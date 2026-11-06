@@ -1,0 +1,46 @@
+---
+/**
+ * Every page of the docs, laid out like the uiKit template (3857:5968): the top bar
+ * (logo, theme switch, Waitlist), then the 1200px card with the sidebar and a 720px column.
+ */
+import Layout from './Layout.astro'
+import { Sidebar } from '../components/Sidebar'
+import { ThemeSwitch } from '../components/ThemeSwitch'
+import { Button } from '@satin/ui'
+import { nav, page } from '../nav'
+
+interface Props {
+  /** The nav item this page shows. */
+  current: string
+}
+const { current } = Astro.props
+const item = page(current)
+const title = current === 'what-is-satin' ? 'Satin' : `${item.title} · Satin`
+---
+
+<Layout title={title} description={item.description}>
+  <header class="relative z-10 mx-auto flex h-14 w-full items-center justify-between px-4 lg:w-[min(1200px,calc(100%-32px))] lg:px-5">
+    <div class="flex items-center gap-2">
+      <a href="/" class="flex items-center gap-1.5 rounded-md focus-visible:shadow-border-focus focus-visible:outline-none">
+        <span class="relative size-5 shrink-0">
+          <img src="/figma/satin-logo.svg" alt="" class="absolute inset-[-4.29%_-7.86%_-11.43%_-7.86%] block size-[calc(100%+15.72%)] max-w-none" />
+        </span>
+        <span class="text-[18px] leading-[19.5px] tracking-[-0.27px] text-text-default">satin</span>
+      </a>
+      <ThemeSwitch client:load />
+    </div>
+    <Button size="lg" shape="rounded" className="mr-11 lg:mr-0">Waitlist</Button>
+  </header>
+
+  <div
+    class="relative mx-auto flex min-h-[calc(100dvh-56px)] w-full overflow-clip bg-bg-card lg:w-[min(1200px,calc(100%-32px))] lg:rounded-2xl lg:border lg:border-border-subtle lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
+  >
+    <Sidebar client:load nav={nav} current={current} />
+
+    <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none">
+      <div class="flex w-full max-w-[720px] flex-col gap-4 pb-24">
+        <slot />
+      </div>
+    </main>
+  </div>
+</Layout>

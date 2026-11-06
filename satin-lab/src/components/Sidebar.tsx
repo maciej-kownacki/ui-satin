@@ -7,7 +7,7 @@ import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } 
 /**
  * navigationSidebar from the docs template (uiKit 3857:5977): group headers with an icon,
  * a count and a chevron (right when closed, down when open), items indented under the
- * label, the current item as a filled pill, and the design-help banner at the bottom.
+ * label, the current page as a filled pill, and the design-help banner at the bottom.
  * Below 1024px it becomes a drawer behind a menu button.
  */
 const groupIcons: Record<string, typeof IntroIcon> = {
@@ -16,11 +16,10 @@ const groupIcons: Record<string, typeof IntroIcon> = {
   'ai-patterns': AiPatternsIcon,
 }
 
-export function Sidebar({ nav }: { nav: NavGroup[] }) {
+export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) {
   const [open, setOpen] = React.useState<Record<string, boolean>>(() =>
     Object.fromEntries(nav.map((g) => [g.id, true])),
   )
-  const [current, setCurrent] = React.useState(nav[0]?.items[0]?.id ?? '')
   const [drawer, setDrawer] = React.useState(false)
   const [wide, setWide] = React.useState(true)
   const menuRef = React.useRef<HTMLButtonElement>(null)
@@ -32,31 +31,6 @@ export function Sidebar({ nav }: { nav: NavGroup[] }) {
     mq.addEventListener('change', sync)
     return () => mq.removeEventListener('change', sync)
   }, [])
-
-  // Scroll spy: the current item is the last section whose top has passed the upper third.
-  React.useEffect(() => {
-    const ids = nav.flatMap((g) => g.items.map((i) => i.id))
-    const sections = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el)
-    const update = () => {
-      const line = window.innerHeight * 0.3
-      let id = ids[0]
-      for (const el of sections) if (el.getBoundingClientRect().top <= line) id = el.id
-      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
-      setCurrent(atBottom ? ids[ids.length - 1] : id)
-    }
-    update()
-    // The browser may jump to the #hash after hydration, without a scroll event.
-    const late = setTimeout(update, 150)
-    window.addEventListener('scroll', update, { passive: true })
-    window.addEventListener('resize', update)
-    window.addEventListener('hashchange', update)
-    return () => {
-      clearTimeout(late)
-      window.removeEventListener('scroll', update)
-      window.removeEventListener('resize', update)
-      window.removeEventListener('hashchange', update)
-    }
-  }, [nav])
 
   // The drawer closes on Escape and gives focus back to the menu button.
   React.useEffect(() => {
@@ -165,8 +139,8 @@ export function Sidebar({ nav }: { nav: NavGroup[] }) {
                         return (
                           <li key={item.id}>
                             <a
-                              href={`#${item.id}`}
-                              aria-current={isCurrent ? 'location' : undefined}
+                              href={item.href}
+                              aria-current={isCurrent ? 'page' : undefined}
                               onClick={() => setDrawer(false)}
                               className={cn(
                                 'flex h-8 items-center truncate pr-3 pl-[34px] text-[13px] leading-[19.5px]',

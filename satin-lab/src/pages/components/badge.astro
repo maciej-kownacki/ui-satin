@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import BadgeDemo, { options } from '../../demos/badge'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="badge">
+  <DocSection item={page('badge')} api={api['badge']}>
+    <BadgeDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

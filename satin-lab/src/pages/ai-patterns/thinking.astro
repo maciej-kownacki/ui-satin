@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ThinkingDemo, { options } from '../../demos/thinking'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="thinking">
+  <DocSection item={page('thinking')} api={api['thinking']}>
+    <ThinkingDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

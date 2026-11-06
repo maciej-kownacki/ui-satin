@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import PromptBarDemo, { options } from '../../demos/prompt-bar'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="prompt-bar">
+  <DocSection item={page('prompt-bar')} api={api['prompt-bar']}>
+    <PromptBarDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

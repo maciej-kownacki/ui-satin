@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SegmentedControlDemo, { options } from '../../demos/segmented-control'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="segmented-control">
+  <DocSection item={page('segmented-control')} api={api['segmented-control']}>
+    <SegmentedControlDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

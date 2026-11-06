@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SwitchDemo, { options } from '../../demos/switch'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="switch">
+  <DocSection item={page('switch')} api={api['switch']}>
+    <SwitchDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

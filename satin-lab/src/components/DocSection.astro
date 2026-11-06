@@ -1,67 +1,58 @@
 ---
 /**
- * One component, laid out like the docs template (uiKit 3857:6009): name and description,
- * then the Showcase island (Preview / Code tabs, full screen, the stage), then the API
- * Reference. The island is hydrated with client:visible, so a component's JavaScript loads
- * only once it scrolls into view.
+ * A component page, laid out like the docs template (uiKit 3857:6009): name and description,
+ * then the Showcase island (Preview / Code tabs, full screen, the stage), then the API Reference.
  */
 import Chip from './Chip.astro'
+import PageHeader from './PageHeader.astro'
 import type { Api } from '../api'
+import type { NavItem } from '../nav'
 
 interface Props {
-  id: string
-  title: string
-  description: string
-  api?: Api
+  item: NavItem
+  api: Api
 }
-const { id, title, description, api } = Astro.props
-const parts = api ? api.description.split(/(`[^`]+`)/).filter(Boolean) : []
+const { item, api } = Astro.props
+const parts = api.description.split(/(`[^`]+`)/).filter(Boolean)
 ---
 
-<section id={id} aria-labelledby={`${id}-title`} class="flex min-w-0 scroll-mt-4 flex-col gap-4">
-  <header class="flex flex-col gap-0.5 text-sm">
-    <h2 id={`${id}-title`} class="font-medium text-text-default">{title}</h2>
-    <p class="text-text-muted">{description}</p>
-  </header>
+<PageHeader title={item.title} description={item.description} />
 
-  <slot />
+<slot />
 
-  {
-    api && (
-      <div class="flex flex-col gap-4 pt-8">
-        <h3 class="text-base font-medium text-text-default">API Reference</h3>
-        <p class="text-sm leading-6 text-text-muted">
-          {parts.map((p) => (p.startsWith('`') ? <Chip>{p.slice(1, -1)}</Chip> : p))}
-        </p>
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[560px] border-collapse text-left text-sm">
-            <thead>
-              <tr class="border-b border-border-default">
-                <th scope="col" class="w-[156px] py-2 pr-4 font-medium text-text-default">Prop</th>
-                <th scope="col" class="py-2 pr-4 font-medium text-text-default">Type</th>
-                <th scope="col" class="w-[140px] py-2 font-medium text-text-default">Default</th>
-              </tr>
-            </thead>
-            <tbody>
-              {api.props.map((prop) => (
-                <tr class="border-b border-border-default align-top">
-                  <th scope="row" class="py-3 pr-4 font-normal">
-                    <Chip>{prop.name}</Chip>
-                  </th>
-                  <td class="py-3 pr-4">
-                    <div class="flex flex-wrap gap-1">
-                      {prop.type.map((t) => (
-                        <Chip>{t}</Chip>
-                      ))}
-                    </div>
-                  </td>
-                  <td class="py-3">{prop.default ? <Chip>{prop.default}</Chip> : <span class="text-text-subtle">—</span>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    )
-  }
+<section aria-labelledby="api-title" class="flex flex-col gap-4 pt-8">
+  <h2 id="api-title" class="text-base font-medium text-text-default">API Reference</h2>
+  <p class="text-sm leading-6 text-text-muted">
+    {parts.map((p) => (p.startsWith('`') ? <Chip>{p.slice(1, -1)}</Chip> : p))}
+  </p>
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[560px] border-collapse text-left text-sm">
+      <thead>
+        <tr class="border-b border-border-default">
+          <th scope="col" class="w-[156px] py-2 pr-4 font-medium text-text-default">Prop</th>
+          <th scope="col" class="py-2 pr-4 font-medium text-text-default">Type</th>
+          <th scope="col" class="w-[140px] py-2 font-medium text-text-default">Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          api.props.map((prop) => (
+            <tr class="border-b border-border-default align-top">
+              <th scope="row" class="py-3 pr-4 font-normal">
+                <Chip>{prop.name}</Chip>
+              </th>
+              <td class="py-3 pr-4">
+                <div class="flex flex-wrap gap-1">
+                  {prop.type.map((t) => (
+                    <Chip>{t}</Chip>
+                  ))}
+                </div>
+              </td>
+              <td class="py-3">{prop.default ? <Chip>{prop.default}</Chip> : <span class="text-text-subtle">—</span>}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
 </section>
