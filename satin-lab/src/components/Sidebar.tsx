@@ -153,12 +153,12 @@ export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) 
                               aria-current={isCurrent ? 'page' : undefined}
                               onClick={() => setDrawer(false)}
                               className={cn(
-                                'flex h-8 items-center truncate pr-3 pl-[34px] text-[13px] leading-[19.5px]',
+                                'flex h-8 items-center truncate rounded-full pr-3 pl-[34px] text-[13px] leading-[19.5px]',
                                 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
                                 'focus-visible:shadow-border-focus focus-visible:outline-none',
                                 isCurrent
-                                  ? 'rounded-full bg-bg-selected text-text-default'
-                                  : 'rounded-lg text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
+                                  ? 'bg-bg-selected text-text-default'
+                                  : 'text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
                               )}
                             >
                               {item.title}
