@@ -85,7 +85,14 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
         )}
       >
         <div className="flex h-dvh flex-col gap-2 py-2 lg:h-full">
-          {drawer && (
+          {/* Small screens: the drawer has its own top row, logo on the left and close on the right. */}
+          <div className="flex h-10 shrink-0 items-center justify-between pr-2 pl-4 lg:hidden">
+            <a href="/" className="flex items-center gap-1.5 rounded-md focus-visible:shadow-border-focus focus-visible:outline-none">
+              <span className="relative size-5 shrink-0">
+                <img src="/figma/satin-logo.png" alt="" className="absolute inset-[-4.29%_-7.86%_-11.43%_-7.86%] block size-[calc(100%+15.72%)] max-w-none" />
+              </span>
+              <span className="text-[18px] leading-[19.5px] tracking-[-0.27px] text-text-default">satin</span>
+            </a>
             <Button
               variant="tertiary"
               shape="rounded"
@@ -95,11 +102,10 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                 setDrawer(false)
                 menuRef.current?.focus()
               }}
-              className="absolute top-2 right-2 z-10 lg:hidden"
             >
               <Xmark />
             </Button>
-          )}
+          </div>
 
           <nav aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto px-2 lg:overflow-visible">
             <ul>
