@@ -90,7 +90,7 @@ export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-start gap-4">
-        <div role="tablist" aria-label={`${name} view`} onKeyDown={onTabKey} className="flex flex-1 items-center gap-3">
+        <div role="tablist" aria-label={`${name} view`} onKeyDown={onTabKey} className="flex flex-1 items-center gap-1">
           {tabs.map(({ id, label, Icon }) => {
             const selected = tab === id
             return (
