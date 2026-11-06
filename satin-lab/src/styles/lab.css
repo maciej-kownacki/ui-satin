@@ -91,12 +91,12 @@ html.dark .code-block .shiki span {
   width: calc(var(--card) - 13px);
   border-color: var(--frame-band);
 }
-.fl-band-left {
+.frame-lines > .fl-band-left {
   left: var(--side);
   border-right: 0;
   border-radius: 16px 0 0 16px;
 }
-.fl-band-right {
+.frame-lines > .fl-band-right {
   left: calc(var(--side) + 13px);
   border-left: 0;
   border-radius: 0 16px 16px 0;
