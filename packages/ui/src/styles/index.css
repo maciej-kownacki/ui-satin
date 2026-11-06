@@ -6,6 +6,15 @@
 @source "../components";
 
 /*
+ * Interaction states that can also be forced with data-force, so a state sheet can show
+ * every state at once (like a Figma variants frame). Declared in this order so pressed
+ * wins over focus, and focus over hover.
+ */
+@custom-variant satin-hover (&:hover, &[data-force="hover"]);
+@custom-variant satin-focus (&:focus-visible, &[data-force="focus"]);
+@custom-variant satin-pressed (&:active, &[data-force="pressed"]);
+
+/*
  * Tailwind 4 leaves buttons with the default arrow cursor. Everything you can click in Satin
  * shows the pointer, like links do; disabled controls show not-allowed.
  */
