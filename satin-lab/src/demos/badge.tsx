@@ -28,8 +28,8 @@ import { Check } from 'iconoir-react'
     label: 'Plain',
     code: `import { Badge } from '@satin/ui/badge'
 
-<Badge tone="green" look="plain">Published</Badge>
-<Badge tone="red" look="plain">Blocked</Badge>`,
+<Badge tone="green" variant="plain">Published</Badge>
+<Badge tone="red" variant="plain">Blocked</Badge>`,
   },
   {
     id: 'rounded',
@@ -53,7 +53,7 @@ export default function BadgeDemo({ codeHtml }: { codeHtml: Record<string, strin
             <Badge
               key={tone}
               tone={tone}
-              look={id === 'plain' ? 'plain' : 'soft'}
+              variant={id === 'plain' ? 'plain' : 'soft'}
               shape={id === 'rounded' ? 'rounded' : 'default'}
               size={id === 'rounded' ? 'sm' : 'lg'}
             >

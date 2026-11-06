@@ -9,11 +9,11 @@ const tones = ['"neutral"', '"brand"', '"sky"', '"green"', '"amber"', '"red"', '
 
 export const api: Record<string, Api> = {
   badge: {
-    description: 'The `Badge` component is a `span` that takes a tone, a size, a look and a shape.',
+    description: 'The `Badge` component is a `span` that takes a tone, a size, a variant and a shape.',
     props: [
       { name: 'tone', type: tones, default: '"neutral"' },
       { name: 'size', type: ['"lg"', '"sm"'], default: '"lg"' },
-      { name: 'look', type: ['"soft"', '"plain"'], default: '"soft"' },
+      { name: 'variant', type: ['"soft"', '"plain"'], default: '"soft"' },
       { name: 'shape', type: ['"default"', '"rounded"'], default: '"default"' },
     ],
   },
@@ -21,7 +21,7 @@ export const api: Record<string, Api> = {
     description: 'The `Button` component is a wrapper around the `button` element that adds styles, sizes and states.',
     props: [
       { name: 'variant', type: ['"primary"', '"secondary"', '"tertiary"', '"inverse"', '"destructive"'], default: '"primary"' },
-      { name: 'size', type: ['"xs"', '"default"', '"lg"', '"xl"'], default: '"default"' },
+      { name: 'size', type: ['"xs"', '"md"', '"lg"', '"xl"'], default: '"md"' },
       { name: 'shape', type: ['"default"', '"rounded"'], default: '"default"' },
       { name: 'iconOnly', type: ['boolean'], default: 'false' },
       { name: 'asChild', type: ['boolean'], default: 'false' },
@@ -47,7 +47,7 @@ export const api: Record<string, Api> = {
       { name: 'value', type: ['string'] },
       { name: 'defaultValue', type: ['string'], default: 'first item' },
       { name: 'onValueChange', type: ['(value: string) => void'] },
-      { name: 'size', type: ['"xs"', '"default"', '"lg"'], default: '"default"' },
+      { name: 'size', type: ['"xs"', '"md"', '"lg"'], default: '"md"' },
       { name: 'shape', type: ['"default"', '"rounded"'], default: '"default"' },
       { name: 'border', type: ['boolean'], default: 'false' },
       { name: 'fullWidth', type: ['boolean'], default: 'false' },

@@ -9,7 +9,7 @@ import { cn } from '../lib/utils'
  * to the new segment (transform, ease-out). Arrow keys move between segments.
  * Values 1:1 with the uiKit `_segmentedControl/item` (3080:20278) and `SegmentedControl` (3080:21247) sets.
  */
-type Size = 'xs' | 'default' | 'lg'
+type Size = 'xs' | 'md' | 'lg'
 type Shape = 'default' | 'rounded'
 
 export interface SegmentedControlItem {
@@ -56,7 +56,7 @@ const segment = cva(
     variants: {
       size: {
         xs: 'h-control-height-xs gap-1 px-2.5 text-sm [&_svg]:size-icon-size-sm',
-        default: 'h-control-height gap-1.5 px-3 text-sm [&_svg]:size-icon-size',
+        md: 'h-control-height gap-1.5 px-3 text-sm [&_svg]:size-icon-size',
         lg: 'h-control-height-lg gap-1.5 px-4 text-base [&_svg]:size-icon-size',
       },
       shape: { default: 'rounded-sm', rounded: 'rounded-full' },
@@ -70,7 +70,7 @@ export function SegmentedControl({
   value: valueProp,
   defaultValue,
   onValueChange,
-  size = 'default',
+  size = 'md',
   shape = 'default',
   border = false,
   fullWidth = false,

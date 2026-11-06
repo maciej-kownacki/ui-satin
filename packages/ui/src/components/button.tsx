@@ -5,7 +5,7 @@ import { cn } from '../lib/utils'
 
 /**
  * Button, 1:1 with the uiKit `button` component set (10:1838): five styles, four sizes
- * (24 / 28 / 32 / 36), Default or Rounded shape, and an icon-only form.
+ * xs / md / lg / xl (24 / 28 / 32 / 36), Default or Rounded shape, and an icon-only form.
  *
  * Solid styles (primary, destructive, inverse) are a 1px border in the style's `border`
  * token, a 1px outer ring in the current background, a 0 3 6 drop shadow (gone when
@@ -68,7 +68,7 @@ const buttonVariants = cva(
       },
       size: {
         xs: 'h-control-height-xs gap-1 px-2 text-sm [&_svg]:size-icon-size-sm',
-        default: 'h-control-height gap-1.5 px-2.5 text-sm [&_svg]:size-icon-size',
+        md: 'h-control-height gap-1.5 px-2.5 text-sm [&_svg]:size-icon-size',
         lg: 'h-control-height-lg gap-1.5 px-3 text-sm [&_svg]:size-icon-size',
         xl: 'h-control-height-xl gap-2 px-3 text-base [&_svg]:size-icon-size',
       },
@@ -84,15 +84,15 @@ const buttonVariants = cva(
     compoundVariants: [
       // Default shape: the radius grows with the size (8 / 10 / 10 / 12).
       { shape: 'default', size: 'xs', className: 'rounded-md' },
-      { shape: 'default', size: 'default', className: 'rounded-lg' },
+      { shape: 'default', size: 'md', className: 'rounded-lg' },
       { shape: 'default', size: 'lg', className: 'rounded-lg' },
       { shape: 'default', size: 'xl', className: 'rounded-xl' },
       { iconOnly: true, size: 'xs', className: 'w-control-height-xs' },
-      { iconOnly: true, size: 'default', className: 'w-control-height' },
+      { iconOnly: true, size: 'md', className: 'w-control-height' },
       { iconOnly: true, size: 'lg', className: 'w-control-height-lg' },
       { iconOnly: true, size: 'xl', className: 'w-control-height-xl' },
     ],
-    defaultVariants: { variant: 'primary', size: 'default', shape: 'default', iconOnly: false },
+    defaultVariants: { variant: 'primary', size: 'md', shape: 'default', iconOnly: false },
   },
 )
 

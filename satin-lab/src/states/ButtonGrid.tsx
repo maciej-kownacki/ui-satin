@@ -8,7 +8,7 @@ import { Calendar } from 'iconoir-react'
  */
 const styles = ['primary', 'destructive', 'secondary', 'tertiary', 'inverse'] as const
 const states = ['Default', 'Hover', 'Pressed', 'Focus', 'Disabled'] as const
-const sizes = ['xs', 'default', 'lg', 'xl'] as const
+const sizes = ['xs', 'md', 'lg', 'xl'] as const
 const label = (s: string) => s[0].toUpperCase() + s.slice(1)
 const force = (state: string) => (['Hover', 'Pressed', 'Focus'].includes(state) ? state.toLowerCase() : undefined)
 

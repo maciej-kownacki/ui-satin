@@ -21,7 +21,7 @@ const badgeVariants = cva(
         lg: 'px-2 py-1',
         sm: 'px-1.5 py-0.5',
       },
-      look: {
+      variant: {
         soft: 'bg-tone-bg',
         plain: 'bg-transparent',
       },
@@ -30,7 +30,7 @@ const badgeVariants = cva(
         rounded: 'rounded-full',
       },
     },
-    defaultVariants: { size: 'lg', look: 'soft', shape: 'default' },
+    defaultVariants: { size: 'lg', variant: 'soft', shape: 'default' },
   },
 )
 
@@ -38,12 +38,12 @@ export interface BadgeProps extends React.ComponentProps<'span'>, VariantProps<t
   tone?: BadgeTone
 }
 
-export function Badge({ className, tone = 'neutral', size, look, shape, ...props }: BadgeProps) {
+export function Badge({ className, tone = 'neutral', size, variant, shape, ...props }: BadgeProps) {
   return (
     <span
       data-slot="badge"
       data-tone={tone}
-      className={cn(badgeVariants({ size, look, shape }), className)}
+      className={cn(badgeVariants({ size, variant, shape }), className)}
       {...props}
     />
   )
