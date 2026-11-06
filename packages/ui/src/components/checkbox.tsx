@@ -28,7 +28,8 @@ export function Checkbox({ className, label, description, placement = 'left', id
       className={cn('peer satin-checkbox', className)}
       {...props}
     >
-      <CheckboxPrimitive.Indicator className="grid size-4 place-items-center">
+      {/* -1px so the 16px glyph sits on the box, not inside its 1px border. */}
+      <CheckboxPrimitive.Indicator className="-m-px grid size-4 place-items-center">
         {/* The Check and Indeterminate glyphs from Figma, 16px at 1.25. */}
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
           {props.checked === 'indeterminate' ? (
