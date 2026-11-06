@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from 'astro:transitions'
 import '../styles/lab.css'
 
 interface Props {
@@ -19,12 +20,19 @@ const { title, description } = Astro.props
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <!-- Pick the theme before the first paint, so dark mode never flashes light. -->
     <script is:inline>
-      try {
-        const t = localStorage.getItem('satin-theme')
-        const dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
-        document.documentElement.classList.toggle('dark', dark)
-      } catch {}
+      function satinTheme(doc) {
+        try {
+          const t = localStorage.getItem('satin-theme')
+          const dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+          doc.documentElement.classList.toggle('dark', dark)
+        } catch {}
+      }
+      satinTheme(document)
+      // Page changes swap in the next page's <html>; give it the theme before it is shown.
+      document.addEventListener('astro:before-swap', (e) => satinTheme(e.newDocument))
     </script>
+    <!-- Page changes happen in place: the sidebar and top bar stay, only the column changes. -->
+    <ClientRouter fallback="none" />
   </head>
   <body class="relative min-h-dvh bg-bg-canvas antialiased">
     <!-- Hairlines that frame the page in the template: one under the top bar, one down each side of the card. -->

@@ -27,7 +27,7 @@ const title = current === 'what-is-satin' ? 'Satin' : `${item.title} · Satin`
         </span>
         <span class="text-[18px] leading-[19.5px] tracking-[-0.27px] text-text-default">satin</span>
       </a>
-      <ThemeSwitch client:load />
+      <ThemeSwitch client:load transition:persist="theme-switch" />
     </div>
     <Button size="lg" shape="rounded" className="mr-11 lg:mr-0">Waitlist</Button>
   </header>
@@ -35,7 +35,7 @@ const title = current === 'what-is-satin' ? 'Satin' : `${item.title} · Satin`
   <div
     class="relative mx-auto flex min-h-[calc(100dvh-56px)] w-full overflow-clip bg-bg-card lg:w-[min(1200px,calc(100%-32px))] lg:rounded-2xl lg:border lg:border-border-subtle lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
   >
-    <Sidebar client:load nav={nav} current={current} />
+    <Sidebar client:load nav={nav} current={current} transition:persist="sidebar" />
 
     <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none">
       <div class="flex w-full max-w-[720px] flex-col gap-4 pb-24">

@@ -20,6 +20,8 @@ export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) 
   const [open, setOpen] = React.useState<Record<string, boolean>>(() =>
     Object.fromEntries(nav.map((g) => [g.id, true])),
   )
+  // Groups the user has opened or closed; only their lists animate, never on page load.
+  const [toggled, setToggled] = React.useState<Record<string, boolean>>({})
   const [drawer, setDrawer] = React.useState(false)
   const [wide, setWide] = React.useState(true)
   const menuRef = React.useRef<HTMLButtonElement>(null)
@@ -108,7 +110,10 @@ export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) 
                       aria-expanded={isOpen}
                       aria-controls={listId}
                       data-active={active || undefined}
-                      onClick={() => setOpen((s) => ({ ...s, [group.id]: !s[group.id] }))}
+                      onClick={() => {
+                        setToggled((t) => ({ ...t, [group.id]: true }))
+                        setOpen((s) => ({ ...s, [group.id]: !s[group.id] }))
+                      }}
                       className={cn(
                         'flex h-8 w-full items-center gap-2 rounded-lg px-3 text-left select-none',
                         'transition-colors duration-(--duration-fast) ease-(--ease-out)',
@@ -133,7 +138,12 @@ export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) 
                         <ChevronRight className="shrink-0 text-text-muted" />
                       )}
                     </button>
-                    <ul id={listId} hidden={!isOpen} data-state={isOpen ? 'open' : 'closed'} className="satin-collapsible">
+                    <ul
+                      id={listId}
+                      hidden={!isOpen}
+                      data-state={isOpen ? 'open' : 'closed'}
+                      className={cn(toggled[group.id] && 'satin-collapsible')}
+                    >
                       {group.items.map((item) => {
                         const isCurrent = item.id === current
                         return (

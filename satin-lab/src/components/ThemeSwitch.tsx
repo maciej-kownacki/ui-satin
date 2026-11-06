@@ -13,7 +13,7 @@ const systemTheme = (): Theme => (matchMedia('(prefers-color-scheme: dark)').mat
 export function ThemeSwitch() {
   const [theme, setTheme] = React.useState<Theme>('dark')
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     let saved: string | null = null
     try {
       saved = localStorage.getItem('satin-theme')
