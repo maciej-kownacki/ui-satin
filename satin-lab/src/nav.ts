@@ -16,6 +16,13 @@ export const nav: NavGroup[] = [
     ],
   },
   {
+    id: 'foundations',
+    title: 'Foundations',
+    items: [
+      { id: 'tokens', title: 'Tokens', href: '/foundations/tokens', description: 'Colour, radius, spacing, type, shadow and motion, straight from tokens.json.' },
+    ],
+  },
+  {
     id: 'components',
     title: 'Components',
     items: [

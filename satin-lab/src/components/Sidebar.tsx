@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Button, cn } from '@satin/ui'
 import { Menu, Minus, Xmark } from 'iconoir-react'
 import type { NavGroup } from '../nav'
-import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
+import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, FoundationsIcon, IntroIcon } from './icons'
 
 /**
  * navigationSidebar from the docs template (uiKit 3857:5977): group headers with an icon,
@@ -12,6 +12,7 @@ import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } 
  */
 const groupIcons: Record<string, typeof IntroIcon> = {
   intro: IntroIcon,
+  foundations: FoundationsIcon,
   components: ComponentsIcon,
   'ai-patterns': AiPatternsIcon,
 }

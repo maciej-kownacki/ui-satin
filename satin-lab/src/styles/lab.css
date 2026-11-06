@@ -41,19 +41,65 @@ html.dark .code-block .shiki span {
   color: var(--shiki-dark);
 }
 
-/* The template draws these in #151517 on the dark canvas; there is no token for it yet. */
+/*
+ * The frame around the card, as the template draws it: a column each side of the card and a
+ * band behind the top bar, all 1px outlines with 16px corners, so where they meet the card
+ * they curve with it. #151517 has no token yet; the bands are the same colour at 55%.
+ */
 :root {
-  --frame-line: var(--color-zinc-100);
+  --frame-line: var(--color-zinc-200);
+  --frame-band: color-mix(in srgb, var(--color-zinc-200) 55%, transparent);
 }
 :root.dark {
   --frame-line: #151517;
+  --frame-band: rgb(21 21 23 / 0.55);
 }
 .frame-lines {
   --card: min(1200px, calc(100% - 32px));
-  background:
-    linear-gradient(var(--frame-line), var(--frame-line)) 0 56px / 100% 1px no-repeat,
-    linear-gradient(var(--frame-line), var(--frame-line)) calc((100% - var(--card)) / 2 - 1px) 0 / 1px 100% no-repeat,
-    linear-gradient(var(--frame-line), var(--frame-line)) calc((100% + var(--card)) / 2) 0 / 1px 100% no-repeat;
+  --side: calc((100% - var(--card)) / 2);
+}
+.frame-lines > span {
+  position: absolute;
+  border: 1px solid var(--frame-line);
+}
+.fl-left-top,
+.fl-left {
+  left: -1px;
+  width: calc(var(--side) + 2px);
+  border-radius: 0 16px 16px 0;
+}
+.fl-right-top,
+.fl-right {
+  right: -1px;
+  width: calc(var(--side) + 2px);
+  border-radius: 16px 0 0 16px;
+}
+.fl-left-top,
+.fl-right-top {
+  top: -45px;
+  height: 102px;
+}
+.fl-left,
+.fl-right {
+  top: 56px;
+  bottom: -17px;
+}
+.frame-lines > .fl-band-left,
+.frame-lines > .fl-band-right {
+  top: -20px;
+  height: 77px;
+  width: calc(var(--card) - 13px);
+  border-color: var(--frame-band);
+}
+.fl-band-left {
+  left: var(--side);
+  border-right: 0;
+  border-radius: 16px 0 0 16px;
+}
+.fl-band-right {
+  left: calc(var(--side) + 13px);
+  border-left: 0;
+  border-radius: 0 16px 16px 0;
 }
 
 /* Theme switch before it hydrates: the segment for the current theme looks selected. */

@@ -50,3 +50,13 @@ export const CodeIcon = ({ className }: IconProps) => (
     <path {...stroke16} d="M8.99996 4L6.66663 12.3333M4.33333 5.66663L2 7.99996L4.33333 10.3333M11.6666 5.66663L14 7.99996L11.6666 10.3333" />
   </svg>
 )
+
+/** Foundations has no icon in the template; a palette drawn to the same 14px, 1.09 stroke grid. */
+export const FoundationsIcon = ({ className }: IconProps) => (
+  <svg {...icon14} className={className}>
+    <path {...stroke14} d="M7 1.75A5.25 5.25 0 0 0 7 12.25c.73 0 1.17-.6 1.17-1.17 0-.3-.12-.57-.3-.77a1.15 1.15 0 0 1-.29-.77c0-.64.52-1.16 1.17-1.16h1.36A2.62 2.62 0 0 0 12.25 5.75C12.25 3.54 9.9 1.75 7 1.75Z" />
+    <circle cx="4.38" cy="6.13" r="0.6" fill="currentColor" />
+    <circle cx="6.13" cy="4.08" r="0.6" fill="currentColor" />
+    <circle cx="8.75" cy="4.38" r="0.6" fill="currentColor" />
+  </svg>
+)
