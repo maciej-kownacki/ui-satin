@@ -187,7 +187,8 @@ export function Table<R extends Row = Row>({
     <table
       aria-label={label}
       className="w-full table-fixed border-separate border-spacing-0 text-left"
-      style={tableWidth ? { width: tableWidth, minWidth: '100%' } : undefined}
+      // With overflow="fit" the columns keep at least 120px each, so a phone scrolls instead of crushing them.
+      style={tableWidth ? { width: tableWidth, minWidth: '100%' } : { minWidth: columns.length * 120 + (selectable ? 24 : 0) }}
     >
       <colgroup>
         {selectable && <col style={{ width: 24 }} />}
@@ -331,7 +332,7 @@ export function Table<R extends Row = Row>({
           </div>
         </>
       ) : (
-        table
+        <div className="overflow-x-auto overscroll-x-contain">{table}</div>
       )}
     </div>
   )
