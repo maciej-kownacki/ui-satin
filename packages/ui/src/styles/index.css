@@ -4,3 +4,24 @@
 
 /* Let Tailwind see the classes used inside the components. */
 @source "../components";
+
+/*
+ * Tailwind 4 leaves buttons with the default arrow cursor. Everything you can click in Satin
+ * shows the pointer, like links do; disabled controls show not-allowed.
+ */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="option"],
+  [role="menuitem"],
+  label[for],
+  summary,
+  select {
+    cursor: pointer;
+  }
+  :disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}

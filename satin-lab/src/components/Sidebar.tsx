@@ -77,7 +77,7 @@ export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) 
           'lg:relative lg:inset-auto lg:z-auto lg:translate-x-0 lg:shrink-0 lg:transition-none',
         )}
       >
-        <div className="flex h-dvh flex-col gap-2 py-2 lg:sticky lg:top-0 lg:h-[calc(100dvh-56px)]">
+        <div className="flex h-dvh flex-col gap-2 py-2 lg:h-full">
           {drawer && (
             <Button
               variant="tertiary"
@@ -94,7 +94,7 @@ export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) 
             </Button>
           )}
 
-          <nav aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto px-2">
+          <nav aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto px-2 lg:overflow-visible">
             <ul>
               {nav.map((group) => {
                 const isOpen = open[group.id]
@@ -163,7 +163,10 @@ export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) 
             </ul>
           </nav>
 
-          <HelpBanner />
+          {/* The banner stays pinned to the bottom of the window while the page scrolls. */}
+          <div className="lg:sticky lg:bottom-2">
+            <HelpBanner />
+          </div>
         </div>
       </aside>
     </>
