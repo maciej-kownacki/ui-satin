@@ -65,7 +65,8 @@ export interface PromptBarProps extends Omit<React.ComponentProps<'form'>, 'onSu
   onSubmit?: (value: string, attachments: File[]) => void
 }
 
-const defaultActions: PromptBarAction[] = [
+/** Upload a file and Web search: spread them into `actions` to add your own rows after them. */
+export const defaultActions: PromptBarAction[] = [
   { id: 'upload', label: 'Upload a file', description: 'Select a file from your computer', icon: <AttachmentIcon /> },
   { id: 'web', label: 'Web search', description: 'Research and find on the internet', icon: <Globe /> },
 ]
@@ -447,7 +448,7 @@ function ShortcutHints({ keyBorder, text }: { keyBorder: string; text: string })
   )
   const label = cn('text-xs leading-4 tracking-normal whitespace-nowrap', text)
   return (
-    <div aria-hidden className="flex items-center gap-3 border-t border-border-subtle bg-bg-canvas px-3 py-1.5">
+    <div aria-hidden className="flex items-center gap-3 border-t border-border-subtle bg-bg-canvas px-3 py-1.5 dark:bg-bg-muted">
       <span className="flex items-center gap-1">
         <span className="flex items-center gap-0.5">
           <span className={key}>
