@@ -40,3 +40,18 @@
 html.dark .code-block .shiki span {
   color: var(--shiki-dark);
 }
+
+/* The template draws these in #151517 on the dark canvas; there is no token for it yet. */
+:root {
+  --frame-line: var(--color-zinc-100);
+}
+:root.dark {
+  --frame-line: #151517;
+}
+.frame-lines {
+  --card: min(1200px, calc(100% - 32px));
+  background:
+    linear-gradient(var(--frame-line), var(--frame-line)) 0 56px / 100% 1px no-repeat,
+    linear-gradient(var(--frame-line), var(--frame-line)) calc((100% - var(--card)) / 2 - 1px) 0 / 1px 100% no-repeat,
+    linear-gradient(var(--frame-line), var(--frame-line)) calc((100% + var(--card)) / 2) 0 / 1px 100% no-repeat;
+}

@@ -77,7 +77,7 @@ export function PromptBar({
       <Button
         variant="tertiary"
         size="lg"
-        shape={shape === 'rounded' ? 'pill' : 'rectangle'}
+        shape={shape === 'rounded' ? 'rounded' : 'default'}
         iconOnly
         aria-label="Add attachment"
         onClick={onAttach}
@@ -106,7 +106,7 @@ export function PromptBar({
       <Button
         variant="tertiary"
         size="lg"
-        shape={shape === 'rounded' ? 'pill' : 'rectangle'}
+        shape={shape === 'rounded' ? 'rounded' : 'default'}
         aria-haspopup="menu"
         onClick={onModelClick}
         className="gap-1 px-2"
@@ -119,7 +119,7 @@ export function PromptBar({
       <Button
         variant="tertiary"
         size="lg"
-        shape={shape === 'rounded' ? 'pill' : 'rectangle'}
+        shape={shape === 'rounded' ? 'rounded' : 'default'}
         iconOnly
         aria-label="Dictate"
         onClick={onVoice}
@@ -127,7 +127,7 @@ export function PromptBar({
       >
         <Microphone />
       </Button>
-      <Button type="submit" size="lg" shape="pill" iconOnly aria-label="Send" disabled={!canSend}>
+      <Button type="submit" size="lg" shape="rounded" iconOnly aria-label="Send" disabled={!canSend}>
         <ArrowUp strokeWidth={2} />
       </Button>
     </form>

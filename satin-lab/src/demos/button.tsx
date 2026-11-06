@@ -2,7 +2,7 @@ import { Button } from '@satin/ui'
 import { Calendar, Plus, Trash } from 'iconoir-react'
 import { Showcase, type ShowcaseOption } from '../components/Showcase'
 
-const code = (shape: 'rectangle' | 'pill') => `import { Button } from '@satin/ui/button'
+const code = (shape: 'default' | 'rounded') => `import { Button } from '@satin/ui/button'
 import { Calendar, Plus, Trash } from 'iconoir-react'
 
 export function Actions() {
@@ -18,8 +18,8 @@ export function Actions() {
 }`
 
 export const options: ShowcaseOption[] = [
-  { id: 'rectangle', label: 'Rectangle', code: code('rectangle') },
-  { id: 'pill', label: 'Pill', code: code('pill') },
+  { id: 'default', label: 'Default', code: code('default') },
+  { id: 'rounded', label: 'Rounded', code: code('rounded') },
 ]
 
 export default function ButtonDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
@@ -29,7 +29,7 @@ export default function ButtonDemo({ codeHtml }: { codeHtml: Record<string, stri
       options={options}
       codeHtml={codeHtml}
       render={(id) => {
-        const shape = id as 'rectangle' | 'pill'
+        const shape = id as 'default' | 'rounded'
         return (
           <div className="flex items-center gap-2">
             <Button shape={shape}><Calendar />Schedule</Button>

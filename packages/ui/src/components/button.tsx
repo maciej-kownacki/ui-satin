@@ -5,7 +5,7 @@ import { cn } from '../lib/utils'
 
 /**
  * Button, from the uiKit `button` page: five variants, four sizes (24 / 28 / 32 / 36),
- * a rectangle or pill shape, and an icon-only form. Pressing scales it to 0.97.
+ * a default or rounded (pill) shape, and an icon-only form. Pressing scales it to 0.97.
  */
 const buttonVariants = cva(
   [
@@ -18,11 +18,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          'bg-action-primary-bg text-text-on-solid shadow-primary',
+          'border border-action-primary-border bg-action-primary-bg text-text-on-solid shadow-primary',
           'hover:bg-action-primary-bg-hover active:bg-action-primary-bg-pressed focus-visible:shadow-primary-focus',
         ],
         destructive: [
-          'bg-action-destructive-bg text-text-on-solid shadow-destructive',
+          'border border-action-destructive-border bg-action-destructive-bg text-text-on-solid shadow-destructive',
           'hover:bg-action-destructive-bg-hover active:bg-action-destructive-bg-pressed focus-visible:shadow-destructive-focus',
         ],
         secondary: [
@@ -34,7 +34,7 @@ const buttonVariants = cva(
           'hover:bg-action-secondary-bg-hover active:bg-action-secondary-bg-pressed focus-visible:shadow-border-focus',
         ],
         inverse: [
-          'bg-action-inverse-bg text-text-on-inverse',
+          'border border-action-inverse-border bg-action-inverse-bg text-text-on-inverse',
           'shadow-[0_0_0_1px_var(--action-inverse-bg),inset_0_0_6px_2px_var(--action-inverse-glow)]',
           'hover:bg-action-inverse-bg-hover active:bg-action-inverse-bg-pressed',
           'focus-visible:shadow-[0_0_0_2px_var(--action-focus-ring),0_0_0_1px_var(--action-inverse-bg)]',
@@ -47,8 +47,8 @@ const buttonVariants = cva(
         xl: 'h-control-height-xl px-3 text-base [&_svg]:size-icon-size',
       },
       shape: {
-        rectangle: 'rounded-md',
-        pill: 'rounded-full',
+        default: 'rounded-md',
+        rounded: 'rounded-full',
       },
       iconOnly: {
         true: 'px-0',
@@ -61,7 +61,7 @@ const buttonVariants = cva(
       { iconOnly: true, size: 'lg', className: 'w-control-height-lg' },
       { iconOnly: true, size: 'xl', className: 'w-control-height-xl' },
     ],
-    defaultVariants: { variant: 'primary', size: 'default', shape: 'rectangle', iconOnly: false },
+    defaultVariants: { variant: 'primary', size: 'default', shape: 'default', iconOnly: false },
   },
 )
 

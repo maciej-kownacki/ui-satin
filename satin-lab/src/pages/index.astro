@@ -1,8 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import DocSection from '../components/DocSection.astro'
+import Chip from '../components/Chip.astro'
 import { Sidebar } from '../components/Sidebar'
+import { ThemeSwitch } from '../components/ThemeSwitch'
+import { Button } from '@satin/ui'
 import { nav } from '../nav'
+import { api } from '../api'
 import { highlight } from '../lib/highlight'
 
 import BadgeDemo, { options as badge } from '../demos/badge'
@@ -16,7 +20,6 @@ import ThinkingDemo, { options as thinking } from '../demos/thinking'
 const [badgeCode, buttonCode, checkboxCode, segmentedCode, switchCode, promptBarCode, thinkingCode] =
   await Promise.all([badge, button, checkbox, segmented, switchOptions, promptBar, thinking].map(highlight))
 
-const install = `npm install @satin/ui`
 const usage = `/* app.css */
 @import "@satin/ui/styles.css";
 
@@ -26,97 +29,94 @@ import { Button } from '@satin/ui/button'
 export function Save() {
   return <Button>Save changes</Button>
 }`
-const [installHtml, usageHtml] = await Promise.all([
-  highlight([{ id: 'x', label: '', code: install }]).then((h) => h.x.replace('language-tsx', 'language-bash')),
-  highlight([{ id: 'x', label: '', code: usage }]).then((h) => h.x),
-])
+const usageHtml = (await highlight([{ id: 'x', label: '', code: usage }])).x
 ---
 
 <Layout title="Satin" description="Satin, a design system for calm, AI-native product interfaces.">
-  <div class="lg:flex">
+  <!-- Top bar (uiKit 3857:6331, 3857:6060, 3857:6055): logo, theme switch, waitlist. -->
+  <header class="relative z-10 mx-auto flex h-14 w-full items-center justify-between px-4 lg:w-[min(1200px,calc(100%-32px))] lg:px-5">
+    <div class="flex items-center gap-2">
+      <a href="#what-is-satin" class="flex items-center gap-1.5 rounded-md focus-visible:shadow-border-focus focus-visible:outline-none">
+        <span class="relative size-5 shrink-0">
+          <img src="/figma/satin-logo.svg" alt="" class="absolute inset-[-4.29%_-7.86%_-11.43%_-7.86%] block size-[calc(100%+15.72%)] max-w-none" />
+        </span>
+        <span class="text-[18px] leading-[19.5px] tracking-[-0.27px] text-text-default">satin</span>
+      </a>
+      <ThemeSwitch client:load />
+    </div>
+    <Button size="lg" shape="rounded" className="mr-11 lg:mr-0">Waitlist</Button>
+  </header>
+
+  <div
+    class="relative mx-auto flex w-full overflow-clip bg-bg-card lg:w-[min(1200px,calc(100%-32px))] lg:rounded-2xl lg:border lg:border-border-subtle lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
+  >
     <Sidebar client:load nav={nav} />
 
-    <main id="main" tabindex="-1" class="min-w-0 flex-1 outline-none lg:py-2 lg:pr-2">
-      <div class="min-h-dvh bg-bg-card lg:rounded-xl lg:border lg:border-border-default lg:shadow-xs">
-        <div class="mx-auto max-w-[880px] px-4 pt-10 pb-24 sm:px-8 lg:px-12 lg:pt-16">
-          <!-- Intro -->
-          <section aria-labelledby="intro-title">
-            <h2 id="intro-title" class="text-xs font-medium tracking-wide text-text-subtle uppercase">Intro</h2>
+    <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none">
+      <div class="flex w-full max-w-[720px] flex-col gap-24 pb-24">
+        <!-- Intro -->
+        <section id="what-is-satin" aria-labelledby="what-is-satin-title" class="flex scroll-mt-4 flex-col gap-4 text-sm">
+          <header class="flex flex-col gap-0.5">
+            <h1 id="what-is-satin-title" class="font-medium text-text-default">What is Satin?</h1>
+            <p class="text-text-muted">A design system for calm product interfaces, with patterns for AI agents.</p>
+          </header>
+          <div class="flex flex-col gap-3 leading-[19.5px] text-text-muted">
+            <p>
+              Satin ships as a Figma library and as React components that match it one to one: same names, same variants,
+              same tokens.
+            </p>
+            <p>
+              The components are built on <a class="text-text-default underline underline-offset-2" href="https://ui.shadcn.com">shadcn/ui</a> and Radix, so focus, keyboard and screen-reader behaviour come from proven primitives. Satin changes how
+              they look: colour, surfaces, borders, focus and motion all come from Satin tokens.
+            </p>
+          </div>
+        </section>
 
-            <article id="what-is-satin" aria-labelledby="what-is-satin-title" class="mt-4 scroll-mt-20 lg:scroll-mt-8">
-              <h3 id="what-is-satin-title" class="text-2xl font-semibold tracking-tight text-text-default">What is Satin?</h3>
-              <div class="mt-3 grid max-w-[60ch] gap-3 text-base leading-6 text-text-muted">
-                <p>
-                  Satin is a design system for calm product interfaces, with a set of patterns for working with AI agents.
-                  It ships as a Figma library and as React components that match it one to one: same names, same
-                  variants, same tokens.
-                </p>
-                <p>
-                  The components are built on <a class="text-text-default underline underline-offset-2" href="https://ui.shadcn.com">shadcn/ui</a> and Radix, so focus, keyboard and screen-reader behaviour come from proven primitives. Satin changes how
-                  they look: colour, surfaces, borders, focus and motion all come from Satin tokens.
-                </p>
-              </div>
-            </article>
+        <section id="who-is-satin-for" aria-labelledby="who-is-satin-for-title" class="flex scroll-mt-4 flex-col gap-4 text-sm">
+          <header class="flex flex-col gap-0.5">
+            <h2 id="who-is-satin-for-title" class="font-medium text-text-default">Who is Satin for?</h2>
+            <p class="text-text-muted">Anyone who designs or builds with it.</p>
+          </header>
+          <ul class="flex flex-col gap-2 leading-[19.5px] text-text-muted">
+            <li><span class="font-medium text-text-default">Designers</span> who work in the Satin Figma library and want to see how a component behaves before they use it.</li>
+            <li><span class="font-medium text-text-default">Engineers</span> who need production code that matches the design without re-creating it by hand.</li>
+            <li><span class="font-medium text-text-default">Teams building AI products</span> who need ready answers for prompts, agent progress and decisions.</li>
+          </ul>
+        </section>
 
-            <article id="who-is-satin-for" aria-labelledby="who-is-satin-for-title" class="mt-12 scroll-mt-20 lg:scroll-mt-8">
-              <h3 id="who-is-satin-for-title" class="text-xl font-semibold tracking-tight text-text-default">Who is Satin for?</h3>
-              <ul class="mt-3 grid max-w-[60ch] list-disc gap-2 pl-5 text-base leading-6 text-text-muted marker:text-text-subtle">
-                <li><strong class="font-medium text-text-default">Designers</strong> who work in the Satin Figma library and want to see how a component behaves before they use it.</li>
-                <li><strong class="font-medium text-text-default">Engineers</strong> who need production code that matches the design without re-creating it by hand.</li>
-                <li><strong class="font-medium text-text-default">Teams building AI products</strong> who need ready answers for prompts, agent progress and decisions.</li>
-              </ul>
-            </article>
+        <section id="how-to-use-satin" aria-labelledby="how-to-use-satin-title" class="flex scroll-mt-4 flex-col gap-4 text-sm">
+          <header class="flex flex-col gap-0.5">
+            <h2 id="how-to-use-satin-title" class="font-medium text-text-default">How can I use Satin?</h2>
+            <p class="text-text-muted">Import the styles once, then import components one by one.</p>
+          </header>
+          <p class="leading-6 text-text-muted">
+            Each component has its own entry point, so you only ship what you use. The package isn't on npm yet; until it
+            is, it lives in the <Chip>packages/ui</Chip> folder of the Satin repository. Light and dark mode come from the <Chip>dark</Chip> class on any parent element.
+          </p>
+          <div class="code-block overflow-hidden rounded-2xl border border-border-subtle bg-bg-field" set:html={usageHtml} />
+        </section>
 
-            <article id="how-to-use-satin" aria-labelledby="how-to-use-satin-title" class="mt-12 scroll-mt-20 lg:scroll-mt-8">
-              <h3 id="how-to-use-satin-title" class="text-xl font-semibold tracking-tight text-text-default">How can I use Satin?</h3>
-              <p class="mt-3 max-w-[60ch] text-base leading-6 text-text-muted">
-                Install the package, import the styles once, then import components one by one. Each component has its own
-                entry point, so you only ship what you use. The package isn't on npm yet; until it is, it lives in the <code class="font-mono text-sm text-text-default">packages/ui</code> folder of the Satin repository.
-              </p>
-              <div class="code-block mt-4 overflow-hidden rounded-xl border border-border-default bg-bg-card" set:html={installHtml} />
-              <div class="code-block mt-3 overflow-hidden rounded-xl border border-border-default bg-bg-card" set:html={usageHtml} />
-              <p class="mt-4 max-w-[60ch] text-base leading-6 text-text-muted">
-                Light and dark mode come from the <code class="font-mono text-sm text-text-default">dark</code> class on any parent element. Motion follows a handful of rules: ease-out, under 250 ms, transform and opacity only, and
-                nothing moves when the user asks for reduced motion.
-              </p>
-            </article>
-          </section>
-
-          <!-- Components -->
-          <section aria-labelledby="components-title" class="mt-20">
-            <h2 id="components-title" class="text-xs font-medium tracking-wide text-text-subtle uppercase">Components</h2>
-            <div class="mt-4 grid grid-cols-[minmax(0,1fr)] gap-16">
-              <DocSection id="badge" title="Badge" description="A short label for a status or a category. Eight tones, Soft or Plain, rectangle or rounded.">
-                <BadgeDemo client:visible codeHtml={badgeCode} />
-              </DocSection>
-              <DocSection id="button" title="Button" description="Starts an action. Primary for the one main action on a screen, secondary and tertiary for the rest, destructive for actions that delete, inverse on busy or coloured backgrounds.">
-                <ButtonDemo client:visible codeHtml={buttonCode} />
-              </DocSection>
-              <DocSection id="checkbox" title="Checkbox" description="Turns an option on or off as part of a form. With a label, a description, or as a select-all with an indeterminate state.">
-                <CheckboxDemo client:visible codeHtml={checkboxCode} />
-              </DocSection>
-              <DocSection id="segmented-control" title="Segmented control" description="Switches between two to five views or filters in place. One segment is always selected; arrow keys move between them.">
-                <SegmentedControlDemo client:visible codeHtml={segmentedCode} />
-              </DocSection>
-              <DocSection id="switch" title="Switch" description="Turns a setting on or off, with immediate effect. Use a checkbox instead when the choice is saved with a form.">
-                <SwitchDemo client:visible codeHtml={switchCode} />
-              </DocSection>
-            </div>
-          </section>
-
-          <!-- AI patterns -->
-          <section aria-labelledby="ai-patterns-title" class="mt-20">
-            <h2 id="ai-patterns-title" class="text-xs font-medium tracking-wide text-text-subtle uppercase">AI patterns</h2>
-            <div class="mt-4 grid grid-cols-[minmax(0,1fr)] gap-16">
-              <DocSection id="prompt-bar" title="Prompt bar" description="Where people write to an agent: attachments, the model picker, voice and send. Enter sends, Shift+Enter adds a line.">
-                <PromptBarDemo client:visible codeHtml={promptBarCode} />
-              </DocSection>
-              <DocSection id="thinking" title="Thinking" description="Shows what an agent is doing while it works, then folds into a one-line summary that opens the steps: tasks, reasoning, sources or tool calls.">
-                <ThinkingDemo client:visible codeHtml={thinkingCode} />
-              </DocSection>
-            </div>
-          </section>
-        </div>
+        <DocSection id="badge" title="Badge" description="A short label for a status or a category." api={api.badge}>
+          <BadgeDemo client:visible codeHtml={badgeCode} />
+        </DocSection>
+        <DocSection id="button" title="Button" description="Starts an action. One primary per screen; secondary and tertiary for the rest." api={api.button}>
+          <ButtonDemo client:visible codeHtml={buttonCode} />
+        </DocSection>
+        <DocSection id="checkbox" title="Checkbox" description="Turns an option on or off as part of a form." api={api.checkbox}>
+          <CheckboxDemo client:visible codeHtml={checkboxCode} />
+        </DocSection>
+        <DocSection id="segmented-control" title="Segmented control" description="Switches between two to five views or filters in place." api={api['segmented-control']}>
+          <SegmentedControlDemo client:visible codeHtml={segmentedCode} />
+        </DocSection>
+        <DocSection id="switch" title="Switch" description="Turns a setting on or off, with immediate effect." api={api.switch}>
+          <SwitchDemo client:visible codeHtml={switchCode} />
+        </DocSection>
+        <DocSection id="prompt-bar" title="Prompt bar" description="Where people write to an agent: attachments, model, voice and send." api={api['prompt-bar']}>
+          <PromptBarDemo client:visible codeHtml={promptBarCode} />
+        </DocSection>
+        <DocSection id="thinking" title="Thinking" description="What an agent is doing while it works, folded into a summary when it is done." api={api.thinking}>
+          <ThinkingDemo client:visible codeHtml={thinkingCode} />
+        </DocSection>
       </div>
     </main>
   </div>

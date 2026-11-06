@@ -53,7 +53,7 @@ const segment = cva(
   {
     variants: {
       size: {
-        xs: 'h-control-height-xs px-2.5 text-xs',
+        xs: 'h-control-height-xs gap-1 px-2.5 text-sm [&_svg]:size-icon-size-sm',
         default: 'h-control-height px-3 text-sm',
         lg: 'h-control-height-lg px-4 text-base',
       },
@@ -115,7 +115,7 @@ export function SegmentedControl({
         <span
           aria-hidden
           className={cn(
-            'absolute top-1 bottom-1 left-0 z-0 bg-component-segmented-selected shadow-xs',
+            'absolute top-1 bottom-1 left-0 z-0 bg-component-segmented-selected shadow-[0_1px_1px_var(--effect-shadow-xs)]',
             shape === 'rounded' ? 'rounded-full' : 'rounded-sm',
             animate && 'transition-[transform,width] duration-(--duration-base) ease-(--ease-out)',
           )}
@@ -130,7 +130,7 @@ export function SegmentedControl({
           className={cn(
             segment({ size, shape, fullWidth }),
             // Before the pill is measured (server render), the selected segment paints its own fill.
-            !pill && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:shadow-xs',
+            !pill && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:shadow-[0_1px_1px_var(--effect-shadow-xs)]',
           )}
         >
           {item.icon}

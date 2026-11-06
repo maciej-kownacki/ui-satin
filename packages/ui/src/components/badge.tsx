@@ -6,7 +6,7 @@ export type BadgeTone = 'neutral' | 'brand' | 'sky' | 'green' | 'amber' | 'red' 
 
 /**
  * Badge, from the uiKit `badge` page: eight tones, two sizes (24 / 20), Soft (with a border)
- * or Plain, rectangle or rounded. The tone comes from `data-tone`, which repoints the
+ * or Plain, default or rounded. The tone comes from `data-tone`, which repoints the
  * `tone/*` tokens, so one set of classes covers every colour.
  */
 const badgeVariants = cva(
@@ -22,11 +22,11 @@ const badgeVariants = cva(
         plain: 'border border-transparent',
       },
       shape: {
-        rectangle: 'rounded-sm',
+        default: 'rounded-sm',
         rounded: 'rounded-full',
       },
     },
-    defaultVariants: { size: 'lg', look: 'soft', shape: 'rectangle' },
+    defaultVariants: { size: 'lg', look: 'soft', shape: 'default' },
   },
 )
 

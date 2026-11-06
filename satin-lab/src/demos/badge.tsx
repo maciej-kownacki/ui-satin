@@ -54,7 +54,7 @@ export default function BadgeDemo({ codeHtml }: { codeHtml: Record<string, strin
               key={tone}
               tone={tone}
               look={id === 'plain' ? 'plain' : 'soft'}
-              shape={id === 'rounded' ? 'rounded' : 'rectangle'}
+              shape={id === 'rounded' ? 'rounded' : 'default'}
               size={id === 'rounded' ? 'sm' : 'lg'}
             >
               {id === 'soft' && <Icon aria-hidden />}
