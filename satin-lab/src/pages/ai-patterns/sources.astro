@@ -1,0 +1,32 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SourcesDemo, { options } from '../../demos/sources'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+
+// Inline until the lead adds 'sources' to nav.ts and api.ts.
+const item = {
+  id: 'sources',
+  title: 'Sources',
+  href: '/ai-patterns/sources',
+  description: 'The pages an answer was based on, as a card or as numbered chips.',
+}
+const api = {
+  description: 'The `Sources` component is a wrapper around the `section` element that lists the pages an answer was based on.',
+  props: [
+    { name: 'sources', type: ['{ title: string; url: string }[]'], default: '[]' },
+    { name: 'variant', type: ['"card"', '"chips"'], default: '"card"' },
+    { name: 'maxVisible', type: ['number'], default: '3' },
+    { name: 'size', type: ['"sm"', '"md"'], default: '"sm"' },
+    { name: 'onOpen', type: ['(url: string) => void'] },
+  ],
+}
+---
+
+<Docs current="sources">
+  <DocSection item={item} api={api}>
+    <SourcesDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

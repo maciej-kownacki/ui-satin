@@ -1,0 +1,34 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import AgentPickerDemo, { options } from '../../demos/agent-picker'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+
+// Inline until the lead adds 'agent-picker' to nav.ts and api.ts.
+const item = {
+  id: 'agent-picker',
+  title: 'Agent picker',
+  href: '/ai-patterns/agent-picker',
+  description: 'Switches which agent answers: avatar, name and one line on what it does.',
+}
+const api = {
+  description: 'The `AgentPicker` component is a wrapper around the `button` that opens a menu of agents.',
+  props: [
+    { name: 'agents', type: ['Agent[]'] },
+    { name: 'value', type: ['string'] },
+    { name: 'onValueChange', type: ['(id: string) => void'] },
+    { name: 'showDescription', type: ['boolean'], default: 'true' },
+    { name: 'variant', type: ['"secondary"', '"tertiary"'], default: '"secondary"' },
+    { name: 'size', type: ['"md"', '"xs"'], default: '"md"' },
+    { name: 'onCreate', type: ['() => void'] },
+  ],
+}
+---
+
+<Docs current="agent-picker">
+  <DocSection item={item} api={api}>
+    <AgentPickerDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

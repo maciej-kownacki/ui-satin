@@ -1,0 +1,31 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import EmptyStateDemo, { options } from '../../demos/empty-state'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="empty-state">
+  <DocSection
+    item={{
+      id: 'empty-state',
+      title: 'Empty state',
+      href: '/ai-patterns/empty-state',
+      description: 'Fills a space with no content yet: says why it is empty and offers the first step.',
+    }}
+    api={{
+      description: 'The `EmptyState` component is a wrapper around the `div` that centres an icon, a message and actions.',
+      props: [
+        { name: 'title', type: ['string'] },
+        { name: 'description', type: ['string'] },
+        { name: 'icon', type: ['ReactNode'] },
+        { name: 'actions', type: ['ReactNode'] },
+        { name: 'border', type: ['"ghost"', '"dashed"', '"outline"'], default: '"ghost"' },
+      ],
+    }}
+  >
+    <EmptyStateDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

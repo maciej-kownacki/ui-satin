@@ -1,0 +1,35 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import PopoverDemo, { options } from '../../demos/popover'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+
+// Until nav.ts has a `popover` entry, the page item is passed inline.
+const item = {
+  id: 'popover',
+  title: 'Popover',
+  href: '/components/popover',
+  description: 'A small titled panel that opens next to the button that asked for it.',
+}
+
+const api = {
+  description:
+    'The `Popover` component wraps the Radix popover in a `div` that floats a titled panel next to its trigger. `children` is the trigger; `body` fills the optional body slot.',
+  props: [
+    { name: 'title', type: ['string'] },
+    { name: 'description', type: ['string'] },
+    { name: 'children', type: ['ReactNode'] },
+    { name: 'body', type: ['ReactNode'] },
+    { name: 'open', type: ['boolean'], default: 'false' },
+    { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+  ],
+}
+---
+
+<Docs current="popover">
+  <DocSection item={item} api={api}>
+    <PopoverDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

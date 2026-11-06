@@ -1,0 +1,45 @@
+/*
+ * Textarea, uiKit 3647:17812. The <textarea> wears the field skin from input.css
+ * (`.satin-field`, so input.css must load first); this adds the multi-line parts: 96px tall,
+ * 12 / 8 padding, 14/21 text, text/placeholder for the placeholder, a vertical resize with
+ * Figma's grip drawn 4px from the corner, and 60% opacity for the whole field when disabled.
+ */
+.satin-field.satin-textarea {
+  display: block;
+  height: 96px;
+  min-height: 56px;
+  padding: 8px 12px;
+  color: var(--text-default);
+  font: inherit;
+  font-size: var(--text-base);
+  line-height: 21px;
+  letter-spacing: -0.015em;
+  outline: none;
+  resize: vertical;
+}
+.satin-textarea:focus-visible {
+  outline: none;
+}
+.satin-textarea::placeholder {
+  color: var(--text-placeholder);
+  opacity: 1;
+}
+.satin-field.satin-textarea:disabled {
+  color: var(--text-subtle);
+}
+/* Hide the browser's own resizer (WebKit/Blink); the grip below stands in for it. */
+.satin-textarea::-webkit-resizer {
+  background: transparent;
+}
+.satin-textarea-grip {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 7px;
+  height: 7px;
+  color: var(--text-subtle);
+  pointer-events: none;
+}
+.satin-textarea-root[data-disabled] {
+  opacity: 0.6;
+}

@@ -1,0 +1,186 @@
+import * as React from 'react'
+import { DropdownMenu as DropdownPrimitive } from 'radix-ui'
+import { cn } from '../lib/utils'
+
+/**
+ * DropdownMenu, 1:1 with the uiKit `DropdownMenu` (654:19150) and `DropdownMenu/Item`
+ * (653:19165) sets. A 255px popover surface (max 520), 4px padding, radius-xl,
+ * border/subtle, the shadcn `sm` shadow. Items are at least 32px high, 12px in, 6px top and
+ * bottom, radius-lg, with an 8px gap between a 16px leading icon (text/muted), the content and
+ * a trailing check (status green) when selected. Hover, keyboard highlight and selected fill
+ * bg/selected.
+ *
+ * Groups: `DropdownMenuGroup`. Content: a 13px medium label (13px line). `stacked` puts the description under it, 4px apart,
+ * at 14px / 21px in text/muted (the size the DropdownMenu set uses); `inline` puts it on the
+ * same baseline 12px after the label, at 13px, truncated. Groups have a 24px header in 12px
+ * text/subtle and are 8px apart with a 1px bg/muted rule between them.
+ *
+ * Built on the Radix DropdownMenu: arrow keys, typeahead, Escape, focus return.
+ */
+export interface DropdownMenuProps {
+  /** The element that opens the menu. Rendered with `asChild`, so pass a Button. */
+  trigger: React.ReactNode
+  /** `DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s. */
+  children: React.ReactNode
+  open?: boolean
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+  /** Modal menus block the rest of the page while open. */
+  modal?: boolean
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  align?: 'start' | 'center' | 'end'
+  sideOffset?: number
+  /** Portal target. Defaults to `document.body`. */
+  container?: HTMLElement | null
+  /** Accessible name for the menu, when the trigger's text doesn't say enough. */
+  'aria-label'?: string
+  className?: string
+}
+
+export function DropdownMenu({
+  trigger,
+  children,
+  open,
+  defaultOpen,
+  onOpenChange,
+  modal = true,
+  side = 'bottom',
+  align = 'start',
+  sideOffset = 8,
+  container,
+  className,
+  ...props
+}: DropdownMenuProps) {
+  return (
+    <DropdownPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} modal={modal}>
+      <DropdownPrimitive.Trigger asChild>{trigger}</DropdownPrimitive.Trigger>
+      <DropdownPrimitive.Portal container={container}>
+        <DropdownPrimitive.Content
+          data-slot="dropdown-menu"
+          aria-label={props['aria-label']}
+          side={side}
+          align={align}
+          sideOffset={sideOffset}
+          collisionPadding={8}
+          className={cn(
+            'pointer-events-auto z-50 flex w-[255px] max-w-[520px] flex-col gap-2 overflow-x-clip overflow-y-auto p-1',
+            'max-h-(--radix-dropdown-menu-content-available-height)',
+            'rounded-xl border border-border-subtle bg-bg-popover',
+            '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+            'origin-(--radix-dropdown-menu-content-transform-origin) outline-none',
+            'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
+            className,
+          )}
+        >
+          {children}
+        </DropdownPrimitive.Content>
+      </DropdownPrimitive.Portal>
+    </DropdownPrimitive.Root>
+  )
+}
+
+/* ------------------------------------------------------------------------------------------ */
+
+export interface DropdownMenuGroupProps extends React.ComponentProps<typeof DropdownPrimitive.Group> {
+  /** The 24px group header. */
+  label?: React.ReactNode
+}
+
+/** A titled group of items (Figma `_dropdown/group`). Groups get a rule between them. */
+export function DropdownMenuGroup({ label, children, className, ...props }: DropdownMenuGroupProps) {
+  return (
+    <DropdownPrimitive.Group
+      data-slot="dropdown-group"
+      // Figma's divider lives inside the group, 8px under the last item; the last group has none.
+      className={cn('flex flex-col not-last:after:mt-2 not-last:after:block not-last:after:h-px not-last:after:bg-bg-muted', className)}
+      {...props}
+    >
+      {label ? (
+        <DropdownPrimitive.Label className="flex h-6 items-center px-3 text-xs leading-3 tracking-normal text-text-subtle">
+          {label}
+        </DropdownPrimitive.Label>
+      ) : null}
+      {children}
+    </DropdownPrimitive.Group>
+  )
+}
+
+/* ------------------------------------------------------------------------------------------ */
+
+export interface DropdownMenuItemProps
+  extends Omit<React.ComponentProps<typeof DropdownPrimitive.Item>, 'children'> {
+  label: string
+  description?: string
+  /** Leading icon. 16px by default; stacked two-line items may use 20px (`iconSize={20}`). */
+  icon?: React.ReactNode
+  iconSize?: 16 | 20
+  /** Marks the current value: bg/selected and a trailing check. */
+  selected?: boolean
+  layout?: 'stacked' | 'inline'
+}
+
+export function DropdownMenuItem({
+  label,
+  description,
+  icon,
+  iconSize = 16,
+  selected = false,
+  layout = 'stacked',
+  className,
+  ...props
+}: DropdownMenuItemProps) {
+  return (
+    <DropdownPrimitive.Item
+      data-slot="dropdown-item"
+      data-selected={selected || undefined}
+      textValue={label}
+      className={cn(
+        'flex min-h-menu-row w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left outline-none select-none',
+        'transition-colors duration-(--duration-fast) ease-(--ease-out)',
+        'data-[highlighted]:bg-bg-selected data-[force=hover]:bg-bg-selected data-[selected]:bg-bg-selected',
+        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        '[&_svg]:pointer-events-none [&_svg]:shrink-0',
+        className,
+      )}
+      {...props}
+    >
+      {icon ? (
+        <span
+          className={cn(
+            'grid shrink-0 place-items-center text-text-muted',
+            iconSize === 20 ? 'size-5 [&_svg]:size-5 [&_svg]:[stroke-width:1.5]' : 'size-4 [&_svg]:size-4 [&_svg]:[stroke-width:1.875]',
+          )}
+        >
+          {icon}
+        </span>
+      ) : null}
+
+      {layout === 'stacked' ? (
+        <span className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+          <span className="text-sm leading-[13px] font-medium text-text-default">{label}</span>
+          {description ? <span className="text-base text-text-muted">{description}</span> : null}
+        </span>
+      ) : (
+        <span className="flex min-w-0 flex-1 items-baseline gap-3">
+          <span className="shrink-0 text-sm leading-[13px] font-medium whitespace-nowrap text-text-default">{label}</span>
+          {description ? (
+            <span className="min-w-0 flex-1 truncate text-sm text-text-muted">{description}</span>
+          ) : null}
+        </span>
+      )}
+
+      {selected && <span className="sr-only">(selected)</span>}
+      {selected && (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className="text-status-green-fg">
+          <path
+            d="M3.33333 8.66667L6 11.3333L12.6667 4.66667"
+            stroke="currentColor"
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+    </DropdownPrimitive.Item>
+  )
+}

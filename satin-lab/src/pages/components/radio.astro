@@ -1,0 +1,27 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import RadioDemo, { options } from '../../demos/radio'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+// Inline until the lead adds 'radio' to nav.ts / api.ts.
+const item = { id: 'radio', title: 'Radio', href: '/components/radio', description: 'Lets people pick exactly one option from a short list.' }
+const api = {
+  description: 'The `Radio` component is a Radix radio item with a label and optional description. Put it in a `RadioGroup`: its `value` decides which radio is `checked`.',
+  props: [
+    { name: 'value', type: ['string'] },
+    { name: 'label', type: ['string'] },
+    { name: 'description', type: ['string'] },
+    { name: 'checked', type: ['boolean'], default: 'false' },
+    { name: 'disabled', type: ['boolean'], default: 'false' },
+    { name: 'placement', type: ['"left"', '"right"'], default: '"left"' },
+  ],
+}
+---
+
+<Docs current="radio">
+  <DocSection item={item} api={api}>
+    <RadioDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

@@ -2,15 +2,34 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import PromptBarDemo, { options } from '../../demos/prompt-bar'
-import { api } from '../../api'
-import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
+
+const item = {
+  id: 'prompt-bar',
+  title: 'Prompt bar',
+  href: '/ai-patterns/prompt-bar',
+  description: 'Where people write to an agent: attachments, model, voice and send.',
+}
+
+const api = {
+  description:
+    'The `PromptBar` component is a wrapper around the `form` element with a text input, attachments, a model picker and a send button.',
+  props: [
+    { name: 'shape', type: ['"pill"', '"default"'], default: '"pill"' },
+    { name: 'value', type: ['string'], default: '""' },
+    { name: 'placeholder', type: ['string'], default: '"Write a message"' },
+    { name: 'attachments', type: ['File[]'], default: '[]' },
+    { name: 'model', type: ['string'] },
+    { name: 'disabled', type: ['boolean'], default: 'false' },
+    { name: 'onSubmit', type: ['(value: string) => void'] },
+  ],
+}
 ---
 
 <Docs current="prompt-bar">
-  <DocSection item={page('prompt-bar')} api={api['prompt-bar']}>
+  <DocSection item={item} api={api}>
     <PromptBarDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

@@ -5,7 +5,7 @@ import { CodeIcon, PreviewIcon } from './icons'
 
 /**
  * The interactive part of a component page, from the docs template (uiKit 3857:6013–6016):
- * Preview / Code tabs with a full-screen button on the right, then a 442px stage with the
+ * Preview / Code tabs with a full-screen button on the right, then a stage (at least 442px) with the
  * live component in the middle and a segmented control for its options at the bottom.
  * The Code tab shows the selected option's code in the same frame, with a copy button.
  */
@@ -128,8 +128,8 @@ export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
         aria-label={fullscreen ? `${name} preview` : undefined}
         aria-labelledby={fullscreen ? undefined : `${ids}-tab-${tab}`}
         className={cn(
-          'relative overflow-hidden border border-border-subtle bg-bg-field shadow-[0_1px_1px_var(--effect-shadow-xs)]',
-          fullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : 'h-[442px] rounded-2xl',
+          'relative flex flex-col overflow-hidden border border-border-subtle bg-bg-field [box-shadow:0_1px_1px_var(--effect-shadow-xs)]',
+          fullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : 'min-h-[442px] rounded-2xl',
         )}
       >
         {fullscreen && <div className="absolute top-3 right-3 z-10">{toggle}</div>}
@@ -137,7 +137,7 @@ export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
         {tab === 'preview' ? (
           <>
             {/* Too wide for the stage? It scrolls sideways instead of squeezing the component. */}
-            <div className="flex h-full overflow-x-auto">
+            <div className="flex flex-1 overflow-x-auto">
               <div className="m-auto flex w-max min-w-full items-center justify-center px-10 pt-6 pb-16">
                 {render(current.id)}
               </div>
@@ -156,7 +156,7 @@ export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
             )}
           </>
         ) : (
-          <div className="flex h-full flex-col">
+          <div className="flex max-h-[600px] flex-1 flex-col">
             <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-subtle pr-2 pl-4">
               <span className="text-sm text-text-muted">{current.label}</span>
               <Button variant="tertiary" shape="rounded" onClick={copy} className="text-text-muted hover:text-text-default">

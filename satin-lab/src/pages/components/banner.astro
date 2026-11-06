@@ -1,0 +1,33 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import BannerDemo, { options } from '../../demos/banner'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="banner">
+  <DocSection
+    item={{
+      id: 'banner',
+      title: 'Banner',
+      href: '/components/banner',
+      description: 'Promotes a next step, a guide or a new feature with a line of copy and one action, on a mesh or plain background.',
+    }}
+    api={{
+      description: 'The `Banner` component is a wrapper around the `div` element that holds a title, an optional description and one action.',
+      props: [
+        { name: 'title', type: ['string'] },
+        { name: 'description', type: ['string'] },
+        { name: 'action', type: ['ReactNode'] },
+        { name: 'layout', type: ['"horizontal"', '"sidebar"'], default: '"horizontal"' },
+        { name: 'background', type: ['"mesh"', '"plain"'], default: '"mesh"' },
+        { name: 'shape', type: ['"rounded"', '"pill"'], default: '"rounded"' },
+        { name: 'onDismiss', type: ['() => void'] },
+      ],
+    }}
+  >
+    <BannerDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

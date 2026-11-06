@@ -1,0 +1,35 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ChipDemo, { options } from '../../demos/chip'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+const tones = ['"neutral"', '"brand"', '"sky"', '"green"', '"amber"', '"red"', '"fuchsia"', '"plum"']
+---
+
+<Docs current="chip">
+  <DocSection
+    item={{
+      id: 'chip',
+      title: 'Chip',
+      href: '/components/chip',
+      description: 'A compact, removable tag for filters, suggestions and people.',
+    }}
+    api={{
+      description: 'The `Chip` component is a wrapper around the `button` element with an optional dot, avatar and remove button.',
+      props: [
+        { name: 'children', type: ['string'] },
+        { name: 'tone', type: tones, default: '"neutral"' },
+        { name: 'variant', type: ['"subtle"', '"outline"'], default: '"subtle"' },
+        { name: 'size', type: ['"sm"', '"md"'], default: '"md"' },
+        { name: 'dot', type: ['boolean'], default: 'false' },
+        { name: 'avatar', type: ['ReactNode'] },
+        { name: 'onRemove', type: ['() => void'] },
+        { name: 'disabled', type: ['boolean'], default: 'false' },
+      ],
+    }}
+  >
+    <ChipDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

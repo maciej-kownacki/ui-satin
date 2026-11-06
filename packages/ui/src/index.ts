@@ -1,12 +1,40 @@
 export { cn } from './lib/utils'
+
+// Components
+export * from './components/avatar'
 export { Badge, badgeVariants, type BadgeProps, type BadgeTone } from './components/badge'
+export * from './components/banner'
 export { Button, buttonVariants, type ButtonProps } from './components/button'
+export * from './components/card'
+export { BarCard, ChannelCard, ChartTooltip, ChartLegendRow, type BarCardProps, type ChannelCardProps, type ChartDatum } from './components/chart'
 export { Checkbox, type CheckboxProps } from './components/checkbox'
-export { PromptBar, type PromptBarProps } from './components/prompt-bar'
-export {
-  SegmentedControl,
-  type SegmentedControlItem,
-  type SegmentedControlProps,
-} from './components/segmented-control'
+export { Chip, ChipAvatar, chipVariants, type ChipProps } from './components/chip'
+export { CodeBlock, type CodeBlockProps } from './components/code-block'
+export { Dialog, DialogClose, DialogAlert, type DialogProps, type DialogVariant, type DialogAlertProps, type DialogAlertIntent } from './components/dialog'
+export * from './components/dot'
+export { DropdownMenu, DropdownMenuGroup, DropdownMenuItem, type DropdownMenuProps, type DropdownMenuGroupProps, type DropdownMenuItemProps } from './components/dropdown'
+export { FormField, useFormField, type FormFieldProps, type FormFieldContextValue } from './components/form-field'
+export { Input, type InputProps } from './components/input'
+export { Popover, PopoverClose, type PopoverProps } from './components/popover'
+export { Radio, RadioGroup, type RadioProps, type RadioGroupProps } from './components/radio'
+export { SegmentedControl, type SegmentedControlItem, type SegmentedControlProps } from './components/segmented-control'
+export * from './components/sidebar'
 export { Switch, type SwitchProps } from './components/switch'
-export { Thinking, type ThinkingProps, type ThinkingStep } from './components/thinking'
+export { Table, type TableProps, type Column, type Row, type Sort } from './components/table'
+export { Tabs, TabsContent, type TabsProps, type TabItem } from './components/tabs'
+export { Textarea, type TextareaProps } from './components/textarea'
+export { Toast, Toaster, toast, type ToastProps, type ToasterProps, type ToastOptions, type ToastIntent, type ToastAction } from './components/toast'
+export { Toggle, toggleVariants, type ToggleProps } from './components/toggle'
+export { Tooltip, TooltipBubble, type TooltipProps } from './components/tooltip'
+
+// AI patterns
+export * from './components/agent-picker'
+export * from './components/attachment'
+export * from './components/decision-card'
+export * from './components/empty-state'
+export { Message, type MessageProps, type MessageSource } from './components/message'
+export { MessageActions, type MessageActionsProps, type MessageFeedback } from './components/message-actions'
+export { PromptBar, type PromptBarProps, type PromptBarModel, type PromptBarAction } from './components/prompt-bar'
+export * from './components/sources'
+export { Thinking, type ThinkingProps, type ThinkingStep, type ThinkingState } from './components/thinking'
+export { TypingIndicator, type TypingIndicatorProps, type TypingIndicatorTone } from './components/typing-indicator'

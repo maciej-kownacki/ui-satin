@@ -1,0 +1,79 @@
+/*
+ * Radio, uiKit _radioBase (852:22410): a 16px circle. Off: bg/field, border/strong, shadow xs;
+ * hover adds shadow sm; pressed is bg/muted with no shadow; focus is border/focus with the 2px
+ * focus ring; disabled is bg/muted with border/default. On: a solid action/primary fill (hover
+ * and pressed take their own fill) with a 6px white dot; disabled-on is border/input with a
+ * bg/canvas dot. Every state also answers to data-force="hover" | "focus" | "pressed".
+ */
+.satin-radio {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 9999px;
+  background: var(--bg-field);
+  color: var(--text-on-solid);
+  box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
+  outline: none;
+  transition-property: background-color, border-color, box-shadow;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+.satin-radio:hover,
+.satin-radio[data-force="hover"] {
+  box-shadow: 0 1px 2px 0 var(--effect-shadow-sm), 0 1px 3px 0 var(--effect-shadow-sm);
+}
+.satin-radio:focus-visible,
+.satin-radio[data-force="focus"] {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--action-focus-ring);
+}
+.satin-radio:active,
+.satin-radio[data-force="pressed"] {
+  background: var(--bg-muted);
+  box-shadow: none;
+}
+.satin-radio:disabled {
+  cursor: not-allowed;
+  border-color: var(--border-default);
+  background: var(--bg-muted);
+  box-shadow: none;
+}
+
+.satin-radio[data-state="checked"] {
+  border-color: var(--action-primary-bg);
+  background: var(--action-primary-bg);
+  box-shadow: none;
+}
+.satin-radio[data-state="checked"]:is(:hover, [data-force="hover"]) {
+  border-color: var(--action-primary-bg-hover);
+  background: var(--action-primary-bg-hover);
+  box-shadow: none;
+}
+.satin-radio[data-state="checked"]:is(:focus-visible, [data-force="focus"]) {
+  border-color: var(--action-primary-bg);
+  background: var(--action-primary-bg);
+  box-shadow: 0 0 0 2px var(--action-focus-ring);
+}
+.satin-radio[data-state="checked"]:is(:active, [data-force="pressed"]) {
+  border-color: var(--action-primary-bg-pressed);
+  background: var(--action-primary-bg-pressed);
+  box-shadow: none;
+}
+.satin-radio[data-state="checked"]:disabled {
+  border-color: var(--border-input);
+  background: var(--border-input);
+  /* Figma's dot here is #FAFAFA, which is bg/canvas in Light. */
+  color: var(--bg-canvas);
+  box-shadow: none;
+}
+
+.satin-radio-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+}

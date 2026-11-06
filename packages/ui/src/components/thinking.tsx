@@ -1,75 +1,102 @@
 import * as React from 'react'
-import { Collapsible } from 'radix-ui'
-import { Check, NavArrowDown, ViewGrid } from 'iconoir-react'
+import { Check, EditPencil, NavArrowDown } from 'iconoir-react'
 import { cn } from '../lib/utils'
 
 /**
- * Thinking, from the uiKit `thinking` page: what an agent did before it answered.
- * While it works the header reads "Thinking…" with a running timer; when it's done the
- * header collapses to a summary ("Thought for 2m 45s") that opens the steps on a rail.
+ * Thinking, 1:1 with the uiKit `Thinking` set (3239:20908) and its parts thinking/header
+ * (3239:20766), thinking/step (3239:20791) and thinking/_mark (3239:20674).
+ *
+ * loading: the header only — the 16 × 11 tetris mark playing, the label in text/muted and the
+ * elapsed time in text/subtle, 12px apart, 4px padding (28 high). collapsed: mark, summary and
+ * a 14px chevron. expanded: the same header with the chevron turned up, then 8px down a body
+ * with 4px left inset: a 16px rail (1px line, rail-edge → rail-center → rail-edge) and, 12px
+ * on, the steps 8px apart.
+ *
+ * Collapsed and expanded are a native `details`, so the summary toggles with click, Enter and
+ * Space; `state` sets the starting state and follows later changes, `onToggle` reports them.
  */
 export type ThinkingStep =
-  | { type: 'task'; label: React.ReactNode; meta?: React.ReactNode }
+  /** A finished action: green check, label, muted meta that truncates. */
+  | { type?: 'task'; label: React.ReactNode; meta?: React.ReactNode }
+  /** A thought, wrapping in text/muted. */
   | { type: 'text'; text: React.ReactNode }
+  /** A page that was read: 16px favicon, title, muted meta. */
   | { type: 'source'; icon?: React.ReactNode; label: React.ReactNode; meta?: React.ReactNode }
-  | { type: 'tool'; icon?: React.ReactNode; label: React.ReactNode; detail?: React.ReactNode; meta?: React.ReactNode }
+  /** A dev tool call: icon (pencil by default), name, mono target, +added −removed, meta. */
+  | {
+      type: 'tool'
+      icon?: React.ReactNode
+      label: React.ReactNode
+      target?: React.ReactNode
+      added?: React.ReactNode
+      removed?: React.ReactNode
+      meta?: React.ReactNode
+    }
+  /** The rest, folded: "+5 more". */
   | { type: 'more'; label: React.ReactNode }
 
-export interface ThinkingProps {
-  /** `loading` while the agent works, `done` once it has answered. */
-  state?: 'loading' | 'done'
-  /** The header: "Thinking…" while loading, a summary when done. */
+export type ThinkingState = 'loading' | 'collapsed' | 'expanded'
+
+export interface ThinkingProps extends Omit<React.ComponentProps<'div'>, 'onToggle'> {
+  /** loading while the agent works, collapsed once it is done, expanded when people open it. */
+  state?: ThinkingState
+  /** The header text: "Thinking…" while loading, a summary ("Thought for 2m 45s") after. */
   label?: React.ReactNode
-  /** Elapsed time shown next to the loading label, e.g. "1.2s". */
-  elapsed?: React.ReactNode
+  /** Elapsed time next to the loading label, e.g. "1.2s". */
+  time?: React.ReactNode
   steps?: ThinkingStep[]
-  defaultOpen?: boolean
-  className?: string
+  onToggle?: (open: boolean) => void
 }
 
 export function Thinking({
-  state = 'done',
-  label,
-  elapsed,
+  state = 'loading',
+  label = 'Thinking…',
+  time,
   steps = [],
-  defaultOpen = false,
+  onToggle,
   className,
+  ...props
 }: ThinkingProps) {
+  const [open, setOpen] = React.useState(state === 'expanded')
+  React.useEffect(() => setOpen(state === 'expanded'), [state])
+
   if (state === 'loading') {
     return (
-      <div
-        data-slot="thinking"
-        role="status"
-        aria-live="polite"
-        className={cn('flex h-7 items-center gap-2.5 text-sm text-text-muted', className)}
-      >
-        <ThinkingMark loading />
-        <span className="satin-shimmer">{label ?? 'Thinking…'}</span>
-        {elapsed && <span className="text-text-subtle tabular-nums">{elapsed}</span>}
+      <div data-slot="thinking" data-state="loading" className={cn('flex w-full flex-col', className)} {...props}>
+        <div role="status" aria-live="polite" className="flex items-center gap-3 p-1">
+          <ThinkingMark loading />
+          <span className="text-sm whitespace-nowrap text-text-muted">{label}</span>
+          {time != null && <span className="text-sm whitespace-nowrap text-text-subtle tabular-nums">{time}</span>}
+        </div>
       </div>
     )
   }
 
   return (
-    <Collapsible.Root data-slot="thinking" defaultOpen={defaultOpen} className={cn('text-sm', className)}>
-      <Collapsible.Trigger
-        className={cn(
-          'group -mx-1.5 flex h-7 items-center gap-2.5 rounded-md px-1.5 text-text-muted',
-          'transition-colors duration-(--duration-fast) ease-(--ease-out) hover:text-text-default',
-          'focus-visible:shadow-border-focus focus-visible:outline-none',
-        )}
+    <div data-slot="thinking" data-state={open ? 'expanded' : 'collapsed'} className={cn('w-full', className)} {...props}>
+      <details
+        open={open}
+        onToggle={(e) => {
+          const next = e.currentTarget.open
+          if (next === open) return
+          setOpen(next)
+          onToggle?.(next)
+        }}
+        className="group"
       >
-        <ThinkingMark />
-        <span>{label ?? 'Thought for a moment'}</span>
-        <NavArrowDown
-          aria-hidden
-          className="size-icon-size-sm transition-transform duration-(--duration-base) ease-(--ease-out) group-data-[state=open]:rotate-180"
-        />
-      </Collapsible.Trigger>
-      <Collapsible.Content className="satin-collapsible">
-        <div className="mt-2 flex gap-3">
-          <div aria-hidden className="ml-[11px] w-px shrink-0 bg-linear-to-b from-component-rail-edge via-component-rail-center to-component-rail-edge" />
-          <ol className="grid min-w-0 flex-1 gap-0 pl-2">
+        <summary className="flex w-fit cursor-pointer list-none items-center gap-3 rounded-md p-1 select-none [&::-webkit-details-marker]:hidden">
+          <ThinkingMark />
+          <span className="text-sm whitespace-nowrap text-text-muted">{label}</span>
+          <NavArrowDown
+            aria-hidden
+            className="size-icon-size-sm shrink-0 text-text-muted transition-transform duration-(--duration-base) ease-(--ease-out) [stroke-width:1.875] group-open:rotate-180"
+          />
+        </summary>
+        <div data-state={open ? 'open' : 'closed'} className="satin-collapsible mt-2 flex gap-3 overflow-clip pl-1">
+          <div aria-hidden className="relative w-4 shrink-0 self-stretch">
+            <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-linear-to-b from-component-rail-edge via-component-rail-center to-component-rail-edge" />
+          </div>
+          <ol className="flex min-w-0 flex-1 flex-col gap-2">
             {steps.map((step, i) => (
               <li key={i} className="min-w-0">
                 <Step step={step} />
@@ -77,58 +104,121 @@ export function Thinking({
             ))}
           </ol>
         </div>
-      </Collapsible.Content>
-    </Collapsible.Root>
+      </details>
+    </div>
   )
 }
 
 function Step({ step }: { step: ThinkingStep }) {
   switch (step.type) {
-    case 'task':
-      return (
-        <Row icon={<Check className="text-status-green-fg" strokeWidth={2} />}>
-          <span className="truncate text-text-default">{step.label}</span>
-          {step.meta && <span className="truncate text-text-subtle">{step.meta}</span>}
-        </Row>
-      )
     case 'text':
-      return <p className="py-1 leading-5 text-text-muted">{step.text}</p>
+      return <p className="text-sm text-text-muted">{step.text}</p>
+    case 'more':
+      return <p className="text-sm whitespace-nowrap text-text-muted">{step.label}</p>
     case 'source':
       return (
-        <Row icon={step.icon}>
-          <span className="truncate text-text-default">{step.label}</span>
-          {step.meta && <span className="truncate text-text-subtle">{step.meta}</span>}
-        </Row>
+        <div className="flex min-w-0 items-center gap-3 p-1 text-sm">
+          <span className="flex size-4 shrink-0 items-center justify-center overflow-clip rounded-xs [&>*]:size-4">
+            {step.icon}
+          </span>
+          <span className="max-w-full shrink-0 truncate text-text-default">{step.label}</span>
+          {step.meta != null && <span className="min-w-0 flex-1 truncate text-text-muted">{step.meta}</span>}
+        </div>
       )
     case 'tool':
       return (
-        <Row icon={step.icon}>
-          <span className="text-text-default">{step.label}</span>
-          {step.detail && <code className="truncate font-mono text-xs text-text-muted">{step.detail}</code>}
-          {step.meta && <span className="ml-auto shrink-0 pl-3 text-text-muted tabular-nums">{step.meta}</span>}
-        </Row>
+        <div className="flex min-w-0 items-center gap-2 p-1 text-sm [&>svg]:size-icon-size [&>svg]:shrink-0 [&>svg]:text-text-muted [&>svg]:[stroke-width:1.875]">
+          {step.icon ?? <EditPencil />}
+          <span className="shrink-0 whitespace-nowrap text-text-default">{step.label}</span>
+          <span className="min-w-0 flex-1 truncate font-mono tracking-normal text-text-muted">{step.target}</span>
+          {(step.added != null || step.removed != null) && (
+            <span className="flex shrink-0 gap-1.5 font-mono tracking-normal whitespace-nowrap">
+              {step.added != null && <span className="text-status-green-fg">{step.added}</span>}
+              {step.removed != null && <span className="text-status-red-fg">{step.removed}</span>}
+            </span>
+          )}
+          {step.meta != null && <span className="shrink-0 whitespace-nowrap text-text-muted">{step.meta}</span>}
+        </div>
       )
-    case 'more':
-      return <p className="flex h-5 items-center text-text-muted">{step.label}</p>
+    default:
+      return (
+        <div className="flex min-w-0 items-center gap-3 p-1 text-sm">
+          <Check aria-hidden className="size-icon-size-sm shrink-0 text-status-green-fg [stroke-width:1.875]" />
+          <span className="max-w-full shrink-0 truncate text-text-default">{step.label}</span>
+          {step.meta != null && <span className="min-w-0 flex-1 truncate text-text-muted">{step.meta}</span>}
+        </div>
+      )
   }
 }
 
-function Row({ icon, children }: { icon?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="flex h-7 min-w-0 items-center gap-2 [&>svg]:size-icon-size [&>svg]:shrink-0 [&>svg]:text-text-muted">
-      {icon}
-      {children}
-    </div>
-  )
-}
+/*
+ * thinking/_mark: a 5 × 4 board of 2px squares, 0.5px apart in a row and 1px between rows,
+ * centred in 16 × 11. Done, every cell is text/muted. Loading, it plays a small tetris:
+ * dominoes drop into the board, full rows clear, the board starts again; empty cells are
+ * bg/muted. It starts on (and with reduced motion holds) the Figma loading frame.
+ */
+const COLS = 5
+const ROWS = 4
+type Board = boolean[][]
 
-/** The small grid mark in front of the header; it pulses while the agent is working. */
+const STILL: Board = [
+  [false, true, false, false, false],
+  [false, true, true, false, false],
+  [false, true, true, false, false],
+  [false, true, true, false, false],
+]
+
+/** Every frame of the loop, worked out once: vertical dominoes drop into columns in this order. */
+const FRAMES: Board[] = (() => {
+  const empty = (): Board => Array.from({ length: ROWS }, () => Array<boolean>(COLS).fill(false))
+  const copy = (b: Board): Board => b.map((row) => [...row])
+  const frames: Board[] = []
+  let board = empty()
+  for (const col of [1, 3, 0, 4, 2, 1, 3, 0, 4, 2]) {
+    let target = 0
+    while (target + 1 < ROWS && !board[target + 1][col]) target++
+    for (let bottom = 0; bottom <= target; bottom++) {
+      const f = copy(board)
+      f[bottom][col] = true
+      if (bottom > 0) f[bottom - 1][col] = true
+      frames.push(f)
+    }
+    board[target][col] = true
+    if (target > 0) board[target - 1][col] = true
+    const full = board.map((row) => row.every(Boolean))
+    if (full.some(Boolean)) {
+      frames.push(board.map((row, r) => (full[r] ? row.map(() => false) : [...row])))
+      const kept = board.filter((_, r) => !full[r])
+      board = [...Array.from({ length: ROWS - kept.length }, () => Array<boolean>(COLS).fill(false)), ...kept]
+      frames.push(copy(board))
+    }
+  }
+  frames.push(empty())
+  return frames
+})()
+
 function ThinkingMark({ loading = false }: { loading?: boolean }) {
+  const [frame, setFrame] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    if (!loading || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const id = window.setInterval(() => setFrame((f) => ((f ?? -1) + 1) % FRAMES.length), 140)
+    return () => window.clearInterval(id)
+  }, [loading])
+
+  const board = !loading ? null : frame == null ? STILL : FRAMES[frame]
+
   return (
-    <ViewGrid
-      aria-hidden
-      className={cn('size-icon-size-sm shrink-0 text-text-subtle', loading && 'animate-pulse')}
-      strokeWidth={1.5}
-    />
+    <span aria-hidden className="flex h-[11px] w-4 shrink-0 items-center justify-center">
+      <span className="flex flex-col gap-px">
+        {Array.from({ length: ROWS }, (_, r) => (
+          <span key={r} className="flex gap-[0.5px]">
+            {Array.from({ length: COLS }, (_, c) => (
+              <span key={c} className={cn('size-0.5', !board || board[r][c] ? 'bg-text-muted' : 'bg-bg-muted')} />
+            ))}
+          </span>
+        ))}
+      </span>
+    </span>
   )
 }

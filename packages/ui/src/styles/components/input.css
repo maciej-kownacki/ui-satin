@@ -1,0 +1,112 @@
+/*
+ * The field skin shared by Input (uiKit 820:51657) and Textarea (3647:17812): surface fill, 1px
+ * border/default, shadow xs, radius-lg. Hover: border/strong. Focus: border/focus and a 2px
+ * action/focus-ring, no drop shadow. Error: action/destructive/bg border; with focus the ring
+ * is action/destructive/glow. Disabled: bg/muted, border/default.
+ *
+ * `.satin-field` is either a wrapper around an <input> (it reacts to :focus-within) or the
+ * <textarea> itself (:focus-within matches the element too). Every state also answers to
+ * data-force="hover" | "focus". Shadows are plain box-shadow (see button.tsx for why).
+ */
+.satin-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-field);
+  /* Icons are muted while empty and take the text colour once there is a value. */
+  color: var(--text-muted);
+  box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
+  cursor: text;
+  transition-property: background-color, border-color, box-shadow, color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+.satin-field[data-filled] {
+  color: var(--text-default);
+}
+.satin-field:not([data-disabled], [data-invalid]):is(:hover, [data-force="hover"]) {
+  border-color: var(--border-strong);
+}
+.satin-field:not([data-disabled]):is(:focus-within, [data-force="focus"]) {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--action-focus-ring);
+}
+.satin-field[data-invalid] {
+  border-color: var(--action-destructive-bg);
+}
+.satin-field[data-invalid]:not([data-disabled]):is(:focus-within, [data-force="focus"]) {
+  border-color: var(--action-destructive-bg);
+  box-shadow: 0 0 0 2px var(--action-destructive-glow);
+}
+.satin-field[data-disabled] {
+  border-color: var(--border-default);
+  background: var(--bg-muted);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Sizes (Input only). sm 28, md 32, lg 36; lg rounds to radius-xl. */
+.satin-field[data-size="sm"] {
+  height: var(--control-height);
+  font-size: var(--text-sm);
+  line-height: 20px;
+}
+.satin-field[data-size="md"] {
+  height: var(--control-height-lg);
+  font-size: var(--text-base);
+  line-height: 21px;
+}
+.satin-field[data-size="lg"] {
+  height: var(--control-height-xl);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-base);
+  line-height: 20px;
+}
+
+.satin-field-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+}
+.satin-field-icon svg {
+  width: 16px;
+  height: 16px;
+  /* Figma icons are 1.25px at 16; on Iconoir's 24 grid that is 1.875. */
+  stroke-width: 1.875;
+}
+
+/* The bare text control inside the skin (or the textarea, which is the skin). */
+.satin-field-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-default);
+  font: inherit;
+  letter-spacing: -0.015em;
+  outline: none;
+}
+.satin-field-input:focus-visible {
+  /* The base layer's focus ring goes on the field, not on the bare input. */
+  box-shadow: none;
+}
+.satin-field-input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+.satin-field-input:disabled {
+  color: var(--text-subtle);
+  cursor: not-allowed;
+}
+.satin-field-input:disabled::placeholder {
+  color: var(--text-placeholder);
+}

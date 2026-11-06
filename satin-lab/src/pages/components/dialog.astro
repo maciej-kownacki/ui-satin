@@ -1,0 +1,38 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import DialogDemo, { options } from '../../demos/dialog'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+
+// Until nav.ts has a `dialog` entry, the page item is passed inline.
+const item = {
+  id: 'dialog',
+  title: 'Dialog',
+  href: '/components/dialog',
+  description: 'Asks for a decision or a short input before the user moves on.',
+}
+
+const api = {
+  description:
+    'The `Dialog` component wraps the Radix dialog in a `div` with `role="dialog"` (`alertdialog` when destructive) that adds a title, body and actions. Put `DialogAlert` in `alert` for a side effect, and wrap footer buttons in `DialogClose` to close it.',
+  props: [
+    { name: 'open', type: ['boolean'], default: 'false' },
+    { name: 'title', type: ['string'] },
+    { name: 'description', type: ['string'] },
+    { name: 'variant', type: ['"default"', '"destructive"'], default: '"default"' },
+    { name: 'alert', type: ['ReactNode'] },
+    { name: 'footer', type: ['ReactNode'] },
+    { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+    { name: 'trigger', type: ['ReactNode'] },
+    { name: 'children', type: ['ReactNode'] },
+  ],
+}
+---
+
+<Docs current="dialog">
+  <DocSection item={item} api={api}>
+    <DialogDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

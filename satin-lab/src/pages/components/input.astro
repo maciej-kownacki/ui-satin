@@ -1,0 +1,29 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import InputDemo, { options } from '../../demos/input'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+// Inline until the lead adds 'input' to nav.ts / api.ts.
+const item = { id: 'input', title: 'Input', href: '/components/input', description: 'A single line of text, with a label, a hint and icons.' }
+const api = {
+  description: 'The `Input` component is a wrapper around the `input` element that adds a label, a hint, icons and three sizes.',
+  props: [
+    { name: 'label', type: ['string'] },
+    { name: 'placeholder', type: ['string'] },
+    { name: 'hint', type: ['string'] },
+    { name: 'size', type: ['"sm"', '"md"', '"lg"'], default: '"md"' },
+    { name: 'leadingIcon', type: ['ReactNode'] },
+    { name: 'trailingIcon', type: ['ReactNode'] },
+    { name: 'error', type: ['string'] },
+    { name: 'disabled', type: ['boolean'], default: 'false' },
+  ],
+}
+---
+
+<Docs current="input">
+  <DocSection item={item} api={api}>
+    <InputDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

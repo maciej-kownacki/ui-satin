@@ -1,0 +1,32 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ChartDemo, { options } from '../../demos/chart'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="chart">
+  <DocSection
+    item={{
+      id: 'chart',
+      title: 'Chart',
+      href: '/components/chart',
+      description: 'Bar and channel-share cards for one metric over a period, built on the chart tokens.',
+    }}
+    api={{
+      description: 'The `BarCard` component is a wrapper around the `div` element with a title, a range, an optional period toggle and the chart. `ChannelCard` takes the same props.',
+      props: [
+        { name: 'title', type: ['string'] },
+        { name: 'range', type: ['string'] },
+        { name: 'data', type: ['ChartDatum[]'] },
+        { name: 'periods', type: ['string[]'] },
+        { name: 'value', type: ['string'] },
+        { name: 'onPeriodChange', type: ['(period) => void'] },
+      ],
+    }}
+  >
+    <ChartDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

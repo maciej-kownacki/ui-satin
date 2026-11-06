@@ -1,0 +1,28 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ToggleDemo, { options } from '../../demos/toggle'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+// Inline until the lead adds 'toggle' to nav.ts / api.ts.
+const item = { id: 'toggle', title: 'Toggle', href: '/components/toggle', description: 'A button that stays pressed to switch an option on or off.' }
+const api = {
+  description: 'The `Toggle` component is a wrapper around the `button` element with aria-pressed.',
+  props: [
+    { name: 'pressed', type: ['boolean'], default: 'false' },
+    { name: 'onPressedChange', type: ['(pressed: boolean) => void'] },
+    { name: 'variant', type: ['"outline"', '"ghost"'], default: '"outline"' },
+    { name: 'size', type: ['"md"', '"sm"'], default: '"md"' },
+    { name: 'icon', type: ['ReactNode'] },
+    { name: 'iconOnly', type: ['boolean'], default: 'false' },
+    { name: 'disabled', type: ['boolean'], default: 'false' },
+  ],
+}
+---
+
+<Docs current="toggle">
+  <DocSection item={item} api={api}>
+    <ToggleDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

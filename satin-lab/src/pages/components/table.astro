@@ -1,0 +1,32 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import TableDemo, { options } from '../../demos/table'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="table">
+  <DocSection
+    item={{
+      id: 'table',
+      title: 'Table',
+      href: '/components/table',
+      description: 'Rows of records with sortable columns, selection and sideways scroll.',
+    }}
+    api={{
+      description: 'The `Table` component is a wrapper around the `table` element with sortable headers, selection and horizontal scroll.',
+      props: [
+        { name: 'columns', type: ['Column[]'] },
+        { name: 'rows', type: ['Row[]'] },
+        { name: 'selectable', type: ['boolean'], default: 'false' },
+        { name: 'zebra', type: ['boolean'], default: 'false' },
+        { name: 'overflow', type: ['"fit"', '"scroll"'], default: '"fit"' },
+        { name: 'onSortChange', type: ['(sort: Sort) => void'] },
+      ],
+    }}
+  >
+    <TableDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

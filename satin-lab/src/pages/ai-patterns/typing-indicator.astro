@@ -1,0 +1,31 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import TypingIndicatorDemo, { options } from '../../demos/typing-indicator'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+
+const item = {
+  id: 'typing-indicator',
+  title: 'Typing indicator',
+  href: '/ai-patterns/typing-indicator',
+  description: 'Three dots in the agent’s tone while it writes a reply.',
+}
+
+const api = {
+  description:
+    'The `TypingIndicator` component is a wrapper around the `span` element that animates three dots while the agent writes.',
+  props: [
+    { name: 'tone', type: ['"fuchsia"', '"sky"', '"plum"', '"green"'], default: '"fuchsia"' },
+    { name: 'label', type: ['string'] },
+    { name: 'showAvatar', type: ['boolean'], default: 'false' },
+  ],
+}
+---
+
+<Docs current="typing-indicator">
+  <DocSection item={item} api={api}>
+    <TypingIndicatorDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

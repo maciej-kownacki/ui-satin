@@ -65,27 +65,4 @@ export const api: Record<string, Api> = {
       { name: 'disabled', type: ['boolean'], default: 'false' },
     ],
   },
-  'prompt-bar': {
-    description: 'The `PromptBar` component is a `form` around a growing `textarea`. Enter submits, Shift+Enter adds a line.',
-    props: [
-      { name: 'shape', type: ['"rectangle"', '"rounded"'], default: '"rectangle"' },
-      { name: 'placeholder', type: ['string'], default: '"Write a message"' },
-      { name: 'model', type: ['ReactNode'], default: '"Model"' },
-      { name: 'value', type: ['string'] },
-      { name: 'onSubmit', type: ['(message: string) => void'] },
-      { name: 'onAttach', type: ['() => void'] },
-      { name: 'onModelClick', type: ['() => void'] },
-      { name: 'onVoice', type: ['() => void'] },
-    ],
-  },
-  thinking: {
-    description: 'The `Thinking` component is a live status while the agent works and a Radix collapsible once it is done.',
-    props: [
-      { name: 'state', type: ['"loading"', '"done"'], default: '"done"' },
-      { name: 'label', type: ['ReactNode'] },
-      { name: 'elapsed', type: ['ReactNode'] },
-      { name: 'steps', type: ['ThinkingStep[]'], default: '[]' },
-      { name: 'defaultOpen', type: ['boolean'], default: 'false' },
-    ],
-  },
 }
