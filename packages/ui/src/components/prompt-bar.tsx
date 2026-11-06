@@ -111,7 +111,7 @@ export function PromptBar({
         onClick={onModelClick}
         className="gap-1 px-2"
       >
-        <Sparks className="text-status-amber-fg" />
+        <Sparks className="!text-status-amber-fg" />
         <span className="sr-only">Model:</span>
         {model}
         <NavArrowDown className="!size-icon-size-sm text-text-muted" />

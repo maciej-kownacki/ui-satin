@@ -10,7 +10,8 @@ import { cn } from '../lib/utils'
  * Solid styles (primary, destructive, inverse) are a 1px border in the style's `border`
  * token, a 1px outer ring in the current background, a 0 3 6 drop shadow (gone when
  * pressed) and a 6px inner glow. Focus adds a 2px `action/focus-ring` spread; disabled
- * is the default look at 50% opacity.
+ * is the default look at 50% opacity. Icons take the label colour on solid styles and
+ * text/muted on secondary and tertiary.
  *
  * States use the satin-hover / satin-focus / satin-pressed variants (styles/index.css):
  * the real pseudo-classes, or `data-force="hover" | "focus" | "pressed"` for state sheets.
@@ -21,6 +22,8 @@ const buttonVariants = cva(
     'transition-[background-color,border-color,color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out)',
     'active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50',
     'focus-visible:outline-none [&_svg]:pointer-events-none [&_svg]:shrink-0',
+    // Figma icons are 1.25px at 16 and 1.09px at 14; on Iconoir's 24 grid both are 1.875.
+    '[&_svg]:[stroke-width:1.875]',
   ],
   {
     variants: {
@@ -47,14 +50,14 @@ const buttonVariants = cva(
           'satin-pressed:bg-action-inverse-bg-pressed satin-pressed:shadow-[0_0_0_1px_var(--action-inverse-bg-pressed),inset_0_0_6px_2px_var(--action-inverse-glow)]',
         ],
         secondary: [
-          'border border-border-default bg-bg-popover text-text-default shadow-[0_1px_2px_0_var(--effect-shadow-xs)]',
+          'border border-border-default bg-bg-popover text-text-default shadow-[0_1px_2px_0_var(--effect-shadow-xs)] [&_svg]:text-text-muted',
           'disabled:border-border-strong disabled:shadow-none',
           'satin-hover:border-border-strong satin-hover:bg-action-secondary-bg-hover',
           'satin-focus:border-border-strong satin-focus:bg-bg-popover satin-focus:shadow-[0_0_0_2px_var(--action-focus-ring)]',
           'satin-pressed:border-border-strong satin-pressed:bg-action-secondary-bg-pressed satin-pressed:shadow-none',
         ],
         tertiary: [
-          'bg-transparent text-text-default',
+          'bg-transparent text-text-default [&_svg]:text-text-muted',
           'satin-hover:bg-bg-hover',
           'satin-focus:bg-bg-hover satin-focus:shadow-[0_0_0_2px_var(--action-focus-ring)]',
           'satin-pressed:bg-border-input',
