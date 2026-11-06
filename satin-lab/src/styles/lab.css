@@ -63,3 +63,10 @@ html.dark .theme-switch:not([data-ready]) button:nth-of-type(2) {
   box-shadow: 0 1px 1px var(--effect-shadow-xs);
   color: var(--text-default);
 }
+
+/* In light mode the theme switch's selected segment is white, not zinc-200. */
+html:not(.dark) .theme-switch [data-slot="segmented-control"] > span,
+html:not(.dark) .theme-switch:not([data-ready]) button:nth-of-type(1) {
+  background: var(--color-white);
+  box-shadow: 0 1px 2px var(--effect-shadow-sm);
+}
