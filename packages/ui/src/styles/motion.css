@@ -1,0 +1,44 @@
+/*
+ * Satin motion tokens. The rules behind them are in MOTION.md:
+ * transform and opacity only, ease-out for anything the user triggers,
+ * 150–250 ms, nothing moves when the user asks for reduced motion.
+ */
+@theme {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 250ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Collapsible content (Thinking, the lab's sidebar): fades and settles in, never animates height. */
+@keyframes satin-enter {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+.satin-collapsible[data-state='open'] {
+  animation: satin-enter var(--duration-base) var(--ease-out);
+}
+
+/* "Thinking…": a soft light that runs across the label while the agent works. */
+@keyframes satin-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+.satin-shimmer {
+  background: linear-gradient(90deg, var(--text-muted) 40%, var(--text-default) 50%, var(--text-muted) 60%) 0 0 / 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: satin-shimmer 1.6s linear infinite;
+}

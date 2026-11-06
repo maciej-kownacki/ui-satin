@@ -1,0 +1,12 @@
+{
+  "name": "ui-satin",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "satin-lab"],
+  "scripts": {
+    "dev": "npm run dev -w satin-lab",
+    "build": "npm run build -w satin-lab",
+    "tokens": "node tokens/build.mjs",
+    "typecheck": "npm run typecheck -w @satin/ui"
+  }
+}

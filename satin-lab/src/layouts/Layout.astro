@@ -1,0 +1,38 @@
+---
+import '../styles/lab.css'
+
+interface Props {
+  title: string
+  description: string
+}
+const { title, description } = Astro.props
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex" />
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Pick the theme before the first paint, so dark mode never flashes light. -->
+    <script is:inline>
+      try {
+        const t = localStorage.getItem('satin-theme')
+        const dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+      } catch {}
+    </script>
+  </head>
+  <body class="min-h-dvh bg-bg-canvas antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-md focus:bg-bg-popover focus:px-3 focus:py-2 focus:shadow-md"
+    >
+      Skip to content
+    </a>
+    <slot />
+  </body>
+</html>

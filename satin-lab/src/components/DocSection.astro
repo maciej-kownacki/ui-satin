@@ -1,0 +1,21 @@
+---
+/**
+ * One component on the page: its title, a description, and (in the slot) its Showcase island.
+ * Islands are hydrated with client:visible, so each component's JavaScript loads only
+ * once it scrolls into view.
+ */
+interface Props {
+  id: string
+  title: string
+  description: string
+}
+const { id, title, description } = Astro.props
+---
+
+<section id={id} aria-labelledby={`${id}-title`} class="min-w-0 scroll-mt-20 lg:scroll-mt-8">
+  <h3 id={`${id}-title`} class="text-xl font-semibold tracking-tight text-text-default">{title}</h3>
+  <p class="mt-2 max-w-[60ch] text-base leading-6 text-text-muted">{description}</p>
+  <div class="mt-6">
+    <slot />
+  </div>
+</section>

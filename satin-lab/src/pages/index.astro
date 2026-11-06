@@ -1,0 +1,123 @@
+---
+import Layout from '../layouts/Layout.astro'
+import DocSection from '../components/DocSection.astro'
+import { Sidebar } from '../components/Sidebar'
+import { nav } from '../nav'
+import { highlight } from '../lib/highlight'
+
+import BadgeDemo, { options as badge } from '../demos/badge'
+import ButtonDemo, { options as button } from '../demos/button'
+import CheckboxDemo, { options as checkbox } from '../demos/checkbox'
+import SegmentedControlDemo, { options as segmented } from '../demos/segmented-control'
+import SwitchDemo, { options as switchOptions } from '../demos/switch'
+import PromptBarDemo, { options as promptBar } from '../demos/prompt-bar'
+import ThinkingDemo, { options as thinking } from '../demos/thinking'
+
+const [badgeCode, buttonCode, checkboxCode, segmentedCode, switchCode, promptBarCode, thinkingCode] =
+  await Promise.all([badge, button, checkbox, segmented, switchOptions, promptBar, thinking].map(highlight))
+
+const install = `npm install @satin/ui`
+const usage = `/* app.css */
+@import "@satin/ui/styles.css";
+
+// App.tsx
+import { Button } from '@satin/ui/button'
+
+export function Save() {
+  return <Button>Save changes</Button>
+}`
+const [installHtml, usageHtml] = await Promise.all([
+  highlight([{ id: 'x', label: '', code: install }]).then((h) => h.x.replace('language-tsx', 'language-bash')),
+  highlight([{ id: 'x', label: '', code: usage }]).then((h) => h.x),
+])
+---
+
+<Layout title="Satin" description="Satin, a design system for calm, AI-native product interfaces.">
+  <div class="lg:flex">
+    <Sidebar client:load nav={nav} />
+
+    <main id="main" tabindex="-1" class="min-w-0 flex-1 outline-none lg:py-2 lg:pr-2">
+      <div class="min-h-dvh bg-bg-card lg:rounded-xl lg:border lg:border-border-default lg:shadow-xs">
+        <div class="mx-auto max-w-[880px] px-4 pt-10 pb-24 sm:px-8 lg:px-12 lg:pt-16">
+          <!-- Intro -->
+          <section aria-labelledby="intro-title">
+            <h2 id="intro-title" class="text-xs font-medium tracking-wide text-text-subtle uppercase">Intro</h2>
+
+            <article id="what-is-satin" aria-labelledby="what-is-satin-title" class="mt-4 scroll-mt-20 lg:scroll-mt-8">
+              <h3 id="what-is-satin-title" class="text-2xl font-semibold tracking-tight text-text-default">What is Satin?</h3>
+              <div class="mt-3 grid max-w-[60ch] gap-3 text-base leading-6 text-text-muted">
+                <p>
+                  Satin is a design system for calm product interfaces, with a set of patterns for working with AI agents.
+                  It ships as a Figma library and as React components that match it one to one: same names, same
+                  variants, same tokens.
+                </p>
+                <p>
+                  The components are built on <a class="text-text-default underline underline-offset-2" href="https://ui.shadcn.com">shadcn/ui</a> and Radix, so focus, keyboard and screen-reader behaviour come from proven primitives. Satin changes how
+                  they look: colour, surfaces, borders, focus and motion all come from Satin tokens.
+                </p>
+              </div>
+            </article>
+
+            <article id="who-is-satin-for" aria-labelledby="who-is-satin-for-title" class="mt-12 scroll-mt-20 lg:scroll-mt-8">
+              <h3 id="who-is-satin-for-title" class="text-xl font-semibold tracking-tight text-text-default">Who is Satin for?</h3>
+              <ul class="mt-3 grid max-w-[60ch] list-disc gap-2 pl-5 text-base leading-6 text-text-muted marker:text-text-subtle">
+                <li><strong class="font-medium text-text-default">Designers</strong> who work in the Satin Figma library and want to see how a component behaves before they use it.</li>
+                <li><strong class="font-medium text-text-default">Engineers</strong> who need production code that matches the design without re-creating it by hand.</li>
+                <li><strong class="font-medium text-text-default">Teams building AI products</strong> who need ready answers for prompts, agent progress and decisions.</li>
+              </ul>
+            </article>
+
+            <article id="how-to-use-satin" aria-labelledby="how-to-use-satin-title" class="mt-12 scroll-mt-20 lg:scroll-mt-8">
+              <h3 id="how-to-use-satin-title" class="text-xl font-semibold tracking-tight text-text-default">How can I use Satin?</h3>
+              <p class="mt-3 max-w-[60ch] text-base leading-6 text-text-muted">
+                Install the package, import the styles once, then import components one by one. Each component has its own
+                entry point, so you only ship what you use. The package isn't on npm yet; until it is, it lives in the <code class="font-mono text-sm text-text-default">packages/ui</code> folder of the Satin repository.
+              </p>
+              <div class="code-block mt-4 overflow-hidden rounded-xl border border-border-default bg-bg-card" set:html={installHtml} />
+              <div class="code-block mt-3 overflow-hidden rounded-xl border border-border-default bg-bg-card" set:html={usageHtml} />
+              <p class="mt-4 max-w-[60ch] text-base leading-6 text-text-muted">
+                Light and dark mode come from the <code class="font-mono text-sm text-text-default">dark</code> class on any parent element. Motion follows a handful of rules: ease-out, under 250 ms, transform and opacity only, and
+                nothing moves when the user asks for reduced motion.
+              </p>
+            </article>
+          </section>
+
+          <!-- Components -->
+          <section aria-labelledby="components-title" class="mt-20">
+            <h2 id="components-title" class="text-xs font-medium tracking-wide text-text-subtle uppercase">Components</h2>
+            <div class="mt-4 grid grid-cols-[minmax(0,1fr)] gap-16">
+              <DocSection id="badge" title="Badge" description="A short label for a status or a category. Eight tones, Soft or Plain, rectangle or rounded.">
+                <BadgeDemo client:visible codeHtml={badgeCode} />
+              </DocSection>
+              <DocSection id="button" title="Button" description="Starts an action. Primary for the one main action on a screen, secondary and tertiary for the rest, destructive for actions that delete, inverse on busy or coloured backgrounds.">
+                <ButtonDemo client:visible codeHtml={buttonCode} />
+              </DocSection>
+              <DocSection id="checkbox" title="Checkbox" description="Turns an option on or off as part of a form. With a label, a description, or as a select-all with an indeterminate state.">
+                <CheckboxDemo client:visible codeHtml={checkboxCode} />
+              </DocSection>
+              <DocSection id="segmented-control" title="Segmented control" description="Switches between two to five views or filters in place. One segment is always selected; arrow keys move between them.">
+                <SegmentedControlDemo client:visible codeHtml={segmentedCode} />
+              </DocSection>
+              <DocSection id="switch" title="Switch" description="Turns a setting on or off, with immediate effect. Use a checkbox instead when the choice is saved with a form.">
+                <SwitchDemo client:visible codeHtml={switchCode} />
+              </DocSection>
+            </div>
+          </section>
+
+          <!-- AI patterns -->
+          <section aria-labelledby="ai-patterns-title" class="mt-20">
+            <h2 id="ai-patterns-title" class="text-xs font-medium tracking-wide text-text-subtle uppercase">AI patterns</h2>
+            <div class="mt-4 grid grid-cols-[minmax(0,1fr)] gap-16">
+              <DocSection id="prompt-bar" title="Prompt bar" description="Where people write to an agent: attachments, the model picker, voice and send. Enter sends, Shift+Enter adds a line.">
+                <PromptBarDemo client:visible codeHtml={promptBarCode} />
+              </DocSection>
+              <DocSection id="thinking" title="Thinking" description="Shows what an agent is doing while it works, then folds into a one-line summary that opens the steps: tasks, reasoning, sources or tool calls.">
+                <ThinkingDemo client:visible codeHtml={thinkingCode} />
+              </DocSection>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+</Layout>

@@ -1,0 +1,6 @@
+/* Everything an app needs from Satin: tokens (generated), motion, and the base layer. */
+@import "./theme.css";
+@import "./motion.css";
+
+/* Let Tailwind see the classes used inside the components. */
+@source "../components";

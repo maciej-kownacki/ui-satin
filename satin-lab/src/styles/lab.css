@@ -1,0 +1,42 @@
+@import "@satin/ui/styles.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+@source "./..";
+
+/* The fonts ship as "Geist Variable"; the tokens ask for "Geist". */
+@theme inline {
+  --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-padding-top: 24px;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+/* Shiki renders both themes; the class on <html> picks one. */
+.code-block pre {
+  background: transparent !important;
+  margin: 0;
+  padding: 16px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+.code-block .shiki span {
+  color: var(--shiki-light);
+}
+html.dark .code-block .shiki span {
+  color: var(--shiki-dark);
+}
