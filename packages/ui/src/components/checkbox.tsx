@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { Checkbox as CheckboxPrimitive } from 'radix-ui'
-import { Check, Minus } from 'iconoir-react'
 import { cn } from '../lib/utils'
 
 /**
- * Checkbox, from the uiKit `checkbox` page: a 16px box with checked and indeterminate
- * states, and an optional label and description on either side. The label is a real
- * `<label>`, the description is wired up with `aria-describedby`.
+ * Checkbox, 1:1 with the uiKit `checkboxBase` (849:57531) and `checkbox` (849:57577) sets:
+ * a 16px box, radius-sm, with checked and indeterminate states and an optional label and
+ * description on either side. The label is a real `<label>`, the description is wired up
+ * with `aria-describedby`. The look of every state lives in styles/components.css.
  */
 export interface CheckboxProps extends React.ComponentProps<typeof CheckboxPrimitive.Root> {
   label?: React.ReactNode
@@ -25,25 +25,24 @@ export function Checkbox({ className, label, description, placement = 'left', id
       id={boxId}
       data-slot="checkbox"
       aria-describedby={descriptionId}
-      className={cn(
-        'peer grid size-4 shrink-0 place-items-center rounded-xs border border-border-strong bg-bg-field shadow-xs',
-        'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
-        'hover:border-text-subtle focus-visible:shadow-xs-focus focus-visible:outline-none',
-        'data-[state=checked]:border-transparent data-[state=checked]:bg-action-primary-bg data-[state=checked]:shadow-primary',
-        'data-[state=indeterminate]:border-transparent data-[state=indeterminate]:bg-action-primary-bg data-[state=indeterminate]:shadow-primary',
-        'data-[state=checked]:hover:bg-action-primary-bg-hover data-[state=indeterminate]:hover:bg-action-primary-bg-hover',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        label || description ? 'mt-px' : '',
-        className,
-      )}
+      className={cn('peer satin-checkbox', className)}
       {...props}
     >
-      <CheckboxPrimitive.Indicator className="grid place-items-center text-text-on-solid">
-        {props.checked === 'indeterminate' ? (
-          <Minus className="size-3" strokeWidth={2.25} aria-hidden />
-        ) : (
-          <Check className="size-3" strokeWidth={2.25} aria-hidden />
-        )}
+      <CheckboxPrimitive.Indicator className="grid size-4 place-items-center">
+        {/* The Check and Indeterminate glyphs from Figma, 16px at 1.25. */}
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+          {props.checked === 'indeterminate' ? (
+            <path d="M3.6 8H12.4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+          ) : (
+            <path
+              d="M3.33333 8.66667L6 11.3333L12.6667 4.66667"
+              stroke="currentColor"
+              strokeWidth="1.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+        </svg>
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )
@@ -56,14 +55,14 @@ export function Checkbox({ className, label, description, placement = 'left', id
       className={cn('flex items-start gap-2', placement === 'right' && 'flex-row-reverse justify-between')}
     >
       {box}
-      <div className="grid gap-0.5 peer-disabled:opacity-50">
+      <div className="grid gap-0.5 text-sm">
         {label && (
-          <label htmlFor={boxId} className="text-sm leading-[18px] font-medium text-text-default">
+          <label htmlFor={boxId} className="leading-4 text-text-default">
             {label}
           </label>
         )}
         {description && (
-          <p id={descriptionId} className="text-sm leading-[18px] text-text-muted">
+          <p id={descriptionId} className="leading-[19.5px] text-text-muted">
             {description}
           </p>
         )}
