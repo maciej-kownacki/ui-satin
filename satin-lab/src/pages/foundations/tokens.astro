@@ -1,256 +1,60 @@
 ---
 /**
- * Every token in tokens/tokens.json, in the API Reference style: colour (Light and Dark
- * side by side), radius, spacing and sizes, type, shadows, and the motion tokens.
+ * The colour tokens from tokens/tokens.json, in the API Reference style: one table per role,
+ * each token with its Light and Dark value side by side.
  */
 import Docs from '../../layouts/Docs.astro'
 import PageHeader from '../../components/PageHeader.astro'
 import Chip from '../../components/Chip.astro'
 import { page } from '../../nav'
-import { colorGroups, fonts, radii, shadows, sizes, spacing, textSizes, weights } from '../../lib/tokens'
+import { colorGroups } from '../../lib/tokens'
 
-// Literal class names, so Tailwind generates them.
-const shadowClass: Record<string, string> = {
-  'shadow-xs': 'shadow-xs',
-  'shadow-sm': 'shadow-sm',
-  'shadow-md': 'shadow-md',
-  'shadow-lg': 'shadow-lg',
-  'shadow-primary': 'shadow-primary',
-  'shadow-destructive': 'shadow-destructive',
-  'shadow-border-focus': 'shadow-border-focus',
-  'shadow-primary-focus': 'shadow-primary-focus',
-  'shadow-destructive-focus': 'shadow-destructive-focus',
-  'shadow-xs-focus': 'shadow-xs-focus',
-}
-
-const motion = [
-  { css: '--ease-out', value: 'cubic-bezier(0.23, 1, 0.32, 1)', use: 'Everything the user triggers: press, open, select' },
-  { css: '--ease-in-out', value: 'cubic-bezier(0.77, 0, 0.175, 1)', use: 'Something on screen moving to a new place' },
-  { css: '--duration-fast', value: '150ms', use: 'Hover, press, colour changes' },
-  { css: '--duration-base', value: '200ms', use: 'Toggles, the segmented pill, a section opening' },
-  { css: '--duration-slow', value: '250ms', use: 'The upper limit for anything in the UI' },
-]
-
-const sections = [
-  { id: 'color', title: 'Colour' },
-  { id: 'radius', title: 'Radius' },
-  { id: 'spacing', title: 'Spacing and sizes' },
-  { id: 'type', title: 'Typography' },
-  { id: 'shadow', title: 'Shadows' },
-  { id: 'motion', title: 'Motion' },
-]
 const th = 'py-2 pr-4 text-left font-medium text-text-default'
-const td = 'py-3 pr-4 align-top'
+const td = 'py-3 pr-4 align-middle'
 ---
 
 <Docs current="tokens">
   <PageHeader title={page('tokens').title} description={page('tokens').description} />
 
-  <nav aria-label="On this page" class="flex flex-wrap gap-1">
-    {
-      sections.map((s) => (
-        <a
-          href={`#${s.id}`}
-          class="flex h-8 items-center rounded-full px-3 text-sm text-text-muted transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-hover hover:text-text-default focus-visible:shadow-border-focus focus-visible:outline-none"
-        >
-          {s.title}
-        </a>
-      ))
-    }
-  </nav>
-
-  <p class="text-sm leading-6 text-text-muted">
-    Components use only the semantic names, never primitives. In CSS each one is a variable (<Chip>bg/card</Chip> →
-    <Chip>var(--bg-card)</Chip>); in Tailwind a utility that repeats the role (<Chip>bg-bg-card</Chip>, <Chip>text-text-muted</Chip>).
-  </p>
-
-  <!-- Colour -->
-  <section id="color" aria-labelledby="color-title" class="flex scroll-mt-4 flex-col gap-4 pt-8">
-    <h2 id="color-title" class="text-base font-medium text-text-default">Colour</h2>
-    {
-      colorGroups.map((g) => (
-        <div class="flex flex-col gap-2 pt-4">
-          <h3 class="text-sm font-medium text-text-default">{g.title}</h3>
-          {g.description && <p class="text-sm leading-[19.5px] text-text-muted">{g.description}</p>}
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[620px] border-collapse text-sm">
-              <thead>
+  {
+    colorGroups.map((g) => (
+      <section aria-labelledby={`${g.role}-title`} class="flex flex-col gap-4 pt-8">
+        <h2 id={`${g.role}-title`} class="text-base font-medium text-text-default">
+          {g.title}
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[560px] border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-border-default">
+                <th scope="col" class={th}>Token</th>
+                <th scope="col" class={`${th} w-[160px]`}>Light</th>
+                <th scope="col" class={`${th} w-[160px] pr-0`}>Dark</th>
+              </tr>
+            </thead>
+            <tbody>
+              {g.tokens.map((t) => (
                 <tr class="border-b border-border-default">
-                  <th scope="col" class={th}>Token</th>
-                  <th scope="col" class={`${th} w-[170px]`}>Light</th>
-                  <th scope="col" class={`${th} w-[170px] pr-0`}>Dark</th>
+                  <th scope="row" class={`${td} text-left font-normal`}>
+                    <Chip>{t.css}</Chip>
+                  </th>
+                  {[t.light, t.dark].map((value, i) => (
+                    <td class={`${td} ${i === 1 ? 'pr-0' : ''}`}>
+                      <span class="flex items-center gap-2">
+                        <span
+                          aria-hidden
+                          class="size-5 shrink-0 rounded-md border border-border-default"
+                          style={`background:${value}`}
+                        />
+                        <span class="font-mono text-text-muted">{value}</span>
+                      </span>
+                    </td>
+                  ))}
                 </tr>
-              </thead>
-              <tbody>
-                {g.tokens.map((t) => (
-                  <tr class="border-b border-border-default">
-                    <th scope="row" class={`${td} text-left font-normal`}>
-                      <div class="flex flex-col items-start gap-1">
-                        <Chip>{t.css}</Chip>
-                        {t.description && <span class="leading-[19.5px] text-text-subtle">{t.description}</span>}
-                      </div>
-                    </th>
-                    {[t.light, t.dark].map((m, i) => (
-                      <td class={`${td} ${i === 1 ? 'pr-0' : ''}`}>
-                        <div class="flex items-center gap-2">
-                          <span
-                            aria-hidden
-                            class="size-6 shrink-0 rounded-md border border-border-default bg-[repeating-conic-gradient(var(--bg-muted)_0_25%,transparent_0_50%)] bg-[length:8px_8px]"
-                          >
-                            <span class="block size-full rounded-[5px]" style={`background:${m.value}`} />
-                          </span>
-                          <span class="flex min-w-0 flex-col leading-[19.5px]">
-                            <span class="font-mono text-text-default">{m.value}</span>
-                            {m.primitive && <span class="truncate text-text-subtle">{m.primitive}</span>}
-                          </span>
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
-      ))
-    }
-  </section>
-
-  <!-- Radius -->
-  <section id="radius" aria-labelledby="radius-title" class="flex scroll-mt-4 flex-col gap-4 pt-8">
-    <h2 id="radius-title" class="text-base font-medium text-text-default">Radius</h2>
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
-      {
-        radii.map((r) => (
-          <div class="flex flex-col gap-2 rounded-2xl border border-border-subtle bg-bg-field p-3">
-            <div class="size-12 border border-border-strong bg-bg-muted" style={`border-radius:${Math.min(r.px, 9999)}px`} />
-            <Chip>{r.css}</Chip>
-            <span class="text-sm text-text-muted">{r.px >= 9999 ? 'full' : `${r.px}px`}</span>
-          </div>
-        ))
-      }
-    </div>
-  </section>
-
-  <!-- Spacing and sizes -->
-  <section id="spacing" aria-labelledby="spacing-title" class="flex scroll-mt-4 flex-col gap-4 pt-8">
-    <h2 id="spacing-title" class="text-base font-medium text-text-default">Spacing and sizes</h2>
-    <p class="text-sm leading-6 text-text-muted">
-      Spacing is the Tailwind scale on a 4px base (<Chip>--spacing: 4px</Chip>): <Chip>p-3</Chip> is 12px. Sizes are
-      named heights for controls and icons, e.g. <Chip>h-control-height</Chip>.
-    </p>
-    <table class="w-full border-collapse text-sm">
-      <thead>
-        <tr class="border-b border-border-default">
-          <th scope="col" class={`${th} w-[156px]`}>Token</th>
-          <th scope="col" class={`${th} w-[80px]`}>Value</th>
-          <th scope="col" class={`${th} pr-0`}><span class="sr-only">Scale</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          spacing.map((s) => (
-            <tr class="border-b border-border-default">
-              <th scope="row" class={`${td} text-left font-normal`}><Chip>{s.name}</Chip></th>
-              <td class={`${td} text-text-muted`}>{s.px}px</td>
-              <td class={`${td} pr-0 align-middle`}>
-                <span aria-hidden class="block h-2 rounded-full bg-action-primary-bg" style={`width:${Math.max(s.px, 1)}px`} />
-              </td>
-            </tr>
-          ))
-        }
-        {
-          sizes.map((s) => (
-            <tr class="border-b border-border-default">
-              <th scope="row" class={`${td} text-left font-normal`}><Chip>{s.css}</Chip></th>
-              <td class={`${td} text-text-muted`}>{s.px}px</td>
-              <td class={`${td} pr-0 align-middle`}>
-                <span aria-hidden class="block rounded-sm border border-border-strong bg-bg-muted" style={`width:${s.px}px;height:${Math.min(s.px, 40)}px`} />
-              </td>
-            </tr>
-          ))
-        }
-      </tbody>
-    </table>
-  </section>
-
-  <!-- Typography -->
-  <section id="type" aria-labelledby="type-title" class="flex scroll-mt-4 flex-col gap-4 pt-8">
-    <h2 id="type-title" class="text-base font-medium text-text-default">Typography</h2>
-    <div class="flex flex-wrap gap-2">
-      {fonts.map((f) => <Chip>{f.css}: {f.value}</Chip>)}
-      {weights.map((w) => <Chip>{w.css}: {w.value}</Chip>)}
-      <Chip>--tracking-tight: -0.015em</Chip>
-    </div>
-    <table class="w-full border-collapse text-sm">
-      <thead>
-        <tr class="border-b border-border-default">
-          <th scope="col" class={`${th} w-[156px]`}>Token</th>
-          <th scope="col" class={`${th} w-[110px]`}>Size / line</th>
-          <th scope="col" class={`${th} pr-0`}>Sample</th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          textSizes.map((t) => (
-            <tr class="border-b border-border-default">
-              <th scope="row" class={`${td} text-left font-normal`}><Chip>{t.css}</Chip></th>
-              <td class={`${td} text-text-muted`}>{t.px} / {t.lineHeight}</td>
-              <td class={`${td} pr-0 tracking-tight text-text-default`} style={`font-size:${t.px}px;line-height:${t.lineHeight}px`}>
-                Calm interfaces for agents
-              </td>
-            </tr>
-          ))
-        }
-      </tbody>
-    </table>
-  </section>
-
-  <!-- Shadows -->
-  <section id="shadow" aria-labelledby="shadow-title" class="flex scroll-mt-4 flex-col gap-4 pt-8">
-    <h2 id="shadow-title" class="text-base font-medium text-text-default">Shadows</h2>
-    <p class="text-sm leading-6 text-text-muted">
-      One style works in both modes: the shadow colours are theme tokens, and every shadow carries a 1px top highlight that is
-      only visible in Dark.
-    </p>
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-3 rounded-2xl border border-border-subtle bg-bg-field p-6">
-      {
-        shadows.map((s) => (
-          <div class="flex flex-col items-start gap-3">
-            <div class={`h-14 w-full rounded-xl bg-bg-card ${shadowClass[s.name] ?? ''}`} />
-            <Chip>{s.name}</Chip>
-          </div>
-        ))
-      }
-    </div>
-  </section>
-
-  <!-- Motion -->
-  <section id="motion" aria-labelledby="motion-title" class="flex scroll-mt-4 flex-col gap-4 pt-8 pb-8">
-    <h2 id="motion-title" class="text-base font-medium text-text-default">Motion</h2>
-    <p class="text-sm leading-6 text-text-muted">
-      Transform and opacity, ease-out for anything the user starts, under 250ms, and nothing moves when reduced motion is on.
-      The rules are in <Chip>packages/ui/MOTION.md</Chip>.
-    </p>
-    <table class="w-full border-collapse text-sm">
-      <thead>
-        <tr class="border-b border-border-default">
-          <th scope="col" class={`${th} w-[156px]`}>Token</th>
-          <th scope="col" class={th}>Value</th>
-          <th scope="col" class={`${th} pr-0`}>Use</th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          motion.map((m) => (
-            <tr class="border-b border-border-default">
-              <th scope="row" class={`${td} text-left font-normal`}><Chip>{m.css}</Chip></th>
-              <td class={td}><Chip>{m.value}</Chip></td>
-              <td class={`${td} pr-0 text-text-muted`}>{m.use}</td>
-            </tr>
-          ))
-        }
-      </tbody>
-    </table>
-  </section>
+      </section>
+    ))
+  }
 </Docs>
