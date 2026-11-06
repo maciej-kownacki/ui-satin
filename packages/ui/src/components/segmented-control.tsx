@@ -7,6 +7,7 @@ import { cn } from '../lib/utils'
  * SegmentedControl, from the uiKit `segmented control` page: 2–5 segments that switch
  * views or filters in place. One segment is always selected; the selected pill slides
  * to the new segment (transform, ease-out). Arrow keys move between segments.
+ * Values 1:1 with the uiKit `_segmentedControl/item` (3080:20278) and `SegmentedControl` (3080:21247) sets.
  */
 type Size = 'xs' | 'default' | 'lg'
 type Shape = 'default' | 'rounded'
@@ -43,19 +44,20 @@ const track = cva('relative isolate inline-flex items-center gap-0.5 bg-bg-muted
 
 const segment = cva(
   [
-    'relative z-10 inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium text-text-muted select-none',
+    'relative z-10 inline-flex items-center justify-center font-medium whitespace-nowrap text-text-muted select-none',
     'transition-[color,background-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
-    'hover:text-text-default active:bg-component-segmented-pressed data-[state=on]:text-text-default',
-    'focus-visible:shadow-border-focus focus-visible:outline-none',
+    'satin-hover:text-text-default data-[state=on]:text-text-default',
+    'satin-pressed:bg-component-segmented-pressed satin-pressed:text-text-default',
+    'focus-visible:outline-none satin-focus:text-text-default satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
     'disabled:pointer-events-none disabled:text-text-subtle',
-    '[&_svg]:pointer-events-none [&_svg]:size-icon-size [&_svg]:shrink-0',
+    '[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
   ],
   {
     variants: {
       size: {
         xs: 'h-control-height-xs gap-1 px-2.5 text-sm [&_svg]:size-icon-size-sm',
-        default: 'h-control-height px-3 text-sm',
-        lg: 'h-control-height-lg px-4 text-base',
+        default: 'h-control-height gap-1.5 px-3 text-sm [&_svg]:size-icon-size',
+        lg: 'h-control-height-lg gap-1.5 px-4 text-base [&_svg]:size-icon-size',
       },
       shape: { default: 'rounded-sm', rounded: 'rounded-full' },
       fullWidth: { true: 'flex-1', false: '' },
@@ -115,7 +117,7 @@ export function SegmentedControl({
         <span
           aria-hidden
           className={cn(
-            'absolute top-1 bottom-1 left-0 z-0 bg-component-segmented-selected shadow-[0_1px_1px_var(--effect-shadow-xs)]',
+            'absolute top-1 bottom-1 left-0 z-0 bg-component-segmented-selected [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             shape === 'rounded' ? 'rounded-full' : 'rounded-sm',
             animate && 'transition-[transform,width] duration-(--duration-base) ease-(--ease-out)',
           )}
@@ -129,8 +131,10 @@ export function SegmentedControl({
           disabled={item.disabled}
           className={cn(
             segment({ size, shape, fullWidth }),
+            // Unselected focus: bg/muted under the ring. Selected focus keeps the pill's fill.
+            'data-[state=off]:satin-focus:bg-bg-muted',
             // Before the pill is measured (server render), the selected segment paints its own fill.
-            !pill && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:shadow-[0_1px_1px_var(--effect-shadow-xs)]',
+            !pill && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
           )}
         >
           {item.icon}

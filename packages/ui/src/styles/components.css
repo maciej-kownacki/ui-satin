@@ -72,3 +72,58 @@
   background: var(--border-input);
   box-shadow: none;
 }
+
+/* Switch, uiKit _switchBase (3647:17617): 32 × 18 track, 14px white thumb 2px in. */
+.satin-switch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 32px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--border-input);
+  outline: none;
+  transition-property: background-color, box-shadow;
+  transition-duration: var(--duration-base);
+  transition-timing-function: var(--ease-out);
+}
+.satin-switch:hover,
+.satin-switch[data-force="hover"] {
+  background: var(--border-strong);
+}
+.satin-switch[data-state="checked"] {
+  background: var(--action-primary-bg);
+}
+.satin-switch[data-state="checked"]:is(:hover, [data-force="hover"]) {
+  background: var(--action-primary-bg-hover);
+}
+.satin-switch:is(:focus-visible, [data-force="focus"]) {
+  box-shadow: 0 0 0 2px var(--action-focus-ring);
+}
+.satin-switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.satin-switch:disabled:hover {
+  background: var(--border-input);
+}
+.satin-switch[data-state="checked"]:disabled:hover {
+  background: var(--action-primary-bg);
+}
+.satin-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
+  pointer-events: none;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+.satin-switch-thumb[data-state="checked"] {
+  transform: translateX(14px);
+}

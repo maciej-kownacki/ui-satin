@@ -5,21 +5,25 @@ import { cn } from '../lib/utils'
 export type BadgeTone = 'neutral' | 'brand' | 'sky' | 'green' | 'amber' | 'red' | 'fuchsia' | 'plum'
 
 /**
- * Badge, from the uiKit `badge` page: eight tones, two sizes (24 / 20), Soft (with a border)
- * or Plain, default or rounded. The tone comes from `data-tone`, which repoints the
- * `tone/*` tokens, so one set of classes covers every colour.
+ * Badge, 1:1 with the uiKit `Badge` set (988:20203): eight tones, Large (8 × 4 padding, 24
+ * high) or Small (6 × 2, 20 high), Soft (tone fill) or Plain (no fill), radius-sm or full.
+ * Label medium 13/16, icon 14px in the tone colour, 4px apart. No border, no shadow.
+ * The tone comes from `data-tone`, which repoints the `tone/*` tokens.
  */
 const badgeVariants = cva(
-  'inline-flex shrink-0 items-center gap-1 whitespace-nowrap bg-tone-bg font-medium text-tone-fg [&_svg]:pointer-events-none [&_svg]:shrink-0',
+  [
+    'inline-flex shrink-0 items-center gap-1 text-sm leading-4 font-medium tracking-normal whitespace-nowrap text-tone-fg',
+    '[&_svg]:pointer-events-none [&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
+  ],
   {
     variants: {
       size: {
-        lg: 'h-6 px-2 text-sm [&_svg]:size-icon-size-sm',
-        sm: 'h-5 px-1.5 text-xs [&_svg]:size-3',
+        lg: 'px-2 py-1',
+        sm: 'px-1.5 py-0.5',
       },
       look: {
-        soft: 'border border-tone-border',
-        plain: 'border border-transparent',
+        soft: 'bg-tone-bg',
+        plain: 'bg-transparent',
       },
       shape: {
         default: 'rounded-sm',

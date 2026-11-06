@@ -3,9 +3,11 @@ import { Switch as SwitchPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 
 /**
- * Switch, from the uiKit `switch` page: a 32 × 18 track with an optional label and
- * description, the switch on the left or the right. Use it for settings that apply
- * at once; use a checkbox when the choice is submitted with a form.
+ * Switch, 1:1 with the uiKit `_switchBase` (3647:17617) and `Switch` (3647:17714) sets: a
+ * 32 × 18 track (border/input off, primary on, each with its hover), a 14px white thumb,
+ * a 2px focus ring, 50% when disabled. Label medium 13/19.5, description muted, 10px from
+ * the track. Use it for settings that apply at once; use a checkbox inside a form.
+ * The look of every state lives in styles/components.css.
  */
 export interface SwitchProps extends React.ComponentProps<typeof SwitchPrimitive.Root> {
   label?: React.ReactNode
@@ -23,24 +25,10 @@ export function Switch({ className, label, description, placement = 'left', id, 
       id={switchId}
       data-slot="switch"
       aria-describedby={descriptionId}
-      className={cn(
-        'peer inline-flex h-[18px] w-8 shrink-0 items-center rounded-full p-0.5',
-        'bg-bg-selected transition-[background-color,box-shadow] duration-(--duration-base) ease-(--ease-out)',
-        'hover:bg-border-strong data-[state=checked]:bg-action-primary-bg data-[state=checked]:hover:bg-action-primary-bg-hover',
-        'focus-visible:shadow-border-focus focus-visible:outline-none',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        label || description ? 'mt-px' : '',
-        className,
-      )}
+      className={cn('peer satin-switch', className)}
       {...props}
     >
-      <SwitchPrimitive.Thumb
-        className={cn(
-          'pointer-events-none block size-3.5 rounded-full bg-white shadow-sm',
-          'transition-transform duration-(--duration-base) ease-(--ease-out)',
-          'data-[state=checked]:translate-x-3.5 data-[state=unchecked]:translate-x-0',
-        )}
-      />
+      <SwitchPrimitive.Thumb className="satin-switch-thumb" />
     </SwitchPrimitive.Root>
   )
 
@@ -52,14 +40,14 @@ export function Switch({ className, label, description, placement = 'left', id, 
       className={cn('flex items-start gap-2.5', placement === 'right' && 'flex-row-reverse justify-between')}
     >
       {control}
-      <div className="grid gap-0.5 peer-disabled:opacity-50">
+      <div className="grid gap-0.5 text-sm leading-[19.5px] peer-disabled:opacity-50">
         {label && (
-          <label htmlFor={switchId} className="text-sm leading-5 font-medium text-text-default">
+          <label htmlFor={switchId} className="font-medium text-text-default">
             {label}
           </label>
         )}
         {description && (
-          <p id={descriptionId} className="text-sm leading-5 text-text-muted">
+          <p id={descriptionId} className="text-text-muted">
             {description}
           </p>
         )}
