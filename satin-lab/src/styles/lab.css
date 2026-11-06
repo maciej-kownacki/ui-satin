@@ -55,3 +55,11 @@ html.dark .code-block .shiki span {
     linear-gradient(var(--frame-line), var(--frame-line)) calc((100% - var(--card)) / 2 - 1px) 0 / 1px 100% no-repeat,
     linear-gradient(var(--frame-line), var(--frame-line)) calc((100% + var(--card)) / 2) 0 / 1px 100% no-repeat;
 }
+
+/* Theme switch before it hydrates: the segment for the current theme looks selected. */
+html:not(.dark) .theme-switch:not([data-ready]) button:nth-of-type(1),
+html.dark .theme-switch:not([data-ready]) button:nth-of-type(2) {
+  background: var(--component-segmented-selected);
+  box-shadow: 0 1px 1px var(--effect-shadow-xs);
+  color: var(--text-default);
+}

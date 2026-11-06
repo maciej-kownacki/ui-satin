@@ -11,7 +11,9 @@ type Theme = 'light' | 'dark'
 const systemTheme = (): Theme => (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
 
 export function ThemeSwitch() {
-  const [theme, setTheme] = React.useState<Theme>('dark')
+  // Unknown until mounted: the server can't know the theme, so lab.css marks the right
+  // segment from the class on <html> until then, and nothing jumps on load.
+  const [theme, setTheme] = React.useState<Theme | null>(null)
 
   React.useLayoutEffect(() => {
     let saved: string | null = null
@@ -30,16 +32,18 @@ export function ThemeSwitch() {
   }
 
   return (
-    <SegmentedControl
-      aria-label="Theme"
-      size="xs"
-      shape="rounded"
-      value={theme}
-      onValueChange={(v) => choose(v as Theme)}
-      items={[
-        { value: 'light', label: <span className="sr-only">Light</span>, icon: <SunLight aria-hidden strokeWidth={1.25} /> },
-        { value: 'dark', label: <span className="sr-only">Dark</span>, icon: <HalfMoon aria-hidden strokeWidth={1.25} /> },
-      ]}
-    />
+    <div className="theme-switch" data-ready={theme ? '' : undefined}>
+      <SegmentedControl
+        aria-label="Theme"
+        size="xs"
+        shape="rounded"
+        value={theme ?? ''}
+        onValueChange={(v) => choose(v as Theme)}
+        items={[
+          { value: 'light', label: <span className="sr-only">Light</span>, icon: <SunLight aria-hidden strokeWidth={1.25} /> },
+          { value: 'dark', label: <span className="sr-only">Dark</span>, icon: <HalfMoon aria-hidden strokeWidth={1.25} /> },
+        ]}
+      />
+    </div>
   )
 }

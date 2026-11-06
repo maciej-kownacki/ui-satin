@@ -16,7 +16,11 @@ const groupIcons: Record<string, typeof IntroIcon> = {
   'ai-patterns': AiPatternsIcon,
 }
 
-export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) {
+export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; current: string }) {
+  // The clicked item becomes current at once, before the next page arrives; otherwise it
+  // would go pressed → hover → current while the page loads, which reads as a flicker.
+  const [current, setCurrent] = React.useState(currentProp)
+  React.useEffect(() => setCurrent(currentProp), [currentProp])
   const [open, setOpen] = React.useState<Record<string, boolean>>(() =>
     Object.fromEntries(nav.map((g) => [g.id, true])),
   )
@@ -115,7 +119,7 @@ export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) 
                         setOpen((s) => ({ ...s, [group.id]: !s[group.id] }))
                       }}
                       className={cn(
-                        'flex h-8 w-full items-center gap-2 rounded-lg px-3 text-left select-none',
+                        'flex h-8 w-full items-center gap-2 rounded-full px-3 text-left select-none',
                         'transition-colors duration-(--duration-fast) ease-(--ease-out)',
                         'hover:bg-bg-hover active:bg-bg-selected',
                         'focus-visible:shadow-border-focus focus-visible:outline-none',
@@ -151,7 +155,11 @@ export function Sidebar({ nav, current }: { nav: NavGroup[]; current: string }) 
                             <a
                               href={item.href}
                               aria-current={isCurrent ? 'page' : undefined}
-                              onClick={() => setDrawer(false)}
+                              onClick={(e) => {
+                                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+                                setCurrent(item.id)
+                                setDrawer(false)
+                              }}
                               className={cn(
                                 'flex h-8 items-center truncate rounded-full pr-3 pl-[34px] text-[13px] leading-[19.5px]',
                                 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
