@@ -23,7 +23,10 @@ const buttonVariants = cva(
   [
     'inline-flex shrink-0 items-center justify-center overflow-clip font-medium whitespace-nowrap select-none',
     'transition-[background-color,border-color,color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out)',
-    'active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50',
+    // A menu or popover trigger snaps back to full size the moment it opens (no scale, no
+    // transform transition), so the menu measures the button's real edge and never jumps.
+    'not-aria-expanded:active:scale-[0.97] aria-expanded:[transition-property:background-color,border-color,color,box-shadow]',
+    'disabled:pointer-events-none disabled:opacity-50',
     'focus-visible:outline-none [&_svg]:pointer-events-none [&_svg]:shrink-0',
     // Figma icons are 1.25px at 16 and 1.09px at 14; on Iconoir's 24 grid both are 1.875.
     '[&_svg]:[stroke-width:1.875]',
