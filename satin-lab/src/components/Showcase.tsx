@@ -3,6 +3,7 @@ import { Button, SegmentedControl, Switch, cn } from '@satin/ui'
 import { DropdownMenu, DropdownMenuItem } from '@satin/ui/dropdown'
 import { Check, Collapse, Copy, Expand, NavArrowDown } from 'iconoir-react'
 import { CodeIcon, PreviewIcon } from './icons'
+import { stageHeights } from '../lib/stage-heights'
 
 /**
  * The interactive part of a component page, from the docs template (uiKit 3857:6013–6016):
@@ -67,6 +68,34 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
   const fullscreenRef = React.useRef<HTMLButtonElement>(null)
   const ids = React.useId()
   const current = options.find((o) => o.id === option) ?? options[0]
+  const stageRef = React.useRef<HTMLDivElement>(null)
+
+  // The stage keeps one height whatever the props, so nothing under it moves.
+  const measuring = typeof location !== 'undefined' && new URLSearchParams(location.search).has('measure')
+  const heights = measuring ? undefined : stageHeights[name]
+  const fixed = heights && !fullscreen
+  const stageStyle = heights
+    ? ({ '--stage-h': `${heights[0]}px`, '--stage-h-m': `${heights[1]}px` } as React.CSSProperties)
+    : undefined
+
+  // `?measure` walks every combination and leaves the tallest stage in window.__stageHeight.
+  React.useEffect(() => {
+    if (!measuring || !controls) return
+    let stop = false
+    ;(async () => {
+      let max = 0
+      for (const v of combos(controls)) {
+        if (stop) return
+        setValues(v)
+        await new Promise((r) => setTimeout(r, 250))
+        max = Math.max(max, stageRef.current?.offsetHeight ?? 0)
+      }
+      ;(window as unknown as { __stageHeight: number }).__stageHeight = max
+    })()
+    return () => {
+      stop = true
+    }
+  }, [])
 
   // Full screen: Escape leaves, the page behind doesn't scroll, focus comes back to the toggle.
   React.useEffect(() => {
@@ -214,8 +243,9 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
         aria-labelledby={fullscreen ? undefined : `${ids}-tab-${tab}`}
         className={cn(
           'relative flex flex-col overflow-hidden border border-border-subtle bg-bg-field [box-shadow:0_1px_1px_var(--effect-shadow-xs)]',
-          fullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : 'min-h-[442px] rounded-2xl',
+          fullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : cn('rounded-2xl', !heights && 'min-h-[442px]'),
         )}
+        style={stageStyle}
       >
         {/* In the Code tab the toggle sits in the code header, next to Copy code. */}
         {fullscreen && tab !== 'code' && <div className="absolute top-3 right-3 z-10">{toggle}</div>}
@@ -223,8 +253,11 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
         {tab === 'preview' ? (
           <>
             {/* Too wide for the stage? It scrolls sideways instead of squeezing the component. */}
-            <div className="flex flex-1 overflow-x-auto">
-              <div className={cn('m-auto flex w-max min-w-full items-center justify-center px-10 pt-6', bar ? 'pb-6' : 'pb-16')}>
+            <div className={cn('flex overflow-auto', fixed ? 'h-(--stage-h-m) shrink-0 md:h-(--stage-h)' : 'flex-1')}>
+              <div
+                ref={stageRef}
+                className={cn('m-auto flex w-max min-w-full items-center justify-center px-10 pt-6', bar ? 'pb-6' : 'pb-16')}
+              >
                 {render(current.id, values)}
               </div>
             </div>
@@ -243,18 +276,20 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
             )}
           </>
         ) : (
-          <div className={cn('flex flex-1 flex-col', !fullscreen && 'max-h-[600px]')}>
-            <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-subtle pr-2 pl-4">
-              <span className="text-sm text-text-muted">{current.label}</span>
-              <div className="flex items-center gap-1">
-                <Button variant="tertiary" shape="rounded" onClick={copy} className="text-text-muted hover:text-text-default">
-                  {copied ? <Check /> : <Copy />}
-                  <span aria-live="polite">{copied ? 'Copied' : 'Copy code'}</span>
-                </Button>
-                {fullscreen && toggle}
+          <div className={cn('flex flex-1 flex-col', !fullscreen && !heights && 'max-h-[600px]')}>
+            <div className={cn('flex min-h-0 flex-col', fixed ? 'h-(--stage-h-m) shrink-0 md:h-(--stage-h)' : 'flex-1')}>
+              <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-subtle pr-2 pl-4">
+                <span className="text-sm text-text-muted">{current.label}</span>
+                <div className="flex items-center gap-1">
+                  <Button variant="tertiary" shape="rounded" onClick={copy} className="text-text-muted hover:text-text-default">
+                    {copied ? <Check /> : <Copy />}
+                    <span aria-live="polite">{copied ? 'Copied' : 'Copy code'}</span>
+                  </Button>
+                  {fullscreen && toggle}
+                </div>
               </div>
+              <div className="code-block min-h-0 flex-1 overflow-auto" dangerouslySetInnerHTML={{ __html: codeHtml[current.id] ?? '' }} />
             </div>
-            <div className="code-block min-h-0 flex-1 overflow-auto" dangerouslySetInnerHTML={{ __html: codeHtml[current.id] ?? '' }} />
             {bar}
             {!bar && options.length > 1 && (
               <div className="flex shrink-0 justify-center border-t border-border-subtle py-3">

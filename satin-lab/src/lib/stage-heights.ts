@@ -1,0 +1,42 @@
+/**
+ * Stage height per Showcase `name`, [from md, below md], in px: the tallest combination of the
+ * page's props, 280 at least, so the preview never grows or shrinks while the reader changes them.
+ * Measured, not guessed: open a component page with `?measure`, wait for `window.__stageHeight`.
+ */
+export const stageHeights: Record<string, [number, number]> = {
+  'Agent picker': [280, 280],
+  'Attachment': [280, 280],
+  'Avatar': [280, 280],
+  'Badge': [280, 280],
+  'Banner': [280, 280],
+  'Button': [280, 280],
+  'Card': [280, 280],
+  'Chart': [504, 504],
+  'Checkbox': [280, 280],
+  'Chip': [280, 280],
+  'Code block': [464, 464],
+  'Decision card': [368, 392],
+  'Dialog': [352, 352],
+  'Dot': [280, 280],
+  'Dropdown': [416, 416],
+  'Empty state': [280, 280],
+  'Form field': [280, 280],
+  'Input': [280, 280],
+  'Message': [280, 296],
+  'Message actions': [280, 280],
+  'Popover': [280, 280],
+  'Prompt bar': [280, 280],
+  'Radio': [280, 280],
+  'Segmented control': [280, 280],
+  'Sidebar': [336, 336],
+  'Sources': [352, 352],
+  'Switch': [280, 280],
+  'Table': [304, 304],
+  'Tabs': [280, 280],
+  'Textarea': [280, 280],
+  'Thinking': [280, 280],
+  'Toast': [312, 312],
+  'Toggle': [280, 280],
+  'Tooltip': [280, 280],
+  'Typing indicator': [280, 280],
+}
