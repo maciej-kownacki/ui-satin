@@ -252,7 +252,7 @@
   --chart-5: var(--color-violet-500);
   --component-table-zebra: var(--color-zinc-50);
   --component-table-header: var(--color-zinc-50);
-  --component-segmented-selected: var(--bg-selected);
+  --component-segmented-selected: var(--bg-card);
   --component-segmented-pressed: var(--color-black-a5);
   --component-rail-center: var(--color-border-subtle-light);
   --component-rail-edge: var(--color-border-subtle-light-a25);

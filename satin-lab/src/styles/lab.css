@@ -106,13 +106,6 @@ html.dark .code-block .shiki span {
 html:not(.dark) .theme-switch:not([data-ready]) button:nth-of-type(1),
 html.dark .theme-switch:not([data-ready]) button:nth-of-type(2) {
   background: var(--component-segmented-selected);
-  box-shadow: 0 1px 1px var(--effect-shadow-xs);
+  box-shadow: 0 1px 3px var(--effect-shadow-sm), 0 1px 2px -1px var(--effect-shadow-sm);
   color: var(--text-default);
-}
-
-/* In light mode the theme switch's selected segment is white, not zinc-200. */
-html:not(.dark) .theme-switch [data-slot="segmented-control"] > span,
-html:not(.dark) .theme-switch:not([data-ready]) button:nth-of-type(1) {
-  background: var(--color-white);
-  box-shadow: 0 1px 2px var(--effect-shadow-sm);
 }

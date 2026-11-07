@@ -6,7 +6,7 @@ import { cn } from '../lib/utils'
 /**
  * SegmentedControl, from the uiKit `segmented control` page: 2–5 segments that switch
  * views or filters in place. One segment is always selected; the selected pill slides
- * to the new segment (transform, ease-out). Arrow keys move between segments.
+ * to the new segment (transform, ease-out): a white card with Shadow/sm in Light. Arrow keys move between segments.
  * Values 1:1 with the uiKit `_segmentedControl/item` (3080:20278) and `SegmentedControl` (3080:21247) sets.
  */
 type Size = 'xs' | 'md' | 'lg'
@@ -117,7 +117,7 @@ export function SegmentedControl({
         <span
           aria-hidden
           className={cn(
-            'absolute top-1 bottom-1 left-0 z-0 bg-component-segmented-selected [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
+            'absolute top-1 bottom-1 left-0 z-0 bg-component-segmented-selected [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
             shape === 'rounded' ? 'rounded-full' : 'rounded-sm',
             animate && 'transition-[transform,width] duration-(--duration-base) ease-(--ease-out)',
           )}
@@ -134,7 +134,7 @@ export function SegmentedControl({
             // Unselected focus: bg/muted under the ring. Selected focus keeps the pill's fill.
             'data-[state=off]:satin-focus:bg-bg-muted',
             // Before the pill is measured (server render), the selected segment paints its own fill.
-            !pill && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
+            !pill && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
           )}
         >
           {item.icon}
