@@ -75,7 +75,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
         aria-expanded={drawer}
         aria-controls="sidebar"
         onClick={() => setDrawer(true)}
-        className="fixed top-2 left-2 z-30 lg:hidden"
+        className="fixed top-[calc(28px-var(--control-height-lg)/2)] left-2 z-30 lg:hidden"
       >
         <Menu />
       </Button>
