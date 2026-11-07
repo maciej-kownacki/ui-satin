@@ -108,12 +108,16 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
     <div
       role="group"
       aria-label={`${name} properties`}
-      // Phones: one prop per row, label left and control right. Wider: one centred row.
-      className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-6 sm:gap-y-3"
+      // Phones: one prop per row, label left and control right. Wider: one column per prop,
+      // the label above its control, columns split by a hairline.
+      className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 md:flex-row md:justify-center md:gap-0 md:px-2 md:py-4"
     >
       {controls.map((c) => (
-        <div key={c.id} className="flex min-h-7 items-center justify-between gap-2">
-          <span aria-hidden className="text-sm text-text-muted">
+        <div
+          key={c.id}
+          className="flex min-h-7 items-center justify-between gap-2 md:flex-col md:items-start md:justify-start md:gap-2 md:border-l md:border-border-subtle md:px-5 md:first:border-l-0"
+        >
+          <span aria-hidden className="text-sm text-text-muted md:text-xs md:leading-4 md:font-medium">
             {c.label}
           </span>
           {'items' in c ? (
@@ -127,6 +131,7 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
             />
           ) : (
             <Switch
+              className="md:my-[5px]"
               aria-label={c.label}
               checked={values[c.id] === 'on'}
               onCheckedChange={(on) => setValues((s) => ({ ...s, [c.id]: on ? 'on' : 'off' }))}
