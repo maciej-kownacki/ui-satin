@@ -30,14 +30,19 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
   const [drawer, setDrawer] = React.useState(false)
   const [wide, setWide] = React.useState(true)
   const menuRef = React.useRef<HTMLButtonElement>(null)
+  const asideRef = React.useRef<HTMLElement>(null)
+  const backdropRef = React.useRef<HTMLDivElement>(null)
+  // Closing with the handle, the backdrop or Escape gives focus back to the menu button;
+  // picking a page doesn't, since the next page takes it.
+  const returnFocus = React.useRef(false)
   // How far the drawer has been dragged down by its handle; null when nobody is dragging.
   const [drag, setDrag] = React.useState<number | null>(null)
   const dragFrom = React.useRef(0)
   const dragged = React.useRef(false)
 
   const close = () => {
+    returnFocus.current = true
     setDrawer(false)
-    menuRef.current?.focus()
   }
 
   React.useEffect(() => {
@@ -51,14 +56,32 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
   // The drawer closes on Escape and gives focus back to the menu button.
   React.useEffect(() => {
     if (!drawer) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      setDrawer(false)
-      menuRef.current?.focus()
-    }
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close()
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [drawer])
+
+  // The open drawer is modal: everything behind it is inert, so Tab stays in the drawer and
+  // screen readers don't wander off. Focus starts on the current page.
+  React.useEffect(() => {
+    const aside = asideRef.current
+    if (!drawer || wide || !aside) return
+    const inerted: Element[] = []
+    for (let el: Element = aside; el.parentElement && el !== document.body; el = el.parentElement) {
+      for (const sibling of el.parentElement.children) {
+        if (sibling === el || sibling === backdropRef.current || sibling.hasAttribute('inert')) continue
+        sibling.setAttribute('inert', '')
+        inerted.push(sibling)
+      }
+    }
+    const start = aside.querySelector<HTMLElement>('[aria-current="page"]') ?? aside.querySelector<HTMLElement>('a, button')
+    start?.focus()
+    return () => {
+      inerted.forEach((el) => el.removeAttribute('inert'))
+      if (returnFocus.current) menuRef.current?.focus()
+      returnFocus.current = false
+    }
+  }, [drawer, wide])
 
   const groupOf = (id: string) => nav.find((g) => g.items.some((i) => i.id === id))?.id
 
@@ -80,10 +103,14 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
         <Menu />
       </Button>
 
-      {drawer && <div aria-hidden onClick={() => setDrawer(false)} className="fixed inset-0 z-40 bg-black/40 lg:hidden" />}
+      {drawer && <div ref={backdropRef} aria-hidden onClick={close} className="fixed inset-0 z-40 bg-black/40 lg:hidden" />}
 
       <aside
+        ref={asideRef}
         id="sidebar"
+        role={wide ? undefined : 'dialog'}
+        aria-modal={(!wide && drawer) || undefined}
+        aria-label={wide ? undefined : 'Menu'}
         // Off screen on small viewports: keep it out of the tab order until the drawer opens.
         inert={!wide && !drawer}
         style={drag != null ? { transform: `translateY(${drag}px)`, transition: 'none' } : undefined}

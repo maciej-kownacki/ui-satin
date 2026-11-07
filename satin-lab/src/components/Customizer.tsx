@@ -144,21 +144,24 @@ export function Customizer() {
                 </button>
               )
             })}
-            {/* Any colour: the native picker, behind a swatch that shows the current custom pick. */}
-            <button
-              type="button"
-              role="radio"
-              aria-checked={custom}
-              aria-label="Custom colour"
-              title="Custom colour"
-              onClick={() => colorRef.current?.click()}
-              className={cn(
-                'relative grid size-7 shrink-0 place-items-center rounded-lg text-text-muted md:size-8 transition-colors duration-(--duration-fast) ease-(--ease-out)',
-                'hover:bg-bg-hover hover:text-text-default focus-visible:shadow-border-focus focus-visible:outline-none',
-                custom && 'bg-bg-card [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
-              )}
-            >
-              {custom ? <span className="size-5 rounded-full" style={{ background: theme.brand }} /> : <ColorPicker className="size-4" />}
+            {/* Any colour: the native picker, behind a swatch that shows the current custom pick.
+                The input sits next to the button, not in it, so no control is nested in another. */}
+            <span className="relative shrink-0">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={custom}
+                aria-label="Custom colour"
+                title="Custom colour"
+                onClick={() => colorRef.current?.click()}
+                className={cn(
+                  'grid size-7 place-items-center rounded-lg text-text-muted transition-colors duration-(--duration-fast) ease-(--ease-out) md:size-8',
+                  'hover:bg-bg-hover hover:text-text-default focus-visible:shadow-border-focus focus-visible:outline-none',
+                  custom && 'bg-bg-card [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+                )}
+              >
+                {custom ? <span className="size-5 rounded-full" style={{ background: theme.brand }} /> : <ColorPicker className="size-4" />}
+              </button>
               <input
                 ref={colorRef}
                 type="color"
@@ -166,9 +169,9 @@ export function Customizer() {
                 aria-hidden
                 value={theme.brand}
                 onChange={(e) => update({ brand: e.target.value })}
-                className="pointer-events-none absolute inset-0 opacity-0"
+                className="pointer-events-none absolute inset-0 size-full opacity-0"
               />
-            </button>
+            </span>
           </div>
         </div>
 

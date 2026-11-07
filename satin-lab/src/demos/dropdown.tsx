@@ -85,6 +85,27 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
 function Preview({ v }: { v: Record<string, string> }) {
   const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
   const [status, setStatus] = React.useState(current)
+  // Opening on mount pulls focus into the menu, which would yank keyboard users off the page
+  // (or off the property they just changed). Hand focus back to where it was.
+  const before = React.useRef<Element | null>(null)
+  if (before.current === null && typeof document !== 'undefined') before.current = document.activeElement
+  React.useEffect(() => {
+    if (!stage) return
+    const onFocus = (e: FocusEvent) => {
+      const prev = before.current
+      if (prev instanceof HTMLElement && prev !== document.body && prev.isConnected) {
+        prev.focus({ preventScroll: true })
+        return
+      }
+      // Nothing had focus yet: back to the top of the page, so Tab starts at the skip link.
+      ;(e.target as HTMLElement).blur()
+      document.body.tabIndex = -1
+      document.body.focus({ preventScroll: true })
+      document.body.removeAttribute('tabindex')
+    }
+    stage.addEventListener('focusin', onFocus, { once: true })
+    return () => stage.removeEventListener('focusin', onFocus)
+  }, [stage])
   const row = (i: (typeof items)[number]) => (
     <DropdownMenuItem
       key={i.value}
@@ -110,6 +131,8 @@ function Preview({ v }: { v: Record<string, string> }) {
           container={stage}
           defaultOpen
           modal={false}
+          // Stays open while focus is elsewhere on the page; Escape, a click outside or a pick closes it.
+          onFocusOutside={(e) => e.preventDefault()}
           trigger={
             <Button variant="secondary">
               Status

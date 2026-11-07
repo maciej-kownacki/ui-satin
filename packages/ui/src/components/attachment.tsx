@@ -81,7 +81,6 @@ export function Attachment({
         type="button"
         data-attachment-main=""
         onClick={onOpen}
-        aria-label={meta ? `${name}, ${meta}` : name}
         className={cn(
           'flex min-w-0 items-center text-left outline-none',
           // The whole chip is the click target; the remove button sits above it.
@@ -102,6 +101,7 @@ export function Attachment({
             </span>
             <span className="flex min-w-0 flex-col">
               <span className="max-w-[200px] truncate text-sm font-medium text-text-default">{name}</span>
+              {meta && <span className="sr-only">, </span>}
               {meta && <span className="truncate text-xs text-text-muted">{meta}</span>}
             </span>
           </>
@@ -109,6 +109,7 @@ export function Attachment({
           <>
             <span className="flex shrink-0 [&_svg]:size-icon-size">{fileIcon}</span>
             <span className="max-w-[200px] truncate text-sm font-medium text-text-default">{name}</span>
+            {meta && <span className="sr-only">, {meta}</span>}
           </>
         )}
       </button>

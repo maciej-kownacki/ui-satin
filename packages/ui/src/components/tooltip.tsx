@@ -42,6 +42,8 @@ export interface TooltipProps {
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void
+  /** Portal target. Defaults to `document.body`. */
+  container?: HTMLElement | null
   className?: string
 }
 
@@ -92,13 +94,14 @@ export function Tooltip({
   open,
   defaultOpen,
   onOpenChange,
+  container,
   className,
 }: TooltipProps) {
   return (
     <TooltipPrimitive.Provider delayDuration={delay}>
       <TooltipPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
         <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
-        <TooltipPrimitive.Portal>
+        <TooltipPrimitive.Portal container={container}>
           <TooltipPrimitive.Content
             side={side}
             sideOffset={8}

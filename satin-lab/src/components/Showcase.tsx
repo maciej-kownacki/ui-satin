@@ -69,6 +69,7 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
   const ids = React.useId()
   const current = options.find((o) => o.id === option) ?? options[0]
   const stageRef = React.useRef<HTMLDivElement>(null)
+  const panelRef = React.useRef<HTMLDivElement>(null)
 
   // The stage keeps one height whatever the props, so nothing under it moves.
   const measuring = typeof location !== 'undefined' && new URLSearchParams(location.search).has('measure')
@@ -108,6 +109,20 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
       document.removeEventListener('keydown', onKey)
       document.documentElement.style.overflow = overflow
     }
+  }, [fullscreen])
+  // It covers the page, so the page behind is inert: Tab can't reach what's hidden under it.
+  React.useEffect(() => {
+    const panel = panelRef.current
+    if (!fullscreen || !panel) return
+    const inerted: Element[] = []
+    for (let el: Element = panel; el.parentElement && el !== document.body; el = el.parentElement) {
+      for (const sibling of el.parentElement.children) {
+        if (sibling === el || sibling.hasAttribute('inert')) continue
+        sibling.setAttribute('inert', '')
+        inerted.push(sibling)
+      }
+    }
+    return () => inerted.forEach((el) => el.removeAttribute('inert'))
   }, [fullscreen])
   const mounted = React.useRef(false)
   React.useEffect(() => {
@@ -236,6 +251,7 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
       </div>
 
       <div
+        ref={panelRef}
         id={`${ids}-panel`}
         role={fullscreen ? 'dialog' : 'tabpanel'}
         aria-modal={fullscreen || undefined}

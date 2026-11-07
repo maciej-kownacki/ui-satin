@@ -102,11 +102,13 @@ export function AgentPicker({
           variant={variant}
           size={size}
           shape="rounded"
-          aria-label={current ? `Agent: ${current.name}` : placeholder}
           className={cn('data-[state=open]:bg-action-secondary-bg-hover', className)}
         >
           {current && <AgentAvatar agent={current} size={16} />}
-          <span className="truncate">{current ? current.name : placeholder}</span>
+          <span className="truncate">
+            {current && <span className="sr-only">Agent: </span>}
+            {current ? current.name : placeholder}
+          </span>
           <NavArrowDown aria-hidden data-chevron />
         </Button>
       </DropdownMenu.Trigger>

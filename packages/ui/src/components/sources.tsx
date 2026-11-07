@@ -33,6 +33,8 @@ export interface SourcesProps extends Omit<React.ComponentProps<'section'>, 'tit
   onOpen?: (url: string) => void
   /** Card title. */
   title?: string
+  /** Heading level of the card title, to fit the page's outline. */
+  headingLevel?: 2 | 3 | 4 | 5 | 6
 }
 
 export function Sources({
@@ -43,6 +45,7 @@ export function Sources({
   size = 'sm',
   onOpen,
   title = 'Sources',
+  headingLevel = 3,
   ...props
 }: SourcesProps) {
   if (variant === 'chips') {
@@ -79,6 +82,7 @@ export function Sources({
               >
                 <SourcesCard
                   title={title}
+                  headingLevel={headingLevel}
                   sources={sources}
                   onOpen={onOpen}
                   className="[box-shadow:0_4px_6px_-1px_var(--effect-shadow-sm),0_2px_4px_-2px_var(--effect-shadow-sm)]"
@@ -91,11 +95,12 @@ export function Sources({
     )
   }
 
-  return <SourcesCard title={title} sources={sources} onOpen={onOpen} maxVisible={maxVisible} className={className} {...props} />
+  return <SourcesCard title={title} headingLevel={headingLevel} sources={sources} onOpen={onOpen} maxVisible={maxVisible} className={className} {...props} />
 }
 
 function SourcesCard({
   title,
+  headingLevel = 3,
   sources,
   onOpen,
   maxVisible,
@@ -103,6 +108,7 @@ function SourcesCard({
   ...props
 }: {
   title: string
+  headingLevel?: SourcesProps['headingLevel']
   sources: Source[]
   onOpen?: (url: string) => void
   maxVisible?: number
@@ -113,6 +119,7 @@ function SourcesCard({
   const limit = maxVisible ?? sources.length
   const shown = expanded ? sources : sources.slice(0, limit)
   const rest = sources.length - shown.length
+  const Heading = `h${headingLevel}` as const
 
   return (
     <section
@@ -122,9 +129,9 @@ function SourcesCard({
       {...props}
     >
       <div className="px-4 pt-4">
-        <h3 id={titleId} className="text-base leading-[14px] font-medium tracking-normal text-text-default">
+        <Heading id={titleId} className="text-base leading-[14px] font-medium tracking-normal text-text-default">
           {title}
-        </h3>
+        </Heading>
       </div>
       <div className="flex flex-col gap-2 p-4">
         <ul className="flex flex-col overflow-clip rounded-md">

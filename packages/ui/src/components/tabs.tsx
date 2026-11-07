@@ -117,6 +117,8 @@ export function Tabs({
             key={tab.value}
             value={tab.value}
             disabled={disabled || tab.disabled}
+            // Without TabsContent there is no panel to point at.
+            {...(children == null && { 'aria-controls': undefined })}
             className={trigger({ variant, size })}
           >
             <span
@@ -150,5 +152,5 @@ export function Tabs({
 
 /** The panel for one tab value. */
 export function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Content>) {
-  return <TabsPrimitive.Content data-slot="tabs-content" className={cn('focus-visible:outline-none', className)} {...props} />
+  return <TabsPrimitive.Content data-slot="tabs-content" className={cn('rounded-md focus-visible:shadow-border-focus focus-visible:outline-none', className)} {...props} />
 }

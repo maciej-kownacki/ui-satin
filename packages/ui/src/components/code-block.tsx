@@ -206,8 +206,13 @@ export function CodeBlock({
           )}
         </div>
       )}
+      {/* Long lines scroll sideways, so the code is a focusable region keyboard users can scroll. */}
       <pre
+        tabIndex={0}
+        role="region"
+        aria-label={filename ? `${filename} code` : 'Code'}
         className={cn(
+          'outline-none focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
           'overflow-x-auto font-mono text-sm leading-(--text-sm--line-height) font-normal tracking-normal',
           // Without the header the code sits in the middle: 12px above, as below.
           showHeader ? 'pt-1' : 'pt-3',

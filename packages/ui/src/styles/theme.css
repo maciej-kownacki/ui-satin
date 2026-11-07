@@ -173,6 +173,7 @@
   --color-teal-950-a20: #042F2E33;
   --color-teal-200-a55: #99F6E48C;
   --color-teal-500-a55: #14B8A68C;
+  --color-text-muted-light: #68686F;
   --spacing: 4px;
 }
 
@@ -187,7 +188,7 @@
   --bg-selected: var(--color-zinc-200);
   --bg-card-fade: var(--color-white-a0);
   --text-default: var(--color-zinc-900);
-  --text-muted: var(--color-zinc-500);
+  --text-muted: var(--color-text-muted-light);
   --text-subtle: var(--color-zinc-400);
   --text-placeholder: var(--color-zinc-300);
   --text-on-solid: var(--color-white);
@@ -305,7 +306,7 @@
   --action-secondary-bg: var(--color-zinc-800);
   --action-secondary-bg-hover: var(--color-secondary-hover-dark);
   --action-secondary-bg-pressed: var(--color-secondary-pressed-dark);
-  --action-destructive-bg: var(--color-red-500);
+  --action-destructive-bg: var(--color-red-600);
   --action-destructive-bg-hover: var(--color-red-400);
   --action-destructive-bg-pressed: var(--color-red-600);
   --action-destructive-border: var(--color-red-300);

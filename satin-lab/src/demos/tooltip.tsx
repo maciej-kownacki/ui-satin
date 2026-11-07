@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { Button } from '@satin/ui/button'
 import { Tooltip } from '@satin/ui/tooltip'
 import { Copy } from 'iconoir-react'
@@ -46,6 +47,31 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   code: code(v),
 }))
 
+/** Starts open, and opens again on every change, so the stage never looks empty. */
+function Preview({ v }: { v: Record<string, string> }) {
+  // Portalled into the stage rather than <body>, so the open tooltip stays inside the page's landmarks.
+  const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
+  const shape = v.shape as 'default' | 'rounded'
+  return (
+    <div ref={setStage}>
+      {stage && (
+        <Tooltip
+          label="Copy"
+          shortcut={v.shortcut === 'on' ? '⌘C' : undefined}
+          shape={shape}
+          side={v.side as Side}
+          defaultOpen
+          container={stage}
+        >
+          <Button variant="secondary" shape={shape} iconOnly aria-label="Copy">
+            <Copy />
+          </Button>
+        </Tooltip>
+      )}
+    </div>
+  )
+}
+
 export default function TooltipDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
   return (
     <Showcase
@@ -53,24 +79,7 @@ export default function TooltipDemo({ codeHtml }: { codeHtml: Record<string, str
       options={options}
       codeHtml={codeHtml}
       controls={controls}
-      render={(id, v) => {
-        const shape = v.shape as 'default' | 'rounded'
-        return (
-          // Starts open, and opens again on every change, so the stage never looks empty.
-          <Tooltip
-            key={id}
-            label="Copy"
-            shortcut={v.shortcut === 'on' ? '⌘C' : undefined}
-            shape={shape}
-            side={v.side as Side}
-            defaultOpen
-          >
-            <Button variant="secondary" shape={shape} iconOnly aria-label="Copy">
-              <Copy />
-            </Button>
-          </Tooltip>
-        )
-      }}
+      render={(id, v) => <Preview key={id} v={v} />}
     />
   )
 }

@@ -65,7 +65,8 @@ export default function SourcesDemo({ codeHtml }: { codeHtml: Record<string, str
           </div>
         ) : (
           // Keyed so a card expanded with "+N" folds again when the controls change.
-          <Sources key={id} {...props} className="w-[min(440px,calc(100vw-80px))]" />
+          // The stage sits under the page title, so the card title is the next level down.
+          <Sources key={id} {...props} headingLevel={2} className="w-[min(440px,calc(100vw-80px))]" />
         )
       }}
     />

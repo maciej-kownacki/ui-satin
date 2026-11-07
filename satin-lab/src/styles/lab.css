@@ -13,7 +13,9 @@
 @layer base {
   html {
     color-scheme: light;
-    scroll-padding-top: 24px;
+    /* Focus and anchors land clear of the fixed top bar and the customizer bar. */
+    scroll-padding-top: 72px;
+    scroll-padding-bottom: 96px;
   }
   html.dark {
     color-scheme: dark;

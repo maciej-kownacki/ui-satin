@@ -18,6 +18,8 @@ import { cn } from '../lib/utils'
  *
  * States use the satin-hover / satin-focus / satin-pressed variants (styles/index.css):
  * the real pseudo-classes, or `data-force="hover" | "focus" | "pressed"` for state sheets.
+ * An open menu's trigger looks pressed, which hides the ring; with keyboard focus on it the
+ * `[aria-haspopup][aria-expanded=true]:focus-visible` rules bring the ring back.
  */
 const buttonVariants = cva(
   [
@@ -40,6 +42,7 @@ const buttonVariants = cva(
           'satin-hover:bg-action-primary-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-primary-bg-hover),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-primary-glow)]',
           'satin-focus:[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-primary-glow)]',
           'satin-pressed:bg-action-primary-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-primary-bg-pressed),inset_0_0_6px_2px_var(--action-primary-glow)]',
+          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-primary-bg-pressed),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-primary-glow)]',
         ],
         destructive: [
           'border border-action-destructive-border bg-action-destructive-bg text-text-on-solid',
@@ -47,6 +50,7 @@ const buttonVariants = cva(
           'satin-hover:bg-action-destructive-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-destructive-bg-hover),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-destructive-glow)]',
           'satin-focus:[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-destructive-glow)]',
           'satin-pressed:bg-action-destructive-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-destructive-bg-pressed),inset_0_0_6px_2px_var(--action-destructive-glow)]',
+          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-destructive-bg-pressed),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-destructive-glow)]',
         ],
         inverse: [
           'border border-action-inverse-border bg-action-inverse-bg text-text-on-inverse',
@@ -54,6 +58,7 @@ const buttonVariants = cva(
           'satin-hover:bg-action-inverse-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-inverse-bg-hover),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-inverse-glow)]',
           'satin-focus:[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-inverse-glow)]',
           'satin-pressed:bg-action-inverse-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed),inset_0_0_6px_2px_var(--action-inverse-glow)]',
+          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-inverse-glow)]',
         ],
         secondary: [
           'border border-border-default bg-bg-popover text-text-default [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)] [&_svg]:text-text-muted',
@@ -61,12 +66,14 @@ const buttonVariants = cva(
           'satin-hover:border-border-strong satin-hover:bg-action-secondary-bg-hover',
           'satin-focus:border-border-strong satin-focus:bg-bg-popover satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
           'satin-pressed:border-border-strong satin-pressed:bg-action-secondary-bg-pressed satin-pressed:[box-shadow:none]',
+          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
         ],
         tertiary: [
           'bg-transparent text-text-default [&_svg]:text-text-muted',
           'satin-hover:bg-bg-hover',
           'satin-focus:bg-bg-hover satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
           'satin-pressed:bg-border-input',
+          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
         ],
       },
       size: {

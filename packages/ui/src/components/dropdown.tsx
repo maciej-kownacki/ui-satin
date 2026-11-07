@@ -34,6 +34,8 @@ export interface DropdownMenuProps {
   container?: HTMLElement | null
   /** Accessible name for the menu, when the trigger's text doesn't say enough. */
   'aria-label'?: string
+  /** Focus moved outside a non-modal menu; call `preventDefault()` to keep it open. */
+  onFocusOutside?: (event: Event) => void
   className?: string
 }
 
@@ -48,6 +50,7 @@ export function DropdownMenu({
   align = 'start',
   sideOffset = 8,
   container,
+  onFocusOutside,
   className,
   ...props
 }: DropdownMenuProps) {
@@ -62,6 +65,7 @@ export function DropdownMenu({
           align={align}
           sideOffset={sideOffset}
           collisionPadding={8}
+          onFocusOutside={onFocusOutside}
           className={cn(
             'pointer-events-auto z-50 flex w-[255px] max-w-[520px] flex-col gap-2 overflow-x-clip overflow-y-auto p-1',
             'max-h-(--radix-dropdown-menu-content-available-height)',

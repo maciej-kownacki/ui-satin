@@ -93,6 +93,7 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
 /** The dialog opens inside the stage (portal + absolute), not over the docs page or the properties. */
 function Preview({ v }: { v: Record<string, string> }) {
   const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
+  const openedOnce = React.useRef(false)
   const c = copy[v.variant as keyof typeof copy]
   const destructive = v.variant === 'destructive'
 
@@ -103,9 +104,13 @@ function Preview({ v }: { v: Record<string, string> }) {
         <Dialog
           container={stage}
           defaultOpen
-          // Inline preview: don't lock the docs page or steal focus on load.
+          // Inline preview: don't lock the docs page or steal focus on load. Opened again from
+          // its trigger, it takes focus like any dialog.
           modal={false}
-          onOpenAutoFocus={(e) => e.preventDefault()}
+          onOpenAutoFocus={(e) => {
+            if (!openedOnce.current) e.preventDefault()
+            openedOnce.current = true
+          }}
           variant={v.variant as 'default' | 'destructive'}
           trigger={<Button variant="secondary">{c.trigger}</Button>}
           title={c.title}

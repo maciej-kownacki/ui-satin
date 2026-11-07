@@ -299,7 +299,7 @@ function RadioRow({ option }: { option: DecisionOption }) {
           '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
           'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
           'data-[state=checked]:border-action-primary-bg data-[state=checked]:bg-action-primary-bg data-[state=checked]:[box-shadow:none]',
-          'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+          'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)] data-[state=checked]:focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
         )}
       >
         <RadioGroup.Indicator className="size-1.5 rounded-full bg-text-on-solid" />
