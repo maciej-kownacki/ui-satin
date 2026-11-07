@@ -2,11 +2,16 @@
   "name": "ui-satin",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*", "satin-lab"],
+  "workspaces": [
+    "packages/*",
+    "satin-lab"
+  ],
   "scripts": {
     "dev": "npm run dev -w satin-lab",
     "build": "npm run build -w satin-lab",
     "tokens": "node tokens/build.mjs",
-    "typecheck": "npm run typecheck -w @satin/ui"
+    "typecheck": "npm run typecheck -w @satin/ui",
+    "build:ui": "npm run build -w @satin/ui",
+    "registry": "npm run build -w @satin/ui && node --no-warnings registry/build.mjs"
   }
 }

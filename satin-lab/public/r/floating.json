@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "floating",
+  "type": "registry:ui",
+  "title": "Floating",
+  "description": "The Satin Floating component.",
+  "dependencies": [
+    "@floating-ui/react-dom@^2.1.9"
+  ],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/floating.tsx",
+      "type": "registry:ui",
+      "content": "import * as React from 'react'\nimport { createPortal } from 'react-dom'\nimport { arrow, autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/react-dom'\n\n/**\n * Anchored positioning for anything that floats next to an element: tooltips, chart\n * tooltips, small hints. Built on Floating UI (the engine Radix uses for Tooltip, Popover and\n * DropdownMenu), so every floating layer in Satin keeps the same rules:\n *\n * - it renders in a portal on `body`, so a card's `overflow: hidden` never cuts it off;\n * - it flips to the other side when there's no room and slides along the edge to stay\n *   8px inside the viewport;\n * - its pointer follows the anchor when it slides;\n * - it follows the anchor on scroll and resize.\n */\nexport type FloatingSide = 'top' | 'right' | 'bottom' | 'left'\n\nexport interface FloatingProps {\n  /** The element it points at. Nothing renders while it's null. */\n  anchor: Element | null\n  side?: FloatingSide\n  /** Gap between the anchor and the layer, pointer included. */\n  sideOffset?: number\n  /** How close to the viewport edge it may go. */\n  collisionPadding?: number\n  className?: string\n  /** Gets the side it ended up on and the pointer's props (ref and position). */\n  children: (state: {\n    side: FloatingSide\n    arrowRef: React.RefObject<HTMLElement | null>\n    arrowStyle: React.CSSProperties\n  }) => React.ReactNode\n}\n\nexport function Floating({ anchor, side = 'top', sideOffset = 8, collisionPadding = 8, className, children }: FloatingProps) {\n  const arrowRef = React.useRef<HTMLElement | null>(null)\n  const [mounted, setMounted] = React.useState(false)\n  React.useEffect(() => setMounted(true), [])\n\n  const { refs, floatingStyles, placement, middlewareData, isPositioned } = useFloating({\n    strategy: 'fixed',\n    placement: side,\n    elements: { reference: anchor },\n    whileElementsMounted: autoUpdate,\n    middleware: [\n      offset(sideOffset),\n      flip({ padding: collisionPadding }),\n      shift({ padding: collisionPadding }),\n      arrow({ element: arrowRef, padding: 8 }),\n    ],\n  })\n\n  if (!mounted || !anchor) return null\n  const actual = placement.split('-')[0] as FloatingSide\n  const { x, y } = middlewareData.arrow ?? {}\n  const arrowStyle: React.CSSProperties = actual === 'top' || actual === 'bottom' ? { left: x ?? undefined } : { top: y ?? undefined }\n\n  return createPortal(\n    <div\n      ref={refs.setFloating}\n      data-side={actual}\n      className={className}\n      // Hidden until the first position lands, so it never flashes in the corner.\n      style={{ ...floatingStyles, zIndex: 60, visibility: isPositioned ? undefined : 'hidden' }}\n    >\n      {children({ side: actual, arrowRef, arrowStyle })}\n    </div>,\n    document.body,\n  )\n}\n"
+    }
+  ]
+}

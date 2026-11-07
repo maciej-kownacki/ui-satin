@@ -1,0 +1,29 @@
+---
+/**
+ * A code frame like the Showcase Code tab: a 48px header with a label and Copy, then the
+ * code, highlighted by Shiki in both themes (lab.css picks the one that matches <html>).
+ */
+import { codeToHtml } from 'shiki'
+import CopyButton from './CopyButton'
+
+interface Props {
+  code: string
+  label: string
+  lang?: 'tsx' | 'bash' | 'json' | 'css'
+  copyLabel?: string
+}
+const { code, label, lang = 'tsx', copyLabel } = Astro.props
+const html = await codeToHtml(code, {
+  lang,
+  themes: { light: 'github-light', dark: 'github-dark' },
+  defaultColor: false,
+})
+---
+
+<div class="overflow-hidden rounded-2xl border border-border-subtle bg-bg-field">
+  <div class="flex h-12 items-center justify-between gap-2 border-b border-border-subtle pr-2 pl-4">
+    <span class="truncate text-sm text-text-muted">{label}</span>
+    <CopyButton client:visible text={code} label={copyLabel} />
+  </div>
+  <div class="code-block" set:html={html} />
+</div>

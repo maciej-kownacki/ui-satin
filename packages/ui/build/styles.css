@@ -1,0 +1,7 @@
+/*
+ * The precompiled stylesheet shipped as `@satin/ui/styles.css` (dist/styles.css) and in the
+ * registry's `satin-styles` item. Tailwind is only Satin's build tool: this entry pulls in
+ * the tokens, motion, component CSS and every utility class the components use, so apps
+ * get finished CSS and never need Tailwind themselves.
+ */
+@import "../src/styles/index.css";

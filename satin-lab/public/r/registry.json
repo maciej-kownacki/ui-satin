@@ -1,0 +1,775 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "satin",
+  "homepage": "https://uisatin.dev",
+  "items": [
+    {
+      "name": "satin-styles",
+      "type": "registry:item",
+      "title": "Satin styles",
+      "description": "Satin tokens, motion and every class the components use, precompiled. Import it once (for example in main.tsx); wrap a subtree in `.dark` for dark mode. No Tailwind needed.",
+      "files": [
+        {
+          "path": "registry/satin/styles/satin.css",
+          "type": "registry:file",
+          "target": "~/src/styles/satin.css"
+        }
+      ]
+    },
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "title": "Utils",
+      "description": "The `cn` helper: joins class names and lets the later class win.",
+      "dependencies": [
+        "clsx@^2.1.1",
+        "tailwind-merge@^3.7.0"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/lib/utils.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "agent-picker",
+      "type": "registry:ui",
+      "title": "Agent picker",
+      "description": "Switches which agent answers: avatar, name and one line on what it does.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Agent picker docs: https://uisatin.dev/ai-patterns/agent-picker",
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "attachment",
+      "type": "registry:ui",
+      "title": "Attachment",
+      "description": "A file attached to a prompt or a message, with its type, size and a preview.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Attachment docs: https://uisatin.dev/ai-patterns/attachment",
+      "files": [
+        {
+          "path": "registry/satin/ui/attachment.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "title": "Avatar",
+      "description": "Shows a person or workspace with initials on a tone colour.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Avatar docs: https://uisatin.dev/components/avatar",
+      "files": [
+        {
+          "path": "registry/satin/ui/avatar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "A short label for a status or a category.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Badge docs: https://uisatin.dev/components/badge",
+      "files": [
+        {
+          "path": "registry/satin/ui/badge.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "banner",
+      "type": "registry:ui",
+      "title": "Banner",
+      "description": "Promotes a next step, a guide or a new feature with a line of copy and one action, on a mesh or plain background.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1",
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Banner docs: https://uisatin.dev/components/banner",
+      "files": [
+        {
+          "path": "registry/satin/ui/banner.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "Starts an action. One primary per screen; secondary and tertiary for the rest.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Button docs: https://uisatin.dev/components/button",
+      "files": [
+        {
+          "path": "registry/satin/ui/button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "Groups related content and actions under a title, with an optional footer.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1",
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Card docs: https://uisatin.dev/components/card",
+      "files": [
+        {
+          "path": "registry/satin/ui/card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "chart",
+      "type": "registry:ui",
+      "title": "Chart",
+      "description": "Bar and channel-share cards for one metric over a period, built on the chart tokens.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/floating.json"
+      ],
+      "docs": "Chart docs: https://uisatin.dev/components/chart",
+      "files": [
+        {
+          "path": "registry/satin/ui/chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "Turns an option on or off as part of a form.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Checkbox docs: https://uisatin.dev/components/checkbox",
+      "files": [
+        {
+          "path": "registry/satin/ui/checkbox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "chip",
+      "type": "registry:ui",
+      "title": "Chip",
+      "description": "A compact, removable tag for filters, suggestions and people.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json"
+      ],
+      "docs": "Chip docs: https://uisatin.dev/components/chip",
+      "files": [
+        {
+          "path": "registry/satin/ui/chip.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "code-block",
+      "type": "registry:ui",
+      "title": "Code block",
+      "description": "Shows code or a diff with a filename, line numbers and a copy button.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Code block docs: https://uisatin.dev/components/code-block",
+      "files": [
+        {
+          "path": "registry/satin/ui/code-block.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "decision-card",
+      "type": "registry:ui",
+      "title": "Decision card",
+      "description": "One question from the agent, with answers to pick, rank or rewrite, and Skip or Continue.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json"
+      ],
+      "docs": "Decision card docs: https://uisatin.dev/ai-patterns/decision-card",
+      "files": [
+        {
+          "path": "registry/satin/ui/decision-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "Asks for a decision or a short input before the user moves on.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Dialog docs: https://uisatin.dev/components/dialog",
+      "files": [
+        {
+          "path": "registry/satin/ui/dialog.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "dot",
+      "type": "registry:ui",
+      "title": "Dot",
+      "description": "A small status dot that marks state or category next to a label.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Dot docs: https://uisatin.dev/components/dot",
+      "files": [
+        {
+          "path": "registry/satin/ui/dot.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "dropdown",
+      "type": "registry:ui",
+      "title": "Dropdown",
+      "description": "Opens a short list of actions or values from a button.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Dropdown docs: https://uisatin.dev/components/dropdown",
+      "files": [
+        {
+          "path": "registry/satin/ui/dropdown.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "empty-state",
+      "type": "registry:ui",
+      "title": "Empty state",
+      "description": "Fills a space with no content yet: says why it is empty and offers the first step.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Empty state docs: https://uisatin.dev/ai-patterns/empty-state",
+      "files": [
+        {
+          "path": "registry/satin/ui/empty-state.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "floating",
+      "type": "registry:ui",
+      "title": "Floating",
+      "description": "The Satin Floating component.",
+      "dependencies": [
+        "@floating-ui/react-dom@^2.1.9"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/ui/floating.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "form-field",
+      "type": "registry:ui",
+      "title": "Form field",
+      "description": "Wraps a control with a label, a description and an error message.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Form field docs: https://uisatin.dev/components/form-field",
+      "files": [
+        {
+          "path": "registry/satin/ui/form-field.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "A single line of text, with a label, a hint and icons.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/form-field.json"
+      ],
+      "docs": "Input docs: https://uisatin.dev/components/input",
+      "files": [
+        {
+          "path": "registry/satin/ui/input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "message",
+      "type": "registry:ui",
+      "title": "Message",
+      "description": "One chat turn: a bubble for the user, plain text with actions for the assistant.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/message-actions.json",
+        "https://uisatin.dev/r/thinking.json"
+      ],
+      "docs": "Message docs: https://uisatin.dev/ai-patterns/message",
+      "files": [
+        {
+          "path": "registry/satin/ui/message.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "message-actions",
+      "type": "registry:ui",
+      "title": "Message actions",
+      "description": "Status, feedback, copy and share under an assistant reply.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Message actions docs: https://uisatin.dev/ai-patterns/message-actions",
+      "files": [
+        {
+          "path": "registry/satin/ui/message-actions.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "title": "Popover",
+      "description": "A small titled panel that opens next to the button that asked for it.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Popover docs: https://uisatin.dev/components/popover",
+      "files": [
+        {
+          "path": "registry/satin/ui/popover.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "prompt-bar",
+      "type": "registry:ui",
+      "title": "Prompt bar",
+      "description": "Where people write to an agent: attachments, model, voice and send.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Prompt bar docs: https://uisatin.dev/ai-patterns/prompt-bar",
+      "files": [
+        {
+          "path": "registry/satin/ui/prompt-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "radio",
+      "type": "registry:ui",
+      "title": "Radio",
+      "description": "Lets people pick exactly one option from a short list.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Radio docs: https://uisatin.dev/components/radio",
+      "files": [
+        {
+          "path": "registry/satin/ui/radio.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "segmented-control",
+      "type": "registry:ui",
+      "title": "Segmented control",
+      "description": "Switches between two to five views or filters in place.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Segmented control docs: https://uisatin.dev/components/segmented-control",
+      "files": [
+        {
+          "path": "registry/satin/ui/segmented-control.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "title": "Sidebar",
+      "description": "App navigation: pages with icons and counters, collapsible groups and an icon-only rail.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Sidebar docs: https://uisatin.dev/components/sidebar",
+      "files": [
+        {
+          "path": "registry/satin/ui/sidebar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sources",
+      "type": "registry:ui",
+      "title": "Sources",
+      "description": "The pages an answer was based on, as a card or as numbered chips.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Sources docs: https://uisatin.dev/ai-patterns/sources",
+      "files": [
+        {
+          "path": "registry/satin/ui/sources.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "Turns a setting on or off, with immediate effect.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Switch docs: https://uisatin.dev/components/switch",
+      "files": [
+        {
+          "path": "registry/satin/ui/switch.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "table",
+      "type": "registry:ui",
+      "title": "Table",
+      "description": "Rows of records with sortable columns, selection and sideways scroll.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/checkbox.json"
+      ],
+      "docs": "Table docs: https://uisatin.dev/components/table",
+      "files": [
+        {
+          "path": "registry/satin/ui/table.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "title": "Tabs",
+      "description": "Switches between two to six views of the same page or panel.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Tabs docs: https://uisatin.dev/components/tabs",
+      "files": [
+        {
+          "path": "registry/satin/ui/tabs.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "textarea",
+      "type": "registry:ui",
+      "title": "Textarea",
+      "description": "Multi-line text input for notes, requests and longer answers.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/form-field.json"
+      ],
+      "docs": "Textarea docs: https://uisatin.dev/components/textarea",
+      "files": [
+        {
+          "path": "registry/satin/ui/textarea.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "thinking",
+      "type": "registry:ui",
+      "title": "Thinking",
+      "description": "What an agent is doing while it works, folded into a summary when it is done.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Thinking docs: https://uisatin.dev/ai-patterns/thinking",
+      "files": [
+        {
+          "path": "registry/satin/ui/thinking.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "title": "Toast",
+      "description": "A short, passing message about something that just happened.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Toast docs: https://uisatin.dev/components/toast",
+      "files": [
+        {
+          "path": "registry/satin/ui/toast.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "title": "Toggle",
+      "description": "A button that stays pressed to switch an option on or off.",
+      "dependencies": [
+        "class-variance-authority@^0.7.1",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Toggle docs: https://uisatin.dev/components/toggle",
+      "files": [
+        {
+          "path": "registry/satin/ui/toggle.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "Names an icon-only control and shows the shortcut that runs it.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Tooltip docs: https://uisatin.dev/components/tooltip",
+      "files": [
+        {
+          "path": "registry/satin/ui/tooltip.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "typing-indicator",
+      "type": "registry:ui",
+      "title": "Typing indicator",
+      "description": "Three dots in the agent’s tone while it writes a reply.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Typing indicator docs: https://uisatin.dev/ai-patterns/typing-indicator",
+      "files": [
+        {
+          "path": "registry/satin/ui/typing-indicator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    }
+  ]
+}

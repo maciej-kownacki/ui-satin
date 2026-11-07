@@ -1,10 +1,12 @@
 ---
 /**
  * A component page, laid out like the docs template (uiKit 3857:6009): name and description,
- * then the Showcase island (Preview / Code tabs, full screen, the stage), then the API Reference,
+ * then the Showcase island (Preview / Code tabs, full screen, the stage), then Installation (the
+ * shadcn registry command), then the API Reference,
  * then Previous / Next cards (uiKit `pager`) that walk the sidebar order across both groups.
  */
 import Chip from './Chip.astro'
+import Installation from './Installation.astro'
 import PageHeader from './PageHeader.astro'
 import { ChevronRight } from './icons'
 import { nav, type NavItem } from '../nav'
@@ -29,12 +31,14 @@ const card =
 
 <slot />
 
+<Installation id={item.id} title={item.title} />
+
 <section aria-labelledby="api-title" class="flex flex-col gap-4 pt-8">
   <h2 id="api-title" class="text-lg font-medium text-text-default">API Reference</h2>
   <p class="text-base leading-6 text-text-muted">
     {parts.map((p) => (p.startsWith('`') ? <Chip>{p.slice(1, -1)}</Chip> : p))}
   </p>
-  <div class="overflow-x-auto">
+  <div class="overflow-x-auto rounded-md focus-visible:shadow-border-focus focus-visible:outline-none" tabindex="0" role="region" aria-label="API reference table">
     <table class="w-full min-w-[560px] border-collapse text-left text-sm">
       <thead>
         <tr class="border-b border-border-default">

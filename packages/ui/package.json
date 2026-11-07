@@ -13,6 +13,7 @@
     "./*": "./src/components/*.tsx"
   },
   "scripts": {
+    "build": "tsup && tsc -p tsconfig.build.json && tailwindcss -i build/styles.css -o dist/styles.css --minify && node build/manifest.mjs",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -28,10 +29,13 @@
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "tailwindcss": "^4.3.4",
+    "tsup": "^9.0.0",
     "typescript": "^7.0.2"
   }
 }

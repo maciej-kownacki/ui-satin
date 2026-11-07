@@ -4,10 +4,46 @@ import Docs from '../layouts/Docs.astro'
 import PageHeader from '../components/PageHeader.astro'
 import Chip from '../components/Chip.astro'
 import { page } from '../nav'
-import { highlight } from '../lib/highlight'
+import CodeFrame from '../components/CodeFrame.astro'
 
-const usage = `/* app.css */
-@import "@satin/ui/styles.css";
+const componentsJson = `{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "utils": "@/lib/utils",
+    "hooks": "@/hooks"
+  }
+}`
+const alias = `// tsconfig.json (and tsconfig.app.json in Vite apps)
+"compilerOptions": {
+  "paths": { "@/*": ["./src/*"] }
+}
+
+// vite.config.ts
+resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } }`
+const registryUsage = `// main.tsx, once for the whole app
+import './styles/satin.css'
+
+// App.tsx
+import { Button } from '@/components/ui/button'
+
+export function Save() {
+  return <Button>Save changes</Button>
+}`
+const packageUsage = `// main.tsx, once for the whole app
+import '@satin/ui/styles.css'
 
 // App.tsx
 import { Button } from '@satin/ui/button'
@@ -15,8 +51,10 @@ import { Button } from '@satin/ui/button'
 export function Save() {
   return <Button>Save changes</Button>
 }`
-const usageHtml = (await highlight([{ id: 'x', label: '', code: usage }])).x
 const h2 = 'text-lg font-medium text-text-default'
+const h3 = 'text-base leading-6 font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
 ---
 
 <Docs current="introduction">
@@ -43,9 +81,45 @@ const h2 = 'text-lg font-medium text-text-default'
 
   <section aria-labelledby="how-title" class="flex flex-col gap-3 pt-8">
     <h2 id="how-title" class={h2}>How can I use Satin?</h2>
-    <p class="text-base leading-6 text-text-muted">
-      Import the styles once, then import components one by one. Each component has its own entry point, so you only ship what you use. The package isn't on npm yet; until it is, it lives in the <Chip>packages/ui</Chip> folder of the Satin repository. Light and dark mode come from the <Chip>dark</Chip> class on any parent element.
+    <p class={prose}>
+      Two ways, and neither needs Tailwind: Satin ships its tokens and every class the components use as one precompiled stylesheet. Copy the components you need into your app with the shadcn CLI and own the code, or install the package and import them. Light and dark mode come from the <Chip>dark</Chip> class on any parent element.
     </p>
-    <div class="code-block overflow-hidden rounded-2xl border border-border-subtle bg-bg-field" set:html={usageHtml} />
+  </section>
+
+  <section id="installation" aria-labelledby="installation-title" class="flex flex-col gap-3 pt-8">
+    <h2 id="installation-title" class={h2}>Installation</h2>
+    <p class={prose}>Satin needs React 19 or newer. Fonts: the tokens ask for Geist and Geist Mono; load them, or the system font is used.</p>
+
+    <h3 class:list={[h3, 'pt-3']}>Copy components with the shadcn CLI</h3>
+    <p class={prose}>
+      Every component is a <a class={link} href="https://ui.shadcn.com/docs/registry">shadcn registry</a> item. The CLI copies its source into <Chip>components/ui</Chip>, with the components it builds on, the <Chip>cn</Chip> helper and Satin’s precompiled styles, and installs its npm dependencies. Set your project up once:
+    </p>
+    <ol class="flex list-decimal flex-col gap-3 pl-5 text-base leading-6 text-text-muted marker:text-text-subtle">
+      <li>
+        <p class="pb-3">Add the <Chip>@/</Chip> import alias, pointing at <Chip>src</Chip>.</p>
+        <CodeFrame code={alias} label="Import alias" />
+      </li>
+      <li>
+        <p class="pb-3">
+          Add a <Chip>components.json</Chip> at the root of the project. Write it by hand: <Chip>shadcn init</Chip> stops when it can’t find Tailwind, and Satin doesn’t need it, so the Tailwind paths stay empty.
+        </p>
+        <CodeFrame code={componentsJson} label="components.json" lang="json" />
+      </li>
+      <li>
+        <p class="pb-3">Add components by URL. Each component page has its own command under Installation.</p>
+        <CodeFrame code="npx shadcn@latest add https://uisatin.dev/r/button.json" label="Terminal" lang="bash" copyLabel="Copy command" />
+      </li>
+      <li>
+        <p class="pb-3">Import the styles once, then use the components.</p>
+        <CodeFrame code={registryUsage} label="Usage" />
+      </li>
+    </ol>
+
+    <h3 class:list={[h3, 'pt-6']} id="npm">Install the npm package</h3>
+    <p class={prose}>
+      <Chip>@satin/ui</Chip> ships compiled ES modules with types and <Chip>styles.css</Chip>. Every component has its own entry point, so you only ship what you use. Until it is published, build it from the Satin repository with <Chip>npm run build:ui</Chip> and install the <Chip>packages/ui/dist</Chip> folder.
+    </p>
+    <CodeFrame code="npm i @satin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
+    <CodeFrame code={packageUsage} label="Usage" />
   </section>
 </Docs>
