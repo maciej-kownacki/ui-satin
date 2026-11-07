@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { AgentPicker, type Agent } from '@satin/ui/agent-picker'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const agents: Agent[] = [
   { id: 'flappy', name: 'Flappy researcher', description: 'Consumer insights analysis', tone: 'brand' },
@@ -16,16 +16,30 @@ const agentsCode = `const agents = [
   { id: 'pipeline', name: 'Pipeline analyst', description: 'Explains forecast and stage changes', tone: 'amber' },
 ]`
 
-type Variant = { id: string; label: string; props: string; render: Partial<React.ComponentProps<typeof AgentPicker>> }
-
-const variants: Variant[] = [
-  { id: 'secondary', label: 'Secondary', props: '', render: {} },
-  { id: 'tertiary', label: 'Tertiary', props: '\n      variant="tertiary"\n      size="xs"', render: { variant: 'tertiary', size: 'xs' } },
-  { id: 'compact', label: 'Compact', props: '\n      showDescription={false}', render: { showDescription: false } },
-  { id: 'create', label: 'Create', props: '\n      onCreate={() => openAgentBuilder()}', render: { onCreate: () => {} } },
+// Variant and size set the trigger, the switches change what the menu holds.
+export const controls: ShowcaseControl[] = [
+  { id: 'variant', label: 'Variant', items: [{ value: 'secondary', label: 'Secondary' }, { value: 'tertiary', label: 'Tertiary' }] },
+  { id: 'size', label: 'Size', items: [{ value: 'md', label: 'Medium' }, { value: 'xs', label: 'Extra small' }] },
+  { id: 'description', label: 'Description', type: 'switch', default: 'on' },
+  { id: 'create', label: 'Create', type: 'switch', default: 'off' },
 ]
 
-const code = (props: string) => `import { AgentPicker } from '@satin/ui/agent-picker'
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
+}
+
+function code(v: Record<string, string>) {
+  const props = [
+    v.variant !== 'secondary' && `variant="${v.variant}"`,
+    v.size !== 'md' && `size="${v.size}"`,
+    v.description === 'off' && 'showDescription={false}',
+    v.create === 'on' && 'onCreate={() => openAgentBuilder()}',
+  ]
+    .filter(Boolean)
+    .map((p) => `\n      ${p}`)
+    .join('')
+  return `import { AgentPicker } from '@satin/ui/agent-picker'
 
 ${agentsCode}
 
@@ -39,14 +53,32 @@ export function Composer() {
     />
   )
 }`
+}
 
-export const options: ShowcaseOption[] = variants.map((v) => ({ id: v.id, label: v.label, code: code(v.props) }))
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    labelOf('variant', v.variant),
+    labelOf('size', v.size),
+    v.description === 'on' ? 'Description' : 'No description',
+    v.create === 'on' ? 'Create' : 'No create',
+  ].join(' · '),
+  code: code(v),
+}))
 
-function Demo({ variant }: { variant: Variant }) {
+function Demo({ v }: { v: Record<string, string> }) {
   const [agent, setAgent] = React.useState('flappy')
   return (
     <div className="flex flex-col items-center gap-3">
-      <AgentPicker agents={agents} value={agent} onValueChange={setAgent} {...variant.render} />
+      <AgentPicker
+        agents={agents}
+        value={agent}
+        onValueChange={setAgent}
+        variant={v.variant as 'secondary' | 'tertiary'}
+        size={v.size as 'md' | 'xs'}
+        showDescription={v.description === 'on'}
+        onCreate={v.create === 'on' ? () => {} : undefined}
+      />
       <p className="text-sm text-text-muted">Open the menu to switch agents.</p>
     </div>
   )
@@ -58,10 +90,8 @@ export default function AgentPickerDemo({ codeHtml }: { codeHtml: Record<string,
       name="Agent picker"
       options={options}
       codeHtml={codeHtml}
-      render={(id) => {
-        const variant = variants.find((v) => v.id === id) ?? variants[0]
-        return <Demo key={id} variant={variant} />
-      }}
+      controls={controls}
+      render={(_, v) => <Demo v={v} />}
     />
   )
 }

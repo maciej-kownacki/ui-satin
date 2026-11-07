@@ -19,14 +19,14 @@ const tones = ['"neutral"', '"brand"', '"sky"', '"green"', '"amber"', '"red"', '
     api={{
       description: 'The `Chip` component is a wrapper around the `button` element with an optional dot, avatar and remove button.',
       props: [
-        { name: 'children', type: ['string'] },
-        { name: 'tone', type: tones, default: '"neutral"' },
-        { name: 'variant', type: ['"subtle"', '"outline"'], default: '"subtle"' },
         { name: 'size', type: ['"sm"', '"md"'], default: '"md"' },
+        { name: 'variant', type: ['"subtle"', '"outline"'], default: '"subtle"' },
+        { name: 'tone', type: tones, default: '"neutral"' },
         { name: 'dot', type: ['boolean'], default: 'false' },
         { name: 'avatar', type: ['ReactNode'] },
         { name: 'onRemove', type: ['() => void'] },
         { name: 'disabled', type: ['boolean'], default: 'false' },
+        { name: 'children', type: ['string'] },
       ],
     }}
   >

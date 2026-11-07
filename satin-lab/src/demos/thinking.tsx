@@ -1,95 +1,113 @@
 import * as React from 'react'
 import { Thinking, type ThinkingStep } from '@satin/ui/thinking'
 import { Globe } from 'iconoir-react'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
-const tasks: ThinkingStep[] = [
-  { label: 'Read client order' },
-  { label: 'Informed the kitchen' },
-  { label: 'Ordered missing ingredients', meta: '2kg onions, 1kg leeks, 6 lemons' },
-]
+/** Each set of steps with its code, so the stage and the Code tab can't drift apart. */
+type StepSet = { label: string; steps: ThinkingStep[]; code: string[] }
 
-const stepTypes: ThinkingStep[] = [
-  { type: 'task', label: 'Read client order', meta: '40 portions for Friday' },
-  { type: 'text', text: 'Stock covers 32 portions, so the kitchen needs onions and leeks before service.' },
-  {
-    type: 'source',
-    icon: <Globe className="text-text-muted [stroke-width:1.875]" />,
-    label: 'Supplier price list',
-    meta: 'freshfarm.example/prices',
+const sets: Record<string, StepSet> = {
+  tasks: {
+    label: 'Thought for 2m 45s',
+    steps: [
+      { label: 'Read client order' },
+      { label: 'Informed the kitchen' },
+      { label: 'Ordered missing ingredients', meta: '2kg onions, 1kg leeks, 6 lemons' },
+    ],
+    code: [
+      "{ label: 'Read client order' },",
+      "{ label: 'Informed the kitchen' },",
+      "{ label: 'Ordered missing ingredients', meta: '2kg onions, 1kg leeks, 6 lemons' },",
+    ],
   },
-  { type: 'tool', label: 'Edit', target: 'orders/friday.csv', added: '+6', removed: '−2' },
-  { type: 'more', label: '+5 more' },
-]
-
-const toolSteps: ThinkingStep[] = [
-  { type: 'tool', label: 'Edit', target: 'src/auth/session.ts', added: '+6', removed: '−2' },
-  { type: 'tool', label: 'Edit', target: 'src/auth/refresh.test.ts', added: '+24', removed: '−0' },
-]
-
-const longRun: ThinkingStep[] = [
-  { label: 'Read client order' },
-  { label: 'Informed the kitchen' },
-  { type: 'more', label: '+5 more' },
-]
-
-export const options: ShowcaseOption[] = [
-  {
-    id: 'loading',
-    label: 'Loading',
-    code: `import { Thinking } from '@satin/ui/thinking'
-
-<Thinking state="loading" label="Thinking…" time="1.2s" />`,
+  types: {
+    label: 'Thought for 2m 45s',
+    steps: [
+      { type: 'task', label: 'Read client order', meta: '40 portions for Friday' },
+      { type: 'text', text: 'Stock covers 32 portions, so the kitchen needs onions and leeks before service.' },
+      {
+        type: 'source',
+        icon: <Globe className="text-text-muted [stroke-width:1.875]" />,
+        label: 'Supplier price list',
+        meta: 'freshfarm.example/prices',
+      },
+      { type: 'tool', label: 'Edit', target: 'orders/friday.csv', added: '+6', removed: '−2' },
+    ],
+    code: [
+      "{ type: 'task', label: 'Read client order', meta: '40 portions for Friday' },",
+      "{ type: 'text', text: 'Stock covers 32 portions, so the kitchen needs onions and leeks before service.' },",
+      "{ type: 'source', icon: <Favicon />, label: 'Supplier price list', meta: 'freshfarm.example/prices' },",
+      "{ type: 'tool', label: 'Edit', target: 'orders/friday.csv', added: '+6', removed: '−2' },",
+    ],
   },
+  tools: {
+    label: 'Edited 2 files',
+    steps: [
+      { type: 'tool', label: 'Edit', target: 'src/auth/session.ts', added: '+6', removed: '−2' },
+      { type: 'tool', label: 'Edit', target: 'src/auth/refresh.test.ts', added: '+24', removed: '−0' },
+    ],
+    code: [
+      "{ type: 'tool', label: 'Edit', target: 'src/auth/session.ts', added: '+6', removed: '−2' },",
+      "{ type: 'tool', label: 'Edit', target: 'src/auth/refresh.test.ts', added: '+24', removed: '−0' },",
+    ],
+  },
+}
+
+const more: ThinkingStep = { type: 'more', label: '+5 more' }
+
+// Steps decide what the run holds, More caps a long one, and state comes last: loading shows
+// only the live label and timer, collapsed and expanded show the steps behind the label.
+export const controls: ShowcaseControl[] = [
   {
-    id: 'tasks',
-    label: 'Expanded',
-    code: `import { Thinking } from '@satin/ui/thinking'
+    id: 'steps',
+    label: 'Steps',
+    items: [
+      { value: 'tasks', label: 'Tasks' },
+      { value: 'types', label: 'Step types' },
+      { value: 'tools', label: 'Tool calls' },
+    ],
+  },
+  { id: 'more', label: 'More', type: 'switch', default: 'off' },
+  {
+    id: 'state',
+    label: 'State',
+    default: 'expanded',
+    items: [
+      { value: 'loading', label: 'Loading' },
+      { value: 'collapsed', label: 'Collapsed' },
+      { value: 'expanded', label: 'Expanded' },
+    ],
+  },
+]
+
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
+}
+
+function code(v: Record<string, string>) {
+  // Loading is the default state and its label defaults to "Thinking…", so only the timer is left.
+  if (v.state === 'loading') return `import { Thinking } from '@satin/ui/thinking'\n\n<Thinking time="1.2s" />`
+  const set = sets[v.steps]
+  const steps = [...set.code, ...(v.more === 'on' ? ["{ type: 'more', label: '+5 more' },"] : [])]
+  return `import { Thinking } from '@satin/ui/thinking'
 
 <Thinking
-  state="expanded"
-  label="Thought for 2m 45s"
+  state="${v.state}"
+  label="${set.label}"
   steps={[
-    { label: 'Read client order' },
-    { label: 'Informed the kitchen' },
-    { label: 'Ordered missing ingredients', meta: '2kg onions, 1kg leeks, 6 lemons' },
+${steps.map((s) => `    ${s}`).join('\n')}
   ]}
-/>`,
-  },
-  {
-    id: 'types',
-    label: 'Step types',
-    code: `import { Thinking } from '@satin/ui/thinking'
+/>`
+}
 
-<Thinking
-  state="expanded"
-  label="Thought for 2m 45s"
-  steps={[
-    { type: 'task', label: 'Read client order', meta: '40 portions for Friday' },
-    { type: 'text', text: 'Stock covers 32 portions, so the kitchen needs onions and leeks before service.' },
-    { type: 'source', icon: <Favicon />, label: 'Supplier price list', meta: 'freshfarm.example/prices' },
-    { type: 'tool', label: 'Edit', target: 'orders/friday.csv', added: '+6', removed: '−2' },
-    { type: 'more', label: '+5 more' },
-  ]}
-/>`,
-  },
-  {
-    id: 'tools',
-    label: 'Tool steps',
-    code: `import { Thinking } from '@satin/ui/thinking'
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [labelOf('steps', v.steps), v.more === 'on' ? 'More' : 'No more', labelOf('state', v.state)].join(' · '),
+  code: code(v),
+}))
 
-<Thinking
-  state="expanded"
-  label="Edited 2 files"
-  steps={[
-    { type: 'tool', label: 'Edit', target: 'src/auth/session.ts', added: '+6', removed: '−2' },
-    { type: 'tool', label: 'Edit', target: 'src/auth/refresh.test.ts', added: '+24', removed: '−0' },
-  ]}
-/>`,
-  },
-]
-
-/** A running timer, so the loading state reads as live; after a few seconds it settles. */
+/** A running timer, so the loading state reads as live. */
 function Live() {
   const [ms, setMs] = React.useState(0)
   React.useEffect(() => {
@@ -106,24 +124,23 @@ export default function ThinkingDemo({ codeHtml }: { codeHtml: Record<string, st
       name="Thinking"
       options={options}
       codeHtml={codeHtml}
-      render={(id) => (
-        <div className="grid w-[min(400px,calc(100vw-80px))] gap-4">
-          {id === 'loading' && (
-            <>
+      controls={controls}
+      render={(_, v) => {
+        const set = sets[v.steps]
+        return (
+          <div className="grid w-[min(400px,calc(100vw-80px))] gap-4">
+            {v.state === 'loading' ? (
               <Live />
-              <Thinking state="collapsed" label="Thought for 2m 45s" steps={tasks} />
-            </>
-          )}
-          {id === 'tasks' && <Thinking state="expanded" label="Thought for 2m 45s" steps={tasks} />}
-          {id === 'types' && <Thinking state="expanded" label="Thought for 2m 45s" steps={stepTypes} />}
-          {id === 'tools' && (
-            <>
-              <Thinking state="expanded" label="Edited 2 files" steps={toolSteps} />
-              <Thinking state="expanded" label="Thought for 4m 10s" steps={longRun} />
-            </>
-          )}
-        </div>
-      )}
+            ) : (
+              <Thinking
+                state={v.state as 'collapsed' | 'expanded'}
+                label={set.label}
+                steps={v.more === 'on' ? [...set.steps, more] : set.steps}
+              />
+            )}
+          </div>
+        )
+      }}
     />
   )
 }

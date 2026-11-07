@@ -18,13 +18,13 @@ const api = {
   description:
     'The `Tabs` component wraps the Radix tabs in a `div` with a tablist of buttons. An item is a string or `{ value, label, icon, disabled }`; put `TabsContent` panels in `children`.',
   props: [
+    { name: 'size', type: ['"md"', '"sm"'], default: '"md"' },
+    { name: 'variant', type: ['"underline"', '"pill"'], default: '"underline"' },
     { name: 'items', type: ['TabItem[]'] },
     { name: 'value', type: ['string'] },
-    { name: 'variant', type: ['"underline"', '"pill"'], default: '"underline"' },
-    { name: 'size', type: ['"md"', '"sm"'], default: '"md"' },
-    { name: 'icon', type: ['ReactNode'] },
-    { name: 'disabled', type: ['boolean'], default: 'false' },
     { name: 'onValueChange', type: ['(value: string) => void'] },
+    { name: 'disabled', type: ['boolean'], default: 'false' },
+    { name: 'icon', type: ['ReactNode'] },
   ],
 }
 ---

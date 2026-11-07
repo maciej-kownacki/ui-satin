@@ -1,7 +1,8 @@
 import { Avatar, type AvatarSize, type AvatarTone } from '@satin/ui/avatar'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const people: { initials: string; tone: AvatarTone }[] = [
+  { initials: 'RC', tone: 'neutral' },
   { initials: 'MK', tone: 'brand' },
   { initials: 'AN', tone: 'sky' },
   { initials: 'JD', tone: 'green' },
@@ -9,50 +10,57 @@ const people: { initials: string; tone: AvatarTone }[] = [
   { initials: 'TS', tone: 'red' },
   { initials: 'LB', tone: 'fuchsia' },
   { initials: 'OP', tone: 'plum' },
-  { initials: 'RC', tone: 'neutral' },
 ]
 const sizes: AvatarSize[] = [16, 20, 24, 32, 40, 48]
 
-export const options: ShowcaseOption[] = [
-  {
-    id: 'sizes',
-    label: 'Sizes',
-    code: `import { Avatar } from '@satin/ui/avatar'
+const swatch = (tone: AvatarTone) => <span aria-hidden data-tone={tone} className="size-2.5 rounded-full bg-tone-fg" />
+const title = (s: string) => s[0].toUpperCase() + s.slice(1)
 
-<Avatar initials="MK" tone="brand" size={20} />
-<Avatar initials="MK" tone="brand" size={32} />
-<Avatar initials="MK" tone="brand" size={48} />`,
-  },
+// Size sets the box and the type, shape its corners, tone only recolours it.
+// "All tones" shows the palette as a loop; one tone gives the one avatar you'd paste.
+export const controls: ShowcaseControl[] = [
+  { id: 'size', label: 'Size', type: 'menu', default: '32', items: sizes.map((s) => ({ value: String(s), label: `${s}px` })) },
+  { id: 'shape', label: 'Shape', items: [{ value: 'circle', label: 'Circle' }, { value: 'rounded', label: 'Rounded' }] },
   {
-    id: 'tones',
-    label: 'Tones',
-    code: `import { Avatar } from '@satin/ui/avatar'
-
-<Avatar initials="MK" tone="brand" />
-<Avatar initials="AN" tone="sky" />
-<Avatar initials="JD" tone="green" />`,
-  },
-  {
-    id: 'shape',
-    label: 'Shape',
-    code: `import { Avatar } from '@satin/ui/avatar'
-
-<Avatar initials="MK" tone="brand" size={40} />
-<Avatar initials="AC" tone="sky" size={40} shape="rounded" />`,
-  },
-  {
-    id: 'group',
-    label: 'Group',
-    code: `import { Avatar } from '@satin/ui/avatar'
-
-<div className="isolate flex items-center">
-  <Avatar initials="MK" tone="brand" className="z-4 -mr-2" />
-  <Avatar initials="AN" tone="sky" className="z-3 -mr-2" />
-  <Avatar initials="JD" tone="green" className="z-2 -mr-2" />
-  <Avatar initials="+3" className="z-1" aria-label="3 more" />
-</div>`,
+    id: 'tone',
+    label: 'Tone',
+    type: 'menu',
+    items: [{ value: 'all', label: 'All tones' }, ...people.map((p) => ({ value: p.tone, label: title(p.tone), icon: swatch(p.tone) }))],
   },
 ]
+
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
+}
+
+function code(v: Record<string, string>) {
+  const attrs = (v.size === '32' ? '' : ` size={${v.size}}`) + (v.shape === 'circle' ? '' : ` shape="${v.shape}"`)
+  if (v.tone === 'all') {
+    const rows = people.map((p) => `  { initials: '${p.initials}', tone: '${p.tone}' },`).join('\n')
+    return `import { Avatar } from '@satin/ui/avatar'
+
+const people = [
+${rows}
+] as const
+
+{people.map(({ initials, tone }) => (
+  <Avatar key={tone} initials={initials} tone={tone}${attrs} />
+))}`
+  }
+  const p = people.find((p) => p.tone === v.tone)!
+  const tone = p.tone === 'neutral' ? '' : ` tone="${p.tone}"`
+  return `import { Avatar } from '@satin/ui/avatar'
+
+<Avatar initials="${p.initials}"${tone}${attrs} />`
+}
+
+// One option per combination, so the Code tab always shows what the stage shows.
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: ['size', 'shape', 'tone'].map((k) => labelOf(k, v[k])).join(' · '),
+  code: code(v),
+}))
 
 export default function AvatarDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
   return (
@@ -60,39 +68,16 @@ export default function AvatarDemo({ codeHtml }: { codeHtml: Record<string, stri
       name="Avatar"
       options={options}
       codeHtml={codeHtml}
-      render={(id) => {
-        if (id === 'sizes')
-          return (
-            <div className="flex items-center gap-2">
-              {sizes.map((size) => (
-                <Avatar key={size} initials="MK" tone="brand" size={size} />
-              ))}
-            </div>
-          )
-        if (id === 'tones')
-          return (
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {people.map((p) => (
-                <Avatar key={p.tone} {...p} />
-              ))}
-            </div>
-          )
-        if (id === 'shape')
-          return (
-            <div className="flex items-center gap-2">
-              <Avatar initials="MK" tone="brand" size={40} />
-              <Avatar initials="AC" tone="sky" size={40} shape="rounded" />
-            </div>
-          )
-        return (
-          <div className="isolate flex items-center">
-            <Avatar initials="MK" tone="brand" className="z-4 -mr-2" />
-            <Avatar initials="AN" tone="sky" className="z-3 -mr-2" />
-            <Avatar initials="JD" tone="green" className="z-2 -mr-2" />
-            <Avatar initials="+3" className="z-1" aria-label="3 more" />
-          </div>
-        )
-      }}
+      controls={controls}
+      render={(_, v) => (
+        <div className="flex max-w-md flex-wrap items-center justify-center gap-2">
+          {people
+            .filter((p) => v.tone === 'all' || v.tone === p.tone)
+            .map((p) => (
+              <Avatar key={p.tone} {...p} size={Number(v.size) as AvatarSize} shape={v.shape as 'circle' | 'rounded'} />
+            ))}
+        </div>
+      )}
     />
   )
 }

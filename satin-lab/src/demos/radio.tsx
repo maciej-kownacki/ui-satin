@@ -1,40 +1,50 @@
 import { Radio, RadioGroup } from '@satin/ui/radio'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
-export const options: ShowcaseOption[] = [
-  {
-    id: 'description',
-    label: 'Description',
-    code: `import { Radio, RadioGroup } from '@satin/ui/radio'
+const choices = [
+  { value: 'public', label: 'Public', description: 'Anyone in the workspace can view.' },
+  { value: 'private', label: 'Private', description: 'Only people you invite.' },
+  { value: 'link', label: 'Anyone with the link', description: 'Anyone you send the link to.' },
+]
 
-<RadioGroup defaultValue="weekly" aria-label="Email digest">
-  <Radio value="daily" label="Daily" description="A summary every morning at 9:00." />
-  <Radio value="weekly" label="Weekly" description="One digest every Monday." />
-  <Radio value="never" label="Never" description="Only urgent alerts." />
-</RadioGroup>`,
-  },
-  {
-    id: 'placement',
-    label: 'Placement',
-    code: `import { Radio, RadioGroup } from '@satin/ui/radio'
+// The selection stays live in the stage. Disabled is per option, so it turns off the last
+// one, the way a plan-gated choice would be.
+export const controls: ShowcaseControl[] = [
+  { id: 'placement', label: 'Placement', items: [{ value: 'left', label: 'Left' }, { value: 'right', label: 'Right' }] },
+  { id: 'description', label: 'Description', type: 'switch', default: 'on' },
+  { id: 'disabled', label: 'Disabled', type: 'switch', default: 'off' },
+]
 
-<RadioGroup defaultValue="left" aria-label="Placement">
-  <Radio value="left" label="Radio on the left" />
-  <Radio value="right" label="Radio on the right" placement="right" />
-</RadioGroup>`,
-  },
-  {
-    id: 'disabled',
-    label: 'Disabled option',
-    code: `import { Radio, RadioGroup } from '@satin/ui/radio'
+function code(v: Record<string, string>) {
+  const rows = choices
+    .map((c, i) => {
+      const attrs = [
+        `value="${c.value}"`,
+        `label="${c.label}"`,
+        v.description === 'on' && `description="${c.description}"`,
+        v.placement !== 'left' && `placement="${v.placement}"`,
+        v.disabled === 'on' && i === choices.length - 1 && 'disabled',
+      ].filter(Boolean)
+      return `  <Radio ${attrs.join(' ')} />`
+    })
+    .join('\n')
+  return `import { Radio, RadioGroup } from '@satin/ui/radio'
 
 <RadioGroup defaultValue="public" aria-label="Visibility">
-  <Radio value="public" label="Public" description="Anyone in the workspace can view." />
-  <Radio value="private" label="Private" description="Only people you invite." />
-  <Radio value="link" label="Anyone with the link" description="Available on the Team plan." disabled />
-</RadioGroup>`,
-  },
-]
+${rows}
+</RadioGroup>`
+}
+
+// One option per combination, so the Code tab always shows what the stage shows.
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    `Radio ${v.placement}`,
+    v.description === 'on' ? 'Description' : 'No description',
+    ...(v.disabled === 'on' ? ['Disabled option'] : []),
+  ].join(' · '),
+  code: code(v),
+}))
 
 export default function RadioDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
   return (
@@ -42,26 +52,22 @@ export default function RadioDemo({ codeHtml }: { codeHtml: Record<string, strin
       name="Radio"
       options={options}
       codeHtml={codeHtml}
-      render={(id) =>
-        id === 'description' ? (
-          <RadioGroup defaultValue="weekly" aria-label="Email digest">
-            <Radio value="daily" label="Daily" description="A summary every morning at 9:00." />
-            <Radio value="weekly" label="Weekly" description="One digest every Monday." />
-            <Radio value="never" label="Never" description="Only urgent alerts." />
-          </RadioGroup>
-        ) : id === 'placement' ? (
-          <RadioGroup defaultValue="left" aria-label="Placement" className="w-60">
-            <Radio value="left" label="Radio on the left" />
-            <Radio value="right" label="Radio on the right" placement="right" />
-          </RadioGroup>
-        ) : (
-          <RadioGroup defaultValue="public" aria-label="Visibility">
-            <Radio value="public" label="Public" description="Anyone in the workspace can view." />
-            <Radio value="private" label="Private" description="Only people you invite." />
-            <Radio value="link" label="Anyone with the link" description="Available on the Team plan." disabled />
-          </RadioGroup>
-        )
-      }
+      controls={controls}
+      render={(_, v) => (
+        // A fixed width, so placement="right" visibly pushes the circles to the far edge.
+        <RadioGroup defaultValue="public" aria-label="Visibility" className="w-72 max-w-full">
+          {choices.map((c, i) => (
+            <Radio
+              key={c.value}
+              value={c.value}
+              label={c.label}
+              description={v.description === 'on' ? c.description : undefined}
+              placement={v.placement as 'left' | 'right'}
+              disabled={v.disabled === 'on' && i === choices.length - 1}
+            />
+          ))}
+        </RadioGroup>
+      )}
     />
   )
 }

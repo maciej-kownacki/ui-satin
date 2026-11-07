@@ -1,169 +1,143 @@
 import * as React from 'react'
 import { Button } from '@satin/ui'
-import { Dialog, DialogAlert, DialogClose } from '@satin/ui/dialog'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Dialog, DialogAlert, DialogClose, type DialogAlertIntent } from '@satin/ui/dialog'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
-const code = {
-  default: `import { Button } from '@satin/ui/button'
-import { Dialog, DialogClose } from '@satin/ui/dialog'
-
-<Dialog
-  trigger={<Button variant="secondary">Rename workspace</Button>}
-  title="Rename workspace"
-  description="The new name shows for everyone."
-  footer={
-    <>
-      <DialogClose asChild><Button variant="secondary">Cancel</Button></DialogClose>
-      <Button>Save changes</Button>
-    </>
-  }
->
-  You can change it again at any time.
-</Dialog>`,
-  destructive: `import { Button } from '@satin/ui/button'
-import { Dialog, DialogClose } from '@satin/ui/dialog'
-
-<Dialog
-  variant="destructive"
-  trigger={<Button variant="secondary">Delete project</Button>}
-  title="Delete project?"
-  description="This can’t be undone."
-  footer={
-    <>
-      <DialogClose asChild><Button variant="secondary">Cancel</Button></DialogClose>
-      <Button variant="destructive">Delete project</Button>
-    </>
-  }
->
-  All 12 files and their version history will be removed.
-</Dialog>`,
-  alert: `import { Button } from '@satin/ui/button'
-import { Dialog, DialogAlert, DialogClose } from '@satin/ui/dialog'
-
-<Dialog
-  trigger={<Button variant="secondary">Publish</Button>}
-  title="Publish changes"
-  description="Your edits go live on the public site."
-  alert={
-    <DialogAlert
-      intent="warning"
-      title="Visitors see it right away"
-      description="There is no review step on this site."
-    />
-  }
-  footer={
-    <>
-      <DialogClose asChild><Button variant="secondary">Cancel</Button></DialogClose>
-      <Button>Publish</Button>
-    </>
-  }
-/>`,
-  plain: `import { Button } from '@satin/ui/button'
-import { Dialog } from '@satin/ui/dialog'
-
-<Dialog
-  trigger={<Button variant="secondary">About this report</Button>}
-  title="About this report"
-  description="Updated every night at 02:00."
->
-  Figures cover the last 30 days and exclude refunded orders.
-</Dialog>`,
+type Copy = {
+  trigger: string
+  title: string
+  description: string
+  body: string
+  alert: { intent: DialogAlertIntent; title: string; description: string }
+  confirm: string
 }
 
-export const options: ShowcaseOption[] = [
-  { id: 'default', label: 'Default', code: code.default },
-  { id: 'destructive', label: 'Destructive', code: code.destructive },
-  { id: 'alert', label: 'With alert', code: code.alert },
-  { id: 'plain', label: 'Without footer', code: code.plain },
+const copy: Record<'default' | 'destructive', Copy> = {
+  default: {
+    trigger: 'Rename workspace',
+    title: 'Rename workspace',
+    description: 'The new name shows for everyone.',
+    body: 'You can change it again at any time.',
+    alert: { intent: 'warning', title: 'Old links stop working', description: 'Update them in your docs and bookmarks.' },
+    confirm: 'Save changes',
+  },
+  destructive: {
+    trigger: 'Delete project',
+    title: 'Delete project?',
+    description: 'This can’t be undone.',
+    body: 'All 12 files and their version history will be removed.',
+    alert: { intent: 'error', title: '3 people are editing it now', description: 'They lose any unsaved changes.' },
+    confirm: 'Delete project',
+  },
+}
+
+// Variant changes the role, the footer and the copy; the rest are slots any dialog can fill.
+export const controls: ShowcaseControl[] = [
+  { id: 'variant', label: 'Variant', items: [{ value: 'default', label: 'Default' }, { value: 'destructive', label: 'Destructive' }] },
+  { id: 'description', label: 'Description', type: 'switch', default: 'on' },
+  { id: 'alert', label: 'Alert', type: 'switch', default: 'off' },
+  { id: 'footer', label: 'Footer', type: 'switch', default: 'on' },
+  { id: 'close', label: 'Close', type: 'switch', default: 'on' },
 ]
 
-/** The dialog opens inside the stage (portal + absolute), not over the docs page. */
-function Preview({ id }: { id: string }) {
+const on = (v: Record<string, string>, id: string) => v[id] === 'on'
+
+function code(v: Record<string, string>) {
+  const c = copy[v.variant as keyof typeof copy]
+  const destructive = v.variant === 'destructive'
+  const parts = ['Dialog', on(v, 'alert') && 'DialogAlert', on(v, 'footer') && 'DialogClose'].filter(Boolean).join(', ')
+  const props = [
+    destructive && 'variant="destructive"',
+    `trigger={<Button variant="secondary">${c.trigger}</Button>}`,
+    `title="${c.title}"`,
+    on(v, 'description') && `description="${c.description}"`,
+    on(v, 'alert') &&
+      `alert={
+    <DialogAlert
+      intent="${c.alert.intent}"
+      title="${c.alert.title}"
+      description="${c.alert.description}"
+    />
+  }`,
+    on(v, 'footer') &&
+      `footer={
+    <>
+      <DialogClose asChild><Button variant="secondary">Cancel</Button></DialogClose>
+      <Button${destructive ? ' variant="destructive"' : ''}>${c.confirm}</Button>
+    </>
+  }`,
+    !on(v, 'close') && 'closeButton={false}',
+  ].filter(Boolean)
+  return `import { Button } from '@satin/ui/button'
+import { ${parts} } from '@satin/ui/dialog'
+
+<Dialog
+${props.map((p) => `  ${p}`).join('\n')}
+>
+  ${c.body}
+</Dialog>`
+}
+
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    v.variant === 'destructive' ? 'Destructive' : 'Default',
+    on(v, 'description') ? 'Description' : 'No description',
+    on(v, 'alert') ? 'Alert' : 'No alert',
+    on(v, 'footer') ? 'Footer' : 'No footer',
+    on(v, 'close') ? 'Close' : 'No close',
+  ].join(' · '),
+  code: code(v),
+}))
+
+/** The dialog opens inside the stage (portal + absolute), not over the docs page or the properties. */
+function Preview({ v }: { v: Record<string, string> }) {
   const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
-  const shared = {
-    container: stage,
-    defaultOpen: true,
-    // Inline preview: don't lock the docs page or steal focus on load.
-    modal: false,
-    onOpenAutoFocus: (e: Event) => e.preventDefault(),
-  }
-  const cancel = (
-    <DialogClose asChild>
-      <Button variant="secondary">Cancel</Button>
-    </DialogClose>
-  )
+  const c = copy[v.variant as keyof typeof copy]
+  const destructive = v.variant === 'destructive'
 
   return (
-    <>
+    <div className="relative grid h-[300px] w-[460px] max-w-full place-items-center">
       <div ref={setStage} className="pointer-events-none absolute inset-0 z-10" />
-      {stage && id === 'default' && (
+      {stage && (
         <Dialog
-          {...shared}
-          trigger={<Button variant="secondary">Rename workspace</Button>}
-          title="Rename workspace"
-          description="The new name shows for everyone."
+          container={stage}
+          defaultOpen
+          // Inline preview: don't lock the docs page or steal focus on load.
+          modal={false}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          variant={v.variant as 'default' | 'destructive'}
+          trigger={<Button variant="secondary">{c.trigger}</Button>}
+          title={c.title}
+          description={on(v, 'description') ? c.description : undefined}
+          alert={on(v, 'alert') ? <DialogAlert {...c.alert} /> : undefined}
           footer={
-            <>
-              {cancel}
-              <Button>Save changes</Button>
-            </>
+            on(v, 'footer') ? (
+              <>
+                <DialogClose asChild>
+                  <Button variant="secondary">Cancel</Button>
+                </DialogClose>
+                <Button variant={destructive ? 'destructive' : 'primary'}>{c.confirm}</Button>
+              </>
+            ) : undefined
           }
+          closeButton={on(v, 'close')}
         >
-          You can change it again at any time.
+          {c.body}
         </Dialog>
       )}
-      {stage && id === 'destructive' && (
-        <Dialog
-          {...shared}
-          variant="destructive"
-          trigger={<Button variant="secondary">Delete project</Button>}
-          title="Delete project?"
-          description="This can’t be undone."
-          footer={
-            <>
-              {cancel}
-              <Button variant="destructive">Delete project</Button>
-            </>
-          }
-        >
-          All 12 files and their version history will be removed.
-        </Dialog>
-      )}
-      {stage && id === 'alert' && (
-        <Dialog
-          {...shared}
-          trigger={<Button variant="secondary">Publish</Button>}
-          title="Publish changes"
-          description="Your edits go live on the public site."
-          alert={
-            <DialogAlert
-              intent="warning"
-              title="Visitors see it right away"
-              description="There is no review step on this site."
-            />
-          }
-          footer={
-            <>
-              {cancel}
-              <Button>Publish</Button>
-            </>
-          }
-        />
-      )}
-      {stage && id === 'plain' && (
-        <Dialog
-          {...shared}
-          trigger={<Button variant="secondary">About this report</Button>}
-          title="About this report"
-          description="Updated every night at 02:00."
-        >
-          Figures cover the last 30 days and exclude refunded orders.
-        </Dialog>
-      )}
-    </>
+    </div>
   )
 }
 
 export default function DialogDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
-  return <Showcase name="Dialog" options={options} codeHtml={codeHtml} render={(id) => <Preview key={id} id={id} />} />
+  return (
+    <Showcase
+      name="Dialog"
+      options={options}
+      codeHtml={codeHtml}
+      controls={controls}
+      render={(id, v) => <Preview key={id} v={v} />}
+    />
+  )
 }

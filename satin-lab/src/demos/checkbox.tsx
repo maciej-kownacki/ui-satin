@@ -1,68 +1,58 @@
-import * as React from 'react'
 import { Checkbox } from '@satin/ui'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
-export const options: ShowcaseOption[] = [
+const label = 'Email notifications'
+const description = 'Send me a summary of new orders every evening.'
+
+// Clicking the box stays live; Checked sets where it starts, including the indeterminate
+// look of a "select all" parent that a click can't reach.
+export const controls: ShowcaseControl[] = [
+  { id: 'placement', label: 'Placement', items: [{ value: 'left', label: 'Left' }, { value: 'right', label: 'Right' }] },
   {
-    id: 'label',
-    label: 'Label',
-    code: `import { Checkbox } from '@satin/ui/checkbox'
-
-<Checkbox label="Remember me" defaultChecked />`,
+    id: 'content',
+    label: 'Content',
+    default: 'label',
+    items: [{ value: 'description', label: 'Label + description' }, { value: 'label', label: 'Label' }, { value: 'none', label: 'None' }],
   },
   {
-    id: 'description',
-    label: 'Description',
-    code: `import { Checkbox } from '@satin/ui/checkbox'
-
-<Checkbox
-  label="Email notifications"
-  description="Send me a summary of new orders every evening."
-/>`,
+    id: 'checked',
+    label: 'Checked',
+    default: 'true',
+    items: [{ value: 'false', label: 'Unchecked' }, { value: 'true', label: 'Checked' }, { value: 'indeterminate', label: 'Indeterminate' }],
   },
-  {
-    id: 'group',
-    label: 'Select all',
-    code: `import { Checkbox } from '@satin/ui/checkbox'
-
-const all = items.every((i) => i.checked)
-const some = items.some((i) => i.checked)
-
-<Checkbox
-  label="All channels"
-  checked={all ? true : some ? 'indeterminate' : false}
-  onCheckedChange={(v) => setAll(v === true)}
-/>`,
-  },
+  { id: 'disabled', label: 'Disabled', type: 'switch', default: 'off' },
 ]
 
-const channels = ['Email', 'SMS', 'Push']
-
-function SelectAll() {
-  const [checked, setChecked] = React.useState<Record<string, boolean>>({ Email: true, SMS: false, Push: true })
-  const values = Object.values(checked)
-  const all = values.every(Boolean)
-  const some = values.some(Boolean)
-  return (
-    <div className="grid gap-3">
-      <Checkbox
-        label="All channels"
-        checked={all ? true : some ? 'indeterminate' : false}
-        onCheckedChange={(v) => setChecked(Object.fromEntries(channels.map((c) => [c, v === true])))}
-      />
-      <div className="grid gap-3 pl-6">
-        {channels.map((c) => (
-          <Checkbox
-            key={c}
-            label={c}
-            checked={checked[c]}
-            onCheckedChange={(v) => setChecked((s) => ({ ...s, [c]: v === true }))}
-          />
-        ))}
-      </div>
-    </div>
-  )
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
 }
+
+function code(v: Record<string, string>) {
+  const attrs = [
+    v.placement !== 'left' && `placement="${v.placement}"`,
+    v.content === 'none' ? `aria-label="${label}"` : `label="${label}"`,
+    v.content === 'description' && `description="${description}"`,
+    v.checked === 'true' ? 'defaultChecked' : v.checked === 'indeterminate' && 'defaultChecked="indeterminate"',
+    v.disabled === 'on' && 'disabled',
+  ].filter(Boolean)
+  const jsx = attrs.length > 2 ? `<Checkbox\n${attrs.map((a) => `  ${a}`).join('\n')}\n/>` : `<Checkbox ${attrs.join(' ')} />`
+  return `import { Checkbox } from '@satin/ui/checkbox'
+
+${jsx}`
+}
+
+// One option per combination, so the Code tab always shows what the stage shows.
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    `Checkbox ${v.placement}`,
+    v.content === 'none' ? 'No label' : labelOf('content', v.content),
+    labelOf('checked', v.checked),
+    ...(v.disabled === 'on' ? ['Disabled'] : []),
+  ].join(' · '),
+  code: code(v),
+}))
 
 export default function CheckboxDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
   return (
@@ -70,17 +60,22 @@ export default function CheckboxDemo({ codeHtml }: { codeHtml: Record<string, st
       name="Checkbox"
       options={options}
       codeHtml={codeHtml}
-      render={(id) =>
-        id === 'label' ? (
-          <Checkbox label="Remember me" defaultChecked />
-        ) : id === 'description' ? (
-          <div className="max-w-80">
-            <Checkbox label="Email notifications" description="Send me a summary of new orders every evening." />
-          </div>
-        ) : (
-          <SelectAll />
-        )
-      }
+      controls={controls}
+      render={(_, v) => (
+        // A fixed width, so placement="right" visibly pushes the box to the far edge.
+        <div className={v.content === 'none' ? undefined : 'w-80 max-w-full'}>
+          <Checkbox
+            // Remount when Checked changes, so the new starting value applies.
+            key={v.checked}
+            placement={v.placement as 'left' | 'right'}
+            label={v.content === 'none' ? undefined : label}
+            aria-label={v.content === 'none' ? label : undefined}
+            description={v.content === 'description' ? description : undefined}
+            defaultChecked={v.checked === 'indeterminate' ? 'indeterminate' : v.checked === 'true'}
+            disabled={v.disabled === 'on'}
+          />
+        </div>
+      )}
     />
   )
 }

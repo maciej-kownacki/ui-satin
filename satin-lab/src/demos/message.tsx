@@ -1,8 +1,9 @@
 import * as React from 'react'
 import { Message } from '@satin/ui/message'
 import { Page } from 'iconoir-react'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
+const question = 'What changed in the pipeline this week?'
 const answer = 'Three deals moved to Negotiation this week. Acme is the largest at $48k, and two renewals close before Friday.'
 
 const steps = [
@@ -11,57 +12,79 @@ const steps = [
   { label: 'Summarised the changes', meta: '3 deals' },
 ]
 
-export const options: ShowcaseOption[] = [
+// Role picks the message; "All roles" shows a user turn and its answer. Source belongs to the
+// user's message, thinking and actions to the assistant's, so each switch shows where it applies.
+export const controls: ShowcaseControl[] = [
   {
-    id: 'thread',
-    label: 'Thread',
-    code: `import { Message } from '@satin/ui/message'
-
-<div className="flex flex-col gap-4">
-  <Message role="user">What changed in the pipeline this week?</Message>
-  <Message
-    role="assistant"
-    thinking={[
-      { label: 'Read the pipeline' },
-      { label: 'Compared stages with last week' },
-      { label: 'Summarised the changes', meta: '3 deals' },
-    ]}
-    thinkingLabel="Thought for 12s"
-    timestamp="20 minutes ago"
-    onFeedback={(value) => rate(value)}
-  >
-    ${answer}
-  </Message>
-</div>`,
+    id: 'role',
+    label: 'Role',
+    items: [
+      { value: 'all', label: 'All roles' },
+      { value: 'user', label: 'User' },
+      { value: 'assistant', label: 'Assistant' },
+    ],
   },
-  {
-    id: 'user',
-    label: 'User',
-    code: `import { Message } from '@satin/ui/message'
+  { id: 'thinking', label: 'Thinking', type: 'switch', default: 'on' },
+  { id: 'source', label: 'Source', type: 'switch', default: 'off' },
+  { id: 'actions', label: 'Actions', type: 'switch', default: 'on' },
+]
 
-<Message role="user">Who owns the Acme deal?</Message>
-<Message
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
+}
+
+function userCode(v: Record<string, string>, indent = '') {
+  if (v.source === 'off') return `${indent}<Message role="user">${question}</Message>`
+  return `<Message
   role="user"
   source={{ icon: <Page />, title: 'Q3 pipeline review', url: 'docs.sature.app/q3-review' }}
 >
-  Summarize this thread and list the open questions.
-</Message>`,
-  },
-  {
-    id: 'assistant',
-    label: 'Assistant',
-    code: `import { Message } from '@satin/ui/message'
+  ${question}
+</Message>`
+    .split('\n')
+    .map((l) => indent + l)
+    .join('\n')
+}
 
-<Message role="assistant" timestamp="20 minutes ago">
-  ${answer}
-</Message>
+function assistantCode(v: Record<string, string>, indent = '') {
+  const props = [
+    v.thinking === 'on' &&
+      `thinking={[\n${steps
+        .map((s) => `    { label: '${s.label}'${s.meta ? `, meta: '${s.meta}'` : ''} },`)
+        .join('\n')}\n  ]}`,
+    v.thinking === 'on' && 'thinkingLabel="Thought for 12s"',
+    v.actions === 'on' ? 'timestamp="20 minutes ago"' : 'actions={false}',
+    v.actions === 'on' && 'onFeedback={(value) => rate(value)}',
+  ].filter(Boolean)
+  const open = props.length > 1 ? `<Message\n${props.map((p) => `  ${p}`).join('\n')}\n>` : `<Message ${props[0]}>`
+  return `${open}\n  ${answer}\n</Message>`
+    .split('\n')
+    .map((l) => indent + l)
+    .join('\n')
+}
 
-// While it streams, or for a system note
-<Message role="assistant" actions={false}>
-  Pipeline synced from HubSpot at 09:41.
-</Message>`,
-  },
-]
+function code(v: Record<string, string>) {
+  const imports = `import { Message } from '@satin/ui/message'\n${v.role !== 'assistant' && v.source === 'on' ? "import { Page } from 'iconoir-react'\n" : ''}`
+  if (v.role === 'user') return `${imports}\n${userCode(v)}`
+  if (v.role === 'assistant') return `${imports}\n${assistantCode(v)}`
+  return `${imports}
+<div className="flex flex-col gap-4">
+${userCode(v, '  ')}
+${assistantCode(v, '  ')}
+</div>`
+}
+
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    labelOf('role', v.role),
+    v.thinking === 'on' ? 'Thinking' : 'No thinking',
+    v.source === 'on' ? 'Source' : 'No source',
+    v.actions === 'on' ? 'Actions' : 'No actions',
+  ].join(' · '),
+  code: code(v),
+}))
 
 export default function MessageDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
   return (
@@ -69,40 +92,35 @@ export default function MessageDemo({ codeHtml }: { codeHtml: Record<string, str
       name="Message"
       options={options}
       codeHtml={codeHtml}
-      render={(id) => (
+      controls={controls}
+      render={(_, v) => (
         <div className="flex w-[min(400px,calc(100vw-80px))] flex-col gap-4">
-          {id === 'thread' && (
-            <>
-              <Message role="user">What changed in the pipeline this week?</Message>
-              <Message role="assistant" thinking={steps} thinkingLabel="Thought for 12s" timestamp="20 minutes ago">
-                {answer}
-              </Message>
-            </>
+          {v.role !== 'assistant' && (
+            <Message
+              role="user"
+              source={
+                v.source === 'on'
+                  ? {
+                      icon: <Page className="text-text-muted [stroke-width:1.875]" />,
+                      title: 'Q3 pipeline review',
+                      url: 'docs.sature.app/q3-review',
+                    }
+                  : undefined
+              }
+            >
+              {question}
+            </Message>
           )}
-          {id === 'user' && (
-            <>
-              <Message role="user">Who owns the Acme deal?</Message>
-              <Message
-                role="user"
-                source={{
-                  icon: <Page className="text-text-muted [stroke-width:1.875]" />,
-                  title: 'Q3 pipeline review',
-                  url: 'docs.sature.app/q3-review',
-                }}
-              >
-                Summarize this thread and list the open questions.
-              </Message>
-            </>
-          )}
-          {id === 'assistant' && (
-            <>
-              <Message role="assistant" timestamp="20 minutes ago">
-                {answer}
-              </Message>
-              <Message role="assistant" actions={false}>
-                Pipeline synced from HubSpot at 09:41.
-              </Message>
-            </>
+          {v.role !== 'user' && (
+            <Message
+              role="assistant"
+              thinking={v.thinking === 'on' ? steps : undefined}
+              thinkingLabel="Thought for 12s"
+              actions={v.actions === 'on'}
+              timestamp="20 minutes ago"
+            >
+              {answer}
+            </Message>
           )}
         </div>
       )}

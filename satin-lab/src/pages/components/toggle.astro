@@ -10,12 +10,12 @@ const item = { id: 'toggle', title: 'Toggle', href: '/components/toggle', descri
 const api = {
   description: 'The `Toggle` component is a wrapper around the `button` element with aria-pressed.',
   props: [
+    { name: 'size', type: ['"md"', '"sm"'], default: '"md"' },
+    { name: 'variant', type: ['"outline"', '"ghost"'], default: '"outline"' },
+    { name: 'iconOnly', type: ['boolean'], default: 'false' },
+    { name: 'icon', type: ['ReactNode'] },
     { name: 'pressed', type: ['boolean'], default: 'false' },
     { name: 'onPressedChange', type: ['(pressed: boolean) => void'] },
-    { name: 'variant', type: ['"outline"', '"ghost"'], default: '"outline"' },
-    { name: 'size', type: ['"md"', '"sm"'], default: '"md"' },
-    { name: 'icon', type: ['ReactNode'] },
-    { name: 'iconOnly', type: ['boolean'], default: 'false' },
     { name: 'disabled', type: ['boolean'], default: 'false' },
   ],
 }

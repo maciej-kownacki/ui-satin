@@ -18,11 +18,11 @@ const codeHtml = await highlight(options)
     api={{
       description: 'The `CodeBlock` component is a wrapper around the `pre` element that adds a filename header, line numbers and diff colours.',
       props: [
-        { name: 'code', type: ['string'] },
-        { name: 'filename', type: ['string'] },
         { name: 'view', type: ['"code"', '"diff"'], default: '"code"' },
         { name: 'showHeader', type: ['boolean'], default: 'true' },
+        { name: 'filename', type: ['string'] },
         { name: 'showActions', type: ['boolean'], default: 'true' },
+        { name: 'code', type: ['string'] },
         { name: 'highlightLines', type: ['number[]'], default: '[]' },
       ],
     }}

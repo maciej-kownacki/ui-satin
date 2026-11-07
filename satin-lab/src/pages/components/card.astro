@@ -18,12 +18,12 @@ const codeHtml = await highlight(options)
     api={{
       description: 'The `Card` component is a wrapper around the `div` element with a header, a body and an optional footer.',
       props: [
+        { name: 'size', type: ['"md"', '"sm"'], default: '"md"' },
         { name: 'title', type: ['string'] },
         { name: 'description', type: ['string'] },
-        { name: 'size', type: ['"md"', '"sm"'], default: '"md"' },
-        { name: 'children', type: ['ReactNode'] },
-        { name: 'footer', type: ['ReactNode'] },
         { name: 'onClose', type: ['() => void'] },
+        { name: 'footer', type: ['ReactNode'] },
+        { name: 'children', type: ['ReactNode'] },
       ],
     }}
   >

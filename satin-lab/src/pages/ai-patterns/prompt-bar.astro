@@ -18,10 +18,10 @@ const api = {
     'The `PromptBar` component is a wrapper around the `form` element with a text input, attachments, a model picker and a send button.',
   props: [
     { name: 'shape', type: ['"pill"', '"default"'], default: '"pill"' },
+    { name: 'model', type: ['string'] },
+    { name: 'attachments', type: ['File[]'], default: '[]' },
     { name: 'value', type: ['string'], default: '""' },
     { name: 'placeholder', type: ['string'], default: '"Write a message"' },
-    { name: 'attachments', type: ['File[]'], default: '[]' },
-    { name: 'model', type: ['string'] },
     { name: 'disabled', type: ['boolean'], default: 'false' },
     { name: 'onSubmit', type: ['(value: string) => void'] },
   ],

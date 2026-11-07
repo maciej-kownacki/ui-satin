@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { DecisionCard, type DecisionOption, type DecisionValue } from '@satin/ui/decision-card'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 /** The 14px ingredient icons from uiKit (3112:39109 …), drawn on Iconoir's grid. */
 function Icon({ children }: { children: React.ReactNode }) {
@@ -69,21 +69,22 @@ const icons = {
   ),
 }
 
+/** One question per type: the props the stage renders, and the same props as code. */
 type Example = {
-  id: string
   label: string
-  props: React.ComponentProps<typeof DecisionCard>
-  code: string
+  title: string
+  hint: string
+  props: Partial<React.ComponentProps<typeof DecisionCard>>
+  code: string[]
+  onContinue: string
 }
 
-const examples: Example[] = [
-  {
-    id: 'radio',
-    label: 'Single choice',
+const examples: Record<string, Example> = {
+  radio: {
+    label: 'Radio',
+    title: 'What’s your dietary preference?',
+    hint: 'Pick one',
     props: {
-      type: 'radio',
-      title: 'What’s your dietary preference?',
-      step: '1/3',
       options: [
         { value: 'gluten', label: 'Gluten-free' },
         { value: 'dairy', label: 'Dairy-free' },
@@ -92,29 +93,47 @@ const examples: Example[] = [
       ],
       defaultValue: 'gluten',
     },
-    code: `<DecisionCard
-  type="radio"
-  title="What’s your dietary preference?"
-  step="1/3"
-  options={[
+    code: [
+      `options={[
     { value: 'gluten', label: 'Gluten-free' },
     { value: 'dairy', label: 'Dairy-free' },
     { value: 'nut', label: 'Nut-free' },
     { value: 'other', label: 'Other' },
-  ]}
-  onContinue={(value) => answer(value)}
-  onSkip={skip}
-/>`,
+  ]}`,
+      `defaultValue="gluten"`,
+    ],
+    onContinue: 'onContinue={(value) => answer(value)}',
   },
-  {
-    id: 'chips',
-    label: 'Chips',
+  checkbox: {
+    label: 'Checkbox',
+    title: 'Which meals should I plan?',
+    hint: 'Select all that apply',
     props: {
-      type: 'chips',
-      title: 'Which ingredients should I avoid?',
-      hint: 'Select up to 5',
+      options: [
+        { value: 'breakfast', label: 'Breakfast' },
+        { value: 'lunch', label: 'Lunch' },
+        { value: 'dinner', label: 'Dinner' },
+        { value: 'snacks', label: 'Snacks' },
+      ],
+      defaultValue: ['lunch', 'dinner'],
+    },
+    code: [
+      `options={[
+    { value: 'breakfast', label: 'Breakfast' },
+    { value: 'lunch', label: 'Lunch' },
+    { value: 'dinner', label: 'Dinner' },
+    { value: 'snacks', label: 'Snacks' },
+  ]}`,
+      `defaultValue={['lunch', 'dinner']}`,
+    ],
+    onContinue: 'onContinue={(values) => answer(values)}',
+  },
+  chips: {
+    label: 'Chips',
+    title: 'Which ingredients should I avoid?',
+    hint: 'Select up to 5',
+    props: {
       max: 5,
-      step: '1/3',
       options: [
         { value: 'peanuts', label: 'Peanuts', icon: icons.peanut },
         { value: 'shellfish', label: 'Shellfish', icon: icons.shell },
@@ -127,24 +146,14 @@ const examples: Example[] = [
       ] satisfies DecisionOption[],
       defaultValue: ['peanuts', 'shellfish'],
     },
-    code: `<DecisionCard
-  type="chips"
-  title="Which ingredients should I avoid?"
-  hint="Select up to 5"
-  max={5}
-  step="1/3"
-  options={ingredients} // { value, label, icon }
-  onContinue={(values) => answer(values)}
-  onSkip={skip}
-/>`,
+    code: ['max={5}', 'options={ingredients} // { value, label, icon }', `defaultValue={['peanuts', 'shellfish']}`],
+    onContinue: 'onContinue={(values) => answer(values)}',
   },
-  {
-    id: 'ranking',
+  ranking: {
     label: 'Ranking',
+    title: 'What matters most this week?',
+    hint: 'Drag to reorder',
     props: {
-      type: 'ranking',
-      title: 'What matters most this week?',
-      step: '1/3',
       options: [
         { value: 'cost', label: 'Cost' },
         { value: 'time', label: 'Cooking time' },
@@ -152,61 +161,96 @@ const examples: Example[] = [
         { value: 'variety', label: 'Variety' },
       ],
     },
-    code: `<DecisionCard
-  type="ranking"
-  title="What matters most this week?"
-  step="1/3"
-  options={[
+    code: [
+      `options={[
     { value: 'cost', label: 'Cost' },
     { value: 'time', label: 'Cooking time' },
     { value: 'protein', label: 'Protein' },
     { value: 'variety', label: 'Variety' },
-  ]}
-  onContinue={(order) => answer(order)}
-  onSkip={skip}
-/>`,
+  ]}`,
+    ],
+    onContinue: 'onContinue={(order) => answer(order)}',
   },
-  {
-    id: 'draft',
+  draft: {
     label: 'Draft',
+    title: 'Reply to Anna from Green Farm',
+    hint: 'Edit it before sending',
     props: {
-      type: 'draft',
-      title: 'Reply to Anna from Green Farm',
-      step: '1/3',
       draftTitle: 'Title: About Friday’s order...',
       defaultValue:
         'Hi Anna,\nthanks for the quick delivery. Could we move Friday’s order to Thursday morning? Everything else stays the same.\n\nBest,\nMaciej',
     },
-    code: `<DecisionCard
-  type="draft"
-  title="Reply to Anna from Green Farm"
-  step="1/3"
-  draftTitle="Title: About Friday’s order..."
-  defaultValue={reply}
-  onContinue={(text) => send(text)}
-  onSkip={skip}
-/>`,
+    code: ['draftTitle="Title: About Friday’s order..."', 'defaultValue={reply}'],
+    onContinue: 'onContinue={(text) => send(text)}',
   },
+}
+
+// Type is the card itself, so it leads (a menu, six is too many to segment). Step, hint and
+// skip are optional parts of a question; a summary has none of them, only Change.
+export const controls: ShowcaseControl[] = [
+  {
+    id: 'type',
+    label: 'Type',
+    type: 'menu',
+    items: [...Object.entries(examples).map(([value, e]) => ({ value, label: e.label })), { value: 'summary', label: 'Summary' }],
+  },
+  { id: 'step', label: 'Step', type: 'switch', default: 'on' },
+  { id: 'hint', label: 'Hint', type: 'switch', default: 'off' },
+  { id: 'skip', label: 'Skip', type: 'switch', default: 'on' },
 ]
 
-export const options: ShowcaseOption[] = examples.map((e) => ({
-  id: e.id,
-  label: e.label,
-  code: `import { DecisionCard } from '@satin/ui/decision-card'\n\n${e.code}`,
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
+}
+
+const summary = { title: examples.radio.title, value: ['Gluten-free'] }
+
+function code(v: Record<string, string>) {
+  const props =
+    v.type === 'summary'
+      ? ['type="summary"', `title="${summary.title}"`, `value={['Gluten-free']}`, 'onEdit={edit}']
+      : [
+          v.type !== 'radio' && `type="${v.type}"`,
+          `title="${examples[v.type].title}"`,
+          v.hint === 'on' && `hint="${examples[v.type].hint}"`,
+          v.step === 'on' && 'step="1/3"',
+          ...examples[v.type].code,
+          examples[v.type].onContinue,
+          v.skip === 'on' && 'onSkip={skip}',
+        ].filter(Boolean)
+  return `import { DecisionCard } from '@satin/ui/decision-card'
+
+<DecisionCard
+${props.map((p) => `  ${p}`).join('\n')}
+/>`
+}
+
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    labelOf('type', v.type),
+    v.step === 'on' ? 'Step' : 'No step',
+    v.hint === 'on' ? 'Hint' : 'No hint',
+    v.skip === 'on' ? 'Skip' : 'No skip',
+  ].join(' · '),
+  code: code(v),
 }))
 
-function Demo({ example }: { example: Example }) {
+/** Answering collapses the card to its summary; Change brings the question back. */
+function Demo({ v }: { v: Record<string, string> }) {
   const [answer, setAnswer] = React.useState<DecisionValue | null>(null)
-  const { options: opts = [], title } = example.props
+  if (v.type === 'summary') return <DecisionCard type="summary" title={summary.title} value={summary.value} onEdit={() => {}} />
 
+  const example = examples[v.type]
+  const opts = example.props.options ?? []
   if (answer !== null) {
-    const summaryValue = example.id === 'draft' ? ['Reply sent'] : answer
     return (
       <DecisionCard
         type="summary"
-        title={title}
+        title={example.title}
         options={opts}
-        value={summaryValue}
+        value={v.type === 'draft' ? ['Reply sent'] : answer}
         onEdit={() => setAnswer(null)}
       />
     )
@@ -214,8 +258,12 @@ function Demo({ example }: { example: Example }) {
   return (
     <DecisionCard
       {...example.props}
-      onContinue={(v) => setAnswer(example.id === 'ranking' ? (v as string[]).slice(0, 2) : v)}
-      onSkip={() => setAnswer(['Skipped'])}
+      type={v.type as 'radio' | 'checkbox' | 'chips' | 'ranking' | 'draft'}
+      title={example.title}
+      hint={v.hint === 'on' ? example.hint : undefined}
+      step={v.step === 'on' ? '1/3' : undefined}
+      onContinue={(value) => setAnswer(v.type === 'ranking' ? (value as string[]).slice(0, 2) : value)}
+      onSkip={v.skip === 'on' ? () => setAnswer(['Skipped']) : undefined}
     />
   )
 }
@@ -226,10 +274,9 @@ export default function DecisionCardDemo({ codeHtml }: { codeHtml: Record<string
       name="Decision card"
       options={options}
       codeHtml={codeHtml}
-      render={(id) => {
-        const example = examples.find((e) => e.id === id) ?? examples[0]
-        return <Demo key={id} example={example} />
-      }}
+      controls={controls}
+      // Remount on every change, so a new combination starts from the question, not an old answer.
+      render={(id, v) => <Demo key={id} v={v} />}
     />
   )
 }

@@ -10,14 +10,14 @@ const item = { id: 'input', title: 'Input', href: '/components/input', descripti
 const api = {
   description: 'The `Input` component is a wrapper around the `input` element that adds a label, a hint, icons and three sizes.',
   props: [
-    { name: 'label', type: ['string'] },
-    { name: 'placeholder', type: ['string'] },
-    { name: 'hint', type: ['string'] },
     { name: 'size', type: ['"sm"', '"md"', '"lg"'], default: '"md"' },
     { name: 'leadingIcon', type: ['ReactNode'] },
     { name: 'trailingIcon', type: ['ReactNode'] },
+    { name: 'label', type: ['string'] },
+    { name: 'hint', type: ['string'] },
     { name: 'error', type: ['string'] },
     { name: 'disabled', type: ['boolean'], default: 'false' },
+    { name: 'placeholder', type: ['string'] },
   ],
 }
 ---

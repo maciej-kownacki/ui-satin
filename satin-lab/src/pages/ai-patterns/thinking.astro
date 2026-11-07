@@ -16,12 +16,12 @@ const item = {
 const api = {
   description: 'The `Thinking` component is a wrapper around the `details` element with a header and a rail of reasoning steps.',
   props: [
+    { name: 'steps', type: ['ThinkingStep[]'], default: '[]' },
     { name: 'state', type: ['"loading"', '"collapsed"', '"expanded"'], default: '"loading"' },
     { name: 'label', type: ['string'], default: '"Thinking…"' },
     { name: 'time', type: ['string'] },
-    { name: 'steps', type: ['ThinkingStep[]'], default: '[]' },
-    { name: 'step.type', type: ['"task"', '"text"', '"source"', '"tool"', '"more"'], default: '"task"' },
     { name: 'onToggle', type: ['(open: boolean) => void'] },
+    { name: 'step.type', type: ['"task"', '"text"', '"source"', '"tool"', '"more"'], default: '"task"' },
   ],
 }
 ---

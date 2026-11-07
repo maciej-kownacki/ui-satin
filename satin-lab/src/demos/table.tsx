@@ -1,7 +1,7 @@
 import { Chip } from '@satin/ui/chip'
 import { Table, type Column, type Row } from '@satin/ui/table'
 import type { BadgeTone } from '@satin/ui/badge'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 type Dish = Row & { product: string; price: string; qty: number; tags: [string, BadgeTone][]; station: string; prep: string }
 
@@ -27,6 +27,7 @@ const columns: Column<Dish>[] = [
   { key: 'tags', header: 'Category', width: 2.2, cell: tags },
 ]
 
+// With overflow="scroll" widths are pixels, and two more columns make it overflow.
 const wide: Column<Dish>[] = [
   { key: 'product', header: 'Product name', width: 180, sortable: true },
   { key: 'price', header: 'Price', width: 110, sortable: true },
@@ -36,30 +37,44 @@ const wide: Column<Dish>[] = [
   { key: 'prep', header: 'Prep time', width: 120 },
 ]
 
-const setup = `import { Table, type Column } from '@satin/ui/table'
-import { Chip } from '@satin/ui/chip'
-
-const columns: Column<Dish>[] = [
-  { key: 'product', header: 'Product name', width: 2, sortable: true },
-  { key: 'price', header: 'Price', width: 1, sortable: true },
-  { key: 'qty', header: 'Qty', width: 0.8, sortable: true },
-  {
-    key: 'tags',
-    header: 'Category',
-    width: 2.2,
-    cell: (row) => row.tags.map(([label, tone]) => <Chip key={label} size="sm" tone={tone}>{label}</Chip>),
-  },
-]`
-
-export const options: ShowcaseOption[] = [
-  { id: 'selectable', label: 'Selectable', code: `${setup}\n\nexport function Menu() {\n  return <Table label="Menu items" columns={columns} rows={rows} selectable />\n}` },
-  { id: 'zebra', label: 'Zebra', code: `${setup}\n\nexport function Menu() {\n  return <Table label="Menu items" columns={columns} rows={rows} zebra />\n}` },
-  {
-    id: 'scroll',
-    label: 'Scroll',
-    code: `${setup.replace(/width: ([\d.]+)/g, (_, w) => `width: ${Math.round(Number(w) * 100)}`)}\n\n// With overflow="scroll", width is in pixels.\nexport function Menu() {\n  return <Table label="Menu items" columns={columns} rows={rows} overflow="scroll" />\n}`,
-  },
+// Overflow decides how columns are measured, so it comes first; selection and zebra are
+// row treatments on top of either.
+export const controls: ShowcaseControl[] = [
+  { id: 'overflow', label: 'Overflow', items: [{ value: 'fit', label: 'Fit' }, { value: 'scroll', label: 'Scroll' }] },
+  { id: 'selectable', label: 'Selectable', type: 'switch', default: 'on' },
+  { id: 'zebra', label: 'Zebra', type: 'switch', default: 'off' },
 ]
+
+function code(v: Record<string, string>) {
+  const scroll = v.overflow === 'scroll'
+  const cols = (scroll ? wide : columns)
+    .map((c) => {
+      const base = `key: '${c.key}', header: '${c.header}', width: ${c.width}${c.sortable ? ', sortable: true' : ''}`
+      return c.cell
+        ? `  {\n    ${base.replace(/, /g, ',\n    ')},\n    cell: (row) => row.tags.map(([label, tone]) => <Chip key={label} size="sm" tone={tone}>{label}</Chip>),\n  },`
+        : `  { ${base} },`
+    })
+    .join('\n')
+  const attrs = [scroll && ' overflow="scroll"', v.selectable === 'on' && ' selectable', v.zebra === 'on' && ' zebra']
+    .filter(Boolean)
+    .join('')
+  return `import { Table, type Column } from '@satin/ui/table'
+import { Chip } from '@satin/ui/chip'
+${scroll ? '\n// With overflow="scroll", width is in pixels.' : ''}
+const columns: Column<Dish>[] = [
+${cols}
+]
+
+export function Menu() {
+  return <Table label="Menu items" columns={columns} rows={rows}${attrs} />
+}`
+}
+
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [v.overflow === 'scroll' ? 'Scroll' : 'Fit', v.selectable === 'on' ? 'Selectable' : 'Not selectable', v.zebra === 'on' ? 'Zebra' : 'No zebra'].join(' · '),
+  code: code(v),
+}))
 
 export default function TableDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
   return (
@@ -67,11 +82,18 @@ export default function TableDemo({ codeHtml }: { codeHtml: Record<string, strin
       name="Table"
       options={options}
       codeHtml={codeHtml}
-      render={(id) => (
+      controls={controls}
+      render={(id, v) => (
         <div className="w-[640px] max-w-full">
-          {id === 'selectable' && <Table label="Menu items" columns={columns} rows={rows} selectable defaultSort={{ key: 'product', direction: 'asc' }} />}
-          {id === 'zebra' && <Table label="Menu items" columns={columns} rows={rows} zebra />}
-          {id === 'scroll' && <Table label="Menu items" columns={wide} rows={rows} overflow="scroll" />}
+          <Table
+            key={id}
+            label="Menu items"
+            columns={v.overflow === 'scroll' ? wide : columns}
+            rows={rows}
+            overflow={v.overflow as 'fit' | 'scroll'}
+            selectable={v.selectable === 'on'}
+            zebra={v.zebra === 'on'}
+          />
         </div>
       )}
     />

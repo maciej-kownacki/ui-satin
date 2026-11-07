@@ -1,5 +1,5 @@
 import { CodeBlock } from '@satin/ui/code-block'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const route = `import { streamText } from "ai"
 
@@ -31,44 +31,52 @@ const diff = ` import { streamText } from "ai"
    return result.toUIMessageStreamResponse()
  }`
 
-const snippet = `const total = orders.reduce((sum, o) => sum + o.amount, 0)`
-
 const literal = (s: string) => '`' + s.replace(/[`$\\]/g, (c) => '\\' + c) + '`'
 
-export const options: ShowcaseOption[] = [
-  {
-    id: 'code',
-    label: 'Code',
-    code: `import { CodeBlock } from '@satin/ui/code-block'
-
-const code = ${literal(route)}
-
-export function Route() {
-  return <CodeBlock filename="app/api/chat/route.ts" code={code} highlightLines={[6, 7, 8, 9, 10]} />
-}`,
-  },
-  {
-    id: 'diff',
-    label: 'Diff',
-    code: `import { CodeBlock } from '@satin/ui/code-block'
-
-// Each line starts with "+", "-" or a space, like a unified diff.
-const diff = ${literal(diff)}
-
-export function Change() {
-  return <CodeBlock view="diff" filename="app/api/chat/route.ts" code={diff} />
-}`,
-  },
-  {
-    id: 'inline',
-    label: 'Inline',
-    code: `import { CodeBlock } from '@satin/ui/code-block'
-
-export function Snippet() {
-  return <CodeBlock showHeader={false} code={${literal(snippet)}} />
-}`,
-  },
+// View decides what the lines mean, syntax how they're coloured; then the header and the copy
+// button in it, and the marked lines (code view only).
+export const controls: ShowcaseControl[] = [
+  { id: 'view', label: 'View', items: [{ value: 'code', label: 'Code' }, { value: 'diff', label: 'Diff' }] },
+  { id: 'syntax', label: 'Syntax', type: 'switch', default: 'on' },
+  { id: 'header', label: 'Header', type: 'switch', default: 'on' },
+  { id: 'actions', label: 'Actions', type: 'switch', default: 'on' },
+  { id: 'lines', label: 'Highlighted lines', type: 'switch', default: 'on' },
 ]
+
+const on = (v: Record<string, string>, id: string) => v[id] === 'on'
+const filename = 'app/api/chat/route.ts'
+const highlightLines = [6, 7, 8, 9, 10]
+
+function code(v: Record<string, string>) {
+  const diffView = v.view === 'diff'
+  const name = diffView ? 'diff' : 'code'
+  const props = [
+    diffView && 'view="diff"',
+    !on(v, 'syntax') && 'highlight={false}',
+    on(v, 'header') ? `filename="${filename}"` : 'showHeader={false}',
+    on(v, 'header') && !on(v, 'actions') && 'showActions={false}',
+    `code={${name}}`,
+    !diffView && on(v, 'lines') && `highlightLines={[${highlightLines.join(', ')}]}`,
+  ].filter(Boolean)
+  return `import { CodeBlock } from '@satin/ui/code-block'
+${diffView ? '\n// Each line starts with "+", "-" or a space, like a unified diff.\n' : '\n'}const ${name} = ${literal(diffView ? diff : route)}
+
+export function ${diffView ? 'Change' : 'Route'}() {
+  return <CodeBlock ${props.join(' ')} />
+}`
+}
+
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    v.view === 'diff' ? 'Diff' : 'Code',
+    on(v, 'syntax') ? 'Syntax' : 'No syntax',
+    on(v, 'header') ? 'Header' : 'No header',
+    on(v, 'actions') ? 'Actions' : 'No actions',
+    on(v, 'lines') ? 'Highlighted lines' : 'No highlighted lines',
+  ].join(' · '),
+  code: code(v),
+}))
 
 export default function CodeBlockDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
   return (
@@ -76,11 +84,18 @@ export default function CodeBlockDemo({ codeHtml }: { codeHtml: Record<string, s
       name="Code block"
       options={options}
       codeHtml={codeHtml}
-      render={(id) => (
+      controls={controls}
+      render={(_, v) => (
         <div className="w-[600px] max-w-full">
-          {id === 'code' && <CodeBlock filename="app/api/chat/route.ts" code={route} highlightLines={[6, 7, 8, 9, 10]} />}
-          {id === 'diff' && <CodeBlock view="diff" filename="app/api/chat/route.ts" code={diff} />}
-          {id === 'inline' && <CodeBlock showHeader={false} code={snippet} />}
+          <CodeBlock
+            view={v.view as 'code' | 'diff'}
+            highlight={on(v, 'syntax')}
+            showHeader={on(v, 'header')}
+            showActions={on(v, 'actions')}
+            filename={filename}
+            code={v.view === 'diff' ? diff : route}
+            highlightLines={v.view === 'code' && on(v, 'lines') ? highlightLines : undefined}
+          />
         </div>
       )}
     />

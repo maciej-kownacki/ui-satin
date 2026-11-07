@@ -18,15 +18,15 @@ const api = {
   description:
     'The `Dialog` component wraps the Radix dialog in a `div` with `role="dialog"` (`alertdialog` when destructive) that adds a title, body and actions. Put `DialogAlert` in `alert` for a side effect, and wrap footer buttons in `DialogClose` to close it.',
   props: [
-    { name: 'open', type: ['boolean'], default: 'false' },
+    { name: 'variant', type: ['"default"', '"destructive"'], default: '"default"' },
+    { name: 'trigger', type: ['ReactNode'] },
     { name: 'title', type: ['string'] },
     { name: 'description', type: ['string'] },
-    { name: 'variant', type: ['"default"', '"destructive"'], default: '"default"' },
+    { name: 'children', type: ['ReactNode'] },
     { name: 'alert', type: ['ReactNode'] },
     { name: 'footer', type: ['ReactNode'] },
+    { name: 'open', type: ['boolean'], default: 'false' },
     { name: 'onOpenChange', type: ['(open: boolean) => void'] },
-    { name: 'trigger', type: ['ReactNode'] },
-    { name: 'children', type: ['ReactNode'] },
   ],
 }
 ---

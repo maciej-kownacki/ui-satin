@@ -1,136 +1,129 @@
 import * as React from 'react'
 import { Button } from '@satin/ui'
 import { DropdownMenu, DropdownMenuGroup, DropdownMenuItem } from '@satin/ui/dropdown'
-import { Brain, Code, Copy, Download, EditPencil, Eye, Flash, NavArrowDown, Sparks, Trash } from 'iconoir-react'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { CheckCircle, Circle, Clock, Eye, NavArrowDown, XmarkCircle } from 'iconoir-react'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
-const code = {
-  icons: `import { Button } from '@satin/ui/button'
-import { DropdownMenu, DropdownMenuItem } from '@satin/ui/dropdown'
-import { Code, Copy, Download, Eye } from 'iconoir-react'
+// A status menu: the current status is the selected item, and the statuses fall into two groups.
+const groups = [
+  {
+    label: 'Open',
+    items: [
+      { value: 'backlog', label: 'Backlog', description: 'Not started yet', Icon: Circle, icon: 'Circle' },
+      { value: 'progress', label: 'In progress', description: 'Someone is on it', Icon: Clock, icon: 'Clock' },
+      { value: 'review', label: 'In review', description: 'Waiting for approval', Icon: Eye, icon: 'Eye' },
+    ],
+  },
+  {
+    label: 'Closed',
+    items: [
+      { value: 'done', label: 'Done', description: 'Shipped and checked', Icon: CheckCircle, icon: 'CheckCircle' },
+      { value: 'cancelled', label: 'Cancelled', description: 'Won’t be done', Icon: XmarkCircle, icon: 'XmarkCircle' },
+    ],
+  },
+]
+const items = groups.flatMap((g) => g.items)
+const current = 'progress'
 
-<DropdownMenu trigger={<Button variant="secondary">Actions</Button>}>
-  <DropdownMenuItem icon={<Eye />} label="Open preview" />
-  <DropdownMenuItem icon={<Code />} label="View code" />
-  <DropdownMenuItem icon={<Copy />} label="Duplicate" />
-  <DropdownMenuItem icon={<Download />} label="Export" />
-</DropdownMenu>`,
-  description: `import { Button } from '@satin/ui/button'
-import { DropdownMenu, DropdownMenuItem } from '@satin/ui/dropdown'
-import { Brain, Flash, Sparks } from 'iconoir-react'
-
-const [model, setModel] = React.useState('balanced')
-
-<DropdownMenu trigger={<Button variant="secondary">Model</Button>}>
-  <DropdownMenuItem icon={<Flash />} label="Fast" description="Quick answers"
-    selected={model === 'fast'} onSelect={() => setModel('fast')} />
-  <DropdownMenuItem icon={<Sparks />} label="Balanced" description="Best for most tasks"
-    selected={model === 'balanced'} onSelect={() => setModel('balanced')} />
-  <DropdownMenuItem icon={<Brain />} label="Deep" description="Thinks before it answers"
-    selected={model === 'deep'} onSelect={() => setModel('deep')} />
-</DropdownMenu>`,
-  groups: `import { Button } from '@satin/ui/button'
-import { DropdownMenu, DropdownMenuGroup, DropdownMenuItem } from '@satin/ui/dropdown'
-import { Copy, EditPencil, Eye, Trash } from 'iconoir-react'
-
-<DropdownMenu trigger={<Button variant="secondary">File</Button>}>
-  <DropdownMenuGroup label="View">
-    <DropdownMenuItem icon={<Eye />} label="Open preview" />
-    <DropdownMenuItem icon={<EditPencil />} label="Rename" />
-  </DropdownMenuGroup>
-  <DropdownMenuGroup label="Manage">
-    <DropdownMenuItem icon={<Copy />} label="Duplicate" />
-    <DropdownMenuItem icon={<Trash />} label="Delete" />
-  </DropdownMenuGroup>
-</DropdownMenu>`,
-  inline: `import { Button } from '@satin/ui/button'
-import { DropdownMenu, DropdownMenuItem } from '@satin/ui/dropdown'
-
-<DropdownMenu trigger={<Button variant="secondary">Sort by</Button>}>
-  <DropdownMenuItem layout="inline" label="Newest" description="Created" selected />
-  <DropdownMenuItem layout="inline" label="Oldest" description="Created" />
-  <DropdownMenuItem layout="inline" label="Name" description="A to Z" />
-</DropdownMenu>`,
-}
-
-export const options: ShowcaseOption[] = [
-  { id: 'icons', label: 'Leading icon', code: code.icons },
-  { id: 'description', label: 'Description', code: code.description },
-  { id: 'groups', label: 'Groups', code: code.groups },
-  { id: 'inline', label: 'Inline', code: code.inline },
+// Item layout shapes every row, groups split the list; then what each row carries, selection last.
+export const controls: ShowcaseControl[] = [
+  { id: 'layout', label: 'Layout', items: [{ value: 'stacked', label: 'Stacked' }, { value: 'inline', label: 'Inline' }] },
+  { id: 'groups', label: 'Groups', type: 'switch', default: 'off' },
+  { id: 'icon', label: 'Icon', type: 'switch', default: 'on' },
+  { id: 'description', label: 'Description', type: 'switch', default: 'off' },
+  { id: 'selected', label: 'Selected', type: 'switch', default: 'on' },
 ]
 
-/** The menu opens on load (non-modal, so the docs page keeps scrolling) and portals into the stage. */
-function Preview({ id }: { id: string }) {
-  const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
-  const [model, setModel] = React.useState('balanced')
-  const [sort, setSort] = React.useState('newest')
-  const shared = { container: stage, defaultOpen: true, modal: false, align: 'start' as const }
-  const trigger = (label: string) => (
+const on = (v: Record<string, string>, id: string) => v[id] === 'on'
+
+function code(v: Record<string, string>) {
+  const item = (i: (typeof items)[number], indent: string) =>
+    `${indent}<DropdownMenuItem${[
+      v.layout === 'inline' && ' layout="inline"',
+      on(v, 'icon') && ` icon={<${i.icon} />}`,
+      ` label="${i.label}"`,
+      on(v, 'description') && ` description="${i.description}"`,
+      on(v, 'selected') && i.value === current && ' selected',
+    ]
+      .filter(Boolean)
+      .join('')} />`
+  const body = on(v, 'groups')
+    ? groups
+        .map((g) => `  <DropdownMenuGroup label="${g.label}">\n${g.items.map((i) => item(i, '    ')).join('\n')}\n  </DropdownMenuGroup>`)
+        .join('\n')
+    : items.map((i) => item(i, '  ')).join('\n')
+  const icons = [...(on(v, 'icon') ? items.map((i) => i.icon) : []), 'NavArrowDown'].sort()
+  return `import { Button } from '@satin/ui/button'
+import { DropdownMenu, ${on(v, 'groups') ? 'DropdownMenuGroup, ' : ''}DropdownMenuItem } from '@satin/ui/dropdown'
+import { ${icons.join(', ')} } from 'iconoir-react'
+
+<DropdownMenu
+  trigger={
     <Button variant="secondary">
-      {label}
+      Status
       <NavArrowDown />
     </Button>
+  }
+>
+${body}
+</DropdownMenu>`
+}
+
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    v.layout === 'inline' ? 'Inline' : 'Stacked',
+    on(v, 'groups') ? 'Groups' : 'No groups',
+    on(v, 'icon') ? 'Icon' : 'No icon',
+    on(v, 'description') ? 'Description' : 'No description',
+    on(v, 'selected') ? 'Selected' : 'No selection',
+  ].join(' · '),
+  code: code(v),
+}))
+
+/** The menu opens on load (non-modal, so the docs page keeps scrolling) and portals into the stage. */
+function Preview({ v }: { v: Record<string, string> }) {
+  const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
+  const [status, setStatus] = React.useState(current)
+  const row = (i: (typeof items)[number]) => (
+    <DropdownMenuItem
+      key={i.value}
+      layout={v.layout as 'stacked' | 'inline'}
+      icon={on(v, 'icon') ? <i.Icon /> : undefined}
+      label={i.label}
+      description={on(v, 'description') ? i.description : undefined}
+      selected={on(v, 'selected') && status === i.value}
+      onSelect={() => setStatus(i.value)}
+    />
   )
 
-  // Leave room under the trigger: the stage is 442px and the menu opens below.
+  // Room under the trigger for the open menu, so it stays inside the stage: trigger and offset,
+  // five rows (taller with a stacked description), group headers and the rule between groups.
+  const rowHeight = on(v, 'description') && v.layout === 'stacked' ? 50 : 32
+  const height = 40 + 10 + items.length * rowHeight + (on(v, 'groups') ? 2 * 24 + 17 : 0)
+
   return (
-    <div className="flex h-[300px] w-[255px] items-start">
+    <div className="flex w-[255px] items-start" style={{ height }}>
       <div ref={setStage} className="pointer-events-none absolute inset-0 z-10" />
-      {stage && id === 'icons' && (
-        <DropdownMenu {...shared} trigger={trigger('Actions')}>
-          <DropdownMenuItem icon={<Eye />} label="Open preview" />
-          <DropdownMenuItem icon={<Code />} label="View code" />
-          <DropdownMenuItem icon={<Copy />} label="Duplicate" />
-          <DropdownMenuItem icon={<Download />} label="Export" />
-        </DropdownMenu>
-      )}
-      {stage && id === 'description' && (
-        <DropdownMenu {...shared} trigger={trigger('Model')}>
-          {[
-            { value: 'fast', icon: <Flash />, label: 'Fast', description: 'Quick answers' },
-            { value: 'balanced', icon: <Sparks />, label: 'Balanced', description: 'Best for most tasks' },
-            { value: 'deep', icon: <Brain />, label: 'Deep', description: 'Thinks before it answers' },
-          ].map((m) => (
-            <DropdownMenuItem
-              key={m.value}
-              icon={m.icon}
-              label={m.label}
-              description={m.description}
-              selected={model === m.value}
-              onSelect={() => setModel(m.value)}
-            />
-          ))}
-        </DropdownMenu>
-      )}
-      {stage && id === 'groups' && (
-        <DropdownMenu {...shared} trigger={trigger('File')}>
-          <DropdownMenuGroup label="View">
-            <DropdownMenuItem icon={<Eye />} label="Open preview" />
-            <DropdownMenuItem icon={<EditPencil />} label="Rename" />
-          </DropdownMenuGroup>
-          <DropdownMenuGroup label="Manage">
-            <DropdownMenuItem icon={<Copy />} label="Duplicate" />
-            <DropdownMenuItem icon={<Trash />} label="Delete" />
-          </DropdownMenuGroup>
-        </DropdownMenu>
-      )}
-      {stage && id === 'inline' && (
-        <DropdownMenu {...shared} trigger={trigger('Sort by')}>
-          {[
-            { value: 'newest', label: 'Newest', description: 'Created' },
-            { value: 'oldest', label: 'Oldest', description: 'Created' },
-            { value: 'name', label: 'Name', description: 'A to Z' },
-          ].map((s) => (
-            <DropdownMenuItem
-              key={s.value}
-              layout="inline"
-              label={s.label}
-              description={s.description}
-              selected={sort === s.value}
-              onSelect={() => setSort(s.value)}
-            />
-          ))}
+      {stage && (
+        <DropdownMenu
+          container={stage}
+          defaultOpen
+          modal={false}
+          trigger={
+            <Button variant="secondary">
+              Status
+              <NavArrowDown />
+            </Button>
+          }
+        >
+          {on(v, 'groups')
+            ? groups.map((g) => (
+                <DropdownMenuGroup key={g.label} label={g.label}>
+                  {g.items.map(row)}
+                </DropdownMenuGroup>
+              ))
+            : items.map(row)}
         </DropdownMenu>
       )}
     </div>
@@ -138,5 +131,13 @@ function Preview({ id }: { id: string }) {
 }
 
 export default function DropdownDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
-  return <Showcase name="Dropdown" options={options} codeHtml={codeHtml} render={(id) => <Preview key={id} id={id} />} />
+  return (
+    <Showcase
+      name="Dropdown"
+      options={options}
+      codeHtml={codeHtml}
+      controls={controls}
+      render={(id, v) => <Preview key={id} v={v} />}
+    />
+  )
 }

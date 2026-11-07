@@ -2,56 +2,66 @@ import * as React from 'react'
 import { Card } from '@satin/ui/card'
 import { Button } from '@satin/ui/button'
 import { Checkbox } from '@satin/ui/checkbox'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
-export const options: ShowcaseOption[] = [
-  {
-    id: 'default',
-    label: 'Default',
-    code: `import { Card } from '@satin/ui/card'
-import { Button } from '@satin/ui/button'
-import { Checkbox } from '@satin/ui/checkbox'
+// Size sets the padding; the rest are the card's parts, top to bottom.
+export const controls: ShowcaseControl[] = [
+  { id: 'size', label: 'Size', items: [{ value: 'md', label: 'Medium' }, { value: 'sm', label: 'Small' }] },
+  { id: 'description', label: 'Description', type: 'switch', default: 'on' },
+  { id: 'close', label: 'Close', type: 'switch', default: 'on' },
+  { id: 'footer', label: 'Footer', type: 'switch', default: 'on' },
+]
 
-<Card
-  title="Notifications"
-  description="Choose what we email you about."
-  footer={
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
+}
+
+function code(v: Record<string, string>) {
+  const footer = v.footer === 'on'
+  const attrs = [
+    v.size === 'sm' && '  size="sm"',
+    '  title="Notifications"',
+    v.description === 'on' && '  description="Choose what we email you about."',
+    footer &&
+      `  footer={
     <>
       <Button variant="secondary">Cancel</Button>
       <Button>Save</Button>
     </>
-  }
-  onClose={() => setOpen(false)}
+  }`,
+    v.close === 'on' && '  onClose={() => setOpen(false)}',
+  ]
+    .filter(Boolean)
+    .join('\n')
+  return `import { Card } from '@satin/ui/card'
+${footer ? `import { Button } from '@satin/ui/button'\n` : ''}import { Checkbox } from '@satin/ui/checkbox'
+
+<Card
+${attrs}
 >
   <div className="flex flex-col gap-3">
     <Checkbox label="Weekly summary" defaultChecked />
     <Checkbox label="New bookings" />
   </div>
-</Card>`,
-  },
-  {
-    id: 'small',
-    label: 'Small',
-    code: `import { Card } from '@satin/ui/card'
+</Card>`
+}
 
-<Card size="sm" title="Notifications" description="Choose what we email you about.">
-  …
-</Card>`,
-  },
-  {
-    id: 'read-only',
-    label: 'No footer',
-    code: `import { Card } from '@satin/ui/card'
+// One option per combination, so the Code tab always shows what the stage shows.
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    labelOf('size', v.size),
+    v.description === 'on' ? 'Description' : 'No description',
+    v.close === 'on' ? 'Close' : 'No close',
+    v.footer === 'on' ? 'Footer' : 'No footer',
+  ].join(' · '),
+  code: code(v),
+}))
 
-<Card title="Notifications" description="Choose what we email you about.">
-  …
-</Card>`,
-  },
-]
-
-function Example({ id }: { id: string }) {
+// Closing stays live in the stage; a button brings the card back, and any change resets it.
+function Example({ v }: { v: Record<string, string> }) {
   const [open, setOpen] = React.useState(true)
-  React.useEffect(() => setOpen(true), [id])
   if (!open)
     return (
       <Button variant="secondary" onClick={() => setOpen(true)}>
@@ -60,18 +70,18 @@ function Example({ id }: { id: string }) {
     )
   return (
     <Card
-      size={id === 'small' ? 'sm' : 'md'}
+      size={v.size as 'md' | 'sm'}
       title="Notifications"
-      description="Choose what we email you about."
+      description={v.description === 'on' ? 'Choose what we email you about.' : undefined}
       footer={
-        id === 'read-only' ? undefined : (
+        v.footer === 'on' ? (
           <>
             <Button variant="secondary">Cancel</Button>
             <Button>Save</Button>
           </>
-        )
+        ) : undefined
       }
-      onClose={id === 'default' ? () => setOpen(false) : undefined}
+      onClose={v.close === 'on' ? () => setOpen(false) : undefined}
     >
       <div className="flex flex-col gap-3">
         <Checkbox label="Weekly summary" defaultChecked />
@@ -82,5 +92,13 @@ function Example({ id }: { id: string }) {
 }
 
 export default function CardDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
-  return <Showcase name="Card" options={options} codeHtml={codeHtml} render={(id) => <Example id={id} />} />
+  return (
+    <Showcase
+      name="Card"
+      options={options}
+      codeHtml={codeHtml}
+      controls={controls}
+      render={(id, v) => <Example key={id} v={v} />}
+    />
+  )
 }

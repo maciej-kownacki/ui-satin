@@ -1,55 +1,58 @@
 import { SegmentedControl } from '@satin/ui'
 import { Home, Folder, User } from 'iconoir-react'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
-export const options: ShowcaseOption[] = [
-  {
-    id: 'default',
-    label: 'Default',
-    code: `import { SegmentedControl } from '@satin/ui/segmented-control'
-
-<SegmentedControl
-  items={[
-    { value: 'all', label: 'All' },
-    { value: 'tab', label: 'Tab' },
-    { value: 'agent', label: 'Agent' },
-  ]}
-  defaultValue="all"
-/>`,
-  },
-  {
-    id: 'rounded',
-    label: 'Rounded',
-    code: `import { SegmentedControl } from '@satin/ui/segmented-control'
-
-<SegmentedControl
-  shape="rounded"
-  items={[
-    { value: 'all', label: 'All' },
-    { value: 'tab', label: 'Tab' },
-    { value: 'agent', label: 'Agent' },
-  ]}
-  defaultValue="all"
-/>`,
-  },
-  {
-    id: 'icons',
-    label: 'Icons',
-    code: `import { SegmentedControl } from '@satin/ui/segmented-control'
-import { Home, Folder, User } from 'iconoir-react'
-
-<SegmentedControl
-  size="lg"
-  shape="rounded"
-  items={[
-    { value: 'home', label: 'Home', icon: <Home /> },
-    { value: 'files', label: 'Files', icon: <Folder /> },
-    { value: 'agent', label: 'Agent', icon: <User /> },
-  ]}
-  defaultValue="home"
-/>`,
-  },
+const segments = [
+  { value: 'home', label: 'Home', Icon: Home, icon: 'Home' },
+  { value: 'files', label: 'Files', Icon: Folder, icon: 'Folder' },
+  { value: 'agent', label: 'Agent', Icon: User, icon: 'User' },
 ]
+
+// Size sets the height, shape the corners, border outlines the track; the icon is content.
+export const controls: ShowcaseControl[] = [
+  {
+    id: 'size',
+    label: 'Size',
+    default: 'md',
+    items: [{ value: 'xs', label: 'Extra small' }, { value: 'md', label: 'Medium' }, { value: 'lg', label: 'Large' }],
+  },
+  { id: 'shape', label: 'Shape', items: [{ value: 'default', label: 'Default' }, { value: 'rounded', label: 'Rounded' }] },
+  { id: 'border', label: 'Border', type: 'switch', default: 'off' },
+  { id: 'icon', label: 'Icon', type: 'switch', default: 'off' },
+]
+
+const defaults: Record<string, string> = { size: 'md', shape: 'default' }
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
+}
+
+function code(v: Record<string, string>) {
+  const icon = v.icon === 'on'
+  const attrs = ['size', 'shape'].filter((k) => v[k] !== defaults[k]).map((k) => `\n  ${k}="${v[k]}"`).join('')
+  const rows = segments
+    .map((s) => `    { value: '${s.value}', label: '${s.label}'${icon ? `, icon: <${s.icon} />` : ''} },`)
+    .join('\n')
+  return `import { SegmentedControl } from '@satin/ui/segmented-control'
+${icon ? `import { ${segments.map((s) => s.icon).join(', ')} } from 'iconoir-react'\n` : ''}
+<SegmentedControl${attrs}${v.border === 'on' ? '\n  border' : ''}
+  items={[
+${rows}
+  ]}
+/>`
+}
+
+// One option per combination, so the Code tab always shows what the stage shows.
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    labelOf('size', v.size),
+    labelOf('shape', v.shape),
+    v.border === 'on' ? 'Border' : 'No border',
+    v.icon === 'on' ? 'Icon' : 'No icon',
+  ].join(' · '),
+  code: code(v),
+}))
 
 export default function SegmentedControlDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
   return (
@@ -57,30 +60,19 @@ export default function SegmentedControlDemo({ codeHtml }: { codeHtml: Record<st
       name="Segmented control"
       options={options}
       codeHtml={codeHtml}
-      render={(id) =>
-        id === 'icons' ? (
-          <SegmentedControl
-            key={id}
-            size="lg"
-            shape="rounded"
-            items={[
-              { value: 'home', label: 'Home', icon: <Home aria-hidden /> },
-              { value: 'files', label: 'Files', icon: <Folder aria-hidden /> },
-              { value: 'agent', label: 'Agent', icon: <User aria-hidden /> },
-            ]}
-          />
-        ) : (
-          <SegmentedControl
-            key={id}
-            shape={id === 'rounded' ? 'rounded' : 'default'}
-            items={[
-              { value: 'all', label: 'All' },
-              { value: 'tab', label: 'Tab' },
-              { value: 'agent', label: 'Agent' },
-            ]}
-          />
-        )
-      }
+      controls={controls}
+      render={(_, v) => (
+        <SegmentedControl
+          size={v.size as 'xs' | 'md' | 'lg'}
+          shape={v.shape as 'default' | 'rounded'}
+          border={v.border === 'on'}
+          items={segments.map(({ value, label, Icon }) => ({
+            value,
+            label,
+            icon: v.icon === 'on' ? <Icon aria-hidden /> : undefined,
+          }))}
+        />
+      )}
     />
   )
 }

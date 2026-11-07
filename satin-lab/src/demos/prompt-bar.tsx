@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { PromptBar, defaultActions, type PromptBarAction, type PromptBarModel } from '@satin/ui/prompt-bar'
-import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import modelMark from './assets/model-mark.png'
 import gmail from './assets/app-gmail.png'
 import notion from './assets/app-notion.png'
@@ -18,7 +18,7 @@ const models: PromptBarModel[] = [
 const App = ({ src }: { src: string }) => <img src={src} alt="" className="size-4 shrink-0" />
 
 /** The + menu as in Figma: the two built-in rows, then apps the user can connect. */
-const actions: PromptBarAction[] = [
+const apps: PromptBarAction[] = [
   ...defaultActions,
   { id: 'gmail', label: 'Gmail', description: 'Read and manage Gmail', icon: <App src={gmail.src} /> },
   { id: 'notion', label: 'Notion', description: 'Create and manage content', icon: <App src={notion.src} /> },
@@ -26,49 +26,91 @@ const actions: PromptBarAction[] = [
   { id: 'wintermute', label: 'Wintermute', description: 'Orchestrate agents', icon: <App src={wintermute.src} /> },
 ]
 
-/** Sample files, so the attachments option shows the three chip types from Figma. */
+/** Sample files, so the attachments switch shows the three chip types from Figma. */
 const sampleFiles = () =>
   ['Deal_Acme.pdf', 'Contract_draft.docx', 'Q3_costs.xlsx'].map((name) => new File([''], name))
 
-const code = (shape: 'pill' | 'default', withFiles = false) => `import { PromptBar, defaultActions } from '@satin/ui/prompt-bar'
+const draft = 'Summarize the Acme deal for Friday'
 
-<PromptBar
-  shape="${shape}"
-  actions={[
+// Shape sets the bar, the switches fill its menus and chips, and state comes last: inactive is
+// the empty bar, active has text to send (the border goes strong), disabled turns it all off.
+export const controls: ShowcaseControl[] = [
+  { id: 'shape', label: 'Shape', items: [{ value: 'pill', label: 'Pill' }, { value: 'default', label: 'Default' }] },
+  { id: 'models', label: 'Models', type: 'switch', default: 'on' },
+  { id: 'apps', label: 'Apps', type: 'switch', default: 'on' },
+  { id: 'attachments', label: 'Attachments', type: 'switch', default: 'off' },
+  {
+    id: 'state',
+    label: 'State',
+    items: [
+      { value: 'inactive', label: 'Inactive' },
+      { value: 'active', label: 'Active' },
+      { value: 'disabled', label: 'Disabled' },
+    ],
+  },
+]
+
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
+}
+
+function code(v: Record<string, string>) {
+  const props = [
+    v.shape !== 'pill' && `shape="${v.shape}"`,
+    v.state === 'active' && `defaultValue="${draft}"`,
+    v.apps === 'on' &&
+      `actions={[
     ...defaultActions,
     { id: 'gmail', label: 'Gmail', description: 'Read and manage Gmail', icon: <GmailLogo /> },
     { id: 'notion', label: 'Notion', description: 'Create and manage content', icon: <NotionLogo /> },
-  ]}
-  models={[
+  ]}`,
+    v.models === 'on' &&
+      `models={[
     { value: 'opus-5.5', label: 'Opus 5.5', icon: <ModelMark /> },
     { value: 'sonnet-5.5', label: 'Sonnet 5.5', icon: <ModelMark /> },
     { value: 'haiku-4.5', label: 'Haiku 4.5', icon: <ModelMark /> },
-  ]}${withFiles ? `
-  attachments={files}
-  onAttachmentsChange={setFiles}` : ''}
-  onSubmit={(message, files) => send(message, files)}
+  ]}`,
+    v.attachments === 'on' && 'attachments={files}',
+    v.attachments === 'on' && 'onAttachmentsChange={setFiles}',
+    v.state === 'disabled' && 'disabled',
+    'onSubmit={(message, files) => send(message, files)}',
+  ].filter(Boolean)
+  return `import { PromptBar${v.apps === 'on' ? ', defaultActions' : ''} } from '@satin/ui/prompt-bar'
+
+<PromptBar
+${props.map((p) => `  ${p}`).join('\n')}
 />`
+}
 
-export const options: ShowcaseOption[] = [
-  { id: 'pill', label: 'Pill', code: code('pill') },
-  { id: 'default', label: 'Default', code: code('default') },
-  { id: 'attachments', label: 'Attachments', code: code('pill', true) },
-]
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [
+    labelOf('shape', v.shape),
+    v.models === 'on' ? 'Models' : 'No models',
+    v.apps === 'on' ? 'Apps' : 'No apps',
+    v.attachments === 'on' ? 'Attachments' : 'No attachments',
+    labelOf('state', v.state),
+  ].join(' · '),
+  code: code(v),
+}))
 
-function Demo({ shape, withFiles }: { shape: 'pill' | 'default'; withFiles?: boolean }) {
+function Demo({ v }: { v: Record<string, string> }) {
   const [sent, setSent] = React.useState<string | null>(null)
-  const [files, setFiles] = React.useState<File[]>(() => (withFiles ? sampleFiles() : []))
+  const [files, setFiles] = React.useState<File[]>(() => (v.attachments === 'on' ? sampleFiles() : []))
   return (
     <div className="grid w-[min(600px,calc(100vw-80px))] gap-3">
       <p aria-live="polite" className="min-h-5 text-center text-sm text-text-muted">
-        {sent ?? 'Type a message and press Enter. + and the model open their menus.'}
+        {sent ?? (v.state === 'disabled' ? 'Disabled: nothing can be typed or sent.' : 'Type a message and press Enter. + and the model open their menus.')}
       </p>
       <PromptBar
-        shape={shape}
-        models={models}
-        actions={actions}
+        shape={v.shape as 'pill' | 'default'}
+        defaultValue={v.state === 'active' ? draft : undefined}
+        models={v.models === 'on' ? models : undefined}
+        actions={v.apps === 'on' ? apps : undefined}
         attachments={files}
         onAttachmentsChange={setFiles}
+        disabled={v.state === 'disabled'}
         onSubmit={(message, attached) =>
           setSent(`Sent: “${message || '(no text)'}”${attached.length ? ` with ${attached.length} file(s)` : ''}`)
         }
@@ -83,9 +125,9 @@ export default function PromptBarDemo({ codeHtml }: { codeHtml: Record<string, s
       name="Prompt bar"
       options={options}
       codeHtml={codeHtml}
-      render={(id) => (
-        <Demo key={id} shape={id === 'default' ? 'default' : 'pill'} withFiles={id === 'attachments'} />
-      )}
+      controls={controls}
+      // Remount on every change, so the text and files start from what the controls say.
+      render={(id, v) => <Demo key={id} v={v} />}
     />
   )
 }

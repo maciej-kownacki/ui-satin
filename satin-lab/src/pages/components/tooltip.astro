@@ -18,10 +18,10 @@ const codeHtml = await highlight(options)
     api={{
       description: 'The `Tooltip` component is a wrapper around the `div` element with role="tooltip", linked to its trigger.',
       props: [
-        { name: 'label', type: ['string'] },
-        { name: 'shortcut', type: ['string'] },
         { name: 'shape', type: ['"default"', '"rounded"'], default: '"default"' },
         { name: 'side', type: ['"top"', '"right"', '"bottom"', '"left"'], default: '"top"' },
+        { name: 'label', type: ['string'] },
+        { name: 'shortcut', type: ['string'] },
         { name: 'delay', type: ['number'], default: '300' },
         { name: 'children', type: ['ReactNode'] },
       ],
