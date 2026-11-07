@@ -61,7 +61,7 @@ import { ${icons.join(', ')} } from 'iconoir-react'
   trigger={
     <Button variant="secondary">
       Status
-      <NavArrowDown />
+      <NavArrowDown data-chevron />
     </Button>
   }
 >
@@ -113,7 +113,7 @@ function Preview({ v }: { v: Record<string, string> }) {
           trigger={
             <Button variant="secondary">
               Status
-              <NavArrowDown />
+              <NavArrowDown data-chevron />
             </Button>
           }
         >

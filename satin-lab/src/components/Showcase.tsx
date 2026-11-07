@@ -329,7 +329,7 @@ function MenuControl({
         <Button variant="secondary" size="lg" shape="rounded" aria-label={`${control.label}: ${current.label}`}>
           {current.icon}
           {current.label}
-          <NavArrowDown />
+          <NavArrowDown data-chevron />
         </Button>
       }
     >

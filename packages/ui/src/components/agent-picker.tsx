@@ -107,7 +107,7 @@ export function AgentPicker({
         >
           {current && <AgentAvatar agent={current} size={16} />}
           <span className="truncate">{current ? current.name : placeholder}</span>
-          <NavArrowDown aria-hidden />
+          <NavArrowDown aria-hidden data-chevron />
         </Button>
       </DropdownMenu.Trigger>
       {disablePortal ? content : <DropdownMenu.Portal>{content}</DropdownMenu.Portal>}

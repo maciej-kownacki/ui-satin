@@ -398,7 +398,7 @@ function ModelSelect({
       {icon && <span className="flex size-4 shrink-0 items-center justify-center [&>*]:size-4">{icon}</span>}
       <span className="sr-only">Model: </span>
       {label}
-      <NavArrowDown aria-hidden />
+      <NavArrowDown aria-hidden data-chevron />
     </Button>
   )
   if (!models?.length) return trigger
