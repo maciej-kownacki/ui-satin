@@ -7,19 +7,11 @@ export type NavGroup = { id: string; title: string; items: NavItem[] }
 
 export const nav: NavGroup[] = [
   {
-    id: 'intro',
-    title: 'Intro',
+    id: 'docs',
+    title: 'Docs',
     items: [
-      { id: 'what-is-satin', title: 'What is Satin?', href: '/', description: 'A design system for calm product interfaces, with patterns for AI agents.' },
-      { id: 'who-is-satin-for', title: 'Who is Satin for?', href: '/intro/who-is-satin-for', description: 'Anyone who designs or builds with it.' },
-      { id: 'how-to-use-satin', title: 'How can I use Satin?', href: '/intro/how-to-use-satin', description: 'Import the styles once, then import components one by one.' },
-    ],
-  },
-  {
-    id: 'foundations',
-    title: 'Foundations',
-    items: [
-      { id: 'tokens', title: 'Tokens', href: '/foundations/tokens', description: 'The colour tokens, in Light and Dark, straight from tokens.json.' },
+      { id: 'introduction', title: 'Introduction', href: '/', description: 'A design system for calm product interfaces, with patterns for AI agents.' },
+      { id: 'tokens', title: 'Tokens', href: '/tokens', description: 'The colour tokens by group, in Light and Dark, straight from tokens.json.' },
     ],
   },
   {

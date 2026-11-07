@@ -3,10 +3,10 @@
  * One group of colour tokens from tokens/tokens.json, in the API Reference style: each token
  * with its Light and Dark value side by side.
  */
-import Docs from '../../../layouts/Docs.astro'
-import PageHeader from '../../../components/PageHeader.astro'
-import Chip from '../../../components/Chip.astro'
-import { colorGroups } from '../../../lib/tokens'
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import { colorGroups } from '../../lib/tokens'
 
 export const getStaticPaths = () => colorGroups.map((g) => ({ params: { role: g.role }, props: { g } }))
 const { g } = Astro.props
@@ -20,7 +20,7 @@ const td = 'py-3 pr-4 align-middle'
     id="tokens"
     title={g.title}
     description={g.description}
-    crumbs={[{ label: 'Foundations' }, { label: 'Tokens', href: '/foundations/tokens' }, { label: g.title }]}
+    crumbs={[{ label: 'Docs' }, { label: 'Tokens', href: '/tokens' }, { label: g.title }]}
   />
 
   <div class="overflow-x-auto pt-4">

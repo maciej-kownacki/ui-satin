@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Button, cn } from '@satin/ui'
 import { Menu, Minus } from 'iconoir-react'
 import type { NavGroup } from '../nav'
-import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, FoundationsIcon, IntroIcon } from './icons'
+import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
 
 /**
  * navigationSidebar from the docs template (uiKit 3857:5977): group headers with an icon,
@@ -12,8 +12,7 @@ import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, FoundationsI
  * left of the logo.
  */
 const groupIcons: Record<string, typeof IntroIcon> = {
-  intro: IntroIcon,
-  foundations: FoundationsIcon,
+  docs: IntroIcon,
   components: ComponentsIcon,
   'ai-patterns': AiPatternsIcon,
 }
@@ -129,7 +128,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
             <span aria-hidden className="h-1 w-9 rounded-full bg-border-strong" />
           </button>
 
-          <nav aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto px-2 lg:overflow-visible">
+          <nav aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2">
             <ul>
               {nav.map((group) => {
                 const isOpen = open[group.id]
@@ -158,7 +157,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                       <span className="min-w-0 flex-1 truncate text-[13px] leading-4 font-medium text-text-default">
                         {group.title}
                       </span>
-                      {group.id !== 'intro' && (
+                      {group.id !== 'docs' && (
                         <span data-tone="neutral" className="rounded-sm px-1.5 py-0.5 text-sm leading-[19.5px] text-tone-fg">
                           <span className="sr-only">, </span>
                           {group.items.length}
@@ -210,8 +209,8 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
             </ul>
           </nav>
 
-          {/* The banner stays pinned to the bottom of the window while the page scrolls. */}
-          <div className="lg:sticky lg:bottom-2">
+          {/* The banner stays pinned under the list, which scrolls on its own. */}
+          <div className="shrink-0">
             <HelpBanner />
           </div>
         </div>

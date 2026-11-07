@@ -1,15 +1,51 @@
 ---
+/** Introduction: what Satin is, who it is for and how to use it, on one page. */
 import Docs from '../layouts/Docs.astro'
 import PageHeader from '../components/PageHeader.astro'
+import Chip from '../components/Chip.astro'
 import { page } from '../nav'
+import { highlight } from '../lib/highlight'
+
+const usage = `/* app.css */
+@import "@satin/ui/styles.css";
+
+// App.tsx
+import { Button } from '@satin/ui/button'
+
+export function Save() {
+  return <Button>Save changes</Button>
+}`
+const usageHtml = (await highlight([{ id: 'x', label: '', code: usage }])).x
+const h2 = 'text-base font-medium text-text-default'
 ---
 
-<Docs current="what-is-satin">
-  <PageHeader id="what-is-satin" title={page('what-is-satin').title} description={page('what-is-satin').description} />
-  <div class="flex flex-col gap-3 text-sm leading-[19.5px] text-text-muted">
-    <p>Satin ships as a Figma library and as React components that match it one to one: same names, same variants, same tokens.</p>
-    <p>
-      The components are built on <a class="text-text-default underline underline-offset-2" href="https://ui.shadcn.com">shadcn/ui</a> and Radix, so focus, keyboard and screen-reader behaviour come from proven primitives. Satin changes how they look: colour, surfaces, borders, focus and motion all come from Satin tokens.
+<Docs current="introduction">
+  <PageHeader id="introduction" title={page('introduction').title} description={page('introduction').description} />
+
+  <section aria-labelledby="what-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="what-title" class={h2}>What is Satin?</h2>
+    <div class="flex flex-col gap-3 text-sm leading-6 text-text-muted">
+      <p>Satin ships as a Figma library and as React components that match it one to one: same names, same variants, same tokens.</p>
+      <p>
+        The components are built on <a class="text-text-default underline underline-offset-2" href="https://ui.shadcn.com">shadcn/ui</a> and Radix, so focus, keyboard and screen-reader behaviour come from proven primitives. Satin changes how they look: colour, surfaces, borders, focus and motion all come from Satin tokens.
+      </p>
+    </div>
+  </section>
+
+  <section aria-labelledby="who-title" class="flex flex-col gap-3 pt-8">
+    <h2 id="who-title" class={h2}>Who is Satin for?</h2>
+    <ul class="flex flex-col gap-2 text-sm leading-6 text-text-muted">
+      <li><span class="font-medium text-text-default">Designers</span> who work in the Satin Figma library and want to see how a component behaves before they use it.</li>
+      <li><span class="font-medium text-text-default">Engineers</span> who need production code that matches the design without re-creating it by hand.</li>
+      <li><span class="font-medium text-text-default">Teams building AI products</span> who need ready answers for prompts, agent progress and decisions.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="how-title" class="flex flex-col gap-3 pt-8">
+    <h2 id="how-title" class={h2}>How can I use Satin?</h2>
+    <p class="text-sm leading-6 text-text-muted">
+      Import the styles once, then import components one by one. Each component has its own entry point, so you only ship what you use. The package isn't on npm yet; until it is, it lives in the <Chip>packages/ui</Chip> folder of the Satin repository. Light and dark mode come from the <Chip>dark</Chip> class on any parent element.
     </p>
-  </div>
+    <div class="code-block overflow-hidden rounded-2xl border border-border-subtle bg-bg-field" set:html={usageHtml} />
+  </section>
 </Docs>

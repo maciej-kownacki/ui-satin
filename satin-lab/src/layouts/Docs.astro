@@ -15,11 +15,12 @@ interface Props {
 }
 const { current } = Astro.props
 const item = page(current)
-const title = current === 'what-is-satin' ? 'Satin' : `${item.title} · Satin`
+const title = current === 'introduction' ? 'Satin' : `${item.title} · Satin`
 ---
 
 <Layout title={title} description={item.description}>
-  <header class="relative z-10 mx-auto flex h-14 w-full items-center justify-between px-4 lg:w-[min(1200px,calc(100%-32px))] lg:px-5">
+  <!-- The top bar is fixed and never moves; the sidebar and the column each scroll on their own. -->
+  <header class="fixed inset-x-0 top-0 z-20 mx-auto flex h-14 w-full items-center justify-between bg-bg-canvas px-4 lg:w-[min(1200px,calc(100%-32px))] lg:bg-transparent lg:px-5">
     <div class="flex items-center gap-2 pl-10 lg:pl-0">
       <a href="/" class="flex items-center gap-1.5 rounded-md focus-visible:shadow-border-focus focus-visible:outline-none">
         <span class="relative size-5 shrink-0">
@@ -33,11 +34,11 @@ const title = current === 'what-is-satin' ? 'Satin' : `${item.title} · Satin`
   </header>
 
   <div
-    class="relative mx-auto flex min-h-[calc(100dvh-56px)] w-full overflow-clip bg-bg-card lg:w-[min(1200px,calc(100%-32px))] lg:rounded-2xl lg:border lg:border-border-subtle lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
+    class="relative mt-14 flex min-h-[calc(100dvh-56px)] w-full overflow-clip bg-bg-card lg:fixed lg:inset-x-0 lg:top-14 lg:bottom-4 lg:mx-auto lg:mt-0 lg:min-h-0 lg:w-[min(1200px,calc(100%-32px))] lg:rounded-2xl lg:border lg:border-border-subtle lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
   >
     <Sidebar client:load nav={nav} current={current} transition:persist="sidebar" />
 
-    <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none">
+    <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none lg:overflow-y-auto lg:overscroll-contain">
       <div class="flex w-full max-w-[720px] flex-col gap-4 pb-24">
         <slot />
       </div>

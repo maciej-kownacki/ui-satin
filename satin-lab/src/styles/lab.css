@@ -76,8 +76,9 @@ html.dark .code-block .shiki span {
 }
 .fl-left,
 .fl-right {
+  /* The card ends 16px above the window, so the columns curve round its bottom corners too. */
   top: 56px;
-  bottom: -17px;
+  bottom: 15px;
 }
 .frame-lines > .fl-band-left,
 .frame-lines > .fl-band-right {
