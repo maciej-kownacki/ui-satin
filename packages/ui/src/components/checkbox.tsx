@@ -5,7 +5,8 @@ import { cn } from '../lib/utils'
 /**
  * Checkbox, 1:1 with the uiKit `checkboxBase` (849:57531) and `checkbox` (849:57577) sets:
  * a 16px box, radius-sm, with checked and indeterminate states and an optional label and
- * description on either side. The label is a real `<label>`, the description is wired up
+ * description on either side, both 14px whatever the theme's body size (label medium,
+ * description regular). The label is a real `<label>`, the description is wired up
  * with `aria-describedby`. The look of every state lives in styles/components.css.
  */
 export interface CheckboxProps extends React.ComponentProps<typeof CheckboxPrimitive.Root> {
@@ -53,17 +54,18 @@ export function Checkbox({ className, label, description, placement = 'left', id
   return (
     <div
       data-slot="checkbox-field"
-      className={cn('flex items-start gap-2', placement === 'right' && 'flex-row-reverse justify-between')}
+      // The 16px box sits on the middle of the label's first 20px line.
+      className={cn('flex items-start gap-2 [&>:first-child]:mt-0.5', placement === 'right' && 'flex-row-reverse justify-between')}
     >
       {box}
-      <div className="grid gap-0.5 text-sm">
+      <div className="grid gap-0.5 text-base">
         {label && (
-          <label htmlFor={boxId} className="leading-4 text-text-default">
+          <label htmlFor={boxId} className="leading-5 font-medium text-text-default">
             {label}
           </label>
         )}
         {description && (
-          <p id={descriptionId} className="leading-[19.5px] text-text-muted">
+          <p id={descriptionId} className="leading-5 text-text-muted">
             {description}
           </p>
         )}

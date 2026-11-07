@@ -4,8 +4,8 @@ import { cn } from '../lib/utils'
 
 /**
  * Radio, 1:1 with the uiKit `_radioBase` (852:22410) and `Radio` (852:22426) sets: a 16px
- * circle, checked as a solid primary fill with a 6px dot, with an optional label (13/16,
- * text/default) and description (13/19.5, muted) 4px apart, 8px from the circle, on either
+ * circle, checked as a solid primary fill with a 6px dot, with an optional label (14/20 medium,
+ * text/default) and description (14/20 regular, muted) 2px apart, 8px from the circle, on either
  * side. Disabled turns both texts text/subtle. The look of every state is
  * styles/components/radio.css.
  *
@@ -51,18 +51,19 @@ export function Radio({ className, label, description, placement = 'left', id, d
   return (
     <div
       data-slot="radio-field"
-      className={cn('flex items-start gap-2', placement === 'right' && 'flex-row-reverse justify-between')}
+      // The 16px circle sits on the middle of the label's first 20px line.
+      className={cn('flex items-start gap-2 [&>:first-child]:mt-0.5', placement === 'right' && 'flex-row-reverse justify-between')}
     >
       {circle}
       {/* Disabled (on the item or the whole group) turns both texts text/subtle. */}
-      <div className="grid min-w-0 gap-1 text-sm text-text-default peer-data-disabled:text-text-subtle peer-data-disabled:[&_p]:text-text-subtle">
+      <div className="grid min-w-0 gap-0.5 text-base text-text-default peer-data-disabled:text-text-subtle peer-data-disabled:[&_p]:text-text-subtle">
         {label && (
-          <label htmlFor={radioId} className="leading-4">
+          <label htmlFor={radioId} className="leading-5 font-medium">
             {label}
           </label>
         )}
         {description && (
-          <p id={descriptionId} className="text-text-muted">
+          <p id={descriptionId} className="leading-5 text-text-muted">
             {description}
           </p>
         )}
