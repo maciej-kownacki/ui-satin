@@ -31,8 +31,8 @@ const { title, description } = Astro.props
           const t = localStorage.getItem('satin-theme')
           const dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
           doc.documentElement.classList.toggle('dark', dark)
-          // The customizer's brand, corners and type for the previews, as it writes them live.
-          const css = localStorage.getItem('satin-preview-css')
+          // The customizer's brand, corners and type, as the same variables it writes live.
+          const css = localStorage.getItem('satin-theme-css')
           if (css && !doc.getElementById('satin-custom')) {
             const el = doc.createElement('style')
             el.id = 'satin-custom'

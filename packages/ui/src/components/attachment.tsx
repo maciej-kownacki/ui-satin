@@ -61,8 +61,8 @@ export function Attachment({
         'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
         lg ? 'gap-2.5 px-2' : 'h-control-height gap-1.5 pl-2',
         !lg && (onRemove ? 'pr-0.5' : 'pr-2.5'),
-        lg && (rounded ? 'rounded-full py-1' : 'rounded-xl py-1.5'),
-        !lg && (rounded ? 'rounded-full' : 'rounded-md'),
+        lg && (rounded ? 'rounded-pill py-1' : 'rounded-xl py-1.5'),
+        !lg && (rounded ? 'rounded-pill' : 'rounded-md'),
         // Hover (satin-pressed, declared later, wins while pressed)
         'satin-hover:border-border-strong',
         !lg && 'satin-hover:bg-bg-canvas',

@@ -10,7 +10,8 @@
  *   steps (hover, rest, pressed) sit at the brand's own lightness, lowered just enough that
  *   white text reads at 4.5:1 on rest and hover, in Light and Dark. Labels stay white for
  *   every brand, so buttons look the same family whatever the colour.
- * - `radius` scales every corner token; 1 is Satin's own, 0 is square. Pills stay pills.
+ * - `radius` scales every corner token, pill-shaped controls included; 1 is Satin's own, 0 is
+ *   square. Circles (avatars, dots, switch and radio marks) stay round.
  * - `fontSize` is the body size, 13 or 14. It moves the content scale only (body, body-lg,
  *   title, heading, display): what people read. The UI scale (2xs to 2xl) that badges, chips,
  *   buttons, labels and menus use stays put, so controls keep their density.
@@ -165,6 +166,8 @@ function radiusVars(scale: number): Vars {
   const v: Vars = {}
   for (const [k, px] of Object.entries(RADII)) v[`--radius-${k}`] = `${Math.round(px * scale * 2) / 2}px`
   v['--radius'] = `${Math.round(10 * scale * 2) / 2}px`
+  // Pills follow the corners too: square at 0, a soft 8px at 0.5, a full pill from 1.
+  v['--radius-pill'] = scale >= 1 ? '9999px' : `${Math.round(16 * scale)}px`
   return v
 }
 

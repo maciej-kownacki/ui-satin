@@ -174,7 +174,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                         setOpen((s) => ({ ...s, [group.id]: !s[group.id] }))
                       }}
                       className={cn(
-                        'flex h-8 w-full items-center gap-2 rounded-full px-3 text-left select-none',
+                        'flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left select-none',
                         'transition-colors duration-(--duration-fast) ease-(--ease-out)',
                         'hover:bg-bg-hover active:bg-bg-selected',
                         'focus-visible:shadow-border-focus focus-visible:outline-none',
@@ -216,7 +216,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                                 setDrawer(false)
                               }}
                               className={cn(
-                                'flex h-8 items-center truncate rounded-full pr-3 pl-[34px] text-[13px] leading-[19.5px]',
+                                'flex h-8 items-center truncate rounded-pill pr-3 pl-[34px] text-[13px] leading-[19.5px]',
                                 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
                                 'focus-visible:shadow-border-focus focus-visible:outline-none',
                                 isCurrent

@@ -66,7 +66,7 @@ const trigger = cva(
       variant: {
         underline: '',
         pill: [
-          'rounded-full',
+          'rounded-pill',
           'data-[state=inactive]:satin-hover:bg-bg-muted data-[state=active]:bg-bg-selected',
           'satin-focus:[box-shadow:0_0_0_1px_var(--border-focus)]',
         ],

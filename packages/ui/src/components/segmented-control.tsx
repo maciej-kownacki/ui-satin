@@ -36,7 +36,7 @@ export interface SegmentedControlProps {
 
 const track = cva('relative isolate inline-flex items-center gap-0.5 bg-bg-muted p-1', {
   variants: {
-    shape: { default: 'rounded-lg', rounded: 'rounded-full' },
+    shape: { default: 'rounded-lg', rounded: 'rounded-pill' },
     border: { true: 'border border-border-subtle', false: '' },
     fullWidth: { true: 'flex w-full', false: '' },
   },
@@ -59,7 +59,7 @@ const segment = cva(
         md: 'h-control-height gap-1.5 px-3 text-sm [&_svg]:size-icon-size',
         lg: 'h-control-height-lg gap-1.5 px-4 text-base [&_svg]:size-icon-size',
       },
-      shape: { default: 'rounded-sm', rounded: 'rounded-full' },
+      shape: { default: 'rounded-sm', rounded: 'rounded-pill' },
       fullWidth: { true: 'flex-1', false: '' },
     },
   },
@@ -118,7 +118,7 @@ export function SegmentedControl({
           aria-hidden
           className={cn(
             'absolute top-1 bottom-1 left-0 z-0 bg-component-segmented-selected [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
-            shape === 'rounded' ? 'rounded-full' : 'rounded-sm',
+            shape === 'rounded' ? 'rounded-pill' : 'rounded-sm',
             animate && 'transition-[transform,width] duration-(--duration-base) ease-(--ease-out)',
           )}
           style={{ width: pill.width, transform: `translateX(${pill.x}px)` }}

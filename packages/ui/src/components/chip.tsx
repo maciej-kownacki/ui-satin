@@ -26,7 +26,7 @@ import type { BadgeTone } from './badge'
  */
 const chipVariants = cva(
   [
-    'group/chip relative inline-flex shrink-0 items-center rounded-full whitespace-nowrap select-none',
+    'group/chip relative inline-flex shrink-0 items-center rounded-pill whitespace-nowrap select-none',
     'text-sm leading-(--text-sm--line-height) font-medium',
     'transition-[background-color,border-color,color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
     'focus-visible:outline-none',
@@ -179,7 +179,7 @@ export function Chip({
             aria-label={removeLabel ?? (label ? `Remove ${label}` : 'Remove')}
             onClick={onRemove}
             className={cn(
-              'grid shrink-0 place-items-center rounded-full focus-visible:outline-none',
+              'grid shrink-0 place-items-center rounded-pill focus-visible:outline-none',
               neutral ? 'text-text-muted' : 'text-tone-fg',
             )}
           >

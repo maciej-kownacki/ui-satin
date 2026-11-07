@@ -61,7 +61,7 @@ export function TooltipBubble({
       className={cn(
         'flex items-center gap-2 bg-text-default py-1 pl-2.5 text-sm leading-(--text-sm--line-height) font-medium whitespace-nowrap text-bg-canvas',
         '[box-shadow:0_8px_12px_0_var(--effect-shadow-md),0_1px_1.5px_0_var(--effect-shadow-ambient),inset_0_1px_0_0_var(--effect-highlight-top)]',
-        shape === 'rounded' ? 'rounded-full' : 'rounded-lg',
+        shape === 'rounded' ? 'rounded-pill' : 'rounded-lg',
         keys.length ? 'pr-1' : 'pr-2.5',
         className,
       )}
@@ -72,7 +72,7 @@ export function TooltipBubble({
         <kbd
           className={cn(
             'flex items-center gap-0.5 bg-text-muted px-1.5 font-sans text-sm leading-(--text-sm--line-height) font-medium text-bg-canvas',
-            shape === 'rounded' ? 'rounded-full' : 'rounded-sm',
+            shape === 'rounded' ? 'rounded-pill' : 'rounded-sm',
           )}
         >
           {keys.map((k, i) => (

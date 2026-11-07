@@ -4,11 +4,12 @@ import { ThemeSwitch } from './ThemeSwitch'
 import { Check, ColorPicker, Copy, DiceFive, Download, NavArrowDown, NavArrowUp, Palette, Refresh } from 'iconoir-react'
 
 /**
- * The customizer bar: brand, corners and body size for Satin's components, live, plus the
- * light / dark switch. The theme applies inside `[data-satin-theme]` (the previews and the
- * Theming samples), so the docs around them keep Satin's own look. It is kept in localStorage
- * so the next page opens with it (Layout.astro injects it before the first paint). Export
- * gives the same theme for a whole app, to load after `@satin/ui/styles.css`.
+ * The customizer bar: brand, corners and body size for the whole site, live, plus the light /
+ * dark switch. The docs are built from Satin's own components, so the top bar, the sidebar and
+ * the switches follow the theme like the previews do; only the content scale is limited to
+ * what the components show, since the docs' own text is fixed. The theme is kept in
+ * localStorage so the next page opens with it (Layout.astro injects it before the first
+ * paint). Export gives the same stylesheet, to load after `@satin/ui/styles.css`.
  */
 // Each preset is already a fill white text reads on at 4.5:1, so the swatch is the button.
 export const BRANDS = [
@@ -28,13 +29,11 @@ const RADII = [
   { value: 1.5, label: 'Large', r: 10 },
 ]
 const STORE = 'satin-custom'
-// The previews' stylesheet. A new key, so a theme saved before it was scoped can't restyle the site.
-const STORE_CSS = 'satin-preview-css'
-
-export const SCOPE = '[data-satin-theme]'
+// The theme's stylesheet, read by Layout.astro before the first paint.
+const STORE_CSS = 'satin-theme-css'
 
 function apply(theme: SatinTheme) {
-  const css = themeCss(theme, SCOPE)
+  const css = themeCss(theme)
   let el = document.getElementById('satin-custom') as HTMLStyleElement | null
   if (!el) {
     el = document.createElement('style')

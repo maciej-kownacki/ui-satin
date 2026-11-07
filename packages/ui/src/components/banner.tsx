@@ -42,7 +42,7 @@ const bannerVariants = cva(
         two: '',
       },
     },
-    compoundVariants: [{ layout: 'horizontal', shape: 'pill', lines: 'one', className: 'rounded-full' }],
+    compoundVariants: [{ layout: 'horizontal', shape: 'pill', lines: 'one', className: 'rounded-pill' }],
     defaultVariants: { layout: 'horizontal', shape: 'rounded', lines: 'one' },
   },
 )

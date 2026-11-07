@@ -75,7 +75,7 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
       its chroma in OKLCH, so tints, borders and soft tones land where they did. The fills a button is painted with move to
       your colour's lightness, and the text on them turns dark when white would read under 4.5:1.
     </p>
-    <div class={panel} data-satin-theme>
+    <div class={panel}>
       <ul class="grid grid-cols-4 gap-2 sm:grid-cols-8" aria-label="Brand ramp">
         {
           ramp.map((s) => (
@@ -97,10 +97,10 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
   <section aria-labelledby="corners-title" class="flex flex-col gap-3 pt-10">
     <h2 id="corners-title" class={h2}>Corners</h2>
     <p class={prose}>
-      One number scales every corner token: 0 is square, 1 is Satin's own, 1.5 is softer. Pills and circles stay round
-      whatever the scale.
+      One number scales every corner token: 0 is square, 1 is Satin's own, 1.5 is softer. Pill-shaped controls follow it
+      too, from square at 0 to a full pill from 1. Circles, like avatars and status dots, stay round.
     </p>
-    <ul class:list={[panel, 'grid grid-cols-3 gap-4 sm:grid-cols-6']} aria-label="Corner tokens" data-satin-theme>
+    <ul class:list={[panel, 'grid grid-cols-3 gap-4 sm:grid-cols-6']} aria-label="Corner tokens">
       {
         radii.map((r) => (
           <li class="flex flex-col gap-2">
@@ -122,7 +122,7 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
       readable content.
     </p>
     <div class="grid gap-3 sm:grid-cols-2">
-      <div class={panel} data-satin-theme>
+      <div class={panel}>
         <p class="flex items-baseline justify-between gap-2 pb-2">
           <span class="text-sm font-medium text-text-default">UI scale</span>
           <span class="text-xs text-text-muted">Fixed</span>
@@ -141,7 +141,7 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
           }
         </ul>
       </div>
-      <div class={panel} data-satin-theme>
+      <div class={panel}>
         <p class="flex items-baseline justify-between gap-2 pb-2">
           <span class="text-sm font-medium text-text-default">Content scale</span>
           <span class="text-xs text-text-muted">Follows body 13 / 14</span>

@@ -349,7 +349,7 @@ function DecisionChip({
       disabled={disabled}
       onClick={() => onPressedChange(!selected)}
       className={cn(
-        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-full border pr-2.5 pl-2 text-sm font-medium outline-none select-none',
+        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-pill border pr-2.5 pl-2 text-sm font-medium outline-none select-none',
         'transition-[background-color,border-color,color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out) active:scale-[0.97]',
         '[&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
         'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',

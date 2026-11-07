@@ -27,7 +27,7 @@ const badgeVariants = cva(
       },
       shape: {
         default: 'rounded-sm',
-        rounded: 'rounded-full',
+        rounded: 'rounded-pill',
       },
     },
     defaultVariants: { size: 'lg', variant: 'soft', shape: 'default' },

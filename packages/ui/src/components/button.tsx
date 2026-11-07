@@ -84,7 +84,7 @@ const buttonVariants = cva(
       },
       shape: {
         default: '',
-        rounded: 'rounded-full',
+        rounded: 'rounded-pill',
       },
       iconOnly: {
         true: 'px-0',

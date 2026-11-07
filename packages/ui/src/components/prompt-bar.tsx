@@ -166,7 +166,7 @@ export function PromptBar({
             'flex w-full flex-col gap-2 border border-border-default bg-bg-field p-2 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             'transition-[border-color,border-radius] duration-(--duration-fast) ease-(--ease-out)',
             'has-[textarea:focus]:border-border-strong data-filled:border-border-strong',
-            pill ? (files.length > 0 || multiline ? 'rounded-3xl' : 'rounded-full') : 'rounded-xl',
+            pill ? (files.length > 0 || multiline ? 'rounded-3xl' : 'rounded-pill') : 'rounded-xl',
             disabled && 'opacity-50',
             className,
           )}
@@ -552,7 +552,7 @@ function AttachmentChip({
         '[filter:drop-shadow(0_1px_1px_var(--effect-shadow-xs))]',
         'transition-[background-color,border-color] duration-(--duration-fast) ease-(--ease-out)',
         'hover:border-border-strong hover:bg-bg-canvas active:border-border-strong active:bg-bg-muted',
-        rounded ? 'rounded-full' : 'rounded-md',
+        rounded ? 'rounded-pill' : 'rounded-md',
       )}
     >
       <FileIcon name={file.name} />

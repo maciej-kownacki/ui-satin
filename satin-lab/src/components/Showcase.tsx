@@ -233,7 +233,7 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setTab(id)}
                 className={cn(
-                  'flex h-8 items-center gap-1.5 rounded-full px-3 text-base font-medium select-none',
+                  'flex h-8 items-center gap-1.5 rounded-pill px-3 text-base font-medium select-none',
                   'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
                   'focus-visible:shadow-border-focus focus-visible:outline-none',
                   selected
@@ -253,8 +253,6 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
       <div
         ref={panelRef}
         id={`${ids}-panel`}
-        // The customizer's theme applies in here, not to the docs around it.
-        data-satin-theme=""
         role={fullscreen ? 'dialog' : 'tabpanel'}
         aria-modal={fullscreen || undefined}
         aria-label={fullscreen ? `${name} preview` : undefined}

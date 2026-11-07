@@ -202,7 +202,7 @@ function SourceLink({
 
 function chipClass(size: 'sm' | 'md') {
   return cn(
-    'inline-flex shrink-0 items-center rounded-full bg-action-secondary-bg px-2 text-sm font-medium whitespace-nowrap text-text-default no-underline outline-none select-none',
+    'inline-flex shrink-0 items-center rounded-pill bg-action-secondary-bg px-2 text-sm font-medium whitespace-nowrap text-text-default no-underline outline-none select-none',
     'transition-[background-color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out)',
     // Same as Button: full size the moment the popover opens, so it lands on the chip's real edge.
     'not-aria-expanded:active:scale-[0.97] aria-expanded:[transition-property:background-color,box-shadow]',
