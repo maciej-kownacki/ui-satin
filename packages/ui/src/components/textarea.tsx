@@ -116,7 +116,7 @@ export function Textarea({
             {message}
           </p>
           {maxLength != null && (
-            <p id={counterId} className={cn('shrink-0 whitespace-nowrap', !hasMessage && 'text-text-subtle')}>
+            <p id={counterId} className={cn('shrink-0 whitespace-nowrap', !hasMessage && 'text-text-muted')}>
               <span className="sr-only">Characters used: </span>
               {text.length}/{maxLength}
             </p>
