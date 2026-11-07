@@ -107,6 +107,7 @@ export function SidebarItem({
           <Tooltip.Content
             side="right"
             sideOffset={6}
+            collisionPadding={8}
             className="z-50 rounded-md bg-action-inverse-bg px-2 py-1 text-xs font-medium text-text-on-inverse [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]"
           >
             {label}

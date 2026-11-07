@@ -2,6 +2,7 @@ import * as React from 'react'
 import { ToggleGroup } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { Badge } from './badge'
+import { Floating } from './floating'
 
 /**
  * Chart cards, 1:1 with the uiKit `chart/barCard` (3607:18253) and `chart/channelCard`
@@ -147,29 +148,71 @@ function PeriodToggles({
   )
 }
 
-/** The chart tooltip pill with its pointer. Exported for custom charts. */
+const pointerPath = 'M1.17721 0.5H13.1772L8.23721 5.62C7.65721 6.22 6.69721 6.22 6.11721 5.62L1.17721 0.5Z'
+const tooltipShadow = '[filter:drop-shadow(0_2px_2px_var(--effect-shadow-sm))_drop-shadow(0_4px_3px_var(--effect-shadow-sm))]'
+
+function TooltipPill({ label, value }: { label: React.ReactNode; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-md bg-text-default px-2.5 py-1.5 text-sm leading-(--text-sm--line-height) whitespace-nowrap text-bg-canvas">
+      <span className="font-medium">{label}</span>
+      <span className="opacity-72">{value}</span>
+    </div>
+  )
+}
+
+/**
+ * The chart tooltip pill with its pointer. Exported for custom charts.
+ * With `anchor` it floats over the page (see Floating): it never gets cut off by the card,
+ * flips below when there's no room above, slides in from the screen edge, and its pointer
+ * keeps pointing at the anchor. Without it, it renders in place.
+ */
 export function ChartTooltip({
   label,
   value,
+  anchor,
+  sideOffset = 4,
   className,
   ...props
-}: { label: React.ReactNode; value: React.ReactNode } & React.ComponentProps<'div'>) {
+}: {
+  label: React.ReactNode
+  value: React.ReactNode
+  /** The element it points at. */
+  anchor?: Element | null
+  /** Gap between the anchor and the pointer's tip. */
+  sideOffset?: number
+} & React.ComponentProps<'div'>) {
+  if (anchor !== undefined) {
+    // The pointer is 6 high and overlaps the pill by 1px.
+    return (
+      <Floating anchor={anchor} side="top" sideOffset={sideOffset + 5} className="pointer-events-none">
+        {({ side, arrowRef, arrowStyle }) => (
+          <div data-slot="chart-tooltip" className={cn('relative', tooltipShadow, className)} {...props}>
+            <TooltipPill label={label} value={value} />
+            <svg
+              ref={arrowRef as React.Ref<SVGSVGElement>}
+              width="12"
+              height="6"
+              viewBox="1.17 0.5 12 5.57"
+              aria-hidden
+              className={cn('absolute block text-text-default', side === 'bottom' ? 'bottom-full -mb-px rotate-180' : 'top-full -mt-px')}
+              style={arrowStyle}
+            >
+              <path d={pointerPath} fill="currentColor" />
+            </svg>
+          </div>
+        )}
+      </Floating>
+    )
+  }
   return (
     <div
       data-slot="chart-tooltip"
-      className={cn(
-        'pointer-events-none flex flex-col items-center',
-        '[filter:drop-shadow(0_2px_2px_var(--effect-shadow-sm))_drop-shadow(0_4px_3px_var(--effect-shadow-sm))]',
-        className,
-      )}
+      className={cn('pointer-events-none flex flex-col items-center', tooltipShadow, className)}
       {...props}
     >
-      <div className="flex items-center gap-1.5 rounded-md bg-text-default px-2.5 py-1.5 text-sm leading-(--text-sm--line-height) whitespace-nowrap text-bg-canvas">
-        <span className="font-medium">{label}</span>
-        <span className="opacity-72">{value}</span>
-      </div>
+      <TooltipPill label={label} value={value} />
       <svg width="12" height="6" viewBox="1.17 0.5 12 5.57" aria-hidden className="-mt-px block text-text-default">
-        <path d="M1.17721 0.5H13.1772L8.23721 5.62C7.65721 6.22 6.69721 6.22 6.11721 5.62L1.17721 0.5Z" fill="currentColor" />
+        <path d={pointerPath} fill="currentColor" />
       </svg>
     </div>
   )
@@ -243,6 +286,7 @@ export function BarCard({
   ...props
 }: BarCardProps) {
   const [hovered, setHovered] = React.useState<number | null>(null)
+  const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
   const active = hovered ?? highlight ?? null
   const max = niceMax(Math.max(0, ...data.map((d) => d.value)))
   const ticks = [4, 3, 2, 1, 0].map((i) => (max / 4) * i)
@@ -289,13 +333,13 @@ export function BarCard({
                   <div className="relative flex w-full flex-col items-center justify-end gap-1.5" style={{ height: TRACK }}>
                     {isActive && (
                       <>
+                        {/* The tooltip floats 4px above the value. */}
                         <ChartTooltip
+                          anchor={anchor}
                           label={d.tooltipLabel ?? d.label}
                           value={`${formatValue(d.value)}${unit ? ` ${unit}` : ''}`}
-                          className="absolute left-1/2 z-10 -translate-x-1/2"
-                          style={{ bottom: height + 6 + 19.5 + 4 }}
                         />
-                        <span className="text-sm leading-(--text-sm--line-height) font-medium text-text-default">
+                        <span ref={setAnchor} className="text-sm leading-(--text-sm--line-height) font-medium text-text-default">
                           {formatValue(d.value)}
                         </span>
                       </>
@@ -357,6 +401,7 @@ export function ChannelCard({
   ...props
 }: ChannelCardProps) {
   const [hovered, setHovered] = React.useState<number | null>(null)
+  const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
   const active = hovered ?? highlight ?? null
   const sum = data.reduce((n, d) => n + d.value, 0)
   const last = data.length - 1
@@ -380,6 +425,7 @@ export function ChannelCard({
           {data.map((d, i) => (
             <span
               key={d.label}
+              ref={active === i ? setAnchor : undefined}
               onPointerEnter={() => setHovered(i)}
               className={cn(
                 'relative rounded-[1.5px] transition-opacity duration-(--duration-fast) ease-(--ease-out)',
@@ -390,11 +436,7 @@ export function ChannelCard({
               style={{ background: seriesColor(i) }}
             >
               {active === i && (
-                <ChartTooltip
-                  label={d.tooltipLabel ?? d.label}
-                  value={formatValue(d.value)}
-                  className="absolute bottom-[calc(100%+8px)] left-1/2 z-10 -translate-x-1/2"
-                />
+                <ChartTooltip anchor={anchor} sideOffset={8} label={d.tooltipLabel ?? d.label} value={formatValue(d.value)} />
               )}
             </span>
           ))}

@@ -12,6 +12,7 @@ export { Chip, ChipAvatar, chipVariants, type ChipProps } from './components/chi
 export { CodeBlock, type CodeBlockProps } from './components/code-block'
 export { Dialog, DialogClose, DialogAlert, type DialogProps, type DialogVariant, type DialogAlertProps, type DialogAlertIntent } from './components/dialog'
 export * from './components/dot'
+export { Floating, type FloatingProps, type FloatingSide } from './components/floating'
 export { DropdownMenu, DropdownMenuGroup, DropdownMenuItem, type DropdownMenuProps, type DropdownMenuGroupProps, type DropdownMenuItemProps } from './components/dropdown'
 export { FormField, useFormField, type FormFieldProps, type FormFieldContextValue } from './components/form-field'
 export { Input, type InputProps } from './components/input'
