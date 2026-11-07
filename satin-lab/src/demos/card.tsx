@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Card } from '@satin/ui/card'
 import { Button } from '@satin/ui/button'
-import { Checkbox } from '@satin/ui/checkbox'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // Size sets the padding; the rest are the card's parts, top to bottom.
@@ -35,15 +34,11 @@ function code(v: Record<string, string>) {
     .filter(Boolean)
     .join('\n')
   return `import { Card } from '@satin/ui/card'
-${footer ? `import { Button } from '@satin/ui/button'\n` : ''}import { Checkbox } from '@satin/ui/checkbox'
-
+${footer ? `import { Button } from '@satin/ui/button'\n` : ''}
 <Card
 ${attrs}
 >
-  <div className="flex flex-col gap-3">
-    <Checkbox label="Weekly summary" defaultChecked />
-    <Checkbox label="New bookings" />
-  </div>
+  {content}
 </Card>`
 }
 
@@ -83,10 +78,8 @@ function Example({ v }: { v: Record<string, string> }) {
       }
       onClose={v.close === 'on' ? () => setOpen(false) : undefined}
     >
-      <div className="flex flex-col gap-3">
-        <Checkbox label="Weekly summary" defaultChecked />
-        <Checkbox label="New bookings" />
-      </div>
+      {/* The content is the reader's: a neutral block stands in for it. */}
+      <div aria-hidden className="h-24 rounded-lg bg-bg-muted" />
     </Card>
   )
 }

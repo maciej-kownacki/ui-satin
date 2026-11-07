@@ -10,7 +10,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Badge': [280, 280],
   'Banner': [280, 280],
   'Button': [280, 280],
-  'Card': [280, 280],
+  'Card': [296, 296],
   'Chart': [504, 504],
   'Checkbox': [280, 280],
   'Chip': [280, 280],
