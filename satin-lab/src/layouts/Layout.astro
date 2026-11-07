@@ -17,8 +17,11 @@ const { title, description } = Astro.props
     <meta name="description" content={description} />
     <meta name="robots" content="noindex" />
     <title>{title}</title>
+    <!-- Safari ignores SVG favicons and asks for the ICO and the touch icon instead. -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <!-- Pick the theme before the first paint, so dark mode never flashes light. -->
     <script is:inline>
       function satinTheme(doc) {
