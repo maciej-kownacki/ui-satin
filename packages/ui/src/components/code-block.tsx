@@ -208,7 +208,9 @@ export function CodeBlock({
       )}
       <pre
         className={cn(
-          'overflow-x-auto pt-1 font-mono text-sm leading-(--text-sm--line-height) font-normal tracking-normal',
+          'overflow-x-auto font-mono text-sm leading-(--text-sm--line-height) font-normal tracking-normal',
+          // Without the header the code sits in the middle: 12px above, as below.
+          showHeader ? 'pt-1' : 'pt-3',
           tokenClass.plain,
         )}
       >
@@ -218,7 +220,7 @@ export function CodeBlock({
               key={i}
               data-line={line.kind}
               className={cn(
-                'flex h-6 items-start px-4 py-0.5',
+                'flex h-6 items-center px-4',
                 diff ? 'gap-2' : 'gap-4',
                 line.kind === 'highlighted' && highlightClass,
                 line.kind === 'added' && 'bg-status-green-bg',
