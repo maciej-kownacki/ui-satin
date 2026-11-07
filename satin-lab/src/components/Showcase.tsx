@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Button, SegmentedControl, Switch, cn } from '@satin/ui'
-import { Check, Collapse, Copy, Expand } from 'iconoir-react'
+import { DropdownMenu, DropdownMenuItem } from '@satin/ui/dropdown'
+import { Check, Collapse, Copy, Expand, NavArrowDown } from 'iconoir-react'
 import { CodeIcon, PreviewIcon } from './icons'
 
 /**
@@ -15,9 +16,13 @@ import { CodeIcon, PreviewIcon } from './icons'
  */
 export type ShowcaseOption = { id: string; label: string; code: string }
 
-/** A prop the reader can change: a segmented control, or a switch with `on`/`off` values. */
+/**
+ * A prop the reader can change: a segmented control, a menu for longer lists (with an
+ * optional swatch per item), or a switch with `on`/`off` values.
+ */
 export type ShowcaseControl =
-  | { id: string; label: string; items: { value: string; label: string }[]; default?: string }
+  | { id: string; label: string; items: { value: string; label: string }[]; default?: string; type?: 'segmented' }
+  | { id: string; label: string; items: { value: string; label: string; icon?: React.ReactNode }[]; default?: string; type: 'menu' }
   | { id: string; label: string; type: 'switch'; default?: 'on' | 'off' }
 
 const initialValue = (c: ShowcaseControl) => c.default ?? ('items' in c ? c.items[0].value : 'off')
@@ -110,17 +115,19 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
       aria-label={`${name} properties`}
       // Phones: one prop per row, label left and control right. Wider: one column per prop,
       // the label above its control, columns split by a hairline.
-      className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 md:flex-row md:justify-center md:gap-0 md:px-2 md:py-4"
+      className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 md:flex-row md:flex-wrap md:justify-center md:gap-x-0 md:gap-y-3 md:px-2 md:py-4"
     >
       {controls.map((c) => (
         <div
           key={c.id}
-          className="flex min-h-7 items-center justify-between gap-2 md:flex-col md:items-start md:justify-start md:gap-2 md:border-l md:border-border-subtle md:px-5 md:first:border-l-0"
+          className="flex min-h-7 items-center justify-between gap-2 md:flex-col md:items-start md:justify-start md:gap-2 md:border-l md:border-border-subtle md:px-4 md:first:border-l-0"
         >
           <span aria-hidden className="text-sm text-text-muted md:text-xs md:leading-4 md:font-medium">
             {c.label}
           </span>
-          {'items' in c ? (
+          {c.type === 'menu' ? (
+            <MenuControl control={c} value={values[c.id]} onChange={(v) => setValues((s) => ({ ...s, [c.id]: v }))} />
+          ) : 'items' in c ? (
             <SegmentedControl
               aria-label={c.label}
               size="xs"
@@ -131,7 +138,7 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
             />
           ) : (
             <Switch
-              className="md:my-[5px]"
+              className="md:my-[7px]"
               aria-label={c.label}
               checked={values[c.id] === 'on'}
               onCheckedChange={(on) => setValues((s) => ({ ...s, [c.id]: on ? 'on' : 'off' }))}
@@ -257,5 +264,35 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
         )}
       </div>
     </div>
+  )
+}
+
+/** A menu control: a small rounded trigger with the current item, the items below it. */
+function MenuControl({
+  control,
+  value,
+  onChange,
+}: {
+  control: Extract<ShowcaseControl, { type: 'menu' }>
+  value: string
+  onChange: (value: string) => void
+}) {
+  const current = control.items.find((i) => i.value === value) ?? control.items[0]
+  return (
+    <DropdownMenu
+      modal={false}
+      align="start"
+      trigger={
+        <Button variant="secondary" size="lg" shape="rounded" aria-label={`${control.label}: ${current.label}`}>
+          {current.icon}
+          {current.label}
+          <NavArrowDown />
+        </Button>
+      }
+    >
+      {control.items.map((i) => (
+        <DropdownMenuItem key={i.value} icon={i.icon} label={i.label} selected={i.value === value} onSelect={() => onChange(i.value)} />
+      ))}
+    </DropdownMenu>
   )
 }
