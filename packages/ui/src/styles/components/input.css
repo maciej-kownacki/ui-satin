@@ -50,22 +50,22 @@
   cursor: not-allowed;
 }
 
-/* Sizes (Input only). sm 28, md 32, lg 36; lg rounds to radius-xl. The value is content, so
-   it follows the theme's body size (body / body-lg); the field's height doesn't. */
+/* Sizes (Input only). sm 28 with 13px text, md 32 and lg 36 with 14px; lg rounds to radius-xl.
+   The sizes are fixed: the theme's body size doesn't move a control. */
 .satin-field[data-size="sm"] {
   height: var(--control-height);
-  font-size: var(--text-body);
+  font-size: var(--text-sm);
   line-height: 20px;
 }
 .satin-field[data-size="md"] {
   height: var(--control-height-lg);
-  font-size: var(--text-body-lg);
+  font-size: var(--text-base);
   line-height: 21px;
 }
 .satin-field[data-size="lg"] {
   height: var(--control-height-xl);
   border-radius: var(--radius-xl);
-  font-size: var(--text-body-lg);
+  font-size: var(--text-base);
   line-height: 20px;
 }
 

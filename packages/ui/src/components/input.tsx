@@ -3,9 +3,10 @@ import { cn } from '../lib/utils'
 import { useFormField } from './form-field'
 
 /**
- * Input, 1:1 with the uiKit `Input` set (820:51657): a label (medium 14/20), the field, and a
- * hint (13/19.5, muted) 8px apart. Three sizes: sm 28 (13px text), md 32 and lg 36 (14px, lg
- * at radius-xl), 12px side padding, optional 16px leading and trailing icons 8px from the text.
+ * Input, 1:1 with the uiKit `Input` set (820:51657): a label (medium), the field, and a hint
+ * (13/19.5, muted) 8px apart. Three sizes: sm 28 with a 13px label and value, md 32 and lg 36
+ * with 14px (lg at radius-xl), fixed whatever the theme's body size; 12px side padding,
+ * optional 16px leading and trailing icons 8px from the text.
  *
  * Placeholder is text/muted; a value is text/default and turns the icons from muted to
  * default (Figma's `filled`). `error` swaps the hint for the message in action/destructive/bg
@@ -67,7 +68,10 @@ export function Input({
   return (
     <div data-slot="input-wrapper" className={cn('grid w-full gap-2', wrapperClassName)}>
       {label && (
-        <label htmlFor={inputId} className="text-base leading-5 font-medium text-text-default">
+        <label
+          htmlFor={inputId}
+          className={cn('font-medium text-text-default', size === 'sm' ? 'text-sm leading-[18px]' : 'text-base leading-5')}
+        >
           {label}
         </label>
       )}
