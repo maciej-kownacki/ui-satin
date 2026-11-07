@@ -35,7 +35,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          'border border-action-primary-border bg-action-primary-bg text-text-on-solid',
+          'border border-action-primary-border bg-action-primary-bg text-action-primary-fg',
           '[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-primary-glow)]',
           'satin-hover:bg-action-primary-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-primary-bg-hover),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-primary-glow)]',
           'satin-focus:[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-primary-glow)]',

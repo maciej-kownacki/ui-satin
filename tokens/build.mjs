@@ -118,13 +118,27 @@ function css() {
     L.push('}', '');
   });
 
+  // Corners and type sizes stay variables in the utilities (plain @theme, not inline), so a
+  // theme can rescale them at runtime: rounded-xl is var(--radius-xl), text-sm var(--text-sm).
+  L.push('@theme {');
+  for (const t of of('radius').filter((t) => cssVar(t) !== '--radius')) {
+    L.push(`  ${cssVar(t)}: ${isAlias(t.$value) ? `var(${cssVar(target(t.$value))})` : px(t.$value)};`);
+  }
+  {
+    const tracking = resolve('{typography.tracking.tracking-tight}');
+    for (const t of of('typography').filter((t) => t.path[1] === 'text')) {
+      const size = dim(t.$value);
+      const lh = dim(flat.get(`typography.leading.${t.path[2]}--line-height`).$value);
+      L.push(`  ${cssVar(t)}: ${size}px;`);
+      L.push(`  ${cssVar(t)}--line-height: ${Math.round((lh / size) * 1000) / 1000};`);
+      L.push(`  ${cssVar(t)}--letter-spacing: ${tracking.value}${tracking.unit};`);
+    }
+  }
+  L.push('}', '');
+
   L.push('@theme inline {');
   for (const t of [...theme, ...of('tone')].filter((t) => !cssVar(t).startsWith('--effect-'))) {
     L.push(`  --color-${cssVar(t).slice(2)}: var(${cssVar(t)});`);
-  }
-  L.push('');
-  for (const t of of('radius').filter((t) => cssVar(t) !== '--radius')) {
-    L.push(`  ${cssVar(t)}: ${isAlias(t.$value) ? `var(${cssVar(target(t.$value))})` : px(t.$value)};`);
   }
   L.push('');
   for (const t of of('spacing').filter((t) => t.path[1] === 'size')) {
@@ -139,13 +153,6 @@ function css() {
   for (const t of of('typography').filter((t) => t.$type === 'fontWeight')) L.push(`  ${cssVar(t)}: ${t.$value};`);
   const tracking = resolve('{typography.tracking.tracking-tight}');
   L.push(`  --tracking-tight: ${tracking.value}${tracking.unit};`);
-  for (const t of of('typography').filter((t) => t.path[1] === 'text')) {
-    const size = dim(t.$value);
-    const lh = dim(flat.get(`typography.leading.${t.path[2]}--line-height`).$value);
-    L.push(`  ${cssVar(t)}: ${size}px;`);
-    L.push(`  ${cssVar(t)}--line-height: ${Math.round((lh / size) * 1000) / 1000};`);
-    L.push(`  ${cssVar(t)}--letter-spacing: ${tracking.value}${tracking.unit};`);
-  }
   L.push('');
   for (const [k, s] of Object.entries(tokens.styles.effect)) {
     if (k.startsWith('$')) continue;

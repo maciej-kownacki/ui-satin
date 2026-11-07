@@ -11,7 +11,7 @@ export const nav: NavGroup[] = [
     title: 'Docs',
     items: [
       { id: 'introduction', title: 'Introduction', href: '/', description: 'A design system for calm product interfaces, with patterns for AI agents.' },
-      { id: 'tokens', title: 'Tokens', href: '/tokens', description: 'The colour tokens by group, in Light and Dark, straight from tokens.json.' },
+      { id: 'theming', title: 'Theming', href: '/theming', description: 'One small config sets the brand, the corners and the type size for every component.' },
     ],
   },
   {

@@ -1,0 +1,179 @@
+---
+/**
+ * Theming: how one small config (brand, corners, body size) reaches every component, with
+ * live previews that read the same CSS variables the customizer writes, then the colour
+ * token groups from tokens/tokens.json. Swatches and samples follow the theme the page is in.
+ */
+import Docs from '../layouts/Docs.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Chip from '../components/Chip.astro'
+import { page } from '../nav'
+import { colorGroups } from '../lib/tokens'
+import { highlight } from '../lib/highlight'
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const panel = 'rounded-2xl border border-border-subtle p-4 sm:p-5'
+
+const ramp = ['50', '200', '300', '500', '600', '700', '900', '950']
+const radii = ['xs', 'sm', 'md', 'lg', 'xl', '2xl']
+const sizes = [
+  { k: '2xs', use: 'Fine print' },
+  { k: 'xs', use: 'Captions, axis labels' },
+  { k: 'sm', use: 'Body: labels, controls, menus' },
+  { k: 'base', use: 'Docs prose, card titles' },
+  { k: 'lg', use: 'Section headings' },
+  { k: 'xl', use: 'Figures' },
+  { k: '2xl', use: 'Page titles' },
+]
+
+const snippets = await highlight([
+  {
+    id: 'file',
+    label: 'Exported file',
+    code: `import '@satin/ui/styles.css'
+import './satin-theme.css' // from the customizer: Export → Download`,
+  },
+  {
+    id: 'code',
+    label: 'In code',
+    code: `import { themeCss } from '@satin/ui'
+
+// Inject once, e.g. in a <style> in your root layout.
+const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
+  },
+])
+---
+
+<Docs current="theming">
+  <PageHeader id="theming" title={page('theming').title} description={page('theming').description} />
+
+  <section aria-labelledby="how-title" class="flex flex-col gap-3 pt-6">
+    <h2 id="how-title" class={h2}>How theming works</h2>
+    <p class={prose}>
+      Satin's tokens come in three layers. <strong class="font-medium text-text-default">Primitives</strong> are raw colours and
+      sizes. <strong class="font-medium text-text-default">Semantic tokens</strong> give them a job, like
+      <Chip>action/primary-bg</Chip> or <Chip>text/muted</Chip>, once for Light and once for Dark.{' '}
+      <strong class="font-medium text-text-default">Components</strong> only ever read semantic tokens, never a raw value.
+    </p>
+    <p class={prose}>
+      So a theme doesn't touch components at all. It repoints a few primitives and scales, and everything that reads them
+      follows: buttons, focus rings, checkboxes, tones, charts. Try it with the customizer at the bottom of the page; every
+      sample here reads the same variables.
+    </p>
+  </section>
+
+  <section aria-labelledby="brand-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="brand-title" class={h2}>Brand</h2>
+    <p class={prose}>
+      One colour becomes the whole brand ramp. Each step keeps the lightness of Satin's own ramp, takes your hue and scales
+      its chroma in OKLCH, so tints, borders and soft tones land where they did. The fills a button is painted with move to
+      your colour's lightness, and the text on them turns dark when white would read under 4.5:1.
+    </p>
+    <div class={panel}>
+      <ul class="grid grid-cols-4 gap-2 sm:grid-cols-8" aria-label="Brand ramp">
+        {
+          ramp.map((s) => (
+            <li class="flex flex-col gap-1.5">
+              <span class="h-10 rounded-md border border-border-subtle" style={`background:var(--color-blue-${s})`} />
+              <span class="text-xs text-text-muted">{s}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-4 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-4">
+        <span class="inline-flex h-8 items-center rounded-lg bg-action-primary-bg px-3 text-sm font-medium text-action-primary-fg">Primary</span>
+        <span data-tone="brand" class="inline-flex items-center rounded-sm bg-tone-bg px-2 py-1 text-sm font-medium text-tone-fg">Brand tone</span>
+        <span class="inline-flex h-8 items-center rounded-lg border border-border-default px-3 text-sm text-text-default shadow-border-focus">Focus ring</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="corners-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="corners-title" class={h2}>Corners</h2>
+    <p class={prose}>
+      One number scales every corner token: 0 is square, 1 is Satin's own, 1.5 is softer. Pills and circles stay round
+      whatever the scale.
+    </p>
+    <ul class:list={[panel, 'grid grid-cols-3 gap-4 sm:grid-cols-6']} aria-label="Corner tokens">
+      {
+        radii.map((r) => (
+          <li class="flex flex-col gap-2">
+            <span class="aspect-square w-full border border-border-default bg-bg-muted" style={`border-radius:var(--radius-${r})`} />
+            <Chip>radius-{r}</Chip>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="type-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="type-title" class={h2}>Body text</h2>
+    <p class={prose}>
+      The body size is 13 or 14. The rest of the scale keeps its steps from it, so captions, headings and figures stay in
+      proportion: at 13 it runs 10, 12, 13, 14, 16, 20, 24.
+    </p>
+    <ul class:list={[panel, 'flex flex-col divide-y divide-border-subtle py-1 sm:py-1']} aria-label="Type scale">
+      {
+        sizes.map(({ k, use }) => (
+          <li class="flex items-baseline gap-4 py-2.5">
+            <span class="w-14 shrink-0">
+              <Chip>{k}</Chip>
+            </span>
+            <span class="min-w-0 flex-1 truncate text-text-default" style={`font-size:var(--text-${k})`}>
+              {use}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="code-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="code-title" class={h2}>Use it in your app</h2>
+    <p class={prose}>
+      The theme is a short stylesheet of variables. Export it from the customizer and load it after Satin's styles, or build
+      it in code from the same three values with <Chip>themeCss</Chip>.
+    </p>
+    {
+      ['file', 'code'].map((id) => (
+        <div class="overflow-hidden rounded-2xl border border-border-subtle bg-bg-field">
+          <div class="code-block overflow-x-auto py-3" set:html={snippets[id]} />
+        </div>
+      ))
+    }
+  </section>
+
+  <section aria-labelledby="tokens-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="tokens-title" class={h2}>Tokens</h2>
+    <p class={prose}>Every semantic colour by group, in Light and Dark, straight from tokens.json.</p>
+    <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {
+        colorGroups.map((g) => (
+          <li>
+            <a
+              href={`/theming/${g.role}`}
+              class="flex h-full flex-col gap-4 rounded-xl border border-border-subtle p-4 transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-hover focus-visible:shadow-border-focus focus-visible:outline-none"
+            >
+              <span aria-hidden class="flex">
+                {g.tokens.slice(0, 8).map((t) => (
+                  <span
+                    class="-mr-1.5 size-6 shrink-0 rounded-full border border-border-default ring-2 ring-bg-card"
+                    style={`background:var(${t.css})`}
+                  />
+                ))}
+              </span>
+              <span class="flex flex-col gap-0.5">
+                <span class="flex items-baseline justify-between gap-2">
+                  <span class="text-base font-medium text-text-default">{g.title}</span>
+                  <span class="text-sm text-text-muted">{g.tokens.length} tokens</span>
+                </span>
+                <span class="text-base leading-6 text-text-muted">{g.description}</span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Docs>

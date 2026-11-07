@@ -106,7 +106,7 @@ export function DecisionCard({
     return (
       <div data-slot="decision-card" data-type="summary" className={card} {...props}>
         <div className="flex items-center gap-2.5 py-2.5 pr-2.5 pl-3">
-          <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-action-primary-bg text-text-on-solid">
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-action-primary-bg text-action-primary-fg">
             <Check aria-hidden className="size-icon-size-sm [stroke-width:1.875]" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
@@ -458,7 +458,7 @@ function Ranking({
               <span
                 className={cn(
                   'flex size-5 shrink-0 items-center justify-center rounded-full text-xs tabular-nums',
-                  i === 0 ? 'bg-action-primary-bg text-text-on-solid' : 'bg-bg-muted text-text-muted',
+                  i === 0 ? 'bg-action-primary-bg text-action-primary-fg' : 'bg-bg-muted text-text-muted',
                 )}
               >
                 {i + 1}

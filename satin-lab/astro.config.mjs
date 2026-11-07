@@ -10,8 +10,10 @@ export default defineConfig({
   redirects: {
     '/intro/who-is-satin-for': '/',
     '/intro/how-to-use-satin': '/',
-    '/foundations/tokens': '/tokens',
-    '/foundations/tokens/[role]': '/tokens/[role]',
+    '/foundations/tokens': '/theming',
+    '/tokens': '/theming',
+    '/tokens/[role]': '/theming/[role]',
+    '/foundations/tokens/[role]': '/theming/[role]',
   },
   vite: { plugins: [tailwindcss()] },
 })

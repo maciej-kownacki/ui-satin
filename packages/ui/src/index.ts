@@ -1,4 +1,5 @@
 export { cn } from './lib/utils'
+export * from './theme'
 
 // Components
 export * from './components/avatar'
