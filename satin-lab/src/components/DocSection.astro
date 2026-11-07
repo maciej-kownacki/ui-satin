@@ -1,12 +1,14 @@
 ---
 /**
  * A component page, laid out like the docs template (uiKit 3857:6009): name and description,
- * then the Showcase island (Preview / Code tabs, full screen, the stage), then the API Reference.
+ * then the Showcase island (Preview / Code tabs, full screen, the stage), then the API Reference,
+ * then Previous / Next cards (uiKit `pager`) that walk the sidebar order across both groups.
  */
 import Chip from './Chip.astro'
 import PageHeader from './PageHeader.astro'
+import { ChevronRight } from './icons'
+import { nav, type NavItem } from '../nav'
 import type { Api } from '../api'
-import type { NavItem } from '../nav'
 
 interface Props {
   item: NavItem
@@ -14,6 +16,13 @@ interface Props {
 }
 const { item, api } = Astro.props
 const parts = api.description.split(/(`[^`]+`)/).filter(Boolean)
+
+const pages = nav.filter((g) => g.id !== 'docs').flatMap((g) => g.items)
+const at = pages.findIndex((p) => p.id === item.id)
+const prev = pages[at - 1]
+const next = pages[at + 1]
+const card =
+  'group flex items-center gap-4 rounded-2xl border border-border-subtle p-4 sm:p-6 transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-hover focus-visible:shadow-border-focus focus-visible:outline-none'
 ---
 
 <PageHeader id={item.id} title={item.title} description={item.description} />
@@ -56,3 +65,28 @@ const parts = api.description.split(/(`[^`]+`)/).filter(Boolean)
     </table>
   </div>
 </section>
+
+{
+  (prev || next) && (
+    <nav aria-label="Components" class="grid grid-cols-2 gap-4 pt-12">
+      {prev && (
+        <a href={prev.href} rel="prev" class={card}>
+          <ChevronRight className="shrink-0 rotate-180 text-text-muted transition-colors group-hover:text-text-default" />
+          <span class="flex min-w-0 flex-col gap-1">
+            <span class="text-sm text-text-muted">Previous</span>
+            <span class="truncate text-base font-medium text-text-default">{prev.title}</span>
+          </span>
+        </a>
+      )}
+      {next && (
+        <a href={next.href} rel="next" class={`${card} col-start-2 justify-end text-right`}>
+          <span class="flex min-w-0 flex-col items-end gap-1">
+            <span class="text-sm text-text-muted">Next</span>
+            <span class="max-w-full truncate text-base font-medium text-text-default">{next.title}</span>
+          </span>
+          <ChevronRight className="shrink-0 text-text-muted transition-colors group-hover:text-text-default" />
+        </a>
+      )}
+    </nav>
+  )
+}
