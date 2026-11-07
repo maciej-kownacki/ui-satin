@@ -13,7 +13,7 @@ import { cn } from '../lib/utils'
  * Groups: `DropdownMenuGroup`. Content: a 13px medium label (13px line). `stacked` puts the description under it, 4px apart,
  * at 14px / 21px in text/muted (the size the DropdownMenu set uses); `inline` puts it on the
  * same baseline 12px after the label, at 13px, truncated. Groups have a 24px header in 12px
- * text/subtle and are 8px apart with a 1px bg/muted rule between them.
+ * text/subtle and are 4px apart with a 1px bg/muted rule between them. Items are 4px apart.
  *
  * Built on the Radix DropdownMenu: arrow keys, typeahead, Escape, focus return.
  */
@@ -67,7 +67,7 @@ export function DropdownMenu({
           collisionPadding={8}
           onFocusOutside={onFocusOutside}
           className={cn(
-            'pointer-events-auto z-50 flex w-[255px] max-w-[520px] flex-col gap-2 overflow-x-clip overflow-y-auto p-1',
+            'pointer-events-auto z-50 flex w-[255px] max-w-[520px] flex-col gap-1 overflow-x-clip overflow-y-auto p-1',
             'max-h-(--radix-dropdown-menu-content-available-height)',
             'rounded-xl border border-border-subtle bg-bg-popover',
             '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
@@ -96,7 +96,7 @@ export function DropdownMenuGroup({ label, children, className, ...props }: Drop
     <DropdownPrimitive.Group
       data-slot="dropdown-group"
       // Figma's divider lives inside the group, 8px under the last item; the last group has none.
-      className={cn('flex flex-col not-last:after:mt-2 not-last:after:block not-last:after:h-px not-last:after:bg-bg-muted', className)}
+      className={cn('flex flex-col gap-1 not-last:after:block not-last:after:h-px not-last:after:bg-bg-muted', className)}
       {...props}
     >
       {label ? (
