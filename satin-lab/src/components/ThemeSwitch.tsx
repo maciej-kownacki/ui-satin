@@ -8,6 +8,15 @@ import { HalfMoon, SunLight } from 'iconoir-react'
  */
 type Theme = 'light' | 'dark'
 
+/** Sets light or dark for the site and tells every switch on the page. */
+export function setMode(next: Theme) {
+  document.documentElement.classList.toggle('dark', next === 'dark')
+  try {
+    localStorage.setItem('satin-theme', next)
+  } catch {}
+  window.dispatchEvent(new CustomEvent('satin-mode', { detail: next }))
+}
+
 const systemTheme = (): Theme => (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
 
 export function ThemeSwitch({ size = 'xs', className }: { size?: 'xs' | 'md' | 'lg'; className?: string }) {
@@ -21,14 +30,15 @@ export function ThemeSwitch({ size = 'xs', className }: { size?: 'xs' | 'md' | '
       saved = localStorage.getItem('satin-theme')
     } catch {}
     setTheme(saved === 'light' || saved === 'dark' ? saved : systemTheme())
+    // Randomize in the customizer can change the mode too.
+    const onMode = (e: Event) => setTheme((e as CustomEvent<Theme>).detail)
+    window.addEventListener('satin-mode', onMode)
+    return () => window.removeEventListener('satin-mode', onMode)
   }, [])
 
   const choose = (next: Theme) => {
     setTheme(next)
-    document.documentElement.classList.toggle('dark', next === 'dark')
-    try {
-      localStorage.setItem('satin-theme', next)
-    } catch {}
+    setMode(next)
   }
 
   return (

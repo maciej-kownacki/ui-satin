@@ -235,12 +235,18 @@ export function themeCss(theme: SatinTheme, scope?: string) {
 
 /* ---------- Random ---------- */
 
-/** A random theme that still reads: a brand with enough chroma, any radius, either size. */
-export function randomTheme(): SatinTheme {
-  const hue = Math.random() * 360
+/**
+ * A random theme that still reads: a brand with enough chroma, a corner scale and a body size.
+ * Pass the current theme to make sure the brand and the corners visibly change.
+ */
+export function randomTheme(current?: SatinTheme): SatinTheme {
+  const [, , currentHue] = current ? rgbToOklch(hexToRgb(current.brand)) : [0, 0, -360]
+  // At least 60° away from the current hue, so the new brand never looks like the old one.
+  const hue = (currentHue + 60 + Math.random() * 240) % 360
   const l = 0.5 + Math.random() * 0.25
   const brand = oklchToHex([l, 0.12 + Math.random() * 0.08, hue])
-  const radius = [0, 0.5, 1, 1.5][Math.floor(Math.random() * 4)]
+  const radii = [0, 0.5, 1, 1.5].filter((r) => r !== current?.radius)
+  const radius = radii[Math.floor(Math.random() * radii.length)]
   const fontSize = Math.random() < 0.5 ? 13 : 14
   return { brand, radius, fontSize }
 }

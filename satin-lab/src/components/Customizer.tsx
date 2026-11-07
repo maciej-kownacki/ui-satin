@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Button, Popover, SegmentedControl, cn, defaultTheme, randomTheme, themeCss, type SatinTheme } from '@satin/ui'
-import { ThemeSwitch } from './ThemeSwitch'
+import { ThemeSwitch, setMode } from './ThemeSwitch'
 import { Check, ColorPicker, Copy, DiceFive, Download, NavArrowDown, NavArrowUp, Palette, Refresh } from 'iconoir-react'
 
 /**
@@ -93,6 +93,11 @@ export function Customizer() {
       setCopied(true)
       setTimeout(() => setCopied(false), 1600)
     } catch {}
+  }
+  // Everything in the bar: a new brand and corners every time, a body size, and light or dark.
+  const randomize = () => {
+    update(randomTheme(theme))
+    setMode(Math.random() < 0.5 ? 'light' : 'dark')
   }
   const download = () => {
     const url = URL.createObjectURL(new Blob([css], { type: 'text/css' }))
@@ -264,7 +269,7 @@ export function Customizer() {
               <Refresh />
             </Button>
           )}
-          <Button size="lg" className="flex-1 xl:flex-none" onClick={() => update(randomTheme())}>
+          <Button size="lg" className="flex-1 xl:flex-none" onClick={randomize}>
             <DiceFive />
             Randomize
           </Button>
