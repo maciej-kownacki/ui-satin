@@ -1,6 +1,6 @@
 ---
 /**
- * Theming: how one small config (brand, corners, body size) reaches every component, with
+ * Theming: how one small config (brand, corners) reaches every component, with
  * live previews that read the same CSS variables the customizer writes, then the colour
  * token groups from tokens/tokens.json. Swatches and samples follow the theme the page is in.
  */
@@ -17,19 +17,18 @@ const panel = 'rounded-2xl border border-border-subtle p-4 sm:p-5'
 
 const ramp = ['50', '200', '300', '500', '600', '700', '900', '950']
 const radii = ['xs', 'sm', 'md', 'lg', 'xl', '2xl']
-// Two scales. UI text sets controls and stays put; content text is what people read and
-// follows the theme's body size.
+// Two fixed scales: 14px is the body; compact controls take 13.
 const uiSizes = [
   { k: 'xs', px: 12, use: 'Captions, keycaps, axis labels' },
   { k: 'sm', px: 13, use: 'Badges, chips, buttons, menus, tabs, small fields' },
   { k: 'base', px: 14, use: 'Fields and their labels, checkboxes, card titles' },
 ]
 const contentSizes = [
-  { k: 'body', at: '13 / 14', use: 'Messages, descriptions, table cells' },
-  { k: 'body-lg', at: '14 / 15', use: 'Long-form prose' },
-  { k: 'title', at: '16 / 17', use: 'Section headings' },
-  { k: 'heading', at: '20 / 21', use: 'Large headings, figures' },
-  { k: 'display', at: '24 / 25', use: 'Page and hero titles' },
+  { k: 'body', px: 14, use: 'Messages, descriptions, table cells' },
+  { k: 'body-lg', px: 15, use: 'Long-form prose' },
+  { k: 'title', px: 16, use: 'Section headings' },
+  { k: 'heading', px: 20, use: 'Large headings, figures' },
+  { k: 'display', px: 24, use: 'Page and hero titles' },
 ]
 
 const snippets = await highlight([
@@ -45,7 +44,7 @@ import './satin-theme.css' // from the customizer: Export → Download`,
     code: `import { themeCss } from '@satin/ui'
 
 // Inject once, e.g. in a <style> in your root layout.
-const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
+const css = themeCss({ brand: '#E5533D', radius: 1.5 })`,
   },
 ])
 ---
@@ -113,19 +112,18 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
   </section>
 
   <section aria-labelledby="type-title" class="flex flex-col gap-3 pt-10">
-    <h2 id="type-title" class={h2}>Body text</h2>
+    <h2 id="type-title" class={h2}>Type</h2>
     <p class={prose}>
-      Text comes in two scales. The <strong class="font-medium text-text-default">UI scale</strong> sets controls: badges,
-      chips, buttons, labels, menus. It never moves, so the interface keeps its density. The{' '}
-      <strong class="font-medium text-text-default">content scale</strong> is what people read, and it follows the body size
-      you pick: 13 for dense tools, 14 for calmer reading. A 13px badge next to 14px text is the point: light controls,
-      readable content.
+      Type isn't part of a theme: it stays the same whatever brand and corners you pick. The body is 14px. Compact
+      controls, like badges, chips, small buttons and small fields, use 13px so the interface stays light, and
+      fields, checkboxes and radios keep 14px labels. Content text has its own scale above the body for prose and
+      headings.
     </p>
     <div class="grid gap-3 sm:grid-cols-2">
       <div class={panel}>
         <p class="flex items-baseline justify-between gap-2 pb-2">
           <span class="text-sm font-medium text-text-default">UI scale</span>
-          <span class="text-xs text-text-muted">Fixed</span>
+          <span class="text-xs text-text-muted">Controls</span>
         </p>
         <ul class="flex flex-col divide-y divide-border-subtle" aria-label="UI scale">
           {
@@ -144,14 +142,14 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
       <div class={panel}>
         <p class="flex items-baseline justify-between gap-2 pb-2">
           <span class="text-sm font-medium text-text-default">Content scale</span>
-          <span class="text-xs text-text-muted">Follows body 13 / 14</span>
+          <span class="text-xs text-text-muted">What people read</span>
         </p>
         <ul class="flex flex-col divide-y divide-border-subtle" aria-label="Content scale">
           {
-            contentSizes.map(({ k, at, use }) => (
+            contentSizes.map(({ k, px, use }) => (
               <li class="flex flex-col gap-1 py-2.5">
                 <span class="flex items-baseline justify-between gap-3">
-                  <span class="truncate text-text-default" style={`font-size:var(--text-${k})`}>Aa {at}</span>
+                  <span class="truncate text-text-default" style={`font-size:var(--text-${k})`}>Aa {px}</span>
                   <Chip>text-{k}</Chip>
                 </span>
                 <span class="text-xs text-text-muted">{use}</span>
@@ -167,7 +165,7 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
     <h2 id="code-title" class={h2}>Use it in your app</h2>
     <p class={prose}>
       The theme is a short stylesheet of variables. Export it from the customizer and load it after Satin's styles, or build
-      it in code from the same three values with <Chip>themeCss</Chip>.
+      it in code from the same two values with <Chip>themeCss</Chip>.
     </p>
     {
       ['file', 'code'].map((id) => (

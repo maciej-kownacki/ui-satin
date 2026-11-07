@@ -4,12 +4,11 @@ import { ThemeSwitch, setMode } from './ThemeSwitch'
 import { Check, ColorPicker, Copy, DiceFive, Download, NavArrowDown, NavArrowUp, Palette, Refresh } from 'iconoir-react'
 
 /**
- * The customizer bar: brand, corners and body size for the whole site, live, plus the light /
- * dark switch. The docs are built from Satin's own components, so the top bar, the sidebar and
- * the switches follow the theme like the previews do; only the content scale is limited to
- * what the components show, since the docs' own text is fixed. The theme is kept in
- * localStorage so the next page opens with it (Layout.astro injects it before the first
- * paint). Export gives the same stylesheet, to load after `@satin/ui/styles.css`.
+ * The customizer bar: brand and corners for the whole site, live, plus the light / dark
+ * switch. The docs are built from Satin's own components, so the top bar, the sidebar and the
+ * switches follow the theme like the previews do. The theme is kept in localStorage so the
+ * next page opens with it (Layout.astro injects it before the first paint). Export gives the
+ * same stylesheet, to load after `@satin/ui/styles.css`.
  */
 // Each preset is already a fill white text reads on at 4.5:1, so the swatch is the button.
 export const BRANDS = [
@@ -51,7 +50,8 @@ function apply(theme: SatinTheme) {
 function load(): SatinTheme {
   try {
     const t = JSON.parse(localStorage.getItem(STORE) ?? 'null')
-    if (t && typeof t.brand === 'string') return { ...defaultTheme, ...t }
+    // Only what the theme still has: older saves also carried a body size.
+    if (t && typeof t.brand === 'string') return { brand: t.brand, radius: typeof t.radius === 'number' ? t.radius : defaultTheme.radius }
   } catch {}
   return defaultTheme
 }
@@ -94,7 +94,7 @@ export function Customizer() {
       setTimeout(() => setCopied(false), 1600)
     } catch {}
   }
-  // Everything in the bar: a new brand and corners every time, a body size, and light or dark.
+  // Everything in the bar: a new brand and corners every time, and light or dark.
   const randomize = () => {
     update(randomTheme(theme))
     setMode(Math.random() < 0.5 ? 'light' : 'dark')
@@ -202,24 +202,6 @@ export function Customizer() {
             items={RADII.map((r) => ({ value: String(r.value), label: <span className="sr-only">{r.label}</span>, icon: <Corner r={r.r} /> }))}
             value={String(theme.radius)}
             onValueChange={(v) => update({ radius: Number(v) })}
-          />
-        </div>
-
-        <span aria-hidden className="hidden h-8 w-px bg-border-subtle xl:block" />
-
-        {/* Body size */}
-        <div className="flex items-center justify-between gap-3">
-          <span className={label}>Body text</span>
-          <SegmentedControl
-            aria-label="Body text size"
-            size="lg"
-            className={track}
-            items={[
-              { value: '13', label: '13' },
-              { value: '14', label: '14' },
-            ]}
-            value={String(theme.fontSize)}
-            onValueChange={(v) => update({ fontSize: Number(v) as 13 | 14 })}
           />
         </div>
 

@@ -1,5 +1,6 @@
 /**
- * Satin theming: one small config in, CSS variables out.
+ * Satin theming: one small config in, CSS variables out. Type isn't part of it: Satin's type
+ * scale is fixed (14px body, 13px for compact controls like badges, chips and small fields).
  *
  * Every Satin component reads tokens, never raw values, so a theme only has to repoint a few
  * of them and the whole system follows:
@@ -12,9 +13,6 @@
  *   every brand, so buttons look the same family whatever the colour.
  * - `radius` scales every corner token, pill-shaped controls included; 1 is Satin's own, 0 is
  *   square. Circles (avatars, dots, switch and radio marks) stay round.
- * - `fontSize` is the body size, 13 or 14. It moves the content scale only (body, body-lg,
- *   title, heading, display): what people read. The UI scale (2xs to 2xl) that badges, chips,
- *   buttons, labels and menus use stays put, so controls keep their density.
  *
  * `themeVars()` returns the variables per mode; `themeCss()` the same as a stylesheet to load
  * after `@satin/ui/styles.css`.
@@ -25,11 +23,9 @@ export interface SatinTheme {
   brand: string
   /** Corner scale: 0, 0.5, 1 (default) or 1.5. */
   radius: number
-  /** Body text size in px: 13 (default) or 14. */
-  fontSize: 13 | 14
 }
 
-export const defaultTheme: SatinTheme = { brand: '#4633D7', radius: 1, fontSize: 13 }
+export const defaultTheme: SatinTheme = { brand: '#4633D7', radius: 1 }
 
 type Vars = Record<string, string>
 
@@ -158,7 +154,7 @@ function brandVars(brand: string): Vars {
   return root
 }
 
-/* ---------- Radius and type ---------- */
+/* ---------- Radius ---------- */
 
 const RADII: Record<string, number> = { xs: 4, sm: 6, md: 8, xl: 12, '2xl': 16, '3xl': 20 }
 
@@ -171,19 +167,10 @@ function radiusVars(scale: number): Vars {
   return v
 }
 
-// The content scale, in steps from the body size: 13 gives 13 / 14 / 16 / 20 / 24.
-const TYPE: Record<string, number> = { body: 0, 'body-lg': 1, title: 3, heading: 7, display: 11 }
-
-function typeVars(body: number): Vars {
-  const v: Vars = {}
-  for (const [k, d] of Object.entries(TYPE)) v[`--text-${k}`] = `${body + d}px`
-  return v
-}
-
 /* ---------- Output ---------- */
 
 export function themeVars(theme: SatinTheme): { root: Vars; dark: Vars } {
-  return { root: { ...brandVars(theme.brand), ...radiusVars(theme.radius), ...typeVars(theme.fontSize) }, dark: {} }
+  return { root: { ...brandVars(theme.brand), ...radiusVars(theme.radius) }, dark: {} }
 }
 
 // Semantic tokens that read the brand ramp or the radius. CSS resolves var() where a property is
@@ -226,7 +213,7 @@ export function themeCss(theme: SatinTheme, scope?: string) {
       .map(([k, v]) => `  ${k}: ${v};`)
       .join('\n')}\n}`
   return [
-    `/* Satin theme: brand ${theme.brand.toUpperCase()}, radius ${theme.radius}, body ${theme.fontSize}px. */`,
+    `/* Satin theme: brand ${theme.brand.toUpperCase()}, radius ${theme.radius}. */`,
     // :root:root outranks Satin's own :root, so the theme wins wherever the file is loaded.
     block(scope ?? ':root:root', root),
     ...(Object.keys(dark).length ? [block(scope ? `.dark ${scope}` : ':root.dark', dark)] : []),
@@ -237,7 +224,7 @@ export function themeCss(theme: SatinTheme, scope?: string) {
 /* ---------- Random ---------- */
 
 /**
- * A random theme that still reads: a brand with enough chroma, a corner scale and a body size.
+ * A random theme that still reads: a brand with enough chroma and a corner scale.
  * Pass the current theme to make sure the brand and the corners visibly change.
  */
 export function randomTheme(current?: SatinTheme): SatinTheme {
@@ -248,6 +235,5 @@ export function randomTheme(current?: SatinTheme): SatinTheme {
   const brand = oklchToHex([l, 0.12 + Math.random() * 0.08, hue])
   const radii = [0, 0.5, 1, 1.5].filter((r) => r !== current?.radius)
   const radius = radii[Math.floor(Math.random() * radii.length)]
-  const fontSize = Math.random() < 0.5 ? 13 : 14
-  return { brand, radius, fontSize }
+  return { brand, radius }
 }
