@@ -116,10 +116,10 @@ export function Customizer() {
           '[box-shadow:0_10px_30px_-8px_var(--effect-shadow-md),0_4px_6px_-4px_var(--effect-shadow-sm),inset_0_1px_0_0_var(--effect-highlight-top)]',
         )}
       >
-        {/* Brand */}
-        <div className="flex items-center justify-between gap-3">
+        {/* Brand: on phones the label sits above, so all nine swatches fit in one row. */}
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
           <span className={label}>Brand</span>
-          <div role="radiogroup" aria-label="Brand colour" className={cn(group, 'overflow-x-auto')}>
+          <div role="radiogroup" aria-label="Brand colour" className={cn(group, 'justify-between md:justify-start')}>
             {BRANDS.map((b) => {
               const selected = b.hex.toLowerCase() === theme.brand.toLowerCase()
               return (
@@ -132,7 +132,7 @@ export function Customizer() {
                   title={b.name}
                   onClick={() => update({ brand: b.hex })}
                   className={cn(
-                    'grid size-8 shrink-0 place-items-center rounded-lg transition-colors duration-(--duration-fast) ease-(--ease-out)',
+                    'grid size-7 shrink-0 place-items-center rounded-lg transition-colors md:size-8 duration-(--duration-fast) ease-(--ease-out)',
                     'hover:bg-bg-hover focus-visible:shadow-border-focus focus-visible:outline-none',
                     selected && 'bg-bg-card [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
                   )}
@@ -153,7 +153,7 @@ export function Customizer() {
               title="Custom colour"
               onClick={() => colorRef.current?.click()}
               className={cn(
-                'relative grid size-8 shrink-0 place-items-center rounded-lg text-text-muted transition-colors duration-(--duration-fast) ease-(--ease-out)',
+                'relative grid size-7 shrink-0 place-items-center rounded-lg text-text-muted md:size-8 transition-colors duration-(--duration-fast) ease-(--ease-out)',
                 'hover:bg-bg-hover hover:text-text-default focus-visible:shadow-border-focus focus-visible:outline-none',
                 custom && 'bg-bg-card [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
               )}
