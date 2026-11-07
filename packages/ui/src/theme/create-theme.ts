@@ -227,8 +227,9 @@ export function themeCss(theme: SatinTheme, scope?: string) {
       .join('\n')}\n}`
   return [
     `/* Satin theme: brand ${theme.brand.toUpperCase()}, radius ${theme.radius}, body ${theme.fontSize}px. */`,
-    block(scope ?? ':root', root),
-    ...(Object.keys(dark).length ? [block(scope ? `.dark ${scope}` : '.dark', dark)] : []),
+    // :root:root outranks Satin's own :root, so the theme wins wherever the file is loaded.
+    block(scope ?? ':root:root', root),
+    ...(Object.keys(dark).length ? [block(scope ? `.dark ${scope}` : ':root.dark', dark)] : []),
     '',
   ].join('\n\n')
 }
