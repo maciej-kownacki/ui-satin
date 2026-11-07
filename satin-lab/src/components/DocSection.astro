@@ -34,8 +34,8 @@ const card =
 <Installation id={item.id} title={item.title} />
 
 <section aria-labelledby="api-title" class="flex flex-col gap-4 pt-8">
-  <h2 id="api-title" class="text-lg font-medium text-text-default">API Reference</h2>
-  <p class="text-base leading-6 text-text-muted">
+  <h2 id="api-title" class="text-title font-medium text-text-default">API Reference</h2>
+  <p class="text-body-lg leading-6 text-text-muted">
     {parts.map((p) => (p.startsWith('`') ? <Chip>{p.slice(1, -1)}</Chip> : p))}
   </p>
   <div class="overflow-x-auto rounded-md focus-visible:shadow-border-focus focus-visible:outline-none" tabindex="0" role="region" aria-label="API reference table">

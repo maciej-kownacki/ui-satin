@@ -11,20 +11,25 @@ import { page } from '../nav'
 import { colorGroups } from '../lib/tokens'
 import { highlight } from '../lib/highlight'
 
-const h2 = 'text-lg font-medium text-text-default'
-const prose = 'text-base leading-6 text-text-muted'
+const h2 = 'text-title font-medium text-text-default'
+const prose = 'text-body-lg leading-6 text-text-muted'
 const panel = 'rounded-2xl border border-border-subtle p-4 sm:p-5'
 
 const ramp = ['50', '200', '300', '500', '600', '700', '900', '950']
 const radii = ['xs', 'sm', 'md', 'lg', 'xl', '2xl']
-const sizes = [
-  { k: '2xs', use: 'Fine print' },
-  { k: 'xs', use: 'Captions, axis labels' },
-  { k: 'sm', use: 'Body: labels, controls, menus' },
-  { k: 'base', use: 'Docs prose, card titles' },
-  { k: 'lg', use: 'Section headings' },
-  { k: 'xl', use: 'Figures' },
-  { k: '2xl', use: 'Page titles' },
+// Two scales. UI text sets controls and stays put; content text is what people read and
+// follows the theme's body size.
+const uiSizes = [
+  { k: 'xs', px: 12, use: 'Captions, keycaps, axis labels' },
+  { k: 'sm', px: 13, use: 'Badges, chips, buttons, menus, tabs, tooltips' },
+  { k: 'base', px: 14, use: 'Field labels, card and dialog titles, large buttons' },
+]
+const contentSizes = [
+  { k: 'body', at: '13 / 14', use: 'Messages, descriptions, table cells, small fields' },
+  { k: 'body-lg', at: '14 / 15', use: 'Field values, long-form prose' },
+  { k: 'title', at: '16 / 17', use: 'Section headings' },
+  { k: 'heading', at: '20 / 21', use: 'Large headings, figures' },
+  { k: 'display', at: '24 / 25', use: 'Page and hero titles' },
 ]
 
 const snippets = await highlight([
@@ -110,23 +115,52 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
   <section aria-labelledby="type-title" class="flex flex-col gap-3 pt-10">
     <h2 id="type-title" class={h2}>Body text</h2>
     <p class={prose}>
-      The body size is 13 or 14. The rest of the scale keeps its steps from it, so captions, headings and figures stay in
-      proportion: at 13 it runs 10, 12, 13, 14, 16, 20, 24.
+      Text comes in two scales. The <strong class="font-medium text-text-default">UI scale</strong> sets controls: badges,
+      chips, buttons, labels, menus. It never moves, so the interface keeps its density. The{' '}
+      <strong class="font-medium text-text-default">content scale</strong> is what people read, and it follows the body size
+      you pick: 13 for dense tools, 14 for calmer reading. A 13px badge next to 14px text is the point: light controls,
+      readable content.
     </p>
-    <ul class:list={[panel, 'flex flex-col divide-y divide-border-subtle py-1 sm:py-1']} aria-label="Type scale">
-      {
-        sizes.map(({ k, use }) => (
-          <li class="flex items-baseline gap-4 py-2.5">
-            <span class="w-14 shrink-0">
-              <Chip>{k}</Chip>
-            </span>
-            <span class="min-w-0 flex-1 truncate text-text-default" style={`font-size:var(--text-${k})`}>
-              {use}
-            </span>
-          </li>
-        ))
-      }
-    </ul>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <div class={panel}>
+        <p class="flex items-baseline justify-between gap-2 pb-2">
+          <span class="text-sm font-medium text-text-default">UI scale</span>
+          <span class="text-xs text-text-muted">Fixed</span>
+        </p>
+        <ul class="flex flex-col divide-y divide-border-subtle" aria-label="UI scale">
+          {
+            uiSizes.map(({ k, px, use }) => (
+              <li class="flex flex-col gap-1 py-2.5">
+                <span class="flex items-baseline justify-between gap-3">
+                  <span class="text-text-default" style={`font-size:var(--text-${k})`}>Aa {px}</span>
+                  <Chip>text-{k}</Chip>
+                </span>
+                <span class="text-xs text-text-muted">{use}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div class={panel}>
+        <p class="flex items-baseline justify-between gap-2 pb-2">
+          <span class="text-sm font-medium text-text-default">Content scale</span>
+          <span class="text-xs text-text-muted">Follows body 13 / 14</span>
+        </p>
+        <ul class="flex flex-col divide-y divide-border-subtle" aria-label="Content scale">
+          {
+            contentSizes.map(({ k, at, use }) => (
+              <li class="flex flex-col gap-1 py-2.5">
+                <span class="flex items-baseline justify-between gap-3">
+                  <span class="truncate text-text-default" style={`font-size:var(--text-${k})`}>Aa {at}</span>
+                  <Chip>text-{k}</Chip>
+                </span>
+                <span class="text-xs text-text-muted">{use}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
   </section>
 
   <section aria-labelledby="code-title" class="flex flex-col gap-3 pt-10">
@@ -168,7 +202,7 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5, fontSize: 14 })`,
                   <span class="text-base font-medium text-text-default">{g.title}</span>
                   <span class="text-sm text-text-muted">{g.tokens.length} tokens</span>
                 </span>
-                <span class="text-base leading-6 text-text-muted">{g.description}</span>
+                <span class="text-body-lg leading-6 text-text-muted">{g.description}</span>
               </span>
             </a>
           </li>

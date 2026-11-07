@@ -7,10 +7,13 @@
  * - `brand` replaces the brand ramp (the `--color-blue-*` primitives and the dark-mode primary
  *   primitives). Each step keeps the lightness of the original ramp, takes the brand's hue and
  *   scales its chroma, so tints, borders and soft tones stay in the same places. The solid
- *   steps (hover, rest, pressed) are moved to the brand's own lightness, and the text on them
- *   switches to dark when white would fall under 4.5:1.
+ *   steps (hover, rest, pressed) sit at the brand's own lightness, lowered just enough that
+ *   white text reads at 4.5:1 on rest and hover, in Light and Dark. Labels stay white for
+ *   every brand, so buttons look the same family whatever the colour.
  * - `radius` scales every corner token; 1 is Satin's own, 0 is square. Pills stay pills.
- * - `fontSize` is the body size, 13 or 14; the rest of the type scale keeps its steps from it.
+ * - `fontSize` is the body size, 13 or 14. It moves the content scale only (body, body-lg,
+ *   title, heading, display): what people read. The UI scale (2xs to 2xl) that badges, chips,
+ *   buttons, labels and menus use stays put, so controls keep their density.
  *
  * `themeVars()` returns the variables per mode; `themeCss()` the same as a stylesheet to load
  * after `@satin/ui/styles.css`.
@@ -114,28 +117,44 @@ const RAMP: Record<string, string> = {
 }
 // The steps a button is painted with: they move with the brand's lightness.
 const SOLID = new Set(['blue-500', 'blue-600', 'blue-700', 'primary-dark', 'primary-hover-dark', 'primary-pressed-dark'])
-const DARK_TEXT = '#18181B'
 
-function brandVars(brand: string): { root: Vars; dark: Vars } {
+// Darkest the solid fill may need to go: white on it, and on its hover, reads at 4.5:1
+// (aimed at 4.7, since fitting each step into sRGB trims its chroma a little).
+function solidLightness(c: number, h: number, base: number, hoverStep: number) {
+  const passes = (L: number) =>
+    contrast(oklchToHex([L, c, h]), '#FFFFFF') >= 4.7 && contrast(oklchToHex([L + hoverStep, c, h]), '#FFFFFF') >= 4.7
+  if (passes(base)) return base
+  let lo = 0.2
+  let hi = base
+  for (let i = 0; i < 20; i++) {
+    const mid = (lo + hi) / 2
+    if (passes(mid)) lo = mid
+    else hi = mid
+  }
+  return lo
+}
+
+function brandVars(brand: string): Vars {
   const [bl, bc, bh] = rgbToOklch(hexToRgb(brand))
-  const [rl, rc, rh] = rgbToOklch(hexToRgb(RAMP['blue-600']))
+  const lch = (step: string) => rgbToOklch(hexToRgb(RAMP[step]))
+  const [rl, rc, rh] = lch('blue-600')
   const chroma = bc / rc
+  // Where the light and the dark solid fills sit: the brand's lightness, darker if white needs it.
+  const light = solidLightness(bc, bh, bl, lch('blue-500')[0] - rl)
+  const darkRest = lch('primary-dark')[0]
+  const dark = solidLightness(bc, bh, light + (darkRest - rl), lch('primary-hover-dark')[0] - darkRest)
   const root: Vars = {}
   for (const [step, hex] of Object.entries(RAMP)) {
     const [l, c, h] = rgbToOklch(hexToRgb(hex))
-    // Solid steps keep their distance from blue-600 but sit around the brand's lightness.
-    const L = SOLID.has(step) ? Math.min(0.97, Math.max(0.2, bl + (l - rl))) : l
-    root[`--color-${step}`] = step === 'blue-600' ? brand.toUpperCase() : oklchToHex([L, c * chroma, bh + (h - rh)])
+    const isDark = step.endsWith('-dark') && step !== 'primary-border-dark'
+    const L = SOLID.has(step) ? (isDark ? dark + (l - darkRest) : light + (l - rl)) : l
+    root[`--color-${step}`] =
+      step === 'blue-600' && light === bl ? brand.toUpperCase() : oklchToHex([Math.min(0.97, Math.max(0.15, L)), c * chroma, bh + (h - rh)])
   }
   root['--color-blue-600-a20'] = `${root['--color-blue-600']}33`
   root['--color-blue-500-a20'] = `${root['--color-blue-500']}33`
   root['--color-primary-focus-dark'] = `${root['--color-primary-dark']}33`
-
-  // White text on the brand when it reads at 4.5:1, dark text otherwise.
-  const fg = (bg: string) => (contrast(bg, '#FFFFFF') >= 4.5 ? '#FFFFFF' : DARK_TEXT)
-  root['--action-primary-fg'] = fg(root['--color-blue-600'])
-  const dark: Vars = { '--action-primary-fg': fg(root['--color-primary-dark']) }
-  return { root, dark }
+  return root
 }
 
 /* ---------- Radius and type ---------- */
@@ -149,8 +168,8 @@ function radiusVars(scale: number): Vars {
   return v
 }
 
-// Steps from the body size (sm): 13 gives 10 / 12 / 13 / 14 / 16 / 20 / 24, Satin's own scale.
-const TYPE: Record<string, number> = { '2xs': -3, xs: -1, sm: 0, base: 1, lg: 3, xl: 7, '2xl': 11 }
+// The content scale, in steps from the body size: 13 gives 13 / 14 / 16 / 20 / 24.
+const TYPE: Record<string, number> = { body: 0, 'body-lg': 1, title: 3, heading: 7, display: 11 }
 
 function typeVars(body: number): Vars {
   const v: Vars = {}
@@ -161,11 +180,7 @@ function typeVars(body: number): Vars {
 /* ---------- Output ---------- */
 
 export function themeVars(theme: SatinTheme): { root: Vars; dark: Vars } {
-  const brand = brandVars(theme.brand)
-  return {
-    root: { ...brand.root, ...radiusVars(theme.radius), ...typeVars(theme.fontSize) },
-    dark: brand.dark,
-  }
+  return { root: { ...brandVars(theme.brand), ...radiusVars(theme.radius), ...typeVars(theme.fontSize) }, dark: {} }
 }
 
 /** The theme as a stylesheet. Load it after `@satin/ui/styles.css`. */
@@ -178,7 +193,7 @@ export function themeCss(theme: SatinTheme) {
   return [
     `/* Satin theme: brand ${theme.brand.toUpperCase()}, radius ${theme.radius}, body ${theme.fontSize}px. */`,
     block(':root', root),
-    block('.dark', dark),
+    ...(Object.keys(dark).length ? [block('.dark', dark)] : []),
     '',
   ].join('\n\n')
 }

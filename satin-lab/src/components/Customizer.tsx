@@ -8,14 +8,15 @@ import { Check, ColorPicker, Copy, DiceFive, Download, NavArrowDown, NavArrowUp,
  * so the next page opens with it (Layout.astro injects it before the first paint), and
  * exports the same stylesheet to load after `@satin/ui/styles.css`.
  */
+// Each preset is already a fill white text reads on at 4.5:1, so the swatch is the button.
 export const BRANDS = [
   { name: 'Indigo', hex: '#4633D7' },
-  { name: 'Sky', hex: '#0A7DC2' },
-  { name: 'Teal', hex: '#0F8A7E' },
-  { name: 'Green', hex: '#2F8A4A' },
-  { name: 'Amber', hex: '#E8A23B' },
-  { name: 'Coral', hex: '#E5533D' },
-  { name: 'Fuchsia', hex: '#B33DC6' },
+  { name: 'Sky', hex: '#0469A5' },
+  { name: 'Teal', hex: '#117167' },
+  { name: 'Green', hex: '#107436' },
+  { name: 'Amber', hex: '#8B5B0A' },
+  { name: 'Coral', hex: '#BF2D19' },
+  { name: 'Fuchsia', hex: '#A42CB7' },
   { name: 'Graphite', hex: '#3F3F46' },
 ]
 const RADII = [

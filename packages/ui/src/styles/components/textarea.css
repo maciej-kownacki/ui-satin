@@ -11,7 +11,7 @@
   padding: 8px 12px;
   color: var(--text-default);
   font: inherit;
-  font-size: var(--text-base);
+  font-size: var(--text-body-lg);
   line-height: 21px;
   letter-spacing: -0.015em;
   outline: none;

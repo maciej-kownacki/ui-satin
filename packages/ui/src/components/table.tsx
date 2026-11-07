@@ -272,7 +272,7 @@ export function Table<R extends Row = Row>({
                   <td
                     key={c.key}
                     className={cn(
-                      'h-10 overflow-hidden py-2 pr-2.5 pl-3 align-middle text-sm leading-(--text-sm--line-height) text-text-default',
+                      'h-10 overflow-hidden py-2 pr-2.5 pl-3 align-middle text-body leading-(--text-body--line-height) text-text-default',
                       c.align === 'right' && 'text-right',
                       cellPosition(i + (selectable ? 1 : 0), cellCount),
                       i === 0 && stickyFirst(cn(firstDataLeft, rowBg)),

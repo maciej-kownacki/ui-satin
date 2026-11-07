@@ -50,7 +50,7 @@ export function EmptyState({ className, border, title, description, icon, action
       )}
       <div className="flex w-full flex-col items-center gap-2">
         <p className="w-full text-lg font-medium text-text-default">{title}</p>
-        {description && <p className="w-full text-base text-text-muted">{description}</p>}
+        {description && <p className="w-full text-body-lg text-text-muted">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-start justify-center gap-2">{actions}</div>}
     </div>

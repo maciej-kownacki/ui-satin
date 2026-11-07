@@ -117,12 +117,12 @@ export function Dialog({
                   {title}
                 </DialogPrimitive.Title>
                 {description ? (
-                  <DialogPrimitive.Description className="text-sm text-text-muted">{description}</DialogPrimitive.Description>
+                  <DialogPrimitive.Description className="text-body text-text-muted">{description}</DialogPrimitive.Description>
                 ) : null}
               </div>
               {hasBody && (
                 <div className="flex flex-col gap-3 px-4 pb-3">
-                  {typeof children === 'string' ? <p className="text-sm text-text-default">{children}</p> : children}
+                  {typeof children === 'string' ? <p className="text-body text-text-default">{children}</p> : children}
                   {alert}
                 </div>
               )}
@@ -233,7 +233,7 @@ export function DialogAlert({
         {icon && <StatusIcon intent={intent} />}
         <div className="flex min-w-0 flex-1 flex-col">
           <p className="text-base font-medium text-text-default">{title}</p>
-          {description ? <p className="text-sm text-text-muted">{description}</p> : null}
+          {description ? <p className="text-body text-text-muted">{description}</p> : null}
         </div>
       </div>
       {onDismiss && (

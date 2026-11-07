@@ -60,7 +60,7 @@ export function Message({
       <div data-slot="message" data-role="user" className={cn('flex flex-col items-end gap-2', className)} {...props}>
         {source && <SourceCard source={source} />}
         <div className="max-w-full rounded-xl rounded-br-xs bg-action-inverse-bg px-3 py-2">
-          <div className="max-w-64 text-sm break-words text-text-on-inverse">{children}</div>
+          <div className="max-w-64 text-body break-words text-text-on-inverse">{children}</div>
         </div>
       </div>
     )
@@ -69,7 +69,7 @@ export function Message({
   return (
     <div data-slot="message" data-role="assistant" className={cn('flex flex-col items-start gap-3', className)} {...props}>
       {thinking && thinking.length > 0 && <Thinking state="collapsed" label={thinkingLabel} steps={thinking} />}
-      <div className="w-full text-sm break-words text-text-default">{children}</div>
+      <div className="w-full text-body break-words text-text-default">{children}</div>
       {actions && <MessageActions timestamp={timestamp} onFeedback={onFeedback} onCopy={onCopy} onShare={onShare} />}
     </div>
   )

@@ -67,7 +67,7 @@ export function Card({
               {title}
             </div>
           )}
-          {description != null && <p className="text-sm text-text-muted">{description}</p>}
+          {description != null && <p className="text-body text-text-muted">{description}</p>}
         </div>
       )}
       {children != null && (

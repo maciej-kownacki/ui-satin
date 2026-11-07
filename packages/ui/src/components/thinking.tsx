@@ -112,7 +112,7 @@ export function Thinking({
 function Step({ step }: { step: ThinkingStep }) {
   switch (step.type) {
     case 'text':
-      return <p className="text-sm text-text-muted">{step.text}</p>
+      return <p className="text-body text-text-muted">{step.text}</p>
     case 'more':
       return <p className="text-sm whitespace-nowrap text-text-muted">{step.label}</p>
     case 'source':

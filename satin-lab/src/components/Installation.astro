@@ -55,18 +55,18 @@ const marker =
   'relative z-10 grid size-6 place-items-center rounded-full border border-border-default bg-bg-card text-xs leading-4 font-medium text-text-default tabular-nums'
 // The line runs from under one marker to just above the next; the last step has none.
 const line = 'absolute top-8 bottom-2 left-[11.5px] w-px bg-border-subtle'
-const stepTitle = 'pt-px text-base leading-6 font-medium text-text-default'
+const stepTitle = 'pt-px text-body-lg leading-6 font-medium text-text-default'
 ---
 
 <section aria-labelledby="install-title" class="flex flex-col gap-4 pt-8">
-  <h2 id="install-title" class="text-lg font-medium text-text-default">Installation</h2>
+  <h2 id="install-title" class="text-title font-medium text-text-default">Installation</h2>
   <ol class="flex flex-col">
     <li class={step}>
       <span aria-hidden class={line}></span>
       <span aria-hidden class={marker}>1</span>
       <div class="flex min-w-0 flex-col gap-2">
         <h3 class={stepTitle}>Set up your project</h3>
-        <p class="text-base leading-6 text-text-muted">
+        <p class="text-body-lg leading-6 text-text-muted">
           You need React 19, TypeScript, the <Chip>@/</Chip> import alias and a <Chip>components.json</Chip>. No Tailwind. Follow the <a
             href="/#installation"
             class="rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none">installation guide</a
@@ -80,7 +80,7 @@ const stepTitle = 'pt-px text-base leading-6 font-medium text-text-default'
       <div class="flex min-w-0 flex-col gap-3">
         <h3 class={stepTitle}>Install the component and its dependencies</h3>
         <CodeFrame code={command} label="Terminal" lang="bash" copyLabel="Copy command" />
-        <div class="flex flex-col gap-2 text-base leading-6 text-text-muted">
+        <div class="flex flex-col gap-2 text-body-lg leading-6 text-text-muted">
           <p>This command will:</p>
           <ul class="flex list-disc flex-col gap-1 pl-5 marker:text-text-subtle">
             {
@@ -104,7 +104,7 @@ const stepTitle = 'pt-px text-base leading-6 font-medium text-text-default'
       <span aria-hidden class={marker}>3</span>
       <div class="flex min-w-0 flex-col gap-3">
         <h3 class={stepTitle}>Start using it</h3>
-        <p class="text-base leading-6 text-text-muted">Import the styles once, then import {title} from your components.</p>
+        <p class="text-body-lg leading-6 text-text-muted">Import the styles once, then import {title} from your components.</p>
         <CodeFrame code={usage} label="Usage" />
       </div>
     </li>

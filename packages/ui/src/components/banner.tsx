@@ -141,7 +141,7 @@ export function Banner({
       >
         <p className="truncate leading-[18px] font-medium text-text-default">{title}</p>
         {description && (
-          <p className={cn('text-text-muted', !sidebar && 'truncate')}>{description}</p>
+          <p className={cn('text-body text-text-muted', !sidebar && 'truncate')}>{description}</p>
         )}
       </div>
       {sidebar ? (

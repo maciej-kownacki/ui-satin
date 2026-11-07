@@ -444,6 +444,21 @@
   --text-2xl: 24px;
   --text-2xl--line-height: 1.3;
   --text-2xl--letter-spacing: -0.015em;
+  --text-body: 13px;
+  --text-body--line-height: 1.5;
+  --text-body--letter-spacing: -0.015em;
+  --text-body-lg: 14px;
+  --text-body-lg--line-height: 1.571;
+  --text-body-lg--letter-spacing: -0.015em;
+  --text-title: 16px;
+  --text-title--line-height: 1.375;
+  --text-title--letter-spacing: -0.015em;
+  --text-heading: 20px;
+  --text-heading--line-height: 1.3;
+  --text-heading--letter-spacing: -0.015em;
+  --text-display: 24px;
+  --text-display--line-height: 1.25;
+  --text-display--letter-spacing: -0.015em;
 }
 
 @theme inline {
