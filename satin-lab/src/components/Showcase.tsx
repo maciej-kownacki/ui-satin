@@ -109,43 +109,51 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
     { id: 'code', label: 'Code', Icon: CodeIcon },
   ]
 
+  // One prop per row, label left and control right. From md the rows split into two columns,
+  // filled top to bottom so the first column keeps the most structural props.
+  const rows = controls ? Math.ceil(controls.length / 2) : 0
   const bar = controls ? (
-    <div
-      role="group"
-      aria-label={`${name} properties`}
-      // Phones: one prop per row, label left and control right. Wider: one column per prop,
-      // the label above its control, columns split by a hairline.
-      className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 md:flex-row md:flex-wrap md:justify-center md:gap-x-0 md:gap-y-3 md:px-2 md:py-4"
-    >
-      {controls.map((c) => (
-        <div
-          key={c.id}
-          className="flex min-h-7 items-center justify-between gap-2 md:flex-col md:items-start md:justify-start md:gap-2 md:border-l md:border-border-subtle md:px-4 md:first:border-l-0"
-        >
-          <span aria-hidden className="text-sm text-text-muted md:text-xs md:leading-4 md:font-medium">
-            {c.label}
-          </span>
-          {c.type === 'menu' ? (
-            <MenuControl control={c} value={values[c.id]} onChange={(v) => setValues((s) => ({ ...s, [c.id]: v }))} />
-          ) : 'items' in c ? (
-            <SegmentedControl
-              aria-label={c.label}
-              size="xs"
-              shape="rounded"
-              items={c.items}
-              value={values[c.id]}
-              onValueChange={(v) => setValues((s) => ({ ...s, [c.id]: v }))}
-            />
-          ) : (
-            <Switch
-              className="md:my-[7px]"
-              aria-label={c.label}
-              checked={values[c.id] === 'on'}
-              onCheckedChange={(on) => setValues((s) => ({ ...s, [c.id]: on ? 'on' : 'off' }))}
-            />
-          )}
-        </div>
-      ))}
+    <div className="shrink-0 border-t border-border-subtle px-4 py-2 md:px-6 md:py-3">
+      <div
+        role="group"
+        aria-label={`${name} properties`}
+        style={{ '--rows': rows } as React.CSSProperties}
+        className="mx-auto grid w-full max-w-[720px] grid-cols-1 md:grid-flow-col md:grid-cols-2 md:grid-rows-[repeat(var(--rows),auto)] md:gap-x-10"
+      >
+        {controls.map((c, i) => (
+          <div
+            key={c.id}
+            className={cn(
+              'flex min-h-11 items-center justify-between gap-3 py-1.5',
+              i > 0 && 'border-t border-border-subtle',
+              // In two columns the first row of the second column starts flush, without a line.
+              i === rows && 'md:border-t-0',
+            )}
+          >
+            <span aria-hidden className="text-sm text-text-muted">
+              {c.label}
+            </span>
+            {c.type === 'menu' ? (
+              <MenuControl control={c} value={values[c.id]} onChange={(v) => setValues((s) => ({ ...s, [c.id]: v }))} />
+            ) : 'items' in c ? (
+              <SegmentedControl
+                aria-label={c.label}
+                size="xs"
+                shape="rounded"
+                items={c.items}
+                value={values[c.id]}
+                onValueChange={(v) => setValues((s) => ({ ...s, [c.id]: v }))}
+              />
+            ) : (
+              <Switch
+                aria-label={c.label}
+                checked={values[c.id] === 'on'}
+                onCheckedChange={(on) => setValues((s) => ({ ...s, [c.id]: on ? 'on' : 'off' }))}
+              />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   ) : null
 
