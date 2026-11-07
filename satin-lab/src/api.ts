@@ -9,12 +9,13 @@ const tones = ['"neutral"', '"brand"', '"sky"', '"green"', '"amber"', '"red"', '
 
 export const api: Record<string, Api> = {
   badge: {
-    description: 'The `Badge` component is a `span` that takes a tone, a size, a variant and a shape.',
+    description: 'The `Badge` component is a `span` that takes a size, a variant, a shape and a tone. Put an icon before the label as a child.',
     props: [
-      { name: 'tone', type: tones, default: '"neutral"' },
       { name: 'size', type: ['"lg"', '"sm"'], default: '"lg"' },
       { name: 'variant', type: ['"soft"', '"plain"'], default: '"soft"' },
       { name: 'shape', type: ['"default"', '"rounded"'], default: '"default"' },
+      { name: 'tone', type: tones, default: '"neutral"' },
+      { name: 'children', type: ['ReactNode'], default: '—' },
     ],
   },
   button: {

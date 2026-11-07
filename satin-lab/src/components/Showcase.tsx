@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, SegmentedControl, cn } from '@satin/ui'
+import { Button, SegmentedControl, Switch, cn } from '@satin/ui'
 import { Check, Collapse, Copy, Expand } from 'iconoir-react'
 import { CodeIcon, PreviewIcon } from './icons'
 
@@ -8,8 +8,34 @@ import { CodeIcon, PreviewIcon } from './icons'
  * Preview / Code tabs with a full-screen button on the right, then a stage (at least 442px) with the
  * live component in the middle and a segmented control for its options at the bottom.
  * The Code tab shows the selected option's code in the same frame, with a copy button.
+ *
+ * With `controls`, the single option bar becomes a properties bar under the stage: one labelled
+ * control per prop, in the order given (the prop that changes the most comes first), and the
+ * option id is the selected values joined with "-", so every combination has its own code.
  */
 export type ShowcaseOption = { id: string; label: string; code: string }
+
+/** A prop the reader can change: a segmented control, or a switch with `on`/`off` values. */
+export type ShowcaseControl =
+  | { id: string; label: string; items: { value: string; label: string }[]; default?: string }
+  | { id: string; label: string; type: 'switch'; default?: 'on' | 'off' }
+
+const initialValue = (c: ShowcaseControl) => c.default ?? ('items' in c ? c.items[0].value : 'off')
+
+/** The option id of one combination of control values. */
+export const comboId = (controls: ShowcaseControl[], values: Record<string, string>) =>
+  controls.map((c) => values[c.id]).join('-')
+
+/** Every combination of control values, for building one option per combination. */
+export function combos(controls: ShowcaseControl[]): Record<string, string>[] {
+  return controls.reduce<Record<string, string>[]>(
+    (acc, c) => {
+      const values = 'items' in c ? c.items.map((i) => i.value) : ['on', 'off']
+      return acc.flatMap((v) => values.map((x) => ({ ...v, [c.id]: x })))
+    },
+    [{}],
+  )
+}
 
 export interface ShowcaseProps {
   /** Used in accessible names: "Button preview", "Button options". */
@@ -17,13 +43,19 @@ export interface ShowcaseProps {
   options: ShowcaseOption[]
   /** Shiki HTML per option id, rendered at build time. */
   codeHtml: Record<string, string>
-  render: (optionId: string) => React.ReactNode
+  /** Props the reader can set, most structural first. Replaces the option bar. */
+  controls?: ShowcaseControl[]
+  render: (optionId: string, values: Record<string, string>) => React.ReactNode
 }
 
 type Tab = 'preview' | 'code'
 
-export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
-  const [option, setOption] = React.useState(options[0].id)
+export function Showcase({ name, options, codeHtml, controls, render }: ShowcaseProps) {
+  const [values, setValues] = React.useState(() =>
+    Object.fromEntries((controls ?? []).map((c) => [c.id, initialValue(c)])),
+  )
+  const [picked, setOption] = React.useState(options[0].id)
+  const option = controls ? comboId(controls, values) : picked
   const [tab, setTab] = React.useState<Tab>('preview')
   const [fullscreen, setFullscreen] = React.useState(false)
   const [copied, setCopied] = React.useState(false)
@@ -71,6 +103,39 @@ export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
     { id: 'preview', label: 'Preview', Icon: PreviewIcon },
     { id: 'code', label: 'Code', Icon: CodeIcon },
   ]
+
+  const bar = controls ? (
+    <div
+      role="group"
+      aria-label={`${name} properties`}
+      // Phones: one prop per row, label left and control right. Wider: one centred row.
+      className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-6 sm:gap-y-3"
+    >
+      {controls.map((c) => (
+        <div key={c.id} className="flex min-h-7 items-center justify-between gap-2">
+          <span aria-hidden className="text-sm text-text-muted">
+            {c.label}
+          </span>
+          {'items' in c ? (
+            <SegmentedControl
+              aria-label={c.label}
+              size="xs"
+              shape="rounded"
+              items={c.items}
+              value={values[c.id]}
+              onValueChange={(v) => setValues((s) => ({ ...s, [c.id]: v }))}
+            />
+          ) : (
+            <Switch
+              aria-label={c.label}
+              checked={values[c.id] === 'on'}
+              onCheckedChange={(on) => setValues((s) => ({ ...s, [c.id]: on ? 'on' : 'off' }))}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  ) : null
 
   const toggle = (
     <Button
@@ -139,11 +204,12 @@ export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
           <>
             {/* Too wide for the stage? It scrolls sideways instead of squeezing the component. */}
             <div className="flex flex-1 overflow-x-auto">
-              <div className="m-auto flex w-max min-w-full items-center justify-center px-10 pt-6 pb-16">
-                {render(current.id)}
+              <div className={cn('m-auto flex w-max min-w-full items-center justify-center px-10 pt-6', bar ? 'pb-6' : 'pb-16')}>
+                {render(current.id, values)}
               </div>
             </div>
-            {options.length > 1 && (
+            {bar}
+            {!bar && options.length > 1 && (
               <div className="absolute inset-x-0 bottom-4 flex justify-center px-4">
                 <SegmentedControl
                   aria-label={`${name} options`}
@@ -169,7 +235,8 @@ export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
               </div>
             </div>
             <div className="code-block min-h-0 flex-1 overflow-auto" dangerouslySetInnerHTML={{ __html: codeHtml[current.id] ?? '' }} />
-            {options.length > 1 && (
+            {bar}
+            {!bar && options.length > 1 && (
               <div className="flex shrink-0 justify-center border-t border-border-subtle py-3">
                 <SegmentedControl
                   aria-label={`${name} options`}
