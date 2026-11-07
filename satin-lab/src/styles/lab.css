@@ -43,62 +43,6 @@ html.dark .code-block .shiki span {
   color: var(--shiki-dark);
 }
 
-/*
- * The frame around the card, as the template draws it: a column each side of the card and a
- * band behind the top bar, all 1px outlines with 16px corners, so where they meet the card
- * they curve with it. Every line is the card's own solid border/subtle, so they all match.
- */
-:root {
-  --frame-line: var(--border-subtle);
-}
-.frame-lines {
-  --card: min(1200px, calc(100% - 32px));
-  --side: calc((100% - var(--card)) / 2);
-}
-.frame-lines > span {
-  position: absolute;
-  border: 1px solid var(--frame-line);
-}
-.fl-left-top,
-.fl-left {
-  left: -1px;
-  width: calc(var(--side) + 2px);
-  border-radius: 0 16px 16px 0;
-}
-.fl-right-top,
-.fl-right {
-  right: -1px;
-  width: calc(var(--side) + 2px);
-  border-radius: 16px 0 0 16px;
-}
-.fl-left-top,
-.fl-right-top {
-  top: -45px;
-  height: 102px;
-}
-.fl-left,
-.fl-right {
-  /* The card ends 16px above the window, so the columns curve round its bottom corners too. */
-  top: 56px;
-  bottom: 15px;
-}
-.frame-lines > .fl-band-left,
-.frame-lines > .fl-band-right {
-  top: -20px;
-  height: 77px;
-  width: calc(var(--card) - 13px);
-}
-.frame-lines > .fl-band-left {
-  left: var(--side);
-  border-right: 0;
-  border-radius: 16px 0 0 16px;
-}
-.frame-lines > .fl-band-right {
-  left: calc(var(--side) + 13px);
-  border-left: 0;
-  border-radius: 0 16px 16px 0;
-}
-
 /* Theme switch before it hydrates: the segment for the current theme looks selected. */
 html:not(.dark) .theme-switch:not([data-ready]) button:nth-of-type(1),
 html.dark .theme-switch:not([data-ready]) button:nth-of-type(2) {

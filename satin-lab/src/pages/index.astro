@@ -51,9 +51,9 @@ import { Button } from '@satin/ui/button'
 export function Save() {
   return <Button>Save changes</Button>
 }`
-const h2 = 'text-title font-medium text-text-default'
-const h3 = 'text-body-lg leading-6 font-medium text-text-default'
-const prose = 'text-body-lg leading-6 text-text-muted'
+const h2 = 'text-lg font-medium text-text-default'
+const h3 = 'text-base leading-6 font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
 const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
 ---
 
@@ -62,7 +62,7 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
 
   <section aria-labelledby="what-title" class="flex flex-col gap-3 pt-4">
     <h2 id="what-title" class={h2}>What is Satin?</h2>
-    <div class="flex flex-col gap-3 text-body-lg leading-6 text-text-muted">
+    <div class="flex flex-col gap-3 text-base leading-6 text-text-muted">
       <p>Satin ships as a Figma library and as React components that match it one to one: same names, same variants, same tokens.</p>
       <p>
         The components are built on <a class="text-text-default underline underline-offset-2" href="https://ui.shadcn.com">shadcn/ui</a> and Radix, so focus, keyboard and screen-reader behaviour come from proven primitives. Satin changes how they look: colour, surfaces, borders, focus and motion all come from Satin tokens.
@@ -72,7 +72,7 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
 
   <section aria-labelledby="who-title" class="flex flex-col gap-3 pt-8">
     <h2 id="who-title" class={h2}>Who is Satin for?</h2>
-    <ul class="flex flex-col gap-2 text-body-lg leading-6 text-text-muted">
+    <ul class="flex flex-col gap-2 text-base leading-6 text-text-muted">
       <li><span class="font-medium text-text-default">Designers</span> who work in the Satin Figma library and want to see how a component behaves before they use it.</li>
       <li><span class="font-medium text-text-default">Engineers</span> who need production code that matches the design without re-creating it by hand.</li>
       <li><span class="font-medium text-text-default">Teams building AI products</span> who need ready answers for prompts, agent progress and decisions.</li>
@@ -94,7 +94,7 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
     <p class={prose}>
       Every component is a <a class={link} href="https://ui.shadcn.com/docs/registry">shadcn registry</a> item. The CLI copies its source into <Chip>components/ui</Chip>, with the components it builds on, the <Chip>cn</Chip> helper and Satin’s precompiled styles, and installs its npm dependencies. Set your project up once:
     </p>
-    <ol class="flex list-decimal flex-col gap-3 pl-5 text-body-lg leading-6 text-text-muted marker:text-text-subtle">
+    <ol class="flex list-decimal flex-col gap-3 pl-5 text-base leading-6 text-text-muted marker:text-text-subtle">
       <li>
         <p class="pb-3">Add the <Chip>@/</Chip> import alias, pointing at <Chip>src</Chip>.</p>
         <CodeFrame code={alias} label="Import alias" />

@@ -253,6 +253,8 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
       <div
         ref={panelRef}
         id={`${ids}-panel`}
+        // The customizer's theme applies in here, not to the docs around it.
+        data-satin-theme=""
         role={fullscreen ? 'dialog' : 'tabpanel'}
         aria-modal={fullscreen || undefined}
         aria-label={fullscreen ? `${name} preview` : undefined}

@@ -1,11 +1,11 @@
 ---
 /**
- * Every page of the docs, laid out like the uiKit template (3857:5968): the top bar
- * (menu button on small screens, logo, theme switch, Waitlist), then the 1200px card with the sidebar and a 720px column.
+ * Every page of the docs: the top bar (menu button on small screens, logo, Waitlist), then the
+ * card with the sidebar and a 720px column. On wide screens the card runs edge to edge with 20px
+ * either side and down to the bottom of the window.
  */
 import Layout from './Layout.astro'
 import { Sidebar } from '../components/Sidebar'
-import { ThemeSwitch } from '../components/ThemeSwitch'
 import { Button } from '@satin/ui'
 import { nav, page } from '../nav'
 
@@ -20,7 +20,7 @@ const title = current === 'introduction' ? 'Satin' : `${item.title} · Satin`
 
 <Layout title={title} description={item.description}>
   <!-- The top bar is fixed and never moves; the sidebar and the column each scroll on their own. -->
-  <header class="fixed inset-x-0 top-0 z-20 mx-auto flex h-14 w-full items-center justify-between bg-bg-canvas px-4 lg:w-[min(1200px,calc(100%-32px))] lg:bg-transparent lg:px-5">
+  <header class="fixed inset-x-0 top-0 z-20 flex h-14 w-full items-center justify-between bg-bg-canvas px-4 lg:px-9">
     <div class="flex items-center gap-2 pl-10 lg:pl-0">
       <a href="/" class="flex items-center gap-1.5 rounded-md focus-visible:shadow-border-focus focus-visible:outline-none">
         <span class="relative size-5 shrink-0">
@@ -28,13 +28,12 @@ const title = current === 'introduction' ? 'Satin' : `${item.title} · Satin`
         </span>
         <span class="text-[18px] leading-[19.5px] tracking-[-0.27px] text-text-default">satin</span>
       </a>
-      <ThemeSwitch client:load transition:persist="theme-switch" />
     </div>
     <Button size="lg" shape="rounded">Waitlist</Button>
   </header>
 
   <div
-    class="relative mt-14 flex min-h-[calc(100dvh-56px)] w-full overflow-clip bg-bg-card lg:fixed lg:inset-x-0 lg:top-14 lg:bottom-4 lg:z-30 lg:mx-auto lg:mt-0 lg:min-h-0 lg:w-[min(1200px,calc(100%-32px))] lg:rounded-2xl lg:border lg:border-border-subtle lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
+    class="relative mt-14 flex min-h-[calc(100dvh-56px)] w-full overflow-clip bg-bg-card lg:fixed lg:inset-x-5 lg:top-14 lg:bottom-0 lg:z-30 lg:mt-0 lg:min-h-0 lg:w-auto lg:rounded-t-2xl lg:border lg:border-b-0 lg:border-border-subtle lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
   >
     <Sidebar client:load nav={nav} current={current} transition:persist="sidebar" />
 

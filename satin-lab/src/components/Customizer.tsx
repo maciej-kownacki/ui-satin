@@ -1,12 +1,14 @@
 import * as React from 'react'
 import { Button, Popover, SegmentedControl, cn, defaultTheme, randomTheme, themeCss, type SatinTheme } from '@satin/ui'
+import { ThemeSwitch } from './ThemeSwitch'
 import { Check, ColorPicker, Copy, DiceFive, Download, NavArrowDown, NavArrowUp, Palette, Refresh } from 'iconoir-react'
 
 /**
- * The floating customizer: brand, corners and body size for the whole design system, live.
- * It writes the theme as CSS variables (see `themeCss` in @satin/ui), keeps it in localStorage
- * so the next page opens with it (Layout.astro injects it before the first paint), and
- * exports the same stylesheet to load after `@satin/ui/styles.css`.
+ * The customizer bar: brand, corners and body size for Satin's components, live, plus the
+ * light / dark switch. The theme applies inside `[data-satin-theme]` (the previews and the
+ * Theming samples), so the docs around them keep Satin's own look. It is kept in localStorage
+ * so the next page opens with it (Layout.astro injects it before the first paint). Export
+ * gives the same theme for a whole app, to load after `@satin/ui/styles.css`.
  */
 // Each preset is already a fill white text reads on at 4.5:1, so the swatch is the button.
 export const BRANDS = [
@@ -26,10 +28,13 @@ const RADII = [
   { value: 1.5, label: 'Large', r: 10 },
 ]
 const STORE = 'satin-custom'
-const STORE_CSS = 'satin-custom-css'
+// The previews' stylesheet. A new key, so a theme saved before it was scoped can't restyle the site.
+const STORE_CSS = 'satin-preview-css'
+
+export const SCOPE = '[data-satin-theme]'
 
 function apply(theme: SatinTheme) {
-  const css = themeCss(theme)
+  const css = themeCss(theme, SCOPE)
   let el = document.getElementById('satin-custom') as HTMLStyleElement | null
   if (!el) {
     el = document.createElement('style')
@@ -65,10 +70,12 @@ export function Customizer() {
   const [copied, setCopied] = React.useState(false)
   const colorRef = React.useRef<HTMLInputElement>(null)
 
-  // Read what the reader chose last time; phones start collapsed so the page stays readable.
+  // Read what the reader chose last time. Below 1280px the bar stacks, so it starts collapsed.
   React.useEffect(() => {
-    setTheme(load())
-    setOpen(matchMedia('(min-width: 768px)').matches)
+    const saved = load()
+    setTheme(saved)
+    if (JSON.stringify(saved) !== JSON.stringify(defaultTheme)) apply(saved)
+    setOpen(matchMedia('(min-width: 1280px)').matches)
   }, [])
 
   const update = (patch: Partial<SatinTheme>) =>
@@ -105,22 +112,25 @@ export function Customizer() {
       </div>
     )
 
-  const group = 'flex items-center gap-1 rounded-xl bg-bg-muted/60 p-1'
-  const label = 'text-sm text-text-muted md:sr-only'
+  const group = 'flex items-center gap-1 rounded-xl bg-bg-muted p-1 dark:bg-white-a6'
+  const track = 'dark:bg-white-a6'
+  const label = 'text-sm text-text-muted xl:sr-only'
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 pb-[env(safe-area-inset-bottom)]">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center md:px-4">
       <section
         aria-label="Customize Satin"
         className={cn(
-          'pointer-events-auto flex w-full max-w-[400px] flex-col gap-3 rounded-2xl border border-border-default bg-bg-popover p-3 md:w-auto md:max-w-none md:flex-row md:items-center md:gap-2 md:p-2',
+          'pointer-events-auto flex w-full flex-col gap-3 md:max-w-[440px] rounded-t-2xl border border-b-0 border-border-default bg-bg-popover p-3 pb-[max(12px,env(safe-area-inset-bottom))] xl:w-auto xl:max-w-none xl:flex-row xl:items-center xl:gap-2 xl:p-2',
+          // Option groups read lighter than the bar in Dark, and the picked option lighter still.
+          'dark:[--component-segmented-selected:var(--color-white-a16)]',
           '[box-shadow:0_10px_30px_-8px_var(--effect-shadow-md),0_4px_6px_-4px_var(--effect-shadow-sm),inset_0_1px_0_0_var(--effect-highlight-top)]',
         )}
       >
         {/* Brand: on phones the label sits above, so all nine swatches fit in one row. */}
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+        <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:gap-3">
           <span className={label}>Brand</span>
-          <div role="radiogroup" aria-label="Brand colour" className={cn(group, 'justify-between md:justify-start')}>
+          <div role="radiogroup" aria-label="Brand colour" className={cn(group, 'justify-between xl:justify-start')}>
             {BRANDS.map((b) => {
               const selected = b.hex.toLowerCase() === theme.brand.toLowerCase()
               return (
@@ -135,7 +145,7 @@ export function Customizer() {
                   className={cn(
                     'grid size-7 shrink-0 place-items-center rounded-lg transition-colors md:size-8 duration-(--duration-fast) ease-(--ease-out)',
                     'hover:bg-bg-hover focus-visible:shadow-border-focus focus-visible:outline-none',
-                    selected && 'bg-bg-card [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+                    selected && 'bg-bg-card dark:bg-white-a16 [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
                   )}
                 >
                   <span
@@ -158,7 +168,7 @@ export function Customizer() {
                 className={cn(
                   'grid size-7 place-items-center rounded-lg text-text-muted transition-colors duration-(--duration-fast) ease-(--ease-out) md:size-8',
                   'hover:bg-bg-hover hover:text-text-default focus-visible:shadow-border-focus focus-visible:outline-none',
-                  custom && 'bg-bg-card [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+                  custom && 'bg-bg-card dark:bg-white-a16 [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
                 )}
               >
                 {custom ? <span className="size-5 rounded-full" style={{ background: theme.brand }} /> : <ColorPicker className="size-4" />}
@@ -176,7 +186,7 @@ export function Customizer() {
           </div>
         </div>
 
-        <span aria-hidden className="hidden h-8 w-px bg-border-subtle md:block" />
+        <span aria-hidden className="hidden h-8 w-px bg-border-subtle xl:block" />
 
         {/* Corners */}
         <div className="flex items-center justify-between gap-3">
@@ -184,13 +194,14 @@ export function Customizer() {
           <SegmentedControl
             aria-label="Corner radius"
             size="lg"
+            className={track}
             items={RADII.map((r) => ({ value: String(r.value), label: <span className="sr-only">{r.label}</span>, icon: <Corner r={r.r} /> }))}
             value={String(theme.radius)}
             onValueChange={(v) => update({ radius: Number(v) })}
           />
         </div>
 
-        <span aria-hidden className="hidden h-8 w-px bg-border-subtle md:block" />
+        <span aria-hidden className="hidden h-8 w-px bg-border-subtle xl:block" />
 
         {/* Body size */}
         <div className="flex items-center justify-between gap-3">
@@ -198,6 +209,7 @@ export function Customizer() {
           <SegmentedControl
             aria-label="Body text size"
             size="lg"
+            className={track}
             items={[
               { value: '13', label: '13' },
               { value: '14', label: '14' },
@@ -207,7 +219,15 @@ export function Customizer() {
           />
         </div>
 
-        <span aria-hidden className="hidden h-8 w-px bg-border-subtle md:block" />
+        <span aria-hidden className="hidden h-8 w-px bg-border-subtle xl:block" />
+
+        {/* Light / dark, for the whole site */}
+        <div className="flex items-center justify-between gap-3">
+          <span className={label}>Mode</span>
+          <ThemeSwitch size="lg" className={track} />
+        </div>
+
+        <span aria-hidden className="hidden h-8 w-px bg-border-subtle xl:block" />
 
         {/* Actions */}
         <div className="flex items-center gap-2">
@@ -235,7 +255,7 @@ export function Customizer() {
               </>
             }
           >
-            <Button variant="secondary" size="lg" className="flex-1 md:flex-none">
+            <Button variant="secondary" size="lg" className="flex-1 xl:flex-none">
               Export
               <NavArrowUp />
             </Button>
@@ -245,7 +265,7 @@ export function Customizer() {
               <Refresh />
             </Button>
           )}
-          <Button size="lg" className="flex-1 md:flex-none" onClick={() => update(randomTheme())}>
+          <Button size="lg" className="flex-1 xl:flex-none" onClick={() => update(randomTheme())}>
             <DiceFive />
             Randomize
           </Button>

@@ -31,8 +31,8 @@ const { title, description } = Astro.props
           const t = localStorage.getItem('satin-theme')
           const dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
           doc.documentElement.classList.toggle('dark', dark)
-          // The customizer's brand, corners and type, as the same variables it writes live.
-          const css = localStorage.getItem('satin-custom-css')
+          // The customizer's brand, corners and type for the previews, as it writes them live.
+          const css = localStorage.getItem('satin-preview-css')
           if (css && !doc.getElementById('satin-custom')) {
             const el = doc.createElement('style')
             el.id = 'satin-custom'
@@ -49,15 +49,6 @@ const { title, description } = Astro.props
     <ClientRouter fallback="none" />
   </head>
   <body class="relative min-h-dvh bg-bg-canvas antialiased">
-    <!-- The hairline frame from the template (uiKit 3857:6328–6762): rounded outlines that curve around the card's corners. -->
-    <div aria-hidden class="frame-lines pointer-events-none fixed inset-0 hidden overflow-hidden lg:block">
-      <span class="fl-left-top"></span>
-      <span class="fl-left"></span>
-      <span class="fl-right-top"></span>
-      <span class="fl-right"></span>
-      <span class="fl-band-left"></span>
-      <span class="fl-band-right"></span>
-    </div>
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-md focus:bg-bg-popover focus:px-3 focus:py-2 focus:shadow-md"

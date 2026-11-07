@@ -3,14 +3,14 @@ import { SegmentedControl } from '@satin/ui'
 import { HalfMoon, SunLight } from 'iconoir-react'
 
 /**
- * The light / dark switch next to the logo (uiKit 3857:6060). Until someone picks one,
+ * The light / dark switch (uiKit 3857:6060), in the customizer bar. Until someone picks one,
  * the page follows the system setting; a pick is remembered in localStorage.
  */
 type Theme = 'light' | 'dark'
 
 const systemTheme = (): Theme => (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
 
-export function ThemeSwitch() {
+export function ThemeSwitch({ size = 'xs', className }: { size?: 'xs' | 'md' | 'lg'; className?: string }) {
   // Unknown until mounted: the server can't know the theme, so lab.css marks the right
   // segment from the class on <html> until then, and nothing jumps on load.
   const [theme, setTheme] = React.useState<Theme | null>(null)
@@ -35,8 +35,9 @@ export function ThemeSwitch() {
     <div className="theme-switch" data-ready={theme ? '' : undefined}>
       <SegmentedControl
         aria-label="Theme"
-        size="xs"
-        shape="rounded"
+        size={size}
+        shape={size === 'xs' ? 'rounded' : 'default'}
+        className={className}
         value={theme ?? ''}
         onValueChange={(v) => choose(v as Theme)}
         items={[

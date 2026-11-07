@@ -183,17 +183,49 @@ export function themeVars(theme: SatinTheme): { root: Vars; dark: Vars } {
   return { root: { ...brandVars(theme.brand), ...radiusVars(theme.radius), ...typeVars(theme.fontSize) }, dark: {} }
 }
 
-/** The theme as a stylesheet. Load it after `@satin/ui/styles.css`. */
-export function themeCss(theme: SatinTheme) {
-  const { root, dark } = themeVars(theme)
+// Semantic tokens that read the brand ramp or the radius. CSS resolves var() where a property is
+// declared, so a theme limited to part of a page has to declare these again inside it.
+const SCOPED_LIGHT: Vars = {
+  '--border-focus': 'var(--color-blue-600)',
+  '--action-primary-bg': 'var(--color-blue-600)',
+  '--action-primary-bg-hover': 'var(--color-blue-500)',
+  '--action-primary-bg-pressed': 'var(--color-blue-700)',
+  '--action-primary-border': 'var(--color-primary-border-light)',
+  '--action-focus-ring': 'var(--color-blue-600-a20)',
+  '--status-brand-bg': 'var(--color-blue-soft-50)',
+  '--status-brand-border': 'var(--color-blue-soft-200)',
+  '--status-brand-fg': 'var(--color-blue-soft-700)',
+  '--radius-lg': 'var(--radius)',
+}
+const SCOPED_DARK: Vars = {
+  '--border-focus': 'var(--color-primary-hover-dark)',
+  '--action-primary-bg': 'var(--color-primary-dark)',
+  '--action-primary-bg-hover': 'var(--color-primary-hover-dark)',
+  '--action-primary-bg-pressed': 'var(--color-primary-pressed-dark)',
+  '--action-primary-border': 'var(--color-primary-border-dark)',
+  '--action-focus-ring': 'var(--color-primary-focus-dark)',
+  '--status-brand-bg': 'var(--color-blue-soft-950)',
+  '--status-brand-border': 'var(--color-blue-soft-900)',
+  '--status-brand-fg': 'var(--color-blue-soft-300)',
+}
+
+/**
+ * The theme as a stylesheet. Load it after `@satin/ui/styles.css`. By default it themes the
+ * whole page; pass a `scope` selector to theme only what's inside it (the docs do this for
+ * their previews, so the site around them keeps Satin's own look).
+ */
+export function themeCss(theme: SatinTheme, scope?: string) {
+  const vars = themeVars(theme)
+  const root = scope ? { ...vars.root, ...SCOPED_LIGHT } : vars.root
+  const dark = scope ? { ...vars.dark, ...SCOPED_DARK } : vars.dark
   const block = (sel: string, vars: Vars) =>
     `${sel} {\n${Object.entries(vars)
       .map(([k, v]) => `  ${k}: ${v};`)
       .join('\n')}\n}`
   return [
     `/* Satin theme: brand ${theme.brand.toUpperCase()}, radius ${theme.radius}, body ${theme.fontSize}px. */`,
-    block(':root', root),
-    ...(Object.keys(dark).length ? [block('.dark', dark)] : []),
+    block(scope ?? ':root', root),
+    ...(Object.keys(dark).length ? [block(scope ? `.dark ${scope}` : '.dark', dark)] : []),
     '',
   ].join('\n\n')
 }
