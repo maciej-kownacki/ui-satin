@@ -21,8 +21,8 @@ const parts = api.description.split(/(`[^`]+`)/).filter(Boolean)
 <slot />
 
 <section aria-labelledby="api-title" class="flex flex-col gap-4 pt-8">
-  <h2 id="api-title" class="text-base font-medium text-text-default">API Reference</h2>
-  <p class="text-sm leading-6 text-text-muted">
+  <h2 id="api-title" class="text-lg font-medium text-text-default">API Reference</h2>
+  <p class="text-base leading-6 text-text-muted">
     {parts.map((p) => (p.startsWith('`') ? <Chip>{p.slice(1, -1)}</Chip> : p))}
   </p>
   <div class="overflow-x-auto">
