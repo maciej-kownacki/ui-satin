@@ -16,7 +16,7 @@ export { Floating, type FloatingProps, type FloatingSide } from './components/fl
 export { DropdownMenu, DropdownMenuGroup, DropdownMenuItem, type DropdownMenuProps, type DropdownMenuGroupProps, type DropdownMenuItemProps } from './components/dropdown'
 export { FormField, useFormField, type FormFieldProps, type FormFieldContextValue } from './components/form-field'
 export { Input, type InputProps } from './components/input'
-export { Popover, PopoverClose, type PopoverProps } from './components/popover'
+export { Popover, PopoverClose, PopoverPanel, type PopoverProps } from './components/popover'
 export { Radio, RadioGroup, type RadioProps, type RadioGroupProps } from './components/radio'
 export { SegmentedControl, type SegmentedControlItem, type SegmentedControlProps } from './components/segmented-control'
 export * from './components/sidebar'

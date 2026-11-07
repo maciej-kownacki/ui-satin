@@ -34,6 +34,41 @@ export interface PopoverProps {
   className?: string
 }
 
+const panelClass = cn(
+  'relative flex w-[320px] max-w-[calc(100vw-16px)] flex-col overflow-clip pb-3',
+  'rounded-xl border border-border-default bg-bg-popover',
+  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+)
+const closeClass = cn(
+  'absolute top-2 right-2 grid size-4 place-items-center rounded-sm text-text-subtle',
+  'transition-colors duration-(--duration-fast) ease-(--ease-out)',
+  'satin-hover:text-text-default focus-visible:outline-none satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+)
+const closeIcon = (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+    <path
+      d="M4.50551 11.4951L8.0006 8M8.0006 8L11.4957 4.50491M8.0006 8L4.50551 4.50491M8.0006 8L11.4957 11.4951"
+      stroke="currentColor"
+      strokeWidth="1.25"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+/** Title, description and body: what both the floating Popover and PopoverPanel show. */
+function PanelBody({ titleId, title, description, body, closeButton }: { titleId: string } & Pick<PopoverProps, 'title' | 'description' | 'body' | 'closeButton'>) {
+  return (
+    <>
+      <div className="flex flex-col gap-0.5 px-2 pt-2 text-sm">
+        <p id={titleId} className={cn('leading-[18px] font-medium text-text-default', closeButton && 'pr-6')}>{title}</p>
+        {description ? <p className="text-text-muted">{description}</p> : null}
+      </div>
+      {body ? <div className="flex flex-col gap-4 px-2.5 pt-4">{body}</div> : null}
+    </>
+  )
+}
+
 export function Popover({
   title,
   description,
@@ -64,43 +99,47 @@ export function Popover({
           collisionPadding={8}
           onOpenAutoFocus={onOpenAutoFocus}
           className={cn(
-            'pointer-events-auto relative z-50 flex w-[320px] max-w-[calc(100vw-16px)] flex-col overflow-clip pb-3',
-            'rounded-xl border border-border-default bg-bg-popover',
-            '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
-            'origin-(--radix-popover-content-transform-origin) focus-visible:outline-none',
+            panelClass,
+            'pointer-events-auto z-50 origin-(--radix-popover-content-transform-origin) focus-visible:outline-none',
             'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
             className,
           )}
         >
-          <div className="flex flex-col gap-0.5 px-2 pt-2 text-sm">
-            {/* Radix Popover has no Title part; the content is labelled by this heading. */}
-            <p id={titleId} className={cn('leading-[18px] font-medium text-text-default', closeButton && 'pr-6')}>{title}</p>
-            {description ? <p className="text-text-muted">{description}</p> : null}
-          </div>
-          {body ? <div className="flex flex-col gap-4 px-2.5 pt-4">{body}</div> : null}
+          {/* Radix Popover has no Title part; the content is labelled by the heading. */}
+          <PanelBody titleId={titleId} title={title} description={description} body={body} closeButton={closeButton} />
           {closeButton && (
-            <PopoverPrimitive.Close
-              aria-label="Close"
-              className={cn(
-                'absolute top-2 right-2 grid size-4 place-items-center rounded-sm text-text-subtle',
-                'transition-colors duration-(--duration-fast) ease-(--ease-out)',
-                'satin-hover:text-text-default focus-visible:outline-none satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
-              )}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                <path
-                  d="M4.50551 11.4951L8.0006 8M8.0006 8L11.4957 4.50491M8.0006 8L4.50551 4.50491M8.0006 8L11.4957 11.4951"
-                  stroke="currentColor"
-                  strokeWidth="1.25"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+            <PopoverPrimitive.Close aria-label="Close" className={closeClass}>
+              {closeIcon}
             </PopoverPrimitive.Close>
           )}
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>
+  )
+}
+
+/**
+ * The popover's panel on its own, in place: no trigger, no positioning. For docs, previews
+ * and layers you anchor yourself. The close button calls `onClose`.
+ */
+export function PopoverPanel({
+  title,
+  description,
+  body,
+  closeButton = true,
+  onClose,
+  className,
+}: Pick<PopoverProps, 'title' | 'description' | 'body' | 'closeButton' | 'className'> & { onClose?: () => void }) {
+  const titleId = React.useId()
+  return (
+    <div role="dialog" aria-labelledby={titleId} data-slot="popover" className={cn(panelClass, className)}>
+      <PanelBody titleId={titleId} title={title} description={description} body={body} closeButton={closeButton} />
+      {closeButton && (
+        <button type="button" aria-label="Close" onClick={onClose} className={closeClass}>
+          {closeIcon}
+        </button>
+      )}
+    </div>
   )
 }
 
