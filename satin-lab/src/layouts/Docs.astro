@@ -34,7 +34,7 @@ const title = current === 'introduction' ? 'Satin' : `${item.title} · Satin`
   </header>
 
   <div
-    class="relative mt-14 flex min-h-[calc(100dvh-56px)] w-full overflow-clip bg-bg-card lg:fixed lg:inset-x-0 lg:top-14 lg:bottom-4 lg:mx-auto lg:mt-0 lg:min-h-0 lg:w-[min(1200px,calc(100%-32px))] lg:rounded-2xl lg:border lg:border-border-subtle lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
+    class="relative mt-14 flex min-h-[calc(100dvh-56px)] w-full overflow-clip bg-bg-card lg:fixed lg:inset-x-0 lg:top-14 lg:bottom-4 lg:z-30 lg:mx-auto lg:mt-0 lg:min-h-0 lg:w-[min(1200px,calc(100%-32px))] lg:rounded-2xl lg:border lg:border-border-subtle lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
   >
     <Sidebar client:load nav={nav} current={current} transition:persist="sidebar" />
 

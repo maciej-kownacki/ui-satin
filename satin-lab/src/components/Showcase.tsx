@@ -132,7 +132,8 @@ export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
           fullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : 'min-h-[442px] rounded-2xl',
         )}
       >
-        {fullscreen && <div className="absolute top-3 right-3 z-10">{toggle}</div>}
+        {/* In the Code tab the toggle sits in the code header, next to Copy code. */}
+        {fullscreen && tab !== 'code' && <div className="absolute top-3 right-3 z-10">{toggle}</div>}
 
         {tab === 'preview' ? (
           <>
@@ -156,13 +157,16 @@ export function Showcase({ name, options, codeHtml, render }: ShowcaseProps) {
             )}
           </>
         ) : (
-          <div className="flex max-h-[600px] flex-1 flex-col">
+          <div className={cn('flex flex-1 flex-col', !fullscreen && 'max-h-[600px]')}>
             <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-subtle pr-2 pl-4">
               <span className="text-sm text-text-muted">{current.label}</span>
-              <Button variant="tertiary" shape="rounded" onClick={copy} className="text-text-muted hover:text-text-default">
-                {copied ? <Check /> : <Copy />}
-                <span aria-live="polite">{copied ? 'Copied' : 'Copy code'}</span>
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button variant="tertiary" shape="rounded" onClick={copy} className="text-text-muted hover:text-text-default">
+                  {copied ? <Check /> : <Copy />}
+                  <span aria-live="polite">{copied ? 'Copied' : 'Copy code'}</span>
+                </Button>
+                {fullscreen && toggle}
+              </div>
             </div>
             <div className="code-block min-h-0 flex-1 overflow-auto" dangerouslySetInnerHTML={{ __html: codeHtml[current.id] ?? '' }} />
             {options.length > 1 && (
