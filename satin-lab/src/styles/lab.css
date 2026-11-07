@@ -44,15 +44,10 @@ html.dark .code-block .shiki span {
 /*
  * The frame around the card, as the template draws it: a column each side of the card and a
  * band behind the top bar, all 1px outlines with 16px corners, so where they meet the card
- * they curve with it. #151517 has no token yet; the bands are the same colour at 55%.
+ * they curve with it. Every line is the card's own solid border/subtle, so they all match.
  */
 :root {
-  --frame-line: var(--color-zinc-200);
-  --frame-band: color-mix(in srgb, var(--color-zinc-200) 55%, transparent);
-}
-:root.dark {
-  --frame-line: #151517;
-  --frame-band: rgb(21 21 23 / 0.55);
+  --frame-line: var(--border-subtle);
 }
 .frame-lines {
   --card: min(1200px, calc(100% - 32px));
@@ -89,7 +84,6 @@ html.dark .code-block .shiki span {
   top: -20px;
   height: 77px;
   width: calc(var(--card) - 13px);
-  border-color: var(--frame-band);
 }
 .frame-lines > .fl-band-left {
   left: var(--side);
