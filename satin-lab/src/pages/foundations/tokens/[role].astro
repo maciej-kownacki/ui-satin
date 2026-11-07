@@ -1,0 +1,58 @@
+---
+/**
+ * One group of colour tokens from tokens/tokens.json, in the API Reference style: each token
+ * with its Light and Dark value side by side.
+ */
+import Docs from '../../../layouts/Docs.astro'
+import PageHeader from '../../../components/PageHeader.astro'
+import Chip from '../../../components/Chip.astro'
+import { colorGroups } from '../../../lib/tokens'
+
+export const getStaticPaths = () => colorGroups.map((g) => ({ params: { role: g.role }, props: { g } }))
+const { g } = Astro.props
+
+const th = 'py-2 pr-4 text-left font-medium text-text-default'
+const td = 'py-3 pr-4 align-middle'
+---
+
+<Docs current="tokens">
+  <PageHeader
+    id="tokens"
+    title={g.title}
+    description={g.description}
+    crumbs={[{ label: 'Foundations' }, { label: 'Tokens', href: '/foundations/tokens' }, { label: g.title }]}
+  />
+
+  <div class="overflow-x-auto pt-4">
+    <table class="w-full min-w-[560px] border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-border-default">
+          <th scope="col" class={th}>Token</th>
+          <th scope="col" class={`${th} w-[160px]`}>Light</th>
+          <th scope="col" class={`${th} w-[160px] pr-0`}>Dark</th>
+        </tr>
+      </thead>
+      <tbody>
+        {g.tokens.map((t) => (
+          <tr class="border-b border-border-default">
+            <th scope="row" class={`${td} text-left font-normal`}>
+              <Chip>{t.css}</Chip>
+            </th>
+            {[t.light, t.dark].map((value, i) => (
+              <td class={`${td} ${i === 1 ? 'pr-0' : ''}`}>
+                <span class="flex items-center gap-2">
+                  <span
+                    aria-hidden
+                    class="size-5 shrink-0 rounded-md border border-border-default"
+                    style={`background:${value}`}
+                  />
+                  <span class="font-mono text-text-muted">{value}</span>
+                </span>
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Docs>

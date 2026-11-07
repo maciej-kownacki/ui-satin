@@ -1,13 +1,52 @@
 ---
-/** Name and description at the top of a page (uiKit 3857:6010). */
+/**
+ * Name and description at the top of a page (uiKit 3857:6010), under breadcrumbs:
+ * Group / Page, split by slashes. Pages deeper than the sidebar pass their own trail.
+ */
+import { groupOf } from '../nav'
+
+type Crumb = { label: string; href?: string }
 interface Props {
+  /** The nav item this page shows; gives the default trail. */
+  id: string
   title: string
   description: string
+  /** Replaces the default Group / Page trail; the last crumb is this page. */
+  crumbs?: Crumb[]
 }
-const { title, description } = Astro.props
+const { id, title, description } = Astro.props
+const crumbs: Crumb[] = Astro.props.crumbs ?? [{ label: groupOf(id).title }, { label: title }]
 ---
 
-<header class="flex flex-col gap-0.5">
-  <h1 class="text-base font-medium text-text-default">{title}</h1>
-  <p class="text-sm text-text-muted">{description}</p>
+<header class="flex flex-col gap-2">
+  <nav aria-label="Breadcrumbs">
+    <ol class="flex flex-wrap items-center gap-1.5 text-sm leading-5 text-text-muted">
+      {
+        crumbs.map((c, i) => (
+          <li class="flex items-center gap-1.5">
+            {i > 0 && (
+              <span aria-hidden class="text-text-subtle">
+                /
+              </span>
+            )}
+            {i === crumbs.length - 1 ? (
+              <span aria-current="page" class="text-text-default">
+                {c.label}
+              </span>
+            ) : c.href ? (
+              <a href={c.href} class="rounded-sm hover:text-text-default focus-visible:shadow-border-focus focus-visible:outline-none">
+                {c.label}
+              </a>
+            ) : (
+              <span>{c.label}</span>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+  <div class="flex flex-col gap-1">
+    <h1 class="text-[28px] leading-9 font-medium tracking-[-0.42px] text-text-default">{title}</h1>
+    <p class="text-sm text-text-muted">{description}</p>
+  </div>
 </header>

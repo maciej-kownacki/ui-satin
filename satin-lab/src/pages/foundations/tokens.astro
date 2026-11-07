@@ -1,60 +1,43 @@
 ---
 /**
- * The colour tokens from tokens/tokens.json, in the API Reference style: one table per role,
- * each token with its Light and Dark value side by side.
+ * The colour token groups from tokens/tokens.json. Each card opens its group's table; the
+ * swatches use the live CSS variables, so they follow the theme the page is in.
  */
 import Docs from '../../layouts/Docs.astro'
 import PageHeader from '../../components/PageHeader.astro'
-import Chip from '../../components/Chip.astro'
 import { page } from '../../nav'
 import { colorGroups } from '../../lib/tokens'
-
-const th = 'py-2 pr-4 text-left font-medium text-text-default'
-const td = 'py-3 pr-4 align-middle'
 ---
 
 <Docs current="tokens">
-  <PageHeader title={page('tokens').title} description={page('tokens').description} />
+  <PageHeader id="tokens" title={page('tokens').title} description={page('tokens').description} />
 
-  {
-    colorGroups.map((g) => (
-      <section aria-labelledby={`${g.role}-title`} class="flex flex-col gap-4 pt-8">
-        <h2 id={`${g.role}-title`} class="text-base font-medium text-text-default">
-          {g.title}
-        </h2>
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[560px] border-collapse text-sm">
-            <thead>
-              <tr class="border-b border-border-default">
-                <th scope="col" class={th}>Token</th>
-                <th scope="col" class={`${th} w-[160px]`}>Light</th>
-                <th scope="col" class={`${th} w-[160px] pr-0`}>Dark</th>
-              </tr>
-            </thead>
-            <tbody>
-              {g.tokens.map((t) => (
-                <tr class="border-b border-border-default">
-                  <th scope="row" class={`${td} text-left font-normal`}>
-                    <Chip>{t.css}</Chip>
-                  </th>
-                  {[t.light, t.dark].map((value, i) => (
-                    <td class={`${td} ${i === 1 ? 'pr-0' : ''}`}>
-                      <span class="flex items-center gap-2">
-                        <span
-                          aria-hidden
-                          class="size-5 shrink-0 rounded-md border border-border-default"
-                          style={`background:${value}`}
-                        />
-                        <span class="font-mono text-text-muted">{value}</span>
-                      </span>
-                    </td>
-                  ))}
-                </tr>
+  <ul class="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-2">
+    {
+      colorGroups.map((g) => (
+        <li>
+          <a
+            href={`/foundations/tokens/${g.role}`}
+            class="flex h-full flex-col gap-4 rounded-xl border border-border-subtle p-4 transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-hover focus-visible:shadow-border-focus focus-visible:outline-none"
+          >
+            <span aria-hidden class="flex">
+              {g.tokens.slice(0, 8).map((t) => (
+                <span
+                  class="-mr-1.5 size-6 shrink-0 rounded-full border border-border-default ring-2 ring-bg-card"
+                  style={`background:var(${t.css})`}
+                />
               ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    ))
-  }
+            </span>
+            <span class="flex flex-col gap-0.5">
+              <span class="flex items-baseline justify-between gap-2">
+                <span class="text-base font-medium text-text-default">{g.title}</span>
+                <span class="text-sm text-text-muted">{g.tokens.length} tokens</span>
+              </span>
+              <span class="text-sm text-text-muted">{g.description}</span>
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
 </Docs>

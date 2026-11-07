@@ -16,7 +16,7 @@ const { item, api } = Astro.props
 const parts = api.description.split(/(`[^`]+`)/).filter(Boolean)
 ---
 
-<PageHeader title={item.title} description={item.description} />
+<PageHeader id={item.id} title={item.title} description={item.description} />
 
 <slot />
 

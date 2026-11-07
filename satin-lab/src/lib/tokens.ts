@@ -40,20 +40,20 @@ const of = (collection: string) => [...flat.values()].filter((e) => e.path[0] ==
 
 export type ColorToken = { name: string; css: string; light: string; dark: string }
 
-const roleTitles: Record<string, string> = {
-  bg: 'Background',
-  text: 'Text',
-  border: 'Border',
-  action: 'Action',
-  status: 'Status',
-  chart: 'Chart',
-  component: 'Component',
-  effect: 'Effect',
+const roles: Record<string, { title: string; description: string }> = {
+  bg: { title: 'Background', description: 'Surfaces from the canvas up to popovers, and their hover and selected fills.' },
+  text: { title: 'Text', description: 'Copy on every surface, from default to placeholder and on solid fills.' },
+  border: { title: 'Border', description: 'Hairlines, dividers, field outlines and the focus ring.' },
+  action: { title: 'Action', description: 'Buttons and other controls, per variant and state.' },
+  status: { title: 'Status', description: 'Info, success, warning and error, for alerts, toasts and fields.' },
+  chart: { title: 'Chart', description: 'Series colours for bars, lines and shares.' },
+  component: { title: 'Component', description: 'Values only one component uses, like tones and the scrollbar.' },
+  effect: { title: 'Effect', description: 'Shadow and glow colours.' },
 }
 
-export const colorGroups = Object.keys(roleTitles).map((role) => ({
+export const colorGroups = Object.keys(roles).map((role) => ({
   role,
-  title: roleTitles[role],
+  ...roles[role],
   tokens: of('theme')
     .filter((e) => e.path[1] === role)
     .map(

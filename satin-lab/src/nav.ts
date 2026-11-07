@@ -71,6 +71,9 @@ export const nav: NavGroup[] = [
   },
 ]
 
+/** The group a page sits in, for the breadcrumbs above its title. */
+export const groupOf = (id: string) => nav.find((g) => g.items.some((i) => i.id === id))!
+
 export const page = (id: string) => {
   const item = nav.flatMap((g) => g.items).find((i) => i.id === id)
   if (!item) throw new Error(`No nav item "${id}"`)

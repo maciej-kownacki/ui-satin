@@ -1,7 +1,7 @@
 ---
 /**
  * Every page of the docs, laid out like the uiKit template (3857:5968): the top bar
- * (logo, theme switch, Waitlist), then the 1200px card with the sidebar and a 720px column.
+ * (menu button on small screens, logo, theme switch, Waitlist), then the 1200px card with the sidebar and a 720px column.
  */
 import Layout from './Layout.astro'
 import { Sidebar } from '../components/Sidebar'
@@ -20,7 +20,7 @@ const title = current === 'what-is-satin' ? 'Satin' : `${item.title} · Satin`
 
 <Layout title={title} description={item.description}>
   <header class="relative z-10 mx-auto flex h-14 w-full items-center justify-between px-4 lg:w-[min(1200px,calc(100%-32px))] lg:px-5">
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 pl-10 lg:pl-0">
       <a href="/" class="flex items-center gap-1.5 rounded-md focus-visible:shadow-border-focus focus-visible:outline-none">
         <span class="relative size-5 shrink-0">
           <img src="/figma/satin-logo.png" alt="" class="absolute inset-[-4.29%_-7.86%_-11.43%_-7.86%] block size-[calc(100%+15.72%)] max-w-none" />
@@ -29,7 +29,7 @@ const title = current === 'what-is-satin' ? 'Satin' : `${item.title} · Satin`
       </a>
       <ThemeSwitch client:load transition:persist="theme-switch" />
     </div>
-    <Button size="lg" shape="rounded" className="mr-11 lg:mr-0">Waitlist</Button>
+    <Button size="lg" shape="rounded">Waitlist</Button>
   </header>
 
   <div

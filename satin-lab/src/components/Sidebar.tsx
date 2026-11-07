@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Button, cn } from '@satin/ui'
-import { Menu, Minus, Xmark } from 'iconoir-react'
+import { Menu, Minus } from 'iconoir-react'
 import type { NavGroup } from '../nav'
 import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, FoundationsIcon, IntroIcon } from './icons'
 
@@ -8,7 +8,8 @@ import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, FoundationsI
  * navigationSidebar from the docs template (uiKit 3857:5977): group headers with an icon,
  * a count and a chevron (right when closed, down when open), items indented under the
  * label, the current page as a filled pill, and the design-help banner at the bottom.
- * Below 1024px it becomes a drawer behind a menu button.
+ * Below 1024px it becomes a full-width bottom drawer with a handle, behind a menu button
+ * left of the logo.
  */
 const groupIcons: Record<string, typeof IntroIcon> = {
   intro: IntroIcon,
@@ -30,6 +31,15 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
   const [drawer, setDrawer] = React.useState(false)
   const [wide, setWide] = React.useState(true)
   const menuRef = React.useRef<HTMLButtonElement>(null)
+  // How far the drawer has been dragged down by its handle; null when nobody is dragging.
+  const [drag, setDrag] = React.useState<number | null>(null)
+  const dragFrom = React.useRef(0)
+  const dragged = React.useRef(false)
+
+  const close = () => {
+    setDrawer(false)
+    menuRef.current?.focus()
+  }
 
   React.useEffect(() => {
     const mq = matchMedia('(min-width: 1024px)')
@@ -55,7 +65,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
 
   return (
     <>
-      {/* Small screens: the menu button sits in the top bar. */}
+      {/* Small screens: the menu button sits in the top bar, left of the logo. */}
       <Button
         ref={menuRef}
         variant="tertiary"
@@ -66,7 +76,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
         aria-expanded={drawer}
         aria-controls="sidebar"
         onClick={() => setDrawer(true)}
-        className="fixed top-3 right-3 z-30 lg:hidden"
+        className="fixed top-2 left-2 z-30 lg:hidden"
       >
         <Menu />
       </Button>
@@ -77,35 +87,47 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
         id="sidebar"
         // Off screen on small viewports: keep it out of the tab order until the drawer opens.
         inert={!wide && !drawer}
+        style={drag != null ? { transform: `translateY(${drag}px)`, transition: 'none' } : undefined}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-[246px] border-r border-border-subtle bg-bg-card',
+          'fixed inset-x-0 bottom-0 z-50 w-full rounded-t-2xl border-t border-border-subtle bg-bg-card',
           'transition-transform duration-(--duration-slow) ease-(--ease-out)',
-          drawer ? 'translate-x-0' : '-translate-x-full',
-          'lg:relative lg:inset-auto lg:z-auto lg:translate-x-0 lg:shrink-0 lg:transition-none',
+          drawer ? 'translate-y-0' : 'translate-y-full',
+          'lg:relative lg:inset-auto lg:z-auto lg:w-[246px] lg:shrink-0 lg:translate-y-0 lg:rounded-none lg:border-t-0 lg:border-r lg:transition-none',
         )}
       >
-        <div className="flex h-dvh flex-col gap-2 py-2 lg:h-full">
-          {/* Small screens: the drawer has its own top row, logo on the left and close on the right. */}
-          <div className="flex h-10 shrink-0 items-center justify-between pr-2 pl-4 lg:hidden">
-            <a href="/" className="flex items-center gap-1.5 rounded-md focus-visible:shadow-border-focus focus-visible:outline-none">
-              <span className="relative size-5 shrink-0">
-                <img src="/figma/satin-logo.png" alt="" className="absolute inset-[-4.29%_-7.86%_-11.43%_-7.86%] block size-[calc(100%+15.72%)] max-w-none" />
-              </span>
-              <span className="text-[18px] leading-[19.5px] tracking-[-0.27px] text-text-default">satin</span>
-            </a>
-            <Button
-              variant="tertiary"
-              shape="rounded"
-              iconOnly
-              aria-label="Close menu"
-              onClick={() => {
-                setDrawer(false)
-                menuRef.current?.focus()
-              }}
-            >
-              <Xmark />
-            </Button>
-          </div>
+        <div className="flex h-[85dvh] flex-col gap-2 pb-[max(8px,env(safe-area-inset-bottom))] lg:h-full lg:py-2">
+          {/* Small screens: the handle. Drag it down or tap it to close the drawer. */}
+          <button
+            type="button"
+            aria-label="Close menu"
+            onPointerDown={(e) => {
+              try {
+                e.currentTarget.setPointerCapture(e.pointerId)
+              } catch {}
+              dragFrom.current = e.clientY
+              dragged.current = false
+              setDrag(0)
+            }}
+            onPointerMove={(e) => {
+              if (drag == null) return
+              const dy = Math.max(0, e.clientY - dragFrom.current)
+              if (dy > 4) dragged.current = true
+              setDrag(dy)
+            }}
+            onPointerUp={() => {
+              if (dragged.current && (drag ?? 0) > 80) close()
+              setDrag(null)
+            }}
+            // A tap, Enter or Space closes it; a drag that didn't go far enough springs back.
+            onClick={(e) => {
+              // detail is 0 for Enter and Space, which never come after a drag.
+              if (e.detail === 0 || !dragged.current) close()
+            }}
+            onPointerCancel={() => setDrag(null)}
+            className="flex h-6 w-full shrink-0 cursor-grab touch-none items-center justify-center rounded-t-2xl focus-visible:shadow-border-focus focus-visible:outline-none lg:hidden"
+          >
+            <span aria-hidden className="h-1 w-9 rounded-full bg-border-strong" />
+          </button>
 
           <nav aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto px-2 lg:overflow-visible">
             <ul>

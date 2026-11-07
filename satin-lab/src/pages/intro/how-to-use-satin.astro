@@ -18,7 +18,7 @@ const usageHtml = (await highlight([{ id: 'x', label: '', code: usage }])).x
 ---
 
 <Docs current="how-to-use-satin">
-  <PageHeader title={page('how-to-use-satin').title} description={page('how-to-use-satin').description} />
+  <PageHeader id="how-to-use-satin" title={page('how-to-use-satin').title} description={page('how-to-use-satin').description} />
   <p class="text-sm leading-6 text-text-muted">
     Each component has its own entry point, so you only ship what you use. The package isn't on npm yet; until it is, it lives in the <Chip>packages/ui</Chip> folder of the Satin repository. Light and dark mode come from the <Chip>dark</Chip> class on any parent element.
   </p>
