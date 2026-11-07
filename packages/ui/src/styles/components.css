@@ -94,10 +94,10 @@
   background: var(--border-strong);
 }
 .satin-switch[data-state="checked"] {
-  background: var(--action-primary-bg);
+  background: var(--component-switch-on);
 }
 .satin-switch[data-state="checked"]:is(:hover, [data-force="hover"]) {
-  background: var(--action-primary-bg-hover);
+  background: var(--component-switch-on-hover);
 }
 .satin-switch:is(:focus-visible, [data-force="focus"]) {
   box-shadow: 0 0 0 2px var(--action-focus-ring);
@@ -110,7 +110,7 @@
   background: var(--border-input);
 }
 .satin-switch[data-state="checked"]:disabled:hover {
-  background: var(--action-primary-bg);
+  background: var(--component-switch-on);
 }
 .satin-switch-thumb {
   position: absolute;

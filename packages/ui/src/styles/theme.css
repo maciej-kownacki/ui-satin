@@ -88,6 +88,8 @@
   --color-green-soft-950: #17271B;
   --color-green-soft-900: #243E29;
   --color-green-soft-300: #A8D9B1;
+  --color-green-soft-500: #4E9B61;
+  --color-green-soft-600: #3B8950;
   --color-amber-50: #FFFBEB;
   --color-amber-200: #FDE68A;
   --color-amber-300: #FCD34D;
@@ -260,6 +262,8 @@
   --component-highlight-hover-to: var(--color-teal-200-a55);
   --component-highlight-surface-from: var(--color-teal-50-a20);
   --component-highlight-surface-to: var(--color-teal-50);
+  --component-switch-on: var(--color-green-soft-700);
+  --component-switch-on-hover: var(--color-green-soft-600);
   --control-height-xs: 24px;
   --control-height: 28px;
   --control-height-lg: 32px;
@@ -355,6 +359,8 @@
   --component-highlight-hover-to: var(--color-teal-500-a55);
   --component-highlight-surface-from: var(--color-teal-950-a20);
   --component-highlight-surface-to: var(--color-teal-950);
+  --component-switch-on: var(--color-green-soft-600);
+  --component-switch-on-hover: var(--color-green-soft-500);
 }
 
 :root, [data-tone="neutral"] {
@@ -484,6 +490,8 @@
   --color-component-highlight-hover-to: var(--component-highlight-hover-to);
   --color-component-highlight-surface-from: var(--component-highlight-surface-from);
   --color-component-highlight-surface-to: var(--component-highlight-surface-to);
+  --color-component-switch-on: var(--component-switch-on);
+  --color-component-switch-on-hover: var(--component-switch-on-hover);
   --color-tone-bg: var(--tone-bg);
   --color-tone-border: var(--tone-border);
   --color-tone-fg: var(--tone-fg);
