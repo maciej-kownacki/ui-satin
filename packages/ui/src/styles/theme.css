@@ -424,8 +424,8 @@
   --radius-3xl: 20px;
   --radius-full: 9999px;
   --radius-pill: 9999px;
-  --text-2xs: 10px;
-  --text-2xs--line-height: 1.5;
+  --text-2xs: 11px;
+  --text-2xs--line-height: 1.455;
   --text-2xs--letter-spacing: -0.015em;
   --text-xs: 12px;
   --text-xs--line-height: 1.5;
@@ -448,8 +448,8 @@
   --text-body: 14px;
   --text-body--line-height: 1.5;
   --text-body--letter-spacing: -0.015em;
-  --text-body-lg: 15px;
-  --text-body-lg--line-height: 1.6;
+  --text-body-lg: 14px;
+  --text-body-lg--line-height: 1.571;
   --text-body-lg--letter-spacing: -0.015em;
   --text-title: 16px;
   --text-title--line-height: 1.375;
@@ -559,9 +559,9 @@
 
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
+  --font-weight-normal: 420;
+  --font-weight-medium: 510;
+  --font-weight-semibold: 590;
   --tracking-tight: -0.015em;
 
   --shadow-xs: 0px 1px 2px 0px var(--effect-shadow-xs), inset 0px 1px 0px 0px var(--effect-highlight-top);
@@ -581,7 +581,7 @@
     @apply border-border-default outline-border-focus/50;
   }
   body {
-    @apply bg-bg-canvas text-text-default font-sans text-sm tracking-tight;
+    @apply bg-bg-canvas text-text-default font-sans font-normal text-sm tracking-tight;
   }
   /* Focus: 2px spread in action/focus-ring (primary at 20%), like shadow-border-focus. */
   :focus-visible {

@@ -164,7 +164,7 @@ function css() {
 
   L.push('@layer base {');
   L.push('  * {', '    @apply border-border-default outline-border-focus/50;', '  }');
-  L.push('  body {', '    @apply bg-bg-canvas text-text-default font-sans text-sm tracking-tight;', '  }');
+  L.push('  body {', '    @apply bg-bg-canvas text-text-default font-sans font-normal text-sm tracking-tight;', '  }');
   L.push('  /* Focus: 2px spread in action/focus-ring (primary at 20%), like shadow-border-focus. */');
   L.push('  :focus-visible {', '    @apply outline-none ring-2 ring-action-focus-ring;', '  }');
   L.push('}');
