@@ -3,6 +3,7 @@ import { DropdownMenu, Popover } from 'radix-ui'
 import { ArrowUp, Attachment as AttachmentIcon, Check, Globe, Microphone, NavArrowDown, Page, Plus, Search, Xmark } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
 
 /**
  * PromptBar, 1:1 with the uiKit `PromptBar` set (3158:21803), its input row
@@ -449,42 +450,13 @@ function ModelSelect({
 
 /**
  * The footer both menus share: ↑ ↓ Navigate, ↵ Select, on the menu's own bg/popover under a
- * border/default rule. Keys are 14px caps with a border/default edge, bg/card in Light and
- * bg/muted in Dark: lighter than the menu, darker than their edge, so both read.
+ * border/default rule. Keys are Kbd sm.
  */
 function ShortcutHints() {
-  const key = cn(
-    'flex size-3.5 items-center justify-center overflow-clip rounded-xs border-[0.75px] border-border-default bg-bg-card text-text-muted dark:bg-bg-muted',
-    '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)] [&>svg]:size-2.5',
-  )
-  // Keys and labels share the menu's description colour, text/muted.
-  const label = 'text-xs leading-4 tracking-normal whitespace-nowrap text-text-muted'
   return (
     <div aria-hidden className="flex items-center gap-3 border-t border-border-default bg-bg-popover px-3 py-1.5">
-      <span className="flex items-center gap-1">
-        <span className="flex items-center gap-0.5">
-          <span className={key}>
-            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5.00018 8.17963L5.00018 1.82037M8.00316 4.82335L5.00018 1.82037L1.9972 4.82335" />
-            </svg>
-          </span>
-          <span className={key}>
-            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4.99982 1.82037L4.99982 8.17963M1.99684 5.17665L4.99982 8.17963L8.0028 5.17665" />
-            </svg>
-          </span>
-        </span>
-        <span className={label}>Navigate</span>
-      </span>
-      <span className="flex items-center gap-1">
-        <span className={key}>
-          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="0.75" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4.27083 8.02083L2.8125 6.5625L4.27083 5.10417" />
-            <path d="M2.8125 6.5625H5.3125C6.23296 6.5625 6.97917 5.81629 6.97917 4.89583V1.97917" />
-          </svg>
-        </span>
-        <span className={label}>Select</span>
-      </span>
+      <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label="Navigate" />
+      <KbdHint keys={[<KbdReturn key="return" />]} label="Select" />
     </div>
   )
 }

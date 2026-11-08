@@ -33,6 +33,26 @@
       ]
     },
     {
+      "name": "accordion",
+      "type": "registry:ui",
+      "title": "Accordion",
+      "description": "Folds sections of content under their titles, one or many open at a time.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Accordion docs: https://uisatin.dev/components/accordion",
+      "files": [
+        {
+          "path": "registry/satin/ui/accordion.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "agent-loading",
       "type": "registry:ui",
       "title": "Loading",
@@ -322,6 +342,53 @@
       ]
     },
     {
+      "name": "combobox",
+      "type": "registry:ui",
+      "title": "Combobox",
+      "description": "Picks one or more values from a long list by typing to filter it, then Apply.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "Combobox docs: https://uisatin.dev/components/combobox",
+      "files": [
+        {
+          "path": "registry/satin/ui/combobox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "command-menu",
+      "type": "registry:ui",
+      "title": "Command menu",
+      "description": "The ⌘K palette: search every action and page, then run one with Enter.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/kbd.json"
+      ],
+      "docs": "Command menu docs: https://uisatin.dev/components/command-menu",
+      "files": [
+        {
+          "path": "registry/satin/ui/command-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "decision-card",
       "type": "registry:ui",
       "title": "Decision card",
@@ -395,7 +462,8 @@
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/kbd.json"
       ],
       "docs": "Dropdown docs: https://uisatin.dev/components/dropdown",
       "files": [
@@ -482,6 +550,24 @@
       ]
     },
     {
+      "name": "kbd",
+      "type": "registry:ui",
+      "title": "Kbd",
+      "description": "A keyboard key, alone or as the keys of one shortcut.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Kbd docs: https://uisatin.dev/components/kbd",
+      "files": [
+        {
+          "path": "registry/satin/ui/kbd.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "message",
       "type": "registry:ui",
       "title": "Message",
@@ -554,7 +640,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/kbd.json"
       ],
       "docs": "Prompt bar docs: https://uisatin.dev/ai-patterns/prompt-bar",
       "files": [
@@ -594,7 +681,8 @@
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/kbd.json"
       ],
       "files": [
         {
@@ -625,6 +713,50 @@
       ]
     },
     {
+      "name": "select",
+      "type": "registry:ui",
+      "title": "Select",
+      "description": "Picks one value from a list, with a label, a hint and an error like any field.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/form-field.json"
+      ],
+      "docs": "Select docs: https://uisatin.dev/components/select",
+      "files": [
+        {
+          "path": "registry/satin/ui/select.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "title": "Sheet",
+      "description": "A panel that slides in from the edge for a task that needs more room than a dialog.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/dialog.json"
+      ],
+      "docs": "Sheet docs: https://uisatin.dev/components/sheet",
+      "files": [
+        {
+          "path": "registry/satin/ui/sheet.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "sidebar",
       "type": "registry:ui",
       "title": "Sidebar",
@@ -641,6 +773,24 @@
       "files": [
         {
           "path": "registry/satin/ui/sidebar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Holds the place of content that is still loading.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Skeleton docs: https://uisatin.dev/components/skeleton",
+      "files": [
+        {
+          "path": "registry/satin/ui/skeleton.tsx",
           "type": "registry:ui"
         }
       ]
@@ -797,7 +947,8 @@
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/kbd.json"
       ],
       "docs": "Tooltip docs: https://uisatin.dev/components/tooltip",
       "files": [

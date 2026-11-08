@@ -1,0 +1,26 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import KbdDemo, { options } from '../../demos/kbd'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+
+const api = {
+  description:
+    "The `Kbd` component renders a `kbd` element for one key. `KbdGroup` splits a shortcut such as \"⇧⌘P\" into keys 2px apart.",
+  props: [
+    {name: "size", type: ["\"sm\"", "\"md\""], default: "\"sm\""},
+    {name: "tone", type: ["\"default\"", "\"inverse\""], default: "\"default\""},
+    {name: "children", type: ["ReactNode"]},
+    {name: "group.keys", type: ["string", "ReactNode[]"]},
+  ],
+}
+---
+
+<Docs current="kbd">
+  <DocSection item={page('kbd')} api={api}>
+    <KbdDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

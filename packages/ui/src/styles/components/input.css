@@ -32,14 +32,14 @@
 .satin-field:not([data-disabled], [data-invalid]):is(:hover, [data-force="hover"]) {
   border-color: var(--border-strong);
 }
-.satin-field:not([data-disabled]):is(:focus-within, [data-force="focus"]) {
+.satin-field:not([data-disabled]):is(:focus-within, [data-force="focus"], [data-state="open"]) {
   border-color: var(--border-focus);
   box-shadow: 0 0 0 2px var(--action-focus-ring);
 }
 .satin-field[data-invalid] {
   border-color: var(--action-destructive-bg);
 }
-.satin-field[data-invalid]:not([data-disabled]):is(:focus-within, [data-force="focus"]) {
+.satin-field[data-invalid]:not([data-disabled]):is(:focus-within, [data-force="focus"], [data-state="open"]) {
   border-color: var(--action-destructive-bg);
   box-shadow: 0 0 0 2px var(--action-destructive-glow);
 }
@@ -110,4 +110,15 @@
 }
 .satin-field-input:disabled::placeholder {
   color: var(--text-placeholder);
+}
+
+/* Select's trigger is a button with the field skin: the list's open state counts as focus
+   (above), and the button takes the field's type rather than the browser's. */
+.satin-select {
+  font: inherit;
+  font-size: var(--text-base);
+  text-align: left;
+}
+.satin-select[data-disabled] {
+  cursor: not-allowed;
 }

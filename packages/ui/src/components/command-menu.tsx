@@ -1,0 +1,237 @@
+import * as React from 'react'
+import { Dialog as DialogPrimitive } from 'radix-ui'
+import { Search } from 'iconoir-react'
+import { cn } from '../lib/utils'
+import { menuItemClass, MenuItemContent } from './dropdown'
+import { Kbd, KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
+
+/**
+ * Command menu, 1:1 with the uiKit `Command menu` set (4024:3582): the ⌘K palette. A 520px
+ * popover surface (radius-2xl, border/subtle, the shadcn `lg` shadow) with a 48px search row
+ * (16px icon, 14px query, an Esc key, 16px in) over a border/subtle rule; titled groups 8px
+ * apart in 8px of padding, each with a 24px heading (12px medium, text/muted) and inline menu
+ * rows; and a 40px footer of key hints (Navigate, Open on the left, Close on the right).
+ *
+ * Rows are the Dropdown's: a 16px icon, the label, an optional description after it and an
+ * optional `shortcut` (Kbd sm) on the right. The highlighted row takes the menu highlight,
+ * bg/selected, whether the pointer or the arrow keys put it there. The first match is
+ * highlighted; Enter runs it and closes the menu.
+ *
+ * Built on the Radix Dialog (focus trap, Escape, focus back to where it was). With `hotkey`,
+ * ⌘K or Ctrl+K anywhere on the page toggles it.
+ */
+export interface CommandItem {
+  id: string
+  label: string
+  description?: string
+  icon?: React.ReactNode
+  /** Keys that run it outside the menu, e.g. "⌘N". Optional. */
+  shortcut?: string
+  /** More words to match on. */
+  keywords?: string[]
+  disabled?: boolean
+  onSelect?: () => void
+}
+
+export interface CommandGroup {
+  label: React.ReactNode
+  items: CommandItem[]
+}
+
+export interface CommandMenuProps {
+  groups: CommandGroup[]
+  open?: boolean
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+  /** Toggle the menu with ⌘K / Ctrl+K. */
+  hotkey?: boolean
+  placeholder?: string
+  /** Shown when nothing matches; gets the query. */
+  emptyText?: (query: string) => React.ReactNode
+  /** Show the footer of key hints. */
+  hints?: boolean
+  /** Modal blocks the page and shows the overlay; turn it off for inline previews. */
+  modal?: boolean
+  /** Portal target. Defaults to `document.body`. */
+  container?: HTMLElement | null
+  onOpenAutoFocus?: (event: Event) => void
+  className?: string
+}
+
+const hit = (item: CommandItem, q: string) => {
+  const t = q.trim().toLowerCase()
+  if (!t) return true
+  return [item.label, item.description ?? '', ...(item.keywords ?? [])].some((s) => s.toLowerCase().includes(t))
+}
+
+export function CommandMenu({
+  groups,
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
+  hotkey = true,
+  placeholder = 'Type a command or search…',
+  emptyText = (q) => `No results for “${q}”`,
+  hints = true,
+  modal = true,
+  container,
+  onOpenAutoFocus,
+  className,
+}: CommandMenuProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
+  const open = openProp ?? uncontrolledOpen
+  const setOpen = React.useCallback(
+    (next: boolean) => {
+      if (openProp == null) setUncontrolledOpen(next)
+      onOpenChange?.(next)
+    },
+    [openProp, onOpenChange],
+  )
+
+  const [query, setQuery] = React.useState('')
+  const [active, setActive] = React.useState(0)
+  const listId = React.useId()
+  const listRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (!hotkey) return
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setOpen(!open)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [hotkey, open, setOpen])
+
+  // A fresh query every time it opens.
+  React.useEffect(() => {
+    if (open) {
+      setQuery('')
+      setActive(0)
+    }
+  }, [open])
+
+  const shown = groups.map((g) => ({ ...g, items: g.items.filter((i) => hit(i, query)) })).filter((g) => g.items.length)
+  const flat = shown.flatMap((g) => g.items)
+  const optionId = (i: number) => `${listId}-${i}`
+
+  // Keep the highlighted row in view as the arrows move it.
+  React.useEffect(() => {
+    listRef.current?.querySelector(`[id="${optionId(active)}"]`)?.scrollIntoView({ block: 'nearest' })
+  }, [active])
+
+  const run = (item: CommandItem | undefined) => {
+    if (!item || item.disabled) return
+    setOpen(false)
+    item.onSelect?.()
+  }
+
+  const position = container ? 'absolute' : 'fixed'
+  let index = -1
+
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={setOpen} modal={modal}>
+      <DialogPrimitive.Portal container={container}>
+        <DialogPrimitive.Overlay className={cn(position, 'inset-0 z-50 bg-black-a40')} />
+        <div className={cn(position, 'pointer-events-none inset-0 z-50 flex justify-center px-4', container ? 'pt-6' : 'pt-[12vh]')}>
+          <DialogPrimitive.Content
+            data-slot="command-menu"
+            aria-describedby={undefined}
+            onOpenAutoFocus={onOpenAutoFocus}
+            className={cn(
+              'pointer-events-auto flex h-fit max-h-[min(480px,76vh)] w-[520px] max-w-full flex-col overflow-hidden',
+              'rounded-2xl border border-border-subtle bg-bg-popover',
+              '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+              'outline-none data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
+              className,
+            )}
+          >
+            <DialogPrimitive.Title className="sr-only">Command menu</DialogPrimitive.Title>
+            <label className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-4 text-text-muted">
+              <Search aria-hidden className="size-4 shrink-0 [stroke-width:1.875]" />
+              <input
+                role="combobox"
+                aria-expanded
+                aria-controls={listId}
+                aria-autocomplete="list"
+                aria-activedescendant={flat[active] ? optionId(active) : undefined}
+                aria-label="Search commands"
+                value={query}
+                placeholder={placeholder}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  setActive(0)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    const step = e.key === 'ArrowDown' ? 1 : -1
+                    setActive((a) => (flat.length ? (a + step + flat.length) % flat.length : 0))
+                  } else if (e.key === 'Enter') {
+                    e.preventDefault()
+                    run(flat[active])
+                  }
+                }}
+                className="min-w-0 flex-1 bg-transparent text-base leading-[21px] text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0"
+              />
+              <Kbd size="md" aria-hidden>
+                Esc
+              </Kbd>
+            </label>
+
+            <div ref={listRef} id={listId} role="listbox" aria-label="Commands" className="flex min-h-0 flex-col gap-2 overflow-y-auto p-2">
+              {flat.length === 0 ? (
+                <p className="px-2 py-8 text-center text-sm text-text-muted">{emptyText(query)}</p>
+              ) : (
+                shown.map((g, gi) => (
+                  <div key={gi} role="group" aria-labelledby={`${listId}-g${gi}`} className="flex flex-col">
+                    <div id={`${listId}-g${gi}`} className="flex h-6 items-center px-2 text-xs leading-3 font-medium tracking-normal text-text-muted">
+                      {g.label}
+                    </div>
+                    {g.items.map((item) => {
+                      index += 1
+                      const i = index
+                      return (
+                        <div
+                          key={item.id}
+                          id={optionId(i)}
+                          role="option"
+                          aria-selected={i === active}
+                          aria-disabled={item.disabled || undefined}
+                          data-highlighted={i === active ? '' : undefined}
+                          data-disabled={item.disabled ? '' : undefined}
+                          onPointerMove={() => setActive(i)}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => run(item)}
+                          className={menuItemClass}
+                        >
+                          <MenuItemContent
+                            label={item.label}
+                            description={item.description}
+                            icon={item.icon}
+                            layout="inline"
+                            shortcut={item.shortcut}
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {hints && (
+              <div aria-hidden className="flex h-10 shrink-0 items-center gap-4 border-t border-border-subtle px-4">
+                <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label="Navigate" />
+                <KbdHint keys={[<KbdReturn key="return" />]} label="Open" />
+                <KbdHint className="ml-auto" keys={['Esc']} label="Close" />
+              </div>
+            )}
+          </DialogPrimitive.Content>
+        </div>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  )
+}

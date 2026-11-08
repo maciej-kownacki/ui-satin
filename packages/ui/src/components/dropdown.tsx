@@ -1,13 +1,15 @@
 import * as React from 'react'
 import { DropdownMenu as DropdownPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
+import { KbdGroup } from './kbd'
 
 /**
  * DropdownMenu, 1:1 with the uiKit `DropdownMenu` (654:19150) and `DropdownMenu/Item`
  * (653:19165) sets. A 255px popover surface (max 520), 4px padding, radius-xl,
  * border/subtle, the shadcn `sm` shadow. Items are at least 32px high, 12px in, 6px top and
  * bottom, radius-lg, with an 8px gap between a 16px leading icon (text/muted), the content and
- * a trailing check (status green) when selected. Hover, keyboard highlight and selected fill
+ * a trailing check (status green) when selected. An optional `shortcut` shows its keys (Kbd sm)
+ * before the check. Hover, keyboard highlight and selected fill
  * bg/selected.
  *
  * Groups: `DropdownMenuGroup`. Content: a 14px medium label (20px line). `stacked` puts the
@@ -17,6 +19,16 @@ import { cn } from '../lib/utils'
  *
  * Built on the Radix DropdownMenu: arrow keys, typeahead, Escape, focus return.
  */
+/** The popover surface menus share: radius-xl, border/subtle, bg/popover, the shadcn `sm` shadow. */
+export const menuSurfaceClass = cn(
+  'rounded-xl border border-border-subtle bg-bg-popover',
+  '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+)
+/** A group of rows, with a 1px bg/muted rule under every group but the last. */
+export const menuGroupClass = 'flex flex-col gap-1 not-last:after:block not-last:after:h-px not-last:after:bg-bg-muted'
+/** The 24px group header in 12px text/subtle. */
+export const menuGroupLabelClass = 'flex h-6 items-center px-3 text-xs leading-3 tracking-normal text-text-subtle'
+
 export interface DropdownMenuProps {
   /** The element that opens the menu. Rendered with `asChild`, so pass a Button. */
   trigger: React.ReactNode
@@ -69,8 +81,7 @@ export function DropdownMenu({
           className={cn(
             'pointer-events-auto z-50 flex w-[255px] max-w-[520px] flex-col gap-1 overflow-x-clip overflow-y-auto p-1',
             'max-h-(--radix-dropdown-menu-content-available-height)',
-            'rounded-xl border border-border-subtle bg-bg-popover',
-            '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+            menuSurfaceClass,
             'origin-(--radix-dropdown-menu-content-transform-origin) outline-none',
             'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
             className,
@@ -96,11 +107,11 @@ export function DropdownMenuGroup({ label, children, className, ...props }: Drop
     <DropdownPrimitive.Group
       data-slot="dropdown-group"
       // Figma's divider lives inside the group, 8px under the last item; the last group has none.
-      className={cn('flex flex-col gap-1 not-last:after:block not-last:after:h-px not-last:after:bg-bg-muted', className)}
+      className={cn(menuGroupClass, className)}
       {...props}
     >
       {label ? (
-        <DropdownPrimitive.Label className="flex h-6 items-center px-3 text-xs leading-3 tracking-normal text-text-subtle">
+        <DropdownPrimitive.Label className={menuGroupLabelClass}>
           {label}
         </DropdownPrimitive.Label>
       ) : null}
@@ -111,43 +122,43 @@ export function DropdownMenuGroup({ label, children, className, ...props }: Drop
 
 /* ------------------------------------------------------------------------------------------ */
 
-export interface DropdownMenuItemProps
-  extends Omit<React.ComponentProps<typeof DropdownPrimitive.Item>, 'children'> {
-  label: string
-  description?: string
+/** The row skin every menu shares: Dropdown, Select, Combobox and the Command menu. */
+export const menuItemClass = cn(
+  'flex min-h-menu-row w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left outline-none select-none focus-visible:ring-0',
+  'transition-colors duration-(--duration-fast) ease-(--ease-out)',
+  'data-[highlighted]:bg-bg-selected data-[force=hover]:bg-bg-selected data-[selected]:bg-bg-selected',
+  'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+  '[&_svg]:pointer-events-none [&_svg]:shrink-0',
+)
+
+export interface MenuItemContentProps {
+  label: React.ReactNode
+  description?: React.ReactNode
   /** Leading icon. 16px by default; stacked two-line items may use 20px (`iconSize={20}`). */
   icon?: React.ReactNode
   iconSize?: 16 | 20
-  /** Marks the current value: bg/selected and a trailing check. */
+  /** Marks the current value: a trailing check. */
   selected?: boolean
   layout?: 'stacked' | 'inline'
+  /** Keys that run the item, e.g. "⌘N", shown on the right (Figma's `showShortcut`). */
+  shortcut?: string
+  /** Wraps the label, e.g. in Radix Select's `ItemText`. */
+  renderLabel?: (label: React.ReactNode) => React.ReactNode
 }
 
-export function DropdownMenuItem({
+/** What sits inside a menu row: icon, label and description, then shortcut and check. */
+export function MenuItemContent({
   label,
   description,
   icon,
   iconSize = 16,
   selected = false,
   layout = 'stacked',
-  className,
-  ...props
-}: DropdownMenuItemProps) {
+  shortcut,
+  renderLabel = (l) => l,
+}: MenuItemContentProps) {
   return (
-    <DropdownPrimitive.Item
-      data-slot="dropdown-item"
-      data-selected={selected || undefined}
-      textValue={label}
-      className={cn(
-        'flex min-h-menu-row w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left outline-none select-none',
-        'transition-colors duration-(--duration-fast) ease-(--ease-out)',
-        'data-[highlighted]:bg-bg-selected data-[force=hover]:bg-bg-selected data-[selected]:bg-bg-selected',
-        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-        '[&_svg]:pointer-events-none [&_svg]:shrink-0',
-        className,
-      )}
-      {...props}
-    >
+    <>
       {icon ? (
         <span
           className={cn(
@@ -161,18 +172,19 @@ export function DropdownMenuItem({
 
       {layout === 'stacked' ? (
         <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
-          <span className="text-base leading-5 font-medium text-text-default">{label}</span>
+          <span className="text-base leading-5 font-medium text-text-default">{renderLabel(label)}</span>
           {description ? <span className="text-sm leading-[18px] text-text-muted">{description}</span> : null}
         </span>
       ) : (
         <span className="flex min-w-0 flex-1 items-baseline gap-3">
-          <span className="shrink-0 text-base leading-5 font-medium whitespace-nowrap text-text-default">{label}</span>
+          <span className="shrink-0 text-base leading-5 font-medium whitespace-nowrap text-text-default">{renderLabel(label)}</span>
           {description ? (
             <span className="min-w-0 flex-1 truncate text-sm text-text-muted">{description}</span>
           ) : null}
         </span>
       )}
 
+      {shortcut && <KbdGroup keys={shortcut} aria-hidden />}
       {selected && <span className="sr-only">(selected)</span>}
       {selected && (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className="text-status-green-fg">
@@ -185,6 +197,44 @@ export function DropdownMenuItem({
           />
         </svg>
       )}
+    </>
+  )
+}
+
+export interface DropdownMenuItemProps
+  extends Omit<React.ComponentProps<typeof DropdownPrimitive.Item>, 'children'>,
+    Omit<MenuItemContentProps, 'label' | 'renderLabel'> {
+  label: string
+}
+
+export function DropdownMenuItem({
+  label,
+  description,
+  icon,
+  iconSize = 16,
+  selected = false,
+  layout = 'stacked',
+  shortcut,
+  className,
+  ...props
+}: DropdownMenuItemProps) {
+  return (
+    <DropdownPrimitive.Item
+      data-slot="dropdown-item"
+      data-selected={selected || undefined}
+      textValue={label}
+      className={cn(menuItemClass, className)}
+      {...props}
+    >
+      <MenuItemContent
+        label={label}
+        description={description}
+        icon={icon}
+        iconSize={iconSize}
+        selected={selected}
+        layout={layout}
+        shortcut={shortcut}
+      />
     </DropdownPrimitive.Item>
   )
 }

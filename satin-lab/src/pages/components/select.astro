@@ -1,0 +1,35 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SelectDemo, { options } from '../../demos/select'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+
+const api = {
+  description:
+    "The `Select` component wraps the Radix select in a `div` with a label, a trigger `button` and a hint. Its list is the Dropdown menu, so each option takes an icon, a description and a shortcut, in groups or not.",
+  props: [
+    {name: "options", type: ["SelectOption[]", "SelectGroup[]"]},
+    {name: "value", type: ["string"]},
+    {name: "onValueChange", type: ["(value: string) => void"]},
+    {name: "label", type: ["ReactNode"]},
+    {name: "hint", type: ["ReactNode"]},
+    {name: "error", type: ["ReactNode", "boolean"]},
+    {name: "leadingIcon", type: ["ReactNode"]},
+    {name: "size", type: ["\"sm\"", "\"md\"", "\"lg\""], default: "\"md\""},
+    {name: "layout", type: ["\"inline\"", "\"stacked\""], default: "\"inline\""},
+    {name: "iconSize", type: ["16", "20"], default: "16"},
+    {name: "placeholder", type: ["string"]},
+    {name: "disabled", type: ["boolean"], default: "false"},
+    {name: "name", type: ["string"]},
+  ],
+}
+---
+
+<Docs current="select">
+  <DocSection item={page('select')} api={api}>
+    <SelectDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

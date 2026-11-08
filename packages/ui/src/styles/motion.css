@@ -42,3 +42,36 @@
   color: transparent;
   animation: satin-shimmer 1.6s linear infinite;
 }
+
+/* Overlays and sheets (components/sheet.tsx): the scrim fades, the sheet slides from its edge. */
+@keyframes satin-fade-in {
+  from { opacity: 0; }
+}
+@keyframes satin-fade-out {
+  to { opacity: 0; }
+}
+@keyframes satin-sheet-up {
+  from { transform: translateY(100%); }
+}
+@keyframes satin-sheet-down {
+  to { transform: translateY(100%); }
+}
+@keyframes satin-sheet-left {
+  from { transform: translateX(100%); }
+}
+@keyframes satin-sheet-right {
+  to { transform: translateX(100%); }
+}
+
+/* Skeleton (components/skeleton.tsx): a soft band runs across the block while it loads. */
+@keyframes satin-skeleton {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+.satin-skeleton[data-animated]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text-default) 6%, transparent), transparent);
+  animation: satin-skeleton 1.6s var(--ease-in-out) infinite;
+}

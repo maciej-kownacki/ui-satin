@@ -269,6 +269,7 @@
   --component-highlight-surface-to: var(--color-teal-50);
   --component-switch-on: var(--color-green-soft-700);
   --component-switch-on-hover: var(--color-green-soft-600);
+  --component-kbd-bg: var(--bg-card);
   --control-height-xs: 24px;
   --control-height: 28px;
   --control-height-lg: 32px;
@@ -367,6 +368,7 @@
   --component-highlight-surface-to: var(--color-teal-950);
   --component-switch-on: var(--color-green-soft-600);
   --component-switch-on-hover: var(--color-green-soft-500);
+  --component-kbd-bg: var(--bg-muted);
 }
 
 :root, [data-tone="neutral"] {
@@ -547,6 +549,7 @@
   --color-component-highlight-surface-to: var(--component-highlight-surface-to);
   --color-component-switch-on: var(--component-switch-on);
   --color-component-switch-on-hover: var(--component-switch-on-hover);
+  --color-component-kbd-bg: var(--component-kbd-bg);
   --color-tone-bg: var(--tone-bg);
   --color-tone-border: var(--tone-border);
   --color-tone-fg: var(--tone-fg);

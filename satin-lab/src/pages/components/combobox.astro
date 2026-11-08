@@ -1,0 +1,35 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ComboboxDemo, { options } from '../../demos/combobox'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+
+const api = {
+  description:
+    "The `Combobox` component renders a trigger `button` that opens a panel with a search `input` (`role=\"combobox\"`), a `listbox` of options and a footer. Picks apply only on Apply, which stays disabled until something is picked.",
+  props: [
+    {name: "options", type: ["SelectOption[]"]},
+    {name: "value", type: ["string[]"]},
+    {name: "onValueChange", type: ["(value: string[]) => void"]},
+    {name: "multiple", type: ["boolean"], default: "false"},
+    {name: "label", type: ["ReactNode"]},
+    {name: "hint", type: ["ReactNode"]},
+    {name: "error", type: ["ReactNode", "boolean"]},
+    {name: "leadingIcon", type: ["ReactNode"]},
+    {name: "size", type: ["\"sm\"", "\"md\"", "\"lg\""], default: "\"md\""},
+    {name: "placeholder", type: ["string"]},
+    {name: "searchPlaceholder", type: ["string"]},
+    {name: "applyLabel", type: ["string"], default: "\"Apply\""},
+    {name: "cancelLabel", type: ["string"], default: "\"Cancel\""},
+  ],
+}
+---
+
+<Docs current="combobox">
+  <DocSection item={page('combobox')} api={api}>
+    <ComboboxDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

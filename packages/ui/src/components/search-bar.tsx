@@ -1,13 +1,14 @@
 import * as React from 'react'
 import { Search } from 'iconoir-react'
 import { cn } from '../lib/utils'
+import { Kbd } from './kbd'
 
 /**
  * SearchBar, 1:1 with the uiKit `searchBar` (3233:18871): a 32px field for the sidebar that
  * fills its container. A 16px search icon in text/muted, 13px text (placeholder text/subtle),
  * 8px padding and gaps, radius-lg, border/default on bg/card with the xs shadow; hover takes
- * border/strong, focus border/focus with the 2px focus ring. The ⌘K keycaps (16px, bg/canvas,
- * a 0.75px border, radius-xs) can be hidden with `shortcut={false}`.
+ * border/strong, focus border/focus with the 2px focus ring. The ⌘K keys (Kbd sm) can be hidden
+ * with `shortcut={false}`.
  *
  * With `shortcut`, ⌘K or Ctrl+K anywhere on the page focuses it; Escape clears it.
  */
@@ -17,9 +18,6 @@ export interface SearchBarProps extends Omit<React.ComponentProps<'input'>, 'siz
   /** Classes for the outer field; `className` styles the input. */
   wrapperClassName?: string
 }
-
-const keycap =
-  'grid size-4 shrink-0 place-items-center rounded-xs border-[0.75px] border-border-default bg-bg-canvas text-[11px] leading-none text-text-muted [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]'
 
 export const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(function SearchBar(
   { shortcut = true, wrapperClassName, className, placeholder = 'Search...', onKeyDown, ...props },
@@ -75,8 +73,8 @@ export const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(func
       />
       {shortcut && (
         <span aria-hidden className="flex shrink-0 items-center gap-0.5">
-          <kbd className={cn(keycap, 'font-sans font-semibold')}>⌘</kbd>
-          <kbd className={cn(keycap, 'font-sans font-medium')}>K</kbd>
+          <Kbd>⌘</Kbd>
+          <Kbd>K</Kbd>
         </span>
       )}
     </label>

@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { Tooltip as TooltipPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
+import { KbdGroup } from './kbd'
 
 /**
  * Tooltip, 1:1 with the uiKit `tooltip/shortcut` set (3306:17555): an inverse pill
  * (text/default fill, bg/canvas text, medium 13/19.5) with the action name and optional
- * keys. Each key is its own 16px keycap, 2px apart, drawn like the shortcut hints under the
- * menus (0.75px border, radius-xs, a 1px drop, 11px glyph) in the inverse palette, so it reads
- * on the dark pill in Light and the light one in Dark. Padding 4 / 6 / 4 / 10, 8px between
+ * keys: a KbdGroup of sm keys in the inverse tone, so they read on the dark pill in Light and
+ * the light one in Dark. Padding 4 / 6 / 4 / 10, 8px between
  * label and keys. Shape default is radius-lg; rounded is a pill. Shadow md (0 8 12 shadow-md, 0 1 1.5 shadow-ambient) and the
  * 1px top highlight. Without a shortcut the right padding matches the left (10).
  *
@@ -15,19 +15,6 @@ import { cn } from '../lib/utils'
  * closes on Escape, and links itself to the trigger with aria-describedby. It sits 8px from
  * the trigger and fades in from 4px towards it (`@starting-style`, ease-out, 150 ms).
  */
-
-/** Splits a shortcut into keycaps: modifier glyphs one by one, the rest as one key ("Esc", "K"). */
-function keysOf(shortcut: string) {
-  if (/[\s+]/.test(shortcut.trim())) return shortcut.split(/[\s+]+/).filter(Boolean)
-  const keys: string[] = []
-  let rest = ''
-  for (const ch of shortcut) {
-    if ('⌘⌃⇧⌥'.includes(ch)) keys.push(ch)
-    else rest += ch
-  }
-  if (rest) keys.push(rest)
-  return keys
-}
 
 export interface TooltipProps {
   /** The action, in one or two words. */
@@ -55,7 +42,6 @@ export function TooltipBubble({
   className,
   ...props
 }: Pick<TooltipProps, 'label' | 'shortcut' | 'shape' | 'className'> & React.ComponentProps<'div'>) {
-  const keys = shortcut ? keysOf(shortcut) : []
   return (
     <div
       data-slot="tooltip"
@@ -63,27 +49,13 @@ export function TooltipBubble({
         'flex items-center gap-2 bg-text-default py-1 pl-2.5 text-sm leading-(--text-sm--line-height) font-medium whitespace-nowrap text-bg-canvas',
         '[box-shadow:0_8px_12px_0_var(--effect-shadow-md),0_1px_1.5px_0_var(--effect-shadow-ambient),inset_0_1px_0_0_var(--effect-highlight-top)]',
         shape === 'rounded' ? 'rounded-pill' : 'rounded-lg',
-        keys.length ? 'pr-1.5' : 'pr-2.5',
+        shortcut ? 'pr-1.5' : 'pr-2.5',
         className,
       )}
       {...props}
     >
       <span>{label}</span>
-      {keys.length > 0 && (
-        <kbd className="flex items-center gap-0.5 font-sans">
-          {keys.map((k, i) => (
-            <span
-              key={i}
-              className={cn(
-                'flex h-4 min-w-4 items-center justify-center rounded-xs border-[0.75px] border-action-inverse-border bg-action-inverse-bg-hover px-0.5 dark:border-action-inverse-bg-pressed dark:bg-text-default',
-                'text-2xs leading-none font-medium text-bg-canvas/72 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
-              )}
-            >
-              {k}
-            </span>
-          ))}
-        </kbd>
-      )}
+      {shortcut && <KbdGroup keys={shortcut} tone="inverse" />}
     </div>
   )
 }

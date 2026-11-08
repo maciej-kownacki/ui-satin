@@ -47,7 +47,7 @@ export interface DialogProps {
 }
 
 /** The X from Figma's close button (`icon` 16px, 1.25 stroke). */
-function CloseIcon() {
+export function CloseIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
       <path
