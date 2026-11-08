@@ -195,27 +195,30 @@ export function Customizer() {
           <ThemeSwitch size="md" className="dark:bg-white-a6" />
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
-          <Button onClick={randomize}>
+        <div className="grid grid-cols-2 gap-2 border-t border-border-subtle pt-4">
+          <Button size="lg" onClick={randomize}>
             <DiceFive />
             Randomize
           </Button>
-          <div className="flex gap-2">
-            <Button variant="secondary" className="flex-1" onClick={copy}>
-              {copied ? <Check /> : <Copy />}
-              <span aria-live="polite">{copied ? 'Copied' : 'Copy CSS'}</span>
-            </Button>
-            <Button variant="secondary" iconOnly aria-label="Download satin-theme.css" title="Download" onClick={download}>
-              <Download />
-            </Button>
-            {!isDefault && (
-              <Button variant="tertiary" iconOnly aria-label="Reset theme" title="Reset" onClick={() => update(defaultTheme)}>
-                <Refresh />
-              </Button>
-            )}
-          </div>
+          <Button variant="secondary" size="lg" aria-label="Download satin-theme.css" onClick={download}>
+            <Download />
+            Download
+          </Button>
         </div>
       </div>
+  )
+
+  // Copy and Reset sit in the header, where a close button would be: plain, out of the way.
+  const tools = (
+    <div className="flex items-center gap-0.5">
+      <Button variant="tertiary" size="xs" onClick={copy}>
+        {copied ? <Check /> : <Copy />}
+        <span aria-live="polite">{copied ? 'Copied' : 'Copy CSS'}</span>
+      </Button>
+      <Button variant="tertiary" size="xs" iconOnly aria-label="Reset theme" title="Reset" disabled={isDefault} onClick={() => update(defaultTheme)}>
+        <Refresh />
+      </Button>
+    </div>
   )
 
   const trigger = (props: React.ComponentProps<typeof Button>) => (
@@ -231,7 +234,7 @@ export function Customizer() {
     return (
       <>
         {trigger({ onClick: () => setSheet(true), 'aria-expanded': sheet, 'aria-haspopup': 'dialog' })}
-        <Sheet open={sheet} onClose={() => setSheet(false)} title="Customize" description="Brand and corners for every component, live.">
+        <Sheet open={sheet} onClose={() => setSheet(false)} title="Customize" description="Brand and corners for every component, live." actions={tools}>
           {panel}
         </Sheet>
       </>
@@ -245,7 +248,13 @@ export function Customizer() {
       title="Customize"
       description="Brand and corners for every component, live."
       className="w-[340px]"
-      body={panel}
+      closeButton={false}
+      body={
+        <>
+          <div className="absolute top-1.5 right-1.5">{tools}</div>
+          {panel}
+        </>
+      }
     >
       {trigger({})}
     </Popover>
@@ -260,6 +269,7 @@ export function Customizer() {
 function Sheet({
   open,
   onClose,
+  actions,
   title,
   description,
   children,
@@ -268,6 +278,7 @@ function Sheet({
   onClose: () => void
   title: string
   description: string
+  actions?: React.ReactNode
   children: React.ReactNode
 }) {
   const [mounted, setMounted] = React.useState(false)
@@ -340,11 +351,14 @@ function Sheet({
           <span aria-hidden className="h-1 w-9 rounded-full bg-border-strong" />
         </button>
         <div className="flex min-h-0 flex-col gap-4 overflow-y-auto px-4 pt-1">
-          <div className="flex flex-col gap-0.5">
-            <p id={titleId} className="text-base font-medium text-text-default">
-              {title}
-            </p>
-            <p className="text-sm text-text-muted">{description}</p>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col gap-0.5">
+              <p id={titleId} className="text-base font-medium text-text-default">
+                {title}
+              </p>
+              <p className="text-sm text-text-muted">{description}</p>
+            </div>
+            {actions}
           </div>
           {children}
         </div>
