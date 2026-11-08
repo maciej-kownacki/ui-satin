@@ -214,8 +214,9 @@ export function Customizer() {
   const tools = (
     <div className="flex items-center gap-0.5">
       <Button variant="tertiary" size="xs" iconOnly aria-label={copied ? 'Copied' : 'Copy CSS'} title="Copy CSS" onClick={copy}>
-        {/* Iconoir's copy draws smaller inside its box than refresh, so it gets a size up to match. */}
-        {copied ? <Check /> : <Copy className="!size-[18px]" />}
+        {/* Iconoir's copy draws smaller inside its box than refresh, so it gets 18px to match; the
+            stroke scales back so the line stays the DS's 1.09px, like refresh at 14. */}
+        {copied ? <Check /> : <Copy className="!size-[18px]" style={{ strokeWidth: (1.875 * 14) / 18 }} />}
         <span className="sr-only" aria-live="polite">{copied ? 'Copied' : ''}</span>
       </Button>
       <Button variant="tertiary" size="xs" iconOnly aria-label="Reset theme" title="Reset" disabled={isDefault} onClick={() => update(defaultTheme)}>
