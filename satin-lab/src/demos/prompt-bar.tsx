@@ -97,13 +97,20 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
 
 function Demo({ v }: { v: Record<string, string> }) {
   const [files, setFiles] = React.useState<File[]>(() => (v.attachments === 'on' ? sampleFiles() : []))
+  // Upload a file adds the next sample file here instead of opening the system file picker.
+  const upload = () =>
+    setFiles((f) => {
+      const samples = sampleFiles()
+      return [...f, samples[f.length % samples.length]]
+    })
+  const actions = (v.apps === 'on' ? apps : defaultActions).map((a) => (a.id === 'upload' ? { ...a, onSelect: upload } : a))
   return (
     <div className="w-[min(600px,calc(100vw-80px))]">
       <PromptBar
         shape={v.shape as 'pill' | 'default'}
         defaultValue={v.state === 'active' ? draft : undefined}
         models={v.models === 'on' ? models : undefined}
-        actions={v.apps === 'on' ? apps : undefined}
+        actions={actions}
         attachments={files}
         onAttachmentsChange={setFiles}
         disabled={v.state === 'disabled'}

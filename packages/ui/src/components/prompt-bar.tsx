@@ -14,7 +14,8 @@ import { Button } from './button'
  * default = radius 12 with Default buttons; pill = radius-full on one line, radius 20 once
  * attachments or a second line of text add height, with Rounded buttons. The input row is
  * add (+), the field (14/21, placeholder text/subtle), then 4px apart the model select, dictation
- * and send — all 28px DS buttons. state inactive: border/default and send disabled; active (the
+ * and send — all 28px DS buttons. Once the text needs a second line the bar expands: the field
+ * takes its own row, with + and the model below on the left and dictation and send on the right. state inactive: border/default and send disabled; active (the
  * field focused, or text to send): border/strong and send enabled.
  *
  * Menus open 8px above: + opens addToConversation across the full width of the bar, the model
@@ -109,7 +110,9 @@ export function PromptBar({
   }, [modelProp])
   const [addOpen, setAddOpen] = React.useState(false)
   const [recording, setRecording] = React.useState(false)
-  const [multiline, setMultiline] = React.useState(false)
+  // Expanded: the text has needed a second line. It stays expanded until the field is empty,
+  // so the layout doesn't flip back when the wider field fits the text on one line again.
+  const [expanded, setExpanded] = React.useState(false)
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
   const fileRef = React.useRef<HTMLInputElement>(null)
 
@@ -134,8 +137,9 @@ export function PromptBar({
     el.style.height = '0px'
     const h = Math.min(el.scrollHeight, 6 * 21 + 7)
     el.style.height = `${h}px`
-    setMultiline(h > 28)
-  }, [value])
+    if (value.length === 0) setExpanded(false)
+    else if (h > 28) setExpanded(true)
+  }, [value, expanded])
 
   const submit = () => {
     if (!canSend) return
@@ -166,7 +170,7 @@ export function PromptBar({
             'flex w-full flex-col gap-2 border border-border-default bg-bg-field p-2 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             'transition-[border-color,border-radius] duration-(--duration-fast) ease-(--ease-out)',
             'has-[textarea:focus]:border-border-strong data-filled:border-border-strong',
-            pill ? (files.length > 0 || multiline ? 'rounded-3xl' : 'rounded-pill') : 'rounded-xl',
+            pill ? (files.length > 0 || expanded ? 'rounded-3xl' : 'rounded-pill') : 'rounded-xl',
             disabled && 'opacity-50',
             className,
           )}
@@ -199,7 +203,9 @@ export function PromptBar({
             </ul>
           )}
 
-          <div className="flex items-end gap-2">
+          {/* One line: + | field | model, dictation, send. Expanded: the field on its own row over
+              + and the model on the left, dictation and send on the right. */}
+          <div className={cn('flex flex-wrap items-end gap-x-2 gap-y-2', expanded && 'items-center')}>
             <Popover.Trigger asChild>
               <Button
                 variant="tertiary"
@@ -230,11 +236,12 @@ export function PromptBar({
               }}
               className={cn(
                 'block h-7 min-w-0 flex-1 resize-none bg-transparent py-[3.5px] text-base leading-[21px] text-text-default',
+                expanded && 'order-first basis-full px-1',
                 'outline-none placeholder:text-text-subtle focus-visible:ring-0 disabled:cursor-not-allowed',
               )}
             />
 
-            <div className="flex shrink-0 items-center gap-1">
+            <div className={cn('flex shrink-0 items-center gap-1', expanded && 'contents')}>
               <ModelSelect
                 models={models}
                 model={model}
@@ -247,6 +254,7 @@ export function PromptBar({
                   onModelChange?.(next)
                 }}
               />
+              {expanded && <span aria-hidden className="flex-1" />}
               <DictationButton
                 shape={btnShape}
                 recording={recording}
@@ -362,7 +370,7 @@ function AddMenu({
         ))}
         {shown.length === 0 && <p className="px-2 py-1.5 text-sm text-text-muted">No matches</p>}
       </div>
-      <ShortcutHints keyBorder="border-border-subtle" />
+      <ShortcutHints />
     </>
   )
 }
@@ -432,7 +440,7 @@ function ModelSelect({
               </DropdownMenu.RadioItem>
             ))}
           </DropdownMenu.RadioGroup>
-          <ShortcutHints keyBorder="border-border-default" />
+          <ShortcutHints />
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
@@ -441,14 +449,13 @@ function ModelSelect({
 
 /**
  * The footer both menus share: ↑ ↓ Navigate, ↵ Select, on the menu's own bg/popover under a
- * border/default rule. Keys are 14px caps, bg/card in Light and the lighter bg/selected in Dark
- * so they stand off the menu.
+ * border/default rule. Keys are 14px caps with a border/default edge, bg/card in Light and
+ * bg/muted in Dark: lighter than the menu, darker than their edge, so both read.
  */
-function ShortcutHints({ keyBorder }: { keyBorder: string }) {
+function ShortcutHints() {
   const key = cn(
-    'flex size-3.5 items-center justify-center overflow-clip rounded-xs border-[0.5px] bg-bg-card text-text-muted dark:bg-bg-selected',
+    'flex size-3.5 items-center justify-center overflow-clip rounded-xs border-[0.75px] border-border-default bg-bg-card text-text-muted dark:bg-bg-muted',
     '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)] [&>svg]:size-2.5',
-    keyBorder,
   )
   // Keys and labels share the menu's description colour, text/muted.
   const label = 'text-xs leading-4 tracking-normal whitespace-nowrap text-text-muted'
