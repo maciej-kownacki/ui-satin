@@ -60,13 +60,16 @@ const buttonVariants = cva(
           'satin-pressed:bg-action-inverse-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed),inset_0_0_6px_2px_var(--action-inverse-glow)]',
           '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-inverse-glow)]',
         ],
+        // The outline is a 1px ring outside the box, like the filled variants' ring, so all of
+        // them read the same height; the border underneath takes the fill.
         secondary: [
-          'border border-border-default bg-bg-popover text-text-default [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)] [&_svg]:text-text-muted',
-          'disabled:border-border-strong disabled:[box-shadow:none]',
-          'satin-hover:border-border-strong satin-hover:bg-action-secondary-bg-hover',
-          'satin-focus:border-border-strong satin-focus:bg-bg-popover satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
-          'satin-pressed:border-border-strong satin-pressed:bg-action-secondary-bg-pressed satin-pressed:[box-shadow:none]',
-          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+          'border border-transparent bg-bg-popover text-text-default [&_svg]:text-text-muted',
+          '[box-shadow:0_0_0_1px_var(--border-default),0_1px_2px_1px_var(--effect-shadow-xs)]',
+          'disabled:[box-shadow:0_0_0_1px_var(--border-strong)]',
+          'satin-hover:bg-action-secondary-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--border-strong),0_1px_2px_1px_var(--effect-shadow-xs)]',
+          'satin-focus:bg-bg-popover satin-focus:[box-shadow:0_0_0_1px_var(--border-strong),0_0_0_2px_var(--action-focus-ring)]',
+          'satin-pressed:bg-action-secondary-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--border-strong)]',
+          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--border-strong),0_0_0_2px_var(--action-focus-ring)]',
         ],
         tertiary: [
           'bg-transparent text-text-default [&_svg]:text-text-muted',

@@ -285,7 +285,7 @@ function HelpBanner() {
         <p className="leading-[18px] font-medium text-text-default">Need design help?</p>
         <p className="leading-[19.5px] text-text-muted">Get expert product design for your business.</p>
       </div>
-      <Button variant="secondary" shape="rounded" className="relative w-full border-border-default">
+      <Button variant="secondary" shape="rounded" className="relative w-full">
         Book a call
       </Button>
       <Button
