@@ -439,16 +439,20 @@ function ModelSelect({
   )
 }
 
-/** The footer both menus share: ↑ ↓ Navigate, ↵ Select. Keys are 14px caps on bg/card. */
+/**
+ * The footer both menus share: ↑ ↓ Navigate, ↵ Select, on the menu's own bg/popover under a
+ * border/default rule. Keys are 14px caps, bg/card in Light and the lighter bg/selected in Dark
+ * so they stand off the menu.
+ */
 function ShortcutHints({ keyBorder, text }: { keyBorder: string; text: string }) {
   const key = cn(
-    'flex size-3.5 items-center justify-center overflow-clip rounded-xs border-[0.5px] bg-bg-card text-text-muted',
+    'flex size-3.5 items-center justify-center overflow-clip rounded-xs border-[0.5px] bg-bg-card text-text-muted dark:bg-bg-selected',
     '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)] [&>svg]:size-2.5',
     keyBorder,
   )
   const label = cn('text-xs leading-4 tracking-normal whitespace-nowrap', text)
   return (
-    <div aria-hidden className="flex items-center gap-3 border-t border-border-subtle bg-bg-canvas px-3 py-1.5 dark:bg-bg-muted">
+    <div aria-hidden className="flex items-center gap-3 border-t border-border-default bg-bg-popover px-3 py-1.5">
       <span className="flex items-center gap-1">
         <span className="flex items-center gap-0.5">
           <span className={key}>

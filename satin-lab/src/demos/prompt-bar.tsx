@@ -96,13 +96,9 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
 }))
 
 function Demo({ v }: { v: Record<string, string> }) {
-  const [sent, setSent] = React.useState<string | null>(null)
   const [files, setFiles] = React.useState<File[]>(() => (v.attachments === 'on' ? sampleFiles() : []))
   return (
-    <div className="grid w-[min(600px,calc(100vw-80px))] gap-3">
-      <p aria-live="polite" className="min-h-5 text-center text-sm text-text-muted">
-        {sent ?? (v.state === 'disabled' ? 'Disabled: nothing can be typed or sent.' : 'Type a message and press Enter. + and the model open their menus.')}
-      </p>
+    <div className="w-[min(600px,calc(100vw-80px))]">
       <PromptBar
         shape={v.shape as 'pill' | 'default'}
         defaultValue={v.state === 'active' ? draft : undefined}
@@ -111,9 +107,6 @@ function Demo({ v }: { v: Record<string, string> }) {
         attachments={files}
         onAttachmentsChange={setFiles}
         disabled={v.state === 'disabled'}
-        onSubmit={(message, attached) =>
-          setSent(`Sent: “${message || '(no text)'}”${attached.length ? ` with ${attached.length} file(s)` : ''}`)
-        }
       />
     </div>
   )
