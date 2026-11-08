@@ -8,8 +8,8 @@ import { cn } from '../lib/utils'
  * xs / md / lg / xl (24 / 28 / 32 / 36), Default or Rounded shape, and an icon-only form.
  *
  * Solid styles (primary, destructive, inverse) are a 1px border in the style's `border`
- * token, a 1px outer ring in the current background, a 0 3 6 drop shadow (gone when
- * pressed) and a 6px inner glow. Focus adds a 2px `action/focus-ring` spread; disabled
+ * token, a 1px outer ring in the current background and a 0 3 6 drop shadow (gone when
+ * pressed); no inner glow. Focus adds a 2px `action/focus-ring` spread; disabled
  * is the default look at 50% opacity. Icons take the label colour on solid styles and
  * text/muted on secondary and tertiary.
  *
@@ -38,27 +38,27 @@ const buttonVariants = cva(
       variant: {
         primary: [
           'border border-action-primary-border bg-action-primary-bg text-action-primary-fg',
-          '[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-primary-glow)]',
-          'satin-hover:bg-action-primary-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-primary-bg-hover),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-primary-glow)]',
-          'satin-focus:[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-primary-glow)]',
-          'satin-pressed:bg-action-primary-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-primary-bg-pressed),inset_0_0_6px_2px_var(--action-primary-glow)]',
-          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-primary-bg-pressed),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-primary-glow)]',
+          '[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-hover:bg-action-primary-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-primary-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-focus:[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring)]',
+          'satin-pressed:bg-action-primary-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-primary-bg-pressed)]',
+          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-primary-bg-pressed),0_0_0_2px_var(--action-focus-ring)]',
         ],
         destructive: [
           'border border-action-destructive-border bg-action-destructive-bg text-text-on-solid',
-          '[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-destructive-glow)]',
-          'satin-hover:bg-action-destructive-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-destructive-bg-hover),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-destructive-glow)]',
-          'satin-focus:[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-destructive-glow)]',
-          'satin-pressed:bg-action-destructive-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-destructive-bg-pressed),inset_0_0_6px_2px_var(--action-destructive-glow)]',
-          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-destructive-bg-pressed),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-destructive-glow)]',
+          '[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-hover:bg-action-destructive-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-destructive-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-focus:[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring)]',
+          'satin-pressed:bg-action-destructive-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-destructive-bg-pressed)]',
+          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-destructive-bg-pressed),0_0_0_2px_var(--action-focus-ring)]',
         ],
         inverse: [
           'border border-action-inverse-border bg-action-inverse-bg text-text-on-inverse',
-          '[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-inverse-glow)]',
-          'satin-hover:bg-action-inverse-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-inverse-bg-hover),0_3px_6px_0_var(--action-primary-shadow),inset_0_0_6px_2px_var(--action-inverse-glow)]',
-          'satin-focus:[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-inverse-glow)]',
-          'satin-pressed:bg-action-inverse-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed),inset_0_0_6px_2px_var(--action-inverse-glow)]',
-          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed),0_0_0_2px_var(--action-focus-ring),inset_0_0_6px_2px_var(--action-inverse-glow)]',
+          '[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-hover:bg-action-inverse-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-inverse-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-focus:[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring)]',
+          'satin-pressed:bg-action-inverse-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed)]',
+          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed),0_0_0_2px_var(--action-focus-ring)]',
         ],
         // The outline is a 1px ring outside the box, like the filled variants' ring, so all of
         // them read the same height; the border underneath takes the fill.
