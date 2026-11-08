@@ -13,6 +13,7 @@ export default defineConfig({
     '/foundations/tokens': '/theming',
     '/tokens': '/theming',
     '/tokens/[role]': '/theming/[role]',
+    '/ai-patterns/empty-state': '/components/empty-state',
     '/foundations/tokens/[role]': '/theming/[role]',
   },
   vite: { plugins: [tailwindcss()] },

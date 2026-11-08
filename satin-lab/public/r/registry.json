@@ -380,7 +380,7 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json"
       ],
-      "docs": "Empty state docs: https://uisatin.dev/ai-patterns/empty-state",
+      "docs": "Empty state docs: https://uisatin.dev/components/empty-state",
       "files": [
         {
           "path": "registry/satin/ui/empty-state.tsx",
