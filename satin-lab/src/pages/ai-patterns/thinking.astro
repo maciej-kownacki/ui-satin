@@ -17,6 +17,8 @@ const api = {
   description: 'The `Thinking` component is a wrapper around the `details` element with a header and a rail of reasoning steps.',
   props: [
     { name: 'steps', type: ['ThinkingStep[]'], default: '[]' },
+    { name: 'indicator', type: ['"tetris"', '"flappy"'], default: '"tetris"' },
+    { name: 'glimmer', type: ['"color"', '"neutral"'], default: '"color"' },
     { name: 'state', type: ['"loading"', '"collapsed"', '"expanded"'], default: '"loading"' },
     { name: 'label', type: ['string'], default: '"Thinking…"' },
     { name: 'time', type: ['string'] },

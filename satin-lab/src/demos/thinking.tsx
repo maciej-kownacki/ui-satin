@@ -55,9 +55,12 @@ const sets: Record<string, StepSet> = {
 
 const more: ThinkingStep = { type: 'more', label: '+5 more' }
 
-// Steps decide what the run holds, More caps a long one, and state comes last: loading shows
-// only the live label and timer, collapsed and expanded show the steps behind the label.
+// The indicator and its glimmer set the header's mark; steps decide what the run holds, More caps
+// a long one, and state comes last: loading shows only the live label and timer, collapsed and
+// expanded show the steps behind the label.
 export const controls: ShowcaseControl[] = [
+  { id: 'indicator', label: 'Indicator', items: [{ value: 'tetris', label: 'Tetris' }, { value: 'flappy', label: 'Flappy' }] },
+  { id: 'glimmer', label: 'Glimmer', items: [{ value: 'color', label: 'Color' }, { value: 'neutral', label: 'Neutral' }] },
   {
     id: 'steps',
     label: 'Steps',
@@ -85,15 +88,19 @@ const labelOf = (id: string, value: string) => {
   return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
 }
 
+// The mark's props, left out at their defaults; the glimmer only matters to the tetris mark.
+const markProps = (v: Record<string, string>) =>
+  [v.indicator === 'flappy' && 'indicator="flappy"', v.indicator === 'tetris' && v.glimmer === 'neutral' && 'glimmer="neutral"'].filter(Boolean) as string[]
+
 function code(v: Record<string, string>) {
   // Loading is the default state and its label defaults to "Thinking…", so only the timer is left.
-  if (v.state === 'loading') return `import { Thinking } from '@satin/ui/thinking'\n\n<Thinking time="1.2s" />`
+  if (v.state === 'loading') return `import { Thinking } from '@satin/ui/thinking'\n\n<Thinking ${[...markProps(v), 'time="1.2s"'].join(' ')} />`
   const set = sets[v.steps]
   const steps = [...set.code, ...(v.more === 'on' ? ["{ type: 'more', label: '+5 more' },"] : [])]
   return `import { Thinking } from '@satin/ui/thinking'
 
 <Thinking
-  state="${v.state}"
+${markProps(v).map((p) => `  ${p}\n`).join('')}  state="${v.state}"
   label="${set.label}"
   steps={[
 ${steps.map((s) => `    ${s}`).join('\n')}
@@ -103,19 +110,19 @@ ${steps.map((s) => `    ${s}`).join('\n')}
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   id: comboId(controls, v),
-  label: [labelOf('steps', v.steps), v.more === 'on' ? 'More' : 'No more', labelOf('state', v.state)].join(' · '),
+  label: [labelOf('indicator', v.indicator), ...(v.indicator === 'tetris' ? [labelOf('glimmer', v.glimmer)] : []), labelOf('steps', v.steps), v.more === 'on' ? 'More' : 'No more', labelOf('state', v.state)].join(' · '),
   code: code(v),
 }))
 
 /** A running timer, so the loading state reads as live. */
-function Live() {
+function Live({ indicator, glimmer }: { indicator: 'tetris' | 'flappy'; glimmer: 'color' | 'neutral' }) {
   const [ms, setMs] = React.useState(0)
   React.useEffect(() => {
     const start = performance.now()
     const id = setInterval(() => setMs(performance.now() - start), 100)
     return () => clearInterval(id)
   }, [])
-  return <Thinking state="loading" time={`${(ms / 1000).toFixed(1)}s`} />
+  return <Thinking state="loading" indicator={indicator} glimmer={glimmer} time={`${(ms / 1000).toFixed(1)}s`} />
 }
 
 export default function ThinkingDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
@@ -130,9 +137,11 @@ export default function ThinkingDemo({ codeHtml }: { codeHtml: Record<string, st
         return (
           <div className="grid w-[min(400px,calc(100vw-80px))] gap-4">
             {v.state === 'loading' ? (
-              <Live />
+              <Live indicator={v.indicator as 'tetris' | 'flappy'} glimmer={v.glimmer as 'color' | 'neutral'} />
             ) : (
               <Thinking
+                indicator={v.indicator as 'tetris' | 'flappy'}
+                glimmer={v.glimmer as 'color' | 'neutral'}
                 state={v.state as 'collapsed' | 'expanded'}
                 label={set.label}
                 steps={v.more === 'on' ? [...set.steps, more] : set.steps}

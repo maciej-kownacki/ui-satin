@@ -5,6 +5,7 @@
 @import "./components/input.css";
 @import "./components/textarea.css";
 @import "./components/radio.css";
+@import "./components/agent-loading.css";
 
 /* Let Tailwind see the classes used inside the components. */
 @source "../components";

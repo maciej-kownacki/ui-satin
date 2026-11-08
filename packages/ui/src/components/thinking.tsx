@@ -1,13 +1,16 @@
 import * as React from 'react'
 import { Check, EditPencil, NavArrowDown } from 'iconoir-react'
 import { cn } from '../lib/utils'
+import { FlappySprite, ShimmerLabel, TetrisLabel, TetrisMark, TetrisStill, type Glimmer } from './agent-loading'
 
 /**
  * Thinking, 1:1 with the uiKit `Thinking` set (3239:20908) and its parts thinking/header
  * (3239:20766), thinking/step (3239:20791) and thinking/_mark (3239:20674).
  *
- * loading: the header only — the 16 × 11 tetris mark playing, the label in text/muted and the
- * elapsed time in text/subtle, 12px apart, 4px padding (28 high). collapsed: mark, summary and
+ * loading: the header only — the mark playing, the label shimmering and the elapsed time in
+ * text/subtle, 12px apart, 4px padding (28 high). The mark is the tetris board (rows clearing,
+ * a band of light crossing it and the label, in glimm's prism or neutral) or the flappy bird
+ * running in place; see agent-loading.tsx. collapsed: mark, summary and
  * a 14px chevron. expanded: the same header with the chevron turned up, then 8px down a body
  * with 4px left inset: a 16px rail (1px line, rail-edge → rail-center → rail-edge) and, 12px
  * on, the steps 8px apart.
@@ -36,6 +39,8 @@ export type ThinkingStep =
   | { type: 'more'; label: React.ReactNode }
 
 export type ThinkingState = 'loading' | 'collapsed' | 'expanded'
+/** What runs beside the label: the tetris mark, or the flappy bird. */
+export type ThinkingIndicator = 'tetris' | 'flappy'
 
 export interface ThinkingProps extends Omit<React.ComponentProps<'div'>, 'onToggle'> {
   /** loading while the agent works, collapsed once it is done, expanded when people open it. */
@@ -45,6 +50,10 @@ export interface ThinkingProps extends Omit<React.ComponentProps<'div'>, 'onTogg
   /** Elapsed time next to the loading label, e.g. "1.2s". */
   time?: React.ReactNode
   steps?: ThinkingStep[]
+  /** The mark beside the label. */
+  indicator?: ThinkingIndicator
+  /** The light that crosses the tetris mark and its label as rows clear: glimm's prism, or neutral. */
+  glimmer?: Glimmer
   onToggle?: (open: boolean) => void
 }
 
@@ -53,6 +62,8 @@ export function Thinking({
   label = 'Thinking…',
   time,
   steps = [],
+  indicator = 'tetris',
+  glimmer = 'color',
   onToggle,
   className,
   ...props
@@ -64,8 +75,14 @@ export function Thinking({
     return (
       <div data-slot="thinking" data-state="loading" className={cn('flex w-full flex-col', className)} {...props}>
         <div role="status" aria-live="polite" className="flex items-center gap-3 p-1">
-          <ThinkingMark loading />
-          <span className="text-sm whitespace-nowrap text-text-muted">{label}</span>
+          <ThinkingMark loading indicator={indicator} glimmer={glimmer} />
+          {indicator === 'tetris' ? (
+            <TetrisLabel glimmer={glimmer} className="text-sm whitespace-nowrap">
+              {label}
+            </TetrisLabel>
+          ) : (
+            <ShimmerLabel className="text-sm whitespace-nowrap">{label}</ShimmerLabel>
+          )}
           {time != null && <span className="text-sm whitespace-nowrap text-text-subtle tabular-nums">{time}</span>}
         </div>
       </div>
@@ -85,7 +102,7 @@ export function Thinking({
         className="group"
       >
         <summary className="flex w-fit cursor-pointer list-none items-center gap-3 rounded-md p-1 select-none [&::-webkit-details-marker]:hidden">
-          <ThinkingMark />
+          <ThinkingMark indicator={indicator} glimmer={glimmer} />
           <span className="text-sm whitespace-nowrap text-text-muted">{label}</span>
           <NavArrowDown
             aria-hidden
@@ -151,74 +168,8 @@ function Step({ step }: { step: ThinkingStep }) {
   }
 }
 
-/*
- * thinking/_mark: a 5 × 4 board of 2px squares, 0.5px apart in a row and 1px between rows,
- * centred in 16 × 11. Done, every cell is text/muted. Loading, it plays a small tetris:
- * dominoes drop into the board, full rows clear, the board starts again; empty cells are
- * bg/muted. It starts on (and with reduced motion holds) the Figma loading frame.
- */
-const COLS = 5
-const ROWS = 4
-type Board = boolean[][]
-
-const STILL: Board = [
-  [false, true, false, false, false],
-  [false, true, true, false, false],
-  [false, true, true, false, false],
-  [false, true, true, false, false],
-]
-
-/** Every frame of the loop, worked out once: vertical dominoes drop into columns in this order. */
-const FRAMES: Board[] = (() => {
-  const empty = (): Board => Array.from({ length: ROWS }, () => Array<boolean>(COLS).fill(false))
-  const copy = (b: Board): Board => b.map((row) => [...row])
-  const frames: Board[] = []
-  let board = empty()
-  for (const col of [1, 3, 0, 4, 2, 1, 3, 0, 4, 2]) {
-    let target = 0
-    while (target + 1 < ROWS && !board[target + 1][col]) target++
-    for (let bottom = 0; bottom <= target; bottom++) {
-      const f = copy(board)
-      f[bottom][col] = true
-      if (bottom > 0) f[bottom - 1][col] = true
-      frames.push(f)
-    }
-    board[target][col] = true
-    if (target > 0) board[target - 1][col] = true
-    const full = board.map((row) => row.every(Boolean))
-    if (full.some(Boolean)) {
-      frames.push(board.map((row, r) => (full[r] ? row.map(() => false) : [...row])))
-      const kept = board.filter((_, r) => !full[r])
-      board = [...Array.from({ length: ROWS - kept.length }, () => Array<boolean>(COLS).fill(false)), ...kept]
-      frames.push(copy(board))
-    }
-  }
-  frames.push(empty())
-  return frames
-})()
-
-function ThinkingMark({ loading = false }: { loading?: boolean }) {
-  const [frame, setFrame] = React.useState<number | null>(null)
-
-  React.useEffect(() => {
-    if (!loading || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const id = window.setInterval(() => setFrame((f) => ((f ?? -1) + 1) % FRAMES.length), 140)
-    return () => window.clearInterval(id)
-  }, [loading])
-
-  const board = !loading ? null : frame == null ? STILL : FRAMES[frame]
-
-  return (
-    <span aria-hidden className="flex h-[11px] w-4 shrink-0 items-center justify-center">
-      <span className="flex flex-col gap-px">
-        {Array.from({ length: ROWS }, (_, r) => (
-          <span key={r} className="flex gap-[0.5px]">
-            {Array.from({ length: COLS }, (_, c) => (
-              <span key={c} className={cn('size-0.5', !board || board[r][c] ? 'bg-text-muted' : 'bg-bg-muted')} />
-            ))}
-          </span>
-        ))}
-      </span>
-    </span>
-  )
+/** thinking/_mark: the tetris mark (playing while loading, filled once done) or the flappy bird. */
+function ThinkingMark({ loading = false, indicator, glimmer }: { loading?: boolean; indicator: ThinkingIndicator; glimmer: Glimmer }) {
+  if (indicator === 'flappy') return <FlappySprite size={16} run={loading} />
+  return loading ? <TetrisMark glimmer={glimmer} /> : <TetrisStill />
 }

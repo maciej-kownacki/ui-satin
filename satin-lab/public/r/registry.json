@@ -33,6 +33,23 @@
       ]
     },
     {
+      "name": "agent-loading",
+      "type": "registry:ui",
+      "title": "Agent loading",
+      "description": "The Satin Agent loading component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-loading.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "agent-picker",
       "type": "registry:ui",
       "title": "Agent picker",
@@ -679,7 +696,8 @@
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json"
       ],
       "docs": "Thinking docs: https://uisatin.dev/ai-patterns/thinking",
       "files": [

@@ -1,0 +1,235 @@
+/*
+ * The agent's loading marks (components/agent-loading.tsx).
+ *
+ * Tetris, on the kit's grid: 2px dots, 0.5px between columns, 1px between rows, 12 × 11 on a
+ * 16px mark. The grid's dots are bg/muted, a piece's text/muted. The board clips, so a piece is
+ * hidden until it falls in from the top edge. Every piece and dot runs its own keyframes (written
+ * by the script) over the same loop, linear between keys; the keys carry their own easing.
+ */
+.satin-tetris {
+  --satin-tetris-off: var(--bg-muted);
+  --satin-tetris-on: var(--text-muted);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.satin-tetris__board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 2px);
+  grid-auto-rows: 2px;
+  gap: 1px 0.5px;
+  overflow: hidden;
+}
+
+.satin-tetris__board > i {
+  display: block;
+  background: var(--satin-tetris-off);
+}
+
+/* Finished: every dot in text/muted, as the kit's done mark. */
+.satin-tetris[data-still] .satin-tetris__board > i {
+  background: var(--satin-tetris-on);
+}
+
+.satin-tetris__fall {
+  position: absolute;
+  inset: 0;
+}
+
+.satin-tetris__fall,
+.satin-tetris__fall > b {
+  animation-duration: var(--satin-tetris-loop);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.satin-tetris__fall > b {
+  position: absolute;
+  top: calc(var(--r) * 3px);
+  left: calc(var(--c) * 2.5px);
+  width: 2px;
+  height: 2px;
+  background: var(--satin-tetris-on);
+}
+
+/*
+ * At each clear a soft band crosses the board left to right, masked to the dots so the light
+ * lands on the mark and nowhere else, then runs on through the label. `color` is glimm.dev's
+ * prism, held back on white where it shouts; `neutral` is a band of text/default.
+ */
+.satin-tetris,
+.satin-tetris-label {
+  --satin-glimm-peak: 0.45;
+  --satin-glimm-band: linear-gradient(90deg, transparent, #00c0e8 30%, #6155f5 50%, #cb30e0 70%, transparent);
+  --satin-glimm-text: linear-gradient(90deg, transparent 40%, #00c0e8 45%, #6155f5 50%, #cb30e0 55%, transparent 60%);
+}
+
+.dark :is(.satin-tetris, .satin-tetris-label) {
+  --satin-glimm-peak: 0.85;
+}
+
+:is(.satin-tetris, .satin-tetris-label)[data-glimmer='neutral'] {
+  --satin-glimm-peak: 1;
+  --satin-glimm-band: linear-gradient(90deg, transparent, var(--text-default) 50%, transparent);
+  --satin-glimm-text: linear-gradient(90deg, transparent 42%, var(--text-default) 50%, transparent 58%);
+}
+
+.satin-tetris__glimm {
+  position: absolute;
+  inset: 0;
+  opacity: var(--satin-glimm-peak);
+  pointer-events: none;
+  -webkit-mask:
+    repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 2.5px),
+    repeating-linear-gradient(180deg, #000 0 2px, transparent 2px 3px);
+  -webkit-mask-composite: source-in;
+  mask:
+    repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 2.5px),
+    repeating-linear-gradient(180deg, #000 0 2px, transparent 2px 3px);
+  mask-composite: intersect;
+}
+
+.satin-tetris__glimm > span {
+  position: absolute;
+  inset: 0;
+  background: var(--satin-glimm-band);
+  opacity: 0;
+  animation: satin-tetris-glimm var(--satin-tetris-loop) linear infinite;
+}
+
+/* The band in the label: a copy of the text over the shimmer, the band clipped to its letters. */
+.satin-tetris-label {
+  position: relative;
+  display: inline-grid;
+}
+
+.satin-tetris-label > * {
+  grid-area: 1 / 1;
+}
+
+.satin-tetris-label__glimm {
+  opacity: var(--satin-glimm-peak);
+  pointer-events: none;
+}
+
+.satin-tetris-label__glimm > span {
+  background: var(--satin-glimm-text) 100% 0 / 300% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0;
+  animation: satin-tetris-glimm-text var(--satin-tetris-loop) linear infinite;
+}
+
+/* The label shimmer: muted text, a band of ink passing through it, then a beat at rest. */
+.satin-shimmer {
+  background: linear-gradient(90deg, var(--text-muted) 0% 40%, var(--text-default) 50%, var(--text-muted) 60% 100%) 100% 0 / 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: satin-shimmer 2000ms ease-in-out infinite;
+}
+
+@keyframes satin-shimmer {
+  70%,
+  100% {
+    background-position: 0% 0;
+  }
+}
+
+/*
+ * Flappy: the bird as clipped copies of one frame. Four held beats: beats 2 and 4 lift the
+ * whole bird a sprite pixel, the wing flicks up then down.
+ */
+.satin-sprite {
+  --satin-run: 440ms;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+}
+
+.satin-sprite__frame {
+  position: relative;
+  display: block;
+}
+
+.satin-sprite__part {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.satin-sprite[data-run] .satin-sprite__frame {
+  animation: satin-sprite-bob var(--satin-run) steps(1, end) infinite;
+}
+
+.satin-sprite[data-run] [data-role='wing'] {
+  animation: satin-sprite-wing var(--satin-run) steps(1, end) infinite;
+}
+
+@keyframes satin-sprite-bob {
+  0%,
+  50% {
+    transform: none;
+  }
+  25%,
+  75% {
+    transform: translateY(calc(-100% / var(--rows)));
+  }
+}
+
+@keyframes satin-sprite-wing {
+  0%,
+  50% {
+    transform: none;
+  }
+  25% {
+    transform: translateY(calc(-100% / var(--rows)));
+  }
+  75% {
+    transform: translateY(calc(100% / var(--rows)));
+  }
+}
+
+/* Reduced motion: nothing falls or runs; the tower stands and breathes, the bird stays put. */
+@media (prefers-reduced-motion: reduce) {
+  .satin-tetris__fall,
+  .satin-tetris__glimm,
+  .satin-tetris-label__glimm {
+    display: none;
+  }
+
+  .satin-tetris .satin-tetris__board > i:is(:nth-child(2), :nth-child(7), :nth-child(8), :nth-child(12), :nth-child(13), :nth-child(17), :nth-child(18)) {
+    background: var(--satin-tetris-on);
+    animation: satin-tetris-breathe 1600ms ease-in-out infinite alternate;
+  }
+
+  .satin-tetris[data-still] .satin-tetris__board > i {
+    animation: none;
+  }
+
+  .satin-shimmer {
+    animation: none;
+    background: none;
+    color: var(--text-muted);
+  }
+
+  .satin-sprite * {
+    animation: none !important;
+  }
+}
+
+@keyframes satin-tetris-breathe {
+  to {
+    opacity: 0.4;
+  }
+}
