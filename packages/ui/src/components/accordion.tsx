@@ -11,8 +11,11 @@ import { cn } from '../lib/utils'
  *
  * Built on the Radix Accordion: the header is a button with aria-expanded, Enter or Space
  * toggles it, arrow keys move between headers. `type="single"` keeps one section open
- * (`collapsible` lets it close too); `type="multiple"` opens any number. The content fades and
- * settles in, it never animates its height.
+ * (`collapsible` lets it close too); `type="multiple"` opens any number.
+ *
+ * Opening, the header stays put and the section grows downwards to its content's height over
+ * 250 ms on the kit's ease-out, while the content settles from 98% scale (from its top edge) and
+ * 92% opacity to full; closing runs the same way back in 200 ms.
  */
 export type AccordionProps = React.ComponentProps<typeof AccordionPrimitive.Root>
 
@@ -61,15 +64,16 @@ export function AccordionItem({ title, icon, children, className, 'data-force': 
           </svg>
         </AccordionPrimitive.Trigger>
       </AccordionPrimitive.Header>
-      <AccordionPrimitive.Content
-        data-slot="accordion-content"
-        className={cn(
-          'satin-collapsible pt-1 pr-2 pb-3 text-base leading-[21px] text-text-muted',
-          // Lined up with the title: past the icon and its gap when there is one.
-          icon ? 'pl-9' : 'pl-2',
-        )}
-      >
-        {children}
+      <AccordionPrimitive.Content data-slot="accordion-content" className="satin-accordion-content">
+        <div
+          className={cn(
+            'pt-1 pr-2 pb-3 text-base leading-[21px] text-text-muted',
+            // Lined up with the title: past the icon and its gap when there is one.
+            icon ? 'pl-9' : 'pl-2',
+          )}
+        >
+          {children}
+        </div>
       </AccordionPrimitive.Content>
     </AccordionPrimitive.Item>
   )

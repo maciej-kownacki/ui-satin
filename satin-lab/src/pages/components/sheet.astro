@@ -9,9 +9,9 @@ const codeHtml = await highlight(options)
 
 const api = {
   description:
-    "The `Sheet` component wraps the Radix dialog in a `div` with `role=\"dialog\"` that slides in from the right or the bottom. Wrap footer buttons in `SheetClose` to close it.",
+    "The `Sheet` component wraps the Radix dialog in a `div` with `role=\"dialog\"` that slides in from the right, the left or the bottom. Wrap footer buttons in `SheetClose` to close it.",
   props: [
-    {name: "side", type: ["\"right\"", "\"bottom\""], default: "\"right\""},
+    {name: "side", type: ["\"right\"", "\"left\"", "\"bottom\""], default: "\"right\""},
     {name: "trigger", type: ["ReactNode"]},
     {name: "title", type: ["ReactNode"]},
     {name: "description", type: ["ReactNode"]},

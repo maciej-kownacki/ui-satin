@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { CommandMenu, type CommandGroup } from '@satin/ui/command-menu'
+import { SearchBar } from '@satin/ui/search-bar'
 import { Calendar, HalfMoon, Page, Plus, Settings, UserPlus } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -47,11 +48,24 @@ function groupsFor(v: Record<string, string>): CommandGroup[] {
 function code(v: Record<string, string>) {
   const item = (i: (typeof data)[number]['items'][number]) =>
     `      { id: '${i.id}', label: '${i.label}', icon: <${i.icon} />${on(v, 'description') ? `, description: '${i.description}'` : ''}${on(v, 'shortcuts') ? `, shortcut: '${i.shortcut}'` : ''}, onSelect: () => run('${i.id}') },`
-  return `import { CommandMenu } from '@satin/ui/command-menu'
+  return `import * as React from 'react'
+import { CommandMenu } from '@satin/ui/command-menu'
+import { SearchBar } from '@satin/ui/search-bar'
 import { ${data.flatMap((g) => g.items.map((i) => i.icon)).sort().join(', ')} } from 'iconoir-react'
 
-// ⌘K or Ctrl+K opens it anywhere on the page.
-<CommandMenu${on(v, 'hints') ? '' : '\n  hints={false}'}
+const [open, setOpen] = React.useState(false)
+
+// The search in the navigation opens the menu; ⌘K or Ctrl+K does too, anywhere on the page.
+<SearchBar
+  readOnly
+  hotkey={false}
+  placeholder="Search…"
+  onClick={() => setOpen(true)}
+  onKeyDown={(e) => e.key === 'Enter' && setOpen(true)}
+/>
+<CommandMenu
+  open={open}
+  onOpenChange={setOpen}${on(v, 'hints') ? '' : '\n  hints={false}'}
   groups={[
 ${data.map((g) => `    {\n      label: '${g.label}',\n      items: [\n${g.items.map(item).map((l) => '  ' + l).join('\n')}\n      ],\n    },`).join('\n')}
   ]}
@@ -68,17 +82,39 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   code: code(v),
 }))
 
-/** Open inside the stage; the page's own ⌘K stays with the docs search. */
+/**
+ * Open inside the stage over the docs-style search it came from. Dismissed (Escape, a click
+ * outside, a command), it leaves the search, which opens it again. The page's own ⌘K stays
+ * with the docs search.
+ */
 function Preview({ v }: { v: Record<string, string> }) {
   const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
+  const [open, setOpen] = React.useState(true)
   const openedOnce = React.useRef(false)
   return (
-    <div className="relative h-[420px] w-[560px] max-w-full">
+    <div className="relative flex h-[420px] w-[560px] max-w-full justify-center pt-6">
+      <SearchBar
+        readOnly
+        hotkey={false}
+        placeholder="Search…"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        wrapperClassName="h-fit w-60 cursor-pointer"
+        className="cursor-pointer"
+        onClick={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setOpen(true)
+          }
+        }}
+      />
       <div ref={setStage} className="pointer-events-none absolute inset-0 z-10 *:pointer-events-auto" />
       {stage && (
         <CommandMenu
           container={stage}
-          defaultOpen
+          open={open}
+          onOpenChange={setOpen}
           modal={false}
           hotkey={false}
           onOpenAutoFocus={(e) => {

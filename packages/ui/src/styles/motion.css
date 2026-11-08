@@ -62,6 +62,12 @@
 @keyframes satin-sheet-right {
   to { transform: translateX(100%); }
 }
+@keyframes satin-sheet-from-left {
+  from { transform: translateX(-100%); }
+}
+@keyframes satin-sheet-to-left {
+  to { transform: translateX(-100%); }
+}
 
 /* Skeleton (components/skeleton.tsx): a soft band runs across the block while it loads. */
 @keyframes satin-skeleton {
@@ -74,4 +80,39 @@
   inset: 0;
   background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text-default) 6%, transparent), transparent);
   animation: satin-skeleton 1.6s var(--ease-in-out) infinite;
+}
+
+/* Accordion (components/accordion.tsx): the section grows downwards from under its header,
+   which never moves; the content inside settles in from its top edge. Closing is quicker. */
+@keyframes satin-accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+@keyframes satin-accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+@keyframes satin-accordion-content-in {
+  from { opacity: 0.92; transform: scale(0.98); }
+}
+@keyframes satin-accordion-content-out {
+  to { opacity: 0.92; transform: scale(0.98); }
+}
+.satin-accordion-content {
+  overflow: hidden;
+}
+.satin-accordion-content[data-state='open'] {
+  animation: satin-accordion-down var(--duration-slow) var(--ease-out);
+}
+.satin-accordion-content[data-state='closed'] {
+  animation: satin-accordion-up var(--duration-base) var(--ease-out);
+}
+.satin-accordion-content > * {
+  transform-origin: top center;
+}
+.satin-accordion-content[data-state='open'] > * {
+  animation: satin-accordion-content-in var(--duration-slow) var(--ease-out);
+}
+.satin-accordion-content[data-state='closed'] > * {
+  animation: satin-accordion-content-out var(--duration-base) var(--ease-out);
 }

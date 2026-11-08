@@ -122,3 +122,27 @@
 .satin-select[data-disabled] {
   cursor: not-allowed;
 }
+
+/* Combobox with picks as chips (components/combobox.tsx): the field grows a 24px row at a time
+   as the chips wrap, keeping the size's height as its minimum, and its icons stay on the first
+   row. The vertical padding centres a 24px chip row in each size. */
+.satin-combobox {
+  cursor: pointer;
+}
+.satin-combobox[data-multiple] {
+  height: auto;
+  align-items: flex-start;
+  padding-block: calc((var(--satin-combobox-h) - 26px) / 2);
+}
+.satin-combobox[data-size="sm"] { --satin-combobox-h: var(--control-height); }
+.satin-combobox[data-size="md"] { --satin-combobox-h: var(--control-height-lg); }
+.satin-combobox[data-size="lg"] { --satin-combobox-h: var(--control-height-xl); }
+.satin-combobox[data-multiple] {
+  min-height: var(--satin-combobox-h);
+}
+.satin-combobox[data-multiple] .satin-combobox-icon {
+  margin-top: 4px;
+}
+.satin-combobox[data-multiple] [data-slot="chip"] {
+  max-width: 100%;
+}

@@ -3,19 +3,24 @@ import { Popover as PopoverPrimitive } from 'radix-ui'
 import { Search } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { Chip } from './chip'
 import { MenuItemContent, menuItemClass, menuSurfaceClass } from './dropdown'
 import { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from './select'
 
 /**
- * Combobox, 1:1 with the uiKit `Combobox` set (4023:3549): Select's field and trigger, opening
- * a searchable list. The panel is the menu surface at the trigger's width (240 at least): a 36px
- * search row (16px icon, 14px query, 12px in) over a border/subtle rule, the matching options
- * as inline menu rows 2px apart in 4px of padding, and a footer under a border/subtle rule with
- * Cancel (secondary) and Apply (primary), 8px apart and 8px in.
+ * Combobox, 1:1 with the uiKit `Combobox` set (4023:3549): Select's field, opening a searchable
+ * list. The panel is the menu surface at the field's width (240 at least): a 36px search row
+ * (16px icon, 14px query, 12px in) over a border/subtle rule, then the matching options as
+ * inline menu rows 2px apart in 4px of padding.
  *
- * Picking an option only marks it; Apply commits the picks and closes, Cancel (or Escape)
- * drops them. Apply stays disabled until at least one option is picked. With `multiple`, each
- * pick toggles; otherwise a pick replaces the last one.
+ * Single: a pick fills the field with its label and closes the list. Multiple: each pick
+ * toggles and the list stays open; the field shows the picks as small outline chips, 4px
+ * apart, each with its own remove button, and grows a row at a time as they wrap. With more
+ * than one pick a Clear button follows the chips, falling to the next row with them.
+ *
+ * `footer` adds Cancel (secondary) and Apply (primary) under a border/subtle rule, 8px in: picks
+ * then wait for Apply, which stays disabled until something is picked; Cancel or Escape drops
+ * them.
  *
  * Typing filters by label and description. Arrow keys move the highlight, Enter picks it, the
  * pointer highlights what it is over. The query field is a `combobox` that owns the `listbox`.
@@ -27,12 +32,15 @@ export interface ComboboxProps {
   defaultValue?: string[]
   onValueChange?: (value: string[]) => void
   multiple?: boolean
+  /** Cancel and Apply under the list; picks apply only with Apply. */
+  footer?: boolean
   placeholder?: string
   searchPlaceholder?: string
   /** Shown when nothing matches the query. */
   emptyText?: React.ReactNode
   applyLabel?: string
   cancelLabel?: string
+  clearLabel?: string
   label?: React.ReactNode
   hint?: React.ReactNode
   error?: React.ReactNode | boolean
@@ -64,11 +72,13 @@ export function Combobox({
   defaultValue = [],
   onValueChange,
   multiple = false,
+  footer = false,
   placeholder = 'Select…',
   searchPlaceholder = 'Search…',
   emptyText = 'No results',
   applyLabel = 'Apply',
   cancelLabel = 'Cancel',
+  clearLabel = 'Clear',
   label,
   hint,
   error,
@@ -90,11 +100,17 @@ export function Combobox({
 
   const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue)
   const applied = value ?? uncontrolledValue
+  const commit = (next: string[]) => {
+    if (value == null) setUncontrolledValue(next)
+    onValueChange?.(next)
+  }
+
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
   const open = openProp ?? uncontrolledOpen
 
-  // Picks made in the panel, applied only by Apply.
+  // With a footer, picks wait here for Apply; without one they apply at once.
   const [pending, setPending] = React.useState<string[]>(applied)
+  const picks = footer ? pending : applied
   const [query, setQuery] = React.useState('')
   const [active, setActive] = React.useState(0)
 
@@ -109,44 +125,89 @@ export function Combobox({
   }
 
   const shown = options.filter((o) => matches(o, query))
-  const toggle = (v: string) =>
-    setPending((p) => (multiple ? (p.includes(v) ? p.filter((x) => x !== v) : [...p, v]) : p[0] === v ? [] : [v]))
+  const pick = (v: string) => {
+    const next = multiple ? (picks.includes(v) ? picks.filter((x) => x !== v) : [...picks, v]) : picks[0] === v && footer ? [] : [v]
+    if (footer) return setPending(next)
+    commit(next)
+    if (!multiple) setOpen(false)
+  }
   const apply = () => {
-    if (value == null) setUncontrolledValue(pending)
-    onValueChange?.(pending)
+    commit(pending)
     setOpen(false)
   }
 
-  const labels = applied.map((v) => options.find((o) => o.value === v)?.label).filter(Boolean) as string[]
-  const display = labels.length === 0 ? null : labels.length <= 2 ? labels.join(', ') : `${labels.length} selected`
+  const chosen = applied.map((v) => options.find((o) => o.value === v)).filter(Boolean) as SelectOption[]
+  const chips = multiple && chosen.length > 0
+  const triggerText = !multiple && chosen[0] ? chosen[0].label : chips ? null : placeholder
 
   return (
     <FieldChrome label={label} chrome={chrome} className={wrapperClassName}>
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
-        <PopoverPrimitive.Trigger
-          id={chrome.controlId}
-          data-slot="combobox-trigger"
-          data-size={size}
-          data-filled={display ? true : undefined}
-          data-invalid={chrome.invalid || undefined}
-          data-disabled={chrome.disabled || undefined}
-          disabled={chrome.disabled}
-          aria-invalid={chrome.invalid || undefined}
-          aria-describedby={chrome.describedBy}
-          aria-label={props['aria-label']}
-          aria-haspopup="listbox"
-          className={cn('satin-field satin-select', className)}
-        >
-          {leadingIcon && (
-            <span className="satin-field-icon" aria-hidden>
-              {leadingIcon}
-            </span>
-          )}
-          <span className={cn('min-w-0 flex-1 truncate', display ? 'text-text-default' : 'text-text-muted')}>
-            {display ?? placeholder}
-          </span>
-          <SelectChevron />
-        </PopoverPrimitive.Trigger>
+        <PopoverPrimitive.Anchor asChild>
+          <div
+            data-slot="combobox-field"
+            data-size={size}
+            data-multiple={chips || undefined}
+            data-filled={chosen.length ? true : undefined}
+            data-invalid={chrome.invalid || undefined}
+            data-disabled={chrome.disabled || undefined}
+            data-state={open ? 'open' : 'closed'}
+            className={cn('satin-field satin-select satin-combobox relative', className)}
+          >
+            {/* The trigger covers the whole field under the chips, so a click anywhere but a
+                chip's remove button or Clear opens the list, and it takes no room in the rows. */}
+            <PopoverPrimitive.Trigger
+              id={chrome.controlId}
+              data-slot="combobox-trigger"
+              disabled={chrome.disabled}
+              aria-invalid={chrome.invalid || undefined}
+              aria-describedby={chrome.describedBy}
+              aria-label={props['aria-label']}
+              aria-haspopup="listbox"
+              className="absolute inset-0 cursor-pointer rounded-[inherit] outline-none focus-visible:ring-0 disabled:cursor-not-allowed"
+            >
+              <span className="sr-only">{chosen.length ? chosen.map((o) => o.label).join(', ') : placeholder}</span>
+            </PopoverPrimitive.Trigger>
+            {leadingIcon && (
+              <span className="satin-field-icon satin-combobox-icon pointer-events-none" aria-hidden>
+                {leadingIcon}
+              </span>
+            )}
+            <div className="pointer-events-none flex min-w-0 flex-1 flex-wrap items-center gap-1 *:pointer-events-auto">
+              {chips &&
+                chosen.map((o) => (
+                  <Chip
+                    key={o.value}
+                    size="sm"
+                    variant="outline"
+                    disabled={chrome.disabled}
+                    removeLabel={`Remove ${o.label}`}
+                    onRemove={() => commit(applied.filter((v) => v !== o.value))}
+                    className="relative"
+                  >
+                    {o.label}
+                  </Chip>
+                ))}
+              {triggerText && (
+                <span aria-hidden className={cn('pointer-events-none! min-w-0 flex-1 truncate', chosen.length ? 'text-text-default' : 'text-text-muted')}>
+                  {triggerText}
+                </span>
+              )}
+              {chips && chosen.length > 1 && (
+                <Button
+                  variant="tertiary"
+                  size="xs"
+                  disabled={chrome.disabled}
+                  className="relative ml-auto"
+                  onClick={() => commit([])}
+                >
+                  {clearLabel}
+                </Button>
+              )}
+            </div>
+            <SelectChevron className="satin-combobox-icon pointer-events-none" />
+          </div>
+        </PopoverPrimitive.Anchor>
 
         <PopoverPrimitive.Portal container={container}>
           <PopoverPrimitive.Content
@@ -185,7 +246,7 @@ export function Combobox({
                     setActive((a) => (shown.length ? (a + step + shown.length) % shown.length : 0))
                   } else if (e.key === 'Enter' && shown[active]) {
                     e.preventDefault()
-                    if (!shown[active].disabled) toggle(shown[active].value)
+                    if (!shown[active].disabled) pick(shown[active].value)
                   }
                 }}
                 className="min-w-0 flex-1 bg-transparent text-base leading-[21px] text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0"
@@ -202,7 +263,7 @@ export function Combobox({
                 <p className="px-3 py-6 text-center text-sm text-text-muted">{emptyText}</p>
               ) : (
                 shown.map((o, i) => {
-                  const picked = pending.includes(o.value)
+                  const picked = picks.includes(o.value)
                   return (
                     <div
                       key={o.value}
@@ -215,7 +276,7 @@ export function Combobox({
                       onPointerMove={() => setActive(i)}
                       // Keep focus in the query field.
                       onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => !o.disabled && toggle(o.value)}
+                      onClick={() => !o.disabled && pick(o.value)}
                       className={cn(menuItemClass, picked && 'bg-bg-selected')}
                     >
                       <MenuItemContent
@@ -232,14 +293,16 @@ export function Combobox({
               )}
             </div>
 
-            <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border-subtle p-2">
-              <Button variant="secondary" onClick={() => setOpen(false)}>
-                {cancelLabel}
-              </Button>
-              <Button disabled={pending.length === 0} onClick={apply}>
-                {applyLabel}
-              </Button>
-            </div>
+            {footer && (
+              <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border-subtle p-2">
+                <Button variant="secondary" onClick={() => setOpen(false)}>
+                  {cancelLabel}
+                </Button>
+                <Button disabled={pending.length === 0} onClick={apply}>
+                  {applyLabel}
+                </Button>
+              </div>
+            )}
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>

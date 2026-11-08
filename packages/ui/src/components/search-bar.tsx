@@ -15,19 +15,22 @@ import { Kbd } from './kbd'
 export interface SearchBarProps extends Omit<React.ComponentProps<'input'>, 'size'> {
   /** Show the ⌘K keycaps and listen for the shortcut. */
   shortcut?: boolean
+  /** Listen for ⌘K / Ctrl+K. Defaults to `shortcut`; turn it off when something else owns the
+   *  shortcut (a Command menu this bar opens) but the keycaps should still show. */
+  hotkey?: boolean
   /** Classes for the outer field; `className` styles the input. */
   wrapperClassName?: string
 }
 
 export const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(function SearchBar(
-  { shortcut = true, wrapperClassName, className, placeholder = 'Search...', onKeyDown, ...props },
+  { shortcut = true, hotkey = shortcut, wrapperClassName, className, placeholder = 'Search...', onKeyDown, ...props },
   forwarded,
 ) {
   const inner = React.useRef<HTMLInputElement>(null)
   React.useImperativeHandle(forwarded, () => inner.current as HTMLInputElement)
 
   React.useEffect(() => {
-    if (!shortcut) return
+    if (!hotkey) return
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
@@ -37,7 +40,7 @@ export const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(func
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [shortcut])
+  }, [hotkey])
 
   return (
     <label

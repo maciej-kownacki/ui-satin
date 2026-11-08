@@ -10,6 +10,7 @@ const hint = 'Pick what goes into the box.'
 // How picks work first, then the field around the trigger.
 export const controls: ShowcaseControl[] = [
   { id: 'multiple', label: 'Multiple', type: 'switch', default: 'off' },
+  { id: 'footer', label: 'Footer', type: 'switch', default: 'off' },
   { id: 'field', label: 'Label & hint', type: 'switch', default: 'on' },
   { id: 'leading', label: 'Leading icon', type: 'switch', default: 'off' },
 ]
@@ -19,6 +20,8 @@ const on = (v: Record<string, string>, id: string) => v[id] === 'on'
 function code(v: Record<string, string>) {
   const attrs = [
     on(v, 'multiple') && 'multiple',
+    on(v, 'footer') && 'footer',
+    on(v, 'multiple') ? "defaultValue={['apple', 'cherry', 'mango']}" : "defaultValue={['apple']}",
     on(v, 'field') ? `label="${label}"` : `aria-label="${label}"`,
     on(v, 'field') && `hint="${hint}"`,
     `placeholder="Select fruit"`,
@@ -33,8 +36,7 @@ const fruit = [
 ${fruit.map((f) => `  { value: '${f.value}', label: '${f.label}' },`).join('\n')}
 ]
 
-// Picks only apply on Apply, which stays disabled until something is picked.
-<Combobox
+${on(v, 'footer') ? '// Picks wait for Apply, which stays disabled until something is picked.\n' : on(v, 'multiple') ? '// Each pick shows as a chip; Clear appears once there are two.\n' : '// A pick fills the field and closes the list.\n'}<Combobox
 ${attrs.map((a) => `  ${a}`).join('\n')}
 />`
 }
@@ -43,6 +45,7 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   id: comboId(controls, v),
   label: [
     on(v, 'multiple') ? 'Multiple' : 'Single',
+    on(v, 'footer') ? 'Footer' : 'No footer',
     on(v, 'field') ? 'Label & hint' : 'No label',
     on(v, 'leading') ? 'Leading icon' : 'No leading icon',
   ].join(' · '),
@@ -65,6 +68,8 @@ function Preview({ v }: { v: Record<string, string> }) {
             openedOnce.current = true
           }}
           multiple={on(v, 'multiple')}
+          footer={on(v, 'footer')}
+          defaultValue={on(v, 'multiple') ? ['apple', 'cherry', 'mango'] : ['apple']}
           label={on(v, 'field') ? label : undefined}
           aria-label={on(v, 'field') ? undefined : label}
           hint={on(v, 'field') ? hint : undefined}

@@ -9,12 +9,13 @@ const codeHtml = await highlight(options)
 
 const api = {
   description:
-    "The `Combobox` component renders a trigger `button` that opens a panel with a search `input` (`role=\"combobox\"`), a `listbox` of options and a footer. Picks apply only on Apply, which stays disabled until something is picked.",
+    "The `Combobox` component renders a trigger `button` that opens a panel with a search `input` (`role=\"combobox\"`), a `listbox` of options. Single picks fill the field and close it; multiple picks show as removable chips with Clear. With `footer`, picks wait for Apply, which stays disabled until something is picked.",
   props: [
     {name: "options", type: ["SelectOption[]"]},
     {name: "value", type: ["string[]"]},
     {name: "onValueChange", type: ["(value: string[]) => void"]},
     {name: "multiple", type: ["boolean"], default: "false"},
+    {name: "footer", type: ["boolean"], default: "false"},
     {name: "label", type: ["ReactNode"]},
     {name: "hint", type: ["ReactNode"]},
     {name: "error", type: ["ReactNode", "boolean"]},
@@ -24,6 +25,7 @@ const api = {
     {name: "searchPlaceholder", type: ["string"]},
     {name: "applyLabel", type: ["string"], default: "\"Apply\""},
     {name: "cancelLabel", type: ["string"], default: "\"Cancel\""},
+    {name: "clearLabel", type: ["string"], default: "\"Clear\""},
   ],
 }
 ---

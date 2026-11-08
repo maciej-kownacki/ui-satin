@@ -63,6 +63,25 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
 
   useScrollLock(drawer && !wide)
 
+  // The list keeps its scroll across page changes. The sidebar persists, but the router moves its
+  // DOM into the new page, and moving an element resets its scroll: put it back after the swap.
+  React.useEffect(() => {
+    let top = 0
+    const save = () => {
+      top = document.getElementById('docs-nav')?.scrollTop ?? 0
+    }
+    const restore = () => {
+      const list = document.getElementById('docs-nav')
+      if (list) list.scrollTop = top
+    }
+    document.addEventListener('astro:before-swap', save)
+    document.addEventListener('astro:after-swap', restore)
+    return () => {
+      document.removeEventListener('astro:before-swap', save)
+      document.removeEventListener('astro:after-swap', restore)
+    }
+  }, [])
+
   // The drawer closes on Escape and gives focus back to the menu button.
   React.useEffect(() => {
     if (!drawer) return
