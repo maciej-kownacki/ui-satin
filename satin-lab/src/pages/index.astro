@@ -1,60 +1,18 @@
 ---
-/** Introduction: what Satin is, who it is for and how to use it, on one page. */
+/** Introduction: what Satin is, who it is for, how it is built and how to use it. */
 import Docs from '../layouts/Docs.astro'
 import PageHeader from '../components/PageHeader.astro'
 import Chip from '../components/Chip.astro'
 import { page } from '../nav'
-import CodeFrame from '../components/CodeFrame.astro'
 
-const componentsJson = `{
-  "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "new-york",
-  "rsc": false,
-  "tsx": true,
-  "tailwind": {
-    "config": "",
-    "css": "",
-    "baseColor": "neutral",
-    "cssVariables": true,
-    "prefix": ""
-  },
-  "aliases": {
-    "components": "@/components",
-    "ui": "@/components/ui",
-    "lib": "@/lib",
-    "utils": "@/lib/utils",
-    "hooks": "@/hooks"
-  }
-}`
-const alias = `// tsconfig.json (and tsconfig.app.json in Vite apps)
-"compilerOptions": {
-  "paths": { "@/*": ["./src/*"] }
-}
-
-// vite.config.ts
-resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } }`
-const registryUsage = `// main.tsx, once for the whole app
-import './styles/satin.css'
-
-// App.tsx
-import { Button } from '@/components/ui/button'
-
-export function Save() {
-  return <Button>Save changes</Button>
-}`
-const packageUsage = `// main.tsx, once for the whole app
-import '@satin/ui/styles.css'
-
-// App.tsx
-import { Button } from '@satin/ui/button'
-
-export function Save() {
-  return <Button>Save changes</Button>
-}`
 const h2 = 'text-lg font-medium text-text-default'
-const h3 = 'text-base leading-6 font-medium text-text-default'
 const prose = 'text-base leading-6 text-text-muted'
 const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+const layers = [
+  { title: 'Tokens', text: 'Colour, type, radius, spacing and motion as variables, in Light and Dark. Primitives hold the raw values, semantic tokens give them a job, and nothing else reads a raw value.', href: '/theming' },
+  { title: 'Components', text: 'Buttons, fields, menus, dialogs, tables and charts, built on Radix and shadcn/ui and painted only with semantic tokens, so a theme reaches all of them.', href: '/components/button' },
+  { title: 'Patterns', text: 'What AI products keep needing: a prompt bar, agent picker, loading and thinking, messages and decisions, composed from the same components.', href: '/ai-patterns/prompt-bar' },
+]
 ---
 
 <Docs current="introduction">
@@ -79,6 +37,27 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
     </ul>
   </section>
 
+  <section aria-labelledby="built-title" class="flex flex-col gap-3 pt-8">
+    <h2 id="built-title" class={h2}>How Satin is built</h2>
+    <p class={prose}>Three layers, each built only from the one under it.</p>
+    <ol class="grid gap-3 sm:grid-cols-3">
+      {
+        layers.map((l, i) => (
+          <li>
+            <a
+              href={l.href}
+              class="flex h-full flex-col gap-2 rounded-xl border border-border-subtle p-4 transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-hover focus-visible:shadow-border-focus focus-visible:outline-none"
+            >
+              <span class="text-xs text-text-subtle tabular-nums">0{i + 1}</span>
+              <span class="text-base font-medium text-text-default">{l.title}</span>
+              <span class="text-base leading-6 text-text-muted">{l.text}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
   <section aria-labelledby="how-title" class="flex flex-col gap-3 pt-8">
     <h2 id="how-title" class={h2}>How can I use Satin?</h2>
     <p class={prose}>
@@ -86,40 +65,13 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
     </p>
   </section>
 
-  <section id="installation" aria-labelledby="installation-title" class="flex flex-col gap-3 pt-8">
-    <h2 id="installation-title" class={h2}>Installation</h2>
-    <p class={prose}>Satin needs React 19 or newer. Fonts: the tokens ask for Geist and Geist Mono; load them, or the system font is used.</p>
-
-    <h3 class:list={[h3, 'pt-3']}>Copy components with the shadcn CLI</h3>
+  <section aria-labelledby="agent-title" class="flex flex-col gap-3 pt-8">
+    <h2 id="agent-title" class={h2}>Install it with your agent</h2>
     <p class={prose}>
-      Every component is a <a class={link} href="https://ui.shadcn.com/docs/registry">shadcn registry</a> item. The CLI copies its source into <Chip>components/ui</Chip>, with the components it builds on, the <Chip>cn</Chip> helper and Satin’s precompiled styles, and installs its npm dependencies. Set your project up once:
+      Satin's components are a shadcn registry, so a coding agent can set it up for you. The{' '}
+      <a class={link} href="/installation">Installation</a> page has a prompt to paste into Claude Code, Cursor or any agent
+      in your repository, and the same steps by hand.
     </p>
-    <ol class="flex list-decimal flex-col gap-3 pl-5 text-base leading-6 text-text-muted marker:text-text-subtle">
-      <li>
-        <p class="pb-3">Add the <Chip>@/</Chip> import alias, pointing at <Chip>src</Chip>.</p>
-        <CodeFrame code={alias} label="Import alias" />
-      </li>
-      <li>
-        <p class="pb-3">
-          Add a <Chip>components.json</Chip> at the root of the project. Write it by hand: <Chip>shadcn init</Chip> stops when it can’t find Tailwind, and Satin doesn’t need it, so the Tailwind paths stay empty.
-        </p>
-        <CodeFrame code={componentsJson} label="components.json" lang="json" />
-      </li>
-      <li>
-        <p class="pb-3">Add components by URL. Each component page has its own command under Installation.</p>
-        <CodeFrame code="npx shadcn@latest add https://uisatin.dev/r/button.json" label="Terminal" lang="bash" copyLabel="Copy command" />
-      </li>
-      <li>
-        <p class="pb-3">Import the styles once, then use the components.</p>
-        <CodeFrame code={registryUsage} label="Usage" />
-      </li>
-    </ol>
-
-    <h3 class:list={[h3, 'pt-6']} id="npm">Install the npm package</h3>
-    <p class={prose}>
-      <Chip>@satin/ui</Chip> ships compiled ES modules with types and <Chip>styles.css</Chip>. Every component has its own entry point, so you only ship what you use. Until it is published, build it from the Satin repository with <Chip>npm run build:ui</Chip> and install the <Chip>packages/ui/dist</Chip> folder.
-    </p>
-    <CodeFrame code="npm i @satin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
-    <CodeFrame code={packageUsage} label="Usage" />
   </section>
+
 </Docs>

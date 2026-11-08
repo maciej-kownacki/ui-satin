@@ -1,0 +1,123 @@
+---
+/**
+ * Installation: a prompt that has a coding agent set Satin up, then the same steps by hand
+ * (shadcn CLI or the npm package).
+ */
+import Docs from '../layouts/Docs.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Chip from '../components/Chip.astro'
+import { page } from '../nav'
+import CodeFrame from '../components/CodeFrame.astro'
+
+const componentsJson = `{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "utils": "@/lib/utils",
+    "hooks": "@/hooks"
+  }
+}`
+const alias = `// tsconfig.json (and tsconfig.app.json in Vite apps)
+"compilerOptions": {
+  "paths": { "@/*": ["./src/*"] }
+}
+
+// vite.config.ts
+resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } }`
+const registryUsage = `// main.tsx, once for the whole app
+import './styles/satin.css'
+
+// App.tsx
+import { Button } from '@/components/ui/button'
+
+export function Save() {
+  return <Button>Save changes</Button>
+}`
+const packageUsage = `// main.tsx, once for the whole app
+import '@satin/ui/styles.css'
+
+// App.tsx
+import { Button } from '@satin/ui/button'
+
+export function Save() {
+  return <Button>Save changes</Button>
+}`
+const agentPrompt = `Set up the Satin design system (https://uisatin.dev) in this React project.
+
+1. Check the project uses React 19 or newer. Satin doesn't need Tailwind; don't add it.
+2. Add an "@/*" import alias pointing at ./src in tsconfig.json (and tsconfig.app.json in a Vite app), and resolve "@" to src in the bundler config.
+3. Write components.json at the project root by hand (shadcn init stops without Tailwind): style "new-york", rsc false, tsx true, empty Tailwind config and css paths, baseColor "neutral", cssVariables true, and aliases components "@/components", ui "@/components/ui", lib "@/lib", utils "@/lib/utils", hooks "@/hooks".
+4. Install the components this project needs with the shadcn CLI, from Satin's registry: npx shadcn@latest add https://uisatin.dev/r/<name>.json. The full list is at https://uisatin.dev/r/registry.json. Start with button.
+5. Import the styles once at the entry point: import './styles/satin.css'. Load the Geist and Geist Mono fonts, or the system font is used.
+6. For dark mode, put the "dark" class on any parent element.
+7. Use the components as they come. Colour, radius, type and motion come from Satin's tokens; don't restyle them with raw values.
+
+When you're done, render a Button to check the styles load, and tell me what you installed.`
+const h2 = 'text-lg font-medium text-text-default'
+const h3 = 'text-base leading-6 font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<Docs current="installation">
+  <PageHeader id="installation" title={page('installation').title} description={page('installation').description} />
+
+  <section aria-labelledby="agent-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="agent-title" class={h2}>Install with your agent</h2>
+    <p class={prose}>
+      Paste this prompt into Claude Code, Cursor or any coding agent that works in your repository. It sets up the import
+      alias and <Chip>components.json</Chip>, installs components from Satin's registry and loads the styles, the same
+      steps as below.
+    </p>
+    <CodeFrame code={agentPrompt} label="Prompt" lang="md" copyLabel="Copy prompt" wrap />
+  </section>
+
+  <section aria-labelledby="manual-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="manual-title" class={h2}>Install by hand</h2>
+    <p class={prose}>Satin needs React 19 or newer. Fonts: the tokens ask for Geist and Geist Mono; load them, or the system font is used.</p>
+
+    <h3 class:list={[h3, 'pt-3']}>Copy components with the shadcn CLI</h3>
+    <p class={prose}>
+      Every component is a <a class={link} href="https://ui.shadcn.com/docs/registry">shadcn registry</a> item. The CLI copies its source into <Chip>components/ui</Chip>, with the components it builds on, the <Chip>cn</Chip> helper and Satin’s precompiled styles, and installs its npm dependencies. Set your project up once:
+    </p>
+    <ol class="flex list-decimal flex-col gap-3 pl-5 text-base leading-6 text-text-muted marker:text-text-subtle">
+      <li>
+        <p class="pb-3">Add the <Chip>@/</Chip> import alias, pointing at <Chip>src</Chip>.</p>
+        <CodeFrame code={alias} label="Import alias" />
+      </li>
+      <li>
+        <p class="pb-3">
+          Add a <Chip>components.json</Chip> at the root of the project. Write it by hand: <Chip>shadcn init</Chip> stops when it can’t find Tailwind, and Satin doesn’t need it, so the Tailwind paths stay empty.
+        </p>
+        <CodeFrame code={componentsJson} label="components.json" lang="json" />
+      </li>
+      <li>
+        <p class="pb-3">Add components by URL. Each component page has its own command under Installation.</p>
+        <CodeFrame code="npx shadcn@latest add https://uisatin.dev/r/button.json" label="Terminal" lang="bash" copyLabel="Copy command" />
+      </li>
+      <li>
+        <p class="pb-3">Import the styles once, then use the components.</p>
+        <CodeFrame code={registryUsage} label="Usage" />
+      </li>
+    </ol>
+
+    <h3 class:list={[h3, 'pt-6']} id="npm">Install the npm package</h3>
+    <p class={prose}>
+      <Chip>@satin/ui</Chip> ships compiled ES modules with types and <Chip>styles.css</Chip>. Every component has its own entry point, so you only ship what you use. Until it is published, build it from the Satin repository with <Chip>npm run build:ui</Chip> and install the <Chip>packages/ui/dist</Chip> folder.
+    </p>
+    <CodeFrame code="npm i @satin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
+    <CodeFrame code={packageUsage} label="Usage" />
+  </section>
+</Docs>

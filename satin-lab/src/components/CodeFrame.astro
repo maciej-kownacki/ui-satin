@@ -9,10 +9,12 @@ import CopyButton from './CopyButton'
 interface Props {
   code: string
   label: string
-  lang?: 'tsx' | 'bash' | 'json' | 'css'
+  lang?: 'tsx' | 'bash' | 'json' | 'css' | 'md'
   copyLabel?: string
+  /** Wrap long lines instead of scrolling sideways, for prose like an agent prompt. */
+  wrap?: boolean
 }
-const { code, label, lang = 'tsx', copyLabel } = Astro.props
+const { code, label, lang = 'tsx', copyLabel, wrap = false } = Astro.props
 const html = await codeToHtml(code, {
   lang,
   themes: { light: 'github-light', dark: 'github-dark' },
@@ -25,5 +27,5 @@ const html = await codeToHtml(code, {
     <span class="truncate text-sm text-text-muted">{label}</span>
     <CopyButton client:visible text={code} label={copyLabel} />
   </div>
-  <div class="code-block" set:html={html} />
+  <div class:list={['code-block', wrap && '[&_pre]:whitespace-pre-wrap']} set:html={html} />
 </div>
