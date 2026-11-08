@@ -362,7 +362,7 @@ function AddMenu({
         ))}
         {shown.length === 0 && <p className="px-2 py-1.5 text-sm text-text-muted">No matches</p>}
       </div>
-      <ShortcutHints keyBorder="border-border-subtle" text="text-text-subtle" />
+      <ShortcutHints keyBorder="border-border-subtle" />
     </>
   )
 }
@@ -432,7 +432,7 @@ function ModelSelect({
               </DropdownMenu.RadioItem>
             ))}
           </DropdownMenu.RadioGroup>
-          <ShortcutHints keyBorder="border-border-default" text="text-text-muted" />
+          <ShortcutHints keyBorder="border-border-default" />
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
@@ -444,13 +444,14 @@ function ModelSelect({
  * border/default rule. Keys are 14px caps, bg/card in Light and the lighter bg/selected in Dark
  * so they stand off the menu.
  */
-function ShortcutHints({ keyBorder, text }: { keyBorder: string; text: string }) {
+function ShortcutHints({ keyBorder }: { keyBorder: string }) {
   const key = cn(
     'flex size-3.5 items-center justify-center overflow-clip rounded-xs border-[0.5px] bg-bg-card text-text-muted dark:bg-bg-selected',
     '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)] [&>svg]:size-2.5',
     keyBorder,
   )
-  const label = cn('text-xs leading-4 tracking-normal whitespace-nowrap', text)
+  // Keys and labels share the menu's description colour, text/muted.
+  const label = 'text-xs leading-4 tracking-normal whitespace-nowrap text-text-muted'
   return (
     <div aria-hidden className="flex items-center gap-3 border-t border-border-default bg-bg-popover px-3 py-1.5">
       <span className="flex items-center gap-1">
