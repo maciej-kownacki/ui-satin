@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Button, SearchBar, cn } from '@satin/ui'
 import { Menu, Minus } from 'iconoir-react'
 import type { NavGroup } from '../nav'
+import { useScrollLock } from '../lib/scroll-lock'
 import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
 
 /**
@@ -58,6 +59,8 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
     mq.addEventListener('change', sync)
     return () => mq.removeEventListener('change', sync)
   }, [])
+
+  useScrollLock(drawer && !wide)
 
   // The drawer closes on Escape and gives focus back to the menu button.
   React.useEffect(() => {

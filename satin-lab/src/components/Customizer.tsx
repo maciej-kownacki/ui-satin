@@ -1,6 +1,8 @@
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { Button, Popover, SegmentedControl, cn, defaultTheme, randomTheme, themeCss, type SatinTheme } from '@satin/ui'
 import { ThemeSwitch, setMode } from './ThemeSwitch'
+import { useScrollLock } from '../lib/scroll-lock'
 import { Check, ColorPicker, Copy, DiceFive, Download, Palette, Refresh } from 'iconoir-react'
 
 /**
@@ -66,6 +68,18 @@ const Corner = ({ r }: { r: number }) => (
 export function Customizer() {
   const [theme, setTheme] = React.useState<SatinTheme>(defaultTheme)
   const [copied, setCopied] = React.useState(false)
+  const [sheet, setSheet] = React.useState(false)
+  const [narrow, setNarrow] = React.useState(false)
+  React.useEffect(() => {
+    const mq = matchMedia('(max-width: 1023px)')
+    const sync = () => {
+      setNarrow(mq.matches)
+      if (!mq.matches) setSheet(false)
+    }
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
   const colorRef = React.useRef<HTMLInputElement>(null)
 
   // Read what the reader chose last time.
@@ -113,6 +127,116 @@ export function Customizer() {
   const row = 'flex items-center justify-between gap-3'
   const label = 'text-sm text-text-muted'
 
+  const panel = (
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <span className={label}>Brand</span>
+          <div role="radiogroup" aria-label="Brand colour" className="flex items-center justify-between rounded-xl bg-bg-muted p-1 dark:bg-white-a6">
+            {BRANDS.map((b) => {
+              const selected = b.hex.toLowerCase() === theme.brand.toLowerCase()
+              return (
+                <button
+                  key={b.hex}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  aria-label={b.name}
+                  title={b.name}
+                  onClick={() => update({ brand: b.hex })}
+                  className={swatch(selected)}
+                >
+                  <span
+                    className="size-[18px] rounded-full [box-shadow:inset_0_0_0_1px_rgb(255_255_255/0.18),inset_0_-4px_6px_rgb(0_0_0/0.18)]"
+                    style={{ background: b.hex }}
+                  />
+                </button>
+              )
+            })}
+            {/* Any colour: the native picker sits next to the swatch, not in it, so no control is nested. */}
+            <span className="relative shrink-0">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={custom}
+                aria-label="Custom colour"
+                title="Custom colour"
+                onClick={() => colorRef.current?.click()}
+                className={cn(swatch(custom), 'text-text-muted hover:text-text-default')}
+              >
+                {custom ? <span className="size-[18px] rounded-full" style={{ background: theme.brand }} /> : <ColorPicker className="size-4" />}
+              </button>
+              <input
+                ref={colorRef}
+                type="color"
+                tabIndex={-1}
+                aria-hidden
+                value={theme.brand}
+                onChange={(e) => update({ brand: e.target.value })}
+                className="pointer-events-none absolute inset-0 size-full opacity-0"
+              />
+            </span>
+          </div>
+        </div>
+
+        <div className={row}>
+          <span className={label}>Corners</span>
+          <SegmentedControl
+            aria-label="Corner radius"
+            size="md"
+            className="dark:bg-white-a6"
+            items={RADII.map((r) => ({ value: String(r.value), label: <span className="sr-only">{r.label}</span>, icon: <Corner r={r.r} /> }))}
+            value={String(theme.radius)}
+            onValueChange={(v) => update({ radius: Number(v) })}
+          />
+        </div>
+
+        <div className={row}>
+          <span className={label}>Mode</span>
+          <ThemeSwitch size="md" className="dark:bg-white-a6" />
+        </div>
+
+        <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
+          <Button onClick={randomize}>
+            <DiceFive />
+            Randomize
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="secondary" className="flex-1" onClick={copy}>
+              {copied ? <Check /> : <Copy />}
+              <span aria-live="polite">{copied ? 'Copied' : 'Copy CSS'}</span>
+            </Button>
+            <Button variant="secondary" iconOnly aria-label="Download satin-theme.css" title="Download" onClick={download}>
+              <Download />
+            </Button>
+            {!isDefault && (
+              <Button variant="tertiary" iconOnly aria-label="Reset theme" title="Reset" onClick={() => update(defaultTheme)}>
+                <Refresh />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+  )
+
+  const trigger = (props: React.ComponentProps<typeof Button>) => (
+    // The same height as Waitlist; a palette alone on phones, where the bar is tight.
+    <Button variant="secondary" size="lg" shape="rounded" aria-label="Customize" {...props}>
+      <Palette />
+      <span className="hidden sm:inline">Customize</span>
+    </Button>
+  )
+
+  // Below 1024px the docs use bottom drawers (the page list too), so this opens as one as well.
+  if (narrow)
+    return (
+      <>
+        {trigger({ onClick: () => setSheet(true), 'aria-expanded': sheet, 'aria-haspopup': 'dialog' })}
+        <Sheet open={sheet} onClose={() => setSheet(false)} title="Customize" description="Brand and corners for every component, live.">
+          {panel}
+        </Sheet>
+      </>
+    )
+
   return (
     <Popover
       side="bottom"
@@ -121,102 +245,111 @@ export function Customizer() {
       title="Customize"
       description="Brand and corners for every component, live."
       className="w-[340px]"
-      body={
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <span className={label}>Brand</span>
-            <div role="radiogroup" aria-label="Brand colour" className="flex items-center justify-between rounded-xl bg-bg-muted p-1 dark:bg-white-a6">
-              {BRANDS.map((b) => {
-                const selected = b.hex.toLowerCase() === theme.brand.toLowerCase()
-                return (
-                  <button
-                    key={b.hex}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    aria-label={b.name}
-                    title={b.name}
-                    onClick={() => update({ brand: b.hex })}
-                    className={swatch(selected)}
-                  >
-                    <span
-                      className="size-[18px] rounded-full [box-shadow:inset_0_0_0_1px_rgb(255_255_255/0.18),inset_0_-4px_6px_rgb(0_0_0/0.18)]"
-                      style={{ background: b.hex }}
-                    />
-                  </button>
-                )
-              })}
-              {/* Any colour: the native picker sits next to the swatch, not in it, so no control is nested. */}
-              <span className="relative shrink-0">
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={custom}
-                  aria-label="Custom colour"
-                  title="Custom colour"
-                  onClick={() => colorRef.current?.click()}
-                  className={cn(swatch(custom), 'text-text-muted hover:text-text-default')}
-                >
-                  {custom ? <span className="size-[18px] rounded-full" style={{ background: theme.brand }} /> : <ColorPicker className="size-4" />}
-                </button>
-                <input
-                  ref={colorRef}
-                  type="color"
-                  tabIndex={-1}
-                  aria-hidden
-                  value={theme.brand}
-                  onChange={(e) => update({ brand: e.target.value })}
-                  className="pointer-events-none absolute inset-0 size-full opacity-0"
-                />
-              </span>
-            </div>
-          </div>
-
-          <div className={row}>
-            <span className={label}>Corners</span>
-            <SegmentedControl
-              aria-label="Corner radius"
-              size="md"
-              className="dark:bg-white-a6"
-              items={RADII.map((r) => ({ value: String(r.value), label: <span className="sr-only">{r.label}</span>, icon: <Corner r={r.r} /> }))}
-              value={String(theme.radius)}
-              onValueChange={(v) => update({ radius: Number(v) })}
-            />
-          </div>
-
-          <div className={row}>
-            <span className={label}>Mode</span>
-            <ThemeSwitch size="md" className="dark:bg-white-a6" />
-          </div>
-
-          <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
-            <Button onClick={randomize}>
-              <DiceFive />
-              Randomize
-            </Button>
-            <div className="flex gap-2">
-              <Button variant="secondary" className="flex-1" onClick={copy}>
-                {copied ? <Check /> : <Copy />}
-                <span aria-live="polite">{copied ? 'Copied' : 'Copy CSS'}</span>
-              </Button>
-              <Button variant="secondary" iconOnly aria-label="Download satin-theme.css" title="Download" onClick={download}>
-                <Download />
-              </Button>
-              {!isDefault && (
-                <Button variant="tertiary" iconOnly aria-label="Reset theme" title="Reset" onClick={() => update(defaultTheme)}>
-                  <Refresh />
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      }
+      body={panel}
     >
-      {/* The same height as Waitlist; a palette alone on phones, where the bar is tight. */}
-      <Button variant="secondary" size="lg" shape="rounded" aria-label="Customize">
-        <Palette />
-        <span className="hidden sm:inline">Customize</span>
-      </Button>
+      {trigger({})}
     </Popover>
+  )
+}
+
+/**
+ * A bottom drawer like the page list's: full width, a handle on top that closes it on a tap
+ * or a drag down, a dimmed page behind that doesn't scroll, Escape to close. It portals to
+ * body so the top bar's stacking doesn't hold it.
+ */
+function Sheet({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+}: {
+  open: boolean
+  onClose: () => void
+  title: string
+  description: string
+  children: React.ReactNode
+}) {
+  const [mounted, setMounted] = React.useState(false)
+  const [drag, setDrag] = React.useState<number | null>(null)
+  const from = React.useRef(0)
+  const dragged = React.useRef(false)
+  const ref = React.useRef<HTMLDivElement>(null)
+  const titleId = React.useId()
+  React.useEffect(() => setMounted(true), [])
+  useScrollLock(open)
+
+  // Focus moves into the drawer when it opens and back to what had it (the trigger) when it closes.
+  React.useEffect(() => {
+    if (!open) return
+    const before = document.activeElement as HTMLElement | null
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    document.addEventListener('keydown', onKey)
+    ref.current?.querySelector<HTMLElement>('button, [href], input')?.focus()
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      before?.focus({ preventScroll: true })
+    }
+  }, [open])
+
+  if (!mounted) return null
+  return createPortal(
+    <>
+      {open && <div aria-hidden onClick={onClose} className="fixed inset-0 z-40 bg-black/40" />}
+      <div
+        ref={ref}
+        role="dialog"
+        aria-modal={open || undefined}
+        aria-labelledby={titleId}
+        inert={!open}
+        style={drag != null ? { transform: `translateY(${drag}px)`, transition: 'none' } : undefined}
+        className={cn(
+          'fixed inset-x-0 bottom-0 z-50 flex max-h-[85dvh] w-full flex-col rounded-t-2xl border-t border-border-subtle bg-bg-card',
+          'pb-[max(16px,env(safe-area-inset-bottom))] transition-transform duration-(--duration-slow) ease-(--ease-out)',
+          open ? 'translate-y-0' : 'translate-y-full',
+        )}
+      >
+        <button
+          type="button"
+          aria-label="Close"
+          onPointerDown={(e) => {
+            try {
+              e.currentTarget.setPointerCapture(e.pointerId)
+            } catch {}
+            from.current = e.clientY
+            dragged.current = false
+            setDrag(0)
+          }}
+          onPointerMove={(e) => {
+            if (drag == null) return
+            const dy = Math.max(0, e.clientY - from.current)
+            if (dy > 4) dragged.current = true
+            setDrag(dy)
+          }}
+          onPointerUp={() => {
+            if (dragged.current && (drag ?? 0) > 80) onClose()
+            setDrag(null)
+          }}
+          onPointerCancel={() => setDrag(null)}
+          // A tap, Enter or Space closes it; a drag that didn't go far enough springs back.
+          onClick={(e) => {
+            if (e.detail === 0 || !dragged.current) onClose()
+          }}
+          className="flex h-6 w-full shrink-0 cursor-grab touch-none items-center justify-center rounded-t-2xl focus-visible:shadow-border-focus focus-visible:outline-none"
+        >
+          <span aria-hidden className="h-1 w-9 rounded-full bg-border-strong" />
+        </button>
+        <div className="flex min-h-0 flex-col gap-4 overflow-y-auto px-4 pt-1">
+          <div className="flex flex-col gap-0.5">
+            <p id={titleId} className="text-base font-medium text-text-default">
+              {title}
+            </p>
+            <p className="text-sm text-text-muted">{description}</p>
+          </div>
+          {children}
+        </div>
+      </div>
+    </>,
+    document.body,
   )
 }
