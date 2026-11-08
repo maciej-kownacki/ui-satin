@@ -19,7 +19,7 @@ import { Floating } from './floating'
  * axis labels regular 12/18 text-muted, columns 8px apart with a 180px track, bars radius-md
  * in chart/3 and day labels medium 13 text-muted 6px below. Hover (or `highlight`) keeps the
  * hovered bar, outlines it 2px out in chart/3, shows its value above and bolds its day; the
- * other bars dim to status/brand-border. A legend row sits under the plot.
+ * other bars dim to a 30% tint of chart/3 on bg/card, so they follow the bar, not the brand. A legend row sits under the plot.
  *
  * ChannelCard: a KPI (semibold 20/30) with a green change badge, a 14px stacked bar of fr
  * segments 2px apart in chart/1–5 (4px outer corners, 1.5px inner), and a legend row per
@@ -348,7 +348,8 @@ export function BarCard({
                       aria-hidden
                       className={cn(
                         'w-full rounded-md transition-[background-color,outline-color] duration-(--duration-fast) ease-(--ease-out)',
-                        dimmed ? 'bg-status-brand-border' : 'bg-chart-3',
+                        // Dimmed bars stay a tint of chart/3 on the card, so the brand colour never reaches them.
+                        dimmed ? 'bg-[color-mix(in_oklab,var(--chart-3)_30%,var(--bg-card))]' : 'bg-chart-3',
                         isActive && 'outline outline-offset-2 outline-chart-3',
                       )}
                       style={{ height }}
