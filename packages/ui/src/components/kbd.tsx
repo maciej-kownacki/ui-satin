@@ -3,7 +3,7 @@ import { cn } from '../lib/utils'
 
 /**
  * Kbd, 1:1 with the uiKit `Kbd` set (4021:3415): one keyboard key. sm is 18px high with 4px
- * sides, md 20px with 6px; both at least square, radius-sm, a 0.75px border/default edge on
+ * sides, md 20px with 6px; a single character or glyph makes it an exact square, radius-sm, a 0.75px border/default edge on
  * component/kbd/bg (bg/card in Light, bg/muted in Dark), the 11px medium Keycap glyph in
  * text/muted. Put keys of one shortcut 2px apart, or pass `keys` and let `KbdGroup` do it.
  *
@@ -15,13 +15,21 @@ export interface KbdProps extends React.ComponentProps<'kbd'> {
   tone?: 'default' | 'inverse'
 }
 
-export function Kbd({ size = 'sm', tone = 'default', className, ...props }: KbdProps) {
+/** One character or one glyph icon: the key is a square. */
+const isSingle = (children: React.ReactNode) =>
+  typeof children === 'string' ? [...children.trim()].length === 1 : React.isValidElement(children)
+
+export function Kbd({ size = 'sm', tone = 'default', className, children, ...props }: KbdProps) {
+  const square = isSingle(children)
   return (
     <kbd
       data-slot="kbd"
+      data-square={square || undefined}
       className={cn(
         'inline-flex shrink-0 items-center justify-center rounded-sm border-[0.75px] font-sans text-2xs leading-none font-medium tracking-normal whitespace-nowrap',
-        size === 'sm' ? 'h-[18px] min-w-[18px] px-1' : 'h-5 min-w-5 px-1.5',
+        size === 'sm' ? 'h-[18px] min-w-[18px]' : 'h-5 min-w-5',
+        // A single key is exactly square with nothing on the sides, so the glyph sits in the middle.
+        square ? (size === 'sm' ? 'w-[18px] px-0' : 'w-5 px-0') : size === 'sm' ? 'px-1' : 'px-1.5',
         tone === 'default'
           ? 'border-border-default bg-component-kbd-bg text-text-muted'
           : 'border-action-inverse-border bg-action-inverse-bg-hover text-bg-canvas/72 dark:border-action-inverse-bg-pressed dark:bg-text-default',
@@ -30,7 +38,9 @@ export function Kbd({ size = 'sm', tone = 'default', className, ...props }: KbdP
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+    </kbd>
   )
 }
 
