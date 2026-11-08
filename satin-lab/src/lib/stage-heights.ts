@@ -29,7 +29,6 @@ export const stageHeights: Record<string, [number, number]> = {
   'Radio': [280, 280],
   'Segmented control': [280, 280],
   'Sidebar': [336, 336],
-  'Sources': [352, 352],
   'Switch': [280, 280],
   'Table': [304, 304],
   'Tabs': [280, 280],
@@ -38,5 +37,4 @@ export const stageHeights: Record<string, [number, number]> = {
   'Toast': [312, 312],
   'Toggle': [280, 280],
   'Tooltip': [280, 280],
-  'Typing indicator': [280, 280],
 }
