@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, cn } from '@satin/ui'
+import { Button, SearchBar, cn } from '@satin/ui'
 import { Menu, Minus } from 'iconoir-react'
 import type { NavGroup } from '../nav'
 import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
@@ -28,6 +28,12 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
   // Groups the user has opened or closed; only their lists animate, never on page load.
   const [toggled, setToggled] = React.useState<Record<string, boolean>>({})
   const [drawer, setDrawer] = React.useState(false)
+  // The search box filters the pages by title; while it has a query every group shows its matches.
+  const [query, setQuery] = React.useState('')
+  const q = query.trim().toLowerCase()
+  const shown = nav
+    .map((g) => ({ ...g, items: q ? g.items.filter((i) => i.title.toLowerCase().includes(q)) : g.items }))
+    .filter((g) => !q || g.items.length > 0)
   const [wide, setWide] = React.useState(true)
   const menuRef = React.useRef<HTMLButtonElement>(null)
   const asideRef = React.useRef<HTMLElement>(null)
@@ -155,10 +161,25 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
             <span aria-hidden className="h-1 w-9 rounded-full bg-border-strong" />
           </button>
 
-          <nav aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2">
+          <div className="shrink-0 px-2">
+            <SearchBar
+              aria-label="Search the docs"
+              aria-controls="docs-nav"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                // Enter opens the first match.
+                const first = shown[0]?.items[0]
+                if (e.key === 'Enter' && q && first) window.location.assign(first.href)
+              }}
+            />
+          </div>
+
+          <nav id="docs-nav" aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2">
+            {q && shown.length === 0 && <p className="px-3 py-2 text-sm text-text-muted">No pages match “{query.trim()}”.</p>}
             <ul>
-              {nav.map((group) => {
-                const isOpen = open[group.id]
+              {shown.map((group) => {
+                const isOpen = q ? true : open[group.id]
                 const listId = `nav-${group.id}`
                 const Icon = groupIcons[group.id] ?? IntroIcon
                 const active = groupOf(current) === group.id
