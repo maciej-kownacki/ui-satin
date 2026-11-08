@@ -62,7 +62,7 @@ function PanelBody({ titleId, title, description, body, closeButton }: { titleId
     <>
       <div className="flex flex-col gap-0.5 px-2 pt-2 text-sm">
         <p id={titleId} className={cn('leading-[18px] font-medium text-text-default', closeButton && 'pr-6')}>{title}</p>
-        {description ? <p className="text-body text-text-muted">{description}</p> : null}
+        {description ? <p className="text-text-muted">{description}</p> : null}
       </div>
       {body ? <div className="flex flex-col gap-4 px-2.5 pt-4">{body}</div> : null}
     </>

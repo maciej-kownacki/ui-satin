@@ -10,9 +10,9 @@ import { cn } from '../lib/utils'
  * a trailing check (status green) when selected. Hover, keyboard highlight and selected fill
  * bg/selected.
  *
- * Groups: `DropdownMenuGroup`. Content: a 13px medium label (13px line). `stacked` puts the description under it, 4px apart,
- * at 14px / 21px in text/muted (the size the DropdownMenu set uses); `inline` puts it on the
- * same baseline 12px after the label, at 13px, truncated. Groups have a 24px header in 12px
+ * Groups: `DropdownMenuGroup`. Content: a 14px medium label (20px line). `stacked` puts the
+ * description under it, 2px apart, at 13px / 18px in text/muted; `inline` puts it on the same
+ * baseline 12px after the label, at 13px, truncated. Groups have a 24px header in 12px
  * text/subtle and are 4px apart with a 1px bg/muted rule between them. Items are 4px apart.
  *
  * Built on the Radix DropdownMenu: arrow keys, typeahead, Escape, focus return.
@@ -160,13 +160,13 @@ export function DropdownMenuItem({
       ) : null}
 
       {layout === 'stacked' ? (
-        <span className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-          <span className="text-sm leading-[13px] font-medium text-text-default">{label}</span>
-          {description ? <span className="text-base text-text-muted">{description}</span> : null}
+        <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+          <span className="text-base leading-5 font-medium text-text-default">{label}</span>
+          {description ? <span className="text-sm leading-[18px] text-text-muted">{description}</span> : null}
         </span>
       ) : (
         <span className="flex min-w-0 flex-1 items-baseline gap-3">
-          <span className="shrink-0 text-sm leading-[13px] font-medium whitespace-nowrap text-text-default">{label}</span>
+          <span className="shrink-0 text-base leading-5 font-medium whitespace-nowrap text-text-default">{label}</span>
           {description ? (
             <span className="min-w-0 flex-1 truncate text-sm text-text-muted">{description}</span>
           ) : null}

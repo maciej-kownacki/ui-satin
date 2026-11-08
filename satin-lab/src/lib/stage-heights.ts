@@ -18,7 +18,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Decision card': [368, 392],
   'Dialog': [352, 352],
   'Dot': [280, 280],
-  'Dropdown': [416, 416],
+  'Dropdown': [440, 440],
   'Empty state': [280, 280],
   'Form field': [280, 280],
   'Input': [280, 280],

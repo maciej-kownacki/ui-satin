@@ -118,13 +118,43 @@ function Preview({ v }: { v: Record<string, string> }) {
     />
   )
 
-  // Room under the trigger for the open menu, so it stays inside the stage: trigger and offset,
-  // five rows (taller with a stacked description), group headers and the rule between groups.
-  const rowHeight = on(v, 'description') && v.layout === 'stacked' ? 50 : 32
-  const height = 40 + 10 + items.length * rowHeight + (on(v, 'groups') ? 2 * 24 + 17 : 0)
+  // Room under the trigger for the open menu, so it stays inside the stage: measured from the
+  // menu itself, so it follows any change to the rows. The guess only holds until it opens.
+  const boxRef = React.useRef<HTMLDivElement>(null)
+  const [height, setHeight] = React.useState(240)
+  React.useEffect(() => {
+    if (!stage) return
+    let resize: ResizeObserver | undefined
+    const fit = (menu: Element) => {
+      const box = boxRef.current
+      if (box) setHeight(Math.ceil(menu.getBoundingClientRect().bottom - box.getBoundingClientRect().top) + 8)
+    }
+    const watch = (menu: Element) => {
+      fit(menu)
+      // Again once the open animation lands, since it moves the menu without resizing it.
+      menu.addEventListener('animationend', () => fit(menu), { once: true })
+      resize = new ResizeObserver(() => fit(menu))
+      resize.observe(menu)
+    }
+    // The menu portals into the stage once it opens; wait for it there.
+    const found = stage.querySelector('[role="menu"]')
+    const added = new MutationObserver(() => {
+      const menu = stage.querySelector('[role="menu"]')
+      if (menu) {
+        added.disconnect()
+        watch(menu)
+      }
+    })
+    if (found) watch(found)
+    else added.observe(stage, { childList: true, subtree: true })
+    return () => {
+      added.disconnect()
+      resize?.disconnect()
+    }
+  }, [stage])
 
   return (
-    <div className="flex w-[255px] items-start" style={{ height }}>
+    <div ref={boxRef} className="flex w-[255px] items-start" style={{ height }}>
       <div ref={setStage} className="pointer-events-none absolute inset-0 z-10" />
       {stage && (
         <DropdownMenu
