@@ -107,8 +107,10 @@ export function Customizer() {
     } catch {}
   }
   // Everything here: a new brand and corners every time, and light or dark.
+  // A new preset brand (never the current one) and new corners from randomTheme.
   const randomize = () => {
-    update(randomTheme(theme))
+    const brands = BRANDS.filter((b) => b.hex.toLowerCase() !== theme.brand.toLowerCase())
+    update({ ...randomTheme(theme), brand: brands[Math.floor(Math.random() * brands.length)].hex })
     setMode(Math.random() < 0.5 ? 'light' : 'dark')
   }
   const download = () => {
