@@ -530,6 +530,25 @@
       ]
     },
     {
+      "name": "search-bar",
+      "type": "registry:ui",
+      "title": "Search bar",
+      "description": "The Satin Search bar component.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/ui/search-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "segmented-control",
       "type": "registry:ui",
       "title": "Segmented control",
@@ -567,27 +586,6 @@
       "files": [
         {
           "path": "registry/satin/ui/sidebar.tsx",
-          "type": "registry:ui"
-        }
-      ]
-    },
-    {
-      "name": "sources",
-      "type": "registry:ui",
-      "title": "Sources",
-      "description": "The pages an answer was based on, as a card or as numbered chips.",
-      "dependencies": [
-        "iconoir-react@^7.12.2",
-        "radix-ui@^1.8.1"
-      ],
-      "registryDependencies": [
-        "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
-      ],
-      "docs": "Sources docs: https://uisatin.dev/ai-patterns/sources",
-      "files": [
-        {
-          "path": "registry/satin/ui/sources.tsx",
           "type": "registry:ui"
         }
       ]
@@ -749,24 +747,6 @@
       "files": [
         {
           "path": "registry/satin/ui/tooltip.tsx",
-          "type": "registry:ui"
-        }
-      ]
-    },
-    {
-      "name": "typing-indicator",
-      "type": "registry:ui",
-      "title": "Typing indicator",
-      "description": "Three dots in the agent’s tone while it writes a reply.",
-      "dependencies": [],
-      "registryDependencies": [
-        "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
-      ],
-      "docs": "Typing indicator docs: https://uisatin.dev/ai-patterns/typing-indicator",
-      "files": [
-        {
-          "path": "registry/satin/ui/typing-indicator.tsx",
           "type": "registry:ui"
         }
       ]
