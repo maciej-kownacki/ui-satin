@@ -50,3 +50,37 @@ html.dark .theme-switch:not([data-ready]) button:nth-of-type(2) {
   box-shadow: 0 1px 3px var(--effect-shadow-sm), 0 1px 2px -1px var(--effect-shadow-sm);
   color: var(--text-default);
 }
+
+/*
+ * Type preview (/preview/type): Linear's scale over Satin's tokens, read from linear.app's
+ * CSS. 11 / 12 / 13 for the interface, 15 to read, 18 / 20 / 24 for headings, weights 510
+ * and 590. Only inside the preview frames; nothing else on the site uses it.
+ */
+[data-type-scale="linear"] {
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-sm--line-height: 1.54;
+  --text-base: 15px;
+  --text-base--line-height: 1.6;
+  --text-lg: 18px;
+  --text-lg--line-height: 1.33;
+  --text-xl: 20px;
+  --text-xl--line-height: 1.33;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 1.33;
+  --text-body: 15px;
+  --text-body-lg: 15px;
+  --text-title: 18px;
+  --text-heading: 20px;
+  --text-display: 24px;
+}
+[data-type-scale="linear"] .font-medium {
+  font-weight: 510;
+}
+[data-type-scale="linear"] .font-semibold {
+  font-weight: 590;
+}
+[data-type-scale="linear"] :is(.text-lg, .text-xl, .text-2xl) {
+  letter-spacing: -0.012em;
+}
