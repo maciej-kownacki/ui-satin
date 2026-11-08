@@ -1,0 +1,35 @@
+---
+/** A playground, not in the nav: three ways the bar chart could redraw when its period changes. */
+import Layout from '../../layouts/Layout.astro'
+import { ChartFiltersPlayground } from '../../components/ChartFiltersPlayground'
+---
+
+<Layout title="Chart filters · Satin playground" description="Three ways the bar chart could redraw its bars when the period changes.">
+  <ChartFiltersPlayground client:load />
+</Layout>
+
+<style is:global>
+  /* A and B: the bar is revealed from the baseline up, its top corners rounded all the way. */
+  @keyframes pg-reveal {
+    from { clip-path: inset(100% 0 0 0 round 6px); }
+    to { clip-path: inset(0 0 0 0 round 6px); }
+  }
+  /* B: the old bar sinks back into the baseline. */
+  @keyframes pg-sink {
+    from { clip-path: inset(0 0 0 0 round 6px); }
+    to { clip-path: inset(100% 0 0 0 round 6px); opacity: 0; }
+  }
+  /* C: from the height that stood here before, and the old bar towards the new one, fading. */
+  @keyframes pg-morph-in {
+    from { height: var(--from); }
+  }
+  @keyframes pg-morph-out {
+    to { height: var(--to); opacity: 0; }
+  }
+  @keyframes pg-fade-in {
+    from { opacity: 0; }
+  }
+  @keyframes pg-fade-out {
+    to { opacity: 0; }
+  }
+</style>
