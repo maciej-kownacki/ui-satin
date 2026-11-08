@@ -8,8 +8,8 @@ import { Button } from './button'
  * A 425px popover surface (min 360, max 560), radius-2xl, border/default, the shadcn `lg`
  * shadow. Header 16 / 16 / 8 with a 14px medium title and a 13px muted description, a body
  * 16px in with a 12px gap (body text, any content, an optional `DialogAlert`), then a
- * right-aligned footer: 12px padding on default, 16px on destructive. The close button is a
- * 36px tertiary icon button 8px from the top-right corner.
+ * right-aligned footer with 16px padding on both variants, on the same inset as the header and
+ * body. The close button is a 36px tertiary icon button 8px from the top-right corner.
  *
  * Built on the Radix Dialog. The destructive variant keeps the same primitive but takes
  * `role="alertdialog"`, so screen readers announce it as an alert. Pass `container` to portal
@@ -129,7 +129,7 @@ export function Dialog({
             </div>
 
             {(footer || footerStart) && (
-              <div className={cn('flex items-center justify-end gap-3', variant === 'destructive' ? 'p-4' : 'p-3')}>
+              <div className="flex items-center justify-end gap-3 p-4">
                 {footerStart && <div className="flex min-w-0 flex-1 items-center">{footerStart}</div>}
                 <div className="flex shrink-0 items-center gap-2">{footer}</div>
               </div>
