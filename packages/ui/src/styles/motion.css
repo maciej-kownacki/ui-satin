@@ -116,3 +116,39 @@
 .satin-accordion-content[data-state='closed'] > * {
   animation: satin-accordion-content-out var(--duration-base) var(--ease-out);
 }
+
+/* Expanding groups (Sidebar groups, the docs sidebar): the same motion as the Accordion, for
+   content that stays mounted. The group grows downwards from under its header, which never
+   moves (grid rows 0fr → 1fr, 250 ms in, 200 out, ease-out), and its content settles in from its
+   top edge (98% scale, 92% opacity). Closed, it is hidden from tab order and screen readers once
+   it has folded. Wrap the content in one element: `.satin-expand > div`. */
+.satin-expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--duration-base) var(--ease-out),
+    visibility 0s linear var(--duration-base);
+}
+.satin-expand[data-state='open'] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--duration-slow) var(--ease-out),
+    visibility 0s;
+}
+.satin-expand > * {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0.92;
+  scale: 0.98;
+  transform-origin: top center;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    scale var(--duration-base) var(--ease-out);
+}
+.satin-expand[data-state='open'] > * {
+  opacity: 1;
+  scale: 1;
+  transition-duration: var(--duration-slow);
+}

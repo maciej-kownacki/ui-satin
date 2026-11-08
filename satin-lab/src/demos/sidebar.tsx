@@ -110,7 +110,10 @@ export default function SidebarDemo({ codeHtml }: { codeHtml: Record<string, str
       codeHtml={codeHtml}
       controls={controls}
       render={(_, v) => (
-        <Demo key={v.layout} iconOnly={v.layout === 'icon-only'} counts={v.count === 'on'} disabled={v.disabled === 'on'} />
+        // Pinned to the stage's top: centred, the whole list would shift as the Docs group folds.
+        <div className="h-[288px] self-start">
+          <Demo key={v.layout} iconOnly={v.layout === 'icon-only'} counts={v.count === 'on'} disabled={v.disabled === 'on'} />
+        </div>
       )}
     />
   )

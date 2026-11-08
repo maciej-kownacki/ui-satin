@@ -27,8 +27,6 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
   const [open, setOpen] = React.useState<Record<string, boolean>>(() =>
     Object.fromEntries(nav.map((g) => [g.id, true])),
   )
-  // Groups the user has opened or closed; only their lists animate, never on page load.
-  const [toggled, setToggled] = React.useState<Record<string, boolean>>({})
   const [drawer, setDrawer] = React.useState(false)
   // The search box filters the pages by title; while it has a query every group shows its matches.
   const [query, setQuery] = React.useState('')
@@ -246,7 +244,6 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                       aria-controls={listId}
                       data-active={active || undefined}
                       onClick={() => {
-                        setToggled((t) => ({ ...t, [group.id]: true }))
                         setOpen((s) => ({ ...s, [group.id]: !s[group.id] }))
                       }}
                       className={cn(
@@ -273,12 +270,9 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                         <ChevronRight className="shrink-0 text-text-muted" />
                       )}
                     </button>
-                    <ul
-                      id={listId}
-                      hidden={!isOpen}
-                      data-state={isOpen ? 'open' : 'closed'}
-                      className={cn(toggled[group.id] && 'satin-collapsible')}
-                    >
+                    {/* The group grows downwards from under its header, which stays put (satin-expand). */}
+                    <div id={listId} data-state={isOpen ? 'open' : 'closed'} className="satin-expand">
+                    <ul>
                       {group.items.map((item) => {
                         const isCurrent = item.id === current
                         return (
@@ -306,6 +300,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                         )
                       })}
                     </ul>
+                    </div>
                   </li>
                 )
               })}

@@ -145,18 +145,30 @@ export function SidebarGroup({
   icon,
   count,
   defaultOpen = true,
+  open: openProp,
+  onOpenChange,
   children,
   triggerProps,
   ...props
 }: SidebarGroupProps) {
+  // The group keeps its own open state and region, not Radix's Content: Content measures itself
+  // with transitions switched off on every toggle, which would cut the fold (satin-expand).
+  const [uncontrolled, setUncontrolled] = React.useState(defaultOpen)
+  const open = openProp ?? uncontrolled
+  const regionId = React.useId()
   return (
     <Collapsible.Root
       data-slot="sidebar-group"
-      defaultOpen={defaultOpen}
+      open={open}
+      onOpenChange={(next) => {
+        if (openProp == null) setUncontrolled(next)
+        onOpenChange?.(next)
+      }}
       className={cn('group/sidebar-group flex flex-col gap-0.5', className)}
       {...props}
     >
       <Collapsible.Trigger
+        aria-controls={regionId}
         {...triggerProps}
         className={cn(
           'flex h-8 w-full shrink-0 items-center gap-2 rounded-lg px-3 text-left text-text-muted',
@@ -181,7 +193,10 @@ export function SidebarGroup({
           className="transition-transform duration-(--duration-base) ease-(--ease-out) group-data-[state=open]/sidebar-group:rotate-90 motion-reduce:transition-none"
         />
       </Collapsible.Trigger>
-      <Collapsible.Content className="satin-collapsible flex flex-col gap-0.5">{children}</Collapsible.Content>
+      {/* Always mounted so it can fold away: grows downwards from under the header (motion.css). */}
+      <div id={regionId} data-state={open ? 'open' : 'closed'} className="satin-expand">
+        <div className="flex flex-col gap-0.5">{children}</div>
+      </div>
     </Collapsible.Root>
   )
 }
