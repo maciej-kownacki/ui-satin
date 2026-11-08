@@ -29,6 +29,8 @@ export type Agent = {
   initials?: string
   /** Avatar hue, same pairs as Badge. */
   tone?: BadgeTone
+  /** Initials on the tone, or the flappy bird painted in it. */
+  avatar?: 'initials' | 'flappy'
 }
 
 export interface AgentPickerProps {
@@ -239,8 +241,10 @@ export function AgentPickerRow({
 /**
  * Initials on a Badge hue pair, round. 16px uses semibold 7/8, 20px semibold 9/10, as on
  * the uiKit Avatar (992:20199). These sizes have no type token, so they stay raw.
+ * `avatar="flappy"` draws the flappy bird instead, in the agent's tone.
  */
 export function AgentAvatar({ agent, size = 16 }: { agent: Agent; size?: 16 | 20 }) {
+  if (agent.avatar === 'flappy') return <FlappyAvatar tone={agent.tone ?? 'brand'} size={size} />
   const initials = agent.initials ?? toInitials(agent.name)
   return (
     <span
@@ -253,6 +257,52 @@ export function AgentAvatar({ agent, size = 16 }: { agent: Agent; size?: 16 | 20
     >
       {initials}
     </span>
+  )
+}
+
+/**
+ * The flappy bird (uiKit flappyAgent, 1215:69019) as a 17 × 12 pixel grid: 0 outline, 1 body,
+ * 2 eye and wing, 3 beak, 4 belly. Body and belly take the tone's hue at a fixed, bright
+ * lightness (0.8 and 0.68 in OKLCH, chroma up a third), so each agent gets its own bird on the
+ * Badge hues and it stays as vivid as the original yellow one in both themes.
+ */
+const FLAPPY_GRID = [
+  '......000000.....',
+  '....001111020....',
+  '...01111102220...',
+  '.00001111022020..',
+  '022220111022020..',
+  '022222011102220..',
+  '0122210111100000.',
+  '.0111011110333330',
+  '..00044440300000.',
+  '....044444033330.',
+  '.....00444400000.',
+  '.......0000......',
+]
+const FLAPPY_FILL = [
+  '#000',
+  'oklch(from var(--tone-fg) 0.8 calc(c * 1.33) h)',
+  '#fff',
+  '#ff5722',
+  'oklch(from var(--tone-fg) 0.68 calc(c * 1.33) h)',
+]
+
+function FlappyAvatar({ tone, size }: { tone: BadgeTone; size: 16 | 20 }) {
+  return (
+    <svg
+      aria-hidden
+      data-tone={tone}
+      width={size}
+      height={size}
+      viewBox="0 -2.5 17 17"
+      shapeRendering="crispEdges"
+      className="shrink-0"
+    >
+      {FLAPPY_GRID.flatMap((row, y) =>
+        [...row].map((c, x) => (c === '.' ? null : <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={FLAPPY_FILL[+c]} />)),
+      )}
+    </svg>
   )
 }
 

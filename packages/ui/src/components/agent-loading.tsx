@@ -14,7 +14,8 @@ import { cn } from '../lib/utils'
  * pieces, each ending on an empty board. As a row clears a band of light crosses the dots (and
  * only the dots) and runs on through the label: `glimmer="color"` is glimm.dev's prism,
  * `neutral` a band of text/default. Plain CSS animations on transform and opacity; the
- * keyframes are written once from the script below into one <style>, the static rules are in
+ * keyframes are written from the script below into one <style>, put back on mount if a
+ * router dropped it, the static rules are in
  * styles/components/agent-loading.css.
  *
  * Flappy: the 17 × 12 pixel bird running in place. It has one frame, so it is stacked as clipped
@@ -221,17 +222,28 @@ function keyframes(falls: Fall[], clears: number[], loop: number): string {
 
 const { falls, clears, loop } = playRounds()
 
-if (typeof document !== 'undefined' && !document.querySelector('style[data-satin-tetris]')) {
-  const style = document.createElement('style')
-  style.dataset.satinTetris = ''
-  style.textContent = keyframes(falls, clears, loop)
-  document.head.append(style)
+let css: string | undefined
+
+/**
+ * Writes the keyframes into <head> if they aren't there. Called on every mount, not once per
+ * module: routers that swap <head> on navigation (Astro's ClientRouter, for one) drop the
+ * style, and the module never runs again, so a mark on the next page would stand still.
+ */
+function useTetrisKeyframes() {
+  React.useInsertionEffect(() => {
+    if (document.querySelector('style[data-satin-tetris]')) return
+    const style = document.createElement('style')
+    style.dataset.satinTetris = ''
+    style.textContent = css ??= keyframes(falls, clears, loop)
+    document.head.append(style)
+  }, [])
 }
 
 const GRID = Array.from({ length: COLS * ROWS }, (_, i) => i)
 
 /** The tetris mark. Memoised: its 125 animated elements never re-render with their parent. */
 export const TetrisMark = React.memo(function TetrisMark({ glimmer = 'color', className }: { glimmer?: Glimmer; className?: string }) {
+  useTetrisKeyframes()
   let d = 0
   return (
     <span
@@ -277,6 +289,7 @@ export function TetrisStill({ className }: { className?: string }) {
  * mark, on the same loop, so the light runs from the icon on through the word.
  */
 export function TetrisLabel({ children, glimmer = 'color', className }: { children: React.ReactNode; glimmer?: Glimmer; className?: string }) {
+  useTetrisKeyframes()
   return (
     <span
       data-glimmer={glimmer}
