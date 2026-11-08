@@ -23,7 +23,6 @@ export const nav: NavGroup[] = [
       { id: 'banner', title: 'Banner', href: '/components/banner', description: 'Promotes a next step, a guide or a new feature with a line of copy and one action, on a mesh or plain background.' },
       { id: 'button', title: 'Button', href: '/components/button', description: 'Starts an action. One primary per screen; secondary and tertiary for the rest.' },
       { id: 'card', title: 'Card', href: '/components/card', description: 'Groups related content and actions under a title, with an optional footer.' },
-      { id: 'chart', title: 'Chart', href: '/components/chart', description: 'Bar and channel-share cards for one metric over a period, built on the chart tokens.' },
       { id: 'checkbox', title: 'Checkbox', href: '/components/checkbox', description: 'Turns an option on or off as part of a form.' },
       { id: 'chip', title: 'Chip', href: '/components/chip', description: 'A compact, removable tag for filters, suggestions and people.' },
       { id: 'code-block', title: 'Code block', href: '/components/code-block', description: 'Shows code or a diff with a filename, line numbers and a copy button.' },
@@ -44,6 +43,14 @@ export const nav: NavGroup[] = [
       { id: 'toast', title: 'Toast', href: '/components/toast', description: 'A short, passing message about something that just happened.' },
       { id: 'toggle', title: 'Toggle', href: '/components/toggle', description: 'A button that stays pressed to switch an option on or off.' },
       { id: 'tooltip', title: 'Tooltip', href: '/components/tooltip', description: 'Names an icon-only control and shows the shortcut that runs it.' },
+    ],
+  },
+  {
+    id: 'charts',
+    title: 'Charts',
+    items: [
+      { id: 'bar-chart', title: 'Bar chart', href: '/charts/bar-chart', description: 'One metric over a period as bars, with a tooltip on the hovered one.' },
+      { id: 'channel-chart', title: 'Channel chart', href: '/charts/channel-chart', description: 'How a total splits across channels: a stacked bar and a legend row per channel.' },
     ],
   },
   {

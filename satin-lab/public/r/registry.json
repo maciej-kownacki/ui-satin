@@ -158,6 +158,25 @@
       ]
     },
     {
+      "name": "bar-chart",
+      "type": "registry:ui",
+      "title": "Bar chart",
+      "description": "One metric over a period as bars, with a tooltip on the hovered one.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/chart.json"
+      ],
+      "docs": "Bar chart docs: https://uisatin.dev/charts/bar-chart",
+      "files": [
+        {
+          "path": "registry/satin/ui/bar-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "button",
       "type": "registry:ui",
       "title": "Button",
@@ -201,20 +220,38 @@
       ]
     },
     {
+      "name": "channel-chart",
+      "type": "registry:ui",
+      "title": "Channel chart",
+      "description": "How a total splits across channels: a stacked bar and a legend row per channel.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/chart.json"
+      ],
+      "docs": "Channel chart docs: https://uisatin.dev/charts/channel-chart",
+      "files": [
+        {
+          "path": "registry/satin/ui/channel-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "chart",
       "type": "registry:ui",
       "title": "Chart",
-      "description": "Bar and channel-share cards for one metric over a period, built on the chart tokens.",
+      "description": "The Satin Chart component.",
       "dependencies": [
         "radix-ui@^1.8.1"
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/floating.json"
       ],
-      "docs": "Chart docs: https://uisatin.dev/components/chart",
       "files": [
         {
           "path": "registry/satin/ui/chart.tsx",

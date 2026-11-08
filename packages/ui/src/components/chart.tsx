@@ -1,30 +1,18 @@
 import * as React from 'react'
 import { ToggleGroup } from 'radix-ui'
 import { cn } from '../lib/utils'
-import { Badge } from './badge'
 import { Floating } from './floating'
 
 /**
- * Chart cards, 1:1 with the uiKit `chart/barCard` (3607:18253) and `chart/channelCard`
- * (3608:18797) sets and their parts `chart/barColumn` (3602:17543), `chart/legendRow`
+ * The parts every chart card shares, 1:1 with the uiKit `chart/barCard` (3607:18253) and `chart/channelCard`
+ * (3608:18797) frames and the parts `chart/legendRow`
  * (3602:17559) and `chart/tooltip` (3602:17522). Plain React and CSS, no chart library.
  *
- * Both sit in the Card frame: bg/card, 1px border-default, radius-2xl. Header 16px in, title
+ * Every card sits in the Card frame: bg/card, 1px border-default, radius-2xl. Header 16px in, title
  * medium 14/14, range regular 13/19.5 text-muted, 2px apart. Footer slot 16px in.
  * period=toggles adds a row of 28px toggles (radius-lg, medium 13/18; on: secondary pressed
  * fill + border-strong + text-default; off: popover + border-default + text-muted) in groups
  * split by 1×16 dividers, scrolling sideways under a 32px fade.
- *
- * BarCard: a 206px plot, 32px axis gutter, 4 dashed border-subtle gridlines at nice ticks,
- * axis labels regular 12/18 text-muted, columns 8px apart with a 180px track, bars radius-md
- * in chart/3 and day labels medium 13 text-muted 6px below. Hover (or `highlight`) keeps the
- * hovered bar, outlines it 2px out in chart/3, shows its value above and bolds its day; the
- * other bars dim to a 30% tint of chart/3 on bg/card, so they follow the bar, not the brand. A legend row sits under the plot.
- *
- * ChannelCard: a KPI (semibold 20/30) with a green change badge, a 14px stacked bar of fr
- * segments 2px apart in chart/1–5 (4px outer corners, 1.5px inner), and a legend row per
- * channel (8px swatch, label, value, 32 high, 2px apart). Hover (or `highlight`) fades the
- * other segments to 15% and the other rows to 45%, and fills the row bg/muted.
  *
  * The tooltip is a text/default pill with bg/canvas text, medium label + value at 72%, 10×6
  * padding, radius-md, a 12×6 pointer and a two-step sm shadow.
@@ -37,9 +25,9 @@ export type ChartDatum = {
   tooltipLabel?: string
 }
 
-type Periods = string[] | string[][]
+export type Periods = string[] | string[][]
 
-interface ChartCardBaseProps extends Omit<React.ComponentProps<'div'>, 'title'> {
+export interface ChartCardBaseProps extends Omit<React.ComponentProps<'div'>, 'title'> {
   title: string
   range: string
   data: ChartDatum[]
@@ -56,11 +44,11 @@ interface ChartCardBaseProps extends Omit<React.ComponentProps<'div'>, 'title'> 
   footer?: React.ReactNode
 }
 
-const defaultFormat = (n: number) => n.toLocaleString('en-US')
+export const defaultFormat = (n: number) => n.toLocaleString('en-US')
 
 /* ---------- shared parts ---------- */
 
-function ChartCard({
+export function ChartCard({
   title,
   range,
   periods,
@@ -257,213 +245,3 @@ export function ChartLegendRow({
 }
 
 /** Rounds the top of the axis up to a nice number that splits into four steps. */
-function niceMax(max: number) {
-  if (max <= 0) return 4
-  const raw = max / 4
-  const pow = 10 ** Math.floor(Math.log10(raw))
-  const step = [1, 1.5, 2, 2.5, 3, 5, 7.5, 10].map((m) => m * pow).find((s) => s >= raw) ?? 10 * pow
-  return step * 4
-}
-
-/* ---------- BarCard ---------- */
-
-export interface BarCardProps extends ChartCardBaseProps {
-  /** The legend row under the plot. */
-  legend?: { label: string; value?: string; note?: string }
-  /** Unit after the value in the tooltip ("covers"). */
-  unit?: string
-}
-
-const TRACK = 180
-
-export function BarCard({
-  data,
-  formatValue = defaultFormat,
-  highlight,
-  legend,
-  unit,
-  periods,
-  ...props
-}: BarCardProps) {
-  const [hovered, setHovered] = React.useState<number | null>(null)
-  const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
-  const active = hovered ?? highlight ?? null
-  const max = niceMax(Math.max(0, ...data.map((d) => d.value)))
-  const ticks = [4, 3, 2, 1, 0].map((i) => (max / 4) * i)
-  const total = data.reduce((n, d) => n + d.value, 0)
-
-  return (
-    <ChartCard periods={periods} bodyClassName="pt-8" {...props}>
-      <div className={periods ? 'pt-[9px]' : undefined}>
-        <div className="relative flex h-[206px] items-end gap-2 pl-8" onPointerLeave={() => setHovered(null)}>
-          {/* Gridlines at each tick but zero, dashed border-subtle. */}
-          {ticks.slice(0, 4).map((_, i) => (
-            <span
-              key={i}
-              aria-hidden
-              className="absolute right-0 left-8 h-px border-t border-dashed border-border-subtle"
-              style={{ top: (TRACK / 4) * i }}
-            />
-          ))}
-          {ticks.map((t, i) => (
-            <span
-              key={t}
-              aria-hidden
-              className="absolute left-6 w-6 -translate-x-full text-right text-xs leading-[18px] text-text-muted"
-              style={{ top: (TRACK / 4) * i - 9 }}
-            >
-              {formatValue(t)}
-            </span>
-          ))}
-          <ul className="contents" aria-label={props.title}>
-            {data.map((d, i) => {
-              const isActive = active === i
-              const dimmed = active !== null && !isActive
-              const height = (d.value / max) * TRACK
-              return (
-                <li
-                  key={d.label}
-                  tabIndex={0}
-                  aria-label={`${d.tooltipLabel ?? d.label}: ${formatValue(d.value)}${unit ? ` ${unit}` : ''}`}
-                  onPointerEnter={() => setHovered(i)}
-                  onFocus={() => setHovered(i)}
-                  onBlur={() => setHovered(null)}
-                  className="relative flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-md focus-visible:outline-none"
-                >
-                  <div className="relative flex w-full flex-col items-center justify-end gap-1.5" style={{ height: TRACK }}>
-                    {isActive && (
-                      <>
-                        {/* The tooltip floats 4px above the value. */}
-                        <ChartTooltip
-                          anchor={anchor}
-                          label={d.tooltipLabel ?? d.label}
-                          value={`${formatValue(d.value)}${unit ? ` ${unit}` : ''}`}
-                        />
-                        <span ref={setAnchor} className="text-sm leading-(--text-sm--line-height) font-medium text-text-default">
-                          {formatValue(d.value)}
-                        </span>
-                      </>
-                    )}
-                    <span
-                      aria-hidden
-                      className={cn(
-                        'w-full rounded-md transition-[background-color,outline-color] duration-(--duration-fast) ease-(--ease-out)',
-                        // Dimmed bars stay a tint of chart/3 on the card, so the brand colour never reaches them.
-                        dimmed ? 'bg-[color-mix(in_oklab,var(--chart-3)_30%,var(--bg-card))]' : 'bg-chart-3',
-                        isActive && 'outline outline-offset-2 outline-chart-3',
-                      )}
-                      style={{ height }}
-                    />
-                  </div>
-                  <span
-                    className={cn(
-                      'text-sm leading-(--text-sm--line-height) font-medium whitespace-nowrap',
-                      isActive ? 'text-text-default' : 'text-text-muted',
-                    )}
-                  >
-                    {d.label}
-                  </span>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      </div>
-      {legend && (
-        <ChartLegendRow
-          color="var(--chart-3)"
-          label={legend.label}
-          value={legend.value ?? formatValue(total)}
-          note={legend.note}
-        />
-      )}
-    </ChartCard>
-  )
-}
-
-/* ---------- ChannelCard ---------- */
-
-export interface ChannelCardProps extends ChartCardBaseProps {
-  /** The KPI, e.g. "€48,260". Defaults to the formatted sum. */
-  total?: string
-  /** Change badge next to the KPI, e.g. "+5.2%". */
-  change?: string
-}
-
-const seriesColor = (i: number) => `var(--chart-${(i % 5) + 1})`
-
-export function ChannelCard({
-  data,
-  formatValue = defaultFormat,
-  highlight,
-  total,
-  change,
-  periods,
-  ...props
-}: ChannelCardProps) {
-  const [hovered, setHovered] = React.useState<number | null>(null)
-  const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
-  const active = hovered ?? highlight ?? null
-  const sum = data.reduce((n, d) => n + d.value, 0)
-  const last = data.length - 1
-
-  return (
-    <ChartCard periods={periods} bodyClassName="pt-4" {...props}>
-      <div className="relative flex flex-col gap-4" onPointerLeave={() => setHovered(null)}>
-        <div className="flex items-center gap-2">
-          <span className="text-xl leading-(--text-xl--line-height) font-semibold text-text-default">{total ?? formatValue(sum)}</span>
-          {change && (
-            <Badge tone="green" size="sm" className="[box-shadow:inset_0_0_0_1px_var(--tone-border)]">
-              {change}
-            </Badge>
-          )}
-        </div>
-        <div
-          aria-hidden
-          className="relative grid h-3.5 gap-x-0.5"
-          style={{ gridTemplateColumns: data.map((d) => `minmax(0, ${Math.max(d.value, 0)}fr)`).join(' ') }}
-        >
-          {data.map((d, i) => (
-            <span
-              key={d.label}
-              ref={active === i ? setAnchor : undefined}
-              onPointerEnter={() => setHovered(i)}
-              className={cn(
-                'relative rounded-[1.5px] transition-opacity duration-(--duration-fast) ease-(--ease-out)',
-                i === 0 && 'rounded-l-[4px]',
-                i === last && 'rounded-r-[4px]',
-                active !== null && active !== i && 'opacity-15',
-              )}
-              style={{ background: seriesColor(i) }}
-            >
-              {active === i && (
-                <ChartTooltip anchor={anchor} sideOffset={8} label={d.tooltipLabel ?? d.label} value={formatValue(d.value)} />
-              )}
-            </span>
-          ))}
-        </div>
-        <ul className="flex flex-col gap-0.5" aria-label={props.title}>
-          {data.map((d, i) => (
-            <li
-              key={d.label}
-              tabIndex={0}
-              onPointerEnter={() => setHovered(i)}
-              onFocus={() => setHovered(i)}
-              onBlur={() => setHovered(null)}
-              aria-label={`${d.label}: ${formatValue(d.value)}, ${Math.round((d.value / (sum || 1)) * 100)}%`}
-              className="rounded-md focus-visible:outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]"
-            >
-              <ChartLegendRow
-                color={seriesColor(i)}
-                label={d.label}
-                value={formatValue(d.value)}
-                active={active === i}
-                dimmed={active !== null && active !== i}
-              />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </ChartCard>
-  )
-}

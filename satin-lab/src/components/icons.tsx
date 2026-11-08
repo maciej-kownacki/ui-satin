@@ -29,6 +29,13 @@ export const AiPatternsIcon = ({ className }: IconProps) => (
   </svg>
 )
 
+/** Charts: three bars on a baseline, drawn to the same 14px, 1.09 stroke grid. */
+export const ChartsIcon = ({ className }: IconProps) => (
+  <svg {...icon14} className={className}>
+    <path {...stroke14} d="M1.75 12.25H12.25M3.5 12.25V7.58M7 12.25V2.92M10.5 12.25V5.25" />
+  </svg>
+)
+
 export const ChevronRight = ({ className }: IconProps) => (
   <svg {...icon14} className={className}>
     <path {...stroke14} d="M5.25 3.5L8.75 7L5.25 10.5" />

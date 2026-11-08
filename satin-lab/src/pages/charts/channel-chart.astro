@@ -1,0 +1,36 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ChannelChartDemo, { options } from '../../demos/channel-chart'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="channel-chart">
+  <DocSection
+    item={{
+      id: 'channel-chart',
+      title: 'Channel chart',
+      href: '/charts/channel-chart',
+      description: 'How a total splits across channels: a stacked bar and a legend row per channel.',
+    }}
+    api={{
+      description: 'The `ChannelCard` component is a wrapper around the `div` element with a title, a range, an optional period toggle, the KPI and the stacked bar.',
+      props: [
+        { name: 'title', type: ['string'] },
+        { name: 'range', type: ['string'] },
+        { name: 'data', type: ['ChartDatum[]'] },
+        { name: 'periods', type: ['string[]'] },
+        { name: 'value', type: ['string'] },
+        { name: 'onPeriodChange', type: ['(period) => void'] },
+        { name: 'total', type: ['string'] },
+        { name: 'change', type: ['string'] },
+        { name: 'highlight', type: ['number'] },
+        { name: 'footer', type: ['ReactNode'] },
+      ],
+    }}
+  >
+    <ChannelChartDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

@@ -3,7 +3,7 @@ import { Button, SearchBar, cn } from '@satin/ui'
 import { Menu, Minus } from 'iconoir-react'
 import type { NavGroup } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
-import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
+import { AiPatternsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
 
 /**
  * navigationSidebar from the docs template (uiKit 3857:5977): group headers with an icon,
@@ -15,6 +15,7 @@ import { AiPatternsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } 
 const groupIcons: Record<string, typeof IntroIcon> = {
   docs: IntroIcon,
   components: ComponentsIcon,
+  charts: ChartsIcon,
   'ai-patterns': AiPatternsIcon,
 }
 

@@ -14,6 +14,7 @@ export default defineConfig({
     '/tokens': '/theming',
     '/tokens/[role]': '/theming/[role]',
     '/ai-patterns/empty-state': '/components/empty-state',
+    '/components/chart': '/charts/bar-chart',
     '/foundations/tokens/[role]': '/theming/[role]',
   },
   vite: { plugins: [tailwindcss()] },
