@@ -10,18 +10,16 @@ const item = {
   id: 'thinking',
   title: 'Thinking',
   href: '/ai-patterns/thinking',
-  description: 'What an agent is doing while it works, folded into a summary when it is done.',
+  description: 'What an agent did, folded into a summary that opens onto its steps.',
 }
 
 const api = {
-  description: 'The `Thinking` component is a wrapper around the `details` element with a header and a rail of reasoning steps.',
+  description: 'The `Thinking` component is a wrapper around the `details` element with a header and a rail of reasoning steps. While the agent works, show `AgentLoading` instead.',
   props: [
     { name: 'steps', type: ['ThinkingStep[]'], default: '[]' },
     { name: 'indicator', type: ['"tetris"', '"flappy"'], default: '"tetris"' },
-    { name: 'glimmer', type: ['"color"', '"neutral"'], default: '"color"' },
-    { name: 'state', type: ['"loading"', '"collapsed"', '"expanded"'], default: '"loading"' },
-    { name: 'label', type: ['string'], default: '"Thinking…"' },
-    { name: 'time', type: ['string'] },
+    { name: 'state', type: ['"collapsed"', '"expanded"'], default: '"collapsed"' },
+    { name: 'label', type: ['string'], default: '"Thought"' },
     { name: 'onToggle', type: ['(open: boolean) => void'] },
     { name: 'step.type', type: ['"task"', '"text"', '"source"', '"tool"', '"more"'], default: '"task"' },
   ],

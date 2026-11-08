@@ -34,6 +34,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Tabs': [280, 280],
   'Textarea': [280, 280],
   'Thinking': [280, 280],
+  'Loading': [280, 280],
   'Toast': [312, 312],
   'Toggle': [280, 280],
   'Tooltip': [280, 280],

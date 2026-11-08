@@ -1,17 +1,15 @@
 import * as React from 'react'
 import { Check, EditPencil, NavArrowDown } from 'iconoir-react'
 import { cn } from '../lib/utils'
-import { FlappySprite, ShimmerLabel, TetrisLabel, TetrisMark, TetrisStill, type Glimmer } from './agent-loading'
+import { FlappySprite, TetrisStill, type AgentLoadingIndicator } from './agent-loading'
 
 /**
  * Thinking, 1:1 with the uiKit `Thinking` set (3239:20908) and its parts thinking/header
  * (3239:20766), thinking/step (3239:20791) and thinking/_mark (3239:20674).
  *
- * loading: the header only — the mark playing, the label shimmering and the elapsed time in
- * text/subtle, 12px apart, 4px padding (28 high). The mark is the tetris board (rows clearing,
- * a band of light crossing it and the label, in glimm's prism or neutral) or the flappy bird
- * running in place; see agent-loading.tsx. collapsed: mark, summary and
- * a 14px chevron. expanded: the same header with the chevron turned up, then 8px down a body
+ * What an agent did, once it is done; while it works, AgentLoading (agent-loading.tsx) shows
+ * instead. collapsed: the mark at rest (the full tetris board, or the flappy bird), summary
+ * and a 14px chevron. expanded: the same header with the chevron turned up, then 8px down a body
  * with 4px left inset: a 16px rail (1px line, rail-edge → rail-center → rail-edge) and, 12px
  * on, the steps 8px apart.
  *
@@ -38,56 +36,32 @@ export type ThinkingStep =
   /** The rest, folded: "+5 more". */
   | { type: 'more'; label: React.ReactNode }
 
-export type ThinkingState = 'loading' | 'collapsed' | 'expanded'
-/** What runs beside the label: the tetris mark, or the flappy bird. */
-export type ThinkingIndicator = 'tetris' | 'flappy'
+export type ThinkingState = 'collapsed' | 'expanded'
+/** The mark beside the summary, matching the AgentLoading that ran before it. */
+export type ThinkingIndicator = AgentLoadingIndicator
 
 export interface ThinkingProps extends Omit<React.ComponentProps<'div'>, 'onToggle'> {
-  /** loading while the agent works, collapsed once it is done, expanded when people open it. */
+  /** collapsed once the agent is done, expanded when people open it. */
   state?: ThinkingState
-  /** The header text: "Thinking…" while loading, a summary ("Thought for 2m 45s") after. */
+  /** The summary, e.g. "Thought for 2m 45s". */
   label?: React.ReactNode
-  /** Elapsed time next to the loading label, e.g. "1.2s". */
-  time?: React.ReactNode
   steps?: ThinkingStep[]
-  /** The mark beside the label. */
+  /** The mark beside the summary. */
   indicator?: ThinkingIndicator
-  /** The light that crosses the tetris mark and its label as rows clear: glimm's prism, or neutral. */
-  glimmer?: Glimmer
   onToggle?: (open: boolean) => void
 }
 
 export function Thinking({
-  state = 'loading',
-  label = 'Thinking…',
-  time,
+  state = 'collapsed',
+  label = 'Thought',
   steps = [],
   indicator = 'tetris',
-  glimmer = 'color',
   onToggle,
   className,
   ...props
 }: ThinkingProps) {
   const [open, setOpen] = React.useState(state === 'expanded')
   React.useEffect(() => setOpen(state === 'expanded'), [state])
-
-  if (state === 'loading') {
-    return (
-      <div data-slot="thinking" data-state="loading" className={cn('flex w-full flex-col', className)} {...props}>
-        <div role="status" aria-live="polite" className="flex items-center gap-3 p-1">
-          <ThinkingMark loading indicator={indicator} glimmer={glimmer} />
-          {indicator === 'tetris' ? (
-            <TetrisLabel glimmer={glimmer} className="text-sm whitespace-nowrap">
-              {label}
-            </TetrisLabel>
-          ) : (
-            <ShimmerLabel className="text-sm whitespace-nowrap">{label}</ShimmerLabel>
-          )}
-          {time != null && <span className="text-sm whitespace-nowrap text-text-subtle tabular-nums">{time}</span>}
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div data-slot="thinking" data-state={open ? 'expanded' : 'collapsed'} className={cn('w-full', className)} {...props}>
@@ -102,7 +76,7 @@ export function Thinking({
         className="group"
       >
         <summary className="flex w-fit cursor-pointer list-none items-center gap-3 rounded-md p-1 select-none [&::-webkit-details-marker]:hidden">
-          <ThinkingMark indicator={indicator} glimmer={glimmer} />
+          <ThinkingMark indicator={indicator} />
           <span className="text-sm whitespace-nowrap text-text-muted">{label}</span>
           <NavArrowDown
             aria-hidden
@@ -168,8 +142,7 @@ function Step({ step }: { step: ThinkingStep }) {
   }
 }
 
-/** thinking/_mark: the tetris mark (playing while loading, filled once done) or the flappy bird. */
-function ThinkingMark({ loading = false, indicator, glimmer }: { loading?: boolean; indicator: ThinkingIndicator; glimmer: Glimmer }) {
-  if (indicator === 'flappy') return <FlappySprite size={16} run={loading} />
-  return loading ? <TetrisMark glimmer={glimmer} /> : <TetrisStill />
+/** thinking/_mark: the tetris board filled, or the flappy bird at rest. */
+function ThinkingMark({ indicator }: { indicator: ThinkingIndicator }) {
+  return indicator === 'flappy' ? <FlappySprite size={16} run={false} /> : <TetrisStill />
 }

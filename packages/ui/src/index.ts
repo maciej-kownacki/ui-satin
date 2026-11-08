@@ -39,4 +39,4 @@ export { Message, type MessageProps, type MessageSource } from './components/mes
 export { MessageActions, type MessageActionsProps, type MessageFeedback } from './components/message-actions'
 export { PromptBar, defaultActions as promptBarDefaultActions, type PromptBarProps, type PromptBarModel, type PromptBarAction } from './components/prompt-bar'
 export { Thinking, type ThinkingProps, type ThinkingStep, type ThinkingState, type ThinkingIndicator } from './components/thinking'
-export { TetrisMark, TetrisLabel, TetrisStill, FlappySprite, ShimmerLabel, type Glimmer } from './components/agent-loading'
+export { AgentLoading, type AgentLoadingProps, type AgentLoadingIndicator, TetrisMark, TetrisLabel, TetrisStill, FlappySprite, ShimmerLabel, type Glimmer } from './components/agent-loading'

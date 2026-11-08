@@ -2,6 +2,10 @@ import * as React from 'react'
 import { cn } from '../lib/utils'
 
 /**
+ * Loading: what shows while an agent works, before there is anything to read. The mark playing,
+ * the label shimmering and the elapsed time in text/subtle, 12px apart, 4px padding (28 high),
+ * announced politely to screen readers. Once the agent is done, Thinking takes its place.
+ *
  * The agent's loading marks, from the uiKit: the tetris mark (uiKit "tetris", 3215:81593, beside
  * its label in thinkingHeader, 3215:81620) and the flappy bird (flappyAgent, 1215:69019).
  *
@@ -326,5 +330,35 @@ export function FlappySprite({ size = 16, run = true, className }: { size?: numb
         ))}
       </span>
     </span>
+  )
+}
+
+/** What runs beside the label: the tetris mark, or the flappy bird. */
+export type AgentLoadingIndicator = 'tetris' | 'flappy'
+
+export interface AgentLoadingProps extends React.ComponentProps<'div'> {
+  /** The live label. */
+  label?: React.ReactNode
+  /** Elapsed time after the label, e.g. "1.2s". */
+  time?: React.ReactNode
+  /** The mark beside the label. */
+  indicator?: AgentLoadingIndicator
+  /** The light that crosses the tetris mark and its label as rows clear: glimm's prism, or neutral. */
+  glimmer?: Glimmer
+}
+
+export function AgentLoading({ label = 'Thinking…', time, indicator = 'tetris', glimmer = 'color', className, ...props }: AgentLoadingProps) {
+  return (
+    <div data-slot="agent-loading" role="status" aria-live="polite" className={cn('flex items-center gap-3 p-1', className)} {...props}>
+      {indicator === 'flappy' ? <FlappySprite size={16} /> : <TetrisMark glimmer={glimmer} />}
+      {indicator === 'tetris' ? (
+        <TetrisLabel glimmer={glimmer} className="text-sm whitespace-nowrap">
+          {label}
+        </TetrisLabel>
+      ) : (
+        <ShimmerLabel className="text-sm whitespace-nowrap">{label}</ShimmerLabel>
+      )}
+      {time != null && <span className="text-sm whitespace-nowrap text-text-subtle tabular-nums">{time}</span>}
+    </div>
   )
 }

@@ -1,7 +1,6 @@
 import * as React from 'react'
-import { Button } from '@satin/ui'
 import { DropdownMenu, DropdownMenuGroup, DropdownMenuItem } from '@satin/ui/dropdown'
-import { CheckCircle, Circle, Clock, Eye, NavArrowDown, XmarkCircle } from 'iconoir-react'
+import { CheckCircle, Circle, Clock, Eye, XmarkCircle } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // A status menu: the current status is the selected item, and the statuses fall into two groups.
@@ -81,7 +80,10 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   code: code(v),
 }))
 
-/** The menu opens on load (non-modal, so the docs page keeps scrolling) and portals into the stage. */
+/**
+ * The menu alone: it stays open (non-modal, so the docs page keeps scrolling) and portals into the
+ * stage, hung from an empty anchor where the trigger would be, so only the menu shows.
+ */
 function Preview({ v }: { v: Record<string, string> }) {
   const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
   const [status, setStatus] = React.useState(current)
@@ -118,7 +120,7 @@ function Preview({ v }: { v: Record<string, string> }) {
     />
   )
 
-  // Room under the trigger for the open menu, so it stays inside the stage: measured from the
+  // Room for the open menu, so it stays inside the stage: measured from the
   // menu itself, so it follows any change to the rows. The guess only holds until it opens.
   const boxRef = React.useRef<HTMLDivElement>(null)
   const [height, setHeight] = React.useState(240)
@@ -127,7 +129,7 @@ function Preview({ v }: { v: Record<string, string> }) {
     let resize: ResizeObserver | undefined
     const fit = (menu: Element) => {
       const box = boxRef.current
-      if (box) setHeight(Math.ceil(menu.getBoundingClientRect().bottom - box.getBoundingClientRect().top) + 8)
+      if (box) setHeight(Math.ceil(menu.getBoundingClientRect().bottom - box.getBoundingClientRect().top))
     }
     const watch = (menu: Element) => {
       fit(menu)
@@ -154,21 +156,17 @@ function Preview({ v }: { v: Record<string, string> }) {
   }, [stage])
 
   return (
-    <div ref={boxRef} className="flex w-[255px] items-start" style={{ height }}>
+    <div ref={boxRef} className="flex w-[255px] flex-col items-stretch" style={{ height }}>
       <div ref={setStage} className="pointer-events-none absolute inset-0 z-10" />
       {stage && (
         <DropdownMenu
           container={stage}
-          defaultOpen
+          open
           modal={false}
-          // Stays open while focus is elsewhere on the page; Escape, a click outside or a pick closes it.
+          sideOffset={0}
+          aria-label="Status"
           onFocusOutside={(e) => e.preventDefault()}
-          trigger={
-            <Button variant="secondary">
-              Status
-              <NavArrowDown data-chevron />
-            </Button>
-          }
+          trigger={<span aria-hidden tabIndex={-1} className="pointer-events-none block h-0 w-full" />}
         >
           {on(v, 'groups')
             ? groups.map((g) => (

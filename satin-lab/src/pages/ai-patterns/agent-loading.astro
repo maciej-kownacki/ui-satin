@@ -1,0 +1,31 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import AgentLoadingDemo, { options } from '../../demos/agent-loading'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+
+const item = {
+  id: 'agent-loading',
+  title: 'Loading',
+  href: '/ai-patterns/agent-loading',
+  description: 'What shows while an agent works: a live mark, a shimmering label and the time so far.',
+}
+
+const api = {
+  description: 'The `AgentLoading` component is a `status` region: screen readers hear the label as it changes. Once the agent is done, render `Thinking` in its place.',
+  props: [
+    { name: 'indicator', type: ['"tetris"', '"flappy"'], default: '"tetris"' },
+    { name: 'glimmer', type: ['"color"', '"neutral"'], default: '"color"' },
+    { name: 'label', type: ['string'], default: '"Thinking…"' },
+    { name: 'time', type: ['string'] },
+  ],
+}
+---
+
+<Docs current="agent-loading">
+  <DocSection item={item} api={api}>
+    <AgentLoadingDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

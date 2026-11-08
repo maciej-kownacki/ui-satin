@@ -211,9 +211,10 @@ export function Customizer() {
   // Copy and Reset sit in the header, where a close button would be: plain, out of the way.
   const tools = (
     <div className="flex items-center gap-0.5">
-      <Button variant="tertiary" size="xs" onClick={copy}>
-        {copied ? <Check /> : <Copy />}
-        <span aria-live="polite">{copied ? 'Copied' : 'Copy CSS'}</span>
+      <Button variant="tertiary" size="xs" iconOnly aria-label={copied ? 'Copied' : 'Copy CSS'} title="Copy CSS" onClick={copy}>
+        {/* Iconoir's copy draws smaller inside its box than refresh, so it gets a size up to match. */}
+        {copied ? <Check /> : <Copy className="!size-[18px]" />}
+        <span className="sr-only" aria-live="polite">{copied ? 'Copied' : ''}</span>
       </Button>
       <Button variant="tertiary" size="xs" iconOnly aria-label="Reset theme" title="Reset" disabled={isDefault} onClick={() => update(defaultTheme)}>
         <Refresh />

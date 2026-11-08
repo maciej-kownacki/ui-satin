@@ -35,13 +35,14 @@
     {
       "name": "agent-loading",
       "type": "registry:ui",
-      "title": "Agent loading",
-      "description": "The Satin Agent loading component.",
+      "title": "Loading",
+      "description": "What shows while an agent works: a live mark, a shimmering label and the time so far.",
       "dependencies": [],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json"
       ],
+      "docs": "Loading docs: https://uisatin.dev/ai-patterns/agent-loading",
       "files": [
         {
           "path": "registry/satin/ui/agent-loading.tsx",
@@ -690,7 +691,7 @@
       "name": "thinking",
       "type": "registry:ui",
       "title": "Thinking",
-      "description": "What an agent is doing while it works, folded into a summary when it is done.",
+      "description": "What an agent did, folded into a summary that opens onto its steps.",
       "dependencies": [
         "iconoir-react@^7.12.2"
       ],
