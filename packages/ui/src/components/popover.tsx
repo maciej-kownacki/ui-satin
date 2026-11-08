@@ -4,10 +4,9 @@ import { cn } from '../lib/utils'
 
 /**
  * Popover, 1:1 with the uiKit `Popover` component (613:18781): a 320px popover surface,
- * radius-xl, border/default, the shadcn `lg` shadow, 12px bottom padding. Header 8px in with a
- * 13px medium title (18px line) over a 13px muted description, 2px apart; a 16px close glyph
- * in text/subtle 8px from the top-right corner; an optional body slot 16px below the header,
- * 10px in. It opens 8px below its trigger, aligned to the trigger's start.
+ * radius-xl, border/default, the shadcn `lg` shadow, 10px padding all round. A 13px medium
+ * title (18px line) over a 13px muted description, 2px apart; a 16px close glyph in text/subtle
+ * 10px from the top-right corner; an optional body slot 16px below the header. It opens 8px below its trigger, aligned to the trigger's start.
  *
  * Built on the Radix Popover. `children` is the trigger (rendered with `asChild`, so pass a
  * Button); `body` fills the body slot. Pass `container` to portal it into the docs stage.
@@ -35,12 +34,12 @@ export interface PopoverProps {
 }
 
 const panelClass = cn(
-  'relative flex w-[320px] max-w-[calc(100vw-16px)] flex-col overflow-clip pb-3',
+  'relative flex w-[320px] max-w-[calc(100vw-16px)] flex-col overflow-clip pb-2.5',
   'rounded-xl border border-border-default bg-bg-popover',
   '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
 )
 const closeClass = cn(
-  'absolute top-2 right-2 grid size-4 place-items-center rounded-sm text-text-subtle',
+  'absolute top-2.5 right-2.5 grid size-4 place-items-center rounded-sm text-text-subtle',
   'transition-colors duration-(--duration-fast) ease-(--ease-out)',
   'satin-hover:text-text-default focus-visible:outline-none satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
 )
@@ -60,7 +59,7 @@ const closeIcon = (
 function PanelBody({ titleId, title, description, body, closeButton }: { titleId: string } & Pick<PopoverProps, 'title' | 'description' | 'body' | 'closeButton'>) {
   return (
     <>
-      <div className="flex flex-col gap-0.5 px-2 pt-2 text-sm">
+      <div className="flex flex-col gap-0.5 px-2.5 pt-2.5 text-sm">
         <p id={titleId} className={cn('leading-[18px] font-medium text-text-default', closeButton && 'pr-6')}>{title}</p>
         {description ? <p className="text-text-muted">{description}</p> : null}
       </div>
