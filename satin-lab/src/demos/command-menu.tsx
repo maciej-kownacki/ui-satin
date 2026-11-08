@@ -83,7 +83,7 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
 }))
 
 /**
- * Open inside the stage over the docs-style search it came from. Dismissed (Escape, a click
+ * Open in the middle of the stage, over the docs-style search it came from (the sidebar's size). Dismissed (Escape, a click
  * outside, a command), it leaves the search, which opens it again. The page's own ⌘K stays
  * with the docs search.
  */
@@ -92,14 +92,14 @@ function Preview({ v }: { v: Record<string, string> }) {
   const [open, setOpen] = React.useState(true)
   const openedOnce = React.useRef(false)
   return (
-    <div className="relative flex h-[420px] w-[560px] max-w-full justify-center pt-6">
+    <div className="relative grid h-[420px] w-[560px] max-w-full place-items-center">
       <SearchBar
         readOnly
         hotkey={false}
         placeholder="Search…"
         aria-haspopup="dialog"
         aria-expanded={open}
-        wrapperClassName="h-fit w-60 cursor-pointer"
+        wrapperClassName="w-60 cursor-pointer"
         className="cursor-pointer"
         onClick={() => setOpen(true)}
         onKeyDown={(e) => {

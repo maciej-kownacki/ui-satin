@@ -63,22 +63,54 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
 
   useScrollLock(drawer && !wide)
 
-  // The list keeps its scroll across page changes. The sidebar persists, but the router moves its
-  // DOM into the new page, and moving an element resets its scroll: put it back after the swap.
+  // The list keeps its scroll across page changes and reloads. The sidebar persists, but the router
+  // moves its DOM into the new page, and moving an element resets its scroll. Safari also lays the
+  // moved list out (and may scroll the focused link into view) after `astro:after-swap`, so one
+  // restore there is not enough: the position is recorded on every scroll the user makes, and put
+  // back after the swap, on the next two frames and once the page has loaded. While a page change
+  // is in flight, scroll events (the reset, Safari's own scrolling) don't overwrite it.
   React.useEffect(() => {
-    let top = 0
-    const save = () => {
-      top = document.getElementById('docs-nav')?.scrollTop ?? 0
+    const KEY = 'satin-docs-nav-scroll'
+    const list = () => document.getElementById('docs-nav')
+    let top = Number(sessionStorage.getItem(KEY) ?? 0) || 0
+    let swapping = false
+
+    const onScroll = (e: Event) => {
+      if (swapping || (e.target as HTMLElement).id !== 'docs-nav') return
+      top = (e.target as HTMLElement).scrollTop
+      try {
+        sessionStorage.setItem(KEY, String(top))
+      } catch {}
     }
-    const restore = () => {
-      const list = document.getElementById('docs-nav')
-      if (list) list.scrollTop = top
+    const put = () => {
+      const el = list()
+      if (el && el.scrollTop !== top) el.scrollTop = top
     }
-    document.addEventListener('astro:before-swap', save)
-    document.addEventListener('astro:after-swap', restore)
+    const start = () => {
+      swapping = true
+    }
+    const settle = () => {
+      put()
+      requestAnimationFrame(() => {
+        put()
+        requestAnimationFrame(() => {
+          put()
+          swapping = false
+        })
+      })
+    }
+
+    put()
+    // Capture: scroll doesn't bubble, and the list element itself is the target.
+    document.addEventListener('scroll', onScroll, true)
+    document.addEventListener('astro:before-preparation', start)
+    document.addEventListener('astro:after-swap', settle)
+    document.addEventListener('astro:page-load', settle)
     return () => {
-      document.removeEventListener('astro:before-swap', save)
-      document.removeEventListener('astro:after-swap', restore)
+      document.removeEventListener('scroll', onScroll, true)
+      document.removeEventListener('astro:before-preparation', start)
+      document.removeEventListener('astro:after-swap', settle)
+      document.removeEventListener('astro:page-load', settle)
     }
   }, [])
 

@@ -17,6 +17,8 @@ import { Kbd, KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
  * bg/selected, whether the pointer or the arrow keys put it there. The first match is
  * highlighted; Enter runs it and closes the menu.
  *
+ * It sits in the middle of the screen (or of its `container`).
+ *
  * Built on the Radix Dialog (focus trap, Escape, focus back to where it was). With `hotkey`,
  * ⌘K or Ctrl+K anywhere on the page toggles it.
  */
@@ -135,7 +137,7 @@ export function CommandMenu({
     <DialogPrimitive.Root open={open} onOpenChange={setOpen} modal={modal}>
       <DialogPrimitive.Portal container={container}>
         <DialogPrimitive.Overlay className={cn(position, 'inset-0 z-50 bg-black-a40')} />
-        <div className={cn(position, 'pointer-events-none inset-0 z-50 flex justify-center px-4', container ? 'pt-6' : 'pt-[12vh]')}>
+        <div className={cn(position, 'pointer-events-none inset-0 z-50 flex items-center justify-center p-4')}>
           <DialogPrimitive.Content
             data-slot="command-menu"
             aria-describedby={undefined}

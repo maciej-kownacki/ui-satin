@@ -8,7 +8,7 @@ import { useFormField } from './form-field'
  * Select, 1:1 with the uiKit `Select` set (4022:3531): the field around it is Input's (a 13px
  * medium label 8px above, a 13px hint or error under it), the trigger is Input's skin with the
  * value and a 16px chevron (sm 28, md 32, lg 36; 12px in, 8px gaps), an optional 16px leading
- * icon. Placeholder is text/muted, a value text/default. While the list is open the trigger
+ * icon (by default the picked option's own icon, when the options have icons). Placeholder is text/muted, a value text/default. While the list is open the trigger
  * keeps the focus border and ring.
  *
  * The list is the Dropdown menu: the same surface, rows, groups and options, so every option
@@ -43,7 +43,7 @@ export interface SelectProps {
   /** An error message (replaces the hint), or `true` to mark the field invalid without one. */
   error?: React.ReactNode | boolean
   size?: 'sm' | 'md' | 'lg'
-  /** A 16px icon before the value. */
+  /** A 16px icon before the value. Left out, the picked option's own icon shows there. */
   leadingIcon?: React.ReactNode
   /** Row layout of every option: description under the label, or after it. */
   layout?: MenuItemContentProps['layout']
@@ -103,11 +103,14 @@ export function useFieldChrome({
 /** Label 8px above the control, hint or error 8px under it: Input's field, for Select and Combobox. */
 export function FieldChrome({
   label,
+  action,
   chrome,
   className,
   children,
 }: {
   label?: React.ReactNode
+  /** On the label's line, at the field's right edge: the smallest button, e.g. Clear. */
+  action?: React.ReactNode
   chrome: ReturnType<typeof useFieldChrome>
   className?: string
   children: React.ReactNode
@@ -115,9 +118,13 @@ export function FieldChrome({
   return (
     <div className={cn('grid w-full gap-2', className)}>
       {label && (
-        <label htmlFor={chrome.controlId} className="text-sm leading-[18px] font-medium text-text-default">
-          {label}
-        </label>
+        // The row keeps the label's 18px whatever the action, so the field never moves.
+        <div className="flex h-[18px] items-center justify-between gap-2">
+          <label htmlFor={chrome.controlId} className="text-sm leading-[18px] font-medium text-text-default">
+            {label}
+          </label>
+          {action && <div className="-my-[3px] flex shrink-0 items-center">{action}</div>}
+        </div>
       )}
       {children}
       {chrome.message && (
@@ -170,6 +177,7 @@ export function Select({
   const [uncontrolled, setUncontrolled] = React.useState(defaultValue)
   const current = value ?? uncontrolled
   const groups: SelectGroup[] = isOptionGroups(options) ? (options as SelectGroup[]) : [{ options: options as SelectOption[] }]
+  const lead = leadingIcon ?? groups.flatMap((g) => g.options).find((o) => o.value === current)?.icon
 
   return (
     <FieldChrome label={label} chrome={chrome} className={wrapperClassName}>
@@ -200,9 +208,9 @@ export function Select({
           aria-label={props['aria-label']}
           className={cn('satin-field satin-select', className)}
         >
-          {leadingIcon && (
+          {lead && (
             <span className="satin-field-icon" aria-hidden>
-              {leadingIcon}
+              {lead}
             </span>
           )}
           <span className="min-w-0 flex-1 truncate text-text-default">

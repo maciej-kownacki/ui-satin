@@ -15,8 +15,9 @@ import { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from '.
  *
  * Single: a pick fills the field with its label and closes the list. Multiple: each pick
  * toggles and the list stays open; the field shows the picks as small outline chips, 4px
- * apart, each with its own remove button, and grows a row at a time as they wrap. With more
- * than one pick a Clear button follows the chips, falling to the next row with them.
+ * apart, each with its own remove button, and grows a row at a time as they wrap. The chips sit
+ * 3px from the field's edge, so their labels start where a value's text would. With more than
+ * one pick, Clear (the xs tertiary button) shows on the label's line at the field's right edge.
  *
  * `footer` adds Cancel (secondary) and Apply (primary) under a border/subtle rule, 8px in: picks
  * then wait for Apply, which stays disabled until something is picked; Cancel or Escape drops
@@ -55,6 +56,8 @@ export interface ComboboxProps {
   container?: HTMLElement | null
   /** Keep focus where it is when the panel opens (inline previews). */
   onOpenAutoFocus?: (event: Event) => void
+  /** A press outside the panel; `preventDefault()` keeps it open. */
+  onInteractOutside?: (event: Event) => void
   'aria-label'?: string
   wrapperClassName?: string
   className?: string
@@ -91,6 +94,7 @@ export function Combobox({
   onOpenChange,
   container,
   onOpenAutoFocus,
+  onInteractOutside,
   wrapperClassName,
   className,
   ...props
@@ -139,15 +143,29 @@ export function Combobox({
   const chosen = applied.map((v) => options.find((o) => o.value === v)).filter(Boolean) as SelectOption[]
   const chips = multiple && chosen.length > 0
   const triggerText = !multiple && chosen[0] ? chosen[0].label : chips ? null : placeholder
+  // As in Select: left out, a single pick's own icon leads the field.
+  const lead = leadingIcon ?? (!multiple ? chosen[0]?.icon : undefined)
 
   return (
-    <FieldChrome label={label} chrome={chrome} className={wrapperClassName}>
+    <FieldChrome
+      label={label}
+      chrome={chrome}
+      className={wrapperClassName}
+      action={
+        label && multiple && chosen.length > 1 ? (
+          <Button variant="tertiary" size="xs" disabled={chrome.disabled} onClick={() => commit([])}>
+            {clearLabel}
+          </Button>
+        ) : undefined
+      }
+    >
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Anchor asChild>
           <div
             data-slot="combobox-field"
             data-size={size}
             data-multiple={chips || undefined}
+            data-leading={lead ? true : undefined}
             data-filled={chosen.length ? true : undefined}
             data-invalid={chrome.invalid || undefined}
             data-disabled={chrome.disabled || undefined}
@@ -168,9 +186,9 @@ export function Combobox({
             >
               <span className="sr-only">{chosen.length ? chosen.map((o) => o.label).join(', ') : placeholder}</span>
             </PopoverPrimitive.Trigger>
-            {leadingIcon && (
+            {lead && (
               <span className="satin-field-icon satin-combobox-icon pointer-events-none" aria-hidden>
-                {leadingIcon}
+                {lead}
               </span>
             )}
             <div className="pointer-events-none flex min-w-0 flex-1 flex-wrap items-center gap-1 *:pointer-events-auto">
@@ -193,7 +211,8 @@ export function Combobox({
                   {triggerText}
                 </span>
               )}
-              {chips && chosen.length > 1 && (
+              {/* Without a label there is no line above the field for Clear: it follows the chips. */}
+              {!label && chips && chosen.length > 1 && (
                 <Button
                   variant="tertiary"
                   size="xs"
@@ -217,6 +236,7 @@ export function Combobox({
             sideOffset={4}
             collisionPadding={8}
             onOpenAutoFocus={onOpenAutoFocus}
+            onInteractOutside={onInteractOutside}
             className={cn(
               'pointer-events-auto z-50 flex w-(--radix-popover-trigger-width) min-w-60 max-w-[520px] flex-col overflow-hidden',
               menuSurfaceClass,

@@ -10,7 +10,7 @@ const items = [
 
 // How sections open first, then what the headers carry.
 export const controls: ShowcaseControl[] = [
-  { id: 'type', label: 'Open', items: [{ value: 'single', label: 'One at a time' }, { value: 'multiple', label: 'Any number' }] },
+  { id: 'type', label: 'Open', default: 'multiple', items: [{ value: 'multiple', label: 'Any number' }, { value: 'single', label: 'One at a time' }] },
   { id: 'icon', label: 'Lead icon', type: 'switch', default: 'off' },
 ]
 
@@ -47,7 +47,7 @@ export default function AccordionDemo({ codeHtml }: { codeHtml: Record<string, s
           </AccordionItem>
         ))
         return (
-          <div key={id} className="w-[480px] max-w-full">
+          <div key={id} className="h-[312px] w-[480px] max-w-full self-start">
             {v.type === 'single' ? (
               <Accordion type="single" collapsible defaultValue="plan">
                 {rows}

@@ -157,7 +157,7 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
   // filled top to bottom so the first column keeps the most structural props.
   const rows = controls ? Math.ceil(controls.length / 2) : 0
   const bar = controls ? (
-    <div className="shrink-0 border-t border-border-subtle px-4 py-2 md:px-6 md:py-3">
+    <div data-showcase-controls className="shrink-0 border-t border-border-subtle px-4 py-2 md:px-6 md:py-3">
       <div
         role="group"
         aria-label={`${name} properties`}

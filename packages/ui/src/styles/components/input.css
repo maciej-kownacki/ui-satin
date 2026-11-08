@@ -140,6 +140,10 @@
 .satin-combobox[data-multiple] {
   min-height: var(--satin-combobox-h);
 }
+.satin-combobox[data-multiple]:not([data-leading]) {
+  /* 1px field border + 3px + the chip's 1px border and 8px inset = 13: where a value's text starts. */
+  padding-left: calc((var(--satin-combobox-h) - 26px) / 2);
+}
 .satin-combobox[data-multiple] .satin-combobox-icon {
   margin-top: 4px;
 }
