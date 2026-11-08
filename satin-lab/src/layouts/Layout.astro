@@ -1,7 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions'
 import '../styles/lab.css'
-import { Customizer } from '../components/Customizer'
 
 interface Props {
   title: string
@@ -56,6 +55,5 @@ const { title, description } = Astro.props
       Skip to content
     </a>
     <slot />
-    <Customizer client:load transition:persist="customizer" />
   </body>
 </html>

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Avatar, Button, Input, SegmentedControl, Switch, cn } from '@satin/ui'
 import { Sidebar, SidebarItem } from '@satin/ui/sidebar'
+import { Customizer } from './Customizer'
 import {
   AppleShortcuts,
   ArrowUpRight,
@@ -213,7 +214,7 @@ const VIEWS: { id: View; title: string; render: () => React.ReactNode }[] = [
 export function TypePreview() {
   const [scale, setScale] = React.useState<Scale>('linear')
   return (
-    <div className="flex min-h-dvh flex-col gap-5 bg-bg-canvas px-5 pt-5 pb-32">
+    <div className="flex min-h-dvh flex-col gap-5 bg-bg-canvas px-5 pt-5 pb-10">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-medium text-text-default">Type preview</h1>
@@ -222,7 +223,9 @@ export function TypePreview() {
             (11 / 12 / 13 for the interface, 15 to read, 18 / 20 / 24 for headings, weights 510 / 590).
           </p>
         </div>
-        <SegmentedControl
+        <div className="flex items-center gap-2">
+          <Customizer />
+          <SegmentedControl
           aria-label="Type scale"
           size="lg"
           items={[
@@ -231,7 +234,8 @@ export function TypePreview() {
           ]}
           value={scale}
           onValueChange={(v) => setScale(v as Scale)}
-        />
+          />
+        </div>
       </header>
 
       {/* The views side by side; wider than the window, they scroll sideways. */}

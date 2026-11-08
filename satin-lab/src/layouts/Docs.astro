@@ -1,11 +1,12 @@
 ---
 /**
- * Every page of the docs: the top bar (menu button on small screens, logo, Waitlist), then the
+ * Every page of the docs: the top bar (menu button on small screens, logo, Customize, Waitlist), then the
  * card with the sidebar and a 720px column. On wide screens the card runs edge to edge with 20px
  * either side and down to the bottom of the window.
  */
 import Layout from './Layout.astro'
 import { Sidebar } from '../components/Sidebar'
+import { Customizer } from '../components/Customizer'
 import { Button } from '@satin/ui'
 import { nav, page } from '../nav'
 
@@ -29,7 +30,10 @@ const title = current === 'introduction' ? 'Satin' : `${item.title} · Satin`
         <span class="text-[18px] leading-[19.5px] tracking-[-0.27px] text-text-default">satin</span>
       </a>
     </div>
-    <Button size="lg" shape="rounded">Waitlist</Button>
+    <div class="flex items-center gap-2">
+      <Customizer client:load transition:persist="customizer" />
+      <Button size="lg" shape="rounded">Waitlist</Button>
+    </div>
   </header>
 
   <div
@@ -37,7 +41,7 @@ const title = current === 'introduction' ? 'Satin' : `${item.title} · Satin`
   >
     <Sidebar client:load nav={nav} current={current} transition:persist="sidebar" />
 
-    <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none lg:overflow-y-auto lg:overscroll-contain lg:scroll-pb-20">
+    <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none lg:overflow-y-auto lg:overscroll-contain">
       <div class="flex w-full max-w-[720px] flex-col gap-4 pb-24">
         <slot />
       </div>
