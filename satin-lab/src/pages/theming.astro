@@ -21,8 +21,8 @@ const radii = ['xs', 'sm', 'md', 'lg', 'xl', '2xl']
 const uiSizes = [
   { k: '2xs', px: 11, use: 'Fine print, counters' },
   { k: 'xs', px: 12, use: 'Captions, keycaps, axis labels' },
-  { k: 'sm', px: 13, use: 'Badges, chips, buttons, menus, tabs, small fields' },
-  { k: 'base', px: 14, use: 'Fields and their labels, checkboxes, card titles' },
+  { k: 'sm', px: 13, use: 'Badges, chips, buttons, menus, tabs, field labels, small fields' },
+  { k: 'base', px: 14, use: 'Field values, checkboxes, card titles' },
 ]
 const contentSizes = [
   { k: 'body', px: 14, use: 'Messages, descriptions, table cells' },
@@ -117,7 +117,7 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5 })`,
     <p class={prose}>
       Type isn't part of a theme: it stays the same whatever brand and corners you pick. The body is 14px. Compact
       controls, like badges, chips, small buttons and small fields, use 13px so the interface stays light, and
-      fields, checkboxes and radios keep 14px labels. Content text has its own scale above the body for prose and
+      so do field labels; field values, checkboxes and radios keep 14px. Content text has its own scale above the body for prose and
       headings. Weights sit a touch off the usual steps on Geist Variable: regular 420, medium 510, semibold 590.
     </p>
     <div class="grid gap-3 sm:grid-cols-2">

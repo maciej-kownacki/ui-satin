@@ -6,7 +6,7 @@ import { useFormField } from './form-field'
  * Textarea, 1:1 with the uiKit `Textarea` set (3647:17812): the Input skin (surface fill,
  * border/default, radius-lg, shadow xs; border/strong on hover, border/focus and the focus
  * ring on focus, action/destructive/bg on error) at 96px tall with a resize grip. Above it a
- * label (medium 14/21) with an optional "(Optional)" in muted 13; under it a hint row: the
+ * label (medium 13/18) with an optional "(Optional)" in muted 13; under it a hint row: the
  * hint (muted) and, with `maxLength`, a counter (text/subtle) on the right. An error message
  * replaces the hint and turns the whole row action/destructive/bg. Disabled is bg/muted with
  * text/subtle and the whole field at 60%.
@@ -73,7 +73,7 @@ export function Textarea({
     >
       {label && (
         <div className="flex items-center gap-1">
-          <label htmlFor={textareaId} className="text-base leading-[21px] font-medium text-text-default">
+          <label htmlFor={textareaId} className="text-sm leading-[18px] font-medium text-text-default">
             {label}
           </label>
           {optional && <span className="text-sm text-text-muted">(Optional)</span>}

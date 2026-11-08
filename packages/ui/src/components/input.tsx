@@ -4,8 +4,8 @@ import { useFormField } from './form-field'
 
 /**
  * Input, 1:1 with the uiKit `Input` set (820:51657): a label (medium), the field, and a hint
- * (13/19.5, muted) 8px apart. Three sizes: sm 28 with a 13px label and value, md 32 and lg 36
- * with 14px (lg at radius-xl), fixed whatever the theme's body size; 12px side padding,
+ * (13/19.5, muted) 8px apart. The label is 13px at every size. Three sizes: sm 28 with a 13px
+ * value, md 32 and lg 36 with 14px (lg at radius-xl), fixed whatever the theme's body size; 12px side padding,
  * optional 16px leading and trailing icons 8px from the text.
  *
  * Placeholder is text/muted; a value is text/default and turns the icons from muted to
@@ -70,7 +70,7 @@ export function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className={cn('font-medium text-text-default', size === 'sm' ? 'text-sm leading-[18px]' : 'text-base leading-5')}
+          className="text-sm leading-[18px] font-medium text-text-default"
         >
           {label}
         </label>

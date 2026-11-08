@@ -76,7 +76,7 @@ export function FormField({
         <label
           htmlFor={id}
           className={cn(
-            'flex items-start gap-0.5 text-base leading-[21px] font-medium text-text-default',
+            'flex items-start gap-0.5 text-sm leading-[18px] font-medium text-text-default',
             layout === 'horizontal' && 'w-40 shrink-0',
             disabled && 'opacity-50',
           )}
