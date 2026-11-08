@@ -176,6 +176,7 @@
   --color-text-muted-light: #68686F;
   --color-selected-light: #EDEDEF;
   --color-selected-dark: #2F2F32;
+  --color-segmented-selected-dark: #3A3A3D;
   --spacing: 4px;
 }
 
@@ -356,7 +357,7 @@
   --chart-5: var(--color-violet-400);
   --component-table-zebra: var(--color-surface-dark);
   --component-table-header: var(--color-card-dark);
-  --component-segmented-selected: var(--bg-selected);
+  --component-segmented-selected: var(--color-segmented-selected-dark);
   --component-segmented-pressed: var(--color-white-a6);
   --component-rail-center: var(--color-white-a10);
   --component-rail-edge: var(--color-white-a3);
