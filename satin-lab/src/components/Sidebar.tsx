@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Button, SearchBar, cn } from '@satin/ui'
-import { Menu, Minus } from 'iconoir-react'
+import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
 import type { NavGroup } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
 import { AiPatternsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
@@ -318,19 +318,74 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
 }
 
 /** Banner / Mesh, Layout=Sidebar (uiKit 3822:3475): 230 wide inside the 246 sidebar. */
+/**
+ * The design-help banner (uiKit 3857:6969). The minus doesn't dismiss it: it folds to the 44px
+ * bar from uiKit 3857:7009 (the title and an arrow on the same mesh), which opens it again. The
+ * choice is kept for the visit, across pages and reloads.
+ */
 function HelpBanner() {
-  const [open, setOpen] = React.useState(true)
-  if (!open) return null
-  return (
-    <aside
-      aria-label="Design help"
-      className={cn(
-        'relative mx-2 flex flex-col gap-3 overflow-clip rounded-xl border border-border-default bg-bg-card p-3',
-        'shadow-[0_2px_4px_-2px_var(--effect-shadow-sm),0_4px_6px_-1px_var(--effect-shadow-sm)]',
-      )}
-    >
+  const KEY = 'satin-help-banner'
+  const [open, setOpenState] = React.useState(true)
+  // Only a change the user makes animates or moves focus; the stored state on load does neither.
+  const toggled = React.useRef(false)
+  const swapRef = React.useRef<HTMLButtonElement>(null)
+  React.useEffect(() => {
+    if (toggled.current) swapRef.current?.focus()
+  }, [open])
+  React.useEffect(() => {
+    try {
+      if (sessionStorage.getItem(KEY) === 'min') setOpenState(false)
+    } catch {}
+  }, [])
+  const setOpen = (next: boolean) => {
+    toggled.current = true
+    setOpenState(next)
+    try {
+      sessionStorage.setItem(KEY, next ? 'open' : 'min')
+    } catch {}
+  }
+
+  const surface = cn(
+    'relative mx-2 overflow-clip rounded-xl border border-border-default bg-bg-card',
+    'shadow-[0_2px_4px_-2px_var(--effect-shadow-sm),0_4px_6px_-1px_var(--effect-shadow-sm)]',
+  )
+  const mesh = (
+    <>
       <img src="/figma/mesh-light.png" alt="" className="pointer-events-none absolute -inset-px size-[calc(100%+2px)] max-w-none object-cover mix-blend-multiply" />
       <img src="/figma/mesh-dark.png" alt="" className="pointer-events-none absolute -inset-px size-[calc(100%+2px)] max-w-none object-cover mix-blend-screen" />
+    </>
+  )
+
+  if (!open) {
+    return (
+      <aside aria-label="Design help" className={surface}>
+        {mesh}
+        <button
+          ref={swapRef}
+          type="button"
+          aria-expanded={false}
+          onClick={() => setOpen(true)}
+          className={cn(
+            'group relative flex h-[42px] w-full cursor-pointer items-center justify-between pr-[7px] pl-3 text-left outline-none',
+            'focus-visible:ring-0 focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)] rounded-[inherit]',
+          )}
+        >
+          <span className="text-sm leading-[18px] font-medium text-text-default">Need design help?</span>
+          {/* The 28px tertiary icon button from uiKit, drawn here: a button can't hold a button. */}
+          <span
+            aria-hidden
+            className="grid size-7 place-items-center rounded-full text-text-default transition-colors duration-(--duration-fast) ease-(--ease-out) group-hover:bg-bg-hover [&_svg]:size-4 [&_svg]:[stroke-width:1.875]"
+          >
+            <ArrowUpRight />
+          </span>
+        </button>
+      </aside>
+    )
+  }
+
+  return (
+    <aside aria-label="Design help" className={cn(surface, 'flex flex-col gap-3 p-3', toggled.current && 'animate-[satin-enter_var(--duration-base)_var(--ease-out)]')}>
+      {mesh}
       <div className="relative flex flex-col gap-0.5 pr-6 text-sm">
         <p className="leading-[18px] font-medium text-text-default">Need design help?</p>
         <p className="leading-[19.5px] text-text-muted">Get expert product design for your business.</p>
@@ -339,10 +394,12 @@ function HelpBanner() {
         Book a call
       </Button>
       <Button
+        ref={swapRef}
         variant="tertiary"
         shape="rounded"
         iconOnly
-        aria-label="Hide banner"
+        aria-label="Minimise banner"
+        aria-expanded
         onClick={() => setOpen(false)}
         className="absolute top-[3px] right-[3px] text-text-muted"
       >
