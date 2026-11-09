@@ -24,7 +24,6 @@ const read = (name: string): RegistryItem | undefined => {
 }
 const item = read(id)
 
-const command = `npx shadcn@latest add https://uisatin.dev/r/${id}.json`
 const packages = (item?.dependencies ?? []).map((d) => d.replace(/(.)@.*$/, '$1'))
 // Other Satin components this one is built from (chip → badge), and theirs, all the way down.
 const nameOf = (url: string) => url.replace(/^.*\/r\//, '').replace(/\.json$/, '')
@@ -38,12 +37,21 @@ const walk = (name: string) => {
   }
 }
 walk(id)
-const files = [id, ...[...used].sort()].map((n) => `${n}.tsx`)
-
 // The Showcase's shortest example (the simplest use), importing from the app's components/ui instead of the package.
 const demos = import.meta.glob<{ options?: { code: string }[] }>('../demos/*.tsx')
 const demo = demos[`../demos/${id}.tsx`] ? await demos[`../demos/${id}.tsx`]() : undefined
 const example = [...(demo?.options ?? [])].sort((a, b) => a.code.length - b.code.length)[0]?.code.replaceAll("'@satin/ui/", "'@/components/ui/").replaceAll("'@satin/ui'", `'@/components/ui/${id}'`)
+// Satin components the example imports beyond this one's own dependencies (Command menu's demo
+// opens from a SearchBar): install them in the same command, so the example compiles as shown.
+const extra = [...new Set([...(example ?? '').matchAll(/from '@\/components\/ui\/([\w-]+)'/g)].map((m) => m[1]))].filter(
+  (n) => n !== id && !used.has(n) && read(n),
+)
+for (const n of extra) {
+  used.add(n)
+  walk(n)
+}
+const command = `npx shadcn@latest add ${[id, ...extra].map((n) => `https://uisatin.dev/r/${n}.json`).join(' ')}`
+const files = [id, ...[...used].sort()].map((n) => `${n}.tsx`)
 const usage = `// main.tsx, once for the whole app
 import './styles/satin.css'
 

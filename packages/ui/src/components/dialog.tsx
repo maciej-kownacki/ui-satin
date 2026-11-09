@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
@@ -5,7 +7,7 @@ import { Button } from './button'
 
 /**
  * Dialog, 1:1 with the uiKit `Dialog` set (465:66873): variant default or destructive.
- * A 425px popover surface (min 360, max 560), radius-2xl, border/default, the shadcn `lg`
+ * A 425px popover surface (min 360, max 560, never wider or taller than the screen less 16px a side; the body scrolls), radius-2xl, border/default, the shadcn `lg`
  * shadow. Header 16 / 16 / 8 with a 14px medium title and a 13px muted description, a body
  * 16px in with a 12px gap (body text, any content, an optional `DialogAlert`), then a
  * right-aligned footer with 16px padding on both variants, on the same inset as the header and
@@ -94,7 +96,7 @@ export function Dialog({
             'inset-0 z-50 bg-black-a40',
           )}
         />
-        <div className={cn(position, 'pointer-events-none inset-0 z-50 grid place-items-center p-4')}>
+        <div className={cn(position, 'pointer-events-none inset-0 z-50 grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)] place-items-center p-4')}>
           <DialogPrimitive.Content
             role={variant === 'destructive' ? 'alertdialog' : 'dialog'}
             data-slot="dialog"
@@ -103,7 +105,7 @@ export function Dialog({
             // No description: tell Radix on purpose, so it doesn't warn.
             {...(description ? {} : { 'aria-describedby': undefined })}
             className={cn(
-              'pointer-events-auto relative flex w-[425px] max-w-[560px] min-w-[360px] flex-col overflow-clip',
+              'pointer-events-auto relative flex max-h-full w-[425px] max-w-[min(560px,100%)] min-w-[min(360px,100%)] flex-col overflow-clip',
               'rounded-2xl border border-border-default bg-bg-popover',
               '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
               'focus-visible:outline-none',
@@ -111,8 +113,8 @@ export function Dialog({
               className,
             )}
           >
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col gap-0.5 px-4 pt-4 pb-2">
+            <div className="flex min-h-0 flex-col gap-3">
+              <div className="flex shrink-0 flex-col gap-0.5 px-4 pt-4 pb-2">
                 <DialogPrimitive.Title className="pr-8 text-base leading-[14px] font-medium tracking-normal text-text-default">
                   {title}
                 </DialogPrimitive.Title>
@@ -121,7 +123,7 @@ export function Dialog({
                 ) : null}
               </div>
               {hasBody && (
-                <div className="flex flex-col gap-3 px-4 pb-3">
+                <div className="flex min-h-0 flex-col gap-3 overflow-y-auto px-4 pb-3">
                   {typeof children === 'string' ? <p className="text-body text-text-default">{children}</p> : children}
                   {alert}
                 </div>
@@ -129,7 +131,7 @@ export function Dialog({
             </div>
 
             {(footer || footerStart) && (
-              <div className="flex items-center justify-end gap-3 p-4">
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-3 p-4">
                 {footerStart && <div className="flex min-w-0 flex-1 items-center">{footerStart}</div>}
                 <div className="flex shrink-0 items-center gap-2">{footer}</div>
               </div>

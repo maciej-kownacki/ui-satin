@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { Collapsible, Slot, Tooltip } from 'radix-ui'
 import { NavArrowRight } from 'iconoir-react'

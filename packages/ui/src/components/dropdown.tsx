@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { DropdownMenu as DropdownPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'

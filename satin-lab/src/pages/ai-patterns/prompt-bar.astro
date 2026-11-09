@@ -23,7 +23,7 @@ const api = {
     { name: 'value', type: ['string'], default: '""' },
     { name: 'placeholder', type: ['string'], default: '"Write a message"' },
     { name: 'disabled', type: ['boolean'], default: 'false' },
-    { name: 'onSubmit', type: ['(value: string) => void'] },
+    { name: 'onSubmit', type: ['(value: string, attachments: File[]) => void'] },
   ],
 }
 ---

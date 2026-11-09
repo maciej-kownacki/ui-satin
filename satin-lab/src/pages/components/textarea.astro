@@ -8,7 +8,7 @@ const codeHtml = await highlight(options)
 // Inline until the lead adds 'textarea' to nav.ts / api.ts.
 const item = { id: 'textarea', title: 'Textarea', href: '/components/textarea', description: 'Multi-line text input for notes, requests and longer answers.' }
 const api = {
-  description: 'The `Textarea` component is a wrapper around the `textarea` element with a label, hint and character counter.',
+  description: 'The `Textarea` component is a wrapper around the `textarea` element with a label, hint and character counter. `maxLength` only drives the counter: it does not stop typing or pasting past it, so check the length in your form validation.',
   props: [
     { name: 'label', type: ['string'] },
     { name: 'optional', type: ['boolean'], default: 'false' },

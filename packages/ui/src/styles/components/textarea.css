@@ -21,7 +21,7 @@
   outline: none;
 }
 .satin-textarea::placeholder {
-  color: var(--text-placeholder);
+  color: var(--text-muted);
   opacity: 1;
 }
 .satin-field.satin-textarea:disabled {

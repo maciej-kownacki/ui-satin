@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { Search } from 'iconoir-react'
 import { cn } from '../lib/utils'
@@ -68,7 +70,7 @@ export const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(func
           onKeyDown?.(e)
         }}
         className={cn(
-          'min-w-0 flex-1 bg-transparent text-sm text-text-default outline-none placeholder:text-text-subtle focus-visible:ring-0',
+          'min-w-0 flex-1 bg-transparent text-sm text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0',
           '[&::-webkit-search-cancel-button]:appearance-none',
           className,
         )}

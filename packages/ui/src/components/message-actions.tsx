@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { Clock, Copy, DoubleCheck, Link, ThumbsDown, ThumbsUp } from 'iconoir-react'
 import { cn } from '../lib/utils'

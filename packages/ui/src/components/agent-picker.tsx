@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { DropdownMenu } from 'radix-ui'
 import { Check, NavArrowDown, Plus } from 'iconoir-react'

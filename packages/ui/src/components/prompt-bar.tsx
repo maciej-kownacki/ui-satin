@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { DropdownMenu, Popover } from 'radix-ui'
 import { ArrowUp, Attachment as AttachmentIcon, Check, Globe, Microphone, NavArrowDown, Page, Plus, Search, Xmark } from 'iconoir-react'
@@ -238,7 +240,7 @@ export function PromptBar({
               className={cn(
                 'block h-7 min-w-0 flex-1 resize-none bg-transparent py-[3.5px] text-base leading-[21px] text-text-default',
                 expanded && 'order-first basis-full px-1',
-                'outline-none placeholder:text-text-subtle focus-visible:ring-0 disabled:cursor-not-allowed',
+                'outline-none placeholder:text-text-muted focus-visible:ring-0 disabled:cursor-not-allowed',
               )}
             />
 

@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { RadioGroup } from 'radix-ui'
 import { Check, EditPencil, NavArrowLeft, NavArrowRight } from 'iconoir-react'

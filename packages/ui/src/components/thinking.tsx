@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { Check, EditPencil, NavArrowDown } from 'iconoir-react'
 import { cn } from '../lib/utils'

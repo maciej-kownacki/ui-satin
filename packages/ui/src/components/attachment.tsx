@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { HoverCard } from 'radix-ui'
 import { ArrowUpRight, NavArrowDown, NavArrowUp, Xmark } from 'iconoir-react'
