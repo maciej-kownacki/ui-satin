@@ -51,7 +51,8 @@ export interface ShowcaseProps {
   codeHtml: Record<string, string>
   /** Props the reader can set, most structural first. Replaces the option bar. */
   controls?: ShowcaseControl[]
-  render: (optionId: string, values: Record<string, string>) => React.ReactNode
+  /** `set` lets the preview move a prop itself, e.g. a flow stepping to the next Type. */
+  render: (optionId: string, values: Record<string, string>, set: (id: string, value: string) => void) => React.ReactNode
 }
 
 type Tab = 'preview' | 'code'
@@ -60,6 +61,7 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
   const [values, setValues] = React.useState(() =>
     Object.fromEntries((controls ?? []).map((c) => [c.id, initialValue(c)])),
   )
+  const setValue = React.useCallback((id: string, value: string) => setValues((s) => ({ ...s, [id]: value })), [])
   const [picked, setOption] = React.useState(options[0].id)
   const option = controls ? comboId(controls, values) : picked
   const [tab, setTab] = React.useState<Tab>('preview')
@@ -274,7 +276,7 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
                 ref={stageRef}
                 className={cn('m-auto flex w-max min-w-full items-center justify-center px-10 pt-6', bar ? 'pb-6' : 'pb-16')}
               >
-                {render(current.id, values)}
+                {render(current.id, values, setValue)}
               </div>
             </div>
             {bar}
