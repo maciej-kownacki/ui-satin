@@ -255,7 +255,7 @@ function Header({
             >
               <NavArrowLeft aria-hidden />
             </Button>
-            <span className="text-sm whitespace-nowrap text-text-muted">{step}</span>
+            <span aria-live="polite" className="text-sm whitespace-nowrap text-text-muted tabular-nums">{step}</span>
             <Button
               variant="tertiary"
               size="xs"

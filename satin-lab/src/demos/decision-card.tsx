@@ -214,13 +214,19 @@ function code(v: Record<string, string>) {
           v.type !== 'radio' && `type="${v.type}"`,
           `title="${examples[v.type].title}"`,
           v.hint === 'on' && `hint="${examples[v.type].hint}"`,
-          v.step === 'on' && 'step="1/3"',
+          v.step === 'on' && 'step={`${index + 1}/${questions.length}`}',
+          v.step === 'on' && 'onPreviousStep={index > 0 ? () => setIndex(index - 1) : undefined}',
+          v.step === 'on' && 'onNextStep={index < questions.length - 1 ? () => setIndex(index + 1) : undefined}',
           ...examples[v.type].code,
           examples[v.type].onContinue,
-          v.skip === 'on' && 'onSkip={skip}',
+          v.skip === 'on' && (v.step === 'on' ? 'onSkip={() => setIndex(index + 1)}' : 'onSkip={skip}'),
         ].filter(Boolean)
-  return `import { DecisionCard } from '@satin/ui/decision-card'
-
+  const flow =
+    v.type !== 'summary' && v.step === 'on'
+      ? `\n// One question of several: the arrows move between them, Skip goes to the next.\nconst [index, setIndex] = React.useState(0)\n`
+      : ''
+  return `${flow ? "import * as React from 'react'\n" : ''}import { DecisionCard } from '@satin/ui/decision-card'
+${flow}
 <DecisionCard
 ${props.map((p) => `  ${p}`).join('\n')}
 />`
@@ -237,33 +243,56 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   code: code(v),
 }))
 
-/** Answering collapses the card to its summary; Change brings the question back. */
+const order = Object.keys(examples)
+
+/**
+ * With Step on, the stage runs the question types as one flow, starting at the chosen Type: the
+ * arrows move between them and Skip goes to the next one, and the counter follows. Answering
+ * collapses a card to its summary; Change brings the question back. The card hangs from the top
+ * of the stage, so a taller or shorter question never moves its title.
+ */
 function Demo({ v }: { v: Record<string, string> }) {
-  const [answer, setAnswer] = React.useState<DecisionValue | null>(null)
+  const [index, setIndex] = React.useState(() => Math.max(0, order.indexOf(v.type)))
+  const [answers, setAnswers] = React.useState<Record<string, DecisionValue>>({})
   if (v.type === 'summary') return <DecisionCard type="summary" title={summary.title} value={summary.value} onEdit={() => {}} />
 
-  const example = examples[v.type]
+  const stepped = v.step === 'on'
+  const type = stepped ? order[index] : v.type
+  const example = examples[type]
   const opts = example.props.options ?? []
-  if (answer !== null) {
+  const answer = answers[type]
+  const answerWith = (value: DecisionValue) => setAnswers((a) => ({ ...a, [type]: value }))
+  const last = index === order.length - 1
+
+  if (answer !== undefined) {
     return (
       <DecisionCard
         type="summary"
         title={example.title}
         options={opts}
-        value={v.type === 'draft' ? ['Reply sent'] : answer}
-        onEdit={() => setAnswer(null)}
+        value={type === 'draft' ? ['Reply sent'] : answer}
+        onEdit={() =>
+          setAnswers((a) => {
+            const { [type]: _, ...rest } = a
+            return rest
+          })
+        }
       />
     )
   }
   return (
     <DecisionCard
+      // A new question starts fresh, not with the last one's picks.
+      key={type}
       {...example.props}
-      type={v.type as 'radio' | 'checkbox' | 'chips' | 'ranking' | 'draft'}
+      type={type as 'radio' | 'checkbox' | 'chips' | 'ranking' | 'draft'}
       title={example.title}
       hint={v.hint === 'on' ? example.hint : undefined}
-      step={v.step === 'on' ? '1/3' : undefined}
-      onContinue={(value) => setAnswer(v.type === 'ranking' ? (value as string[]).slice(0, 2) : value)}
-      onSkip={v.skip === 'on' ? () => setAnswer(['Skipped']) : undefined}
+      step={stepped ? `${index + 1}/${order.length}` : undefined}
+      onPreviousStep={stepped && index > 0 ? () => setIndex(index - 1) : undefined}
+      onNextStep={stepped && !last ? () => setIndex(index + 1) : undefined}
+      onContinue={(value) => answerWith(type === 'ranking' ? (value as string[]).slice(0, 2) : value)}
+      onSkip={v.skip === 'on' ? () => (stepped && !last ? setIndex(index + 1) : answerWith(['Skipped'])) : undefined}
     />
   )
 }
@@ -276,7 +305,11 @@ export default function DecisionCardDemo({ codeHtml }: { codeHtml: Record<string
       codeHtml={codeHtml}
       controls={controls}
       // Remount on every change, so a new combination starts from the question, not an old answer.
-      render={(id, v) => <Demo key={id} v={v} />}
+      render={(id, v) => (
+        <div className="h-[344px] w-full max-w-[400px] self-start md:h-[320px]">
+          <Demo key={id} v={v} />
+        </div>
+      )}
     />
   )
 }
