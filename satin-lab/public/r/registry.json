@@ -125,7 +125,8 @@
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/tooltip.json"
       ],
       "docs": "Avatar docs: https://uisatin.dev/components/avatar",
       "files": [
@@ -341,6 +342,25 @@
       ]
     },
     {
+      "name": "citations",
+      "type": "registry:ui",
+      "title": "Citations",
+      "description": "Numbered sources in an answer, with a preview on hover and the list under it.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/hover-card.json"
+      ],
+      "docs": "Citations docs: https://uisatin.dev/ai-patterns/citations",
+      "files": [
+        {
+          "path": "registry/satin/ui/citations.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "code-block",
       "type": "registry:ui",
       "title": "Code block",
@@ -405,6 +425,28 @@
       "files": [
         {
           "path": "registry/satin/ui/command-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "title": "Context menu",
+      "description": "The actions for one thing, at the pointer, on right-click or a long press.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/dropdown.json"
+      ],
+      "docs": "Context menu docs: https://uisatin.dev/components/context-menu",
+      "files": [
+        {
+          "path": "registry/satin/ui/context-menu.tsx",
           "type": "registry:ui"
         }
       ]
@@ -595,6 +637,26 @@
       ]
     },
     {
+      "name": "hover-card",
+      "type": "registry:ui",
+      "title": "Hover card",
+      "description": "A preview of a person, place or file while the pointer rests on its link.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Hover card docs: https://uisatin.dev/components/hover-card",
+      "files": [
+        {
+          "path": "registry/satin/ui/hover-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "input",
       "type": "registry:ui",
       "title": "Input",
@@ -609,6 +671,25 @@
       "files": [
         {
           "path": "registry/satin/ui/input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input-otp",
+      "type": "registry:ui",
+      "title": "Input OTP",
+      "description": "A one-time code in separate cells, with paste and SMS autofill.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "Input OTP docs: https://uisatin.dev/components/input-otp",
+      "files": [
+        {
+          "path": "registry/satin/ui/input-otp.tsx",
           "type": "registry:ui"
         }
       ]
@@ -688,6 +769,27 @@
       "files": [
         {
           "path": "registry/satin/ui/message-actions.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "number-input",
+      "type": "registry:ui",
+      "title": "Number input",
+      "description": "A number with − and + and the arrow keys, kept between a min and a max.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "Number input docs: https://uisatin.dev/components/number-input",
+      "files": [
+        {
+          "path": "registry/satin/ui/number-input.tsx",
           "type": "registry:ui"
         }
       ]

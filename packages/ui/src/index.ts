@@ -57,3 +57,8 @@ export { StreamingText, type StreamingTextProps } from './components/streaming-t
 export { Thinking, type ThinkingProps, type ThinkingStep, type ThinkingState, type ThinkingIndicator } from './components/thinking'
 export { AgentLoading, type AgentLoadingProps, type AgentLoadingIndicator, TetrisMark, TetrisLabel, TetrisStill, FlappySprite, ShimmerLabel, type Glimmer } from './components/agent-loading'
 export { FileUpload, FileUploadItem, fileIconFor, formatBytes, type FileUploadProps, type FileUploadFile, type FileUploadRejection, type FileUploadStatus } from './components/file-upload'
+export { InputOTP, type InputOTPProps } from './components/input-otp'
+export { NumberInput, type NumberInputProps } from './components/number-input'
+export { ContextMenu, ContextMenuItem, ContextMenuSub, ContextMenuSeparator, type ContextMenuProps, type ContextMenuItemProps, type ContextMenuSubProps } from './components/context-menu'
+export { HoverCard, hoverCardClass, type HoverCardProps } from './components/hover-card'
+export { Citation, Sources, type CitationProps, type CitationSource, type SourcesProps } from './components/citations'

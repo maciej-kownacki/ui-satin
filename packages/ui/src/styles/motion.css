@@ -204,3 +204,11 @@
   border-radius: 1px;
   background: var(--action-primary-bg);
 }
+
+/* InputOTP (components/input-otp.tsx): the caret in the active cell blinks on and off. */
+@keyframes satin-caret {
+  50% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='input-otp'] .animate-\[satin-caret_1s_steps\(1\)_infinite\] { animation: none; }
+}

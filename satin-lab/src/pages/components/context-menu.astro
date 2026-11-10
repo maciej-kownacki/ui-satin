@@ -1,0 +1,28 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import Demo, { options } from '../../demos/context-menu'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+const api = {
+  description: "The `ContextMenu` component opens on right-click or a long press of its `trigger`, at the pointer. `ContextMenuItem`, `ContextMenuSub` and `ContextMenuSeparator` build the list.",
+  props: [
+    {name: 'trigger', type: ['ReactNode']},
+    {name: 'children', type: ['ReactNode']},
+    {name: 'onOpenChange', type: ['(open: boolean) => void']},
+    {name: 'ContextMenuItem.label', type: ['string']},
+    {name: 'ContextMenuItem.icon', type: ['ReactNode']},
+    {name: 'ContextMenuItem.shortcut', type: ['string']},
+    {name: 'ContextMenuItem.destructive', type: ['boolean']},
+    {name: 'ContextMenuSub.label', type: ['string']},
+  ],
+}
+---
+
+<Docs current="context-menu">
+  <DocSection item={page('context-menu')} api={api}>
+    <Demo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

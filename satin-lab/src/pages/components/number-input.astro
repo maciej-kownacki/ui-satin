@@ -1,0 +1,31 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import Demo, { options } from '../../demos/number-input'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+const api = {
+  description: "The `NumberInput` component is a spinbutton: arrow keys step, Page Up / Down step ten times, Home / End jump to the limits; a typed value is clamped and snapped on Enter or blur.",
+  props: [
+    {name: 'value', type: ['number']},
+    {name: 'defaultValue', type: ['number'], default: '0'},
+    {name: 'onValueChange', type: ['(value: number) => void']},
+    {name: 'min', type: ['number']},
+    {name: 'max', type: ['number']},
+    {name: 'step', type: ['number'], default: '1'},
+    {name: 'size', type: ['"sm"', '"md"', '"lg"'], default: '"md"'},
+    {name: 'formatValue', type: ['(value: number) => string']},
+    {name: 'label', type: ['ReactNode']},
+    {name: 'hint', type: ['ReactNode']},
+    {name: 'error', type: ['ReactNode', 'boolean']},
+  ],
+}
+---
+
+<Docs current="number-input">
+  <DocSection item={page('number-input')} api={api}>
+    <Demo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

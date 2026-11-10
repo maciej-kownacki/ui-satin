@@ -1,0 +1,25 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import Demo, { options } from '../../demos/citations'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+const api = {
+  description: "The `Citation` component is a numbered link with a `HoverCard` preview of its source; `Sources` folds the list of sources into a pill that opens it.",
+  props: [
+    {name: 'Citation.index', type: ['number']},
+    {name: 'Citation.source', type: ['CitationSource']},
+    {name: 'Sources.sources', type: ['CitationSource[]']},
+    {name: 'Sources.defaultOpen', type: ['boolean'], default: 'false'},
+    {name: 'CitationSource', type: ['{ title, origin?, href?, icon?, quote? }']},
+  ],
+}
+---
+
+<Docs current="citations">
+  <DocSection item={page('citations')} api={api}>
+    <Demo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>
