@@ -15,8 +15,9 @@ import { FlappySprite, TetrisStill, type AgentLoadingIndicator } from './agent-l
  * with 4px left inset: a 16px rail (1px line, rail-edge → rail-center → rail-edge) and, 12px
  * on, the steps 8px apart.
  *
- * Collapsed and expanded are a native `details`, so the summary toggles with click, Enter and
- * Space; `state` sets the starting state and follows later changes, `onToggle` reports them.
+ * The header is a button (click, Enter, Space) that opens and folds the body with the
+ * Accordion's motion; the folded body stays mounted but leaves tab order and screen readers.
+ * `state` sets the starting state and follows later changes, `onToggle` reports them.
  */
 export type ThinkingStep =
   /** A finished action: green check, label, muted meta that truncates. */
@@ -64,40 +65,48 @@ export function Thinking({
 }: ThinkingProps) {
   const [open, setOpen] = React.useState(state === 'expanded')
   React.useEffect(() => setOpen(state === 'expanded'), [state])
+  const bodyId = `${React.useId()}-steps`
 
   return (
     <div data-slot="thinking" data-state={open ? 'expanded' : 'collapsed'} className={cn('w-full', className)} {...props}>
-      <details
-        open={open}
-        onToggle={(e) => {
-          const next = e.currentTarget.open
-          if (next === open) return
-          setOpen(next)
-          onToggle?.(next)
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={bodyId}
+        onClick={() => {
+          setOpen(!open)
+          onToggle?.(!open)
         }}
-        className="group"
+        className="group flex w-fit cursor-pointer items-center gap-3 rounded-md p-1 outline-none select-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]"
       >
-        <summary className="flex w-fit cursor-pointer list-none items-center gap-3 rounded-md p-1 select-none [&::-webkit-details-marker]:hidden">
-          <ThinkingMark indicator={indicator} />
-          <span className="text-sm whitespace-nowrap text-text-muted">{label}</span>
-          <NavArrowDown
-            aria-hidden
-            className="size-icon-size-sm shrink-0 text-text-muted transition-transform duration-(--duration-base) ease-(--ease-out) [stroke-width:1.875] group-open:rotate-180"
-          />
-        </summary>
-        <div data-state={open ? 'open' : 'closed'} className="satin-collapsible mt-2 flex gap-3 overflow-clip pl-1">
-          <div aria-hidden className="relative w-4 shrink-0 self-stretch">
-            <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-linear-to-b from-component-rail-edge via-component-rail-center to-component-rail-edge" />
+        <ThinkingMark indicator={indicator} />
+        <span className="text-sm whitespace-nowrap text-text-muted">{label}</span>
+        <NavArrowDown
+          aria-hidden
+          className={cn(
+            'size-icon-size-sm shrink-0 text-text-muted transition-transform duration-(--duration-base) ease-(--ease-out) [stroke-width:1.875]',
+            open && 'rotate-180',
+          )}
+        />
+      </button>
+      {/* The Accordion's motion (satin-expand): the body grows down from under the header, which
+          never moves, and its steps settle in from the top edge; closing is quicker. */}
+      <div id={bodyId} data-state={open ? 'open' : 'closed'} className="satin-expand">
+        <div>
+          <div className="flex gap-3 pt-2 pl-1">
+            <div aria-hidden className="relative w-4 shrink-0 self-stretch">
+              <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-linear-to-b from-component-rail-edge via-component-rail-center to-component-rail-edge" />
+            </div>
+            <ol className="flex min-w-0 flex-1 flex-col gap-2">
+              {steps.map((step, i) => (
+                <li key={i} className="min-w-0">
+                  <Step step={step} />
+                </li>
+              ))}
+            </ol>
           </div>
-          <ol className="flex min-w-0 flex-1 flex-col gap-2">
-            {steps.map((step, i) => (
-              <li key={i} className="min-w-0">
-                <Step step={step} />
-              </li>
-            ))}
-          </ol>
         </div>
-      </details>
+      </div>
     </div>
   )
 }
