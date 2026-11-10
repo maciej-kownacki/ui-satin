@@ -42,8 +42,6 @@ export interface ChartCardBaseProps extends Omit<React.ComponentProps<'div'>, 't
   formatValue?: (value: number) => string
   /** Index of the datum shown as hovered (state sheets, docs). */
   highlight?: number
-  /** Footer slot, e.g. a tertiary and an inverse button. */
-  footer?: React.ReactNode
 }
 
 export const defaultFormat = (n: number) => n.toLocaleString('en-US')
@@ -56,7 +54,6 @@ export function ChartCard({
   periods,
   value,
   onPeriodChange,
-  footer,
   className,
   children,
   bodyClassName,
@@ -81,7 +78,6 @@ export function ChartCard({
         {periods && <PeriodToggles periods={periods} value={value} onValueChange={onPeriodChange} />}
         {children}
       </div>
-      {footer && <div className="flex items-center justify-between p-4">{footer}</div>}
     </div>
   )
 }
@@ -231,9 +227,12 @@ export function ChartLegendRow({
       data-slot="chart-legend-row"
       className={cn(
         'flex h-8 items-center gap-2 rounded-md px-2 py-1.5 text-sm leading-(--text-sm--line-height)',
-        'transition-[background-color,opacity] duration-(--duration-fast) ease-(--ease-out)',
+        // The dim fades the row's content, never its ground: on the row itself it would multiply
+        // the leaving highlight's fade-out and cut it short.
+        'transition-[background-color] duration-(--duration-fast) ease-(--ease-out)',
+        '*:transition-opacity *:duration-(--duration-fast) *:ease-(--ease-out)',
         active && 'bg-bg-muted',
-        dimmed && 'opacity-45',
+        dimmed && '*:opacity-45',
         className,
       )}
       {...props}

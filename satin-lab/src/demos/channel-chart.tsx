@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Button } from '@satin/ui/button'
 import { ChannelCard } from '@satin/ui/channel-chart'
 import type { ChartDatum } from '@satin/ui/chart'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
@@ -23,17 +22,14 @@ const periods = [
 // The datum shown as hovered with Highlight: the biggest channel.
 const highlighted = 0
 
-// Periods and the footer are content the card can carry; the highlighted (hover) look is a
-// state, last.
+// Periods are content the card can carry; the highlighted (hover) look is a state, last.
 export const controls: ShowcaseControl[] = [
   { id: 'periods', label: 'Periods', type: 'switch', default: 'off' },
-  { id: 'footer', label: 'Footer', type: 'switch', default: 'on' },
   { id: 'highlight', label: 'Highlight', type: 'switch', default: 'off' },
 ]
 
 function code(v: Record<string, string>) {
   const withPeriods = v.periods === 'on'
-  const footer = v.footer === 'on'
   const data = `const channels = [\n${channels.map((c) => `  { label: '${c.label}', value: ${c.value} },`).join('\n')}\n]`
   const attrs = [
     'title="Revenue by channel"',
@@ -45,12 +41,10 @@ function code(v: Record<string, string>) {
       ? [`periods={[['7 days', '30 days', '90 days', '365 days'], ['Sep', 'Oct', 'Nov'], ['2025', '2026']]}`, 'value={period}', 'onPeriodChange={setPeriod}']
       : []),
     ...(v.highlight === 'on' ? [`highlight={${highlighted}}`] : []),
-    ...(footer ? ['footer={<><Button variant="tertiary">Save to reports</Button><Button variant="inverse">Save</Button></>}'] : []),
   ]
   const imports = [
     withPeriods && "import * as React from 'react'",
     "import { ChannelCard } from '@satin/ui/channel-chart'",
-    footer && "import { Button } from '@satin/ui/button'",
   ]
   return `${imports.filter(Boolean).join('\n')}
 
@@ -67,7 +61,6 @@ ${attrs.map((a) => `      ${a}`).join('\n')}
 
 const labels: Record<string, [string, string]> = {
   periods: ['Periods', 'No periods'],
-  footer: ['Footer', 'No footer'],
   highlight: ['Highlighted', 'At rest'],
 }
 
@@ -77,15 +70,6 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   code: code(v),
 }))
 
-function Footer() {
-  return (
-    <>
-      <Button variant="tertiary">Save to reports</Button>
-      <Button variant="inverse">Save</Button>
-    </>
-  )
-}
-
 function Card({ v }: { v: Record<string, string> }) {
   const [period, setPeriod] = React.useState('7 days')
   const shared = {
@@ -93,7 +77,6 @@ function Card({ v }: { v: Record<string, string> }) {
     range: 'Oct 26 – Nov 1, 2026',
     ...(v.periods === 'on' && { periods, value: period, onPeriodChange: setPeriod }),
     highlight: v.highlight === 'on' ? highlighted : undefined,
-    footer: v.footer === 'on' ? <Footer /> : undefined,
   }
   return <ChannelCard {...shared} data={channels} change="+5.2%" formatValue={euro} />
 }

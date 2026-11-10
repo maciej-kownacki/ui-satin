@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Button } from '@satin/ui/button'
 import { BarCard } from '@satin/ui/bar-chart'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import { DATA, PERIODS, format } from './covers-data'
@@ -10,19 +9,17 @@ const busiest = (period: string) => {
   return values.indexOf(Math.max(...values))
 }
 
-// Periods, the picked period and the footer are content the card can carry; reduced motion
+// Periods and the picked period are content the card can carry; reduced motion
 // and the highlighted (hover) look are states, last. The card's own toggles move Period too.
 export const controls: ShowcaseControl[] = [
   { id: 'periods', label: 'Periods', type: 'switch', default: 'off' },
   { id: 'period', label: 'Period', type: 'menu', default: '7 days', items: PERIODS.flat().map((p) => ({ value: p, label: p })) },
-  { id: 'footer', label: 'Footer', type: 'switch', default: 'on' },
   { id: 'reduced', label: 'Reduced motion', type: 'switch', default: 'off' },
   { id: 'highlight', label: 'Highlight', type: 'switch', default: 'off' },
 ]
 
 function code(v: Record<string, string>) {
   const withPeriods = v.periods === 'on'
-  const footer = v.footer === 'on'
   const { range, data: first } = DATA[v.period]
   const d = first[0]
   const data = `const covers = {
@@ -50,12 +47,10 @@ const compact = (n: number) => (n >= 1000 ? \`\${+(n / 1000).toFixed(1)}k\` : n.
     "legend={{ label: 'Total covers', note: '+8.4% vs last period' }}",
     ...(v.reduced === 'on' ? ['reducedMotion'] : []),
     ...(v.highlight === 'on' ? [`highlight={${busiest(v.period)}}`] : []),
-    ...(footer ? ['footer={<><Button variant="tertiary">Save to reports</Button><Button variant="inverse">Save</Button></>}'] : []),
   ]
   const imports = [
     withPeriods && "import * as React from 'react'",
     "import { BarCard } from '@satin/ui/bar-chart'",
-    footer && "import { Button } from '@satin/ui/button'",
   ]
   return `${imports.filter(Boolean).join('\n')}
 
@@ -72,7 +67,6 @@ ${attrs.map((a) => `      ${a}`).join('\n')}
 
 const labels: Record<string, [string, string]> = {
   periods: ['Periods', 'No periods'],
-  footer: ['Footer', 'No footer'],
   reduced: ['Reduced motion', 'Motion'],
   highlight: ['Highlighted', 'At rest'],
 }
@@ -82,15 +76,6 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   label: [v.period, ...Object.entries(labels).map(([k, [on, off]]) => (v[k] === 'on' ? on : off))].join(' · '),
   code: code(v),
 }))
-
-function Footer() {
-  return (
-    <>
-      <Button variant="tertiary">Save to reports</Button>
-      <Button variant="inverse">Save</Button>
-    </>
-  )
-}
 
 function Card({ v, set }: { v: Record<string, string>; set: (id: string, value: string) => void }) {
   const { range, data } = DATA[v.period]
@@ -105,7 +90,6 @@ function Card({ v, set }: { v: Record<string, string>; set: (id: string, value: 
       {...(v.periods === 'on' && { periods: PERIODS, value: v.period, onPeriodChange: (p: string) => set('period', p) })}
       reducedMotion={v.reduced === 'on'}
       highlight={v.highlight === 'on' ? busiest(v.period) : undefined}
-      footer={v.footer === 'on' ? <Footer /> : undefined}
     />
   )
 }
