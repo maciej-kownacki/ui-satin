@@ -26,10 +26,9 @@ export function setMode(next: Theme) {
 }
 
 /**
- * The theme change as a curtain, like Glimmer's band but much quieter: the new theme is laid over
- * the whole screen from left to right behind a soft 12%-wide edge, and a faint prism band
- * (glimm.dev's cyan → indigo → magenta, through Glimmer's pixel grid) rides that edge. 600 ms,
- * ease-in-out since it crosses the screen. Without View Transitions, or under reduced motion, the
+ * The theme change as a duvet lifted at a corner: the new theme comes in on a 45° diagonal from the
+ * top-left to the bottom-right behind a soft edge, with a faint shadow where it lifts and a quiet
+ * Glimmer prism on the new side. 700 ms, ease-in-out since it crosses the screen. Without View Transitions, or under reduced motion, the
  * theme just changes. Styles in lab.css (`data-theme-sweep`).
  */
 function sweep(start: (cb: () => void) => { finished: Promise<void> }, apply: () => void) {

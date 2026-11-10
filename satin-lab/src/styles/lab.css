@@ -96,53 +96,61 @@ html.dark .theme-switch:not([data-ready]) button:nth-of-type(2) {
   }
 }
 
-/* Theme change curtain (ThemeSwitch.tsx `sweep`). The new page is revealed through a mask three
-   screens wide: solid up to 45%, a soft edge to 49%, then clear, so the edge is 12% of the screen.
-   Moving the mask from 100% to 0% carries that edge from off the left to off the right. The band
-   is placed on the same path and timing, centred on the edge. */
+/* Theme change curtain (ThemeSwitch.tsx `sweep`): the new theme comes in on a 45° diagonal, from
+   the top-left corner to the bottom-right, like a duvet lifted by one corner. The new page shows
+   through a mask three screens wide and tall, solid up to 45% of its diagonal and clear from 49%,
+   so the edge is soft. Moving the mask from 100% 100% to 0 0 carries that edge from beyond the
+   top-left corner to beyond the bottom-right. Riding the edge, a band: a faint shadow on the old
+   side, where the "duvet" lifts, and Glimmer's prism on the new side, very quietly. 700 ms,
+   ease-in-out since it crosses the whole screen. */
 html[data-theme-sweep]::view-transition-old(root),
 html[data-theme-sweep]::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
 html[data-theme-sweep]::view-transition-new(root) {
-  -webkit-mask: linear-gradient(90deg, #000 45%, transparent 49%) 0 0 / 300% 100% no-repeat;
-  mask: linear-gradient(90deg, #000 45%, transparent 49%) 0 0 / 300% 100% no-repeat;
-  animation: theme-sweep-mask 600ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  -webkit-mask: linear-gradient(135deg, #000 45%, transparent 49%) 100% 100% / 300% 300% no-repeat;
+  mask: linear-gradient(135deg, #000 45%, transparent 49%) 100% 100% / 300% 300% no-repeat;
+  animation: theme-sweep-mask 700ms cubic-bezier(0.65, 0, 0.35, 1) both;
 }
 @keyframes theme-sweep-mask {
-  from { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
+  from { -webkit-mask-position: 100% 100%; mask-position: 100% 100%; }
   to { -webkit-mask-position: 0 0; mask-position: 0 0; }
 }
 
+/* The band is a stripe across the screen's diagonal, turned 45° so it lies along the edge. */
 .theme-sweep-band {
   position: fixed;
-  inset: 0 auto 0 0;
-  width: 20vw;
+  top: 50%;
+  left: 50%;
+  width: 22vmax;
+  height: 300vmax;
+  margin: -150vmax 0 0 -11vmax;
+  rotate: 45deg;
   pointer-events: none;
   view-transition-name: theme-sweep-band;
-  background: linear-gradient(90deg, transparent, #00c0e8 30%, #6155f5 50%, #cb30e0 70%, transparent);
-  opacity: 0.1;
-  -webkit-mask:
-    repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 2.5px),
-    repeating-linear-gradient(180deg, #000 0 2px, transparent 2px 3px);
-  -webkit-mask-composite: source-in;
-  mask:
-    repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 2.5px),
-    repeating-linear-gradient(180deg, #000 0 2px, transparent 2px 3px);
-  mask-composite: intersect;
+  /* Turned 45°, the band's left half lies on the new theme and its right half on the old one:
+     the prism on the new side, the lift's shadow falling ahead of it on the old side. */
+  background:
+    linear-gradient(90deg, transparent 14%, color-mix(in oklab, #00c0e8 10%, transparent) 30%, color-mix(in oklab, #6155f5 10%, transparent) 40%, color-mix(in oklab, #cb30e0 8%, transparent) 47%, transparent 50%),
+    linear-gradient(90deg, transparent 50%, color-mix(in oklab, #000 10%, transparent) 50%, transparent 86%);
 }
 .dark .theme-sweep-band {
-  opacity: 0.16;
+  background:
+    linear-gradient(90deg, transparent 14%, color-mix(in oklab, #00c0e8 16%, transparent) 30%, color-mix(in oklab, #6155f5 16%, transparent) 40%, color-mix(in oklab, #cb30e0 13%, transparent) 47%, transparent 50%),
+    linear-gradient(90deg, transparent 50%, color-mix(in oklab, #000 30%, transparent) 50%, transparent 86%);
 }
-::view-transition-new(theme-sweep-band) {
+/* The group keeps the band's own place and 45° turn; only its picture moves, along the band's
+   turned x axis, so a step of t on both screen axes is t·√2 along it. The edge is the line
+   x + y = c, with c running from −0.59 to 1.41 times (W + H) as the mask moves; the band, centred
+   on screen, sits on x + y = (W + H)/2 + 2t, so t runs from −0.545 to 0.455 times (W + H). */
+::view-transition-group(theme-sweep-band) {
   animation: none;
 }
-::view-transition-group(theme-sweep-band) {
-  /* Edge centre runs from -59vw to 141vw; the 20vw band is centred on it. */
-  animation: theme-sweep-band 600ms cubic-bezier(0.65, 0, 0.35, 1) both;
+::view-transition-new(theme-sweep-band) {
+  animation: theme-sweep-band 700ms cubic-bezier(0.65, 0, 0.35, 1) both;
 }
 @keyframes theme-sweep-band {
-  from { transform: translateX(-69vw); }
-  to { transform: translateX(131vw); }
+  from { transform: translateX(calc(-0.545 * 1.41421 * (100vw + 100vh))); }
+  to { transform: translateX(calc(0.455 * 1.41421 * (100vw + 100vh))); }
 }
