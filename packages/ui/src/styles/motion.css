@@ -173,3 +173,16 @@
 .satin-page-text[data-motion='scroll'][data-phase='in'][data-dir='prev'] { animation: satin-page-in-prev var(--duration-slow) var(--ease-out) both; }
 .satin-page-text[data-motion='scroll'][data-phase='out'][data-dir='next'] { animation: satin-page-out-next var(--duration-base) var(--ease-out) both; }
 .satin-page-text[data-motion='scroll'][data-phase='out'][data-dir='prev'] { animation: satin-page-out-prev var(--duration-base) var(--ease-out) both; }
+
+/* Bar chart (components/bar-chart.tsx): new data regrows the bars from the baseline, revealed
+   by clip-path so the rounded tops stay whole; the day labels and the axis fade in. */
+@keyframes satin-bar-regrow {
+  from { clip-path: inset(100% 0 0 0 round var(--radius-md)); }
+  to { clip-path: inset(0 0 0 0 round var(--radius-md)); }
+}
+.satin-bar-regrow {
+  animation: satin-bar-regrow var(--duration-slow) var(--ease-out);
+}
+.satin-bar-fade {
+  animation: satin-fade-in var(--duration-base) var(--ease-out);
+}

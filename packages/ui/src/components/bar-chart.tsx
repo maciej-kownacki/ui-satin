@@ -13,6 +13,11 @@ import { ChartCard, ChartLegendRow, ChartTooltip, defaultFormat, type ChartCardB
  * in chart/3 and day labels medium 13 text-muted 6px below. Hover (or `highlight`) keeps the
  * hovered bar, outlines it 2px out in chart/3, shows its value above and bolds its day; the
  * other bars dim to a 30% tint of chart/3 on bg/card, so they follow the bar, not the brand. A legend row sits under the plot.
+ *
+ * When the data changes (a new period, say) the bars regrow from the baseline in 250 ms on
+ * ease-out, revealed by clip-path so their rounded tops stay whole, and the day labels and the
+ * axis fade in on the new scale. Not on the first paint; under reduced motion, or with
+ * `reducedMotion`, the bars swap at once.
  */
 function niceMax(max: number) {
   if (max <= 0) return 4
@@ -28,6 +33,8 @@ export interface BarCardProps extends ChartCardBaseProps {
   legend?: { label: string; value?: string; note?: string }
   /** Unit after the value in the tooltip ("covers"). */
   unit?: string
+  /** Swap the bars without motion when the data changes, as under prefers-reduced-motion. */
+  reducedMotion?: boolean
 }
 
 const TRACK = 180
@@ -39,11 +46,18 @@ export function BarCard({
   legend,
   unit,
   periods,
+  reducedMotion,
   ...props
 }: BarCardProps) {
   const [hovered, setHovered] = React.useState<number | null>(null)
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
-  const active = hovered ?? highlight ?? null
+  const active = (hovered != null && hovered < data.length ? hovered : null) ?? highlight ?? null
+  // Counts real changes to the data (not a new array with the same values), so the bars
+  // remount and regrow; zero until the first change.
+  const signature = data.map((d) => `${d.label}:${d.value}`).join('|')
+  const [redraw, setRedraw] = React.useState({ signature, n: 0 })
+  if (redraw.signature !== signature) setRedraw({ signature, n: redraw.n + 1 })
+  const regrow = redraw.n > 0 && !reducedMotion
   const max = niceMax(Math.max(0, ...data.map((d) => d.value)))
   const ticks = [4, 3, 2, 1, 0].map((i) => (max / 4) * i)
   const total = data.reduce((n, d) => n + d.value, 0)
@@ -63,15 +77,18 @@ export function BarCard({
           ))}
           {ticks.map((t, i) => (
             <span
-              key={t}
+              key={`${redraw.n}-${i}`}
               aria-hidden
-              className="absolute left-6 w-6 -translate-x-full text-right text-xs leading-[18px] text-text-muted"
+              className={cn(
+                'absolute left-6 w-6 -translate-x-full text-right text-xs leading-[18px] text-text-muted',
+                regrow && 'satin-bar-fade',
+              )}
               style={{ top: (TRACK / 4) * i - 9 }}
             >
               {formatValue(t)}
             </span>
           ))}
-          <ul className="contents" aria-label={props.title}>
+          <ul key={redraw.n} className="contents" aria-label={props.title}>
             {data.map((d, i) => {
               const isActive = active === i
               const dimmed = active !== null && !isActive
@@ -107,6 +124,7 @@ export function BarCard({
                         // Dimmed bars stay a tint of chart/3 on the card, so the brand colour never reaches them.
                         dimmed ? 'bg-[color-mix(in_oklab,var(--chart-3)_30%,var(--bg-card))]' : 'bg-chart-3',
                         isActive && 'outline outline-offset-2 outline-chart-3',
+                        regrow && 'satin-bar-regrow',
                       )}
                       style={{ height }}
                     />
@@ -115,6 +133,7 @@ export function BarCard({
                     className={cn(
                       'text-sm leading-(--text-sm--line-height) font-medium whitespace-nowrap',
                       isActive ? 'text-text-default' : 'text-text-muted',
+                      regrow && 'satin-bar-fade',
                     )}
                   >
                     {d.label}
