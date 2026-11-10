@@ -217,8 +217,6 @@ function Demo({ v, set }: { v: Record<string, string>; set: (id: string, value: 
   }
   return (
     <DecisionCard
-      // A new question starts fresh, not with the last one's picks.
-      key={type}
       {...example.props}
       type={type as 'radio' | 'checkbox' | 'chips' | 'ranking' | 'draft'}
       title={example.title}

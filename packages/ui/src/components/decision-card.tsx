@@ -6,6 +6,7 @@ import { Check, EditPencil, NavArrowLeft, NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { Checkbox } from './checkbox'
+import { SLIDE_MS } from './sliding-indicator'
 
 /**
  * DecisionCard, 1:1 with the uiKit `DecisionCard` set (3096:1626) and its `decisionItem` rows
@@ -21,6 +22,12 @@ import { Checkbox } from './checkbox'
  *   reorder, or Alt + Arrow keys; the dragged row lifts with border/strong and the md shadow.
  * - `draft`: the agent's text in a bubble (radius-2xl, 4px top-left); Rewrite makes it editable.
  * - `summary`: what the card collapses to once answered, with a Change action.
+ *
+ * Stepping between questions moves like Pagination: the new title and answers slide in 24px from
+ * the side of the step (from the right going forward), the old ones slide the other way and fade
+ * out a little faster, and the card eases to its new height, all 300 ms on the kit ease-out. The
+ * step navigator and the footer stay put. Stepping again mid-slide carries on from where things
+ * are. Under reduced motion the parts only cross-fade (150 ms) and the height snaps.
  */
 
 export type DecisionOption = {
@@ -89,12 +96,23 @@ export function DecisionCard({
   const [inner, setInner] = React.useState<DecisionValue>(
     () => defaultValue ?? initialValue(type, options),
   )
+  // A new question (another step or title) starts from its own default, not the last one's picks.
+  const question = step ?? title
+  const [innerFor, setInnerFor] = React.useState(question)
+  if (innerFor !== question) {
+    setInnerFor(question)
+    setInner(defaultValue ?? initialValue(type, options))
+  }
   const value = valueProp ?? inner
   const set = (next: DecisionValue) => {
     setInner(next)
     onValueChange?.(next)
   }
   const titleId = React.useId()
+  const cardRef = React.useRef<HTMLDivElement>(null)
+  const titleRef = React.useRef<HTMLDivElement>(null)
+  const bodyRef = React.useRef<HTMLDivElement>(null)
+  useStepSlide(question, step, cardRef, [titleRef, bodyRef])
 
   const card = cn(
     'flex w-[364px] max-w-full flex-col overflow-clip rounded-2xl border border-border-default bg-bg-popover',
@@ -130,6 +148,7 @@ export function DecisionCard({
 
   return (
     <div
+      ref={cardRef}
       role="group"
       aria-labelledby={titleId}
       data-slot="decision-card"
@@ -137,7 +156,17 @@ export function DecisionCard({
       className={card}
       {...props}
     >
-      <Header titleId={titleId} title={title} step={step} hint={hint} onPreviousStep={onPreviousStep} onNextStep={onNextStep} />
+      <Header
+        titleRef={titleRef}
+        titleId={titleId}
+        title={title}
+        step={step}
+        hint={hint}
+        onPreviousStep={onPreviousStep}
+        onNextStep={onNextStep}
+      />
+      <div className="relative">
+        <div ref={bodyRef}>
 
       {type === 'radio' && (
         <RadioGroup.Root
@@ -191,11 +220,12 @@ export function DecisionCard({
       )}
 
       {type === 'ranking' && (
-        <Ranking options={options} value={asArray(value)} onValueChange={set} labelledBy={titleId} />
+        <Ranking key={question} options={options} value={asArray(value)} onValueChange={set} labelledBy={titleId} />
       )}
 
       {type === 'draft' && (
         <Draft
+          key={question}
           title={draftTitle}
           value={typeof value === 'string' ? value : ''}
           onValueChange={set}
@@ -206,6 +236,9 @@ export function DecisionCard({
           skipLabel={skipLabel}
         />
       )}
+
+        </div>
+      </div>
 
       {type !== 'draft' && (
         <div className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">
@@ -224,6 +257,7 @@ export function DecisionCard({
 }
 
 function Header({
+  titleRef,
   titleId,
   title,
   step,
@@ -231,6 +265,7 @@ function Header({
   onPreviousStep,
   onNextStep,
 }: {
+  titleRef: React.Ref<HTMLDivElement>
   titleId: string
   title: string
   step?: string
@@ -239,42 +274,119 @@ function Header({
   onNextStep?: () => void
 }) {
   return (
-    <div className="flex flex-col gap-0.5 py-3 pr-px pl-3">
-      <div className="flex items-start gap-0.5">
-        <p id={titleId} className="min-w-0 flex-1 text-sm leading-4 font-medium tracking-normal text-text-default">
-          {title}
-        </p>
-        {step && (
-          <div className="flex h-[21px] shrink-0 items-center gap-1 pr-2">
-            <Button
-              variant="tertiary"
-              size="xs"
-              shape="rounded"
-              iconOnly
-              aria-label="Previous question"
-              disabled={!onPreviousStep}
-              onClick={onPreviousStep}
-            >
-              <NavArrowLeft aria-hidden />
-            </Button>
-            <span aria-live="polite" className="text-sm whitespace-nowrap text-text-muted tabular-nums">{step}</span>
-            <Button
-              variant="tertiary"
-              size="xs"
-              shape="rounded"
-              iconOnly
-              aria-label="Next question"
-              disabled={!onNextStep}
-              onClick={onNextStep}
-            >
-              <NavArrowRight aria-hidden />
-            </Button>
-          </div>
-        )}
+    <div className="flex items-start gap-0.5 py-3 pr-px pl-3">
+      {/* The title and hint move with the question; the step navigator stays. */}
+      <div className="relative min-w-0 flex-1">
+        <div ref={titleRef} className="flex flex-col gap-0.5">
+          <p id={titleId} className="text-sm leading-4 font-medium tracking-normal text-text-default">
+            {title}
+          </p>
+          {hint && <p className="text-sm text-text-muted">{hint}</p>}
+        </div>
       </div>
-      {hint && <p className="text-sm text-text-muted">{hint}</p>}
+      {step && (
+        <div className="flex h-[21px] shrink-0 items-center gap-1 pr-2">
+          <Button
+            variant="tertiary"
+            size="xs"
+            shape="rounded"
+            iconOnly
+            aria-label="Previous question"
+            disabled={!onPreviousStep}
+            onClick={onPreviousStep}
+          >
+            <NavArrowLeft aria-hidden />
+          </Button>
+          <span aria-live="polite" className="text-sm whitespace-nowrap text-text-muted tabular-nums">{step}</span>
+          <Button
+            variant="tertiary"
+            size="xs"
+            shape="rounded"
+            iconOnly
+            aria-label="Next question"
+            disabled={!onNextStep}
+            onClick={onNextStep}
+          >
+            <NavArrowRight aria-hidden />
+          </Button>
+        </div>
+      )}
     </div>
   )
+}
+
+const SLIDE_PX = 24
+const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
+
+/**
+ * Slides the parts in `refs` when `key` changes, the way Pagination moves its pages: each part
+ * comes in SLIDE_PX from the side of the step while a copy of how it looked slides out the other
+ * way and fades, and the card eases between its old and new height. The direction comes from the
+ * "2/3" step; without one it moves forward.
+ */
+function useStepSlide(
+  key: string,
+  step: string | undefined,
+  cardRef: React.RefObject<HTMLDivElement | null>,
+  refs: React.RefObject<HTMLDivElement | null>[],
+) {
+  const last = React.useRef<{ key: string; index: number; height: number; copies: (Node | null)[] } | null>(null)
+  const index = step ? parseInt(step, 10) || 0 : 0
+
+  React.useLayoutEffect(() => {
+    const card = cardRef.current
+    const prev = last.current
+    // The card's own height, not a frame of a running resize.
+    let height = card && card.getAnimations().length > 0 && prev ? prev.height : (card?.getBoundingClientRect().height ?? 0)
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+    if (card && prev && prev.key !== key) {
+      const sign = index < prev.index ? -1 : 1
+      // Under reduced motion the parts only cross-fade, quicker, and the card snaps to its height.
+      const dx = reduce ? 0 : SLIDE_PX
+      const timing: KeyframeAnimationOptions = { duration: reduce ? 150 : SLIDE_MS, easing: EASE }
+      refs.forEach((ref, i) => {
+        const el = ref.current
+        const copy = prev.copies[i] as HTMLElement | null
+        if (!el) return
+        // Stepping again mid-slide: the copy leaves from where the part was, not from rest.
+        const midway = el.getAnimations().length > 0
+        const from = midway ? getComputedStyle(el) : null
+        const start: Keyframe = { transform: from?.transform && from.transform !== 'none' ? from.transform : 'none', opacity: from ? Number(from.opacity) : 1 }
+        el.getAnimations().forEach((a) => a.cancel())
+        el.parentElement?.querySelectorAll(':scope > [data-step-copy]').forEach((n) => n.remove())
+        el.animate([{ transform: `translateX(${sign * dx}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], timing)
+        const host = el.parentElement
+        if (!copy || !host) return
+        copy.setAttribute('data-step-copy', '')
+        copy.setAttribute('aria-hidden', 'true')
+        copy.setAttribute('inert', '')
+        copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'))
+        copy.style.cssText += ';position:absolute;top:0;left:0;right:0;pointer-events:none'
+        host.appendChild(copy)
+        copy
+          .animate([start, { transform: `translateX(${-sign * dx}px)`, opacity: 0 }], {
+            ...timing,
+            duration: (timing.duration as number) * 0.6,
+          })
+          .finished.then(
+            () => copy.remove(),
+            () => copy.remove(),
+          )
+      })
+      // Mid-resize, the card goes on from the height it shows now.
+      const running = card.getAnimations().length > 0
+      const fromHeight = running ? card.getBoundingClientRect().height : prev.height
+      card.getAnimations().forEach((a) => a.cancel())
+      const toHeight = card.getBoundingClientRect().height
+      height = toHeight
+      if (!reduce && Math.abs(fromHeight - toHeight) > 0.5) {
+        card.animate([{ height: `${fromHeight}px` }, { height: `${toHeight}px` }], timing)
+      }
+    }
+
+    last.current = { key, index, height, copies: refs.map((r) => r.current?.cloneNode(true) ?? null) }
+  })
 }
 
 /** `decisionItem` (3092:61608): 4px padding, radius-md, action/secondary fill on hover. */
