@@ -158,3 +158,18 @@
   from { transform: translateX(-100%); }
   to { transform: translateX(300%); }
 }
+
+/* Pagination (components/pagination.tsx): a page number changing in place. `fade` swaps it;
+   `scroll` slides the old one out and the new one in along the way the reader is paging. */
+@keyframes satin-page-fade-in { from { opacity: 0; } }
+@keyframes satin-page-fade-out { to { opacity: 0; } }
+@keyframes satin-page-in-next { from { opacity: 0; transform: translateX(8px); } }
+@keyframes satin-page-in-prev { from { opacity: 0; transform: translateX(-8px); } }
+@keyframes satin-page-out-next { to { opacity: 0; transform: translateX(-8px); } }
+@keyframes satin-page-out-prev { to { opacity: 0; transform: translateX(8px); } }
+.satin-page-text[data-motion='fade'][data-phase='in'] { animation: satin-page-fade-in var(--duration-base) var(--ease-out) both; }
+.satin-page-text[data-motion='fade'][data-phase='out'] { animation: satin-page-fade-out var(--duration-base) var(--ease-out) both; }
+.satin-page-text[data-motion='scroll'][data-phase='in'][data-dir='next'] { animation: satin-page-in-next var(--duration-slow) var(--ease-out) both; }
+.satin-page-text[data-motion='scroll'][data-phase='in'][data-dir='prev'] { animation: satin-page-in-prev var(--duration-slow) var(--ease-out) both; }
+.satin-page-text[data-motion='scroll'][data-phase='out'][data-dir='next'] { animation: satin-page-out-next var(--duration-base) var(--ease-out) both; }
+.satin-page-text[data-motion='scroll'][data-phase='out'][data-dir='prev'] { animation: satin-page-out-prev var(--duration-base) var(--ease-out) both; }

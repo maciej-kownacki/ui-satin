@@ -11,6 +11,9 @@ import { DropdownMenu, DropdownMenuItem } from './dropdown'
  * in 2px × 4px of padding, radius 6; it turns text/default on hover. The last item is the
  * current page: text/default, medium, not a link.
  *
+ * An item can lead with a 14px `icon`, 4px before its label; usually the first one (Home, the
+ * workspace). With `hideLabel` only the icon shows, and the label names it for screen readers.
+ *
  * With more items than `maxItems`, the middle ones fold into a "…" button (24px) that lists
  * them in a Dropdown; the first item and the last `maxItems - 1` stay.
  *
@@ -18,6 +21,10 @@ import { DropdownMenu, DropdownMenuItem } from './dropdown'
  */
 export interface BreadcrumbItem {
   label: string
+  /** A 14px icon before the label, usually on the first item. */
+  icon?: React.ReactNode
+  /** Show only the icon; the label still names the item for screen readers. */
+  hideLabel?: boolean
   /** Where it goes. Left out (or on the current page) it is plain text, or a button with `onSelect`. */
   href?: string
   onSelect?: () => void
@@ -31,7 +38,8 @@ export interface BreadcrumbProps extends Omit<React.ComponentProps<'nav'>, 'chil
 }
 
 const itemClass = cn(
-  'inline-flex h-6 items-center rounded-md px-1 text-sm leading-5 whitespace-nowrap text-text-muted',
+  'inline-flex h-6 items-center gap-1 rounded-md px-1 text-sm leading-5 whitespace-nowrap text-text-muted',
+  '[&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
   'transition-colors duration-(--duration-fast) ease-(--ease-out) outline-none focus-visible:shadow-border-focus',
 )
 const linkClass = 'cursor-pointer hover:text-text-default'
@@ -53,20 +61,30 @@ export function Breadcrumb({ items, maxItems, className, 'aria-label': ariaLabel
 
   const crumb = (item: BreadcrumbItem, index: number) => {
     const current = index === last
+    const content = item.icon ? (
+      <>
+        <span aria-hidden className="flex">
+          {item.icon}
+        </span>
+        <span className={item.hideLabel ? 'sr-only' : undefined}>{item.label}</span>
+      </>
+    ) : (
+      item.label
+    )
     const el = current ? (
       <span aria-current="page" className={cn(itemClass, 'font-medium text-text-default')}>
-        {item.label}
+        {content}
       </span>
     ) : item.href ? (
       <a href={item.href} onClick={item.onSelect} className={cn(itemClass, linkClass)}>
-        {item.label}
+        {content}
       </a>
     ) : item.onSelect ? (
       <button type="button" onClick={item.onSelect} className={cn(itemClass, linkClass)}>
-        {item.label}
+        {content}
       </button>
     ) : (
-      <span className={itemClass}>{item.label}</span>
+      <span className={itemClass}>{content}</span>
     )
     return <li className="flex">{el}</li>
   }
@@ -101,6 +119,7 @@ export function Breadcrumb({ items, maxItems, className, 'aria-label': ariaLabel
                   <DropdownMenuItem
                     key={i}
                     label={item.label}
+                    icon={item.icon}
                     onSelect={() => {
                       item.onSelect?.()
                       if (item.href) window.location.assign(item.href)

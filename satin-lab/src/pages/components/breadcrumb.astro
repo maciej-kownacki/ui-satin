@@ -13,6 +13,8 @@ const api = {
   props: [
     {name: "items", type: ["BreadcrumbItem[]"]},
     {name: "item.label", type: ["string"]},
+    {name: "item.icon", type: ["ReactNode"]},
+    {name: "item.hideLabel", type: ["boolean"], default: "false"},
     {name: "item.href", type: ["string"]},
     {name: "item.onSelect", type: ["() => void"]},
     {name: "maxItems", type: ["number"]},

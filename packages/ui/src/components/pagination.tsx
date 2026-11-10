@@ -13,6 +13,15 @@ import { Button } from './button'
  *   hover bg/hover and text/default; the current page bg/selected, text/default, medium.
  * - compact: icon-only Previous and Next around "Page 5 of 12" (13px, text/muted), 8px apart.
  *
+ * Moving between pages (`motion`), the pages keep their places and only their numbers change:
+ * - scroll (default): the pill slides as in `slide`, and a number that changes in place moves
+ *   out and the next one in along the way the reader pages (8px, 250 ms), so the row reads as
+ *   a strip of pages scrolling under a still frame.
+ * - slide: the current page's bg/selected pill slides under the numbers to the new
+ *   page, like the Segmented control's, 200 ms on ease-out; a number that changes in place
+ *   cross-fades.
+ * - none: no motion; the current page simply takes the pill.
+ *
  * Previous and Next are disabled at the ends. With `getHref`, every page is a link (for pages
  * the server renders); without it they are buttons that call `onPageChange`.
  *
@@ -32,6 +41,8 @@ export interface PaginationProps extends Omit<React.ComponentProps<'nav'>, 'chil
   siblings?: number
   previousLabel?: string
   nextLabel?: string
+  /** How the row moves when the page changes. */
+  motion?: 'slide' | 'scroll' | 'none'
 }
 
 /** The pages to show, with 'gap' where an ellipsis stands for skipped ones. Always 2 × siblings + 5 slots when there are enough pages, so the bar keeps its width. */
@@ -49,11 +60,49 @@ export function paginationRange(page: number, pageCount: number, siblings = 1): 
 }
 
 const pageClass = cn(
-  'grid h-control-height min-w-control-height place-items-center rounded-lg px-1.5 text-sm text-text-muted tabular-nums',
+  'relative z-10 grid h-control-height min-w-control-height place-items-center overflow-hidden rounded-lg px-1.5 text-sm text-text-muted tabular-nums',
   'transition-colors duration-(--duration-fast) ease-(--ease-out) outline-none focus-visible:shadow-border-focus',
   'hover:bg-bg-hover hover:text-text-default',
-  'aria-[current=page]:bg-bg-selected aria-[current=page]:font-medium aria-[current=page]:text-text-default',
+  'aria-[current=page]:font-medium aria-[current=page]:text-text-default aria-[current=page]:hover:bg-transparent',
 )
+
+type Dir = 'next' | 'prev'
+
+/**
+ * A slot's number. When it changes, the old one stays on top of the new one for the length of
+ * its exit, both in one grid cell, so the slot keeps the wider of the two and nothing jumps.
+ */
+function PageText({ text, dir, motion }: { text: string; dir: Dir; motion: 'fade' | 'scroll' | 'none' }) {
+  const [state, setState] = React.useState({ text, old: null as string | null, dir, n: 0 })
+  if (state.text !== text) setState({ text, old: motion === 'none' ? null : state.text, dir, n: state.n + 1 })
+  const animate = motion !== 'none' && state.n > 0
+  return (
+    <span className="inline-grid">
+      {state.old != null && (
+        <span
+          key={`o${state.n}`}
+          aria-hidden
+          data-motion={motion}
+          data-phase="out"
+          data-dir={state.dir}
+          className="satin-page-text col-start-1 row-start-1 text-center"
+          onAnimationEnd={() => setState((s) => ({ ...s, old: null }))}
+        >
+          {state.old}
+        </span>
+      )}
+      <span
+        key={`n${state.n}`}
+        data-motion={animate ? motion : undefined}
+        data-phase={animate ? 'in' : undefined}
+        data-dir={state.dir}
+        className="satin-page-text col-start-1 row-start-1 text-center"
+      >
+        {state.text}
+      </span>
+    </span>
+  )
+}
 
 export function Pagination({
   pageCount,
@@ -65,6 +114,7 @@ export function Pagination({
   siblings = 1,
   previousLabel = 'Previous',
   nextLabel = 'Next',
+  motion = 'scroll',
   className,
   'aria-label': ariaLabel = 'Pagination',
   ...props
@@ -73,9 +123,37 @@ export function Pagination({
   const page = Math.min(Math.max(pageProp ?? uncontrolled, 1), Math.max(pageCount, 1))
   const go = (p: number) => {
     if (p < 1 || p > pageCount || p === page) return
+    setAnimate(motion !== 'none')
     if (pageProp == null) setUncontrolled(p)
     onPageChange?.(p)
   }
+
+  // Which way the reader is paging, for the scroll motion.
+  const prevPage = React.useRef(page)
+  const dir: Dir = page >= prevPage.current ? 'next' : 'prev'
+  React.useEffect(() => {
+    prevPage.current = page
+  }, [page])
+
+  // The pill under the current page: measured from the page itself, moved with a transform.
+  const listRef = React.useRef<HTMLUListElement>(null)
+  const [pill, setPill] = React.useState<{ x: number; width: number } | null>(null)
+  const [animate, setAnimate] = React.useState(false)
+  const measure = React.useCallback(() => {
+    const list = listRef.current
+    const el = list?.querySelector<HTMLElement>('[aria-current="page"]')
+    if (!list || !el) return setPill(null)
+    setPill({ x: el.getBoundingClientRect().left - list.getBoundingClientRect().left, width: el.offsetWidth })
+  }, [])
+  React.useLayoutEffect(measure, [measure, page, pageCount, layout, siblings])
+  React.useEffect(() => {
+    const el = listRef.current
+    if (!el) return
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [measure, layout])
+  const textMotion = motion === 'scroll' ? 'scroll' : motion === 'slide' ? 'fade' : 'none'
 
   // A page as a link or a button; the same skin either way.
   const target = (p: number, className: string, children: React.ReactNode, extra?: React.HTMLAttributes<HTMLElement>) =>
@@ -116,21 +194,33 @@ export function Pagination({
         <div className="flex items-center gap-2">
           {step(-1)}
           <span className="text-sm text-text-muted tabular-nums" aria-live="polite">
-            Page {page} of {pageCount}
+            Page <PageText text={String(page)} dir={dir} motion={motion === 'scroll' ? 'scroll' : motion === 'slide' ? 'fade' : 'none'} /> of {pageCount}
           </span>
           {step(1)}
         </div>
       ) : (
-        <ul className="flex items-center gap-1">
+        <ul ref={listRef} className="relative flex items-center gap-1">
+          {pill && (
+            <li
+              aria-hidden
+              role="presentation"
+              className={cn(
+                'pointer-events-none absolute top-0 left-0 h-control-height rounded-lg bg-bg-selected',
+                animate && 'transition-[transform,width] duration-(--duration-base) ease-(--ease-out)',
+              )}
+              style={{ width: pill.width, transform: `translateX(${pill.x}px)` }}
+            />
+          )}
           <li>{step(-1)}</li>
+          {/* Slots keep their places (keyed by position), so paging changes numbers, not elements. */}
           {paginationRange(page, pageCount, siblings).map((p, i) =>
             p === 'gap' ? (
-              <li key={`gap-${i}`} aria-hidden className="grid size-control-height place-items-center text-sm text-text-muted">
-                …
+              <li key={i} aria-hidden className="grid size-control-height place-items-center text-sm text-text-muted">
+                <PageText text="…" dir={dir} motion={textMotion} />
               </li>
             ) : (
-              <li key={p}>
-                {target(p, pageClass, p, {
+              <li key={i}>
+                {target(p, pageClass, <PageText text={String(p)} dir={dir} motion={textMotion} />, {
                   'aria-current': p === page ? 'page' : undefined,
                   'aria-label': `Page ${p}`,
                 } as React.HTMLAttributes<HTMLElement>)}
