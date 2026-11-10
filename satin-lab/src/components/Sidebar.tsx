@@ -177,7 +177,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
           'fixed inset-x-0 bottom-0 z-50 w-full rounded-t-2xl border-t border-border-subtle bg-bg-card',
           'transition-transform duration-(--duration-slow) ease-(--ease-out)',
           drawer ? 'translate-y-0' : 'translate-y-full',
-          'lg:relative lg:inset-auto lg:z-auto lg:w-[246px] lg:shrink-0 lg:translate-none lg:rounded-[15px_0_0_0] lg:bg-transparent lg:border-t-0 lg:border-r lg:transition-none',
+          'lg:relative lg:inset-auto lg:z-auto lg:w-[246px] lg:shrink-0 lg:translate-none lg:rounded-[15px_0_0_0] lg:bg-transparent lg:border-t-0 lg:border-r dark:lg:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))] lg:transition-none',
         )}
       >
         <div className="flex h-[85dvh] flex-col gap-2 pb-[max(8px,env(safe-area-inset-bottom))] lg:h-full lg:py-2">

@@ -1,0 +1,28 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import StreamingTextDemo, { options } from '../../demos/streaming-text'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+
+const api = {
+  description:
+    "The `StreamingText` component renders the text received so far as a `div`, one `span` per letter (or word), and writes it out at an even pace. Letters not yet written are transparent but in the DOM, so screen readers get the whole text; the box is `aria-busy` while it streams.",
+  props: [
+    {name: "text", type: ["string"]},
+    {name: "streaming", type: ["boolean"], default: "false"},
+    {name: "speed", type: ["number"], default: "80"},
+    {name: "reveal", type: ["\"blur\"", "\"fade\"", "\"word\"", "\"none\""], default: "\"blur\""},
+    {name: "caret", type: ["boolean"], default: "true"},
+    {name: "onDone", type: ["() => void"]},
+  ],
+}
+---
+
+<Docs current="streaming-text">
+  <DocSection item={page('streaming-text')} api={api}>
+    <StreamingTextDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

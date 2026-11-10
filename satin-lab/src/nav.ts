@@ -76,6 +76,7 @@ export const nav: NavGroup[] = [
       { id: 'message', title: 'Message', href: '/ai-patterns/message', description: 'One chat turn: a bubble for the user, plain text with actions for the assistant.' },
       { id: 'message-actions', title: 'Message actions', href: '/ai-patterns/message-actions', description: 'Status, feedback, copy and share under an assistant reply.' },
       { id: 'prompt-bar', title: 'Prompt bar', href: '/ai-patterns/prompt-bar', description: 'Where people write to an agent: attachments, model, voice and send.' },
+      { id: 'streaming-text', title: 'Streaming text', href: '/ai-patterns/streaming-text', description: 'An answer writing itself out as it arrives, at an even pace with a caret.' },
       { id: 'thinking', title: 'Thinking', href: '/ai-patterns/thinking', description: 'What an agent did, folded into a summary that opens onto its steps.' },
     ],
   },

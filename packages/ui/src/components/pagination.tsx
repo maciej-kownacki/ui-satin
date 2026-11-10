@@ -14,12 +14,13 @@ import { Button } from './button'
  * - compact: icon-only Previous and Next around "Page 5 of 12" (13px, text/muted), 8px apart.
  *
  * Moving between pages (`motion`), the pages keep their places and only their numbers change:
- * - scroll (default): the pill slides as in `slide`, and a number that changes in place moves
- *   out and the next one in along the way the reader pages (8px, 250 ms), so the row reads as
- *   a strip of pages scrolling under a still frame.
+ * - scroll (default): the pages are a strip. Each page slides from where it was to its new place,
+ *   a page coming into view slides out from under the ellipsis on the side the reader pages
+ *   towards, one leaving slides under the other and fades, and the pill under the current
+ *   page moves on the same 300 ms curve. Nothing is clipped and no number changes in place.
  * - slide: the current page's bg/selected pill slides under the numbers to the new
  *   page, like the Segmented control's, 200 ms on ease-out; a number that changes in place
- *   cross-fades.
+ *   fades out before the new one fades in.
  * - none: no motion; the current page simply takes the pill.
  *
  * Previous and Next are disabled at the ends. With `getHref`, every page is a link (for pages
@@ -68,6 +69,10 @@ const pageClass = cn(
 
 type Dir = 'next' | 'prev'
 
+/** The strip's move, ms, and one page's step along it (a 28px page and the 4px gap), px. */
+const STRIP_MS = 300
+const STEP_PX = 32
+
 /**
  * A slot's number. When it changes, the old one stays on top of the new one for the length of
  * its exit, both in one grid cell, so the slot keeps the wider of the two and nothing jumps.
@@ -77,7 +82,9 @@ function PageText({ text, dir, motion }: { text: string; dir: Dir; motion: 'fade
   if (state.text !== text) setState({ text, old: motion === 'none' ? null : state.text, dir, n: state.n + 1 })
   const animate = motion !== 'none' && state.n > 0
   return (
-    <span className="inline-grid">
+    // Clipped to the wider number, so in the compact "Page 5 of 12" a moving number never runs
+    // into the words around it.
+    <span className="inline-grid overflow-hidden align-bottom">
       {state.old != null && (
         <span
           key={`o${state.n}`}
@@ -123,6 +130,8 @@ export function Pagination({
   const page = Math.min(Math.max(pageProp ?? uncontrolled, 1), Math.max(pageCount, 1))
   const go = (p: number) => {
     if (p < 1 || p > pageCount || p === page) return
+    // Where every page is on screen right now (mid-move too), for the strip to move from.
+    if (motion === 'scroll') snapshot()
     setAnimate(motion !== 'none')
     if (pageProp == null) setUncontrolled(p)
     onPageChange?.(p)
@@ -143,7 +152,9 @@ export function Pagination({
     const list = listRef.current
     const el = list?.querySelector<HTMLElement>('[aria-current="page"]')
     if (!list || !el) return setPill(null)
-    setPill({ x: el.getBoundingClientRect().left - list.getBoundingClientRect().left, width: el.offsetWidth })
+    // Layout position, not the screen one: a page sliding along the strip ends here.
+    const cell = el.closest('li') as HTMLElement
+    setPill({ x: cell.offsetLeft + el.offsetLeft, width: el.offsetWidth })
   }, [])
   React.useLayoutEffect(measure, [measure, page, pageCount, layout, siblings])
   React.useEffect(() => {
@@ -153,7 +164,67 @@ export function Pagination({
     observer.observe(el)
     return () => observer.disconnect()
   }, [measure, layout])
-  const textMotion = motion === 'scroll' ? 'scroll' : motion === 'slide' ? 'fade' : 'none'
+  const textMotion = motion === 'slide' ? 'fade' : 'none'
+
+  /* ---- scroll: the pages are a strip that moves (FLIP) ---- */
+  // Each page is its own element, keyed by its number. When the page changes, every page that
+  // stays slides from where it was to where it now is; a page coming into view slides in from
+  // the side the reader is paging towards, out from under the ellipsis; one leaving slides
+  // the other way and fades as it goes under the other ellipsis. The pill under the current
+  // page moves on the same curve, so a page sliding into it lands with it.
+  const ghostRef = React.useRef<HTMLLIElement>(null)
+  const before = React.useRef<Map<string, { x: number; node: HTMLElement }> | null>(null)
+  function snapshot() {
+    const list = listRef.current
+    if (!list) return
+    const base = list.getBoundingClientRect().left
+    const map = new Map<string, { x: number; node: HTMLElement }>()
+    list.querySelectorAll<HTMLElement>('[data-cell]').forEach((li) => {
+      const face = li.firstElementChild as HTMLElement | null
+      if (face) map.set(li.dataset.cell!, { x: li.getBoundingClientRect().left - base, node: face.cloneNode(true) as HTMLElement })
+    })
+    before.current = map
+  }
+  React.useLayoutEffect(() => {
+    const prev = before.current
+    before.current = null
+    const list = listRef.current
+    if (!prev || !list || motion !== 'scroll' || layout !== 'full') return
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    const sign = dir === 'next' ? 1 : -1
+    const timing: KeyframeAnimationOptions = { duration: STRIP_MS, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
+    const seen = new Set<string>()
+    list.querySelectorAll<HTMLElement>('[data-cell]').forEach((li) => {
+      const key = li.dataset.cell!
+      seen.add(key)
+      li.getAnimations().forEach((a) => a.cancel())
+      const from = prev.get(key)
+      if (from) {
+        const dx = from.x - li.offsetLeft
+        if (Math.abs(dx) > 0.5) li.animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], timing)
+      } else {
+        li.animate([{ transform: `translateX(${sign * STEP_PX}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], timing)
+      }
+    })
+    // Pages that left: a copy of each, where it was, sliding off and fading.
+    const layer = ghostRef.current
+    if (!layer) return
+    for (const [key, { x, node }] of prev) {
+      if (seen.has(key)) continue
+      node.removeAttribute('aria-current')
+      node.style.cssText = `position:absolute;top:0;left:${x}px;margin:0`
+      layer.appendChild(node)
+      node
+        .animate([{ transform: 'none', opacity: 1 }, { transform: `translateX(${-sign * STEP_PX}px)`, opacity: 0 }], {
+          ...timing,
+          duration: STRIP_MS * 0.6,
+        })
+        .finished.then(
+          () => node.remove(),
+          () => node.remove(),
+        )
+    }
+  }, [page, motion, layout, dir])
 
   // A page as a link or a button; the same skin either way.
   const target = (p: number, className: string, children: React.ReactNode, extra?: React.HTMLAttributes<HTMLElement>) =>
@@ -194,7 +265,7 @@ export function Pagination({
         <div className="flex items-center gap-2">
           {step(-1)}
           <span className="text-sm text-text-muted tabular-nums" aria-live="polite">
-            Page <PageText text={String(page)} dir={dir} motion={motion === 'scroll' ? 'scroll' : motion === 'slide' ? 'fade' : 'none'} /> of {pageCount}
+            Page <PageText text={String(page)} dir={dir} motion={motion === 'scroll' ? 'scroll' : textMotion} /> of {pageCount}
           </span>
           {step(1)}
         </div>
@@ -206,35 +277,60 @@ export function Pagination({
               role="presentation"
               className={cn(
                 'pointer-events-none absolute top-0 left-0 h-control-height rounded-lg bg-bg-selected',
-                animate && 'transition-[transform,width] duration-(--duration-base) ease-(--ease-out)',
+                animate && 'transition-[transform,width] ease-(--ease-out)',
               )}
-              style={{ width: pill.width, transform: `translateX(${pill.x}px)` }}
+              style={{
+                width: pill.width,
+                transform: `translateX(${pill.x}px)`,
+                transitionDuration: animate ? `${motion === 'scroll' ? STRIP_MS : 200}ms` : undefined,
+              }}
             />
           )}
+          {/* Copies of the pages that just left, playing out; under the live pages. */}
+          <li ref={ghostRef} aria-hidden role="presentation" className="pointer-events-none absolute inset-0 overflow-visible" />
           <li>{step(-1)}</li>
-          {/* Slots keep their places (keyed by position), so paging changes numbers, not elements. */}
-          {paginationRange(page, pageCount, siblings).map((p, i) => {
-            const gap = p === 'gap'
-            // A slot is the same element whether it holds a page or the ellipsis, so a page
-            // coming out from behind "…" (or going behind it) plays the same motion as a number.
-            const text = <PageText text={gap ? '…' : String(p)} dir={dir} motion={textMotion} />
-            return (
-              <li key={i}>
-                {gap
-                  ? React.createElement(getHref ? 'a' : 'button', {
-                      className: cn(pageClass, 'pointer-events-none'),
-                      'aria-hidden': true,
-                      tabIndex: -1,
-                      ...(getHref ? {} : { type: 'button', disabled: true }),
-                      children: text,
-                    })
-                  : target(p, pageClass, text, {
-                      'aria-current': p === page ? 'page' : undefined,
-                      'aria-label': `Page ${p}`,
-                    } as React.HTMLAttributes<HTMLElement>)}
-              </li>
-            )
-          })}
+          {motion === 'scroll'
+            ? // The strip: pages keyed by their number, the two ellipses by their side.
+              paginationRange(page, pageCount, siblings).map((p, i, all) => {
+                const key = p === 'gap' ? (i < all.length / 2 ? 'gap-start' : 'gap-end') : `p${p}`
+                return (
+                  <li key={key} data-cell={key} className="relative">
+                    {p === 'gap' ? (
+                      <span aria-hidden className={cn(pageClass, 'pointer-events-none')}>
+                        …
+                      </span>
+                    ) : (
+                      target(p, pageClass, p, {
+                        'aria-current': p === page ? 'page' : undefined,
+                        'aria-label': `Page ${p}`,
+                      } as React.HTMLAttributes<HTMLElement>)
+                    )}
+                  </li>
+                )
+              })
+            : // Slots keep their places (keyed by position), so paging changes numbers, not elements.
+              paginationRange(page, pageCount, siblings).map((p, i) => {
+                const gap = p === 'gap'
+                // A slot is the same element whether it holds a page or the ellipsis, so a page
+                // coming out from behind "…" (or going behind it) plays the same motion as a number.
+                const text = <PageText text={gap ? '…' : String(p)} dir={dir} motion={textMotion} />
+                return (
+                  <li key={i}>
+                    {gap
+                      ? React.createElement(getHref ? 'a' : 'button', {
+                          className: cn(pageClass, 'pointer-events-none'),
+                          'aria-hidden': true,
+                          tabIndex: -1,
+                          ...(getHref ? {} : { type: 'button', disabled: true }),
+                          children: text,
+                        })
+                      : target(p, pageClass, text, {
+                          'aria-current': p === page ? 'page' : undefined,
+                          'aria-label': `Page ${p}`,
+                        } as React.HTMLAttributes<HTMLElement>)}
+                  </li>
+                )
+              })}
           <li>{step(1)}</li>
         </ul>
       )}

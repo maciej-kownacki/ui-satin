@@ -16,12 +16,16 @@ import { Button } from './button'
  *   toast.success('Booking confirmed', { description: 'Table for 4…', action: { label: 'Undo' } })
  *
  * The Toaster stacks them bottom-right, newest in front. Behind it, the next ones peek 16px above,
- * each 5% smaller, their content hidden; three show at most and the rest wait, parked in the last
- * place. Hovering or focusing the stack unfolds it, one under another 8px apart, with every
- * toast readable, and pauses their timers. A toast comes in from 24px below over 250 ms. The
- * front one leaves the way it came, 24px down and faded, quicker (200 ms), while the next one
- * comes forward into its place behind it, so the two never cross. One further back (closed
- * from the unfolded stack) fades where it is, shrinking to 96%. All on the kit's ease-out.
+ * each 5% smaller, cut to the front one's height with their content faded out, so the stack is
+ * even; three show at most and the rest wait, parked in the last place. Hovering or focusing the
+ * stack unfolds it, one under another 8px apart at their own heights, every toast readable, and
+ * pauses their timers.
+ *
+ * Toasts move as whole cards and never fade on the way: a new one slides up from below the
+ * stack (150% of its height), a closed one slides back down the same way, and the rest move to
+ * their new places at the same time. Every move is one transform on one element, 500 ms on the
+ * kit's ease-out, so a toast added or closed mid-move just carries on from where it is. The
+ * cut to the front one's height eases over 150 ms, the content fade over 250 ms.
  */
 export type ToastIntent = 'neutral' | 'info' | 'success' | 'warning' | 'error'
 
@@ -46,8 +50,8 @@ export interface ToastOptions {
 type ExitReason = 'close' | 'action'
 type ToastRecord = ToastOptions & { id: string; title: React.ReactNode; open: boolean; exit?: ExitReason }
 
-/** Enter, exit and re-stack, ms (--duration-slow). A closed toast stays this long to play out. */
-const MOTION_MS = 250
+/** Enter, exit and re-stack, ms. A closed toast stays this long to play out. */
+const MOTION_MS = 500
 
 /* ---------- the store behind toast() ---------- */
 
@@ -274,23 +278,22 @@ export function Toast({
 const PEEK = 16
 const SCALE_STEP = 0.05
 const GAP = 8
-/** Where a toast comes in from and where the front one goes, px below its place. */
-const ENTER_Y = 24
-const EXIT_Y = 24
-/** A toast leaving from further back fades where it is, to this scale. */
-const EXIT_SCALE = 0.96
-/** Leaving is a response, so it is quicker than arriving. */
-const EXIT_MS = 200
 const FALLBACK_HEIGHT = 58
 
-const motion = `transform ${MOTION_MS}ms var(--ease-out), opacity ${MOTION_MS}ms var(--ease-out)`
-const exitMotion = `transform ${EXIT_MS}ms var(--ease-out), opacity ${EXIT_MS}ms var(--ease-out)`
+/** Where a toast comes in from and goes to: this much of its own height below its place. */
+const OFFSCREEN = '150%'
+const ease = 'var(--ease-out)'
+const cardMotion = `transform ${MOTION_MS}ms ${ease}, height 150ms ${ease}`
+const contentMotion = `opacity 250ms ${ease}`
 
 interface StackedToastProps {
   record: ToastRecord
   index: number
+  /** Its place in the stack, px up from the bottom, and its scale. */
   y: number
   scale: number
+  /** Cut to this height (the front toast's) while it waits behind; undefined shows its own. */
+  height?: number
   beyond: boolean
   contentVisible: boolean
   onMeasure: (id: string, height: number) => void
@@ -299,28 +302,29 @@ interface StackedToastProps {
 
 /**
  * One toast in the stack, on two elements so the two movements never fight over one transform:
- * the `li` (the Radix root) takes its place in the stack, the card inside takes the way in and out.
+ * the `li` (the Radix root) takes its place in the stack, the card inside slides in and out.
  */
-function StackedToast({ record, index, y, scale, beyond, contentVisible, onMeasure, onForget }: StackedToastProps) {
-  const { id, title, open, duration, exit, intent = 'neutral', icon = true, closeButton = true, ...options } = record
+function StackedToast({ record, index, y, scale, height, beyond, contentVisible, onMeasure, onForget }: StackedToastProps) {
+  const { id, title, open, duration, exit: _exit, intent = 'neutral', icon = true, closeButton = true, ...options } = record
   const [entered, setEntered] = React.useState(false)
-  React.useEffect(() => {
-    // Two frames: one paints the start, the next flips to the place, so the move has two ends.
-    let second = 0
-    const first = requestAnimationFrame(() => {
-      second = requestAnimationFrame(() => setEntered(true))
-    })
-    return () => {
-      cancelAnimationFrame(first)
-      cancelAnimationFrame(second)
-    }
+  const cardRef = React.useRef<HTMLDivElement>(null)
+  React.useLayoutEffect(() => {
+    // Read the start (below the stack) so the browser has it, then move to the place: the
+    // transition runs from there without waiting on animation frames.
+    cardRef.current?.getBoundingClientRect()
+    setEntered(true)
   }, [])
 
+  // Its own height, whatever the stack cuts it to: the content plus the card's padding and border.
   const measured = React.useCallback(
     (node: HTMLDivElement | null) => {
       if (!node) return
-      // Layout height: the stack's scale never gets into it.
-      const report = () => onMeasure(id, node.offsetHeight)
+      const card = node.parentElement as HTMLElement
+      const report = () => {
+        const cs = getComputedStyle(card)
+        const chrome = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'].reduce((t, k) => t + parseFloat(cs[k as 'paddingTop']), 0)
+        onMeasure(id, node.offsetHeight + chrome)
+      }
       report()
       const observer = new ResizeObserver(report)
       observer.observe(node)
@@ -332,15 +336,7 @@ function StackedToast({ record, index, y, scale, beyond, contentVisible, onMeasu
     [id, onMeasure, onForget],
   )
 
-  const settled = entered && open
-  // The front one goes back down the way it came; one behind it fades in place, so it never
-  // slides over its neighbours.
-  const front = index === 0
-  const cardTransform = settled
-    ? 'translate3d(0, 0, 0)'
-    : open || front
-      ? `translate3d(0, ${open ? ENTER_Y : EXIT_Y}px, 0)`
-      : `translate3d(0, 0, 0) scale(${EXIT_SCALE})`
+  const inPlace = entered && open
 
   return (
     <ToastPrimitive.Root
@@ -363,21 +359,23 @@ function StackedToast({ record, index, y, scale, beyond, contentVisible, onMeasu
         opacity: beyond ? 0 : 1,
         zIndex: 1000 - index,
         pointerEvents: beyond || !open ? 'none' : undefined,
-        transition: motion,
+        transition: `transform ${MOTION_MS}ms ${ease}, opacity ${MOTION_MS}ms ${ease}`,
       }}
     >
       <div
-        ref={measured}
-        className={cn('pointer-events-auto', card(intent))}
+        ref={cardRef}
+        className={cn('pointer-events-auto', card(intent), 'items-start')}
         style={{
-          transform: cardTransform,
-          opacity: settled ? 1 : 0,
-          transition: open ? motion : exitMotion,
+          transform: inPlace ? 'translate3d(0, 0, 0)' : `translate3d(0, ${OFFSCREEN}, 0)`,
+          height,
+          transition: cardMotion,
+          willChange: 'transform',
         }}
       >
         <div
+          ref={measured}
           className="flex w-full min-w-0 items-center gap-2.5"
-          style={{ opacity: contentVisible ? 1 : 0, transition: motion }}
+          style={{ opacity: contentVisible ? 1 : 0, transition: contentMotion }}
           // The cards behind the front one show no content, so nothing in them can be reached.
           aria-hidden={!contentVisible || undefined}
           inert={!contentVisible || undefined}
@@ -460,9 +458,13 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
   }
   const slots = stack.filter((r) => r.open).map((r) => heights[r.id] ?? FALLBACK_HEIGHT)
   const depth = Math.max(limit, 1)
+  const frontHeight = slots[0] ?? FALLBACK_HEIGHT
+  const scaleOf = (slot: number) => (expanded ? 1 : Math.max(1 - slot * SCALE_STEP, 0))
 
+  // Px up from the bottom. Folded, every card is the front one's height, scaled from its bottom
+  // edge, so lifting it by the height it lost puts its top exactly PEEK above the one in front.
   const offset = (slot: number) => {
-    if (!expanded) return slot * PEEK
+    if (!expanded) return slot * PEEK + (1 - scaleOf(slot)) * frontHeight
     let y = 0
     for (let i = 0; i < slot; i++) y += (slots[i] ?? FALLBACK_HEIGHT) + GAP
     return y
@@ -470,9 +472,11 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
 
   // The viewport covers the whole stack, gaps included, so moving between toasts never refolds it.
   const count = Math.min(slots.length, depth)
-  let height = 0
-  if (expanded) height = slots.slice(0, count).reduce((t, h, i) => t + h + (i ? GAP : 0), 0)
-  else for (let i = 0; i < count; i++) height = Math.max(height, i * PEEK + slots[i] * (1 - i * SCALE_STEP))
+  const height = expanded
+    ? slots.slice(0, count).reduce((t, h, i) => t + h + (i ? GAP : 0), 0)
+    : count
+      ? frontHeight + (count - 1) * PEEK
+      : 0
 
   return (
     <ToastPrimitive.Provider swipeDirection="right" label="Notifications">
@@ -485,7 +489,8 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
             record={record}
             index={index}
             y={-offset(slot)}
-            scale={expanded ? 1 : Math.max(1 - slot * SCALE_STEP, 0)}
+            scale={scaleOf(slot)}
+            height={!expanded && slot > 0 && record.open ? frontHeight : heights[record.id]}
             beyond={index >= depth}
             contentVisible={expanded || index === 0}
             onMeasure={measure}

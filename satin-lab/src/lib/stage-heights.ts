@@ -42,6 +42,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Progress': [280, 280],
   'Slider': [320, 320],
   'Skeleton': [280, 280],
+  'Streaming text': [320, 360],
   'Switch': [280, 280],
   'Table': [304, 304],
   'Tabs': [280, 280],

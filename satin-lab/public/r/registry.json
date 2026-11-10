@@ -879,6 +879,24 @@
       ]
     },
     {
+      "name": "streaming-text",
+      "type": "registry:ui",
+      "title": "Streaming text",
+      "description": "An answer writing itself out as it arrives, at an even pace with a caret.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Streaming text docs: https://uisatin.dev/ai-patterns/streaming-text",
+      "files": [
+        {
+          "path": "registry/satin/ui/streaming-text.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "switch",
       "type": "registry:ui",
       "title": "Switch",
