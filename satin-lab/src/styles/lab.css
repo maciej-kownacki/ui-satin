@@ -95,3 +95,54 @@ html.dark .theme-switch:not([data-ready]) button:nth-of-type(2) {
     overscroll-behavior: none;
   }
 }
+
+/* Theme change curtain (ThemeSwitch.tsx `sweep`). The new page is revealed through a mask three
+   screens wide: solid up to 45%, a soft edge to 49%, then clear, so the edge is 12% of the screen.
+   Moving the mask from 100% to 0% carries that edge from off the left to off the right. The band
+   is placed on the same path and timing, centred on the edge. */
+html[data-theme-sweep]::view-transition-old(root),
+html[data-theme-sweep]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html[data-theme-sweep]::view-transition-new(root) {
+  -webkit-mask: linear-gradient(90deg, #000 45%, transparent 49%) 0 0 / 300% 100% no-repeat;
+  mask: linear-gradient(90deg, #000 45%, transparent 49%) 0 0 / 300% 100% no-repeat;
+  animation: theme-sweep-mask 600ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+@keyframes theme-sweep-mask {
+  from { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
+  to { -webkit-mask-position: 0 0; mask-position: 0 0; }
+}
+
+.theme-sweep-band {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 20vw;
+  pointer-events: none;
+  view-transition-name: theme-sweep-band;
+  background: linear-gradient(90deg, transparent, #00c0e8 30%, #6155f5 50%, #cb30e0 70%, transparent);
+  opacity: 0.1;
+  -webkit-mask:
+    repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 2.5px),
+    repeating-linear-gradient(180deg, #000 0 2px, transparent 2px 3px);
+  -webkit-mask-composite: source-in;
+  mask:
+    repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 2.5px),
+    repeating-linear-gradient(180deg, #000 0 2px, transparent 2px 3px);
+  mask-composite: intersect;
+}
+.dark .theme-sweep-band {
+  opacity: 0.16;
+}
+::view-transition-new(theme-sweep-band) {
+  animation: none;
+}
+::view-transition-group(theme-sweep-band) {
+  /* Edge centre runs from -59vw to 141vw; the 20vw band is centred on it. */
+  animation: theme-sweep-band 600ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+@keyframes theme-sweep-band {
+  from { transform: translateX(-69vw); }
+  to { transform: translateX(131vw); }
+}
