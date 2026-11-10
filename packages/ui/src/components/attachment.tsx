@@ -102,7 +102,7 @@ export function Attachment({
               {fileIcon}
             </span>
             <span className="flex min-w-0 flex-col">
-              <span className="max-w-[200px] truncate text-sm font-medium text-text-default">{name}</span>
+              <span data-attachment-name="" className="max-w-[200px] truncate text-sm font-medium text-text-default">{name}</span>
               {meta && <span className="sr-only">, </span>}
               {meta && <span className="truncate text-xs text-text-muted">{meta}</span>}
             </span>
@@ -110,7 +110,7 @@ export function Attachment({
         ) : (
           <>
             <span className="flex shrink-0 [&_svg]:size-icon-size">{fileIcon}</span>
-            <span className="max-w-[200px] truncate text-sm font-medium text-text-default">{name}</span>
+            <span data-attachment-name="" className="max-w-[200px] truncate text-sm font-medium text-text-default">{name}</span>
             {meta && <span className="sr-only">, {meta}</span>}
           </>
         )}

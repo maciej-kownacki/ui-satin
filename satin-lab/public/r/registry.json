@@ -516,6 +516,29 @@
       ]
     },
     {
+      "name": "file-upload",
+      "type": "registry:ui",
+      "title": "File upload",
+      "description": "Takes files by drop or browse, shows each upload and what failed, then the attached files.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/attachment.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/progress.json"
+      ],
+      "docs": "File upload docs: https://uisatin.dev/components/file-upload",
+      "files": [
+        {
+          "path": "registry/satin/ui/file-upload.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "floating",
       "type": "registry:ui",
       "title": "Floating",

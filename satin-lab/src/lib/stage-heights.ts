@@ -24,6 +24,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Dot': [280, 280],
   'Dropdown': [440, 440],
   'Empty state': [280, 280],
+  'File upload': [440, 440],
   'Form field': [280, 280],
   'Input': [280, 280],
   'Kbd': [280, 280],

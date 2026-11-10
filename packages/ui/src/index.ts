@@ -54,3 +54,4 @@ export { PromptBar, defaultActions as promptBarDefaultActions, type PromptBarPro
 export { StreamingText, type StreamingTextProps } from './components/streaming-text'
 export { Thinking, type ThinkingProps, type ThinkingStep, type ThinkingState, type ThinkingIndicator } from './components/thinking'
 export { AgentLoading, type AgentLoadingProps, type AgentLoadingIndicator, TetrisMark, TetrisLabel, TetrisStill, FlappySprite, ShimmerLabel, type Glimmer } from './components/agent-loading'
+export { FileUpload, FileUploadItem, fileIconFor, formatBytes, type FileUploadProps, type FileUploadFile, type FileUploadRejection, type FileUploadStatus } from './components/file-upload'
