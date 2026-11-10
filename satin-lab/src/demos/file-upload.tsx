@@ -82,8 +82,21 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
 
 let seq = 0
 
-function Live({ state, onBrowse }: { state: string; onBrowse: () => void }) {
+// What Browse files picks in the demo, one file per click, round and round.
+const SAMPLES = [
+  { name: 'roadmap.pdf', size: 2.4 * MB },
+  { name: 'menu-autumn.docx', size: 120 * 1024 },
+  { name: 'costs-q3.xlsx', size: 84 * 1024 },
+  { name: 'floor-plan.png', size: 1.1 * MB },
+]
+let picked = 0
+
+function Live({ state }: { state: string }) {
   const [files, setFiles] = React.useState<FileUploadFile[]>(presets[state])
+  const browse = () => {
+    const f = SAMPLES[picked++ % SAMPLES.length]
+    setFiles((fs) => [...fs, { id: `live-${seq++}`, name: f.name, size: f.size, status: 'uploading', progress: 0 }])
+  }
 
   // Files added here upload for real-looking: progress climbs, then they turn into attachments.
   const live = files.some((f) => f.status === 'uploading' && f.id.startsWith('live'))
@@ -108,8 +121,8 @@ function Live({ state, onBrowse }: { state: string; onBrowse: () => void }) {
       maxSize={10 * MB}
       description="PDF, images, CSV · up to 10 MB"
       data-force={state === 'drag' ? 'drag' : undefined}
-      // The page can't open a real picker for you: Browse files shows the result instead.
-      onBrowse={onBrowse}
+      // The page can't open a real picker for you: each click picks one sample file instead.
+      onBrowse={browse}
       onFilesAdded={(added) =>
         setFiles((fs) => [...fs, ...added.map((f) => ({ id: `live-${seq++}`, name: f.name, size: f.size, status: 'uploading' as const, progress: 0 }))])
       }
@@ -129,9 +142,9 @@ export default function FileUploadDemo({ codeHtml }: { codeHtml: Record<string, 
       options={options}
       codeHtml={codeHtml}
       controls={controls}
-      render={(_, v, set) => (
+      render={(_, v) => (
         <div className="w-[440px] max-w-full">
-          <Live key={v.state} state={v.state} onBrowse={() => set('state', 'attached')} />
+          <Live key={v.state} state={v.state} />
         </div>
       )}
     />
