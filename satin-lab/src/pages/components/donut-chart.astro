@@ -1,0 +1,31 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import DonutChartDemo, { options } from '../../demos/donut-chart'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="donut-chart">
+  <DocSection
+    item={page('donut-chart')}
+    api={{
+      description: 'The `DonutCard` component is a wrapper around the `div` element with the title and a period Select, the range, a ring with the sum in the middle and a legend pill per part. Hovering a part or its pill brings it forward and shows its value and share in the middle.',
+      props: [
+        { name: 'title', type: ['string'] },
+        { name: 'range', type: ['string'] },
+        { name: 'data', type: ['ChartDatum[]'] },
+        { name: 'centerLabel', type: ['string'], default: '"Total"' },
+        { name: 'periods', type: ['string[]', 'string[][]'] },
+        { name: 'value', type: ['string'] },
+        { name: 'onPeriodChange', type: ['(period) => void'] },
+        { name: 'formatValue', type: ['(value) => string'] },
+        { name: 'highlight', type: ['number'] },
+      ],
+    }}
+  >
+    <DonutChartDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

@@ -1,0 +1,34 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import LineChartDemo, { options } from '../../demos/line-chart'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="line-chart">
+  <DocSection
+    item={page('line-chart')}
+    api={{
+      description: 'The `LineCard` component is a wrapper around the `div` element with the title and a period Select, the KPI with its change and the range, then the line. Arrow keys move along the points once the plot has focus.',
+      props: [
+        { name: 'title', type: ['string'] },
+        { name: 'range', type: ['string'] },
+        { name: 'data', type: ['ChartDatum[]'] },
+        { name: 'total', type: ['string'] },
+        { name: 'change', type: ['string'] },
+        { name: 'periods', type: ['string[]', 'string[][]'] },
+        { name: 'value', type: ['string'] },
+        { name: 'onPeriodChange', type: ['(period) => void'] },
+        { name: 'unit', type: ['string'] },
+        { name: 'formatValue', type: ['(value) => string'] },
+        { name: 'reducedMotion', type: ['boolean'] },
+        { name: 'highlight', type: ['number'] },
+      ],
+    }}
+  >
+    <LineChartDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

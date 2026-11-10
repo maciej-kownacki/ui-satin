@@ -1,20 +1,18 @@
 'use client'
 
 import * as React from 'react'
-import { ToggleGroup } from 'radix-ui'
 import { cn } from '../lib/utils'
+import { Badge } from './badge'
 import { Floating } from './floating'
+import { Select } from './select'
 
 /**
  * The parts every chart card shares, 1:1 with the uiKit `chart/barCard` (3607:18253) and `chart/channelCard`
  * (3608:18797) frames and the parts `chart/legendRow`
  * (3602:17559) and `chart/tooltip` (3602:17522). Plain React and CSS, no chart library.
  *
- * Every card sits in the Card frame: bg/card, 1px border-default, radius-2xl. Header 16px in, title
- * medium 14/14, range regular 13/19.5 text-muted, 2px apart. Footer slot 16px in.
- * period=toggles adds a row of 28px toggles (radius-lg, medium 13/18; on: secondary pressed
- * fill + border-strong + text-default; off: popover + border-default + text-muted) in groups
- * split by 1×16 dividers, scrolling sideways under a 32px fade.
+ * Every card sits in ChartCard: the title and a period Select on one row, the KPI with its
+ * change and the range under it, then the chart.
  *
  * The tooltip is a text/default pill with bg/canvas text, medium label + value at 72%, 10×6
  * padding, radius-md, a 12×6 pointer and a two-step sm shadow.
@@ -31,9 +29,14 @@ export type Periods = string[] | string[][]
 
 export interface ChartCardBaseProps extends Omit<React.ComponentProps<'div'>, 'title'> {
   title: string
+  /** The dates the card covers, under the KPI, e.g. "Oct 26 – Nov 1, 2026 · vs previous 7 days". */
   range: string
   data: ChartDatum[]
-  /** Period toggles. Nested arrays become groups split by a divider. */
+  /** The KPI under the title, e.g. "€48,260". Cards that have one default it to the formatted sum. */
+  total?: string
+  /** The change badge after the KPI, e.g. "+5.2%". A leading minus turns it red. */
+  change?: string
+  /** Periods for the Select in the header. Nested arrays become titled-less groups split by a rule. */
   periods?: Periods
   /** The selected period. */
   value?: string
@@ -48,41 +51,68 @@ export const defaultFormat = (n: number) => n.toLocaleString('en-US')
 
 /* ---------- shared parts ---------- */
 
+/**
+ * The card every chart sits in (uiKit "chart explorations" A, 4084:3591): bg/card, 1px
+ * border-default, radius-2xl, 16px in and 16 between rows. Row one: the title (16/24 medium,
+ * text/default) and, when there are `periods`, a small Select for the period at the right. Row
+ * two: the KPI (text/xl semibold) with its change badge, and the range under it in text/muted, 2px
+ * apart; without a KPI the range sits 4px under the title. Then the chart. The card is a size
+ * container, so a chart can lay itself out wider from 560px (`@min-[560px]:`).
+ */
 export function ChartCard({
   title,
   range,
+  total,
+  change,
   periods,
   value,
   onPeriodChange,
   className,
   children,
-  bodyClassName,
   ...props
-}: Omit<ChartCardBaseProps, 'data' | 'formatValue' | 'highlight'> & { bodyClassName?: string }) {
+}: Omit<ChartCardBaseProps, 'data' | 'formatValue' | 'highlight'>) {
   const titleId = React.useId()
   return (
     <div
       data-slot="chart-card"
       role="figure"
       aria-labelledby={titleId}
-      className={cn('flex flex-col overflow-hidden rounded-2xl border border-border-default bg-bg-card', className)}
+      className={cn('@container flex flex-col gap-4 overflow-hidden rounded-2xl border border-border-default bg-bg-card p-4', className)}
       {...props}
     >
-      <div className="flex flex-col gap-0.5 px-4 pt-4">
-        <p id={titleId} className="text-base leading-[14px] font-medium tracking-normal text-text-default">
-          {title}
-        </p>
-        <p className="text-sm leading-(--text-sm--line-height) text-text-muted">{range}</p>
+      <div className="flex flex-col gap-1">
+        <div className="flex min-h-7 items-center gap-3">
+          <p id={titleId} className="min-w-0 flex-1 truncate text-lg leading-6 font-medium text-text-default">
+            {title}
+          </p>
+          {periods && <PeriodSelect periods={periods} value={value} onValueChange={onPeriodChange} />}
+        </div>
+        {/* Without a KPI the range sits right under the title. */}
+        {total == null && <p className="text-sm leading-(--text-sm--line-height) text-text-muted">{range}</p>}
       </div>
-      <div className={cn('flex flex-col gap-4 px-4 pb-4', periods ? 'pt-3' : bodyClassName)}>
-        {periods && <PeriodToggles periods={periods} value={value} onValueChange={onPeriodChange} />}
-        {children}
-      </div>
+      {total != null && (
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xl leading-(--text-xl--line-height) font-semibold text-text-default tabular-nums">{total}</span>
+            {change && (
+              <Badge
+                tone={/^[−-]/.test(change) ? 'red' : 'green'}
+                size="sm"
+                className="[box-shadow:inset_0_0_0_1px_var(--tone-border)]"
+              >
+                {change}
+              </Badge>
+            )}
+          </div>
+          <p className="text-sm leading-(--text-sm--line-height) text-text-muted">{range}</p>
+        </div>
+      )}
+      {children}
     </div>
   )
 }
 
-function PeriodToggles({
+function PeriodSelect({
   periods,
   value,
   onValueChange,
@@ -93,43 +123,62 @@ function PeriodToggles({
 }) {
   const groups: string[][] = Array.isArray(periods[0]) ? (periods as string[][]) : [periods as string[]]
   return (
-    <div className="relative">
-      <ToggleGroup.Root
-        type="single"
-        aria-label="Period"
-        value={value}
-        onValueChange={(v) => v && onValueChange?.(v)}
-        className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {groups.map((group, g) => (
-          <React.Fragment key={g}>
-            {g > 0 && <span aria-hidden className="h-4 w-px shrink-0 bg-border-default" />}
-            <div className="flex shrink-0 items-center gap-1">
-              {group.map((p) => (
-                <ToggleGroup.Item
-                  key={p}
-                  value={p}
-                  className={cn(
-                    'flex h-7 shrink-0 items-center justify-center rounded-lg border px-2.5 text-sm leading-[18px] font-medium whitespace-nowrap',
-                    'transition-[background-color,border-color,color,box-shadow] duration-(--duration-fast) ease-(--ease-out) focus-visible:outline-none',
-                    'border-border-default bg-bg-popover text-text-muted',
-                    'satin-hover:bg-bg-hover satin-hover:text-text-default',
-                    'satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
-                    'data-[state=on]:border-border-strong data-[state=on]:bg-action-secondary-bg-pressed data-[state=on]:text-text-default',
-                  )}
-                >
-                  {p}
-                </ToggleGroup.Item>
-              ))}
-            </div>
-          </React.Fragment>
-        ))}
-      </ToggleGroup.Root>
-      {/* The track runs under the card's right padding and fades out there. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 -right-4 w-8 bg-linear-to-r from-bg-card-fade to-bg-card"
-      />
+    <Select
+      size="sm"
+      aria-label="Period"
+      options={groups.map((g) => ({ options: g.map((p) => ({ value: p, label: p })) }))}
+      value={value}
+      onValueChange={onValueChange}
+      wrapperClassName="w-[132px] shrink-0"
+    />
+  )
+}
+
+/**
+ * chart/legendPill (4061:4182).
+ * - `outline`: an outline pill with no fill — 8px swatch, label, value 6 apart, 6 / 10 in. Active
+ *   turns the ring border-strong.
+ * - `plain` (the Donut legend): no ring and no value, 6 / 8 in; active fills bg/hover, as plain
+ *   controls do on hover.
+ * Dimmed fades the content to 45%, never the ground.
+ */
+export function ChartLegendPill({
+  color,
+  label,
+  value,
+  variant = 'outline',
+  active,
+  dimmed,
+  className,
+  ...props
+}: {
+  color: string
+  label: React.ReactNode
+  value?: React.ReactNode
+  variant?: 'outline' | 'plain'
+  active?: boolean
+  dimmed?: boolean
+} & React.ComponentProps<'div'>) {
+  const plain = variant === 'plain'
+  return (
+    <div
+      data-slot="chart-legend-pill"
+      data-variant={variant}
+      className={cn(
+        'inline-flex h-8 items-center gap-1.5 rounded-full text-sm leading-(--text-sm--line-height) whitespace-nowrap',
+        'transition-[border-color,background-color] duration-(--duration-fast) ease-(--ease-out)',
+        '*:transition-opacity *:duration-(--duration-fast) *:ease-(--ease-out)',
+        plain ? 'px-2' : 'border px-2.5',
+        !plain && (active ? 'border-border-strong' : 'border-border-default'),
+        plain && active && 'bg-bg-hover',
+        dimmed && '*:opacity-45',
+        className,
+      )}
+      {...props}
+    >
+      <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: color }} />
+      <span className="min-w-0 truncate text-text-default">{label}</span>
+      {value != null && <span className="font-medium text-text-default tabular-nums">{value}</span>}
     </div>
   )
 }

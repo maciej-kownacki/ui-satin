@@ -2,24 +2,18 @@
 
 import * as React from 'react'
 import { cn } from '../lib/utils'
-import { Badge } from './badge'
 import { ChartCard, ChartLegendRow, ChartTooltip, defaultFormat, type ChartCardBaseProps } from './chart'
 
 /**
  * Channel chart, 1:1 with the uiKit `chart/channelCard` (3608:18797), in the shared card
  * frame (chart.tsx).
  *
- * ChannelCard: a KPI (semibold 20/30) with a green change badge, a 14px stacked bar of fr
+ * ChannelCard: the KPI (the sum unless given) with its change badge, a 14px stacked bar of fr
  * segments 2px apart in chart/1–5 (4px outer corners, 1.5px inner), and a legend row per
- * channel (8px swatch, label, value, 32 high, 2px apart). Hover (or `highlight`) fades the
+ * channel (8px swatch, label, value, 32 high, 2px apart), in two columns from 560px. Hover (or `highlight`) fades the
  * other segments to 15% and the other rows to 45%, and fills the row bg/muted.
  */
-export interface ChannelCardProps extends ChartCardBaseProps {
-  /** The KPI, e.g. "€48,260". Defaults to the formatted sum. */
-  total?: string
-  /** Change badge next to the KPI, e.g. "+5.2%". */
-  change?: string
-}
+export interface ChannelCardProps extends ChartCardBaseProps {}
 
 const seriesColor = (i: number) => `var(--chart-${(i % 5) + 1})`
 
@@ -28,8 +22,6 @@ export function ChannelCard({
   formatValue = defaultFormat,
   highlight,
   total,
-  change,
-  periods,
   ...props
 }: ChannelCardProps) {
   const [hovered, setHovered] = React.useState<number | null>(null)
@@ -39,16 +31,8 @@ export function ChannelCard({
   const last = data.length - 1
 
   return (
-    <ChartCard periods={periods} bodyClassName="pt-4" {...props}>
+    <ChartCard total={total ?? formatValue(sum)} {...props}>
       <div className="relative flex flex-col gap-4" onPointerLeave={() => setHovered(null)}>
-        <div className="flex items-center gap-2">
-          <span className="text-xl leading-(--text-xl--line-height) font-semibold text-text-default">{total ?? formatValue(sum)}</span>
-          {change && (
-            <Badge tone="green" size="sm" className="[box-shadow:inset_0_0_0_1px_var(--tone-border)]">
-              {change}
-            </Badge>
-          )}
-        </div>
         <div
           aria-hidden
           className="relative grid h-3.5 gap-x-0.5"
@@ -73,7 +57,11 @@ export function ChannelCard({
             </span>
           ))}
         </div>
-        <ul className="flex flex-col gap-0.5" aria-label={props.title}>
+        <ul
+          className="flex flex-col gap-0.5 @min-[560px]:grid @min-[560px]:grid-flow-col @min-[560px]:auto-cols-fr @min-[560px]:gap-x-6"
+          style={{ gridTemplateRows: `repeat(${Math.ceil(data.length / 2)}, auto)` }}
+          aria-label={props.title}
+        >
           {data.map((d, i) => (
             <li
               key={d.label}

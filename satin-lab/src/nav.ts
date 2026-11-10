@@ -41,6 +41,9 @@ export const nav: NavGroup[] = [
         children: [
           { id: 'bar-chart', title: 'Bar chart', href: '/components/bar-chart', description: 'One metric over a period as bars, with a tooltip on the hovered one.' },
           { id: 'channel-chart', title: 'Channel chart', href: '/components/channel-chart', description: 'How a total splits across channels: a stacked bar and a legend row per channel.' },
+          { id: 'line-chart', title: 'Line chart', href: '/components/line-chart', description: 'One metric over a period as a smooth line, with the value of the hovered point.' },
+          { id: 'area-chart', title: 'Area chart', href: '/components/area-chart', description: 'The line chart with its area filled down to the baseline in a fading gradient.' },
+          { id: 'donut-chart', title: 'Donut chart', href: '/components/donut-chart', description: 'How a total splits into a few parts, as a ring with the sum in the middle.' },
         ],
       },
       { id: 'checkbox', title: 'Checkbox', href: '/components/checkbox', description: 'Turns an option on or off as part of a form.' },

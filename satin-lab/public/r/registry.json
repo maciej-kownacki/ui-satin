@@ -269,7 +269,6 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/chart.json"
       ],
       "docs": "Channel chart docs: https://uisatin.dev/components/channel-chart",
@@ -285,13 +284,13 @@
       "type": "registry:ui",
       "title": "Chart",
       "description": "The Satin Chart component.",
-      "dependencies": [
-        "radix-ui@^1.8.1"
-      ],
+      "dependencies": [],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/floating.json"
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/floating.json",
+        "https://uisatin.dev/r/select.json"
       ],
       "files": [
         {
@@ -423,7 +422,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/checkbox.json"
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Decision card docs: https://uisatin.dev/ai-patterns/decision-card",
       "files": [
@@ -450,6 +450,25 @@
       "files": [
         {
           "path": "registry/satin/ui/dialog.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "donut-chart",
+      "type": "registry:ui",
+      "title": "Donut chart",
+      "description": "How a total splits into a few parts, as a ring with the sum in the middle.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/chart.json"
+      ],
+      "docs": "Donut chart docs: https://uisatin.dev/components/donut-chart",
+      "files": [
+        {
+          "path": "registry/satin/ui/donut-chart.tsx",
           "type": "registry:ui"
         }
       ]
@@ -608,6 +627,26 @@
       "files": [
         {
           "path": "registry/satin/ui/kbd.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "line-chart",
+      "type": "registry:ui",
+      "title": "Line chart",
+      "description": "One metric over a period as a smooth line, with the value of the hovered point.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/bar-chart.json",
+        "https://uisatin.dev/r/chart.json"
+      ],
+      "docs": "Line chart docs: https://uisatin.dev/components/line-chart",
+      "files": [
+        {
+          "path": "registry/satin/ui/line-chart.tsx",
           "type": "registry:ui"
         }
       ]

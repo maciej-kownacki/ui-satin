@@ -24,6 +24,7 @@ const highlighted = 0
 
 // Periods are content the card can carry; the highlighted (hover) look is a state, last.
 export const controls: ShowcaseControl[] = [
+  { id: 'width', label: 'Width', items: [{ value: 'compact', label: 'Compact' }, { value: 'wide', label: 'Wide' }] },
   { id: 'periods', label: 'Periods', type: 'switch', default: 'off' },
   { id: 'highlight', label: 'Highlight', type: 'switch', default: 'off' },
 ]
@@ -66,7 +67,7 @@ const labels: Record<string, [string, string]> = {
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   id: comboId(controls, v),
-  label: [...Object.entries(labels).map(([k, [on, off]]) => (v[k] === 'on' ? on : off))].join(' · '),
+  label: [...Object.entries(labels).map(([k, [on, off]]) => (v[k] === 'on' ? on : off)), v.width === 'wide' ? 'Wide' : 'Compact'].join(' · '),
   code: code(v),
 }))
 
@@ -89,7 +90,7 @@ export default function ChannelChartDemo({ codeHtml }: { codeHtml: Record<string
       codeHtml={codeHtml}
       controls={controls}
       render={(_, v) => (
-        <div className="w-[400px] max-w-full">
+        <div className={v.width === 'wide' ? 'w-[720px] max-w-full' : 'w-[400px] max-w-full'}>
           <Card v={v} />
         </div>
       )}

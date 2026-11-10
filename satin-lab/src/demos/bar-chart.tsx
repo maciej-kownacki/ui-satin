@@ -12,6 +12,7 @@ const busiest = (period: string) => {
 // Periods and the picked period are content the card can carry; reduced motion
 // and the highlighted (hover) look are states, last. The card's own toggles move Period too.
 export const controls: ShowcaseControl[] = [
+  { id: 'width', label: 'Width', items: [{ value: 'compact', label: 'Compact' }, { value: 'wide', label: 'Wide' }] },
   { id: 'periods', label: 'Periods', type: 'switch', default: 'off' },
   { id: 'period', label: 'Period', type: 'menu', default: '7 days', items: PERIODS.flat().map((p) => ({ value: p, label: p })) },
   { id: 'reduced', label: 'Reduced motion', type: 'switch', default: 'off' },
@@ -44,7 +45,7 @@ const compact = (n: number) => (n >= 1000 ? \`\${+(n / 1000).toFixed(1)}k\` : n.
     ...(withPeriods
       ? [`periods={[['7 days', '30 days', '90 days', '365 days'], ['Sep', 'Oct', 'Nov'], ['2025', '2026']]}`, 'value={period}', 'onPeriodChange={setPeriod}']
       : []),
-    "legend={{ label: 'Total covers', note: '+8.4% vs last period' }}",
+    'change="+8.4%"',
     ...(v.reduced === 'on' ? ['reducedMotion'] : []),
     ...(v.highlight === 'on' ? [`highlight={${busiest(v.period)}}`] : []),
   ]
@@ -73,7 +74,7 @@ const labels: Record<string, [string, string]> = {
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   id: comboId(controls, v),
-  label: [v.period, ...Object.entries(labels).map(([k, [on, off]]) => (v[k] === 'on' ? on : off))].join(' · '),
+  label: [v.period, ...Object.entries(labels).map(([k, [on, off]]) => (v[k] === 'on' ? on : off)), v.width === 'wide' ? 'Wide' : 'Compact'].join(' · '),
   code: code(v),
 }))
 
@@ -86,7 +87,7 @@ function Card({ v, set }: { v: Record<string, string>; set: (id: string, value: 
       data={data}
       unit="covers"
       formatValue={format}
-      legend={{ label: 'Total covers', note: '+8.4% vs last period' }}
+      change="+8.4%"
       {...(v.periods === 'on' && { periods: PERIODS, value: v.period, onPeriodChange: (p: string) => set('period', p) })}
       reducedMotion={v.reduced === 'on'}
       highlight={v.highlight === 'on' ? busiest(v.period) : undefined}
@@ -102,7 +103,7 @@ export default function BarChartDemo({ codeHtml }: { codeHtml: Record<string, st
       codeHtml={codeHtml}
       controls={controls}
       render={(_, v, set) => (
-        <div className="w-[400px] max-w-full">
+        <div className={v.width === 'wide' ? 'w-[720px] max-w-full' : 'w-[400px] max-w-full'}>
           <Card v={v} set={set} />
         </div>
       )}

@@ -12,14 +12,15 @@ import { ChartCard, ChartLegendRow, ChartTooltip, defaultFormat, type ChartCardB
  * axis labels regular 12/18 text-muted, columns 8px apart with a 180px track, bars radius-md
  * in chart/3 and day labels medium 13 text-muted 6px below. Hover (or `highlight`) keeps the
  * hovered bar, outlines it 2px out in chart/3, shows its value above and bolds its day; the
- * other bars dim to a 30% tint of chart/3 on bg/card, so they follow the bar, not the brand. A legend row sits under the plot.
+ * other bars dim to a 30% tint of chart/3 on bg/card, so they follow the bar, not the brand.
+ * The KPI above defaults to the sum, in full (formatValue is for the axis); an optional legend row can sit under the plot.
  *
  * When the data changes (a new period, say) the bars regrow from the baseline in 250 ms on
  * ease-out, revealed by clip-path so their rounded tops stay whole, and the day labels and the
  * axis fade in on the new scale. Not on the first paint; under reduced motion, or with
  * `reducedMotion`, the bars swap at once.
  */
-function niceMax(max: number) {
+export function niceMax(max: number) {
   if (max <= 0) return 4
   const raw = max / 4
   const pow = 10 ** Math.floor(Math.log10(raw))
@@ -45,8 +46,8 @@ export function BarCard({
   highlight,
   legend,
   unit,
-  periods,
   reducedMotion,
+  total,
   ...props
 }: BarCardProps) {
   const [hovered, setHovered] = React.useState<number | null>(null)
@@ -60,11 +61,11 @@ export function BarCard({
   const regrow = redraw.n > 0 && !reducedMotion
   const max = niceMax(Math.max(0, ...data.map((d) => d.value)))
   const ticks = [4, 3, 2, 1, 0].map((i) => (max / 4) * i)
-  const total = data.reduce((n, d) => n + d.value, 0)
+  const sum = data.reduce((n, d) => n + d.value, 0)
 
   return (
-    <ChartCard periods={periods} bodyClassName="pt-8" {...props}>
-      <div className={periods ? 'pt-[9px]' : undefined}>
+    <ChartCard total={total ?? defaultFormat(sum)} {...props}>
+      <div className="pt-2">
         <div className="relative flex h-[206px] items-end gap-2 pl-8" onPointerLeave={() => setHovered(null)}>
           {/* Gridlines at each tick but zero, dashed border-subtle. */}
           {ticks.slice(0, 4).map((_, i) => (
@@ -148,7 +149,7 @@ export function BarCard({
         <ChartLegendRow
           color="var(--chart-3)"
           label={legend.label}
-          value={legend.value ?? formatValue(total)}
+          value={legend.value ?? formatValue(sum)}
           note={legend.note}
         />
       )}
