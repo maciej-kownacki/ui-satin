@@ -1,0 +1,38 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SliderDemo, { options } from '../../demos/slider'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+
+const api = {
+  description:
+    "The `Slider` component wraps the Radix slider: one `slider` thumb for a number, two for a `[from, to]` range, with a hidden input per thumb when it has a `name`. The label names it; `formatValue` is what screen readers hear. Typed values in `inputs` are clamped, snapped to `step` and kept in order on Enter or blur.",
+  props: [
+    {name: "value", type: ["number", "[number, number]"]},
+    {name: "defaultValue", type: ["number", "[number, number]"]},
+    {name: "onValueChange", type: ["(value: number | [number, number]) => void"]},
+    {name: "onValueCommit", type: ["(value: number | [number, number]) => void"]},
+    {name: "min", type: ["number"], default: "0"},
+    {name: "max", type: ["number"], default: "100"},
+    {name: "step", type: ["number"], default: "1"},
+    {name: "minStepsBetweenThumbs", type: ["number"], default: "0"},
+    {name: "label", type: ["ReactNode"]},
+    {name: "showValue", type: ["boolean"], default: "true"},
+    {name: "inputs", type: ["boolean"], default: "false"},
+    {name: "tooltip", type: ["boolean"], default: "false"},
+    {name: "orientation", type: ["\"horizontal\"", "\"vertical\""], default: "\"horizontal\""},
+    {name: "formatValue", type: ["(value: number) => string"]},
+    {name: "disabled", type: ["boolean"], default: "false"},
+    {name: "name", type: ["string"]},
+  ],
+}
+---
+
+<Docs current="slider">
+  <DocSection item={page('slider')} api={api}>
+    <SliderDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

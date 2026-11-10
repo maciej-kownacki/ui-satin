@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "progress",
+  "type": "registry:ui",
+  "title": "Progress",
+  "description": "Shows how far a task has got, or that it is still running.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/progress.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\n\n/**\n * Progress, 1:1 with the uiKit `Progress` set (4025:3851): a bg/muted track, 4px (sm) or 8px\n * (md), fully rounded, with the done part in action/primary/bg. Above it, optionally, a label\n * row 8px up: the label (13px medium, text/default) on the left and the percentage (13px,\n * text/muted) on the right.\n *\n * Leave `value` out while the amount is unknown: a third of the track then slides across.\n * The bar moves to a new value over 300 ms on ease-out.\n *\n * A `progressbar` with aria-valuenow (and the label as its name) when there is a value.\n */\nexport interface ProgressProps extends Omit<React.ComponentProps<'div'>, 'children'> {\n  /** 0 to `max`; left out, the bar is indeterminate. */\n  value?: number | null\n  max?: number\n  label?: React.ReactNode\n  /** The percentage at the right of the label row. */\n  showValue?: boolean\n  size?: 'sm' | 'md'\n  /** How the value reads on the right and to screen readers. Defaults to a whole percentage. */\n  formatValue?: (value: number, max: number) => string\n}\n\nconst percent = (value: number, max: number) => `${Math.round((value / max) * 100)}%`\n\nexport function Progress({\n  value,\n  max = 100,\n  label,\n  showValue = true,\n  size = 'sm',\n  formatValue = percent,\n  className,\n  'aria-label': ariaLabel,\n  ...props\n}: ProgressProps) {\n  const labelId = React.useId()\n  const known = value != null\n  const v = known ? Math.min(max, Math.max(0, value)) : 0\n  const text = known ? formatValue(v, max) : undefined\n\n  return (\n    <div data-slot=\"progress\" data-size={size} className={cn('flex w-full flex-col gap-2', className)} {...props}>\n      {(label || (showValue && known)) && (\n        <div className=\"flex items-center justify-between gap-3 text-sm leading-5\">\n          {label ? (\n            <span id={labelId} className=\"min-w-0 truncate font-medium text-text-default\">\n              {label}\n            </span>\n          ) : (\n            <span />\n          )}\n          {showValue && known && (\n            <span aria-hidden className=\"shrink-0 text-text-muted tabular-nums\">\n              {text}\n            </span>\n          )}\n        </div>\n      )}\n      <div\n        role=\"progressbar\"\n        aria-labelledby={label ? labelId : undefined}\n        aria-label={label ? undefined : ariaLabel}\n        aria-valuemin={0}\n        aria-valuemax={max}\n        aria-valuenow={known ? v : undefined}\n        aria-valuetext={text}\n        className={cn('relative w-full overflow-hidden rounded-full bg-bg-muted', size === 'md' ? 'h-2' : 'h-1')}\n      >\n        {known ? (\n          <div\n            className=\"h-full rounded-full bg-action-primary-bg transition-[width] duration-300 ease-(--ease-out)\"\n            style={{ width: `${(v / max) * 100}%` }}\n          />\n        ) : (\n          <div className=\"absolute inset-y-0 left-0 w-1/3 rounded-full bg-action-primary-bg animate-[satin-progress-indeterminate_1.4s_var(--ease-in-out)_infinite]\" />\n        )}\n      </div>\n    </div>\n  )\n}\n"
+    }
+  ],
+  "docs": "Progress docs: https://uisatin.dev/components/progress"
+}

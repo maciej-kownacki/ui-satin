@@ -197,6 +197,27 @@
       ]
     },
     {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "title": "Breadcrumb",
+      "description": "Shows where the page sits and leads back up the path.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/dropdown.json"
+      ],
+      "docs": "Breadcrumb docs: https://uisatin.dev/components/breadcrumb",
+      "files": [
+        {
+          "path": "registry/satin/ui/breadcrumb.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "button",
       "type": "registry:ui",
       "title": "Button",
@@ -610,6 +631,27 @@
       ]
     },
     {
+      "name": "pagination",
+      "type": "registry:ui",
+      "title": "Pagination",
+      "description": "Moves through a long list one page at a time.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Pagination docs: https://uisatin.dev/components/pagination",
+      "files": [
+        {
+          "path": "registry/satin/ui/pagination.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "popover",
       "type": "registry:ui",
       "title": "Popover",
@@ -625,6 +667,24 @@
       "files": [
         {
           "path": "registry/satin/ui/popover.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "title": "Progress",
+      "description": "Shows how far a task has got, or that it is still running.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Progress docs: https://uisatin.dev/components/progress",
+      "files": [
+        {
+          "path": "registry/satin/ui/progress.tsx",
           "type": "registry:ui"
         }
       ]
@@ -792,6 +852,28 @@
       "files": [
         {
           "path": "registry/satin/ui/skeleton.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "title": "Slider",
+      "description": "Picks a number or a range by dragging, with the value to read or type.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Slider docs: https://uisatin.dev/components/slider",
+      "files": [
+        {
+          "path": "registry/satin/ui/slider.tsx",
           "type": "registry:ui"
         }
       ]
