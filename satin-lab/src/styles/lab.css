@@ -83,3 +83,15 @@ html.dark .theme-switch:not([data-ready]) button:nth-of-type(2) {
 [data-type-scale="linear"] :is(.text-lg, .text-xl, .text-2xl) {
   letter-spacing: -0.012em;
 }
+
+/* Docs on wide screens: the panel is fixed to the viewport and only the sidebar list and the
+   content scroll. The page itself never moves, not even with nothing to scroll or at the end
+   of a list (no rubber band, no scroll handed on to the document). */
+@media (width >= 64rem) {
+  html:has([data-docs-shell]),
+  html:has([data-docs-shell]) body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
