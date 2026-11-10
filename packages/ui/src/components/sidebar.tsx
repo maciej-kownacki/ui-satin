@@ -17,6 +17,11 @@ import { cn } from '../lib/utils'
  *   text/default, a plain count, chevron right → down) and its `SidebarSubItem`s.
  * - `SidebarSubItem` is a regular 13px row whose text starts in line with the group label
  *   (34px in). Hover bg/muted, active bg/selected, disabled 50%.
+ * - `SidebarSubGroup` is a sub-item that holds sub-items of its own (Chart → Bar chart,
+ *   Channel chart): the same row with a chevron on the right, folding open and shut like the
+ *   group (satin-expand, the chevron turning right → down). Its sub-items start 12px further
+ *   in (46px). It opens on its own when one of them is the current page, and its label turns
+ *   text/default while it holds the current page.
  *
  * Rows sit 2px apart. Focus draws the 1px border/focus outline Figma shows on the focus
  * variants, inset so the row doesn't move. Every state also answers to `data-force`.
@@ -243,5 +248,61 @@ export function SidebarSubItem({
     >
       {asChild ? children : <span className="min-w-0 flex-1 truncate">{label}</span>}
     </Comp>
+  )
+}
+
+export interface SidebarSubGroupProps extends Omit<React.ComponentProps<'div'>, 'children'> {
+  label: string
+  /** Its `SidebarSubItem`s; they sit 12px further in. */
+  children?: React.ReactNode
+  /** One of its sub-items is the current page: opens it by default and marks the label. */
+  active?: boolean
+  open?: boolean
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export function SidebarSubGroup({
+  className,
+  label,
+  children,
+  active = false,
+  open: openProp,
+  defaultOpen,
+  onOpenChange,
+  ...props
+}: SidebarSubGroupProps) {
+  const [uncontrolled, setUncontrolled] = React.useState(defaultOpen ?? active)
+  const open = openProp ?? uncontrolled
+  const regionId = React.useId()
+  return (
+    <div data-slot="sidebar-sub-group" data-state={open ? 'open' : 'closed'} className={cn('group/sub-group flex flex-col gap-0.5', className)} {...props}>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={regionId}
+        data-active={active || undefined}
+        onClick={() => {
+          if (openProp == null) setUncontrolled(!open)
+          onOpenChange?.(!open)
+        }}
+        className={cn(
+          'flex h-8 w-full shrink-0 items-center gap-2 rounded-lg pr-3 pl-[34px] text-left text-sm font-normal text-text-muted select-none',
+          'transition-[background-color,color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
+          'satin-hover:bg-bg-muted satin-hover:text-text-default data-active:text-text-default',
+          '[&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
+          rowFocus,
+        )}
+      >
+        <span className="min-w-0 flex-1 truncate">{label}</span>
+        <NavArrowRight
+          aria-hidden
+          className="text-text-muted transition-transform duration-(--duration-base) ease-(--ease-out) group-data-[state=open]/sub-group:rotate-90 motion-reduce:transition-none"
+        />
+      </button>
+      <div id={regionId} data-state={open ? 'open' : 'closed'} className="satin-expand">
+        <div className="flex flex-col gap-0.5 [&>[data-slot=sidebar-sub-item]]:pl-[46px]">{children}</div>
+      </div>
+    </div>
   )
 }

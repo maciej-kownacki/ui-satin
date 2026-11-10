@@ -2,7 +2,14 @@
  * The sidebar, group by group. Every item is its own page; `id` names it in the sidebar
  * (the current item), `href` is its URL, `description` sits under its title.
  */
-export type NavItem = { id: string; title: string; href: string; description: string }
+export type NavItem = {
+  id: string
+  title: string
+  href: string
+  description: string
+  /** A parent row in the sidebar (Chart) that folds open onto these pages; it has no page itself. */
+  children?: NavItem[]
+}
 export type NavGroup = { id: string; title: string; items: NavItem[] }
 
 export const nav: NavGroup[] = [
@@ -26,6 +33,16 @@ export const nav: NavGroup[] = [
       { id: 'breadcrumb', title: 'Breadcrumb', href: '/components/breadcrumb', description: 'Shows where the page sits and leads back up the path.' },
       { id: 'button', title: 'Button', href: '/components/button', description: 'Starts an action. One primary per screen; secondary and tertiary for the rest.' },
       { id: 'card', title: 'Card', href: '/components/card', description: 'Groups related content and actions under a title, with an optional footer.' },
+      {
+        id: 'chart',
+        title: 'Chart',
+        href: '/components/bar-chart',
+        description: 'Charts for one metric over time and for how a total splits.',
+        children: [
+          { id: 'bar-chart', title: 'Bar chart', href: '/components/bar-chart', description: 'One metric over a period as bars, with a tooltip on the hovered one.' },
+          { id: 'channel-chart', title: 'Channel chart', href: '/components/channel-chart', description: 'How a total splits across channels: a stacked bar and a legend row per channel.' },
+        ],
+      },
       { id: 'checkbox', title: 'Checkbox', href: '/components/checkbox', description: 'Turns an option on or off as part of a form.' },
       { id: 'chip', title: 'Chip', href: '/components/chip', description: 'A compact, removable tag for filters, suggestions and people.' },
       { id: 'code-block', title: 'Code block', href: '/components/code-block', description: 'Shows code or a diff with a filename, line numbers and a copy button.' },
@@ -58,14 +75,6 @@ export const nav: NavGroup[] = [
     ],
   },
   {
-    id: 'charts',
-    title: 'Charts',
-    items: [
-      { id: 'bar-chart', title: 'Bar chart', href: '/charts/bar-chart', description: 'One metric over a period as bars, with a tooltip on the hovered one.' },
-      { id: 'channel-chart', title: 'Channel chart', href: '/charts/channel-chart', description: 'How a total splits across channels: a stacked bar and a legend row per channel.' },
-    ],
-  },
-  {
     id: 'ai-patterns',
     title: 'AI patterns',
     items: [
@@ -82,11 +91,17 @@ export const nav: NavGroup[] = [
   },
 ]
 
+/** Every page in a list of items: parents give their children instead of themselves. */
+export const pagesOf = (items: NavItem[]): NavItem[] => items.flatMap((i) => (i.children ? pagesOf(i.children) : [i]))
+
 /** The group a page sits in, for the breadcrumbs above its title. */
-export const groupOf = (id: string) => nav.find((g) => g.items.some((i) => i.id === id))!
+export const groupOf = (id: string) => nav.find((g) => pagesOf(g.items).some((i) => i.id === id))!
+
+/** The parent row a page sits under (Chart for Bar chart), if any. */
+export const parentOf = (id: string) => nav.flatMap((g) => g.items).find((i) => i.children?.some((c) => c.id === id))
 
 export const page = (id: string) => {
-  const item = nav.flatMap((g) => g.items).find((i) => i.id === id)
+  const item = pagesOf(nav.flatMap((g) => g.items)).find((i) => i.id === id)
   if (!item) throw new Error(`No nav item "${id}"`)
   return item
 }

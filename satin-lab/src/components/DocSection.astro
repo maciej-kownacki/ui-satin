@@ -9,7 +9,7 @@ import Chip from './Chip.astro'
 import Installation from './Installation.astro'
 import PageHeader from './PageHeader.astro'
 import { ChevronRight } from './icons'
-import { nav, type NavItem } from '../nav'
+import { nav, pagesOf, type NavItem } from '../nav'
 import type { Api } from '../api'
 
 interface Props {
@@ -19,7 +19,7 @@ interface Props {
 const { item, api } = Astro.props
 const parts = api.description.split(/(`[^`]+`)/).filter(Boolean)
 
-const pages = nav.filter((g) => g.id !== 'docs').flatMap((g) => g.items)
+const pages = nav.filter((g) => g.id !== 'docs').flatMap((g) => pagesOf(g.items))
 const at = pages.findIndex((p) => p.id === item.id)
 const prev = pages[at - 1]
 const next = pages[at + 1]

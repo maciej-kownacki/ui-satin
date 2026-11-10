@@ -36,7 +36,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Segmented control': [280, 280],
   'Select': [448, 448],
   'Sheet': [528, 528],
-  'Sidebar': [336, 336],
+  'Sidebar': [416, 416],
   'Breadcrumb': [280, 280],
   'Pagination': [280, 280],
   'Progress': [280, 280],

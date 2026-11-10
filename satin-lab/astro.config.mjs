@@ -14,7 +14,10 @@ export default defineConfig({
     '/tokens': '/theming',
     '/tokens/[role]': '/theming/[role]',
     '/ai-patterns/empty-state': '/components/empty-state',
-    '/components/chart': '/charts/bar-chart',
+    '/components/chart': '/components/bar-chart',
+    // Charts moved from their own group into Components, under Chart.
+    '/charts/bar-chart': '/components/bar-chart',
+    '/charts/channel-chart': '/components/channel-chart',
     '/foundations/tokens/[role]': '/theming/[role]',
   },
   vite: { plugins: [tailwindcss()] },

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Sidebar, SidebarGroup, SidebarItem, SidebarSubItem } from '@satin/ui/sidebar'
+import { Sidebar, SidebarGroup, SidebarItem, SidebarSubGroup, SidebarSubItem } from '@satin/ui/sidebar'
 import { Bookmark, Calendar, Home, Mail, Settings, Sparks } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -13,8 +13,9 @@ const pages = [
 const docs = [
   { id: 'intro', label: 'Introduction' },
   { id: 'setup', label: 'Getting started' },
-  { id: 'guides', label: 'Agents' },
 ]
+// A sub-item that folds open onto pages of its own.
+const guides = { id: 'guides', label: 'Agents', pages: [{ id: 'agent-setup', label: 'Set up' }, { id: 'agent-tools', label: 'Tools' }] }
 
 // The rail and the expanded list are different layouts, so that comes first. Counts are
 // content either can carry; a disabled row is a state, last.
@@ -48,10 +49,13 @@ function code(v: Record<string, string>) {
   const icons = [...itemsFor(iconOnly).map((p) => p.icon), ...(iconOnly ? [] : ['Bookmark'])].sort()
   const group = iconOnly
     ? ''
-    : `\n      <SidebarGroup label="Docs" icon={<Bookmark />}${counts ? ` count={${docs.length}}` : ''} className="mt-3">
+    : `\n      <SidebarGroup label="Docs" icon={<Bookmark />}${counts ? ` count={${docs.length + guides.pages.length}}` : ''} className="mt-3">
 ${docs.map((d) => `        <SidebarSubItem href="/docs/${d.id}" label="${d.label}" />`).join('\n')}
+        <SidebarSubGroup label="${guides.label}">
+${guides.pages.map((d) => `          <SidebarSubItem href="/docs/${d.id}" label="${d.label}" />`).join('\n')}
+        </SidebarSubGroup>
       </SidebarGroup>`
-  return `import { Sidebar, ${iconOnly ? 'SidebarItem' : 'SidebarGroup, SidebarItem, SidebarSubItem'} } from '@satin/ui/sidebar'
+  return `import { Sidebar, ${iconOnly ? 'SidebarItem' : 'SidebarGroup, SidebarItem, SidebarSubGroup, SidebarSubItem'} } from '@satin/ui/sidebar'
 import { ${icons.join(', ')} } from 'iconoir-react'
 
 export function ${iconOnly ? 'Rail' : 'AppNav'}() {
@@ -92,10 +96,15 @@ function Demo({ iconOnly, counts, disabled }: { iconOnly: boolean; counts: boole
         />
       ))}
       {!iconOnly && (
-        <SidebarGroup label="Docs" icon={<Bookmark />} count={counts ? docs.length : undefined} className="mt-3">
+        <SidebarGroup label="Docs" icon={<Bookmark />} count={counts ? docs.length + guides.pages.length : undefined} className="mt-3">
           {docs.map((d) => (
             <SidebarSubItem key={d.id} href={`#${d.id}`} onClick={go(d.id)} label={d.label} active={current === d.id} />
           ))}
+          <SidebarSubGroup label={guides.label} active={guides.pages.some((d) => d.id === current)}>
+            {guides.pages.map((d) => (
+              <SidebarSubItem key={d.id} href={`#${d.id}`} onClick={go(d.id)} label={d.label} active={current === d.id} />
+            ))}
+          </SidebarSubGroup>
         </SidebarGroup>
       )}
     </Sidebar>

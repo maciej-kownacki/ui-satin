@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Button, SearchBar, cn } from '@satin/ui'
 import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
-import type { NavGroup } from '../nav'
+import { pagesOf, type NavGroup, type NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
 import { AiPatternsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
 
@@ -24,16 +24,25 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
   // would go pressed → hover → current while the page loads, which reads as a flicker.
   const [current, setCurrent] = React.useState(currentProp)
   React.useEffect(() => setCurrent(currentProp), [currentProp])
-  const [open, setOpen] = React.useState<Record<string, boolean>>(() =>
-    Object.fromEntries(nav.map((g) => [g.id, true])),
-  )
+  // Groups start open; a parent row (Chart) starts open only when it holds the current page.
+  const [open, setOpen] = React.useState<Record<string, boolean>>(() => ({
+    ...Object.fromEntries(nav.map((g) => [g.id, true])),
+    ...Object.fromEntries(
+      nav.flatMap((g) => g.items.filter((i) => i.children).map((i) => [i.id, i.children!.some((c) => c.id === currentProp)])),
+    ),
+  }))
   const [drawer, setDrawer] = React.useState(false)
   // The search box filters the pages by title; while it has a query every group shows its matches.
   const [query, setQuery] = React.useState('')
   const q = query.trim().toLowerCase()
-  const shown = nav
-    .map((g) => ({ ...g, items: q ? g.items.filter((i) => i.title.toLowerCase().includes(q)) : g.items }))
-    .filter((g) => !q || g.items.length > 0)
+  // A parent stays when its title or any of its pages matches, showing those pages.
+  const match = (items: NavItem[]): NavItem[] =>
+    items.flatMap((i) => {
+      if (!i.children) return i.title.toLowerCase().includes(q) ? [i] : []
+      const kids = i.title.toLowerCase().includes(q) ? i.children : match(i.children)
+      return kids.length ? [{ ...i, children: kids }] : []
+    })
+  const shown = nav.map((g) => ({ ...g, items: q ? match(g.items) : g.items })).filter((g) => !q || g.items.length > 0)
   const [wide, setWide] = React.useState(true)
   const menuRef = React.useRef<HTMLButtonElement>(null)
   const asideRef = React.useRef<HTMLElement>(null)
@@ -142,7 +151,36 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
     }
   }, [drawer, wide])
 
-  const groupOf = (id: string) => nav.find((g) => g.items.some((i) => i.id === id))?.id
+  const groupOf = (id: string) => nav.find((g) => pagesOf(g.items).some((i) => i.id === id))?.id
+
+  // One page in the list; `nested` ones sit under a parent row, 12px further in.
+  const link = (item: NavItem, nested: boolean) => {
+    const isCurrent = item.id === current
+    return (
+      <li key={item.id}>
+        <a
+          href={item.href}
+          aria-current={isCurrent ? 'page' : undefined}
+          onClick={(e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+            setCurrent(item.id)
+            setDrawer(false)
+          }}
+          className={cn(
+            'flex h-8 items-center truncate rounded-pill pr-3 text-[13px] leading-[19.5px]',
+            nested ? 'pl-[46px]' : 'pl-[34px]',
+            'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
+            'focus-visible:shadow-border-focus focus-visible:outline-none',
+            isCurrent
+              ? 'bg-bg-selected text-text-default'
+              : 'text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
+          )}
+        >
+          {item.title}
+        </a>
+      </li>
+    )
+  }
 
   return (
     <>
@@ -222,7 +260,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
                 // Enter opens the first match.
-                const first = shown[0]?.items[0]
+                const first = pagesOf(shown[0]?.items ?? [])[0]
                 if (e.key === 'Enter' && q && first) window.location.assign(first.href)
               }}
             />
@@ -260,7 +298,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                       {group.id !== 'docs' && (
                         <span data-tone="neutral" className="rounded-sm px-1.5 py-0.5 text-sm leading-[19.5px] text-tone-fg">
                           <span className="sr-only">, </span>
-                          {group.items.length}
+                          {pagesOf(group.items).length}
                           <span className="sr-only"> pages</span>
                         </span>
                       )}
@@ -273,32 +311,20 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                     {/* The group grows downwards from under its header, which stays put (satin-expand). */}
                     <div id={listId} data-state={isOpen ? 'open' : 'closed'} className="satin-expand">
                     <ul>
-                      {group.items.map((item) => {
-                        const isCurrent = item.id === current
-                        return (
-                          <li key={item.id}>
-                            <a
-                              href={item.href}
-                              aria-current={isCurrent ? 'page' : undefined}
-                              onClick={(e) => {
-                                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
-                                setCurrent(item.id)
-                                setDrawer(false)
-                              }}
-                              className={cn(
-                                'flex h-8 items-center truncate rounded-pill pr-3 pl-[34px] text-[13px] leading-[19.5px]',
-                                'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
-                                'focus-visible:shadow-border-focus focus-visible:outline-none',
-                                isCurrent
-                                  ? 'bg-bg-selected text-text-default'
-                                  : 'text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
-                              )}
-                            >
-                              {item.title}
-                            </a>
-                          </li>
-                        )
-                      })}
+                      {group.items.map((item) =>
+                        item.children ? (
+                          <NavParent
+                            key={item.id}
+                            item={item}
+                            open={q ? true : !!open[item.id]}
+                            onToggle={() => setOpen((s) => ({ ...s, [item.id]: !s[item.id] }))}
+                            current={current}
+                            renderLink={(child) => link(child, true)}
+                          />
+                        ) : (
+                          link(item, false)
+                        ),
+                      )}
                     </ul>
                     </div>
                   </li>
@@ -314,6 +340,51 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
         </div>
       </aside>
     </>
+  )
+}
+
+/**
+ * A parent row in the list (Chart): the page row's look with a chevron, folding open onto its
+ * pages like a group does (satin-expand). Its title turns text/default while it holds the
+ * current page.
+ */
+function NavParent({
+  item,
+  open,
+  onToggle,
+  current,
+  renderLink,
+}: {
+  item: NavItem
+  open: boolean
+  onToggle: () => void
+  current: string
+  renderLink: (child: NavItem) => React.ReactNode
+}) {
+  const listId = `nav-${item.id}`
+  const holdsCurrent = item.children!.some((c) => c.id === current)
+  return (
+    <li>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={listId}
+        onClick={onToggle}
+        className={cn(
+          'flex h-8 w-full items-center gap-2 rounded-pill pr-3 pl-[34px] text-left text-[13px] leading-[19.5px] select-none',
+          'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
+          'hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
+          'focus-visible:shadow-border-focus focus-visible:outline-none',
+          holdsCurrent ? 'text-text-default' : 'text-text-muted',
+        )}
+      >
+        <span className="min-w-0 flex-1 truncate">{item.title}</span>
+        {open ? <ChevronDown className="shrink-0 text-text-muted" /> : <ChevronRight className="shrink-0 text-text-muted" />}
+      </button>
+      <div id={listId} data-state={open ? 'open' : 'closed'} className="satin-expand">
+        <ul>{item.children!.map(renderLink)}</ul>
+      </div>
+    </li>
   )
 }
 

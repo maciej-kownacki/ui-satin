@@ -3,7 +3,7 @@
  * Name and description at the top of a page (uiKit 3857:6010), under breadcrumbs:
  * Group / Page, split by slashes. Pages deeper than the sidebar pass their own trail.
  */
-import { groupOf } from '../nav'
+import { groupOf, parentOf } from '../nav'
 
 type Crumb = { label: string; href?: string }
 interface Props {
@@ -15,7 +15,8 @@ interface Props {
   crumbs?: Crumb[]
 }
 const { id, title, description } = Astro.props
-const crumbs: Crumb[] = Astro.props.crumbs ?? [{ label: groupOf(id).title }, { label: title }]
+const parent = parentOf(id)
+const crumbs: Crumb[] = Astro.props.crumbs ?? [{ label: groupOf(id).title }, ...(parent ? [{ label: parent.title }] : []), { label: title }]
 ---
 
 <header class="flex flex-col gap-10">

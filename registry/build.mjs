@@ -13,7 +13,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { nav } from '../satin-lab/src/nav.ts'
+import { nav, pagesOf } from '../satin-lab/src/nav.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const ui = join(root, 'packages/ui')
@@ -23,7 +23,7 @@ const url = (name) => `${base}/${name}.json`
 
 const pkg = JSON.parse(readFileSync(join(ui, 'package.json'), 'utf8'))
 const versions = { ...pkg.dependencies }
-const pages = Object.fromEntries(nav.flatMap((g) => g.items.map((i) => [i.id, i])))
+const pages = Object.fromEntries(nav.flatMap((g) => pagesOf(g.items).map((i) => [i.id, i])))
 
 const css = join(ui, 'dist/styles.css')
 if (!existsSync(css)) throw new Error('packages/ui/dist/styles.css is missing: run `npm run build -w @satin/ui` first')

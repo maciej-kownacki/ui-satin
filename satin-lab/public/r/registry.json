@@ -188,7 +188,7 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/chart.json"
       ],
-      "docs": "Bar chart docs: https://uisatin.dev/charts/bar-chart",
+      "docs": "Bar chart docs: https://uisatin.dev/components/bar-chart",
       "files": [
         {
           "path": "registry/satin/ui/bar-chart.tsx",
@@ -272,7 +272,7 @@
         "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/chart.json"
       ],
-      "docs": "Channel chart docs: https://uisatin.dev/charts/channel-chart",
+      "docs": "Channel chart docs: https://uisatin.dev/components/channel-chart",
       "files": [
         {
           "path": "registry/satin/ui/channel-chart.tsx",
