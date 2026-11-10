@@ -18,9 +18,10 @@ import { Button } from './button'
  * The Toaster stacks them bottom-right, newest in front. Behind it, the next ones peek 16px above,
  * each 5% smaller, their content hidden; three show at most and the rest wait, parked in the last
  * place. Hovering or focusing the stack unfolds it, one under another 8px apart, with every
- * toast readable, and pauses their timers. A toast comes in from 24px below; closed or timed out
- * it carries on 24px up and fades, while its action (Undo) takes it back down the way it came.
- * The ones behind move up into its place as it goes. Every move is 250 ms on the kit's ease-out.
+ * toast readable, and pauses their timers. A toast comes in from 24px below over 250 ms. The
+ * front one leaves the way it came, 24px down and faded, quicker (200 ms), while the next one
+ * comes forward into its place behind it, so the two never cross. One further back (closed
+ * from the unfolded stack) fades where it is, shrinking to 96%. All on the kit's ease-out.
  */
 export type ToastIntent = 'neutral' | 'info' | 'success' | 'warning' | 'error'
 
@@ -273,13 +274,17 @@ export function Toast({
 const PEEK = 16
 const SCALE_STEP = 0.05
 const GAP = 8
-/** Where a toast comes in from and where it goes, px below its place (negative = above). */
+/** Where a toast comes in from and where the front one goes, px below its place. */
 const ENTER_Y = 24
-const EXIT_Y = -24
-const ACTION_Y = 24
+const EXIT_Y = 24
+/** A toast leaving from further back fades where it is, to this scale. */
+const EXIT_SCALE = 0.96
+/** Leaving is a response, so it is quicker than arriving. */
+const EXIT_MS = 200
 const FALLBACK_HEIGHT = 58
 
 const motion = `transform ${MOTION_MS}ms var(--ease-out), opacity ${MOTION_MS}ms var(--ease-out)`
+const exitMotion = `transform ${EXIT_MS}ms var(--ease-out), opacity ${EXIT_MS}ms var(--ease-out)`
 
 interface StackedToastProps {
   record: ToastRecord
@@ -328,7 +333,14 @@ function StackedToast({ record, index, y, scale, beyond, contentVisible, onMeasu
   )
 
   const settled = entered && open
-  const travel = open ? ENTER_Y : exit === 'action' ? ACTION_Y : EXIT_Y
+  // The front one goes back down the way it came; one behind it fades in place, so it never
+  // slides over its neighbours.
+  const front = index === 0
+  const cardTransform = settled
+    ? 'translate3d(0, 0, 0)'
+    : open || front
+      ? `translate3d(0, ${open ? ENTER_Y : EXIT_Y}px, 0)`
+      : `translate3d(0, 0, 0) scale(${EXIT_SCALE})`
 
   return (
     <ToastPrimitive.Root
@@ -358,9 +370,9 @@ function StackedToast({ record, index, y, scale, beyond, contentVisible, onMeasu
         ref={measured}
         className={cn('pointer-events-auto', card(intent))}
         style={{
-          transform: `translate3d(0, ${settled ? 0 : travel}px, 0)`,
+          transform: cardTransform,
           opacity: settled ? 1 : 0,
-          transition: motion,
+          transition: open ? motion : exitMotion,
         }}
       >
         <div

@@ -213,20 +213,28 @@ export function Pagination({
           )}
           <li>{step(-1)}</li>
           {/* Slots keep their places (keyed by position), so paging changes numbers, not elements. */}
-          {paginationRange(page, pageCount, siblings).map((p, i) =>
-            p === 'gap' ? (
-              <li key={i} aria-hidden className="grid size-control-height place-items-center text-sm text-text-muted">
-                <PageText text="…" dir={dir} motion={textMotion} />
-              </li>
-            ) : (
+          {paginationRange(page, pageCount, siblings).map((p, i) => {
+            const gap = p === 'gap'
+            // A slot is the same element whether it holds a page or the ellipsis, so a page
+            // coming out from behind "…" (or going behind it) plays the same motion as a number.
+            const text = <PageText text={gap ? '…' : String(p)} dir={dir} motion={textMotion} />
+            return (
               <li key={i}>
-                {target(p, pageClass, <PageText text={String(p)} dir={dir} motion={textMotion} />, {
-                  'aria-current': p === page ? 'page' : undefined,
-                  'aria-label': `Page ${p}`,
-                } as React.HTMLAttributes<HTMLElement>)}
+                {gap
+                  ? React.createElement(getHref ? 'a' : 'button', {
+                      className: cn(pageClass, 'pointer-events-none'),
+                      'aria-hidden': true,
+                      tabIndex: -1,
+                      ...(getHref ? {} : { type: 'button', disabled: true }),
+                      children: text,
+                    })
+                  : target(p, pageClass, text, {
+                      'aria-current': p === page ? 'page' : undefined,
+                      'aria-label': `Page ${p}`,
+                    } as React.HTMLAttributes<HTMLElement>)}
               </li>
-            ),
-          )}
+            )
+          })}
           <li>{step(1)}</li>
         </ul>
       )}
