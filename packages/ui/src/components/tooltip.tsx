@@ -14,7 +14,7 @@ import { KbdGroup } from './kbd'
  * 1px top highlight. Without a shortcut the right padding matches the left (10).
  *
  * Built on the Radix tooltip: it opens on hover after `delay` and at once on keyboard focus,
- * closes on Escape, and links itself to the trigger with aria-describedby. It sits 8px from
+ * waits `closeDelay` after the pointer leaves before closing, closes on Escape, and links itself to the trigger with aria-describedby. It sits 8px from
  * the trigger and fades in from 4px towards it (`@starting-style`, ease-out, 150 ms).
  */
 
@@ -27,6 +27,8 @@ export interface TooltipProps {
   side?: 'top' | 'right' | 'bottom' | 'left'
   /** Hover delay in ms before it opens. */
   delay?: number
+  /** How long it stays after the pointer leaves, in ms, so a quick slip off the trigger doesn't flicker it. */
+  closeDelay?: number
   /** The trigger. It must be focusable (a button, a link). */
   children: React.ReactNode
   open?: boolean
@@ -68,16 +70,31 @@ export function Tooltip({
   shape = 'default',
   side = 'top',
   delay = 300,
+  closeDelay = 0,
   children,
-  open,
-  defaultOpen,
+  open: openProp,
+  defaultOpen = false,
   onOpenChange,
   container,
   className,
 }: TooltipProps) {
+  // Open state lives here so closing can wait `closeDelay`; opening again cancels the wait.
+  const [inner, setInner] = React.useState(defaultOpen)
+  const open = openProp ?? inner
+  const timer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
+  React.useEffect(() => () => clearTimeout(timer.current), [])
+  const change = (next: boolean) => {
+    clearTimeout(timer.current)
+    const apply = () => {
+      setInner(next)
+      onOpenChange?.(next)
+    }
+    if (!next && closeDelay > 0) timer.current = setTimeout(apply, closeDelay)
+    else apply()
+  }
   return (
     <TooltipPrimitive.Provider delayDuration={delay}>
-      <TooltipPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
+      <TooltipPrimitive.Root open={open} onOpenChange={change}>
         <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
         <TooltipPrimitive.Portal container={container}>
           <TooltipPrimitive.Content
