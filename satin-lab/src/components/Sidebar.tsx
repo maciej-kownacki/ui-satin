@@ -210,12 +210,15 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
         aria-label={wide ? undefined : 'Menu'}
         // Off screen on small viewports: keep it out of the tab order until the drawer opens.
         inert={!wide && !drawer}
-        style={drag != null ? { transform: `translateY(${drag}px)`, transition: 'none' } : undefined}
+        style={drag != null && !wide ? { transform: `translateY(${drag}px)`, transition: 'none' } : undefined}
         className={cn(
           'fixed inset-x-0 bottom-0 z-50 w-full rounded-t-2xl border-t border-border-subtle bg-bg-card',
-          'transition-transform duration-(--duration-slow) ease-(--ease-out)',
-          drawer ? 'translate-y-0' : 'translate-y-full',
-          'lg:relative lg:inset-auto lg:z-auto lg:w-[246px] lg:shrink-0 lg:translate-none lg:rounded-[15px_0_0_0] lg:bg-transparent lg:border-t-0 lg:border-r dark:lg:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))] lg:transition-none',
+          // The drawer's slide exists only on small screens. On wide ones the sidebar has no
+          // translate at all, rather than one overridden: a lost override (Safari, mid page
+          // change) would leave it pushed down out of the clipped panel, its column empty.
+          'max-lg:transition-transform max-lg:duration-(--duration-slow) max-lg:ease-(--ease-out)',
+          drawer ? 'max-lg:translate-y-0' : 'max-lg:translate-y-full',
+          'lg:relative lg:inset-auto lg:z-auto lg:w-[246px] lg:shrink-0 lg:rounded-[15px_0_0_0] lg:bg-transparent lg:border-t-0 lg:border-r dark:lg:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))]',
         )}
       >
         <div className="flex h-[85dvh] flex-col gap-2 pb-[max(8px,env(safe-area-inset-bottom))] lg:h-full lg:py-2">

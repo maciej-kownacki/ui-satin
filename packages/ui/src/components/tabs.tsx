@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Tabs as TabsPrimitive } from 'radix-ui'
 import { cva } from 'class-variance-authority'
 import { cn } from '../lib/utils'
+import { useSlidingIndicator } from './sliding-indicator'
 
 /**
  * Tabs, 1:1 with the uiKit `Tabs` (3635:18677) and `tabs/item` (3635:18591) sets.
@@ -14,6 +15,10 @@ import { cn } from '../lib/utils'
  *
  * Pill: tabs 4px apart, radius-full; md 32px high with 12px sides, sm 28px with 10px. Hover
  * fills bg/muted, selected bg/selected, focus a 1px border/focus ring.
+ *
+ * The selected tab's indicator (the underline's 2px bar, the pill's bg/selected) is one element
+ * that slides from tab to tab under the labels, as in the Segmented control and Pagination
+ * (sliding-indicator.tsx): 300 ms, the leading edge first.
  *
  * Labels are text/muted, text/default on hover, focus and selected; disabled is 50%. Optional
  * 16px leading icon, 6px from the label. Built on the Radix Tabs (arrow keys move between tabs).
@@ -69,7 +74,7 @@ const trigger = cva(
         underline: '',
         pill: [
           'rounded-pill',
-          'data-[state=inactive]:satin-hover:bg-bg-muted data-[state=active]:bg-bg-selected',
+          'data-[state=inactive]:satin-hover:bg-bg-muted',
           'satin-focus:[box-shadow:0_0_0_1px_var(--border-focus)]',
         ],
       },
@@ -104,16 +109,33 @@ export function Tabs({
   ...props
 }: TabsProps) {
   const tabs = items.map(normalize)
+  const listRef = React.useRef<HTMLDivElement>(null)
+  // Uncontrolled tabs: follow the selection here too, so the indicator knows when to move.
+  const [current, setCurrent] = React.useState(value ?? defaultValue ?? tabs[0]?.value)
+  const selected = value ?? current
+  const indicator = useSlidingIndicator(listRef, '[role="tab"][data-state="active"]', `${selected}|${variant}|${size}|${tabs.length}`)
 
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
       value={value}
       defaultValue={defaultValue ?? (value === undefined ? tabs[0]?.value : undefined)}
-      onValueChange={onValueChange}
+      onValueChange={(v) => {
+        setCurrent(v)
+        onValueChange?.(v)
+      }}
       className={cn('flex flex-col', className)}
     >
-      <TabsPrimitive.List aria-label={props['aria-label']} className={list({ variant })}>
+      <TabsPrimitive.List ref={listRef} aria-label={props['aria-label']} className={list({ variant })}>
+        <span
+          ref={indicator.ref}
+          aria-hidden
+          className={cn(
+            'pointer-events-none absolute left-0 opacity-0',
+            variant === 'underline' ? 'bottom-0 z-10 h-0.5 rounded-full bg-action-primary-bg' : 'top-1/2 z-0 -translate-y-1/2 rounded-pill bg-bg-selected',
+            variant === 'pill' && (size === 'md' ? 'h-control-height-lg' : 'h-control-height'),
+          )}
+        />
         {tabs.map((tab) => (
           <TabsPrimitive.Trigger
             key={tab.value}
@@ -121,7 +143,12 @@ export function Tabs({
             disabled={disabled || tab.disabled}
             // Without TabsContent there is no panel to point at.
             {...(children == null && { 'aria-controls': undefined })}
-            className={trigger({ variant, size })}
+            className={cn(
+              trigger({ variant, size }),
+              variant === 'pill' && 'z-10',
+              // Before the indicator is placed (server render), the selected tab paints its own.
+              !indicator.ready && variant === 'pill' && 'data-[state=active]:bg-bg-selected',
+            )}
           >
             <span
               className={cn(
@@ -140,7 +167,7 @@ export function Tabs({
                   'absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-transparent',
                   'transition-colors duration-(--duration-fast) ease-(--ease-out)',
                   'group-data-[state=inactive]/tab:group-hover/tab:bg-border-strong group-data-[state=inactive]/tab:group-data-[force=hover]/tab:bg-border-strong',
-                  'group-data-[state=active]/tab:bg-action-primary-bg',
+                  !indicator.ready && 'group-data-[state=active]/tab:bg-action-primary-bg',
                 )}
               />
             )}

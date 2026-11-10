@@ -4,6 +4,7 @@ import * as React from 'react'
 import { NavArrowLeft, NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { SLIDE_MS, useSlidingIndicator } from './sliding-indicator'
 
 /**
  * Pagination, 1:1 with the uiKit `Pagination` set (4025:3807), two layouts:
@@ -17,7 +18,8 @@ import { Button } from './button'
  * - scroll (default): the pages are a strip. Each page slides from where it was to its new place,
  *   a page coming into view slides out from under the ellipsis on the side the reader pages
  *   towards, one leaving slides under the other and fades, and the pill under the current
- *   page moves on the same 300 ms curve. Nothing is clipped and no number changes in place.
+ *   page moves on the same 300 ms curve (sliding-indicator.tsx, shared with Tabs and the
+ *   Segmented control). Nothing is clipped and no number changes in place.
  * - slide: the current page's bg/selected pill slides under the numbers to the new
  *   page, like the Segmented control's, 200 ms on ease-out; a number that changes in place
  *   fades out before the new one fades in.
@@ -70,7 +72,7 @@ const pageClass = cn(
 type Dir = 'next' | 'prev'
 
 /** The strip's move, ms, and one page's step along it (a 28px page and the 4px gap), px. */
-const STRIP_MS = 300
+const STRIP_MS = SLIDE_MS
 const STEP_PX = 32
 
 /**
@@ -132,7 +134,6 @@ export function Pagination({
     if (p < 1 || p > pageCount || p === page) return
     // Where every page is on screen right now (mid-move too), for the strip to move from.
     if (motion === 'scroll') snapshot()
-    setAnimate(motion !== 'none')
     if (pageProp == null) setUncontrolled(p)
     onPageChange?.(p)
   }
@@ -144,26 +145,12 @@ export function Pagination({
     prevPage.current = page
   }, [page])
 
-  // The pill under the current page: measured from the page itself, moved with a transform.
+  // The pill under the current page slides to the new one (sliding-indicator.tsx); with
+  // motion off it just moves.
   const listRef = React.useRef<HTMLUListElement>(null)
-  const [pill, setPill] = React.useState<{ x: number; width: number } | null>(null)
-  const [animate, setAnimate] = React.useState(false)
-  const measure = React.useCallback(() => {
-    const list = listRef.current
-    const el = list?.querySelector<HTMLElement>('[aria-current="page"]')
-    if (!list || !el) return setPill(null)
-    // Layout position, not the screen one: a page sliding along the strip ends here.
-    const cell = el.closest('li') as HTMLElement
-    setPill({ x: cell.offsetLeft + el.offsetLeft, width: el.offsetWidth })
-  }, [])
-  React.useLayoutEffect(measure, [measure, page, pageCount, layout, siblings])
-  React.useEffect(() => {
-    const el = listRef.current
-    if (!el) return
-    const observer = new ResizeObserver(measure)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [measure, layout])
+  const pill = useSlidingIndicator<HTMLLIElement>(listRef, '[aria-current="page"]', `${page}|${pageCount}|${layout}|${siblings}`, {
+    animate: motion !== 'none',
+  })
   const textMotion = motion === 'slide' ? 'fade' : 'none'
 
   /* ---- scroll: the pages are a strip that moves (FLIP) ---- */
@@ -271,21 +258,12 @@ export function Pagination({
         </div>
       ) : (
         <ul ref={listRef} className="relative flex items-center gap-1">
-          {pill && (
-            <li
-              aria-hidden
-              role="presentation"
-              className={cn(
-                'pointer-events-none absolute top-0 left-0 h-control-height rounded-lg bg-bg-selected',
-                animate && 'transition-[transform,width] ease-(--ease-out)',
-              )}
-              style={{
-                width: pill.width,
-                transform: `translateX(${pill.x}px)`,
-                transitionDuration: animate ? `${motion === 'scroll' ? STRIP_MS : 200}ms` : undefined,
-              }}
-            />
-          )}
+          <li
+            ref={pill.ref}
+            aria-hidden
+            role="presentation"
+            className="pointer-events-none absolute top-0 left-0 h-control-height rounded-lg bg-bg-selected opacity-0"
+          />
           {/* Copies of the pages that just left, playing out; under the live pages. */}
           <li ref={ghostRef} aria-hidden role="presentation" className="pointer-events-none absolute inset-0 overflow-visible" />
           <li>{step(-1)}</li>

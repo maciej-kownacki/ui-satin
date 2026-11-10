@@ -4,11 +4,13 @@ import * as React from 'react'
 import { ToggleGroup } from 'radix-ui'
 import { cva } from 'class-variance-authority'
 import { cn } from '../lib/utils'
+import { useSlidingIndicator } from './sliding-indicator'
 
 /**
  * SegmentedControl, from the uiKit `segmented control` page: 2–5 segments that switch
- * views or filters in place. One segment is always selected; the selected pill slides
- * to the new segment (transform, ease-out): a white card with Shadow/sm in Light. Arrow keys move between segments.
+ * views or filters in place. One segment is always selected; the selected pill slides under
+ * the labels to the new segment, as in Tabs and Pagination (sliding-indicator.tsx: 300 ms,
+ * the leading edge first): a white card with Shadow/sm in Light. Arrow keys move between segments.
  * Values 1:1 with the uiKit `_segmentedControl/item` (3080:20278) and `SegmentedControl` (3080:21247) sets.
  */
 type Size = 'xs' | 'md' | 'lg'
@@ -82,22 +84,8 @@ export function SegmentedControl({
   const [inner, setInner] = React.useState(defaultValue ?? items[0]?.value ?? '')
   const value = valueProp ?? inner
   const trackRef = React.useRef<HTMLDivElement>(null)
-  const [pill, setPill] = React.useState<{ x: number; width: number } | null>(null)
-  const [animate, setAnimate] = React.useState(false)
-
-  const measure = React.useCallback(() => {
-    const el = trackRef.current?.querySelector<HTMLElement>('[data-state="on"]')
-    if (el) setPill({ x: el.offsetLeft, width: el.offsetWidth })
-  }, [])
-
-  React.useLayoutEffect(measure, [measure, value, size, fullWidth, items.length])
-  React.useEffect(() => {
-    const el = trackRef.current
-    if (!el) return
-    const observer = new ResizeObserver(measure)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [measure])
+  // The pill slides under the selected segment (sliding-indicator.tsx).
+  const pill = useSlidingIndicator(trackRef, '[data-state="on"]', `${value}|${size}|${fullWidth}|${items.length}`)
 
   return (
     <ToggleGroup.Root
@@ -107,7 +95,6 @@ export function SegmentedControl({
       onValueChange={(next) => {
         // A segmented control never ends up with nothing selected.
         if (!next) return
-        setAnimate(true)
         setInner(next)
         onValueChange?.(next)
       }}
@@ -115,17 +102,14 @@ export function SegmentedControl({
       className={cn(track({ shape, border, fullWidth }), className)}
       {...aria}
     >
-      {pill && (
-        <span
-          aria-hidden
-          className={cn(
-            'absolute top-1 bottom-1 left-0 z-0 bg-component-segmented-selected [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
-            shape === 'rounded' ? 'rounded-pill' : 'rounded-sm',
-            animate && 'transition-[transform,width] duration-(--duration-base) ease-(--ease-out)',
-          )}
-          style={{ width: pill.width, transform: `translateX(${pill.x}px)` }}
-        />
-      )}
+      <span
+        ref={pill.ref}
+        aria-hidden
+        className={cn(
+          'pointer-events-none absolute top-1 bottom-1 left-0 z-0 bg-component-segmented-selected opacity-0 [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+          shape === 'rounded' ? 'rounded-pill' : 'rounded-sm',
+        )}
+      />
       {items.map((item) => (
         <ToggleGroup.Item
           key={item.value}
@@ -136,7 +120,7 @@ export function SegmentedControl({
             // Unselected focus: bg/muted under the ring. Selected focus keeps the pill's fill.
             'data-[state=off]:satin-focus:bg-bg-muted',
             // Before the pill is measured (server render), the selected segment paints its own fill.
-            !pill && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+            !pill.ready && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
           )}
         >
           {item.icon}

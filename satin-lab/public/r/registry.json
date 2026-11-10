@@ -641,7 +641,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Pagination docs: https://uisatin.dev/components/pagination",
       "files": [
@@ -763,7 +764,8 @@
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Segmented control docs: https://uisatin.dev/components/segmented-control",
       "files": [
@@ -879,6 +881,23 @@
       ]
     },
     {
+      "name": "sliding-indicator",
+      "type": "registry:ui",
+      "title": "Sliding indicator",
+      "description": "The Satin Sliding indicator component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/ui/sliding-indicator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "streaming-text",
       "type": "registry:ui",
       "title": "Streaming text",
@@ -946,7 +965,8 @@
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Tabs docs: https://uisatin.dev/components/tabs",
       "files": [
