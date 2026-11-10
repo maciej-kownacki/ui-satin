@@ -131,7 +131,7 @@ export function LineCard({
           role="group"
           aria-label={`${props.title}, ${n} points`}
           tabIndex={0}
-          className="relative mx-3 rounded-md outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]"
+          className="relative rounded-md outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]"
           style={{ height: TRACK }}
           onPointerMove={pick}
           onPointerLeave={() => setHovered(null)}
@@ -197,7 +197,7 @@ export function LineCard({
             </>
           )}
         </div>
-        <div aria-hidden className="relative mx-3 mt-1.5 h-5">
+        <div aria-hidden className="relative mt-1.5 h-5">
           {data.map((d, i) =>
             showLabel(i) ? (
               <span
