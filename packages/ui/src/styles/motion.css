@@ -149,7 +149,10 @@
 }
 .satin-expand[data-state='open'] > * {
   opacity: 1;
-  scale: 1;
+  /* none, not 1: at rest the content has no transform and no layer of its own. Safari keeps
+     text on a scaled layer it stops repainting, so an open group could show its rows'
+     backgrounds but none of their labels. */
+  scale: none;
   transition-duration: var(--duration-slow);
 }
 
