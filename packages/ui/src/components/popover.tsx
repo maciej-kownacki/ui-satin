@@ -32,6 +32,8 @@ export interface PopoverProps {
   container?: HTMLElement | null
   /** Called when focus moves into the popover on open; `preventDefault()` keeps it where it was. */
   onOpenAutoFocus?: (event: Event) => void
+  /** A press or focus outside the popover; `preventDefault()` keeps it open. */
+  onInteractOutside?: (event: Event) => void
   className?: string
 }
 
@@ -84,6 +86,7 @@ export function Popover({
   closeButton = true,
   container,
   onOpenAutoFocus,
+  onInteractOutside,
   className,
 }: PopoverProps) {
   const titleId = React.useId()
@@ -99,6 +102,7 @@ export function Popover({
           sideOffset={sideOffset}
           collisionPadding={8}
           onOpenAutoFocus={onOpenAutoFocus}
+          onInteractOutside={onInteractOutside}
           className={cn(
             panelClass,
             'pointer-events-auto z-50 origin-(--radix-popover-content-transform-origin) focus-visible:outline-none',

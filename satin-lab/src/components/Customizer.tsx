@@ -253,6 +253,12 @@ export function Customizer() {
       description="Brand and corners for every component, live."
       className="w-[340px]"
       closeButton={false}
+      // While the theme change sweeps across, the browser sends every press to the root element
+      // (the View Transition covers the page), which would read as a click outside and close
+      // the panel mid-switch. Ignore those until the sweep is done.
+      onInteractOutside={(e) => {
+        if (document.documentElement.hasAttribute('data-theme-sweep')) e.preventDefault()
+      }}
       body={
         <>
           <div className="absolute top-1.5 right-1.5">{tools}</div>
