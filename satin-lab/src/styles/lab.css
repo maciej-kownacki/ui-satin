@@ -154,3 +154,17 @@ html[data-theme-sweep]::view-transition-new(root) {
   from { transform: translateX(calc(-0.545 * 1.41421 * (100vw + 100vh))); }
   to { transform: translateX(calc(0.455 * 1.41421 * (100vw + 100vh))); }
 }
+
+/* The Customizer's own panel stays out of the sweep: it gets its own layer, shown live in the new
+   theme from the first frame, so the Mode control's indicator slides on smoothly instead of
+   freezing under the old picture until the curtain reaches it. */
+html[data-theme-sweep] .customizer-panel {
+  view-transition-name: customizer;
+}
+::view-transition-group(customizer),
+::view-transition-new(customizer) {
+  animation: none;
+}
+::view-transition-old(customizer) {
+  display: none;
+}

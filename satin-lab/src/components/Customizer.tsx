@@ -251,7 +251,7 @@ export function Customizer() {
       sideOffset={8}
       title="Customize"
       description="Brand and corners for every component, live."
-      className="w-[340px]"
+      className="customizer-panel w-[340px]"
       closeButton={false}
       // While the theme change sweeps across, the browser sends every press to the root element
       // (the View Transition covers the page), which would read as a click outside and close
@@ -327,7 +327,7 @@ function Sheet({
         className={cn(
           'fixed inset-x-0 bottom-0 z-50 flex max-h-[85dvh] w-full flex-col rounded-t-2xl border-t border-border-subtle bg-bg-card',
           'pb-[max(16px,env(safe-area-inset-bottom))] transition-transform duration-(--duration-slow) ease-(--ease-out)',
-          open ? 'translate-y-0' : 'translate-y-full',
+          open ? 'customizer-panel translate-y-0' : 'translate-y-full',
         )}
       >
         <button
