@@ -42,17 +42,49 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   code: code(v),
 }))
 
-/** The sheet slides in at the stage's own edges (the wrapper cancels the stage padding), not the page's. */
+/**
+ * The sheet slides in at the stage's own edges (the wrapper cancels the stage padding), not the
+ * page's. It stays open while the properties change: a press outside the stage (the controls, the
+ * rest of the page) doesn't close it, and changing a property opens it again if it was closed with
+ * Cancel, the close button or Escape. Changing the side remounts it, so it slides in from the new edge.
+ */
 function Preview({ v }: { v: Record<string, string> }) {
   const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
   const openedOnce = React.useRef(false)
+  const [open, setOpen] = React.useState(true)
+  const boxRef = React.useRef<HTMLDivElement>(null)
+
+  // Where the last press landed: outside the preview it is the docs page, not the sheet's own page.
+  const pressedOutside = React.useRef(false)
+  React.useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      pressedOutside.current = !boxRef.current?.contains(e.target as Node)
+    }
+    // A key (Escape) is the sheet's own close, whatever was pressed before it.
+    const onKey = () => {
+      pressedOutside.current = false
+    }
+    document.addEventListener('pointerdown', onDown, true)
+    document.addEventListener('keydown', onKey, true)
+    return () => {
+      document.removeEventListener('pointerdown', onDown, true)
+      document.removeEventListener('keydown', onKey, true)
+    }
+  }, [])
+
+  // A new property shows the sheet again.
+  React.useEffect(() => setOpen(true), [v.description, v.footer])
   return (
-    <div className="relative -mx-10 -my-6 grid h-[528px] min-w-0 flex-1 place-items-center self-stretch">
+    <div ref={boxRef} className="relative -mx-10 -my-6 grid h-[528px] min-w-0 flex-1 place-items-center self-stretch">
       <div ref={setStage} className="pointer-events-none absolute inset-0 z-10 overflow-hidden *:pointer-events-auto" />
       {stage && (
         <Sheet
           container={stage}
-          defaultOpen
+          open={open}
+          onOpenChange={(next) => {
+            if (!next && pressedOutside.current) return
+            setOpen(next)
+          }}
           modal={false}
           onOpenAutoFocus={(e) => {
             if (!openedOnce.current) e.preventDefault()
