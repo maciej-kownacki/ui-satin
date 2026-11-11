@@ -64,3 +64,5 @@ export { HoverCard, hoverCardClass, type HoverCardProps } from './components/hov
 export { Citation, Sources, type CitationProps, type CitationSource, type SourcesProps } from './components/citations'
 export { Calendar, DatePicker, DatePickerPanel, DateRangePicker, DateRangePickerPanel, formatDate, formatRange, type CalendarProps, type DatePickerProps, type DatePickerPanelProps, type DateRangePickerPanelProps, type DateRangePickerProps, type DateRange } from './components/date-picker'
 export { AgentSuggestion, AgentSuggestionQuote, AgentSuggestionMetric, AgentSuggestionDiff, AgentSuggestionChanges, type AgentSuggestionProps, type AgentSuggestionChange } from './components/agent-suggestion'
+export { CookieConsent, type CookieConsentProps } from './components/cookie-consent'
+export { AnnouncementBar, type AnnouncementBarProps } from './components/announcement-bar'

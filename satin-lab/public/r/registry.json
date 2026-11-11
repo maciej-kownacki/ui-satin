@@ -116,6 +116,28 @@
       ]
     },
     {
+      "name": "announcement-bar",
+      "type": "registry:ui",
+      "title": "Announcement bar",
+      "description": "One line of news across the top or bottom of the page, with a link and a close.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/banner.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Announcement bar docs: https://uisatin.dev/components/announcement-bar",
+      "files": [
+        {
+          "path": "registry/satin/ui/announcement-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "attachment",
       "type": "registry:ui",
       "title": "Attachment",
@@ -469,6 +491,25 @@
       "files": [
         {
           "path": "registry/satin/ui/context-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "cookie-consent",
+      "type": "registry:ui",
+      "title": "Cookie consent",
+      "description": "Asks once what the site may store: Customize, Reject all or Accept all.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Cookie consent docs: https://uisatin.dev/components/cookie-consent",
+      "files": [
+        {
+          "path": "registry/satin/ui/cookie-consent.tsx",
           "type": "registry:ui"
         }
       ]

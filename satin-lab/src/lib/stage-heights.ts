@@ -5,6 +5,8 @@
  */
 export const stageHeights: Record<string, [number, number]> = {
   'Accordion': [360, 360],
+  'Announcement bar': [368, 368],
+  'Cookie consent': [368, 368],
   'Agent picker': [280, 280],
   'Attachment': [280, 280],
   'Avatar': [280, 280],

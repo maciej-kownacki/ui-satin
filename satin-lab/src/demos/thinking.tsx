@@ -115,6 +115,7 @@ export default function ThinkingDemo({ codeHtml }: { codeHtml: Record<string, st
       options={options}
       codeHtml={codeHtml}
       controls={controls}
+      align="top"
       render={(_, v) => {
         const set = sets[v.steps]
         return (

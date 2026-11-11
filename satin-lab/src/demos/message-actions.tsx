@@ -56,7 +56,7 @@ function Demo({ v }: { v: Record<string, string> }) {
   const [note, setNote] = React.useState('')
   return (
     <div className="flex w-[min(520px,calc(100vw-80px))] flex-col gap-2">
-      <p className="text-sm text-text-default">{answer}</p>
+      <p className="text-body text-text-default">{answer}</p>
       <MessageActions
         timestamp={v.timestamp === 'on' ? '20 minutes ago' : undefined}
         status={v.status as 'delivered' | 'sending'}

@@ -53,11 +53,13 @@ export interface ShowcaseProps {
   controls?: ShowcaseControl[]
   /** `set` lets the preview move a prop itself, e.g. a flow stepping to the next Type. */
   render: (optionId: string, values: Record<string, string>, set: (id: string, value: string) => void) => React.ReactNode
+  /** `top` pins the preview to the stage's top, so anything that unfolds grows downwards and nothing above it moves. */
+  align?: 'center' | 'top'
 }
 
 type Tab = 'preview' | 'code'
 
-export function Showcase({ name, options, codeHtml, controls, render }: ShowcaseProps) {
+export function Showcase({ name, options, codeHtml, controls, render, align = 'center' }: ShowcaseProps) {
   const [values, setValues] = React.useState(() =>
     Object.fromEntries((controls ?? []).map((c) => [c.id, initialValue(c)])),
   )
@@ -274,7 +276,7 @@ export function Showcase({ name, options, codeHtml, controls, render }: Showcase
             <div className={cn('flex overflow-auto', fixed ? 'h-(--stage-h-m) shrink-0 md:h-(--stage-h)' : 'flex-1')}>
               <div
                 ref={stageRef}
-                className={cn('m-auto flex w-max min-w-full items-center justify-center px-10 pt-6', bar ? 'pb-6' : 'pb-16')}
+                className={cn('flex w-max min-w-full justify-center px-10 pt-6', align === 'top' ? 'mx-auto mb-auto items-start' : 'm-auto items-center', bar ? 'pb-6' : 'pb-16')}
               >
                 {render(current.id, values, setValue)}
               </div>

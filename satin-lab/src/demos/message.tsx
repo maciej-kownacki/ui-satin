@@ -93,6 +93,7 @@ export default function MessageDemo({ codeHtml }: { codeHtml: Record<string, str
       options={options}
       codeHtml={codeHtml}
       controls={controls}
+      align="top"
       render={(_, v) => (
         <div className="flex w-[min(400px,calc(100vw-80px))] flex-col gap-4">
           {v.role !== 'assistant' && (

@@ -212,3 +212,36 @@
 @media (prefers-reduced-motion: reduce) {
   [data-slot='input-otp'] .animate-\[satin-caret_1s_steps\(1\)_infinite\] { animation: none; }
 }
+
+/* Sheen (Banner, AnnouncementBar `shimmer`): now and then a soft band of light crosses the
+   surface, left to right, then nothing for a while — 1.2 s of sweep every 9 s, first after 2 s.
+   It sits between the background and the content, so text stays crisp. Off under reduced motion. */
+.satin-sheen {
+  isolation: isolate;
+  overflow: clip;
+}
+.satin-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, var(--color-white-a24) 50%, transparent 70%);
+  transform: translateX(-110%);
+  animation: satin-sheen 9s var(--ease-in-out) 2s infinite;
+}
+@keyframes satin-sheen {
+  0% {
+    transform: translateX(-110%);
+  }
+  13%,
+  100% {
+    transform: translateX(110%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .satin-sheen::after {
+    animation: none;
+    display: none;
+  }
+}

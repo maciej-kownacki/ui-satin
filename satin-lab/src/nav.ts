@@ -27,9 +27,18 @@ export const nav: NavGroup[] = [
     title: 'Components',
     items: [
       { id: 'accordion', title: 'Accordion', href: '/components/accordion', description: 'Folds sections of content under their titles, one or many open at a time.' },
+      {
+        id: 'announcements',
+        title: 'Announcements',
+        href: '/components/banner',
+        description: 'News and next steps the product shows on its own: a banner card or a bar across the page.',
+        children: [
+          { id: 'announcement-bar', title: 'Announcement bar', href: '/components/announcement-bar', description: 'One line of news across the top or bottom of the page, with a link and a close.' },
+          { id: 'banner', title: 'Banner', href: '/components/banner', description: 'Promotes a next step, a guide or a new feature with a line of copy and one action, on a mesh or plain background.' },
+        ],
+      },
       { id: 'avatar', title: 'Avatar', href: '/components/avatar', description: 'Shows a person or workspace with initials on a tone colour.' },
       { id: 'badge', title: 'Badge', href: '/components/badge', description: 'A short label for a status or a category.' },
-      { id: 'banner', title: 'Banner', href: '/components/banner', description: 'Promotes a next step, a guide or a new feature with a line of copy and one action, on a mesh or plain background.' },
       { id: 'breadcrumb', title: 'Breadcrumb', href: '/components/breadcrumb', description: 'Shows where the page sits and leads back up the path.' },
       { id: 'button', title: 'Button', href: '/components/button', description: 'Starts an action. One primary per screen; secondary and tertiary for the rest.' },
       { id: 'card', title: 'Card', href: '/components/card', description: 'Groups related content and actions under a title, with an optional footer.' },
@@ -51,6 +60,7 @@ export const nav: NavGroup[] = [
       { id: 'code-block', title: 'Code block', href: '/components/code-block', description: 'Shows code or a diff with a filename, line numbers and a copy button.' },
       { id: 'combobox', title: 'Combobox', href: '/components/combobox', description: 'Picks one or more values from a long list by typing to filter it, then Apply.' },
       { id: 'command-menu', title: 'Command menu', href: '/components/command-menu', description: 'The ⌘K palette: search every action and page, then run one with Enter.' },
+      { id: 'cookie-consent', title: 'Cookie consent', href: '/components/cookie-consent', description: 'Asks once what the site may store: Customize, Reject all or Accept all.' },
       { id: 'dialog', title: 'Dialog', href: '/components/dialog', description: 'Asks for a decision or a short input before the user moves on.' },
       { id: 'dot', title: 'Dot', href: '/components/dot', description: 'A small status dot that marks state or category next to a label.' },
       {

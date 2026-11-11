@@ -7,15 +7,17 @@ import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } 
 // carry, close last since it only adds a button.
 export const controls: ShowcaseControl[] = [
   { id: 'layout', label: 'Layout', items: [{ value: 'horizontal', label: 'Horizontal' }, { value: 'sidebar', label: 'Sidebar' }] },
+  { id: 'tone', label: 'Tone', items: [{ value: 'default', label: 'Default' }, { value: 'primary', label: 'Primary' }] },
   { id: 'background', label: 'Background', items: [{ value: 'mesh', label: 'Mesh' }, { value: 'plain', label: 'Plain' }] },
   { id: 'shape', label: 'Shape', items: [{ value: 'rounded', label: 'Rounded' }, { value: 'pill', label: 'Pill' }] },
   { id: 'description', label: 'Description', type: 'switch', default: 'on' },
   { id: 'action', label: 'Action', type: 'switch', default: 'on' },
   { id: 'close', label: 'Close', type: 'switch', default: 'on' },
+  { id: 'shimmer', label: 'Shimmer', type: 'switch', default: 'off' },
 ]
 
-const props = ['layout', 'background', 'shape']
-const defaults: Record<string, string> = { layout: 'horizontal', background: 'mesh', shape: 'rounded' }
+const props = ['layout', 'tone', 'background', 'shape']
+const defaults: Record<string, string> = { layout: 'horizontal', tone: 'default', background: 'mesh', shape: 'rounded' }
 const labelOf = (id: string, value: string) => {
   const c = controls.find((c) => c.id === id)
   return c && 'items' in c ? c.items.find((i) => i.value === value)?.label : undefined
@@ -31,6 +33,7 @@ function code(v: Record<string, string>) {
     v.description === 'on' && `description="${description}"`,
     v.action === 'on' && 'action={<Button variant="secondary">Cheat sheet</Button>}',
     v.close === 'on' && 'onDismiss={() => setOpen(false)}',
+    v.shimmer === 'on' && 'shimmer',
   ].filter(Boolean)
   return `import { Banner } from '@satin/ui/banner'
 ${v.action === 'on' ? `import { Button } from '@satin/ui/button'\n` : ''}
@@ -47,6 +50,7 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
     v.description === 'on' ? 'Description' : 'No description',
     v.action === 'on' ? 'Action' : 'No action',
     v.close === 'on' ? 'Close' : 'No close',
+    v.shimmer === 'on' ? 'Shimmer' : 'Still',
   ].join(' · '),
   code: code(v),
 }))
@@ -62,7 +66,9 @@ function Example({ v }: { v: Record<string, string> }) {
   return (
     <Banner
       layout={v.layout as 'horizontal' | 'sidebar'}
+      tone={v.tone as 'default' | 'primary'}
       background={v.background as 'mesh' | 'plain'}
+      shimmer={v.shimmer === 'on'}
       shape={v.shape as 'rounded' | 'pill'}
       title={title}
       description={v.description === 'on' ? description : undefined}

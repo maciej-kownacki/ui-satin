@@ -21,7 +21,11 @@ import { Button } from './button'
  *   the theme without variables. Figma renders one pair per layout and line count; the PNGs live
  *   in satin-lab/public/figma and can be swapped with `mesh`.
  *
- * Title is Label/md (13/18 medium), description Body/md in text/muted, 2px apart. The close
+ * tone="primary" turns the card action/primary/bg (border action/primary/border) with
+ * action/primary/fg copy (description at 80%); its mesh is the dark glow alone, in Screen, so it
+ * lightens the primary. `shimmer` sends a soft band of light across now and then.
+ *
+ * Title is 14/18 medium, description Body/md in text/muted, 2px apart. The close
  * button only renders when `onDismiss` is passed.
  */
 const bannerVariants = cva(
@@ -71,6 +75,10 @@ export interface BannerProps
   /** One action, usually `<Button variant="secondary">`. Stretches across a sidebar banner. */
   action?: React.ReactNode
   background?: 'mesh' | 'plain'
+  /** `primary`: action/primary/bg with action/primary/fg text; its mesh glows lighter on top. */
+  tone?: 'default' | 'primary'
+  /** Now and then a soft band of light crosses the banner (off under reduced motion). */
+  shimmer?: boolean
   /** Shows the close button. */
   onDismiss?: () => void
   /** Accessible name of the close button. */
@@ -86,6 +94,8 @@ export function Banner({
   action,
   layout = 'horizontal',
   background = 'mesh',
+  tone = 'default',
+  shimmer = false,
   shape = 'rounded',
   onDismiss,
   dismissLabel = 'Dismiss',
@@ -96,6 +106,7 @@ export function Banner({
   const layoutKey = layout ?? 'horizontal'
   const glow = mesh ?? bannerMesh[layoutKey][lines]
   const sidebar = layoutKey === 'sidebar'
+  const primary = tone === 'primary'
 
   const close = onDismiss && (
     <Button
@@ -104,7 +115,10 @@ export function Banner({
       iconOnly
       aria-label={dismissLabel}
       onClick={onDismiss}
-      className={cn(sidebar && 'absolute top-[3px] right-[3px] z-10')}
+      className={cn(
+        sidebar && 'absolute top-[3px] right-[3px] z-10',
+        primary && 'text-action-primary-fg [&_svg]:text-action-primary-fg satin-hover:bg-action-primary-bg-hover',
+      )}
     >
       <Xmark aria-hidden />
     </Button>
@@ -115,10 +129,24 @@ export function Banner({
       data-slot="banner"
       data-layout={layoutKey}
       data-background={background}
-      className={cn(bannerVariants({ layout, shape, lines }), className)}
+      data-tone={tone}
+      className={cn(
+        bannerVariants({ layout, shape, lines }),
+        primary && 'border-action-primary-border bg-action-primary-bg',
+        shimmer && 'satin-sheen',
+        className,
+      )}
       {...props}
     >
-      {background === 'mesh' && (
+      {background === 'mesh' && primary && (
+        <img
+          src={glow.dark}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute -inset-px -z-10 size-[calc(100%+2px)] max-w-none object-cover mix-blend-screen"
+        />
+      )}
+      {background === 'mesh' && !primary && (
         <>
           <img
             src={glow.light}
@@ -141,9 +169,9 @@ export function Banner({
           description && 'gap-0.5',
         )}
       >
-        <p className="truncate leading-[18px] font-medium text-text-default">{title}</p>
+        <p className={cn('truncate text-base leading-[18px] font-medium', primary ? 'text-action-primary-fg' : 'text-text-default')}>{title}</p>
         {description && (
-          <p className={cn('text-body text-text-muted', !sidebar && 'truncate')}>{description}</p>
+          <p className={cn('text-body', primary ? 'text-action-primary-fg/80' : 'text-text-muted', !sidebar && 'truncate')}>{description}</p>
         )}
       </div>
       {sidebar ? (

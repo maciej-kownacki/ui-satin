@@ -55,7 +55,7 @@ export function AgentSuggestion({
       data-slot="agent-suggestion"
       aria-labelledby={title ? titleId : undefined}
       className={cn(
-        'flex w-full max-w-[400px] flex-col gap-3 rounded-xl border border-border-subtle bg-bg-card p-3 text-text-default shadow-sm',
+        'flex w-full max-w-[400px] flex-col gap-3 rounded-xl border border-border-subtle bg-bg-card p-3 text-text-default [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
         className,
       )}
       {...props}
