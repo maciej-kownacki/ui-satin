@@ -176,7 +176,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
               : 'text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
           )}
         >
-          {item.title}
+          <Highlight text={item.title} query={q} />
         </a>
       </li>
     )
@@ -323,6 +323,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                             onToggle={() => setOpen((s) => ({ ...s, [item.id]: !s[item.id] }))}
                             current={current}
                             renderLink={(child) => link(child, true)}
+                            query={q}
                           />
                         ) : (
                           link(item, false)
@@ -357,12 +358,15 @@ function NavParent({
   onToggle,
   current,
   renderLink,
+  query = '',
 }: {
   item: NavItem
   open: boolean
   onToggle: () => void
   current: string
   renderLink: (child: NavItem) => React.ReactNode
+  /** The search, lower-cased, to mark in the title. */
+  query?: string
 }) {
   const listId = `nav-${item.id}`
   const holdsCurrent = item.children!.some((c) => c.id === current)
@@ -381,7 +385,9 @@ function NavParent({
           holdsCurrent ? 'text-text-default' : 'text-text-muted',
         )}
       >
-        <span className="min-w-0 flex-1 truncate">{item.title}</span>
+        <span className="min-w-0 flex-1 truncate">
+          <Highlight text={item.title} query={query} />
+        </span>
         {open ? <ChevronDown className="shrink-0 text-text-muted" /> : <ChevronRight className="shrink-0 text-text-muted" />}
       </button>
       <div id={listId} data-state={open ? 'open' : 'closed'} className="satin-expand">
@@ -403,6 +409,26 @@ function HelpBanner() {
   // Only a change the user makes animates or moves focus; the stored state on load does neither.
   const toggled = React.useRef(false)
   const swapRef = React.useRef<HTMLButtonElement>(null)
+  // The card keeps its element and its height follows the change like the nav's dropdown
+  // (satin-expand): --duration-slow when it opens, --duration-base when it folds, on --ease-out.
+  // A click mid-way starts from the height it has reached.
+  const cardRef = React.useRef<HTMLElement>(null)
+  const fromHeight = React.useRef(0)
+  const resize = React.useRef<Animation | null>(null)
+  React.useLayoutEffect(() => {
+    const card = cardRef.current
+    if (!toggled.current || !card) return
+    resize.current?.cancel()
+    const to = card.offsetHeight
+    const from = fromHeight.current
+    if (from === to || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const css = getComputedStyle(document.documentElement)
+    const ms = (name: string) => parseFloat(css.getPropertyValue(name)) * (css.getPropertyValue(name).trim().endsWith('ms') ? 1 : 1000)
+    resize.current = card.animate([{ height: `${from}px` }, { height: `${to}px` }], {
+      duration: ms(open ? '--duration-slow' : '--duration-base'),
+      easing: css.getPropertyValue('--ease-out').trim() || 'ease-out',
+    })
+  }, [open])
   React.useEffect(() => {
     if (toggled.current) swapRef.current?.focus()
   }, [open])
@@ -413,6 +439,8 @@ function HelpBanner() {
   }, [])
   const setOpen = (next: boolean) => {
     toggled.current = true
+    // The height it has now, mid-animation included, is where the next change starts.
+    fromHeight.current = cardRef.current?.offsetHeight ?? 0
     setOpenState(next)
     try {
       sessionStorage.setItem(KEY, next ? 'open' : 'min')
@@ -423,6 +451,8 @@ function HelpBanner() {
     'relative mx-2 overflow-clip rounded-xl border border-border-default bg-bg-card',
     'shadow-[0_2px_4px_-2px_var(--effect-shadow-sm),0_4px_6px_-1px_var(--effect-shadow-sm)]',
   )
+  // The content that comes in fades in over the resize, as the dropdown's rows do.
+  const fade = toggled.current && 'animate-[satin-fade-in_var(--duration-base)_var(--ease-out)]'
   const mesh = (
     <>
       <img src="/figma/mesh-light.png" alt="" className="pointer-events-none absolute -inset-px size-[calc(100%+2px)] max-w-none object-cover mix-blend-multiply" />
@@ -432,7 +462,7 @@ function HelpBanner() {
 
   if (!open) {
     return (
-      <aside aria-label="Design help" className={surface}>
+      <aside ref={cardRef} aria-label="Design help" className={surface}>
         {mesh}
         <button
           ref={swapRef}
@@ -441,6 +471,7 @@ function HelpBanner() {
           onClick={() => setOpen(true)}
           className={cn(
             'group relative flex h-[42px] w-full cursor-pointer items-center justify-between pr-[7px] pl-3 text-left outline-none',
+            fade,
             'focus-visible:ring-0 focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)] rounded-[inherit]',
           )}
         >
@@ -458,13 +489,13 @@ function HelpBanner() {
   }
 
   return (
-    <aside aria-label="Design help" className={cn(surface, 'flex flex-col gap-3 p-3', toggled.current && 'animate-[satin-enter_var(--duration-base)_var(--ease-out)]')}>
+    <aside ref={cardRef} aria-label="Design help" className={cn(surface, 'flex flex-col gap-3 p-3')}>
       {mesh}
-      <div className="relative flex flex-col gap-0.5 pr-6 text-sm">
+      <div className={cn('relative flex flex-col gap-0.5 pr-6 text-sm', fade)}>
         <p className="leading-[18px] font-medium text-text-default">Need design help?</p>
         <p className="leading-[19.5px] text-text-muted">Get expert product design for your business.</p>
       </div>
-      <Button variant="secondary" shape="rounded" className="relative w-full">
+      <Button variant="secondary" shape="rounded" className={cn('relative w-full', fade)}>
         Book a call
       </Button>
       <Button
@@ -480,5 +511,18 @@ function HelpBanner() {
         <Minus />
       </Button>
     </aside>
+  )
+}
+
+/** The title with the part that matches the search in the primary colour, on a 14% tint of it. */
+function Highlight({ text, query }: { text: string; query: string }) {
+  const at = query ? text.toLowerCase().indexOf(query) : -1
+  if (at < 0) return <>{text}</>
+  return (
+    <>
+      {text.slice(0, at)}
+      <mark className="rounded-xs bg-[color-mix(in_oklab,var(--action-primary-bg)_14%,transparent)] text-action-primary-bg">{text.slice(at, at + query.length)}</mark>
+      {text.slice(at + query.length)}
+    </>
   )
 }
