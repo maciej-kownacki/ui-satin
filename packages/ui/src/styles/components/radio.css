@@ -22,8 +22,8 @@
   transition-duration: var(--duration-fast);
   transition-timing-function: var(--ease-out);
 }
-.satin-radio:hover,
-.satin-radio[data-force="hover"] {
+/* Hover on the whole field (the circle sits in its <label>) hovers the circle. */
+.satin-radio:is(:hover, [data-force="hover"], :where(label:hover) > *) {
   box-shadow: 0 1px 2px 0 var(--effect-shadow-sm), 0 1px 3px 0 var(--effect-shadow-sm);
 }
 .satin-radio:focus-visible,
@@ -48,7 +48,7 @@
   background: var(--action-primary-bg);
   box-shadow: none;
 }
-.satin-radio[data-state="checked"]:is(:hover, [data-force="hover"]) {
+.satin-radio[data-state="checked"]:is(:hover, [data-force="hover"], :where(label:hover) > *) {
   border-color: var(--action-primary-bg-hover);
   background: var(--action-primary-bg-hover);
   box-shadow: none;

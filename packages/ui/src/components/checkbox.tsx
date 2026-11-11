@@ -8,8 +8,9 @@ import { cn } from '../lib/utils'
  * Checkbox, 1:1 with the uiKit `checkboxBase` (849:57531) and `checkbox` (849:57577) sets:
  * a 16px box, radius-sm, with checked and indeterminate states and an optional label and
  * description on either side, both 14px whatever the theme's body size (label medium,
- * description regular). The label is a real `<label>`, the description is wired up
- * with `aria-describedby`. The look of every state lives in styles/components.css.
+ * description regular). With a label or description the whole field is a `<label>`, so a
+ * click anywhere on it (box, label, description) toggles the box, and hovering it hovers the
+ * box; the label names the box, the description is wired up with `aria-describedby`. The look of every state lives in styles/components.css.
  */
 export interface CheckboxProps extends React.ComponentProps<typeof CheckboxPrimitive.Root> {
   label?: React.ReactNode
@@ -21,12 +22,14 @@ export interface CheckboxProps extends React.ComponentProps<typeof CheckboxPrimi
 export function Checkbox({ className, label, description, placement = 'left', id, ...props }: CheckboxProps) {
   const autoId = React.useId()
   const boxId = id ?? autoId
+  const labelId = label ? `${boxId}-label` : undefined
   const descriptionId = description ? `${boxId}-description` : undefined
 
   const box = (
     <CheckboxPrimitive.Root
       id={boxId}
       data-slot="checkbox"
+      aria-labelledby={labelId}
       aria-describedby={descriptionId}
       className={cn('peer satin-checkbox', className)}
       {...props}
@@ -54,24 +57,26 @@ export function Checkbox({ className, label, description, placement = 'left', id
   if (!label && !description) return box
 
   return (
-    <div
+    // The whole field is the <label>: the control, its label and its description all toggle it.
+    <label
+      htmlFor={boxId}
       data-slot="checkbox-field"
       // The 16px box sits on the middle of the label's first 20px line.
-      className={cn('flex items-start gap-2 [&>:first-child]:mt-0.5', placement === 'right' && 'flex-row-reverse justify-between')}
+      className={cn('flex cursor-pointer items-start gap-2 has-disabled:cursor-not-allowed has-data-disabled:cursor-not-allowed [&>:first-child]:mt-0.5', placement === 'right' && 'flex-row-reverse justify-between')}
     >
       {box}
       <div className="grid gap-0.5 text-base">
         {label && (
-          <label htmlFor={boxId} className="leading-5 font-medium text-text-default">
+          <span id={labelId} className="block leading-5 font-medium text-text-default">
             {label}
-          </label>
+          </span>
         )}
         {description && (
-          <p id={descriptionId} className="leading-5 text-text-muted">
+          <span id={descriptionId} className="block leading-5 text-text-muted">
             {description}
-          </p>
+          </span>
         )}
       </div>
-    </div>
+    </label>
   )
 }

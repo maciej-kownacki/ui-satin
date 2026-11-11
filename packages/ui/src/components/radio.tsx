@@ -13,7 +13,9 @@ import { cn } from '../lib/utils'
  *
  * A Radio lives in a RadioGroup (Radix): the group owns the value, so `checked` (Figma's
  * property) follows from the group's `value` / `defaultValue`, and arrow keys move between
- * options. The label is a real `<label>`, the description is wired with `aria-describedby`.
+ * options. With a label or description the whole field is a `<label>`, so a click anywhere on
+ * it (circle, label, description) picks the option, and hovering it hovers the circle; the label
+ * names the circle, the description is wired with `aria-describedby`.
  */
 export interface RadioGroupProps extends React.ComponentProps<typeof RadioGroupPrimitive.Root> {}
 
@@ -33,12 +35,14 @@ export interface RadioProps extends React.ComponentProps<typeof RadioGroupPrimit
 export function Radio({ className, label, description, placement = 'left', id, disabled, ...props }: RadioProps) {
   const autoId = React.useId()
   const radioId = id ?? autoId
+  const labelId = label ? `${radioId}-label` : undefined
   const descriptionId = description ? `${radioId}-description` : undefined
 
   const circle = (
     <RadioGroupPrimitive.Item
       id={radioId}
       data-slot="radio"
+      aria-labelledby={labelId}
       aria-describedby={descriptionId}
       disabled={disabled}
       className={cn('peer satin-radio', className)}
@@ -51,25 +55,27 @@ export function Radio({ className, label, description, placement = 'left', id, d
   if (!label && !description) return circle
 
   return (
-    <div
+    // The whole field is the <label>: the control, its label and its description all toggle it.
+    <label
+      htmlFor={radioId}
       data-slot="radio-field"
       // The 16px circle sits on the middle of the label's first 20px line.
-      className={cn('flex items-start gap-2 [&>:first-child]:mt-0.5', placement === 'right' && 'flex-row-reverse justify-between')}
+      className={cn('flex cursor-pointer items-start gap-2 has-disabled:cursor-not-allowed has-data-disabled:cursor-not-allowed [&>:first-child]:mt-0.5', placement === 'right' && 'flex-row-reverse justify-between')}
     >
       {circle}
       {/* Disabled (on the item or the whole group) turns both texts text/subtle. */}
-      <div className="grid min-w-0 gap-0.5 text-base text-text-default peer-data-disabled:text-text-subtle peer-data-disabled:[&_p]:text-text-subtle">
+      <div className="grid min-w-0 gap-0.5 text-base text-text-default peer-data-disabled:text-text-subtle peer-data-disabled:*:text-text-subtle">
         {label && (
-          <label htmlFor={radioId} className="leading-5 font-medium">
+          <span id={labelId} className="block leading-5 font-medium">
             {label}
-          </label>
+          </span>
         )}
         {description && (
-          <p id={descriptionId} className="leading-5 text-text-muted">
+          <span id={descriptionId} className="block leading-5 text-text-muted">
             {description}
-          </p>
+          </span>
         )}
       </div>
-    </div>
+    </label>
   )
 }
