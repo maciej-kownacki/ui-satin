@@ -84,5 +84,5 @@ function Preview({ v }: { v: Record<string, string> }) {
 }
 
 export default function SheetDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
-  return <Showcase name="Sheet" options={options} codeHtml={codeHtml} controls={controls} render={(id, v) => <Preview key={id} v={v} />} />
+  return <Showcase name="Sheet" options={options} codeHtml={codeHtml} controls={controls} render={(_, v) => <Preview key={v.side} v={v} />} />
 }
