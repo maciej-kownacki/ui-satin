@@ -12,6 +12,9 @@ import { FieldChrome, useFieldChrome } from './select'
  * text/base medium. With an error every cell turns action/destructive and the message replaces the
  * hint under the cells; label, hint and error sit like Input's.
  *
+ * The field is as wide as its cells, so it centres wherever it is placed. Focus shows only on
+ * the active cell: the real input carries no ring of its own.
+ *
  * One real <input> lies over the cells (transparent text and caret), so typing, deleting, paste
  * and the browser's SMS autofill (`autocomplete="one-time-code"`) all work as in any field, and
  * screen readers hear one text box. Only digits by default (`pattern`); `onComplete` fires when
@@ -76,7 +79,7 @@ export function InputOTP({
   const cells = Array.from({ length }, (_, i) => i)
 
   return (
-    <FieldChrome label={label} chrome={chrome} className={className}>
+    <FieldChrome label={label} chrome={chrome} className={cn('w-fit', className)}>
       <div
         data-slot="input-otp"
         data-disabled={chrome.disabled || undefined}
@@ -137,7 +140,7 @@ export function InputOTP({
           aria-describedby={chrome.describedBy}
           aria-label={props['aria-label']}
           spellCheck={false}
-          className="absolute inset-0 w-full cursor-text bg-transparent text-transparent caret-transparent outline-none selection:bg-transparent disabled:cursor-not-allowed"
+          className="absolute inset-0 w-full cursor-text bg-transparent text-transparent caret-transparent outline-none selection:bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:[box-shadow:none] disabled:cursor-not-allowed"
         />
       </div>
     </FieldChrome>
