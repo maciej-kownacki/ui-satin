@@ -18,7 +18,7 @@ import { HoverCard } from './hover-card'
  */
 export interface CitationSource {
   title: string
-  /** Where it lives: a domain, or "Notion · Contracts". */
+  /** Where it comes from: the app or site, "Notion" or "freshfarm.pl". */
   origin?: string
   href?: string
   /** A 16px logo or favicon. */
@@ -91,7 +91,7 @@ export function Sources({ sources, defaultOpen = false, className }: SourcesProp
         aria-controls={listId}
         onClick={() => setOpen(!open)}
         className={cn(
-          'inline-flex h-8 w-fit items-center gap-2 rounded-full border border-border-default py-1 pr-3 pl-1.5 text-sm font-medium text-text-default outline-none',
+          'inline-flex h-8 w-fit items-center gap-2 rounded-pill border border-border-default py-1 pr-3 pl-1.5 text-sm font-medium text-text-default outline-none',
           'transition-[border-color,background-color] duration-(--duration-fast) ease-(--ease-out)',
           'hover:border-border-strong focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
           open && 'bg-bg-hover',

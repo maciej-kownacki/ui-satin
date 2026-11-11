@@ -165,7 +165,7 @@ export function ChartLegendPill({
       data-slot="chart-legend-pill"
       data-variant={variant}
       className={cn(
-        'inline-flex h-8 items-center gap-1.5 rounded-full text-sm leading-(--text-sm--line-height) whitespace-nowrap',
+        'inline-flex h-8 items-center gap-1.5 rounded-pill text-sm leading-(--text-sm--line-height) whitespace-nowrap',
         'transition-[border-color,background-color] duration-(--duration-fast) ease-(--ease-out)',
         '*:transition-opacity *:duration-(--duration-fast) *:ease-(--ease-out)',
         plain ? 'px-2' : 'border px-2.5',

@@ -5,9 +5,9 @@ import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } 
 const favicon = (domain: string) => <img alt="" src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`} />
 
 const sources: CitationSource[] = [
-  { title: 'Fresh Farm price list, November 2026', origin: 'Gmail · from Fresh Farm', icon: favicon('mail.google.com'), quote: 'Tomatoes €2.10/kg for orders over 20 kg, delivered Mon–Sat before 9:00.' },
-  { title: 'Supplier contract · Fresh Farm', origin: 'Notion · Contracts', icon: favicon('notion.so'), quote: 'Orders over €500 need a manager’s approval.' },
-  { title: 'Stock count, Nov 10', origin: 'ClickUp · Kitchen', icon: favicon('clickup.com'), quote: 'Tomatoes 6 kg left, 2.1 days at the current pace.' },
+  { title: 'Fresh Farm price list, November 2026', origin: 'Gmail', icon: favicon('mail.google.com'), quote: 'Tomatoes €2.10/kg for orders over 20 kg, delivered Mon–Sat before 9:00.' },
+  { title: 'Supplier contract · Fresh Farm', origin: 'Notion', icon: favicon('notion.so'), quote: 'Orders over €500 need a manager’s approval.' },
+  { title: 'Stock count, Nov 10', origin: 'ClickUp', icon: favicon('clickup.com'), quote: 'Tomatoes 6 kg left, 2.1 days at the current pace.' },
 ]
 
 export const controls: ShowcaseControl[] = [{ id: 'list', label: 'Sources open', type: 'switch', default: 'off' }]
@@ -15,9 +15,9 @@ export const controls: ShowcaseControl[] = [{ id: 'list', label: 'Sources open',
 const code = (v: Record<string, string>) => `import { Citation, Sources } from '@satin/ui/citations'
 
 const sources = [
-  { title: 'Fresh Farm price list, November 2026', origin: 'Gmail · from Fresh Farm', icon: <GmailLogo />, quote: 'Tomatoes €2.10/kg for orders over 20 kg…' },
-  { title: 'Supplier contract · Fresh Farm', origin: 'Notion · Contracts', icon: <NotionLogo />, quote: 'Orders over €500 need a manager’s approval.' },
-  { title: 'Stock count, Nov 10', origin: 'ClickUp · Kitchen', icon: <ClickUpLogo />, quote: 'Tomatoes 6 kg left…' },
+  { title: 'Fresh Farm price list, November 2026', origin: 'Gmail', icon: <GmailLogo />, quote: 'Tomatoes €2.10/kg for orders over 20 kg…' },
+  { title: 'Supplier contract · Fresh Farm', origin: 'Notion', icon: <NotionLogo />, quote: 'Orders over €500 need a manager’s approval.' },
+  { title: 'Stock count, Nov 10', origin: 'ClickUp', icon: <ClickUpLogo />, quote: 'Tomatoes 6 kg left…' },
 ]
 
 <p>

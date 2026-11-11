@@ -89,7 +89,7 @@ export function DonutCard({ data, formatValue = defaultFormat, highlight, center
               onFocus={() => setHovered(i)}
               onBlur={() => setHovered(null)}
               aria-label={`${d.label}: ${formatValue(d.value)}, ${share(d.value)}%`}
-              className="min-w-0 rounded-full outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]"
+              className="min-w-0 rounded-pill outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]"
             >
               <ChartLegendPill
                 variant="plain"
