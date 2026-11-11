@@ -212,7 +212,15 @@ export function Calendar({
                   const off = disabled(d)
                   const focused = sameDay(d, focus) && !out
                   return (
-                    <div key={d.toISOString()} role="gridcell" aria-selected={isSingle || isEnd || undefined} className="relative grid size-10 place-items-center">
+                    <div
+                      key={d.toISOString()}
+                      role="gridcell"
+                      aria-selected={isSingle || isEnd || undefined}
+                      // The whole 40px cell tracks the pointer, so the preview never stalls in the
+                      // gaps between the 36px days.
+                      onPointerEnter={() => picking && !out && !off && setHover(d)}
+                      className="relative grid size-10 place-items-center"
+                    >
                       {inBand && <span aria-hidden className={cn('absolute inset-y-0.5 bg-status-brand-bg', bandFrom, bandTo)} />}
                       <button
                         type="button"
@@ -225,11 +233,12 @@ export function Calendar({
                           setFocus(d)
                           pick(d)
                         }}
-                        onPointerEnter={() => picking && setHover(d)}
                         onFocus={() => setFocus(d)}
                         className={cn(
                           'relative grid size-9 place-items-center text-base leading-[21px] outline-none',
-                          'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
+                          // While the end is being picked the band and the end circle move together,
+                          // so neither fades: a fade here would trail the pointer.
+                          !picking && 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
                           'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)] disabled:pointer-events-none disabled:opacity-40',
                           isEnd ? 'rounded-md' : 'rounded-full',
                           isSingle || isEnd
