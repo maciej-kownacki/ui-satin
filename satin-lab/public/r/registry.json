@@ -452,6 +452,29 @@
       ]
     },
     {
+      "name": "date-picker",
+      "type": "registry:ui",
+      "title": "Date picker",
+      "description": "Picks a day or a range from a calendar, with presets and a quick year.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "Date picker docs: https://uisatin.dev/components/date-picker",
+      "files": [
+        {
+          "path": "registry/satin/ui/date-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "decision-card",
       "type": "registry:ui",
       "title": "Decision card",

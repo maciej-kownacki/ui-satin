@@ -28,6 +28,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Dropdown': [440, 440],
   'Empty state': [280, 280],
   'File upload': [440, 440],
+  'Date picker': [540, 600],
   'Input OTP': [240, 240],
   'Number input': [240, 240],
   'Context menu': [400, 400],
