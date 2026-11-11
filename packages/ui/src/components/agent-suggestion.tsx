@@ -13,7 +13,7 @@ import { Progress } from './progress'
  *
  * A bg/card card, border/subtle, radius-xl, shadow-sm, 12px in and 12px between its parts:
  *
- * - the kind row: what it is, as a neutral Large Badge outlined in border/default with a 14px icon
+ * - the kind row: what it is, as a neutral Large Outline Badge (white, border/default) with a 14px icon
  *   or app logo (`kind`, `icon`), and on the right who or what it concerns (`meta`: avatars, a
  *   small Badge with the source);
  * - `title` in Label/lg (14/14 medium) and `description` in Body/lg text/muted, 8px apart;
@@ -65,7 +65,8 @@ export function AgentSuggestion({
           <Badge
             size="lg"
             tone="neutral"
-            className="max-w-full [box-shadow:inset_0_0_0_1px_var(--border-default)] [&_img]:size-3.5 [&_img]:shrink-0"
+            variant="outline"
+            className="max-w-full [&_img]:size-3.5 [&_img]:shrink-0"
           >
             {icon}
             <span className="truncate">{kind}</span>
@@ -112,7 +113,7 @@ export function AgentSuggestionQuote({
         {avatar}
         <span className="text-xs leading-3 font-medium tracking-normal text-text-default">{from}</span>
       </div>
-      <p className="m-0 text-sm text-text-muted">{children}</p>
+      <p className="m-0 text-base text-text-muted">{children}</p>
     </blockquote>
   )
 }
@@ -137,7 +138,7 @@ export function AgentSuggestionMetric({
     <div data-slot="agent-suggestion-metric" className={cn('flex flex-col gap-2', className)}>
       <div className="flex items-baseline gap-2">
         <span className="text-2xl leading-[1.5] font-medium tabular-nums">{value}</span>
-        {unit && <span className="text-sm text-text-muted">{unit}</span>}
+        {unit && <span className="text-base text-text-muted">{unit}</span>}
       </div>
       {used != null && max != null && (
         <Progress
@@ -155,7 +156,7 @@ export function AgentSuggestionMetric({
 /** Old text struck through on bg/muted, the new text in status/green below it. */
 export function AgentSuggestionDiff({ before, after, className }: { before: React.ReactNode; after: React.ReactNode; className?: string }) {
   return (
-    <div data-slot="agent-suggestion-diff" className={cn('flex flex-col gap-1 text-sm', className)}>
+    <div data-slot="agent-suggestion-diff" className={cn('flex flex-col gap-1 text-base', className)}>
       <del className="rounded-lg bg-bg-muted px-2 py-1.5 text-text-muted">
         <span className="sr-only">Remove: </span>
         {before}
@@ -178,9 +179,9 @@ export interface AgentSuggestionChange {
 /** Fields the agent will change: name, the old value struck through, an arrow and the new one. */
 export function AgentSuggestionChanges({ changes, className }: { changes: AgentSuggestionChange[]; className?: string }) {
   return (
-    <dl data-slot="agent-suggestion-changes" className={cn('m-0 flex flex-col gap-2 text-sm', className)}>
+    <dl data-slot="agent-suggestion-changes" className={cn('m-0 flex flex-col gap-2 text-base', className)}>
       {changes.map((c, i) => (
-        <div key={i} className="flex min-h-5 items-center gap-2">
+        <div key={i} className="flex min-h-[21px] items-center gap-2">
           <dt className="w-[88px] shrink-0 text-text-muted">{c.field}</dt>
           <dd className="m-0 flex min-w-0 items-center gap-2">
             {c.from != null && (

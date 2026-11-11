@@ -21,7 +21,7 @@ const title = (s: string) => s[0].toUpperCase() + s.slice(1)
 // palette and turns the code into a loop; one tone gives the one badge you'd paste.
 export const controls: ShowcaseControl[] = [
   { id: 'size', label: 'Size', items: [{ value: 'lg', label: 'Large' }, { value: 'sm', label: 'Small' }] },
-  { id: 'variant', label: 'Variant', items: [{ value: 'soft', label: 'Soft' }, { value: 'plain', label: 'Plain' }] },
+  { id: 'variant', label: 'Variant', items: [{ value: 'soft', label: 'Soft' }, { value: 'plain', label: 'Plain' }, { value: 'outline', label: 'Outline' }] },
   { id: 'shape', label: 'Shape', items: [{ value: 'default', label: 'Default' }, { value: 'rounded', label: 'Rounded' }] },
   {
     id: 'tone',
@@ -88,7 +88,7 @@ export default function BadgeDemo({ codeHtml }: { codeHtml: Record<string, strin
                 key={tone}
                 tone={tone}
                 size={v.size as 'lg' | 'sm'}
-                variant={v.variant as 'soft' | 'plain'}
+                variant={v.variant as 'soft' | 'plain' | 'outline'}
                 shape={v.shape as 'default' | 'rounded'}
               >
                 {v.icon === 'on' && <Icon aria-hidden />}

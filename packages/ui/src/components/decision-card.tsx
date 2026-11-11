@@ -13,7 +13,7 @@ import { SLIDE_MS } from './sliding-indicator'
  * (3092:61608): one question an agent asks, its answers, and Skip / Continue.
  *
  * The card is 364 wide, bg/popover, border/default, radius-2xl, shadow-xs. The header is the
- * medium 13/16 title with an optional step navigator (24px icon buttons around "1/3"); the
+ * medium 14/20 title with an optional step navigator (24px icon buttons around "1/3"); the
  * footer is a tertiary Skip in text/muted and a primary Continue, 16px above and 12px below.
  *
  * - `radio` / `checkbox`: rows of 20px with 4px padding, hover bg action/secondary, 2px apart.
@@ -278,10 +278,10 @@ function Header({
       {/* The title and hint move with the question; the step navigator stays. */}
       <div className="relative min-w-0 flex-1">
         <div ref={titleRef} className="flex flex-col gap-0.5">
-          <p id={titleId} className="text-sm leading-4 font-medium tracking-normal text-text-default">
+          <p id={titleId} className="text-base leading-5 font-medium tracking-normal text-text-default">
             {title}
           </p>
-          {hint && <p className="text-sm text-text-muted">{hint}</p>}
+          {hint && <p className="text-base text-text-muted">{hint}</p>}
         </div>
       </div>
       {step && (
@@ -418,7 +418,7 @@ function RadioRow({ option }: { option: DecisionOption }) {
       >
         <RadioGroup.Indicator className="size-1.5 rounded-full bg-text-on-solid" />
       </RadioGroup.Item>
-      <label htmlFor={id} className="min-w-0 flex-1 text-sm text-text-default">
+      <label htmlFor={id} className="min-w-0 flex-1 text-base text-text-default">
         {option.label}
       </label>
     </div>
@@ -438,7 +438,7 @@ function CheckboxRow({
   return (
     <div className="flex h-5 items-center gap-2">
       <Checkbox id={id} checked={checked} onCheckedChange={(c) => onCheckedChange(c === true)} />
-      <label htmlFor={id} className="min-w-0 flex-1 text-sm text-text-default">
+      <label htmlFor={id} className="min-w-0 flex-1 text-base text-text-default">
         {option.label}
       </label>
     </div>
@@ -463,7 +463,7 @@ function DecisionChip({
       disabled={disabled}
       onClick={() => onPressedChange(!selected)}
       className={cn(
-        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-pill border pr-2.5 pl-2 text-sm font-medium outline-none select-none',
+        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-pill border pr-2.5 pl-2 text-base font-medium outline-none select-none',
         'transition-[background-color,border-color,color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out) active:scale-[0.97]',
         '[&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
         'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
@@ -577,7 +577,7 @@ function Ranking({
               >
                 {i + 1}
               </span>
-              <span className="min-w-0 flex-1 text-sm font-medium text-text-default">{label(item)}</span>
+              <span className="min-w-0 flex-1 text-base font-medium text-text-default">{label(item)}</span>
             </li>
           )
         })}
@@ -643,7 +643,7 @@ function Draft({
       <div className="px-3 pb-1">
         <div
           className={cn(
-            'flex flex-col gap-2 rounded-2xl rounded-tl-[4px] border border-border-default bg-bg-popover px-3 py-2.5 text-sm text-text-default',
+            'flex flex-col gap-2 rounded-2xl rounded-tl-[4px] border border-border-default bg-bg-popover px-3 py-2.5 text-base text-text-default',
             '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             'transition-[box-shadow,border-color] duration-(--duration-fast) ease-(--ease-out)',
             'has-[textarea:focus-visible]:border-border-strong has-[textarea:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',

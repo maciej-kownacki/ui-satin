@@ -8,7 +8,7 @@ export type BadgeTone = 'neutral' | 'brand' | 'sky' | 'green' | 'amber' | 'red' 
 
 /**
  * Badge, 1:1 with the uiKit `Badge` set (988:20203): eight tones, Large (8 × 4 padding, 24
- * high) or Small (6 × 2, 20 high), Soft (tone fill) or Plain (no fill), radius-sm or full.
+ * high) or Small (6 × 2, 20 high), Soft (tone fill), Plain (no fill) or Outline (bg/card with a border/default edge), radius-sm or full.
  * Label medium 13/16, icon 14px in the tone colour, 4px apart. No border, no shadow.
  * The tone comes from `data-tone`, which repoints the `tone/*` tokens.
  */
@@ -26,6 +26,8 @@ const badgeVariants = cva(
       variant: {
         soft: 'bg-tone-bg',
         plain: 'bg-transparent',
+        // White (bg/card) inside a 1px border/default edge, drawn inset so the size stays put.
+        outline: 'bg-bg-card [box-shadow:inset_0_0_0_1px_var(--border-default)]',
       },
       shape: {
         default: 'rounded-sm',
