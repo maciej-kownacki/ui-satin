@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuItem } from './dropdown'
  * in 2px × 4px of padding, radius 6; it turns text/default on hover. The last item is the
  * current page: text/default, medium, not a link.
  *
- * An item can lead with a 14px `icon`, 6px before its label and centred on it; usually the first one (Home, the
+ * An item can lead with a 14px `icon`, 8px before its label and centred on it; usually the first one (Home, the
  * workspace). With `hideLabel` only the icon shows, and the label names it for screen readers.
  *
  * With more items than `maxItems`, the middle ones fold into a "…" button (24px) that lists
@@ -38,7 +38,7 @@ export interface BreadcrumbProps extends Omit<React.ComponentProps<'nav'>, 'chil
 }
 
 const itemClass = cn(
-  'inline-flex h-6 items-center gap-1.5 rounded-md px-1 text-sm leading-5 whitespace-nowrap text-text-muted',
+  'inline-flex h-6 items-center gap-2 rounded-md px-1 text-sm leading-5 whitespace-nowrap text-text-muted',
   '[&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
   'transition-colors duration-(--duration-fast) ease-(--ease-out) outline-none focus-visible:shadow-border-focus',
 )
