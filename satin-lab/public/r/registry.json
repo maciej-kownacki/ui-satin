@@ -94,6 +94,28 @@
       ]
     },
     {
+      "name": "agent-suggestion",
+      "type": "registry:ui",
+      "title": "Agent suggestion",
+      "description": "Something the agent prepared, an email, a meeting or a CRM update, for the user to approve.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/progress.json"
+      ],
+      "docs": "Agent suggestion docs: https://uisatin.dev/ai-patterns/agent-suggestion",
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-suggestion.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "attachment",
       "type": "registry:ui",
       "title": "Attachment",
