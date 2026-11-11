@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { ContextMenu, ContextMenuItem, ContextMenuSeparator, ContextMenuSub } from '@satin/ui/context-menu'
-import { FileIcon } from '@satin/ui/attachment'
 import { ArrowUpRight, Copy, Download, EditPencil, Folder, Trash } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -28,18 +27,19 @@ function code(v: Record<string, string>) {
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({ id: comboId(controls, v), label: v.submenu === 'on' ? 'With submenu' : 'Flat', code: code(v) }))
 
 /**
- * The menu already open under the file, the way a right-click there opens it: the page sends the
- * row the same contextmenu event at a point just under it, and does again whenever the menu
- * closes, so it stays on show. It portals into the stage (non-modal, so the docs page keeps
- * scrolling) inside a preview tall enough for it. Right-click still opens it at the pointer.
+ * The menu alone, already open: the page sends an empty anchor the contextmenu event a
+ * right-click would, at its top-left corner, and does again whenever the menu closes, so it stays
+ * on show. It portals into the stage (non-modal, so the docs page keeps scrolling) inside a
+ * preview exactly its size, so only the menu shows.
  */
 function Preview({ v }: { v: Record<string, string> }) {
   const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
   const rowRef = React.useRef<HTMLDivElement>(null)
-  // Room for the row and the open menu under it, fixed so the row doesn't move after the menu
-  // opens at a point under it (the menu is 220 high with the submenu row, 182 without).
-  const height = v.submenu === 'on' ? 280 : 242
+  // The menu's own height: 220 with the submenu row, 182 without.
+  const height = v.submenu === 'on' ? 220 : 182
 
+  // Radix opens the menu 2px right of the point (its sideOffset); the point sits 2px left so the
+  // menu fills the preview exactly.
   // Opening moves focus into the menu; a menu the page opened hands it back to where it was, so
   // keyboard users aren't pulled off the property they just changed. A real right-click keeps it.
   const show = React.useCallback(() => {
@@ -47,7 +47,7 @@ function Preview({ v }: { v: Record<string, string> }) {
     if (!row || !stage) return
     const before = document.activeElement
     const r = row.getBoundingClientRect()
-    row.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: r.left + 16, clientY: r.bottom + 6 }))
+    row.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: r.left - 2, clientY: r.top }))
     // Radix focuses the menu once it has mounted; once it has, hand focus back.
     setTimeout(() => {
       if (!stage.contains(document.activeElement)) return
@@ -63,8 +63,8 @@ function Preview({ v }: { v: Record<string, string> }) {
     }, 120)
   }, [stage])
 
-  // The menu hangs from a fixed point, so it must open once the row is where it ends up (fonts in,
-  // layout settled), and open again under it whenever the row moves (stage resize, sidebar, window).
+  // The menu hangs from a fixed point, so it must open once the anchor is where it ends up (fonts
+  // in, layout settled), and open again there whenever it moves (stage resize, sidebar, window).
   React.useEffect(() => {
     const row = rowRef.current
     if (!row || !stage) return
@@ -73,7 +73,7 @@ function Preview({ v }: { v: Record<string, string> }) {
     const place = () => {
       if (!alive) return
       const r = row.getBoundingClientRect()
-      const at = `${Math.round(r.left)},${Math.round(r.bottom)}`
+      const at = `${Math.round(r.left)},${Math.round(r.top)}`
       if (at === last) return
       last = at
       show()
@@ -91,7 +91,7 @@ function Preview({ v }: { v: Record<string, string> }) {
   }, [show, stage])
 
   return (
-    <div className="flex w-[360px] max-w-full flex-col items-center gap-3" style={{ height }}>
+    <div className="relative w-[255px] max-w-full" style={{ height }}>
       <div ref={setStage} className="pointer-events-none absolute inset-0 z-10" />
       {stage && (
         <ContextMenu
@@ -101,17 +101,7 @@ function Preview({ v }: { v: Record<string, string> }) {
           onOpenChange={(open) => {
             if (!open) setTimeout(show, 0)
           }}
-          trigger={
-            <div
-              ref={rowRef}
-              tabIndex={0}
-              className="flex w-full items-center gap-3 rounded-lg border border-border-default bg-bg-card p-3 outline-none data-[state=open]:bg-bg-hover focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]"
-            >
-              <FileIcon type="pdf" />
-              <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-default">menu-autumn.pdf</span>
-              <span className="text-sm text-text-muted">2.4 MB</span>
-            </div>
-          }
+          trigger={<div ref={rowRef} aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-0" />}
         >
           <ContextMenuItem label="Open" icon={<ArrowUpRight />} shortcut="↵" />
           <ContextMenuItem label="Rename" icon={<EditPencil />} shortcut="⌘R" />
