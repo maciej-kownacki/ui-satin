@@ -37,7 +37,8 @@ export default function CitationsDemo({ codeHtml }: { codeHtml: Record<string, s
       codeHtml={codeHtml}
       controls={controls}
       render={(_, v) => (
-        <div className="flex w-[520px] max-w-full flex-col gap-4">
+        // A fixed box pinned to the top: the list opens downwards and nothing above it moves.
+        <div className="flex h-[320px] w-[520px] max-w-full flex-col gap-4 self-start">
           <p className="text-body-lg text-text-default">
             Order 24 kg of tomatoes from Fresh Farm: it drops to €2.10/kg over 20 kg
             <Citation index={1} source={sources[0]} /> and you have only 2 days of stock left
