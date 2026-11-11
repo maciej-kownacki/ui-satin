@@ -455,7 +455,7 @@
       "name": "date-picker",
       "type": "registry:ui",
       "title": "Date picker",
-      "description": "Picks a day or a range from a calendar, with presets and a quick year.",
+      "description": "Picks a day or a range from a calendar, with a quick year.",
       "dependencies": [
         "iconoir-react@^7.12.2",
         "radix-ui@^1.8.1"

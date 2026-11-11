@@ -7,13 +7,12 @@ import { page } from '../../nav'
 
 const codeHtml = await highlight(options)
 const api = {
-  description: "`DatePicker` and `DateRangePicker` are fields with the Input skin that open a `Calendar` in a popover. The range picker waits for Apply; its presets apply at once. `Calendar` works on its own too, as one month or two.",
+  description: "`DatePicker` and `DateRangePicker` are fields with the Input skin that open a `Calendar` in a popover. The range picker waits for Apply. `Calendar` works on its own too, as one month or two.",
   props: [
     {name: 'DatePicker.value', type: ['Date', 'null']},
     {name: 'DatePicker.onValueChange', type: ['(value: Date) => void']},
     {name: 'DateRangePicker.value', type: ['{ from: Date | null, to: Date | null }']},
     {name: 'DateRangePicker.onValueChange', type: ['(range: DateRange) => void']},
-    {name: 'DateRangePicker.presets', type: ['DateRangePreset[]'], default: 'defaultRangePresets'},
     {name: 'Calendar.mode', type: ['"single"', '"range"'], default: '"single"'},
     {name: 'Calendar.header', type: ['"title"', '"picker"'], default: '"title"'},
     {name: 'Calendar.months', type: ['1', '2'], default: '1'},

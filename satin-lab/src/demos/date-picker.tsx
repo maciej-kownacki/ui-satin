@@ -43,13 +43,7 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({ id: comb
 function Live({ kind }: { kind: string }) {
   const [day, setDay] = React.useState<Date | null>(new Date(2026, 10, 18))
   const [range, setRange] = React.useState<DateRange>({ from: new Date(2026, 10, 23), to: new Date(2026, 10, 27) })
-  // A size container: where the stage is narrower than the panel, its presets move on top.
-  if (kind === 'range')
-    return (
-      <div className="@container flex w-full justify-center">
-        <DateRangePickerPanel key={`${range.from}-${range.to}`} value={range} onApply={setRange} today={TODAY} />
-      </div>
-    )
+  if (kind === 'range') return <DateRangePickerPanel key={`${range.from}-${range.to}`} value={range} onApply={setRange} today={TODAY} />
   return <DatePickerPanel value={day} onValueChange={setDay} today={TODAY} />
 }
 

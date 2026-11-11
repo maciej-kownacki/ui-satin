@@ -11,13 +11,13 @@ import { FieldChrome, Select, useFieldChrome } from './select'
  * Calendar, DatePicker and DateRangePicker, 1:1 with the uiKit design (🆕 date picker).
  *
  * Calendar: one month (or two side by side), Monday first, weekdays as one letter in text/xs muted.
- * Days are 36px in 40px cells. A picked day is a primary circle; the two ends of a range are
+ * Days are 36px in 40px cells, their numbers text/sm (13px) medium. A picked day is a primary circle; the two ends of a range are
  * primary squares rounded radius-md, with a band in status/brand/bg — a tint of the brand —
  * from the middle of the first to the middle of the last. While the end is being picked the day
  * under the pointer gets a bg/hover circle and the band runs up to it. Today is a 12×2 primary
  * dash under its number; days of other months are text/subtle.
  *
- * Header: "November 2026" with arrows, or (`header="picker"`) "‹ November ›" on the left and the
+ * Header: "November 2026" in text/sm (13px) medium, with arrows, or (`header="picker"`) "‹ November ›" on the left and the
  * year as a small Select on the right, newest first, the shown year checked. Always six weeks, so
  * the height never jumps between months.
  *
@@ -161,7 +161,7 @@ export function Calendar({
           <div className="flex h-8 items-center gap-1">
             <div className="flex items-center gap-1">
               {navBtn(-1, 'Previous month', () => setMonth(addMonths(month, -1)))}
-              <span id={titleId} className="min-w-[72px] text-center text-base leading-[21px] font-medium text-text-default">
+              <span id={titleId} className="min-w-[72px] text-center text-sm leading-5 font-medium text-text-default">
                 {MONTHS[m.getMonth()]}
               </span>
               {navBtn(1, 'Next month', () => setMonth(addMonths(month, 1)))}
@@ -181,7 +181,7 @@ export function Calendar({
         ) : (
           <div className="flex h-8 items-center gap-1">
             {months === 2 && i === 0 && navBtn(-1, 'Previous month', () => setMonth(addMonths(month, -1)))}
-            <span id={titleId} className="flex-1 text-base leading-[21px] font-medium text-text-default">
+            <span id={titleId} className="flex-1 text-sm leading-5 font-medium text-text-default">
               {MONTHS[m.getMonth()]} {m.getFullYear()}
             </span>
             {months === 1 && navBtn(-1, 'Previous month', () => setMonth(addMonths(month, -1)))}
@@ -235,14 +235,14 @@ export function Calendar({
                         }}
                         onFocus={() => setFocus(d)}
                         className={cn(
-                          'relative grid size-9 place-items-center text-base leading-[21px] outline-none',
+                          'relative grid size-9 place-items-center text-sm leading-5 font-medium outline-none',
                           // While the end is being picked the band and the end circle move together,
                           // so neither fades: a fade here would trail the pointer.
                           !picking && 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
                           'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)] disabled:pointer-events-none disabled:opacity-40',
                           isEnd ? 'rounded-md' : 'rounded-full',
                           isSingle || isEnd
-                            ? 'bg-action-primary-bg font-medium text-text-on-solid'
+                            ? 'bg-action-primary-bg text-text-on-solid'
                             : cn(out ? 'text-text-subtle' : 'text-text-default', isHoverEnd ? 'bg-bg-hover' : !inBand && 'hover:bg-bg-hover'),
                         )}
                       >
@@ -410,29 +410,13 @@ export function DatePicker({
   )
 }
 
-export interface DateRangePreset {
-  label: string
-  range: () => DateRange
-}
-
 const todayDate = () => startOfDay(new Date())
-/** The kit's presets, counted back from today. */
-export const defaultRangePresets: DateRangePreset[] = [
-  { label: 'Today', range: () => ({ from: todayDate(), to: todayDate() }) },
-  { label: 'Last 7 days', range: () => ({ from: addDays(todayDate(), -6), to: todayDate() }) },
-  { label: 'Last 30 days', range: () => ({ from: addDays(todayDate(), -29), to: todayDate() }) },
-  { label: 'This month', range: () => ({ from: addMonths(todayDate(), 0), to: todayDate() }) },
-  { label: 'Last month', range: () => { const s = addMonths(todayDate(), -1); return { from: s, to: addDays(addMonths(s, 1), -1) } } },
-  { label: 'This year', range: () => ({ from: new Date(todayDate().getFullYear(), 0, 1), to: todayDate() }) },
-]
 
 export interface DateRangePickerProps extends FieldBits {
   value?: DateRange
   defaultValue?: DateRange
-  /** Called on Apply, or when a preset is picked. */
+  /** Called on Apply. */
   onValueChange?: (value: DateRange) => void
-  /** Shortcuts on the left; `[]` hides the column. */
-  presets?: DateRangePreset[]
   min?: Date
   max?: Date
   today?: Date
@@ -442,14 +426,13 @@ export interface DateRangePickerProps extends FieldBits {
 }
 
 /**
- * A range field: presets on the left, two months, Cancel and Apply in the footer. Picks wait
- * for Apply; a preset applies at once. Picking an end before the start swaps them.
+ * A range field: two months, Cancel and Apply in the footer. Picks wait for Apply. Picking an
+ * end before the start swaps them.
  */
 export function DateRangePicker({
   value: valueProp,
   defaultValue = { from: null, to: null },
   onValueChange,
-  presets = defaultRangePresets,
   min,
   max,
   today,
@@ -485,7 +468,6 @@ export function DateRangePicker({
           <PopoverPrimitive.Content data-slot="date-range-picker" align="start" sideOffset={4} collisionPadding={8} className={popClass}>
             <DateRangePickerPanel
               value={value}
-              presets={presets}
               min={min}
               max={max}
               today={today}
@@ -504,10 +486,9 @@ export function DateRangePicker({
 export interface DateRangePickerPanelProps {
   /** The range the panel starts from; picks stay in the panel until Apply. */
   value?: DateRange
-  /** Apply, or a preset. */
+  /** Apply. */
   onApply?: (value: DateRange) => void
   onCancel?: () => void
-  presets?: DateRangePreset[]
   min?: Date
   max?: Date
   today?: Date
@@ -516,12 +497,11 @@ export interface DateRangePickerPanelProps {
   className?: string
 }
 
-/** The range picker's panel on its own, in place: presets, two months, Cancel and Apply. */
+/** The range picker's panel on its own, in place: two months, Cancel and Apply. */
 export function DateRangePickerPanel({
   value = { from: null, to: null },
   onApply,
   onCancel,
-  presets = defaultRangePresets,
   min,
   max,
   today,
@@ -531,43 +511,10 @@ export function DateRangePickerPanel({
 }: DateRangePickerPanelProps) {
   const [draft, setDraft] = React.useState<DateRange>(value)
   const [month, setMonth] = React.useState(() => addMonths(value.from ?? today ?? todayDate(), 0))
-  const matching = presets.find((p) => { const r = p.range(); return sameDay(r.from, draft.from) && sameDay(r.to, draft.to) })
   return (
     <div data-slot="date-range-picker-panel" className={cn(surfaceClass, 'flex w-fit shrink-0 flex-col overflow-hidden', className)}>
-      {/* Inside a container narrower than the panel, the presets move to a row on top. */}
-      <div className="flex @max-[800px]:flex-col">
-        {presets.length > 0 && (
-          <div
-            role="listbox"
-            aria-label="Presets"
-            className="flex w-[168px] shrink-0 flex-col gap-0.5 border-r border-border-subtle p-2 @max-[800px]:w-auto @max-[800px]:flex-row @max-[800px]:flex-wrap @max-[800px]:border-r-0 @max-[800px]:border-b"
-          >
-            {presets.map((p) => (
-              <button
-                key={p.label}
-                type="button"
-                role="option"
-                aria-selected={matching === p}
-                onClick={() => {
-                  const r = p.range()
-                  setDraft(r)
-                  onApply?.(r)
-                }}
-                className={cn(
-                  'rounded-md px-2 py-1.5 text-left text-sm text-text-default outline-none transition-colors duration-(--duration-fast) ease-(--ease-out)',
-                  'hover:bg-bg-hover focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
-                  matching === p && 'bg-bg-hover font-medium',
-                )}
-              >
-                {p.label}
-              </button>
-            ))}
-            <span className={cn('rounded-md px-2 py-1.5 text-sm text-text-default', !matching && 'bg-bg-hover font-medium')}>Custom</span>
-          </div>
-        )}
-        <div className="p-3">
-          <Calendar mode="range" months={2} range={draft} onRangeChange={setDraft} month={month} onMonthChange={setMonth} min={min} max={max} today={today} />
-        </div>
+      <div className="p-3">
+        <Calendar mode="range" months={2} range={draft} onRangeChange={setDraft} month={month} onMonthChange={setMonth} min={min} max={max} today={today} />
       </div>
       <div className="flex items-center justify-end gap-2 border-t border-border-subtle px-3 py-2">
         <Button variant="secondary" onClick={() => { setDraft(value); onCancel?.() }}>
