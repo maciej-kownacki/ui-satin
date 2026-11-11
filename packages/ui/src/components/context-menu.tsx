@@ -11,7 +11,7 @@ import { MenuItemContent, menuItemClass, menuSurfaceClass, type MenuItemContentP
  * and rows, opened by right-click (or a long press) on its target, at the pointer. 255 wide, 4px
  * in, rows 0 apart, separators a 1px bg/muted rule. Shortcuts on the right as Kbd; a submenu row
  * ends in a text/muted chevron (the kit's `showSubmenu`) and opens beside it, 4px off; destructive
- * rows are status/red, icon included, and go last.
+ * rows are action/destructive/fg (red-400 in dark), icon included, and go last.
  *
  * Built on the Radix ContextMenu: arrow keys, typeahead, Escape, Shift+F10 / the menu key on the
  * focused target.
@@ -67,7 +67,7 @@ export interface ContextMenuItemProps
   extends Omit<React.ComponentProps<typeof ContextPrimitive.Item>, 'children'>,
     Pick<MenuItemContentProps, 'icon' | 'shortcut' | 'description'> {
   label: string
-  /** Deletes or removes: status/red, and best placed last. */
+  /** Deletes or removes: action/destructive/fg, and best placed last. */
   destructive?: boolean
 }
 
@@ -76,7 +76,7 @@ export function ContextMenuItem({ label, icon, shortcut, description, destructiv
     <ContextPrimitive.Item
       data-slot="context-menu-item"
       textValue={label}
-      className={cn(menuItemClass, destructive && '[&_*]:text-status-red-fg', className)}
+      className={cn(menuItemClass, destructive && '[&_*]:text-action-destructive-fg', className)}
       {...props}
     >
       <MenuItemContent label={label} icon={icon} shortcut={shortcut} description={description} layout="inline" />
