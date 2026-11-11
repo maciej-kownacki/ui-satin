@@ -180,11 +180,14 @@ export function Calendar({
           </div>
         ) : (
           <div className="flex h-8 items-center gap-1">
-            {months === 2 && i === 0 && navBtn(-1, 'Previous month', () => setMonth(addMonths(month, -1)))}
-            <span id={titleId} className="flex-1 text-sm leading-5 font-medium text-text-default">
+            {/* Two months: each title centred over its own month, an empty slot the arrow's size
+                balancing the arrow on the other side. */}
+            {months === 2 && (i === 0 ? navBtn(-1, 'Previous month', () => setMonth(addMonths(month, -1))) : <span aria-hidden className="size-6 shrink-0" />)}
+            <span id={titleId} className={cn('flex-1 text-sm leading-5 font-medium text-text-default', months === 2 && 'text-center')}>
               {MONTHS[m.getMonth()]} {m.getFullYear()}
             </span>
             {months === 1 && navBtn(-1, 'Previous month', () => setMonth(addMonths(month, -1)))}
+            {months === 2 && i === 0 && <span aria-hidden className="size-6 shrink-0" />}
             {(months === 1 || i === 1) && navBtn(1, 'Next month', () => setMonth(addMonths(month, 1)))}
           </div>
         )}
