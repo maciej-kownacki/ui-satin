@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { CheckCircle } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { FieldChrome, useFieldChrome } from './select'
 
@@ -10,7 +11,13 @@ import { FieldChrome, useFieldChrome } from './select'
  * field skin (bg/field, border/default, radius-lg, shadow xs); the cell the next digit goes into
  * gets the focus border and ring and a blinking caret while the field has focus. A digit is
  * text/base medium. With an error every cell turns action/destructive and the message replaces the
- * hint under the cells; label, hint and error sit like Input's.
+ * hint under the cells; label, hint and error sit like Input's. With `success` (the code checked
+ * out) every cell's border turns status/green/fg and the message, in the same colour, leads with a
+ * 16px check.
+ *
+ * The message never moves the cells: it is as wide as the cells (it wraps rather than widening
+ * the field, which would shift a centred field sideways) and keeps a 20px line even while empty,
+ * so swapping hint → "Checking…" → success or error leaves the code where it is.
  *
  * The field is as wide as its cells, so it centres wherever it is placed. Focus shows only on
  * the active cell: the real input carries no ring of its own.
@@ -36,6 +43,8 @@ export interface InputOTPProps {
   hint?: React.ReactNode
   /** An error message (replaces the hint), or `true` to mark the cells invalid without one. */
   error?: React.ReactNode | boolean
+  /** The code checked out: a message under the cells (replaces the hint), or `true` for green cells alone. Ignored while there is an error. */
+  success?: React.ReactNode | boolean
   disabled?: boolean
   autoFocus?: boolean
   id?: string
@@ -55,6 +64,7 @@ export function InputOTP({
   label,
   hint,
   error,
+  success,
   disabled,
   autoFocus,
   id,
@@ -62,7 +72,14 @@ export function InputOTP({
   className,
   ...props
 }: InputOTPProps) {
-  const chrome = useFieldChrome({ id, disabled, error, hint })
+  // The message under the cells is drawn here, so the chrome only gets whether there is an error.
+  const chrome = useFieldChrome({ id, disabled, error: error ? true : undefined })
+  const isError = typeof error === 'string' || React.isValidElement(error)
+  const isSuccess = !chrome.invalid && Boolean(success)
+  const successMessage = isSuccess && success !== true ? (success as React.ReactNode) : null
+  const message = isError ? (error as React.ReactNode) : successMessage ?? (chrome.invalid ? null : hint)
+  const messageId = message ? `${chrome.controlId}-message` : undefined
+  const describedBy = [chrome.describedBy, messageId].filter(Boolean).join(' ') || undefined
   const [inner, setInner] = React.useState(defaultValue)
   const value = (valueProp ?? inner).slice(0, length)
   const [focused, setFocused] = React.useState(false)
@@ -99,11 +116,13 @@ export function InputOTP({
                   'relative grid size-9 shrink-0 place-items-center rounded-lg border bg-bg-field text-base leading-[21px] font-medium text-text-default',
                   '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
                   'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
-                  chrome.invalid ? 'border-action-destructive-bg' : 'border-border-default',
+                  chrome.invalid ? 'border-action-destructive-bg' : isSuccess ? 'border-status-green-fg' : 'border-border-default',
                   isActive &&
                     (chrome.invalid
                       ? '[box-shadow:0_0_0_2px_var(--action-destructive-glow)]'
-                      : 'border-border-focus [box-shadow:0_0_0_2px_var(--action-focus-ring)]'),
+                      : isSuccess
+                        ? '[box-shadow:0_0_0_2px_var(--status-green-border)]'
+                        : 'border-border-focus [box-shadow:0_0_0_2px_var(--action-focus-ring)]'),
                 )}
               >
                 {value[i] ?? ''}
@@ -137,12 +156,24 @@ export function InputOTP({
           autoFocus={autoFocus}
           disabled={chrome.disabled}
           aria-invalid={chrome.invalid || undefined}
-          aria-describedby={chrome.describedBy}
+          aria-describedby={describedBy}
           aria-label={props['aria-label']}
           spellCheck={false}
           className="absolute inset-0 w-full cursor-text bg-transparent text-transparent caret-transparent outline-none selection:bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:[box-shadow:none] disabled:cursor-not-allowed"
         />
       </div>
+      {/* 0 wide and min-w-full: as wide as the cells, never wider; min-h-5 holds the line while empty. */}
+      <p
+        id={messageId}
+        aria-live="polite"
+        className={cn(
+          'flex min-h-5 w-0 min-w-full items-start gap-1.5 text-sm leading-5',
+          isError ? 'text-action-destructive-bg' : successMessage ? 'text-status-green-fg' : 'text-text-muted',
+        )}
+      >
+        {successMessage && <CheckCircle aria-hidden className="mt-0.5 size-4 shrink-0 [stroke-width:1.875]" />}
+        {message}
+      </p>
     </FieldChrome>
   )
 }

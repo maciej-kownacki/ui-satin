@@ -703,7 +703,9 @@
       "type": "registry:ui",
       "title": "Input OTP",
       "description": "A one-time code in separate cells, with paste and SMS autofill.",
-      "dependencies": [],
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
