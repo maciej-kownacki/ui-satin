@@ -24,6 +24,10 @@ export interface ContextMenuProps {
   onOpenChange?: (open: boolean) => void
   /** Portal target. Defaults to `document.body`. */
   container?: HTMLElement | null
+  /** Modal menus block the rest of the page while open. */
+  modal?: boolean
+  /** Focus moved outside a non-modal menu; call `preventDefault()` to keep it open. */
+  onFocusOutside?: (event: Event) => void
   className?: string
 }
 
@@ -33,14 +37,23 @@ const contentClass = cn(
   'outline-none data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
 )
 
-export function ContextMenu({ trigger, children, onOpenChange, container, className }: ContextMenuProps) {
+export function ContextMenu({
+  trigger,
+  children,
+  onOpenChange,
+  container,
+  modal = true,
+  onFocusOutside,
+  className,
+}: ContextMenuProps) {
   return (
-    <ContextPrimitive.Root onOpenChange={onOpenChange}>
+    <ContextPrimitive.Root onOpenChange={onOpenChange} modal={modal}>
       <ContextPrimitive.Trigger asChild>{trigger}</ContextPrimitive.Trigger>
       <ContextPrimitive.Portal container={container}>
         <ContextPrimitive.Content
           data-slot="context-menu"
           collisionPadding={8}
+          onFocusOutside={onFocusOutside}
           className={cn(contentClass, 'origin-(--radix-context-menu-content-transform-origin)', 'max-h-(--radix-context-menu-content-available-height)', className)}
         >
           {children}
