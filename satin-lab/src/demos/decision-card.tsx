@@ -238,7 +238,7 @@ export default function DecisionCardDemo({ codeHtml }: { codeHtml: Record<string
       codeHtml={codeHtml}
       controls={controls}
       render={(_, v, set) => (
-        <div className="h-[344px] w-full max-w-[400px] self-start md:h-[320px]">
+        <div className="h-[344px] w-[364px] max-w-full self-start md:h-[320px]">
           {/* Kept across Type changes, so stepping keeps the answers; the other props start over. */}
           <Demo key={`${v.step}-${v.hint}-${v.skip}`} v={v} set={set} />
         </div>

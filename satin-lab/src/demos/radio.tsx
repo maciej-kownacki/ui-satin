@@ -54,8 +54,9 @@ export default function RadioDemo({ codeHtml }: { codeHtml: Record<string, strin
       codeHtml={codeHtml}
       controls={controls}
       render={(_, v) => (
-        // A fixed width, so placement="right" visibly pushes the circles to the far edge.
-        <RadioGroup defaultValue="public" aria-label="Visibility" className="w-72 max-w-full">
+        // placement="right" gets a fixed width, so the circles visibly go to the far edge; on the left
+        // the group hugs its widest row, so it sits centred on the stage.
+        <RadioGroup defaultValue="public" aria-label="Visibility" className={v.placement === 'right' ? 'w-72 max-w-full' : 'w-fit max-w-72'}>
           {choices.map((c, i) => (
             <Radio
               key={c.value}

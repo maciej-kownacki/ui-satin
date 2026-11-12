@@ -62,8 +62,9 @@ export default function CheckboxDemo({ codeHtml }: { codeHtml: Record<string, st
       codeHtml={codeHtml}
       controls={controls}
       render={(_, v) => (
-        // A fixed width, so placement="right" visibly pushes the box to the far edge.
-        <div className={v.content === 'none' ? undefined : 'w-80 max-w-full'}>
+        // placement="right" gets a fixed width, so the box visibly goes to the far edge; on the left
+        // the field hugs its text, so it sits centred on the stage.
+        <div className={v.content === 'none' ? undefined : v.placement === 'right' ? 'w-80 max-w-full' : 'w-fit max-w-80'}>
           <Checkbox
             // Remount when Checked changes, so the new starting value applies.
             key={v.checked}
