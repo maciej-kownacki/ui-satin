@@ -13,8 +13,13 @@ const manifest = {
   description: pkg.description,
   type: 'module',
   license: pkg.license,
+  author: pkg.author,
   repository: pkg.repository,
   homepage: pkg.homepage,
+  bugs: pkg.bugs,
+  keywords: pkg.keywords,
+  // Satin Free (this package) or Satin Pro (a separate, licensed package later).
+  satin: pkg.satin,
   sideEffects: ['*.css'],
   main: './index.js',
   module: './index.js',
@@ -27,11 +32,13 @@ const manifest = {
   },
   peerDependencies: pkg.peerDependencies,
   dependencies: pkg.dependencies,
+  publishConfig: { access: 'public' },
 }
 for (const k of Object.keys(manifest)) if (manifest[k] === undefined) delete manifest[k]
 
 writeFileSync('dist/package.json', JSON.stringify(manifest, null, 2) + '\n')
 if (existsSync('README.md')) copyFileSync('README.md', 'dist/README.md')
+if (existsSync('LICENSE')) copyFileSync('LICENSE', 'dist/LICENSE')
 console.log('dist/package.json written')
 
 // esbuild drops 'use client' when it bundles, so put it back on every entry a React Server

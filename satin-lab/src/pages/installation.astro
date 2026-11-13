@@ -74,7 +74,14 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
 <Docs current="installation">
   <PageHeader id="installation" title={page('installation').title} description={page('installation').description} />
 
-  <section aria-labelledby="agent-title" class="flex flex-col gap-3 pt-4">
+  <section aria-labelledby="edition-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="edition-title" class={h2}>Satin Free</h2>
+    <p class={prose}>
+      Everything on this site is Satin Free: open source under the MIT license, on npm as <Chip>@satin/ui</Chip> and in the shadcn registry. Use it in any project, commercial ones included. Satin Pro, with more components, patterns and templates, will come as a separate licensed package; Free stays as it is.
+    </p>
+  </section>
+
+  <section aria-labelledby="agent-title" class="flex flex-col gap-3 pt-10">
     <h2 id="agent-title" class={h2}>Install with your agent</h2>
     <p class={prose}>
       Paste this prompt into Claude Code, Cursor or any coding agent that works in your repository. It sets up the import
@@ -115,7 +122,7 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
 
     <h3 class:list={[h3, 'pt-6']} id="npm">Install the npm package</h3>
     <p class={prose}>
-      <Chip>@satin/ui</Chip> ships compiled ES modules with types and <Chip>styles.css</Chip>. Every component has its own entry point, so you only ship what you use. Until it is published, build it from the Satin repository with <Chip>npm run build:ui</Chip> and install the <Chip>packages/ui/dist</Chip> folder.
+      <Chip>@satin/ui</Chip> ships compiled ES modules with types and a precompiled <Chip>styles.css</Chip>, so you don't need Tailwind. Every component has its own entry point, so you only ship what you use, and each one is marked <Chip>'use client'</Chip>, so a Next.js Server Component can import it directly. Updates come with <Chip>npm update</Chip>; the changelog is in the package.
     </p>
     <CodeFrame code="npm i @satin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
     <CodeFrame code={packageUsage} label="Usage" />

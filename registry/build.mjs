@@ -99,6 +99,8 @@ for (const name of components) {
     registryDependencies: [url('satin-styles'), url('utils'), ...[...new Set(local)].sort().map(url)],
     files: [{ path: `registry/satin/ui/${name}.tsx`, type: 'registry:ui', content }],
     ...(page ? { docs: `${page.title} docs: https://uisatin.dev${page.href}` } : {}),
+    // The npm release this source matches, and the edition: Free (open source) or Pro.
+    meta: { version: pkg.version, edition: pkg.satin?.edition ?? 'free' },
   })
 }
 

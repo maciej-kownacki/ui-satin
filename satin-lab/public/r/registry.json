@@ -45,6 +45,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Accordion docs: https://uisatin.dev/components/accordion",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/accordion.tsx",
@@ -63,6 +67,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Loading docs: https://uisatin.dev/ai-patterns/agent-loading",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/agent-loading.tsx",
@@ -86,6 +94,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Agent picker docs: https://uisatin.dev/ai-patterns/agent-picker",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/agent-picker.tsx",
@@ -108,6 +120,10 @@
         "https://uisatin.dev/r/progress.json"
       ],
       "docs": "Agent suggestion docs: https://uisatin.dev/ai-patterns/agent-suggestion",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/agent-suggestion.tsx",
@@ -130,6 +146,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Announcement bar docs: https://uisatin.dev/components/announcement-bar",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/announcement-bar.tsx",
@@ -152,6 +172,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Attachment docs: https://uisatin.dev/ai-patterns/attachment",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/attachment.tsx",
@@ -173,6 +197,10 @@
         "https://uisatin.dev/r/tooltip.json"
       ],
       "docs": "Avatar docs: https://uisatin.dev/components/avatar",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/avatar.tsx",
@@ -193,6 +221,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Badge docs: https://uisatin.dev/components/badge",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/badge.tsx",
@@ -215,6 +247,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Banner docs: https://uisatin.dev/components/banner",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/banner.tsx",
@@ -234,6 +270,10 @@
         "https://uisatin.dev/r/chart.json"
       ],
       "docs": "Bar chart docs: https://uisatin.dev/components/bar-chart",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/bar-chart.tsx",
@@ -255,6 +295,10 @@
         "https://uisatin.dev/r/dropdown.json"
       ],
       "docs": "Breadcrumb docs: https://uisatin.dev/components/breadcrumb",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/breadcrumb.tsx",
@@ -276,6 +320,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Button docs: https://uisatin.dev/components/button",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/button.tsx",
@@ -298,6 +346,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Card docs: https://uisatin.dev/components/card",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/card.tsx",
@@ -317,6 +369,10 @@
         "https://uisatin.dev/r/chart.json"
       ],
       "docs": "Channel chart docs: https://uisatin.dev/components/channel-chart",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/channel-chart.tsx",
@@ -337,6 +393,10 @@
         "https://uisatin.dev/r/floating.json",
         "https://uisatin.dev/r/select.json"
       ],
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/chart.tsx",
@@ -357,6 +417,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Checkbox docs: https://uisatin.dev/components/checkbox",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/checkbox.tsx",
@@ -378,6 +442,10 @@
         "https://uisatin.dev/r/badge.json"
       ],
       "docs": "Chip docs: https://uisatin.dev/components/chip",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/chip.tsx",
@@ -397,6 +465,10 @@
         "https://uisatin.dev/r/hover-card.json"
       ],
       "docs": "Citations docs: https://uisatin.dev/ai-patterns/citations",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/citations.tsx",
@@ -418,6 +490,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Code block docs: https://uisatin.dev/components/code-block",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/code-block.tsx",
@@ -443,6 +519,10 @@
         "https://uisatin.dev/r/select.json"
       ],
       "docs": "Combobox docs: https://uisatin.dev/components/combobox",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/combobox.tsx",
@@ -466,6 +546,10 @@
         "https://uisatin.dev/r/kbd.json"
       ],
       "docs": "Command menu docs: https://uisatin.dev/components/command-menu",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/command-menu.tsx",
@@ -488,6 +572,10 @@
         "https://uisatin.dev/r/dropdown.json"
       ],
       "docs": "Context menu docs: https://uisatin.dev/components/context-menu",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/context-menu.tsx",
@@ -507,6 +595,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Cookie consent docs: https://uisatin.dev/components/cookie-consent",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/cookie-consent.tsx",
@@ -530,6 +622,10 @@
         "https://uisatin.dev/r/select.json"
       ],
       "docs": "Date picker docs: https://uisatin.dev/components/date-picker",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/date-picker.tsx",
@@ -554,6 +650,10 @@
         "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Decision card docs: https://uisatin.dev/ai-patterns/decision-card",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/decision-card.tsx",
@@ -575,6 +675,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Dialog docs: https://uisatin.dev/components/dialog",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/dialog.tsx",
@@ -594,6 +698,10 @@
         "https://uisatin.dev/r/chart.json"
       ],
       "docs": "Donut chart docs: https://uisatin.dev/components/donut-chart",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/donut-chart.tsx",
@@ -614,6 +722,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Dot docs: https://uisatin.dev/components/dot",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/dot.tsx",
@@ -635,6 +747,10 @@
         "https://uisatin.dev/r/kbd.json"
       ],
       "docs": "Dropdown docs: https://uisatin.dev/components/dropdown",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/dropdown.tsx",
@@ -655,6 +771,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Empty state docs: https://uisatin.dev/components/empty-state",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/empty-state.tsx",
@@ -678,6 +798,10 @@
         "https://uisatin.dev/r/progress.json"
       ],
       "docs": "File upload docs: https://uisatin.dev/components/file-upload",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/file-upload.tsx",
@@ -697,6 +821,10 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json"
       ],
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/floating.tsx",
@@ -715,6 +843,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Form field docs: https://uisatin.dev/components/form-field",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/form-field.tsx",
@@ -735,6 +867,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Hover card docs: https://uisatin.dev/components/hover-card",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/hover-card.tsx",
@@ -754,6 +890,10 @@
         "https://uisatin.dev/r/form-field.json"
       ],
       "docs": "Input docs: https://uisatin.dev/components/input",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/input.tsx",
@@ -775,6 +915,10 @@
         "https://uisatin.dev/r/select.json"
       ],
       "docs": "Input OTP docs: https://uisatin.dev/components/input-otp",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/input-otp.tsx",
@@ -793,6 +937,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Kbd docs: https://uisatin.dev/components/kbd",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/kbd.tsx",
@@ -813,6 +961,10 @@
         "https://uisatin.dev/r/chart.json"
       ],
       "docs": "Line chart docs: https://uisatin.dev/components/line-chart",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/line-chart.tsx",
@@ -833,6 +985,10 @@
         "https://uisatin.dev/r/thinking.json"
       ],
       "docs": "Message docs: https://uisatin.dev/ai-patterns/message",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/message.tsx",
@@ -854,6 +1010,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Message actions docs: https://uisatin.dev/ai-patterns/message-actions",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/message-actions.tsx",
@@ -875,6 +1035,10 @@
         "https://uisatin.dev/r/select.json"
       ],
       "docs": "Number input docs: https://uisatin.dev/components/number-input",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/number-input.tsx",
@@ -897,6 +1061,10 @@
         "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Pagination docs: https://uisatin.dev/components/pagination",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/pagination.tsx",
@@ -917,6 +1085,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Popover docs: https://uisatin.dev/components/popover",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/popover.tsx",
@@ -935,6 +1107,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Progress docs: https://uisatin.dev/components/progress",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/progress.tsx",
@@ -958,6 +1134,10 @@
         "https://uisatin.dev/r/kbd.json"
       ],
       "docs": "Prompt bar docs: https://uisatin.dev/ai-patterns/prompt-bar",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/prompt-bar.tsx",
@@ -978,6 +1158,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Radio docs: https://uisatin.dev/components/radio",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/radio.tsx",
@@ -998,6 +1182,10 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/kbd.json"
       ],
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/search-bar.tsx",
@@ -1020,6 +1208,10 @@
         "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Segmented control docs: https://uisatin.dev/components/segmented-control",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/segmented-control.tsx",
@@ -1042,6 +1234,10 @@
         "https://uisatin.dev/r/form-field.json"
       ],
       "docs": "Select docs: https://uisatin.dev/components/select",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/select.tsx",
@@ -1064,6 +1260,10 @@
         "https://uisatin.dev/r/dialog.json"
       ],
       "docs": "Sheet docs: https://uisatin.dev/components/sheet",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/sheet.tsx",
@@ -1085,6 +1285,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Sidebar docs: https://uisatin.dev/components/sidebar",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/sidebar.tsx",
@@ -1103,6 +1307,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Skeleton docs: https://uisatin.dev/components/skeleton",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/skeleton.tsx",
@@ -1125,6 +1333,10 @@
         "https://uisatin.dev/r/tooltip.json"
       ],
       "docs": "Slider docs: https://uisatin.dev/components/slider",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/slider.tsx",
@@ -1142,6 +1354,10 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json"
       ],
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/sliding-indicator.tsx",
@@ -1160,6 +1376,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Streaming text docs: https://uisatin.dev/ai-patterns/streaming-text",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/streaming-text.tsx",
@@ -1180,6 +1400,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Switch docs: https://uisatin.dev/components/switch",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/switch.tsx",
@@ -1199,6 +1423,10 @@
         "https://uisatin.dev/r/checkbox.json"
       ],
       "docs": "Table docs: https://uisatin.dev/components/table",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/table.tsx",
@@ -1221,6 +1449,10 @@
         "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Tabs docs: https://uisatin.dev/components/tabs",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/tabs.tsx",
@@ -1240,6 +1472,10 @@
         "https://uisatin.dev/r/form-field.json"
       ],
       "docs": "Textarea docs: https://uisatin.dev/components/textarea",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/textarea.tsx",
@@ -1261,6 +1497,10 @@
         "https://uisatin.dev/r/agent-loading.json"
       ],
       "docs": "Thinking docs: https://uisatin.dev/ai-patterns/thinking",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/thinking.tsx",
@@ -1282,6 +1522,10 @@
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Toast docs: https://uisatin.dev/components/toast",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/toast.tsx",
@@ -1303,6 +1547,10 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "docs": "Toggle docs: https://uisatin.dev/components/toggle",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/toggle.tsx",
@@ -1324,6 +1572,10 @@
         "https://uisatin.dev/r/kbd.json"
       ],
       "docs": "Tooltip docs: https://uisatin.dev/components/tooltip",
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
       "files": [
         {
           "path": "registry/satin/ui/tooltip.tsx",

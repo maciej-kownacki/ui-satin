@@ -1,7 +1,22 @@
 {
   "name": "@satin/ui",
   "version": "0.1.0",
-  "description": "Satin design system components: React, shadcn-based, themed with Satin tokens.",
+  "description": "Satin Free: the open-source React components of the Satin design system. shadcn-based, built on Radix, themed with Satin tokens.",
+  "license": "MIT",
+  "author": "Maciej Kownacki",
+  "homepage": "https://uisatin.dev",
+  "keywords": [
+    "satin",
+    "design-system",
+    "react",
+    "components",
+    "shadcn",
+    "radix",
+    "ui"
+  ],
+  "satin": {
+    "edition": "free"
+  },
   "type": "module",
   "sideEffects": [
     "*.css"
@@ -14,7 +29,8 @@
   },
   "scripts": {
     "build": "tsup && tsc -p tsconfig.build.json && tailwindcss -i build/styles.css -o dist/styles.css --minify && node build/manifest.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "node -e \"console.error('Publish the built package: npm run release (it publishes packages/ui/dist).'); process.exit(1)\""
   },
   "peerDependencies": {
     "react": ">=19",

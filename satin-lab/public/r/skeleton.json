@@ -16,5 +16,9 @@
       "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\n\n/**\n * Skeleton, 1:1 with the uiKit `Skeleton` set (4025:3862): a bg/muted placeholder in three\n * shapes. text is a 12px line at radius-sm (240 wide by default), circle 32px round, rect\n * 240 × 120 at radius-lg. Size it with `width` / `height` or classes.\n *\n * `animated` runs a soft band across the block (a 6% wash of text/default, so it lightens in\n * Dark and darkens in Light), 1.6 s a pass on ease-in-out; with reduced motion it stays still.\n *\n * The blocks are aria-hidden: put `aria-busy` on the region that is loading.\n */\nexport interface SkeletonProps extends React.ComponentProps<'div'> {\n  shape?: 'text' | 'circle' | 'rect'\n  animated?: boolean\n  width?: number | string\n  height?: number | string\n}\n\nexport function Skeleton({ shape = 'text', animated = false, width, height, className, style, ...props }: SkeletonProps) {\n  return (\n    <div\n      aria-hidden\n      data-slot=\"skeleton\"\n      data-shape={shape}\n      data-animated={animated || undefined}\n      className={cn(\n        'satin-skeleton relative shrink-0 overflow-hidden bg-bg-muted',\n        shape === 'text' && 'h-3 w-60 max-w-full rounded-sm',\n        shape === 'circle' && 'size-8 rounded-full',\n        shape === 'rect' && 'h-30 w-60 max-w-full rounded-lg',\n        className,\n      )}\n      style={{ width, height, ...style }}\n      {...props}\n    />\n  )\n}\n"
     }
   ],
-  "docs": "Skeleton docs: https://uisatin.dev/components/skeleton"
+  "docs": "Skeleton docs: https://uisatin.dev/components/skeleton",
+  "meta": {
+    "version": "0.1.0",
+    "edition": "free"
+  }
 }
