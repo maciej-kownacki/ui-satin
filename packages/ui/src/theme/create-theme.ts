@@ -15,7 +15,7 @@
  *   square. Circles (avatars, dots, switch and radio marks) stay round.
  *
  * `themeVars()` returns the variables per mode; `themeCss()` the same as a stylesheet to load
- * after `@satin/ui/styles.css`.
+ * after `@uisatin/ui/styles.css`.
  */
 
 export interface SatinTheme {
@@ -200,7 +200,7 @@ const SCOPED_DARK: Vars = {
 }
 
 /**
- * The theme as a stylesheet. Load it after `@satin/ui/styles.css`. By default it themes the
+ * The theme as a stylesheet. Load it after `@uisatin/ui/styles.css`. By default it themes the
  * whole page; pass a `scope` selector to theme only what's inside it (the docs do this for
  * their previews, so the site around them keeps Satin's own look).
  */

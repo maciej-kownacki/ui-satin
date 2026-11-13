@@ -1,4 +1,4 @@
-import { Avatar, type AvatarSize, type AvatarTone } from '@satin/ui/avatar'
+import { Avatar, type AvatarSize, type AvatarTone } from '@uisatin/ui/avatar'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const people: { initials: string; tone: AvatarTone; name: string }[] = [
@@ -40,7 +40,7 @@ function code(v: Record<string, string>) {
   const named = v.tooltip === 'on'
   if (v.tone === 'all') {
     const rows = people.map((p) => `  { initials: '${p.initials}', tone: '${p.tone}'${named ? `, name: '${p.name}'` : ''} },`).join('\n')
-    return `import { Avatar } from '@satin/ui/avatar'
+    return `import { Avatar } from '@uisatin/ui/avatar'
 
 const people = [
 ${rows}
@@ -52,7 +52,7 @@ ${rows}
   }
   const p = people.find((p) => p.tone === v.tone)!
   const tone = p.tone === 'neutral' ? '' : ` tone="${p.tone}"`
-  return `import { Avatar } from '@satin/ui/avatar'
+  return `import { Avatar } from '@uisatin/ui/avatar'
 
 <Avatar initials="${p.initials}"${tone}${named ? ` name="${p.name}"` : ''}${attrs} />`
 }

@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Button } from '@satin/ui/button'
-import { Tooltip } from '@satin/ui/tooltip'
+import { Button } from '@uisatin/ui/button'
+import { Tooltip } from '@uisatin/ui/tooltip'
 import { Copy } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -31,8 +31,8 @@ function code(v: Record<string, string>) {
   const shape = v.shape === 'default' ? '' : ` shape="${v.shape}"`
   const side = v.side === 'top' ? '' : ` side="${v.side}"`
   const shortcut = v.shortcut === 'on' ? ' shortcut="⌘C"' : ''
-  return `import { Tooltip } from '@satin/ui/tooltip'
-import { Button } from '@satin/ui/button'
+  return `import { Tooltip } from '@uisatin/ui/tooltip'
+import { Button } from '@uisatin/ui/button'
 import { Copy } from 'iconoir-react'
 
 <Tooltip label="Copy"${shortcut}${shape}${side}>

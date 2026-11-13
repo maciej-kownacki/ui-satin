@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { CookieConsent } from '@satin/ui/cookie-consent'
-import { Button } from '@satin/ui/button'
+import { CookieConsent } from '@uisatin/ui/cookie-consent'
+import { Button } from '@uisatin/ui/button'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import { MockView } from '../components/MockView'
 
 export const controls: ShowcaseControl[] = [{ id: 'customize', label: 'Customize', type: 'switch', default: 'on' }]
 
-const code = (v: Record<string, string>) => `import { CookieConsent } from '@satin/ui/cookie-consent'
+const code = (v: Record<string, string>) => `import { CookieConsent } from '@uisatin/ui/cookie-consent'
 
 {!answered && (
   <CookieConsent

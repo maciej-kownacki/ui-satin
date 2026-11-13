@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Button, SegmentedControl, Switch, cn } from '@satin/ui'
-import { DropdownMenu, DropdownMenuItem } from '@satin/ui/dropdown'
+import { Button, SegmentedControl, Switch, cn } from '@uisatin/ui'
+import { DropdownMenu, DropdownMenuItem } from '@uisatin/ui/dropdown'
 import { Check, Collapse, Copy, Expand, NavArrowDown } from 'iconoir-react'
 import { CodeIcon, PreviewIcon } from './icons'
 import { stageHeights } from '../lib/stage-heights'

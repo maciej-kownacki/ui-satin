@@ -1,4 +1,4 @@
-import { Skeleton } from '@satin/ui/skeleton'
+import { Skeleton } from '@uisatin/ui/skeleton'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // What is loading, then whether it moves.
@@ -32,7 +32,7 @@ function code(v: Record<string, string>) {
 <Skeleton shape="circle"${a} />
 <Skeleton shape="rect"${a} />`,
   }[v.layout]
-  return `import { Skeleton } from '@satin/ui/skeleton'\n\n${body}`
+  return `import { Skeleton } from '@uisatin/ui/skeleton'\n\n${body}`
 }
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({

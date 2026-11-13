@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { DropdownMenu, DropdownMenuGroup, DropdownMenuItem } from '@satin/ui/dropdown'
+import { DropdownMenu, DropdownMenuGroup, DropdownMenuItem } from '@uisatin/ui/dropdown'
 import { CheckCircle, Circle, Clock, Eye, XmarkCircle } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -52,8 +52,8 @@ function code(v: Record<string, string>) {
         .join('\n')
     : items.map((i) => item(i, '  ')).join('\n')
   const icons = [...(on(v, 'icon') ? items.map((i) => i.icon) : []), 'NavArrowDown'].sort()
-  return `import { Button } from '@satin/ui/button'
-import { DropdownMenu, ${on(v, 'groups') ? 'DropdownMenuGroup, ' : ''}DropdownMenuItem } from '@satin/ui/dropdown'
+  return `import { Button } from '@uisatin/ui/button'
+import { DropdownMenu, ${on(v, 'groups') ? 'DropdownMenuGroup, ' : ''}DropdownMenuItem } from '@uisatin/ui/dropdown'
 import { ${icons.join(', ')} } from 'iconoir-react'
 
 <DropdownMenu

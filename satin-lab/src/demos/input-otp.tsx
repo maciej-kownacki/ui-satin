@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { InputOTP } from '@satin/ui/input-otp'
+import { InputOTP } from '@uisatin/ui/input-otp'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 export const controls: ShowcaseControl[] = [
@@ -12,7 +12,7 @@ const SUCCESS = 'Code verified'
 
 function code(v: Record<string, string>) {
   return `import * as React from 'react'
-import { InputOTP } from '@satin/ui/input-otp'
+import { InputOTP } from '@uisatin/ui/input-otp'
 
 export function Verify() {
   const [code, setCode] = React.useState('${VALUE[v.state]}')

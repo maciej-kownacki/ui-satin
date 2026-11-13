@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { CommandMenu, type CommandGroup } from '@satin/ui/command-menu'
-import { SearchBar } from '@satin/ui/search-bar'
+import { CommandMenu, type CommandGroup } from '@uisatin/ui/command-menu'
+import { SearchBar } from '@uisatin/ui/search-bar'
 import { Calendar, HalfMoon, Page, Plus, Settings, UserPlus } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -49,8 +49,8 @@ function code(v: Record<string, string>) {
   const item = (i: (typeof data)[number]['items'][number]) =>
     `      { id: '${i.id}', label: '${i.label}', icon: <${i.icon} />${on(v, 'description') ? `, description: '${i.description}'` : ''}${on(v, 'shortcuts') ? `, shortcut: '${i.shortcut}'` : ''}, onSelect: () => run('${i.id}') },`
   return `import * as React from 'react'
-import { CommandMenu } from '@satin/ui/command-menu'
-import { SearchBar } from '@satin/ui/search-bar'
+import { CommandMenu } from '@uisatin/ui/command-menu'
+import { SearchBar } from '@uisatin/ui/search-bar'
 import { ${data.flatMap((g) => g.items.map((i) => i.icon)).sort().join(', ')} } from 'iconoir-react'
 
 const [open, setOpen] = React.useState(false)

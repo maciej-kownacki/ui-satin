@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { StreamingText } from '@satin/ui/streaming-text'
-import { Button } from '@satin/ui/button'
+import { StreamingText } from '@uisatin/ui/streaming-text'
+import { Button } from '@uisatin/ui/button'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 export const controls: ShowcaseControl[] = [
@@ -30,7 +30,7 @@ function code(v: Record<string, string>) {
     v.speed !== '80' && `speed={${v.speed}}`,
     v.caret === 'off' && 'caret={false}',
   ].filter(Boolean)
-  return `import { StreamingText } from '@satin/ui/streaming-text'
+  return `import { StreamingText } from '@uisatin/ui/streaming-text'
 
 // received: everything the model has sent so far; it grows as chunks arrive.
 <StreamingText ${p.join(' ')} />`

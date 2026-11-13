@@ -5,12 +5,12 @@ import {
   AgentSuggestionDiff,
   AgentSuggestionMetric,
   AgentSuggestionQuote,
-} from '@satin/ui/agent-suggestion'
-import { Avatar } from '@satin/ui/avatar'
-import { Badge } from '@satin/ui/badge'
-import { Button } from '@satin/ui/button'
-import { Checkbox } from '@satin/ui/checkbox'
-import { Chip } from '@satin/ui/chip'
+} from '@uisatin/ui/agent-suggestion'
+import { Avatar } from '@uisatin/ui/avatar'
+import { Badge } from '@uisatin/ui/badge'
+import { Button } from '@uisatin/ui/button'
+import { Checkbox } from '@uisatin/ui/checkbox'
+import { Chip } from '@uisatin/ui/chip'
 import { Calendar, Check, EditPencil, Flash, GraphUp, Mail, Plus, SendDiagonal, TaskList } from 'iconoir-react'
 import { Showcase, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -49,11 +49,11 @@ const types = [
 export const controls: ShowcaseControl[] = [{ id: 'type', label: 'Type', type: 'menu', items: types }]
 
 const imports = (parts: string[], more: string) =>
-  `import { ${['AgentSuggestion', ...parts].join(', ')} } from '@satin/ui/agent-suggestion'\n${more}`
+  `import { ${['AgentSuggestion', ...parts].join(', ')} } from '@uisatin/ui/agent-suggestion'\n${more}`
 
 const codes: Record<string, string> = {
-  email: `${imports([], `import { Avatar } from '@satin/ui/avatar'
-import { Button } from '@satin/ui/button'
+  email: `${imports([], `import { Avatar } from '@uisatin/ui/avatar'
+import { Button } from '@uisatin/ui/button'
 import { Mail, SendDiagonal } from 'iconoir-react'`)}
 
 <AgentSuggestion
@@ -67,9 +67,9 @@ import { Mail, SendDiagonal } from 'iconoir-react'`)}
     <Button><SendDiagonal />Send</Button>
   </>}
 />`,
-  reply: `${imports(['AgentSuggestionQuote'], `import { Avatar } from '@satin/ui/avatar'
-import { Button } from '@satin/ui/button'
-import { Chip } from '@satin/ui/chip'
+  reply: `${imports(['AgentSuggestionQuote'], `import { Avatar } from '@uisatin/ui/avatar'
+import { Button } from '@uisatin/ui/button'
+import { Chip } from '@uisatin/ui/chip'
 import { SendDiagonal } from 'iconoir-react'`)}
 
 <AgentSuggestion
@@ -90,8 +90,8 @@ import { SendDiagonal } from 'iconoir-react'`)}
     <Chip variant="outline" size="sm">Offer two times</Chip>
   </div>
 </AgentSuggestion>`,
-  meeting: `${imports([], `import { Button } from '@satin/ui/button'
-import { Chip } from '@satin/ui/chip'
+  meeting: `${imports([], `import { Button } from '@uisatin/ui/button'
+import { Chip } from '@uisatin/ui/chip'
 import { Calendar } from 'iconoir-react'`)}
 
 <AgentSuggestion
@@ -112,9 +112,9 @@ import { Calendar } from 'iconoir-react'`)}
     ))}
   </div>
 </AgentSuggestion>`,
-  tasks: `${imports([], `import { Badge } from '@satin/ui/badge'
-import { Button } from '@satin/ui/button'
-import { Checkbox } from '@satin/ui/checkbox'
+  tasks: `${imports([], `import { Badge } from '@uisatin/ui/badge'
+import { Button } from '@uisatin/ui/button'
+import { Checkbox } from '@uisatin/ui/checkbox'
 import { Plus, TaskList } from 'iconoir-react'`)}
 
 <AgentSuggestion
@@ -131,8 +131,8 @@ import { Plus, TaskList } from 'iconoir-react'`)}
     {tasks.map((t) => <Checkbox key={t.id} label={t.label} description={t.due} … />)}
   </div>
 </AgentSuggestion>`,
-  insight: `${imports(['AgentSuggestionMetric'], `import { Badge } from '@satin/ui/badge'
-import { Button } from '@satin/ui/button'
+  insight: `${imports(['AgentSuggestionMetric'], `import { Badge } from '@uisatin/ui/badge'
+import { Button } from '@uisatin/ui/button'
 import { GraphUp, Mail } from 'iconoir-react'`)}
 
 <AgentSuggestion
@@ -148,8 +148,8 @@ import { GraphUp, Mail } from 'iconoir-react'`)}
   <AgentSuggestionMetric value="47 / 50" unit="seats in use" used={47} max={50} />
   <p>At this pace they run out in about 9 days. Accounts that hit the limit are twice as likely to churn.</p>
 </AgentSuggestion>`,
-  edit: `${imports(['AgentSuggestionDiff'], `import { Badge } from '@satin/ui/badge'
-import { Button } from '@satin/ui/button'
+  edit: `${imports(['AgentSuggestionDiff'], `import { Badge } from '@uisatin/ui/badge'
+import { Button } from '@uisatin/ui/button'
 import { Check, EditPencil } from 'iconoir-react'`)}
 
 <AgentSuggestion
@@ -167,8 +167,8 @@ import { Check, EditPencil } from 'iconoir-react'`)}
     after="Pricing scales with seats, and annual plans save 15%."
   />
 </AgentSuggestion>`,
-  record: `${imports(['AgentSuggestionChanges'], `import { Badge } from '@satin/ui/badge'
-import { Button } from '@satin/ui/button'
+  record: `${imports(['AgentSuggestionChanges'], `import { Badge } from '@uisatin/ui/badge'
+import { Button } from '@uisatin/ui/button'
 import { Check, Flash } from 'iconoir-react'`)}
 
 <AgentSuggestion

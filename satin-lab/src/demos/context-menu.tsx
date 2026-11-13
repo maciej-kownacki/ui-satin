@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { ContextMenu, ContextMenuItem, ContextMenuSeparator, ContextMenuSub } from '@satin/ui/context-menu'
+import { ContextMenu, ContextMenuItem, ContextMenuSeparator, ContextMenuSub } from '@uisatin/ui/context-menu'
 import { ArrowUpRight, Copy, Download, EditPencil, Folder, Trash } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 export const controls: ShowcaseControl[] = [{ id: 'submenu', label: 'Submenu', type: 'switch', default: 'on' }]
 
 function code(v: Record<string, string>) {
-  return `import { ContextMenu, ContextMenuItem, ContextMenuSeparator${v.submenu === 'on' ? ', ContextMenuSub' : ''} } from '@satin/ui/context-menu'
+  return `import { ContextMenu, ContextMenuItem, ContextMenuSeparator${v.submenu === 'on' ? ', ContextMenuSub' : ''} } from '@uisatin/ui/context-menu'
 
 <ContextMenu trigger={<FileRow name="menu-autumn.pdf" />}>
   <ContextMenuItem label="Open" icon={<ArrowUpRight />} shortcut="↵" />

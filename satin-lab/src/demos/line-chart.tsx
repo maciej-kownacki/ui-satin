@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { LineCard, AreaCard } from '@satin/ui/line-chart'
+import { LineCard, AreaCard } from '@uisatin/ui/line-chart'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import { DATA, PERIODS, format } from './covers-data'
 
@@ -36,7 +36,7 @@ export function makeDemo(kind: 'line' | 'area') {
       ...(withPeriods ? ["periods={[['7 days', '30 days', '90 days', '365 days'], ['Sep', 'Oct', 'Nov'], ['2025', '2026']]}", 'value={period}', 'onPeriodChange={setPeriod}'] : []),
       ...(v.highlight === 'on' ? [`highlight={${busiest(v.period)}}`] : []),
     ]
-    return `${withPeriods ? "import * as React from 'react'\n" : ''}import { ${name} } from '@satin/ui/line-chart'
+    return `${withPeriods ? "import * as React from 'react'\n" : ''}import { ${name} } from '@uisatin/ui/line-chart'
 
 const data = {
   '${v.period}': {

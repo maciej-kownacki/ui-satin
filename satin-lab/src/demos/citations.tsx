@@ -1,4 +1,4 @@
-import { Citation, Sources, type CitationSource } from '@satin/ui/citations'
+import { Citation, Sources, type CitationSource } from '@uisatin/ui/citations'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // Real favicons for the demo; in an app pass the logo you already have.
@@ -12,7 +12,7 @@ const sources: CitationSource[] = [
 
 export const controls: ShowcaseControl[] = [{ id: 'list', label: 'Sources open', type: 'switch', default: 'off' }]
 
-const code = (v: Record<string, string>) => `import { Citation, Sources } from '@satin/ui/citations'
+const code = (v: Record<string, string>) => `import { Citation, Sources } from '@uisatin/ui/citations'
 
 const sources = [
   { title: 'Fresh Farm price list, November 2026', origin: 'Gmail', icon: <GmailLogo />, quote: 'Tomatoes €2.10/kg for orders over 20 kg…' },

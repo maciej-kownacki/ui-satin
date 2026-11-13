@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, SearchBar, cn } from '@satin/ui'
+import { Button, SearchBar, cn } from '@uisatin/ui'
 import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
 import { pagesOf, type NavGroup, type NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'

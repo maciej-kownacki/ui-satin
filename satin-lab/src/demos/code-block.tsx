@@ -1,4 +1,4 @@
-import { CodeBlock } from '@satin/ui/code-block'
+import { CodeBlock } from '@uisatin/ui/code-block'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const route = `import { streamText } from "ai"
@@ -58,7 +58,7 @@ function code(v: Record<string, string>) {
     `code={${name}}`,
     !diffView && on(v, 'lines') && `highlightLines={[${highlightLines.join(', ')}]}`,
   ].filter(Boolean)
-  return `import { CodeBlock } from '@satin/ui/code-block'
+  return `import { CodeBlock } from '@uisatin/ui/code-block'
 ${diffView ? '\n// Each line starts with "+", "-" or a space, like a unified diff.\n' : '\n'}const ${name} = ${literal(diffView ? diff : route)}
 
 export function ${diffView ? 'Change' : 'Route'}() {

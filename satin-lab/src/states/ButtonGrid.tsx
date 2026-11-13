@@ -1,4 +1,4 @@
-import { Button } from '@satin/ui'
+import { Button } from '@uisatin/ui'
 import { Calendar } from 'iconoir-react'
 
 /**

@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Banner } from '@satin/ui/banner'
-import { Button } from '@satin/ui/button'
+import { Banner } from '@uisatin/ui/banner'
+import { Button } from '@uisatin/ui/button'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // Layout sets the box, background its fill, shape its corners; then the content any of them can
@@ -35,8 +35,8 @@ function code(v: Record<string, string>) {
     v.close === 'on' && 'onDismiss={() => setOpen(false)}',
     v.shimmer === 'on' && 'shimmer',
   ].filter(Boolean)
-  return `import { Banner } from '@satin/ui/banner'
-${v.action === 'on' ? `import { Button } from '@satin/ui/button'\n` : ''}
+  return `import { Banner } from '@uisatin/ui/banner'
+${v.action === 'on' ? `import { Button } from '@uisatin/ui/button'\n` : ''}
 <Banner
 ${lines.map((l) => `  ${l}`).join('\n')}
 />`

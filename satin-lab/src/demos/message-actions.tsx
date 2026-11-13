@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { MessageActions, type MessageFeedback } from '@satin/ui/message-actions'
+import { MessageActions, type MessageFeedback } from '@uisatin/ui/message-actions'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const answer = 'Three deals moved to Negotiation this week. Acme is the largest at $48k, and two renewals close before Friday.'
@@ -29,7 +29,7 @@ function code(v: Record<string, string>) {
     'onCopy={() => copy(answer)}',
     v.share === 'on' && 'onShare={() => share(answer)}',
   ].filter(Boolean)
-  return `import { MessageActions } from '@satin/ui/message-actions'
+  return `import { MessageActions } from '@uisatin/ui/message-actions'
 
 <div className="flex flex-col gap-2">
   <p>${answer}</p>

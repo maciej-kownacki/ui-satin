@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Card } from '@satin/ui/card'
-import { Button } from '@satin/ui/button'
+import { Card } from '@uisatin/ui/card'
+import { Button } from '@uisatin/ui/button'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // Size sets the padding; the rest are the card's parts, top to bottom.
@@ -33,8 +33,8 @@ function code(v: Record<string, string>) {
   ]
     .filter(Boolean)
     .join('\n')
-  return `import { Card } from '@satin/ui/card'
-${footer ? `import { Button } from '@satin/ui/button'\n` : ''}
+  return `import { Card } from '@uisatin/ui/card'
+${footer ? `import { Button } from '@uisatin/ui/button'\n` : ''}
 <Card
 ${attrs}
 >

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Slider } from '@satin/ui/slider'
+import { Slider } from '@uisatin/ui/slider'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // One value or a range first, then where it runs, then what sits around it.
@@ -27,7 +27,7 @@ const props = (v: Record<string, string>) => {
 
 function code(v: Record<string, string>) {
   const p = props(v)
-  return `import { Slider } from '@satin/ui/slider'\n\n<Slider\n  ${p.join('\n  ')}\n/>`
+  return `import { Slider } from '@uisatin/ui/slider'\n\n<Slider\n  ${p.join('\n  ')}\n/>`
 }
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({

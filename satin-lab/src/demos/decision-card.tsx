@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { DecisionCard, type DecisionOption, type DecisionValue } from '@satin/ui/decision-card'
+import { DecisionCard, type DecisionOption, type DecisionValue } from '@uisatin/ui/decision-card'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 /** One question per type: the props the stage renders, and the same props as code. */
@@ -158,7 +158,7 @@ function code(v: Record<string, string>) {
     v.type !== 'summary' && v.step === 'on'
       ? `\n// One question of several: the arrows move between them, Skip goes to the next.\nconst [index, setIndex] = React.useState(0)\n`
       : ''
-  return `${flow ? "import * as React from 'react'\n" : ''}import { DecisionCard } from '@satin/ui/decision-card'
+  return `${flow ? "import * as React from 'react'\n" : ''}import { DecisionCard } from '@uisatin/ui/decision-card'
 ${flow}
 <DecisionCard
 ${props.map((p) => `  ${p}`).join('\n')}

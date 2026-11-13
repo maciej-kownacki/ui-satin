@@ -1,4 +1,4 @@
-import { Tabs } from '@satin/ui/tabs'
+import { Tabs } from '@uisatin/ui/tabs'
 import { Activity, Group, Settings, ViewGrid } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -28,7 +28,7 @@ function code(v: Record<string, string>) {
   const items = icon
     ? `[\n${tabs.map((t) => `    { value: '${t.value}', label: '${t.label}', icon: <${t.icon} /> },`).join('\n')}\n  ]`
     : `[${tabs.map((t) => `'${t.label}'`).join(', ')}]`
-  return `import { Tabs } from '@satin/ui/tabs'
+  return `import { Tabs } from '@uisatin/ui/tabs'
 ${icon ? `import { ${tabs.map((t) => t.icon).join(', ')} } from 'iconoir-react'\n` : ''}
 <Tabs${attrs}${v.disabled === 'on' ? '\n  disabled' : ''}
   items={${items}}

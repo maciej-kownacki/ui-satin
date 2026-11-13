@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Thinking, type ThinkingStep } from '@satin/ui/thinking'
+import { Thinking, type ThinkingStep } from '@uisatin/ui/thinking'
 import { Globe } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -91,7 +91,7 @@ const markProps = (v: Record<string, string>) => (v.indicator === 'flappy' ? ['i
 function code(v: Record<string, string>) {
   const set = sets[v.steps]
   const steps = [...set.code, ...(v.more === 'on' ? ["{ type: 'more', label: '+5 more' },"] : [])]
-  return `import { Thinking } from '@satin/ui/thinking'
+  return `import { Thinking } from '@uisatin/ui/thinking'
 
 <Thinking
 ${markProps(v).map((p) => `  ${p}\n`).join('')}  state="${v.state}"

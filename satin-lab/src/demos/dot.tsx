@@ -1,4 +1,4 @@
-import { Dot, type DotTone } from '@satin/ui/dot'
+import { Dot, type DotTone } from '@uisatin/ui/dot'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // Each dot stands alone in the stage, so each carries its status as an accessible name.
@@ -31,7 +31,7 @@ function code(v: Record<string, string>) {
   const variant = v.variant === 'solid' ? '' : ` variant="${v.variant}"`
   if (v.tone === 'all') {
     const rows = statuses.map((s) => `  { tone: '${s.tone}', label: '${s.label}' },`).join('\n')
-    return `import { Dot } from '@satin/ui/dot'
+    return `import { Dot } from '@uisatin/ui/dot'
 
 const statuses = [
 ${rows}
@@ -43,7 +43,7 @@ ${rows}
   }
   const s = statuses.find((s) => s.tone === v.tone)!
   const tone = s.tone === 'fuchsia' ? '' : ` tone="${s.tone}"`
-  return `import { Dot } from '@satin/ui/dot'
+  return `import { Dot } from '@uisatin/ui/dot'
 
 <Dot${tone}${variant} label="${s.label}" />`
 }

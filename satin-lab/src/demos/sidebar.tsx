@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Sidebar, SidebarGroup, SidebarItem, SidebarSubGroup, SidebarSubItem } from '@satin/ui/sidebar'
+import { Sidebar, SidebarGroup, SidebarItem, SidebarSubGroup, SidebarSubItem } from '@uisatin/ui/sidebar'
 import { Bookmark, Calendar, Home, Mail, Settings, Sparks } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -55,7 +55,7 @@ ${docs.map((d) => `        <SidebarSubItem href="/docs/${d.id}" label="${d.label
 ${guides.pages.map((d) => `          <SidebarSubItem href="/docs/${d.id}" label="${d.label}" />`).join('\n')}
         </SidebarSubGroup>
       </SidebarGroup>`
-  return `import { Sidebar, ${iconOnly ? 'SidebarItem' : 'SidebarGroup, SidebarItem, SidebarSubGroup, SidebarSubItem'} } from '@satin/ui/sidebar'
+  return `import { Sidebar, ${iconOnly ? 'SidebarItem' : 'SidebarGroup, SidebarItem, SidebarSubGroup, SidebarSubItem'} } from '@uisatin/ui/sidebar'
 import { ${icons.join(', ')} } from 'iconoir-react'
 
 export function ${iconOnly ? 'Rail' : 'AppNav'}() {

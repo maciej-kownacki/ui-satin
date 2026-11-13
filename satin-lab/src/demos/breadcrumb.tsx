@@ -1,5 +1,5 @@
 import { Home } from 'iconoir-react'
-import { Breadcrumb, type BreadcrumbItem } from '@satin/ui/breadcrumb'
+import { Breadcrumb, type BreadcrumbItem } from '@uisatin/ui/breadcrumb'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 export const controls: ShowcaseControl[] = [
@@ -29,7 +29,7 @@ function code(v: Record<string, string>) {
       return `  { label: '${it.label}'${icon}${it.href ? `, href: '/${it.label.toLowerCase()}'` : ''} },`
     })
     .join('\n')
-  return `${v.icon !== 'text' ? "import { Home } from 'iconoir-react'\n" : ''}import { Breadcrumb } from '@satin/ui/breadcrumb'
+  return `${v.icon !== 'text' ? "import { Home } from 'iconoir-react'\n" : ''}import { Breadcrumb } from '@uisatin/ui/breadcrumb'
 
 <Breadcrumb${v.levels === 'collapsed' ? ' maxItems={4}' : ''} items={[
 ${lines}

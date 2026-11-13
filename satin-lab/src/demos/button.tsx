@@ -1,4 +1,4 @@
-import { Button } from '@satin/ui'
+import { Button } from '@uisatin/ui'
 import { Calendar, Copy, EditPencil, Plus, Trash } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -60,7 +60,7 @@ function code(v: Record<string, string>) {
       : `  <Button key={variant} variant={variant}${attrs}>
 ${icon ? '    <Icon />\n' : ''}    {label}
   </Button>`
-    return `import { Button } from '@satin/ui/button'
+    return `import { Button } from '@uisatin/ui/button'
 ${icon ? `import { ${buttons.map((b) => b.icon).join(', ')} } from 'iconoir-react'\n` : ''}
 const buttons = [
 ${rows}
@@ -75,7 +75,7 @@ ${body}
   const jsx = only
     ? `<Button${variant}${attrs} iconOnly aria-label="${b.label}"><${b.icon} /></Button>`
     : `<Button${variant}${attrs}>${icon ? `<${b.icon} />` : ''}${b.label}</Button>`
-  return `import { Button } from '@satin/ui/button'
+  return `import { Button } from '@uisatin/ui/button'
 ${icon ? `import { ${b.icon} } from 'iconoir-react'\n` : ''}
 ${jsx}`
 }

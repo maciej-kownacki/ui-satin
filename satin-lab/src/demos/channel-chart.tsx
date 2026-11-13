@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { ChannelCard } from '@satin/ui/channel-chart'
-import type { ChartDatum } from '@satin/ui/chart'
+import { ChannelCard } from '@uisatin/ui/channel-chart'
+import type { ChartDatum } from '@uisatin/ui/chart'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const channels: ChartDatum[] = [
@@ -45,7 +45,7 @@ function code(v: Record<string, string>) {
   ]
   const imports = [
     withPeriods && "import * as React from 'react'",
-    "import { ChannelCard } from '@satin/ui/channel-chart'",
+    "import { ChannelCard } from '@uisatin/ui/channel-chart'",
   ]
   return `${imports.filter(Boolean).join('\n')}
 

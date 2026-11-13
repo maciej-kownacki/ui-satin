@@ -1,4 +1,4 @@
-import { SegmentedControl } from '@satin/ui'
+import { SegmentedControl } from '@uisatin/ui'
 import { Home, Folder, User } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -33,7 +33,7 @@ function code(v: Record<string, string>) {
   const rows = segments
     .map((s) => `    { value: '${s.value}', label: '${s.label}'${icon ? `, icon: <${s.icon} />` : ''} },`)
     .join('\n')
-  return `import { SegmentedControl } from '@satin/ui/segmented-control'
+  return `import { SegmentedControl } from '@uisatin/ui/segmented-control'
 ${icon ? `import { ${segments.map((s) => s.icon).join(', ')} } from 'iconoir-react'\n` : ''}
 <SegmentedControl${attrs}${v.border === 'on' ? '\n  border' : ''}
   items={[

@@ -1,4 +1,4 @@
-import { Radio, RadioGroup } from '@satin/ui/radio'
+import { Radio, RadioGroup } from '@uisatin/ui/radio'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const choices = [
@@ -28,7 +28,7 @@ function code(v: Record<string, string>) {
       return `  <Radio ${attrs.join(' ')} />`
     })
     .join('\n')
-  return `import { Radio, RadioGroup } from '@satin/ui/radio'
+  return `import { Radio, RadioGroup } from '@uisatin/ui/radio'
 
 <RadioGroup defaultValue="public" aria-label="Visibility">
 ${rows}

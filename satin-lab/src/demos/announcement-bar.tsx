@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { AnnouncementBar } from '@satin/ui/announcement-bar'
-import { Button } from '@satin/ui/button'
+import { AnnouncementBar } from '@uisatin/ui/announcement-bar'
+import { Button } from '@uisatin/ui/button'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import { MockView } from '../components/MockView'
 
@@ -24,7 +24,7 @@ const code = (v: Record<string, string>) => {
     v.dismiss === 'on' && 'onDismiss={() => setOpen(false)}',
     v.shimmer === 'on' && 'shimmer',
   ].filter(Boolean)
-  return `import { AnnouncementBar } from '@satin/ui/announcement-bar'
+  return `import { AnnouncementBar } from '@uisatin/ui/announcement-bar'
 
 {open && (
   <AnnouncementBar

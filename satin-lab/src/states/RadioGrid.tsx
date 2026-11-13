@@ -1,4 +1,4 @@
-import { Radio, RadioGroup } from '@satin/ui/radio'
+import { Radio, RadioGroup } from '@uisatin/ui/radio'
 
 /** _radioBase states laid out like uiKit 852:22410: rows are states, columns unchecked / checked. */
 const rows = ['default', 'hover', 'focus', 'pressed', 'disabled'] as const

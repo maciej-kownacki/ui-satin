@@ -1,4 +1,4 @@
-import { Textarea } from '@satin/ui/textarea'
+import { Textarea } from '@uisatin/ui/textarea'
 
 /** Textarea states laid out like uiKit 3647:17812: rows are states, columns empty / filled / error / error filled. */
 const states = ['default', 'hover', 'focus', 'disabled'] as const

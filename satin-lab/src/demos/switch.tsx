@@ -1,4 +1,4 @@
-import { Switch } from '@satin/ui'
+import { Switch } from '@uisatin/ui'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const label = 'Email notifications'
@@ -29,7 +29,7 @@ function code(v: Record<string, string>) {
     v.disabled === 'on' && 'disabled',
   ].filter(Boolean)
   const jsx = attrs.length > 2 ? `<Switch\n${attrs.map((a) => `  ${a}`).join('\n')}\n/>` : `<Switch ${attrs.join(' ')} />`
-  return `import { Switch } from '@satin/ui/switch'
+  return `import { Switch } from '@uisatin/ui/switch'
 
 ${jsx}`
 }

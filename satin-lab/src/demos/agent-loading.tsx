@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AgentLoading, type AgentLoadingIndicator, type Glimmer } from '@satin/ui/agent-loading'
+import { AgentLoading, type AgentLoadingIndicator, type Glimmer } from '@uisatin/ui/agent-loading'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // The indicator first; the glimmer only crosses the tetris mark, and the timer comes last.
@@ -21,7 +21,7 @@ function code(v: Record<string, string>) {
     v.indicator === 'tetris' && v.glimmer === 'neutral' && 'glimmer="neutral"',
     v.time === 'on' && 'time="1.2s"',
   ].filter(Boolean)
-  return `import { AgentLoading } from '@satin/ui/agent-loading'\n\n<AgentLoading${props.map((p) => ` ${p}`).join('')} />`
+  return `import { AgentLoading } from '@uisatin/ui/agent-loading'\n\n<AgentLoading${props.map((p) => ` ${p}`).join('')} />`
 }
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({

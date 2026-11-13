@@ -1,5 +1,5 @@
-import { EmptyState } from '@satin/ui/empty-state'
-import { Button } from '@satin/ui/button'
+import { EmptyState } from '@uisatin/ui/empty-state'
+import { Button } from '@uisatin/ui/button'
 import { ArrowRight } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -71,8 +71,8 @@ function code(v: Record<string, string>) {
     actions.code && `actions={${actions.code}${actions.code.startsWith('\n') ? '\n  ' : ''}}`,
   ].filter(Boolean)
   const arrow = v.icon === 'on' || v.actions === 'learn-more'
-  return `import { EmptyState } from '@satin/ui/empty-state'
-${v.actions !== 'none' ? "import { Button } from '@satin/ui/button'\n" : ''}${arrow ? "import { ArrowRight } from 'iconoir-react'\n" : ''}
+  return `import { EmptyState } from '@uisatin/ui/empty-state'
+${v.actions !== 'none' ? "import { Button } from '@uisatin/ui/button'\n" : ''}${arrow ? "import { ArrowRight } from 'iconoir-react'\n" : ''}
 ${attrs.length > 2 ? `<EmptyState\n${attrs.map((a) => `  ${a}`).join('\n')}\n/>` : `<EmptyState ${attrs.join(' ')} />`}`
 }
 

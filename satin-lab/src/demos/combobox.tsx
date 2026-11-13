@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Combobox } from '@satin/ui/combobox'
+import { Combobox } from '@uisatin/ui/combobox'
 import { Book, Bug, Flash, Palette, Rocket, Server, Shield, Wallet } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -49,7 +49,7 @@ function code(v: Record<string, string>) {
     'options={labels}',
     'onValueChange={(picked) => save(picked)}',
   ].filter(Boolean)
-  return `import { Combobox } from '@satin/ui/combobox'
+  return `import { Combobox } from '@uisatin/ui/combobox'
 ${on(v, 'leading') ? `import { ${labels.map((l) => l.icon).sort().join(', ')} } from 'iconoir-react'\n` : ''}
 const labels = [
 ${labels.map((l) => `  { value: '${l.value}', label: '${l.label}'${on(v, 'leading') ? `, icon: <${l.icon} />` : ''}${on(v, 'description') ? `, description: '${l.description}'` : ''} },`).join('\n')}

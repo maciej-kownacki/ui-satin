@@ -5,7 +5,7 @@ Satin, a design system for calm, AI-native product interfaces. Docs live at [uis
 | Folder | What it is |
 |---|---|
 | `tokens/` | The source of truth: `tokens.json` (W3C design tokens, Light/Dark), mirrored from the uiKit Figma file. `npm run tokens` regenerates `packages/ui/src/styles/theme.css`. |
-| `packages/ui/` | `@satin/ui`: React components built on shadcn/ui and Radix, themed with the tokens. Motion rules: `packages/ui/MOTION.md`. |
+| `packages/ui/` | `@uisatin/ui`: React components built on shadcn/ui and Radix, themed with the tokens. Motion rules: `packages/ui/MOTION.md`. |
 | `satin-lab/` | The docs site (Astro + React islands), deployed to uisatin.dev. One page per intro item and component: `src/pages/{intro,components,ai-patterns}/`, listed in `src/nav.ts`. |
 
 ## Develop
@@ -21,13 +21,13 @@ The lab runs on http://localhost:4330.
 
 ```tsx
 // app.css
-@import "@satin/ui/styles.css";
+@import "@uisatin/ui/styles.css";
 
 // App.tsx
-import { Button } from '@satin/ui/button'
+import { Button } from '@uisatin/ui/button'
 ```
 
-Each component has its own entry point (`@satin/ui/<name>`), or import everything from `@satin/ui`.
+Each component has its own entry point (`@uisatin/ui/<name>`), or import everything from `@uisatin/ui`.
 
 ## Deploy
 

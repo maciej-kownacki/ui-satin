@@ -1,5 +1,5 @@
-import { FormField } from '@satin/ui/form-field'
-import { Input } from '@satin/ui/input'
+import { FormField } from '@uisatin/ui/form-field'
+import { Input } from '@uisatin/ui/input'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // Layout places the label; description and the required mark are content; error and disabled are
@@ -34,8 +34,8 @@ function code(v: Record<string, string>) {
   const input = on(v, 'error') ? `<Input defaultValue="${field.invalid}" />` : `<Input placeholder="${field.placeholder}" />`
   // One line while it fits, one prop per line once it doesn't.
   const open = `<FormField ${props.join(' ')}>`
-  return `import { FormField } from '@satin/ui/form-field'
-import { Input } from '@satin/ui/input'
+  return `import { FormField } from '@uisatin/ui/form-field'
+import { Input } from '@uisatin/ui/input'
 
 ${open.length <= 90 ? open : `<FormField\n${props.map((p) => `  ${p}`).join('\n')}\n>`}
   ${input}

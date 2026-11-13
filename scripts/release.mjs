@@ -1,21 +1,21 @@
 /**
- * Publishes @satin/ui to npm from packages/ui/dist, the built package (compiled ESM, types,
+ * Publishes @uisatin/ui to npm from packages/ui/dist, the built package (compiled ESM, types,
  * styles.css and its own package.json). Run by the Release workflow after Changesets has bumped
- * the version; safe to run by hand too (`npm run release`), it needs `npm login` or NPM_TOKEN.
+ * the version (it publishes through npm Trusted Publishing); by hand it needs `npm login`.
  *
  * 1. Builds the package (tsup, tsc, the precompiled CSS, dist/package.json).
  * 2. Skips when this version is already on npm, so re-runs do nothing.
- * 3. Publishes dist (public), then tags the commit with Changesets (`@satin/ui@x.y.z`).
+ * 3. Publishes dist (public), then tags the commit with Changesets (`@uisatin/ui@x.y.z`).
  */
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 
 const run = (cmd, opts = {}) => execSync(cmd, { stdio: 'inherit', ...opts })
 
-// In CI without a token there is nothing to publish with: say so and stop cleanly, so pushes to
-// main stay green until the NPM_TOKEN secret is added. Adding it is what turns publishing on.
-if (process.env.CI && !process.env.NODE_AUTH_TOKEN) {
-  console.log('NPM_TOKEN is not set: skipping the npm publish.')
+// In CI, npm publishes through Trusted Publishing (OIDC): the workflow needs `id-token: write`.
+// Without it (or a token) there is nothing to publish with, so stop cleanly instead of failing.
+if (process.env.CI && !process.env.ACTIONS_ID_TOKEN_REQUEST_URL && !process.env.NODE_AUTH_TOKEN) {
+  console.log('No OIDC token or npm token in this CI run: skipping the npm publish.')
   process.exit(0)
 }
 const { name, version } = JSON.parse(readFileSync('packages/ui/package.json', 'utf8'))

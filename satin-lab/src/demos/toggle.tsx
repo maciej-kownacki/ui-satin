@@ -1,4 +1,4 @@
-import { Toggle } from '@satin/ui/toggle'
+import { Toggle } from '@uisatin/ui/toggle'
 import { Eye } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -32,7 +32,7 @@ function code(v: Record<string, string>) {
     .filter(Boolean)
     .join('')
   const jsx = v.icon === 'only' ? `<Toggle${attrs} />` : `<Toggle${attrs}>Preview</Toggle>`
-  return `import { Toggle } from '@satin/ui/toggle'
+  return `import { Toggle } from '@uisatin/ui/toggle'
 ${v.icon !== 'none' ? "import { Eye } from 'iconoir-react'\n" : ''}
 ${jsx}`
 }

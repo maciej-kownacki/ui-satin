@@ -1,4 +1,4 @@
-import type { ChartDatum } from '@satin/ui/chart'
+import type { ChartDatum } from '@uisatin/ui/chart'
 
 /** Covers per period for the bar chart's docs demo and its motion playground. */
 

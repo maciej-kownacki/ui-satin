@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { PromptBar, defaultActions, type PromptBarAction, type PromptBarModel } from '@satin/ui/prompt-bar'
+import { PromptBar, defaultActions, type PromptBarAction, type PromptBarModel } from '@uisatin/ui/prompt-bar'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import modelMark from './assets/model-mark.png'
 import gmail from './assets/app-gmail.png'
@@ -76,7 +76,7 @@ function code(v: Record<string, string>) {
     v.state === 'disabled' && 'disabled',
     'onSubmit={(message, files) => send(message, files)}',
   ].filter(Boolean)
-  return `import { PromptBar${v.apps === 'on' ? ', defaultActions' : ''} } from '@satin/ui/prompt-bar'
+  return `import { PromptBar${v.apps === 'on' ? ', defaultActions' : ''} } from '@uisatin/ui/prompt-bar'
 
 <PromptBar
 ${props.map((p) => `  ${p}`).join('\n')}

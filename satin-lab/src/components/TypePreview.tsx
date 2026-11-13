@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Avatar, Button, Input, SegmentedControl, Switch, cn } from '@satin/ui'
-import { Sidebar, SidebarItem } from '@satin/ui/sidebar'
+import { Avatar, Button, Input, SegmentedControl, Switch, cn } from '@uisatin/ui'
+import { Sidebar, SidebarItem } from '@uisatin/ui/sidebar'
 import { Customizer } from './Customizer'
 import {
   AppleShortcuts,

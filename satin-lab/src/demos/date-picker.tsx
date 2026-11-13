@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { DatePickerPanel, DateRangePickerPanel, type DateRange } from '@satin/ui/date-picker'
+import { DatePickerPanel, DateRangePickerPanel, type DateRange } from '@uisatin/ui/date-picker'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // Pinned to a fixed "today" so the docs read the same every day.
@@ -14,7 +14,7 @@ export const controls: ShowcaseControl[] = [
 const code = (v: Record<string, string>) =>
   v.kind === 'range'
     ? `import * as React from 'react'
-import { DateRangePicker, DateRangePickerPanel, type DateRange } from '@satin/ui/date-picker'
+import { DateRangePicker, DateRangePickerPanel, type DateRange } from '@uisatin/ui/date-picker'
 
 export function Period() {
   const [range, setRange] = React.useState<DateRange>({ from: new Date(2026, 10, 23), to: new Date(2026, 10, 27) })
@@ -26,7 +26,7 @@ export function Period() {
   // return <DateRangePickerPanel value={range} onApply={setRange} />
 }`
     : `import * as React from 'react'
-import { DatePicker, DatePickerPanel } from '@satin/ui/date-picker'
+import { DatePicker, DatePickerPanel } from '@uisatin/ui/date-picker'
 
 export function Delivery() {
   const [day, setDay] = React.useState<Date | null>(new Date(2026, 10, 18))

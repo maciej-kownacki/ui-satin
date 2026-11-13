@@ -1,4 +1,4 @@
-import { Checkbox } from '@satin/ui'
+import { Checkbox } from '@uisatin/ui'
 
 /** checkboxBase states laid out like uiKit 849:57531: rows are states, columns unchecked / checked / indeterminate. */
 const rows = ['default', 'hover', 'focus', 'pressed', 'disabled'] as const

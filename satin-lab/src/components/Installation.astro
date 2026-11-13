@@ -40,7 +40,7 @@ walk(id)
 // The Showcase's shortest example (the simplest use), importing from the app's components/ui instead of the package.
 const demos = import.meta.glob<{ options?: { code: string }[] }>('../demos/*.tsx')
 const demo = demos[`../demos/${id}.tsx`] ? await demos[`../demos/${id}.tsx`]() : undefined
-const example = [...(demo?.options ?? [])].sort((a, b) => a.code.length - b.code.length)[0]?.code.replaceAll("'@satin/ui/", "'@/components/ui/").replaceAll("'@satin/ui'", `'@/components/ui/${id}'`)
+const example = [...(demo?.options ?? [])].sort((a, b) => a.code.length - b.code.length)[0]?.code.replaceAll("'@uisatin/ui/", "'@/components/ui/").replaceAll("'@uisatin/ui'", `'@/components/ui/${id}'`)
 // Satin components the example imports beyond this one's own dependencies (Command menu's demo
 // opens from a SearchBar): install them in the same command, so the example compiles as shown.
 const extra = [...new Set([...(example ?? '').matchAll(/from '@\/components\/ui\/([\w-]+)'/g)].map((m) => m[1]))].filter(

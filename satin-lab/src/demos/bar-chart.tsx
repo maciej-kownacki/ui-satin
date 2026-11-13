@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { BarCard } from '@satin/ui/bar-chart'
+import { BarCard } from '@uisatin/ui/bar-chart'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import { DATA, PERIODS, format } from './covers-data'
 
@@ -51,7 +51,7 @@ const compact = (n: number) => (n >= 1000 ? \`\${+(n / 1000).toFixed(1)}k\` : n.
   ]
   const imports = [
     withPeriods && "import * as React from 'react'",
-    "import { BarCard } from '@satin/ui/bar-chart'",
+    "import { BarCard } from '@uisatin/ui/bar-chart'",
   ]
   return `${imports.filter(Boolean).join('\n')}
 

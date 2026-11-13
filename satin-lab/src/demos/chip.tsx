@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Chip, ChipAvatar } from '@satin/ui/chip'
-import type { BadgeTone } from '@satin/ui'
+import { Chip, ChipAvatar } from '@uisatin/ui/chip'
+import type { BadgeTone } from '@uisatin/ui'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const people: { tone: BadgeTone; name: string; initials: string }[] = [
@@ -45,7 +45,7 @@ const labelOf = (id: string, value: string) => {
 function code(v: Record<string, string>) {
   const attrs = ['size', 'variant'].filter((k) => v[k] !== defaults[k]).map((k) => ` ${k}="${v[k]}"`).join('')
   const avatar = v.leading === 'avatar'
-  const imports = `import { Chip${avatar ? ', ChipAvatar' : ''} } from '@satin/ui/chip'`
+  const imports = `import { Chip${avatar ? ', ChipAvatar' : ''} } from '@uisatin/ui/chip'`
   const dot = v.leading === 'dot' ? ' dot' : ''
   const remove = v.remove === 'on'
   if (v.tone === 'all') {

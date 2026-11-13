@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Check, Copy } from 'iconoir-react'
-import { Button } from '@satin/ui/button'
+import { Button } from '@uisatin/ui/button'
 
 /** The Copy code button from the Showcase code header, for code frames rendered by Astro. */
 export default function CopyButton({ text, label = 'Copy code' }: { text: string; label?: string }) {

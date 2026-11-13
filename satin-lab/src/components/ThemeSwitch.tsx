@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { SegmentedControl } from '@satin/ui'
+import { SegmentedControl } from '@uisatin/ui'
 import { HalfMoon, SunLight } from 'iconoir-react'
 
 /**

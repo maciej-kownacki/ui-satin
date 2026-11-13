@@ -1,4 +1,4 @@
-import { Input } from '@satin/ui/input'
+import { Input } from '@uisatin/ui/input'
 import { Mail, Xmark } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -46,7 +46,7 @@ function code(v: Record<string, string>) {
     v.state === 'error' && `error="${error}"`,
     v.state === 'disabled' && 'disabled',
   ].filter(Boolean)
-  return `import { Input } from '@satin/ui/input'
+  return `import { Input } from '@uisatin/ui/input'
 ${icons.length ? `import { ${icons.join(', ')} } from 'iconoir-react'\n` : ''}
 <Input
 ${attrs.map((a) => `  ${a}`).join('\n')}

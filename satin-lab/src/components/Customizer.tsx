@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createPortal } from 'react-dom'
-import { Button, Popover, SegmentedControl, cn, defaultTheme, randomTheme, themeCss, type SatinTheme } from '@satin/ui'
+import { Button, Popover, SegmentedControl, cn, defaultTheme, randomTheme, themeCss, type SatinTheme } from '@uisatin/ui'
 import { ThemeSwitch, setMode } from './ThemeSwitch'
 import { useScrollLock } from '../lib/scroll-lock'
 import { Check, ColorPicker, Copy, DiceFive, Download, Palette, Refresh } from 'iconoir-react'
@@ -10,7 +10,7 @@ import { Check, ColorPicker, Copy, DiceFive, Download, Palette, Refresh } from '
  * corners and the light / dark switch for the whole site, live. The docs are built from Satin's own components, so the top bar, the sidebar and the
  * switches follow the theme like the previews do. The theme is kept in localStorage so the
  * next page opens with it (Layout.astro injects it before the first paint). Export gives the
- * same stylesheet, to load after `@satin/ui/styles.css`.
+ * same stylesheet, to load after `@uisatin/ui/styles.css`.
  */
 // Each preset is already a fill white text reads on at 4.5:1, so the swatch is the button.
 export const BRANDS = [

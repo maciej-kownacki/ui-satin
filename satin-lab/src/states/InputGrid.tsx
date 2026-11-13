@@ -1,4 +1,4 @@
-import { Input } from '@satin/ui/input'
+import { Input } from '@uisatin/ui/input'
 import { NavArrowDown, HomeSimple } from 'iconoir-react'
 
 /** Input states laid out like uiKit 820:51657: rows are state × size, columns empty / filled / error / error filled. */

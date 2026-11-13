@@ -2,7 +2,7 @@ import { readdirSync } from 'node:fs'
 import { defineConfig } from 'tsup'
 
 /**
- * The npm build: one ESM entry for `@satin/ui` and one per component (`@satin/ui/button`),
+ * The npm build: one ESM entry for `@uisatin/ui` and one per component (`@uisatin/ui/button`),
  * so apps only ship what they import. Shared code lands in chunks. Types come from
  * `tsc -p tsconfig.build.json`, the CSS from the Tailwind CLI (see build/styles.css).
  */

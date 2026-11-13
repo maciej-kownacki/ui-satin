@@ -36,13 +36,13 @@ const snippets = await highlight([
   {
     id: 'file',
     label: 'Exported file',
-    code: `import '@satin/ui/styles.css'
+    code: `import '@uisatin/ui/styles.css'
 import './satin-theme.css' // from the customizer: Export → Download`,
   },
   {
     id: 'code',
     label: 'In code',
-    code: `import { themeCss } from '@satin/ui'
+    code: `import { themeCss } from '@uisatin/ui'
 
 // Inject once, e.g. in a <style> in your root layout.
 const css = themeCss({ brand: '#E5533D', radius: 1.5 })`,

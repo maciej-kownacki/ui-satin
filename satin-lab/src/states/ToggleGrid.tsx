@@ -1,4 +1,4 @@
-import { Toggle } from '@satin/ui/toggle'
+import { Toggle } from '@uisatin/ui/toggle'
 import { HomeSimple } from 'iconoir-react'
 
 /** Toggle states laid out like uiKit 852:21771: per variant and size, rows are pressed off / on, columns states. */

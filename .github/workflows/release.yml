@@ -1,6 +1,8 @@
 # Release: on every push to main, Changesets either opens (or updates) a "Version packages" pull
-# request with the pending changesets, or, once that PR is merged, publishes @satin/ui to npm.
-# Needs the NPM_TOKEN repository secret: an npm automation token with publish rights on @satin.
+# request with the pending changesets, or, once that PR is merged, publishes @uisatin/ui to npm.
+# Publishing uses npm Trusted Publishing (OIDC): npm trusts this workflow file in this repository,
+# so no npm token is stored anywhere. Set up once with:
+#   npx npm@latest trust github @uisatin/ui --file release.yml --repo maciej-kownacki/ui-satin
 name: Release
 
 on:
@@ -12,6 +14,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   release:
@@ -20,9 +23,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           registry-url: https://registry.npmjs.org
+      # Trusted Publishing needs npm 11.5 or newer.
+      - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run typecheck
       - uses: changesets/action@v1
@@ -33,5 +38,3 @@ jobs:
           title: 'Version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

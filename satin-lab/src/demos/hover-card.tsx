@@ -1,11 +1,11 @@
-import { HoverCard } from '@satin/ui/hover-card'
-import { Avatar } from '@satin/ui/avatar'
+import { HoverCard } from '@uisatin/ui/hover-card'
+import { Avatar } from '@uisatin/ui/avatar'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 export const controls: ShowcaseControl[] = [{ id: 'open', label: 'Open', type: 'switch', default: 'off' }]
 
-const code = () => `import { HoverCard } from '@satin/ui/hover-card'
-import { Avatar } from '@satin/ui/avatar'
+const code = () => `import { HoverCard } from '@uisatin/ui/hover-card'
+import { Avatar } from '@uisatin/ui/avatar'
 
 <p>
   Assigned to{' '}

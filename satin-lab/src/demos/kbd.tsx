@@ -1,4 +1,4 @@
-import { Kbd, KbdGroup } from '@satin/ui/kbd'
+import { Kbd, KbdGroup } from '@uisatin/ui/kbd'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const shortcuts = { cmdk: '⌘K', palette: '⇧⌘P', esc: 'Esc', enter: '↵' } as const
@@ -22,8 +22,8 @@ function code(v: Record<string, string>) {
   const keys = shortcuts[v.keys as keyof typeof shortcuts]
   const size = v.size === 'md' ? ' size="md"' : ''
   return keys.length === 1 || keys === 'Esc'
-    ? `import { Kbd } from '@satin/ui/kbd'\n\n<Kbd${size}>${keys}</Kbd>`
-    : `import { KbdGroup } from '@satin/ui/kbd'\n\n<KbdGroup${size} keys="${keys}" />`
+    ? `import { Kbd } from '@uisatin/ui/kbd'\n\n<Kbd${size}>${keys}</Kbd>`
+    : `import { KbdGroup } from '@uisatin/ui/kbd'\n\n<KbdGroup${size} keys="${keys}" />`
 }
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({

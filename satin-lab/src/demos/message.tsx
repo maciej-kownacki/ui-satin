@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Message } from '@satin/ui/message'
+import { Message } from '@uisatin/ui/message'
 import { Page } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -65,7 +65,7 @@ function assistantCode(v: Record<string, string>, indent = '') {
 }
 
 function code(v: Record<string, string>) {
-  const imports = `import { Message } from '@satin/ui/message'\n${v.role !== 'assistant' && v.source === 'on' ? "import { Page } from 'iconoir-react'\n" : ''}`
+  const imports = `import { Message } from '@uisatin/ui/message'\n${v.role !== 'assistant' && v.source === 'on' ? "import { Page } from 'iconoir-react'\n" : ''}`
   if (v.role === 'user') return `${imports}\n${userCode(v)}`
   if (v.role === 'assistant') return `${imports}\n${assistantCode(v)}`
   return `${imports}

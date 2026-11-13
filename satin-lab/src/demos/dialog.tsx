@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Button } from '@satin/ui'
-import { Dialog, DialogAlert, DialogClose, type DialogAlertIntent } from '@satin/ui/dialog'
+import { Button } from '@uisatin/ui'
+import { Dialog, DialogAlert, DialogClose, type DialogAlertIntent } from '@uisatin/ui/dialog'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 type Copy = {
@@ -68,8 +68,8 @@ function code(v: Record<string, string>) {
   }`,
     !on(v, 'close') && 'closeButton={false}',
   ].filter(Boolean)
-  return `import { Button } from '@satin/ui/button'
-import { ${parts} } from '@satin/ui/dialog'
+  return `import { Button } from '@uisatin/ui/button'
+import { ${parts} } from '@uisatin/ui/dialog'
 
 <Dialog
 ${props.map((p) => `  ${p}`).join('\n')}

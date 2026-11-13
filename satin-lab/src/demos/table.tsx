@@ -1,6 +1,6 @@
-import { Chip } from '@satin/ui/chip'
-import { Table, type Column, type Row } from '@satin/ui/table'
-import type { BadgeTone } from '@satin/ui/badge'
+import { Chip } from '@uisatin/ui/chip'
+import { Table, type Column, type Row } from '@uisatin/ui/table'
+import type { BadgeTone } from '@uisatin/ui/badge'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 type Dish = Row & { product: string; price: string; qty: number; tags: [string, BadgeTone][]; station: string; prep: string }
@@ -58,8 +58,8 @@ function code(v: Record<string, string>) {
   const attrs = [scroll && ' overflow="scroll"', v.selectable === 'on' && ' selectable', v.zebra === 'on' && ' zebra']
     .filter(Boolean)
     .join('')
-  return `import { Table, type Column } from '@satin/ui/table'
-import { Chip } from '@satin/ui/chip'
+  return `import { Table, type Column } from '@uisatin/ui/table'
+import { Chip } from '@uisatin/ui/chip'
 ${scroll ? '\n// With overflow="scroll", width is in pixels.' : ''}
 const columns: Column<Dish>[] = [
 ${cols}

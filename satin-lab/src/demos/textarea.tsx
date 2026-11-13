@@ -1,4 +1,4 @@
-import { Textarea } from '@satin/ui/textarea'
+import { Textarea } from '@uisatin/ui/textarea'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const hint = 'Shown to the host and printed on the kitchen ticket.'
@@ -37,7 +37,7 @@ function code(v: Record<string, string>) {
     value ? `defaultValue="${value}"` : 'placeholder="Allergies, seating, occasion…"',
     v.state === 'disabled' && 'disabled',
   ].filter(Boolean)
-  return `import { Textarea } from '@satin/ui/textarea'
+  return `import { Textarea } from '@uisatin/ui/textarea'
 
 <Textarea
 ${attrs.map((a) => `  ${a}`).join('\n')}

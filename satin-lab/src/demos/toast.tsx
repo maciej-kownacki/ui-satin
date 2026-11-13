@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Button } from '@satin/ui'
-import { Toaster, toast, type ToastIntent } from '@satin/ui/toast'
+import { Button } from '@uisatin/ui'
+import { Toaster, toast, type ToastIntent } from '@uisatin/ui/toast'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 type Copy = { title: string; description: string; action: string; onClick: string }
@@ -25,11 +25,11 @@ export const controls: ShowcaseControl[] = [
 ]
 
 const setup = `// Once, near the root of the app:
-import { Toaster } from '@satin/ui/toast'
+import { Toaster } from '@uisatin/ui/toast'
 <Toaster />
 
 // Anywhere:
-import { toast } from '@satin/ui/toast'
+import { toast } from '@uisatin/ui/toast'
 `
 
 function code(v: Record<string, string>) {

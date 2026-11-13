@@ -1,4 +1,4 @@
-import { Badge, type BadgeTone } from '@satin/ui'
+import { Badge, type BadgeTone } from '@uisatin/ui'
 import { Calendar, Check, Flash, List, Group, EditPencil, Prohibition, Shop } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -46,7 +46,7 @@ function code(v: Record<string, string>) {
     const rows = badges
       .map((b) => `  { tone: '${b.tone}', label: '${b.label}'${icon ? `, Icon: ${b.icon}` : ''} },`)
       .join('\n')
-    return `import { Badge } from '@satin/ui/badge'
+    return `import { Badge } from '@uisatin/ui/badge'
 ${icon ? `import { ${badges.map((b) => b.icon).join(', ')} } from 'iconoir-react'\n` : ''}
 const badges = [
 ${rows}
@@ -60,7 +60,7 @@ ${icon ? '    <Icon />\n' : ''}    {label}
   }
   const b = badges.find((b) => b.tone === v.tone)!
   const tone = v.tone === defaults.tone ? '' : ` tone="${v.tone}"`
-  return `import { Badge } from '@satin/ui/badge'
+  return `import { Badge } from '@uisatin/ui/badge'
 ${icon ? `import { ${b.icon} } from 'iconoir-react'\n` : ''}
 <Badge${tone}${attrs}>${icon ? `<${b.icon} />` : ''}${b.label}</Badge>`
 }

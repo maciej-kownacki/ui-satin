@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { Button } from '@satin/ui/button'
-import { Input } from '@satin/ui/input'
-import { Sheet, SheetClose } from '@satin/ui/sheet'
+import { Button } from '@uisatin/ui/button'
+import { Input } from '@uisatin/ui/input'
+import { Sheet, SheetClose } from '@uisatin/ui/sheet'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 export const controls: ShowcaseControl[] = [
@@ -22,9 +22,9 @@ function code(v: Record<string, string>) {
   const footer = on(v, 'footer')
     ? `\n  footer={\n    <>\n      <SheetClose asChild>\n        <Button variant="secondary">Cancel</Button>\n      </SheetClose>\n      <Button>Save</Button>\n    </>\n  }`
     : ''
-  return `import { Button } from '@satin/ui/button'
-import { Input } from '@satin/ui/input'
-import { Sheet${on(v, 'footer') ? ', SheetClose' : ''} } from '@satin/ui/sheet'
+  return `import { Button } from '@uisatin/ui/button'
+import { Input } from '@uisatin/ui/input'
+import { Sheet${on(v, 'footer') ? ', SheetClose' : ''} } from '@uisatin/ui/sheet'
 
 <Sheet
 ${attrs.map((a) => `  ${a}`).join('\n')}${footer}

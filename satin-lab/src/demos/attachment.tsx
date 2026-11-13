@@ -6,7 +6,7 @@ import {
   AttachmentPreviewPager,
   AttachmentPreviewSheets,
   FileIcon,
-} from '@satin/ui/attachment'
+} from '@uisatin/ui/attachment'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 type File = { id: string; name: string; meta: string; type: 'pdf' | 'xlsx' }
@@ -74,7 +74,7 @@ function code(v: Record<string, string>) {
       // Each file renders its own first page or rows, so the loop hands that to a component.
       preview && 'preview={<FilePreview file={file} />}',
     ].filter(Boolean)
-    return `import { Attachment, AttachmentGroup, FileIcon } from '@satin/ui/attachment'
+    return `import { Attachment, AttachmentGroup, FileIcon } from '@uisatin/ui/attachment'
 
 const files = [
 ${files.map((f) => `  { id: '${f.id}', name: '${f.name}', meta: '${f.meta}', type: '${f.type}' },`).join('\n')}
@@ -99,7 +99,7 @@ ${props.map((p) => `      ${p}`).join('\n')}
     remove && `onRemove={() => remove('${f.id}')}`,
     preview && `preview={\n    ${previewCode[f.id]}\n  }`,
   ].filter(Boolean)
-  return `import { Attachment, ${preview ? `AttachmentPreview, ${nav}, ` : ''}FileIcon } from '@satin/ui/attachment'
+  return `import { Attachment, ${preview ? `AttachmentPreview, ${nav}, ` : ''}FileIcon } from '@uisatin/ui/attachment'
 
 <Attachment
 ${props.map((p) => `  ${p}`).join('\n')}

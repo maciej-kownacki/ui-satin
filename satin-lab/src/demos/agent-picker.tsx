@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AgentPicker, type Agent } from '@satin/ui/agent-picker'
+import { AgentPicker, type Agent } from '@uisatin/ui/agent-picker'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const agents: Agent[] = [
@@ -40,7 +40,7 @@ function code(v: Record<string, string>) {
     .filter(Boolean)
     .map((p) => `\n      ${p}`)
     .join('')
-  return `import { AgentPicker } from '@satin/ui/agent-picker'
+  return `import { AgentPicker } from '@uisatin/ui/agent-picker'
 
 ${agentsCode(v.avatar === 'flappy')}
 

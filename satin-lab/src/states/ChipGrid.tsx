@@ -1,4 +1,4 @@
-import { Chip } from '@satin/ui/chip'
+import { Chip } from '@uisatin/ui/chip'
 
 /**
  * Chip states laid out like the uiKit `Chip` set (3206:79959): rows are states, columns are

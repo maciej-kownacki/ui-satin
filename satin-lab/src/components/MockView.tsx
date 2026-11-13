@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Skeleton } from '@satin/ui/skeleton'
-import { cn } from '@satin/ui'
+import { Skeleton } from '@uisatin/ui/skeleton'
+import { cn } from '@uisatin/ui'
 
 /**
  * A pretend app view for page-level components (cookie consent, announcement bar): a card with

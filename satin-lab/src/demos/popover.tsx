@@ -1,5 +1,5 @@
-import { Button } from '@satin/ui'
-import { PopoverPanel } from '@satin/ui/popover'
+import { Button } from '@uisatin/ui'
+import { PopoverPanel } from '@uisatin/ui/popover'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 // Only what the panel holds, top to bottom. The trigger and where the panel opens belong
@@ -30,7 +30,7 @@ function code(v: Record<string, string>) {
   ].filter(Boolean)
   // Short prop lists stay on one line, as you'd write them.
   const open = props.length <= 2 && !on(v, 'body') ? `<Popover ${props.join(' ')}>` : `<Popover\n${props.map((p) => `  ${p}`).join('\n')}\n>`
-  return `${on(v, 'body') ? "import { Button } from '@satin/ui/button'\n" : ''}import { Popover${on(v, 'body') ? ', PopoverClose' : ''} } from '@satin/ui/popover'
+  return `${on(v, 'body') ? "import { Button } from '@uisatin/ui/button'\n" : ''}import { Popover${on(v, 'body') ? ', PopoverClose' : ''} } from '@uisatin/ui/popover'
 
 ${open}
   {trigger}

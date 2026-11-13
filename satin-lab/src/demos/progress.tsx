@@ -1,4 +1,4 @@
-import { Progress } from '@satin/ui/progress'
+import { Progress } from '@uisatin/ui/progress'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 export const controls: ShowcaseControl[] = [
@@ -15,7 +15,7 @@ function code(v: Record<string, string>) {
     on(v, 'label') ? 'label="Uploading files"' : 'aria-label="Uploading files"',
     v.size === 'md' && 'size="md"',
   ].filter(Boolean)
-  return `import { Progress } from '@satin/ui/progress'\n\n<Progress ${p.join(' ')} />`
+  return `import { Progress } from '@uisatin/ui/progress'\n\n<Progress ${p.join(' ')} />`
 }
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({

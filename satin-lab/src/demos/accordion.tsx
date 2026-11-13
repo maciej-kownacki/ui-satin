@@ -1,4 +1,4 @@
-import { Accordion, AccordionItem } from '@satin/ui/accordion'
+import { Accordion, AccordionItem } from '@uisatin/ui/accordion'
 import { CreditCard, Group, Lock } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -18,7 +18,7 @@ const on = (v: Record<string, string>, id: string) => v[id] === 'on'
 
 function code(v: Record<string, string>) {
   const root = v.type === 'single' ? 'type="single" collapsible defaultValue="plan"' : 'type="multiple" defaultValue={["plan"]}'
-  return `import { Accordion, AccordionItem } from '@satin/ui/accordion'
+  return `import { Accordion, AccordionItem } from '@uisatin/ui/accordion'
 ${on(v, 'icon') ? `import { ${items.map((i) => i.icon).sort().join(', ')} } from 'iconoir-react'\n` : ''}
 <Accordion ${root}>
 ${items

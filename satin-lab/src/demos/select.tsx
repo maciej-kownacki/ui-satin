@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Select, type SelectGroup, type SelectOption } from '@satin/ui/select'
+import { Select, type SelectGroup, type SelectOption } from '@uisatin/ui/select'
 import { CheckCircle, Circle, Clock, Eye, XmarkCircle } from 'iconoir-react'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -70,7 +70,7 @@ function code(v: Record<string, string>) {
     v.state === 'error' && `error="${error}"`,
     v.state === 'disabled' && 'disabled',
   ].filter(Boolean)
-  return `import { Select } from '@satin/ui/select'
+  return `import { Select } from '@uisatin/ui/select'
 ${icons.length ? `import { ${[...new Set(icons)].sort().join(', ')} } from 'iconoir-react'\n` : ''}
 // Options with icons put the picked one's icon in the field too.
 const statuses = ${list}

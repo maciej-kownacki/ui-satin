@@ -1,4 +1,4 @@
-import { DonutCard } from '@satin/ui/donut-chart'
+import { DonutCard } from '@uisatin/ui/donut-chart'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const base = [
@@ -27,7 +27,7 @@ export const controls: ShowcaseControl[] = [
 
 function code(v: Record<string, string>) {
   return `import * as React from 'react'
-import { DonutCard } from '@satin/ui/donut-chart'
+import { DonutCard } from '@uisatin/ui/donut-chart'
 
 const channels = [
 ${dataFor(v.period).map((d) => `  { label: '${d.label}', value: ${d.value} },`).join('\n')}

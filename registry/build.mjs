@@ -8,7 +8,7 @@
  * `satin-styles` (the precompiled dist/styles.css, so installed components need no Tailwind).
  * Imports are rewritten to shadcn's conventions: `../lib/utils` → `@/lib/utils`,
  * `./badge` → `@/registry/satin/ui/badge`; the CLI then maps them onto the app's aliases.
- * Run `npm run build -w @satin/ui` first, the styles item reads dist/styles.css.
+ * Run `npm run build -w @uisatin/ui` first, the styles item reads dist/styles.css.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -26,7 +26,7 @@ const versions = { ...pkg.dependencies }
 const pages = Object.fromEntries(nav.flatMap((g) => pagesOf(g.items).map((i) => [i.id, i])))
 
 const css = join(ui, 'dist/styles.css')
-if (!existsSync(css)) throw new Error('packages/ui/dist/styles.css is missing: run `npm run build -w @satin/ui` first')
+if (!existsSync(css)) throw new Error('packages/ui/dist/styles.css is missing: run `npm run build -w @uisatin/ui` first')
 
 /** npm packages a source imports (not react / react-dom, which every app has), with the range we build against. */
 function npmDeps(src) {

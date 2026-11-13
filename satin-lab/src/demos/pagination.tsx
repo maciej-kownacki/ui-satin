@@ -1,4 +1,4 @@
-import { Pagination } from '@satin/ui/pagination'
+import { Pagination } from '@uisatin/ui/pagination'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 export const controls: ShowcaseControl[] = [
@@ -8,7 +8,7 @@ export const controls: ShowcaseControl[] = [
 ]
 
 function code(v: Record<string, string>) {
-  return `import { Pagination } from '@satin/ui/pagination'
+  return `import { Pagination } from '@uisatin/ui/pagination'
 
 const [page, setPage] = React.useState(1)
 

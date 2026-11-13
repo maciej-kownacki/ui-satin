@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { NumberInput } from '@satin/ui/number-input'
+import { NumberInput } from '@uisatin/ui/number-input'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 export const controls: ShowcaseControl[] = [
@@ -10,7 +10,7 @@ export const controls: ShowcaseControl[] = [
 function code(v: Record<string, string>) {
   const attrs = [v.label === 'on' ? 'label="Guests"' : 'aria-label="Guests"', 'hint="Up to 12 per table"', 'min={1}', 'max={12}', v.size !== 'md' && `size="${v.size}"`].filter(Boolean)
   return `import * as React from 'react'
-import { NumberInput } from '@satin/ui/number-input'
+import { NumberInput } from '@uisatin/ui/number-input'
 
 export function Guests() {
   const [guests, setGuests] = React.useState(4)

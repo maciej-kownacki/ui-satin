@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { SegmentedControl, Switch, cn } from '@satin/ui'
-import { ChartCard, ChartLegendRow, ChartTooltip, type ChartDatum } from '@satin/ui/chart'
+import { SegmentedControl, Switch, cn } from '@uisatin/ui'
+import { ChartCard, ChartLegendRow, ChartTooltip, type ChartDatum } from '@uisatin/ui/chart'
 import { DATA, PERIODS, format, type Dataset } from '../demos/covers-data'
 
 /**
- * A playground, not in the nav and not in @satin/ui: three ways the bar chart could redraw
+ * A playground, not in the nav and not in @uisatin/ui: three ways the bar chart could redraw
  * when its period changes, side by side, all driven by one period. A copy of BarCard
  * (bar-chart.tsx) with per-period data; the shipped card stays as it is until one is picked.
  *

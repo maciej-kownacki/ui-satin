@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { FileUpload, type FileUploadFile } from '@satin/ui/file-upload'
+import { FileUpload, type FileUploadFile } from '@uisatin/ui/file-upload'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const MB = 1024 * 1024
@@ -45,7 +45,7 @@ const stateLabel: Record<string, string> = 'items' in first ? Object.fromEntries
 
 function code(v: Record<string, string>) {
   return `import * as React from 'react'
-import { FileUpload, type FileUploadFile } from '@satin/ui/file-upload'
+import { FileUpload, type FileUploadFile } from '@uisatin/ui/file-upload'
 
 export function Attachments() {
   const [files, setFiles] = React.useState<FileUploadFile[]>(${v.state === 'empty' || v.state === 'drag' ? '[]' : `[

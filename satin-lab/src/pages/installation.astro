@@ -46,10 +46,10 @@ export function Save() {
   return <Button>Save changes</Button>
 }`
 const packageUsage = `// main.tsx, once for the whole app
-import '@satin/ui/styles.css'
+import '@uisatin/ui/styles.css'
 
 // App.tsx
-import { Button } from '@satin/ui/button'
+import { Button } from '@uisatin/ui/button'
 
 export function Save() {
   return <Button>Save changes</Button>
@@ -77,7 +77,7 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
   <section aria-labelledby="edition-title" class="flex flex-col gap-3 pt-4">
     <h2 id="edition-title" class={h2}>Satin Free</h2>
     <p class={prose}>
-      Everything on this site is Satin Free: open source under the MIT license, on npm as <Chip>@satin/ui</Chip> and in the shadcn registry. Use it in any project, commercial ones included. Satin Pro, with more components, patterns and templates, will come as a separate licensed package; Free stays as it is.
+      Everything on this site is Satin Free: open source under the MIT license, on npm as <Chip>@uisatin/ui</Chip> and in the shadcn registry. Use it in any project, commercial ones included. Satin Pro, with more components, patterns and templates, will come as a separate licensed package; Free stays as it is.
     </p>
   </section>
 
@@ -122,9 +122,9 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
 
     <h3 class:list={[h3, 'pt-6']} id="npm">Install the npm package</h3>
     <p class={prose}>
-      <Chip>@satin/ui</Chip> ships compiled ES modules with types and a precompiled <Chip>styles.css</Chip>, so you don't need Tailwind. Every component has its own entry point, so you only ship what you use, and each one is marked <Chip>'use client'</Chip>, so a Next.js Server Component can import it directly. Updates come with <Chip>npm update</Chip>; the changelog is in the package.
+      <Chip>@uisatin/ui</Chip> ships compiled ES modules with types and a precompiled <Chip>styles.css</Chip>, so you don't need Tailwind. Every component has its own entry point, so you only ship what you use, and each one is marked <Chip>'use client'</Chip>, so a Next.js Server Component can import it directly. Updates come with <Chip>npm update</Chip>; the changelog is in the package.
     </p>
-    <CodeFrame code="npm i @satin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
+    <CodeFrame code="npm i @uisatin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
     <CodeFrame code={packageUsage} label="Usage" />
   </section>
 </Docs>
