@@ -18,7 +18,7 @@ export const nav: NavGroup[] = [
     title: 'Docs',
     items: [
       { id: 'introduction', title: 'Introduction', href: '/', description: 'A design system for calm product interfaces, with patterns for AI agents.' },
-      { id: 'installation', title: 'Installation', href: '/installation', description: 'Set Satin up with your coding agent, or by hand with the shadcn CLI or the npm package.' },
+      { id: 'installation', title: 'Installation', href: '/installation', description: 'Set Satin up with your coding agent, or by hand from npm or with the shadcn CLI.' },
       { id: 'theming', title: 'Theming', href: '/theming', description: 'One small config sets the brand and the corners for every component.' },
     ],
   },

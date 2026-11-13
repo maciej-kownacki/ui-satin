@@ -5,6 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { Xmark } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { bannerMesh, type Mesh } from './banner-mesh'
 
 /**
  * Banner, 1:1 with the uiKit `Banner` set (3822:3475): a title, an optional description (one
@@ -18,8 +19,8 @@ import { Button } from './button'
  *   banner and radius-3xl (20) wherever the banner is taller.
  * - background="mesh" lays two pre-rendered glows over the card: a light one in Multiply (shows
  *   on white, gone on dark) and a dark one in Screen (glows on dark, gone on white), so it follows
- *   the theme without variables. Figma renders one pair per layout and line count; the PNGs live
- *   in satin-lab/public/figma and can be swapped with `mesh`.
+ *   the theme without variables. Figma renders one pair per layout and line count; they are
+ *   inlined in banner-mesh.tsx and can be swapped with `mesh`.
  *
  * tone="primary" turns the card action/primary/bg (border action/primary/border) with
  * action/primary/fg copy (description at 80%); its mesh is the dark glow alone, in Screen, so it
@@ -53,19 +54,8 @@ const bannerVariants = cva(
   },
 )
 
-type Mesh = { light: string; dark: string }
-
-/** Figma's pre-rendered mesh pairs, per layout and line count (served from satin-lab/public). */
-export const bannerMesh: Record<'horizontal' | 'sidebar', Record<'one' | 'two', Mesh>> = {
-  horizontal: {
-    one: { light: '/figma/banner-mesh-light.png', dark: '/figma/banner-mesh-dark.png' },
-    two: { light: '/figma/banner-mesh-two-light.png', dark: '/figma/banner-mesh-two-dark.png' },
-  },
-  sidebar: {
-    one: { light: '/figma/banner-mesh-sidebar-light.png', dark: '/figma/banner-mesh-sidebar-dark.png' },
-    two: { light: '/figma/mesh-light.png', dark: '/figma/mesh-dark.png' },
-  },
-}
+// The glows are inlined (banner-mesh.tsx), so they come with the component wherever it goes.
+export { bannerMesh, type Mesh } from './banner-mesh'
 
 export interface BannerProps
   extends Omit<React.ComponentProps<'div'>, 'title'>,

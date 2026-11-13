@@ -244,6 +244,7 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/banner-mesh.json",
         "https://uisatin.dev/r/button.json"
       ],
       "docs": "Banner docs: https://uisatin.dev/components/banner",
@@ -254,6 +255,27 @@
       "files": [
         {
           "path": "registry/satin/ui/banner.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "banner-mesh",
+      "type": "registry:ui",
+      "title": "Banner mesh",
+      "description": "The Satin Banner mesh component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.1.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/banner-mesh.tsx",
           "type": "registry:ui"
         }
       ]

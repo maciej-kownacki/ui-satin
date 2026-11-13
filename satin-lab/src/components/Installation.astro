@@ -1,9 +1,13 @@
 ---
 /**
- * Installation, between the Showcase and the API Reference: three numbered steps on a
- * vertical hairline. 1 links to the Installation page, 2 is the
- * shadcn command for this component's registry item (public/r/<id>.json, built by
- * `npm run registry`) and what it does, 3 is the Showcase's shortest example, with app imports.
+ * Installation, between the Showcase and the API Reference, two ways:
+ *
+ * - npm: install @uisatin/ui (every component comes with it), import the styles once, then the
+ *   Showcase's shortest example as it is, importing from `@uisatin/ui/<id>`.
+ * - shadcn CLI, to own the source: three numbered steps on a vertical hairline. 1 links to the
+ *   Installation page, 2 is the shadcn command for this component's registry item
+ *   (public/r/<id>.json, built by `npm run registry`) and what it does, 3 is the same example
+ *   with app imports.
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -40,7 +44,8 @@ walk(id)
 // The Showcase's shortest example (the simplest use), importing from the app's components/ui instead of the package.
 const demos = import.meta.glob<{ options?: { code: string }[] }>('../demos/*.tsx')
 const demo = demos[`../demos/${id}.tsx`] ? await demos[`../demos/${id}.tsx`]() : undefined
-const example = [...(demo?.options ?? [])].sort((a, b) => a.code.length - b.code.length)[0]?.code.replaceAll("'@uisatin/ui/", "'@/components/ui/").replaceAll("'@uisatin/ui'", `'@/components/ui/${id}'`)
+const shortest = [...(demo?.options ?? [])].sort((a, b) => a.code.length - b.code.length)[0]?.code
+const example = shortest?.replaceAll("'@uisatin/ui/", "'@/components/ui/").replaceAll("'@uisatin/ui'", `'@/components/ui/${id}'`)
 // Satin components the example imports beyond this one's own dependencies (Command menu's demo
 // opens from a SearchBar): install them in the same command, so the example compiles as shown.
 const extra = [...new Set([...(example ?? '').matchAll(/from '@\/components\/ui\/([\w-]+)'/g)].map((m) => m[1]))].filter(
@@ -57,6 +62,12 @@ import './styles/satin.css'
 
 ${example ?? `import { ${title.replace(/\s+(\w)/g, (_, c) => c.toUpperCase())} } from '@/components/ui/${id}'`}`
 
+const componentName = title.replace(/\s+(\w)/g, (_, c) => c.toUpperCase())
+const npmUsage = `// main.tsx, once for the whole app
+import '@uisatin/ui/styles.css'
+
+${shortest ?? `import { ${componentName} } from '@uisatin/ui/${id}'`}`
+
 const list = (names: string[]) => names.map((n, i) => ({ n, sep: i === 0 ? '' : i === names.length - 1 ? ' and ' : ', ' }))
 const step = 'relative grid grid-cols-[24px_minmax(0,1fr)] gap-x-4 pb-8 last:pb-0'
 const marker =
@@ -68,12 +79,39 @@ const stepTitle = 'pt-px text-base leading-6 font-medium text-text-default'
 
 <section aria-labelledby="install-title" class="flex flex-col gap-4 pt-8">
   <h2 id="install-title" class="text-lg font-medium text-text-default">Installation</h2>
+  <h3 class="text-base leading-6 font-medium text-text-default">With npm</h3>
+  <ol class="flex flex-col">
+    <li class={step}>
+      <span aria-hidden class={line}></span>
+      <span aria-hidden class={marker}>1</span>
+      <div class="flex min-w-0 flex-col gap-3">
+        <h4 class={stepTitle}>Install the package</h4>
+        <CodeFrame code="npm i @uisatin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
+        <p class="text-base leading-6 text-text-muted">
+          {title} comes with it, along with every other Satin component. You need React 19; no Tailwind, no import alias, no <Chip>components.json</Chip>.
+        </p>
+      </div>
+    </li>
+    <li class={step}>
+      <span aria-hidden class={marker}>2</span>
+      <div class="flex min-w-0 flex-col gap-3">
+        <h4 class={stepTitle}>Start using it</h4>
+        <p class="text-base leading-6 text-text-muted">
+          Import the styles once, then import {title} from <Chip>@uisatin/ui/{id}</Chip>. It's marked <Chip>'use client'</Chip>, so a Next.js Server Component can render it.
+        </p>
+        <CodeFrame code={npmUsage} label="Usage" />
+      </div>
+    </li>
+  </ol>
+
+  <h3 class="pt-6 text-base leading-6 font-medium text-text-default">Or copy the source with the shadcn CLI</h3>
+  <p class="text-base leading-6 text-text-muted">The component's code lands in your project, for you to own and change.</p>
   <ol class="flex flex-col">
     <li class={step}>
       <span aria-hidden class={line}></span>
       <span aria-hidden class={marker}>1</span>
       <div class="flex min-w-0 flex-col gap-2">
-        <h3 class={stepTitle}>Set up your project</h3>
+        <h4 class={stepTitle}>Set up your project</h4>
         <p class="text-base leading-6 text-text-muted">
           You need React 19, TypeScript, the <Chip>@/</Chip> import alias and a <Chip>components.json</Chip>. No Tailwind. Follow the <a
             href="/installation"
@@ -86,7 +124,7 @@ const stepTitle = 'pt-px text-base leading-6 font-medium text-text-default'
       <span aria-hidden class={line}></span>
       <span aria-hidden class={marker}>2</span>
       <div class="flex min-w-0 flex-col gap-3">
-        <h3 class={stepTitle}>Install the component and its dependencies</h3>
+        <h4 class={stepTitle}>Install the component and its dependencies</h4>
         <CodeFrame code={command} label="Terminal" lang="bash" copyLabel="Copy command" />
         <div class="flex flex-col gap-2 text-base leading-6 text-text-muted">
           <p>This command will:</p>
@@ -111,7 +149,7 @@ const stepTitle = 'pt-px text-base leading-6 font-medium text-text-default'
     <li class={step}>
       <span aria-hidden class={marker}>3</span>
       <div class="flex min-w-0 flex-col gap-3">
-        <h3 class={stepTitle}>Start using it</h3>
+        <h4 class={stepTitle}>Start using it</h4>
         <p class="text-base leading-6 text-text-muted">Import the styles once, then import {title} from your components.</p>
         <CodeFrame code={usage} label="Usage" />
       </div>
