@@ -1,7 +1,8 @@
 ---
 /**
- * Installation: a prompt that has a coding agent set Satin up from npm, then the same steps by hand
- * (the npm package first, the shadcn CLI to own the source).
+ * Installation: the npm package in three lines, a prompt that has a coding agent do the same,
+ * and the shadcn CLI folded away for those who want to own the source. Component pages carry only
+ * their own install and import; everything shared lives here.
  */
 import Docs from '../layouts/Docs.astro'
 import PageHeader from '../components/PageHeader.astro'
@@ -45,7 +46,7 @@ import { Button } from '@/components/ui/button'
 export function Save() {
   return <Button>Save changes</Button>
 }`
-const packageUsage = `// main.tsx, once for the whole app
+const packageUsage = `// main.tsx (app/layout.tsx in Next.js), once for the whole app
 import '@uisatin/ui/styles.css'
 
 // App.tsx
@@ -66,7 +67,6 @@ const agentPrompt = `Set up the Satin design system (https://uisatin.dev) in thi
 
 When you're done, render a Button to check the styles load, and tell me what you set up.`
 const h2 = 'text-lg font-medium text-text-default'
-const h3 = 'text-base leading-6 font-medium text-text-default'
 const prose = 'text-base leading-6 text-text-muted'
 const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
 ---
@@ -74,65 +74,42 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
 <Docs current="installation">
   <PageHeader id="installation" title={page('installation').title} description={page('installation').description} />
 
-  <section aria-labelledby="edition-title" class="flex flex-col gap-3 pt-4">
-    <h2 id="edition-title" class={h2}>Satin Free</h2>
+  <section aria-labelledby="npm-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="npm-title" class={h2}>Install from npm</h2>
     <p class={prose}>
-      Everything on this site is Satin Free: open source under the MIT license, on npm as <Chip>@uisatin/ui</Chip> and in the shadcn registry. Use it in any project, commercial ones included. Satin Pro, with more components, patterns and templates, will come as a separate licensed package; Free stays as it is.
+      Satin needs React 19. No Tailwind, no config: <Chip>@uisatin/ui</Chip> ships compiled components and one precompiled stylesheet.
+    </p>
+    <CodeFrame code="npm i @uisatin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
+    <CodeFrame code={packageUsage} label="Usage" />
+    <p class={prose}>
+      Each component has its own import, shown on its page. They're marked <Chip>'use client'</Chip>, so Next.js Server Components can render them. For dark mode, put the <Chip>dark</Chip> class on any parent. Load Geist and Geist Mono, or the system font is used.
     </p>
   </section>
 
   <section aria-labelledby="agent-title" class="flex flex-col gap-3 pt-10">
-    <h2 id="agent-title" class={h2}>Install with your agent</h2>
-    <p class={prose}>
-      Paste this prompt into Claude Code, Cursor or any coding agent that works in your repository. It installs
-      <Chip>@uisatin/ui</Chip> from npm and loads the styles, the same steps as below.
-    </p>
+    <h2 id="agent-title" class={h2}>Or let your agent do it</h2>
+    <p class={prose}>Paste this into Claude Code, Cursor or any coding agent working in your repository.</p>
     <CodeFrame code={agentPrompt} label="Prompt" lang="md" copyLabel="Copy prompt" wrap />
   </section>
 
-  <section aria-labelledby="manual-title" class="flex flex-col gap-3 pt-10">
-    <h2 id="manual-title" class={h2}>Install by hand</h2>
-    <p class={prose}>Satin needs React 19 or newer. Fonts: the tokens ask for Geist and Geist Mono; load them, or the system font is used.</p>
-
-    <h3 class:list={[h3, 'pt-3']} id="npm">Install the npm package</h3>
-    <p class={prose}>
-      <Chip>@uisatin/ui</Chip> ships compiled ES modules with types and a precompiled <Chip>styles.css</Chip>, so you don't need Tailwind, an import alias or a <Chip>components.json</Chip>. Every component has its own entry point, so you only ship what you use, and each one is marked <Chip>'use client'</Chip>, so a Next.js Server Component can import it directly. Updates come with <Chip>npm update</Chip>.
-    </p>
-    <ol class="flex list-decimal flex-col gap-3 pl-5 text-base leading-6 text-text-muted marker:text-text-subtle">
-      <li>
-        <p class="pb-3">Install the package.</p>
-        <CodeFrame code="npm i @uisatin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
-      </li>
-      <li>
-        <p class="pb-3">Import the styles once, at the app's entry point (<Chip>main.tsx</Chip>, or <Chip>app/layout.tsx</Chip> in Next.js), then import each component from its own path. Every component page shows its import under Installation.</p>
-        <CodeFrame code={packageUsage} label="Usage" />
-      </li>
-    </ol>
-
-    <h3 class:list={[h3, 'pt-6']}>Or copy components with the shadcn CLI</h3>
-    <p class={prose}>
-      To own and change the code, take components from the <a class={link} href="https://ui.shadcn.com/docs/registry">shadcn registry</a> instead. The CLI copies their source into <Chip>components/ui</Chip>, with the components it builds on, the <Chip>cn</Chip> helper and Satin’s precompiled styles, and installs its npm dependencies. Set your project up once:
-    </p>
-    <ol class="flex list-decimal flex-col gap-3 pl-5 text-base leading-6 text-text-muted marker:text-text-subtle">
-      <li>
-        <p class="pb-3">Add the <Chip>@/</Chip> import alias, pointing at <Chip>src</Chip>.</p>
-        <CodeFrame code={alias} label="Import alias" />
-      </li>
-      <li>
-        <p class="pb-3">
-          Add a <Chip>components.json</Chip> at the root of the project. Write it by hand: <Chip>shadcn init</Chip> stops when it can’t find Tailwind, and Satin doesn’t need it, so the Tailwind paths stay empty.
+  <section aria-labelledby="shadcn-title" class="flex flex-col gap-3 pt-10">
+    <details class="group flex flex-col gap-3">
+      <summary class="flex cursor-pointer list-none items-center gap-2 rounded-sm text-lg font-medium text-text-default outline-none focus-visible:shadow-border-focus [&::-webkit-details-marker]:hidden">
+        <span id="shadcn-title">Own the source with the shadcn CLI</span>
+        <svg aria-hidden width="16" height="16" viewBox="0 0 16 16" fill="none" class="text-text-muted transition-transform duration-(--duration-fast) ease-(--ease-out) group-open:rotate-180"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </summary>
+      <div class="flex flex-col gap-3 pt-3">
+        <p class={prose}>
+          To change components' code, copy them into your project from the <a class={link} href="https://ui.shadcn.com/docs/registry">shadcn registry</a> instead. Set the project up once: add the <Chip>@/</Chip> alias and a <Chip>components.json</Chip> (written by hand: <Chip>shadcn init</Chip> stops without Tailwind, and Satin doesn't need it). Then each component page has its own command under Installation.
         </p>
+        <CodeFrame code={alias} label="Import alias" />
         <CodeFrame code={componentsJson} label="components.json" lang="json" />
-      </li>
-      <li>
-        <p class="pb-3">Add components by URL. Each component page has its own command under Installation.</p>
-        <CodeFrame code="npx shadcn@latest add https://uisatin.dev/r/button.json" label="Terminal" lang="bash" copyLabel="Copy command" />
-      </li>
-      <li>
-        <p class="pb-3">Import the styles once, then use the components.</p>
         <CodeFrame code={registryUsage} label="Usage" />
-      </li>
-    </ol>
-
+      </div>
+    </details>
   </section>
+
+  <p class:list={[prose, 'pt-10']}>
+    Satin Free is open source under the MIT license; use it in any project, commercial ones included. Satin Pro will come as a separate package.
+  </p>
 </Docs>
