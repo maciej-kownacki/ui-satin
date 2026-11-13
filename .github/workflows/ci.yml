@@ -1,4 +1,5 @@
-# CI on pull requests: types, the npm build and a dry-run pack of what would be published.
+# CI on pull requests: types, the npm build, a dry-run pack of what would be published, and the
+# published types checked the way apps resolve them.
 name: CI
 
 on:
@@ -17,3 +18,6 @@ jobs:
       - run: npm run typecheck
       - run: npm run build:ui
       - run: npm pack ./packages/ui/dist --dry-run
+      # The package's types under moduleResolution node16, nodenext and bundler, every entry point.
+      - run: npm run check:types
+      - run: npx -y @arethetypeswrong/cli --pack ./packages/ui/dist --exclude-entrypoints ./styles.css --ignore-rules cjs-resolves-to-esm
