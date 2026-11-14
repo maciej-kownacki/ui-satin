@@ -1,5 +1,19 @@
 # @uisatin/ui
 
+## 0.3.0
+
+### Minor Changes
+
+- 0d40736: Satin now sits next to an app's own Tailwind or shadcn/ui theme without touching it. The stylesheet's classes carry Satin's prefix (`sa:flex`), its theme variables are `--sa-*` (`--sa-text-sm`, `--sa-color-blue-600`, `--sa-radius`, `--sa-chart-1`…), and Tailwind's reset and Satin's base rules apply only to Satin's elements, so the app's `text-sm`, `--spacing`, `--radius`, list styles and headings stay the app's in either import order. Tailwind classes passed in `className` still replace the Satin classes they conflict with.
+
+  Breaking for custom CSS that read Satin's primitive variables: use `--sa-color-*` and `--sa-radius-*` instead of `--color-*` and `--radius-*` (semantic tokens like `--bg-card` and `--action-primary-bg` are unchanged). `themeCss()` writes the new names. The shadcn registry ships the same prefixed source. The empty source maps are gone from the package.
+
+- 9a4b332: Every component now takes ordinary HTML attributes and a `ref` (`id`, `data-*`, `aria-*`, `style`, handlers): fields pass them to the control a label points at (Select's trigger, NumberInput's input), overlays to their panel (Dialog, Sheet, Popover, menus, Tooltip's bubble). Each component's docs comment says where they go. Tabs' extra props are now typed.
+
+  New `SatinLabels` (`@uisatin/ui/labels`): the words components say on their own (Close, Increase, Select all rows, Pick a date…) are English by default and can be translated or reworded for an app or part of it. A component's own prop still wins.
+
+  Table: a column's `key` must be a field of the row unless the column renders its own `cell`, so a typo is a type error; rows no longer need an index signature. Internal helpers still exported from the root (`CloseIcon`, `menuItemClass`, `FieldChrome`…) are marked `@internal`.
+
 ## 0.2.0
 
 ### Minor Changes
