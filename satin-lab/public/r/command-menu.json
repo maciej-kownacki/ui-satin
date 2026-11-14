@@ -23,7 +23,7 @@
   ],
   "docs": "Command menu docs: https://uisatin.dev/components/command-menu",
   "meta": {
-    "version": "0.1.1",
+    "version": "0.2.0",
     "edition": "free"
   }
 }
