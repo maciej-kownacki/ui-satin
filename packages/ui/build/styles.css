@@ -1,7 +1,14 @@
 /*
  * The precompiled stylesheet shipped as `@uisatin/ui/styles.css` (dist/styles.css) and in the
- * registry's `satin-styles` item. Tailwind is only Satin's build tool: this entry pulls in
- * the tokens, motion, component CSS and every utility class the components use, so apps
- * get finished CSS and never need Tailwind themselves.
+ * registry's `satin-styles` item. Tailwind is only Satin's build tool, run with Satin's own
+ * prefix: every class is `sa:*` and every theme variable `--sa-*`, so this sheet shares no name
+ * with an app's own Tailwind and works the same in either load order. Tailwind's preflight and
+ * Satin's base rules come scoped to Satin's elements (build/.preflight.css, from
+ * build/styles.mjs). Classes are read from the built JS in dist, where they carry the prefix.
  */
-@import "../src/styles/index.css";
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme) prefix(sa);
+@import "./.preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "../src/styles/satin.css";
+@source "../dist";

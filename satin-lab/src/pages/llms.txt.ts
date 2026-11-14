@@ -33,12 +33,13 @@ import '${pkg.name}/styles.css' // once, at the root of the app
 import { Button } from '${pkg.name}/button'
 \`\`\`
 
-Or copy a component's source with the shadcn CLI: \`npx shadcn@latest add ${url('/r/button.json')}\`.
+Or copy a component's source with the shadcn CLI: \`npx shadcn@latest add ${url('/r/button.json')}\`, or \`npx shadcn@latest add @satin/button\` with \`"registries": { "@satin": "https://uisatin.dev/r/{name}.json" }\` in components.json.
 
 ## Rules for agents
 
 - Import each component from its own entry, \`${pkg.name}/<name>\` (kebab-case file name, e.g. \`${pkg.name}/segmented-control\`).
-- Import \`${pkg.name}/styles.css\` once. Don't add Tailwind for Satin's sake.
+- Import \`${pkg.name}/styles.css\` once. Don't add Tailwind for Satin's sake; if the app has Tailwind or shadcn/ui already, they coexist (Satin's classes are \`sa:*\`, its variables \`--sa-*\`).
+- Tailwind classes in \`className\` override Satin's only when the app has its own Tailwind; otherwise use the app's CSS.
 - Style with the components' props (variant, size, tone, shape) and the Satin tokens (CSS variables), not raw colours.
 - Dark mode: the \`dark\` class on \`<html>\` or any parent.
 - React 19 or newer. The package is ESM only.

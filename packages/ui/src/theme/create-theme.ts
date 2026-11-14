@@ -169,8 +169,27 @@ function radiusVars(scale: number): Vars {
 
 /* ---------- Output ---------- */
 
-export function themeVars(theme: SatinTheme): { root: Vars; dark: Vars } {
-  return { root: { ...brandVars(theme.brand), ...radiusVars(theme.radius) }, dark: {} }
+/**
+ * The prefix on Satin's primitive variables (the colour ramp and the corners). The npm package
+ * ships them as `--sa-color-*` and `--sa-radius-*`, so they never touch an app's own Tailwind
+ * or shadcn theme; the build sets it to 'sa-' (tsup.config.ts). In the source it's empty.
+ */
+const VAR_PREFIX = ''
+
+export interface ThemeOptions {
+  /** Prefix for the primitive variables. Defaults to the one the installed build uses. */
+  prefix?: string
+}
+
+/** `--color-x` → `--sa-color-x`, `var(--radius)` → `var(--sa-radius)`; semantic tokens stay. */
+const prefixed = (text: string, prefix: string) =>
+  prefix ? text.replace(/--(?=color-|radius)/g, `--${prefix}`) : text
+const prefixVars = (vars: Vars, prefix: string): Vars =>
+  Object.fromEntries(Object.entries(vars).map(([k, v]) => [prefixed(k, prefix), prefixed(v, prefix)]))
+
+export function themeVars(theme: SatinTheme, options: ThemeOptions = {}): { root: Vars; dark: Vars } {
+  const prefix = options.prefix ?? VAR_PREFIX
+  return { root: prefixVars({ ...brandVars(theme.brand), ...radiusVars(theme.radius) }, prefix), dark: {} }
 }
 
 // Semantic tokens that read the brand ramp or the radius. CSS resolves var() where a property is
@@ -204,10 +223,11 @@ const SCOPED_DARK: Vars = {
  * whole page; pass a `scope` selector to theme only what's inside it (the docs do this for
  * their previews, so the site around them keeps Satin's own look).
  */
-export function themeCss(theme: SatinTheme, scope?: string) {
-  const vars = themeVars(theme)
-  const root = scope ? { ...vars.root, ...SCOPED_LIGHT } : vars.root
-  const dark = scope ? { ...vars.dark, ...SCOPED_DARK } : vars.dark
+export function themeCss(theme: SatinTheme, scope?: string, options: ThemeOptions = {}) {
+  const prefix = options.prefix ?? VAR_PREFIX
+  const vars = themeVars(theme, { prefix })
+  const root = scope ? { ...vars.root, ...prefixVars(SCOPED_LIGHT, prefix) } : vars.root
+  const dark = scope ? { ...vars.dark, ...prefixVars(SCOPED_DARK, prefix) } : vars.dark
   const block = (sel: string, vars: Vars) =>
     `${sel} {\n${Object.entries(vars)
       .map(([k, v]) => `  ${k}: ${v};`)

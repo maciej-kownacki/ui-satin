@@ -1,0 +1,55 @@
+/*
+ * Base rules: border and outline colours, the text a page starts from, the focus ring, the
+ * pointer on everything clickable, chevrons that turn while their menu is open. The docs site
+ * and source builds apply them to the page; the npm build scopes them to Satin's elements.
+ */
+@layer base {
+  * {
+    @apply border-border-default outline-border-focus/50;
+  }
+  body {
+    @apply bg-bg-canvas text-text-default font-sans font-normal text-sm tracking-tight;
+  }
+  /* Focus: 2px spread in action/focus-ring (primary at 20%), like shadow-border-focus. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-action-focus-ring;
+  }
+}
+
+/*
+ * Tailwind 4 leaves buttons with the default arrow cursor. Everything you can click in Satin
+ * shows the pointer, like links do; disabled controls show not-allowed.
+ */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="option"],
+  [role="radio"],
+  [role="checkbox"],
+  [role="switch"],
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="menuitemcheckbox"],
+  label[for],
+  summary,
+  select {
+    cursor: pointer;
+  }
+  :disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/*
+ * A trigger's chevron (`data-chevron` on the icon) points up while its menu is open.
+ */
+@layer base {
+  [data-chevron] {
+    transition: rotate var(--duration-base) var(--ease-out);
+  }
+  [aria-haspopup][aria-expanded="true"] [data-chevron] {
+    rotate: 180deg;
+  }
+}

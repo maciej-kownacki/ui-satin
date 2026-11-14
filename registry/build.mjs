@@ -14,6 +14,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { nav, pagesOf } from '../satin-lab/src/nav.ts'
+import { declaredThemeVars, prefixSource, prefixThemeVars } from '../packages/ui/build/prefix.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const ui = join(root, 'packages/ui')
@@ -27,6 +28,12 @@ const pages = Object.fromEntries(nav.flatMap((g) => pagesOf(g.items).map((i) => 
 
 const css = join(ui, 'dist/styles.css')
 if (!existsSync(css)) throw new Error('packages/ui/dist/styles.css is missing: run `npm run build -w @uisatin/ui` first')
+
+// The registry ships the same prefixed classes and variables as the npm build, so the copied
+// source matches satin.css (see packages/ui/build/prefix.mjs).
+const classes = new Set(JSON.parse(readFileSync(join(ui, 'build/.classes.json'), 'utf8')))
+const declared = declaredThemeVars(readFileSync(css, 'utf8'))
+const prefixed = (code, file) => prefixThemeVars(prefixSource(code, classes, file).code, declared)
 
 /** npm packages a source imports (not react / react-dom, which every app has), with the range we build against. */
 function npmDeps(src) {
@@ -86,7 +93,7 @@ for (const name of components) {
   const others = [...raw.matchAll(/from\s+'(\.\.?\/[^']+)'/g)].map((m) => m[1]).filter((s) => s !== '../lib/utils' && !s.startsWith('./'))
   if (others.length) throw new Error(`${name} imports ${others.join(', ')}; the registry only knows ../lib/utils and ./<component>`)
 
-  const content = raw
+  const content = prefixed(raw, name)
     .replace(/from\s+'\.\.\/lib\/utils'/g, "from '@/lib/utils'")
     .replace(/from\s+'\.\/([^']+)'/g, "from '@/registry/satin/ui/$1'")
   const page = pages[name]

@@ -1,0 +1,22 @@
+/*
+ * Satin without Tailwind itself: tokens (generated), motion, component CSS and the variants
+ * the components use. index.css adds Tailwind and the base rules for the docs site and
+ * source builds; the npm build (build/styles.mjs) adds a prefixed Tailwind and scoped base.
+ */
+@import "./theme.css";
+@import "./motion.css";
+@import "./components.css";
+@import "./components/input.css";
+@import "./components/textarea.css";
+@import "./components/radio.css";
+@import "./components/agent-loading.css";
+
+/*
+ * Interaction states that can also be forced with data-force, so a state sheet can show
+ * every state at once (like a Figma variants frame). Declared in this order so pressed
+ * wins over focus, and focus over hover.
+ */
+@custom-variant satin-hover (&:hover, &[data-force="hover"]);
+@custom-variant satin-focus (&:focus-visible, &[data-force="focus"]);
+/* A trigger stays pressed while the menu or popover it opened is open. */
+@custom-variant satin-pressed (&:active, &[data-force="pressed"], &[aria-haspopup][aria-expanded="true"]);

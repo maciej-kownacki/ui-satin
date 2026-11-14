@@ -28,6 +28,9 @@ const componentsJson = `{
     "lib": "@/lib",
     "utils": "@/lib/utils",
     "hooks": "@/hooks"
+  },
+  "registries": {
+    "@satin": "https://uisatin.dev/r/{name}.json"
   }
 }`
 const alias = `// tsconfig.json (and tsconfig.app.json in Vite apps)
@@ -79,6 +82,9 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
     <p class={prose}>
       Satin needs React 19. No Tailwind, no config: <Chip>@uisatin/ui</Chip> ships compiled components and one precompiled stylesheet.
     </p>
+    <p class={prose}>
+      Already on Tailwind or shadcn/ui? They don't clash. Satin's classes carry a prefix (<Chip>sa:flex</Chip>), its variables are <Chip>--sa-*</Chip> and its reset only touches Satin's elements, so your <Chip>text-sm</Chip>, <Chip>--spacing</Chip> and <Chip>--radius</Chip> stay yours whichever stylesheet loads first. Your Tailwind classes in a component's <Chip>className</Chip> still override Satin's.
+    </p>
     <CodeFrame code="npm i @uisatin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
     <CodeFrame code={packageUsage} label="Usage" />
     <p class={prose}>
@@ -100,7 +106,10 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
       </summary>
       <div class="flex flex-col gap-3 pt-3">
         <p class={prose}>
-          To change components' code, copy them into your project from the <a class={link} href="https://ui.shadcn.com/docs/registry">shadcn registry</a> instead. Set the project up once: add the <Chip>@/</Chip> alias and a <Chip>components.json</Chip> (written by hand: <Chip>shadcn init</Chip> stops without Tailwind, and Satin doesn't need it). Then each component page has its own command under Installation.
+          To change components' code, copy them into your project from the <a class={link} href="https://ui.shadcn.com/docs/registry">shadcn registry</a> instead. Set the project up once: add the <Chip>@/</Chip> alias and a <Chip>components.json</Chip> (written by hand: <Chip>shadcn init</Chip> stops without Tailwind, and Satin doesn't need it). Then each component page has its own command under Installation; with the <Chip>@satin</Chip> registry in <Chip>components.json</Chip> it's also just <Chip>npx shadcn@latest add @satin/button</Chip>, and the shadcn MCP server can browse Satin for your agent.
+        </p>
+        <p class={prose}>
+          The copied code keeps Satin's prefixed classes, styled by <Chip>satin.css</Chip>. Classes you add yourself need your own Tailwind.
         </p>
         <CodeFrame code={alias} label="Import alias" />
         <CodeFrame code={componentsJson} label="components.json" lang="json" />

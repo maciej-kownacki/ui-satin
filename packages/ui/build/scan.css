@@ -1,0 +1,5 @@
+/* Satin's classes as the source writes them, unprefixed: build/styles.mjs reads which exist. */
+@import "tailwindcss" source(none);
+@import "../src/styles/satin.css";
+@import "../src/styles/base.css";
+@source "../src";

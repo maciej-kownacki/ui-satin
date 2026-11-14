@@ -29,6 +29,9 @@ const manifest = {
     '.': { types: './index.d.ts', import: './index.js', default: './index.js' },
     './styles.css': './styles.css',
     './package.json': './package.json',
+    // themeCss / themeVars on their own, and the cn helper, for apps that compose their own parts.
+    './theme': { types: './theme/index.d.ts', import: './theme/index.js', default: './theme/index.js' },
+    './lib/utils': { types: './lib/utils.d.ts', import: './lib/utils.js', default: './lib/utils.js' },
     './*': { types: './components/*.d.ts', import: './components/*.js', default: './components/*.js' },
   },
   // ESM only: Node 20.19+ can also require() it.
@@ -72,7 +75,7 @@ console.log(`.d.ts imports with extensions: ${rewritten}`)
 // esbuild drops 'use client' when it bundles, so put it back on every entry a React Server
 // Components app can import: the barrel and each component. Same line as the first statement,
 // so the source maps stay aligned.
-const entries = ['dist/index.js', ...readdirSync('dist/components').filter((f) => f.endsWith('.js')).map((f) => `dist/components/${f}`)]
+const entries = ['dist/index.js', 'dist/theme/index.js', ...readdirSync('dist/components').filter((f) => f.endsWith('.js')).map((f) => `dist/components/${f}`)]
 for (const f of entries) {
   const js = readFileSync(f, 'utf8')
   if (!js.startsWith("'use client'")) writeFileSync(f, `'use client';${js}`)

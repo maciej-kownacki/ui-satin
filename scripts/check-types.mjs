@@ -27,10 +27,12 @@ try {
     [
       `import * as root from '@uisatin/ui'`,
       ...components.map((c) => `import * as ${ident(c)} from '@uisatin/ui/${c}'`),
+      `import { themeCss } from '@uisatin/ui/theme'`,
+      `import { cn } from '@uisatin/ui/lib/utils'`,
       `import { Button, type ButtonProps } from '@uisatin/ui/button'`,
       `// @ts-expect-error: not a Button variant, so the types resolved to something real`,
       `const wrong: ButtonProps['variant'] = 'nope'`,
-      `export const all = [root, ${components.map(ident).join(', ')}, <Button>ok</Button>, wrong]`,
+      `export const all = [root, ${components.map(ident).join(', ')}, themeCss, cn, <Button>ok</Button>, wrong]`,
     ].join('\n'),
   )
 

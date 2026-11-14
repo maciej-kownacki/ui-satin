@@ -10,7 +10,7 @@ Satin's React components: shadcn-based, built on Radix, themed with Satin tokens
 
 **Satin Free.** This package is the free, open-source edition of Satin, under the MIT license. Satin Pro, with more components, patterns and templates, will ship separately as its own licensed package; nothing here changes when it does.
 
-You don't need Tailwind. Satin ships one precompiled stylesheet with the tokens and every class the components use.
+You don't need Tailwind. Satin ships one precompiled stylesheet with the tokens and every class the components use. If your app has its own Tailwind (v3 or v4) or a shadcn/ui theme, the two don't touch: Satin's classes are prefixed (`sa:flex`), its variables are `--sa-*`, and its reset only applies to Satin's elements, so your `text-sm`, `--spacing` or `--radius` stay yours in either import order.
 
 ## Install
 
@@ -42,6 +42,13 @@ export function Save() {
 ```
 
 **Dark mode:** add the `dark` class to `<html>` or any parent element.
+
+**Customizing:**
+
+- Props first: `variant`, `size`, `tone`, `shape` cover what the design system allows.
+- `className` takes your own classes and lands on the component's root. With Tailwind in your app, a utility there replaces the Satin class it conflicts with (`<Button className="px-6">` drops Satin's padding for yours). Without Tailwind, use your own CSS classes; a Tailwind class name alone does nothing, because Satin's stylesheet only contains its own prefixed classes.
+- Theme: brand colour and corners with `themeCss({ brand, radius })` or the customizer at https://uisatin.dev/theming. Semantic tokens (`--bg-card`, `--text-muted`, `--action-primary-bg`…) can be set in your CSS too.
+- Satin's CSS sits in cascade layers (`theme`, `base`, `components`, `utilities`). Your unlayered rules win over it, so a global `p { margin: … }` also reaches a paragraph inside a Satin Card; scope those rules or put them in `@layer base`.
 
 **Font:** the tokens ask for Geist and Geist Mono; load them (for example with `@fontsource-variable/geist`) or the system font is used.
 

@@ -95,7 +95,9 @@ export function Customizer() {
       apply(next)
       return next
     })
-  const css = React.useMemo(() => themeCss(theme), [theme])
+  // What you copy or download is for an app on @uisatin/ui (or the registry): the package's
+  // prefixed variables. The page itself applies the unprefixed ones the docs build uses.
+  const css = React.useMemo(() => themeCss(theme, undefined, { prefix: 'sa-' }), [theme])
   const custom = !BRANDS.some((b) => b.hex.toLowerCase() === theme.brand.toLowerCase())
   const isDefault = JSON.stringify(theme) === JSON.stringify(defaultTheme)
 
