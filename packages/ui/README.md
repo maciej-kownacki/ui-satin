@@ -1,6 +1,12 @@
 # @uisatin/ui
 
-Satin's React components: shadcn-based, built on Radix, themed with Satin tokens. Docs: https://uisatin.dev
+[![npm](https://img.shields.io/npm/v/@uisatin/ui)](https://www.npmjs.com/package/@uisatin/ui)
+[![CI](https://github.com/maciej-kownacki/ui-satin/actions/workflows/ci.yml/badge.svg)](https://github.com/maciej-kownacki/ui-satin/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/npm/l/@uisatin/ui)](https://github.com/maciej-kownacki/ui-satin/blob/main/LICENSE)
+
+Satin's React components: shadcn-based, built on Radix, themed with Satin tokens.
+
+[Docs](https://uisatin.dev) · [Source](https://github.com/maciej-kownacki/ui-satin/tree/main/packages/ui) · [Changelog](https://github.com/maciej-kownacki/ui-satin/blob/main/packages/ui/CHANGELOG.md) · [Issues](https://github.com/maciej-kownacki/ui-satin/issues)
 
 **Satin Free.** This package is the free, open-source edition of Satin, under the MIT license. Satin Pro, with more components, patterns and templates, will ship separately as its own licensed package; nothing here changes when it does.
 
@@ -12,7 +18,9 @@ You don't need Tailwind. Satin ships one precompiled stylesheet with the tokens 
 npm i @uisatin/ui
 ```
 
-React 19 or newer is a peer dependency.
+Requirements: React 19 or newer (peer dependency). The package is ESM only; Node 20.19 or newer can also `require()` it. Every entry point is marked `'use client'`, so it works in React Server Components apps (Next.js App Router).
+
+Versions: Satin is 0.x. Until 1.0 a minor release (0.2 → 0.3) may change an API; patches don't. Every change is in the changelog.
 
 ## Use
 

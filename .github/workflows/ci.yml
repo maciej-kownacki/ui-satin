@@ -18,6 +18,9 @@ jobs:
       - run: npm run typecheck
       - run: npm run build:ui
       - run: npm pack ./packages/ui/dist --dry-run
+      # The shadcn registry says which npm release its source matches; it must be this one.
+      - name: Registry version matches the package
+        run: node -e "const v=require('./packages/ui/package.json').version, r=require('./satin-lab/public/r/button.json').meta.version; if (v!==r) { console.error('registry meta.version', r, '!= package', v, '- run npm run registry'); process.exit(1) }"
       # The package's types under moduleResolution node16, nodenext and bundler, every entry point.
       - run: npm run check:types
       - run: npx -y @arethetypeswrong/cli --pack ./packages/ui/dist --exclude-entrypoints ./styles.css --ignore-rules cjs-resolves-to-esm

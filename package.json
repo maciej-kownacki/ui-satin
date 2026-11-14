@@ -14,7 +14,7 @@
     "build:ui": "npm run build -w @uisatin/ui",
     "registry": "npm run build -w @uisatin/ui && node --no-warnings registry/build.mjs",
     "changeset": "changeset",
-    "version": "changeset version && npm install --package-lock-only --no-audit --no-fund",
+    "version": "changeset version && npm install --package-lock-only --no-audit --no-fund && npm run registry",
     "release": "node scripts/release.mjs",
     "pack:ui": "npm run build:ui && npm pack ./packages/ui/dist --pack-destination .",
     "check:types": "node scripts/check-types.mjs"

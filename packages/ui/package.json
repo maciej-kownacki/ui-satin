@@ -5,6 +5,14 @@
   "license": "MIT",
   "author": "Maciej Kownacki",
   "homepage": "https://uisatin.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maciej-kownacki/ui-satin.git",
+    "directory": "packages/ui"
+  },
+  "bugs": {
+    "url": "https://github.com/maciej-kownacki/ui-satin/issues"
+  },
   "keywords": [
     "satin",
     "design-system",
@@ -21,6 +29,9 @@
   "sideEffects": [
     "*.css"
   ],
+  "engines": {
+    "node": ">=20.19"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./styles.css": "./src/styles/index.css",

@@ -31,6 +31,8 @@ const manifest = {
     './package.json': './package.json',
     './*': { types: './components/*.d.ts', import: './components/*.js', default: './components/*.js' },
   },
+  // ESM only: Node 20.19+ can also require() it.
+  engines: pkg.engines,
   peerDependencies: pkg.peerDependencies,
   dependencies: pkg.dependencies,
   publishConfig: { access: 'public' },
@@ -40,6 +42,7 @@ for (const k of Object.keys(manifest)) if (manifest[k] === undefined) delete man
 writeFileSync('dist/package.json', JSON.stringify(manifest, null, 2) + '\n')
 if (existsSync('README.md')) copyFileSync('README.md', 'dist/README.md')
 if (existsSync('LICENSE')) copyFileSync('LICENSE', 'dist/LICENSE')
+if (existsSync('CHANGELOG.md')) copyFileSync('CHANGELOG.md', 'dist/CHANGELOG.md')
 console.log('dist/package.json written')
 
 // tsc writes relative imports in the .d.ts files as they are in the source ('./button'). Under

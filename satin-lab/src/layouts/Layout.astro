@@ -7,6 +7,9 @@ interface Props {
   description: string
 }
 const { title, description } = Astro.props
+// Pages built to compare with Figma or to film (not in the nav) stay out of search.
+const hidden = /^\/(states|preview|playground|film)(\/|$)/.test(Astro.url.pathname)
+const canonical = new URL(Astro.url.pathname.replace(/(.)\/$/, "$1"), Astro.site)
 ---
 
 <!doctype html>
@@ -15,7 +18,11 @@ const { title, description } = Astro.props
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <meta name="robots" content="noindex" />
+    {hidden ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="Satin" />
     <title>{title}</title>
     <!-- PNGs rendered from favicon.svg: Safari drops the SVG (its filters) and caches icons
          hard, so the files carry a version to bump when the icon changes. -->

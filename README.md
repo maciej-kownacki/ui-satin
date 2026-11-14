@@ -1,6 +1,12 @@
-# ui-satin
+# Satin
+
+[![npm](https://img.shields.io/npm/v/@uisatin/ui)](https://www.npmjs.com/package/@uisatin/ui)
+[![CI](https://github.com/maciej-kownacki/ui-satin/actions/workflows/ci.yml/badge.svg)](https://github.com/maciej-kownacki/ui-satin/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 Satin, a design system for calm, AI-native product interfaces. Docs live at [uisatin.dev](https://uisatin.dev).
+
+The React components are published as [`@uisatin/ui`](https://www.npmjs.com/package/@uisatin/ui) (Satin Free, MIT): `npm i @uisatin/ui`. See [packages/ui](packages/ui) for usage, and the [changelog](packages/ui/CHANGELOG.md) for what changed. Bugs and ideas: [issues](https://github.com/maciej-kownacki/ui-satin/issues).
 
 | Folder | What it is |
 |---|---|
@@ -37,4 +43,4 @@ The repo root is linked to the Vercel project `uisatin` (`.vercel/`, not committ
 vercel deploy --prod
 ```
 
-DNS lives at name.com: A `@` → 216.198.79.1, CNAME `www` → Vercel. Nothing to change there when the site changes.
+Releases of `@uisatin/ui` go through Changesets and the Release workflow, published from GitHub Actions with npm Trusted Publishing; see [packages/ui/README.md](packages/ui/README.md#release).
