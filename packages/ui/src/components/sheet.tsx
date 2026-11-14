@@ -5,6 +5,7 @@ import { Dialog as DialogPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { CloseIcon } from './dialog'
+import { useSatinLabels } from './labels'
 
 /**
  * Sheet, 1:1 with the uiKit `Sheet` set (4025:3504): a panel that slides in from an edge and sits
@@ -18,8 +19,11 @@ import { CloseIcon } from './dialog'
  *
  * Built on the Radix Dialog: focus moves in on open and back to the trigger on close; Escape,
  * the backdrop or the handle closes it. It slides in over 250 ms on ease-out and out over 200.
+ *
+ * Other props, `ref` included, go to the sheet's panel.
  */
-export interface SheetProps {
+export interface SheetProps
+  extends Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'title' | 'children' | 'asChild' | 'onOpenAutoFocus'> {
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void
@@ -53,7 +57,9 @@ export function Sheet({
   container,
   onOpenAutoFocus,
   className,
+  ...props
 }: SheetProps) {
+  const labels = useSatinLabels()
   const position = container ? 'absolute' : 'fixed'
   return (
     <DialogPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} modal={modal}>
@@ -68,10 +74,12 @@ export function Sheet({
           )}
         />
         <DialogPrimitive.Content
+          // No description: tell Radix on purpose, so it doesn't warn (an aria-describedby passed in still wins).
+          {...(description ? {} : { 'aria-describedby': undefined })}
+          {...props}
           data-slot="sheet"
           data-side={side}
           onOpenAutoFocus={onOpenAutoFocus}
-          {...(description ? {} : { 'aria-describedby': undefined })}
           className={cn(
             position,
             'z-50 flex flex-col gap-4 bg-bg-card p-4 outline-none',
@@ -91,7 +99,7 @@ export function Sheet({
         >
           {side === 'bottom' && (
             <DialogPrimitive.Close
-              aria-label="Close"
+              aria-label={labels.close}
               className="absolute inset-x-4 top-0 flex h-6 cursor-pointer items-center justify-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-action-focus-ring"
             >
               <span aria-hidden className="h-1 w-9 rounded-full bg-border-strong" />
@@ -113,7 +121,7 @@ export function Sheet({
 
           {side !== 'bottom' && (
             <DialogPrimitive.Close asChild>
-              <Button variant="tertiary" size="xl" iconOnly aria-label="Close" className="absolute top-[7px] right-[7px] rounded-lg">
+              <Button variant="tertiary" size="xl" iconOnly aria-label={labels.close} className="absolute top-[7px] right-[7px] rounded-lg">
                 <CloseIcon />
               </Button>
             </DialogPrimitive.Close>

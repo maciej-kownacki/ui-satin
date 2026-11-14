@@ -23,6 +23,8 @@ import { useSlidingIndicator } from './sliding-indicator'
  * Labels are text/muted, text/default on hover, focus and selected; disabled is 50%. Optional
  * 16px leading icon, 6px from the label. Built on the Radix Tabs (arrow keys move between tabs).
  * States answer to `data-force="hover" | "focus"` for state sheets.
+ *
+ * Other props, `ref` included, go to the Radix Tabs root (`aria-label` names the tab list instead).
  */
 export type TabItem =
   | string
@@ -34,7 +36,11 @@ export type TabItem =
       disabled?: boolean
     }
 
-export interface TabsProps {
+export interface TabsProps
+  extends Omit<
+    React.ComponentProps<typeof TabsPrimitive.Root>,
+    'value' | 'defaultValue' | 'onValueChange' | 'children' | 'asChild' | 'aria-label'
+  > {
   items: TabItem[]
   value?: string
   defaultValue?: string
@@ -106,6 +112,7 @@ export function Tabs({
   disabled = false,
   children,
   className,
+  'aria-label': ariaLabel,
   ...props
 }: TabsProps) {
   const tabs = items.map(normalize)
@@ -117,6 +124,7 @@ export function Tabs({
 
   return (
     <TabsPrimitive.Root
+      {...props}
       data-slot="tabs"
       value={value}
       defaultValue={defaultValue ?? (value === undefined ? tabs[0]?.value : undefined)}
@@ -126,7 +134,7 @@ export function Tabs({
       }}
       className={cn('flex flex-col', className)}
     >
-      <TabsPrimitive.List ref={listRef} aria-label={props['aria-label']} className={list({ variant })}>
+      <TabsPrimitive.List ref={listRef} aria-label={ariaLabel} className={list({ variant })}>
         <span
           ref={indicator.ref}
           aria-hidden

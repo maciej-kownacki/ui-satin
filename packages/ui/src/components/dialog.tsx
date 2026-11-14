@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 
 /**
  * Dialog, 1:1 with the uiKit `Dialog` set (465:66873): variant default or destructive.
@@ -17,10 +18,13 @@ import { Button } from './button'
  * `role="alertdialog"`, so screen readers announce it as an alert. Pass `container` to portal
  * it into a positioned element (the docs stage) instead of the page; the dialog then centres
  * inside that element rather than the viewport.
+ *
+ * Other props, `ref` included, go to the dialog's content panel.
  */
 export type DialogVariant = 'default' | 'destructive'
 
-export interface DialogProps {
+export interface DialogProps
+  extends Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'title' | 'children' | 'asChild' | 'onOpenAutoFocus'> {
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void
@@ -49,6 +53,7 @@ export interface DialogProps {
 }
 
 /** The X from Figma's close button (`icon` 16px, 1.25 stroke). */
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export function CloseIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -80,7 +85,9 @@ export function Dialog({
   container,
   onOpenAutoFocus,
   className,
+  ...props
 }: DialogProps) {
+  const labels = useSatinLabels()
   // Inside a container the dialog is laid out against it, not the viewport.
   const position = container ? 'absolute' : 'fixed'
   const hasBody = children != null || alert != null
@@ -98,12 +105,13 @@ export function Dialog({
         />
         <div className={cn(position, 'pointer-events-none inset-0 z-50 grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)] place-items-center p-4')}>
           <DialogPrimitive.Content
+            // No description: tell Radix on purpose, so it doesn't warn (an aria-describedby passed in still wins).
+            {...(description ? {} : { 'aria-describedby': undefined })}
+            {...props}
             role={variant === 'destructive' ? 'alertdialog' : 'dialog'}
             data-slot="dialog"
             data-variant={variant}
             onOpenAutoFocus={onOpenAutoFocus}
-            // No description: tell Radix on purpose, so it doesn't warn.
-            {...(description ? {} : { 'aria-describedby': undefined })}
             className={cn(
               'pointer-events-auto relative flex max-h-full w-[425px] max-w-[min(560px,100%)] min-w-[min(360px,100%)] flex-col overflow-clip',
               'rounded-2xl border border-border-default bg-bg-popover',
@@ -143,7 +151,7 @@ export function Dialog({
                   variant="tertiary"
                   size="xl"
                   iconOnly
-                  aria-label="Close"
+                  aria-label={labels.close}
                   className="absolute top-[7px] right-[7px] rounded-lg"
                 >
                   <CloseIcon />
@@ -223,6 +231,7 @@ export function DialogAlert({
   className,
   ...props
 }: DialogAlertProps) {
+  const labels = useSatinLabels()
   return (
     <div
       role={intent === 'error' || intent === 'warning' ? 'alert' : 'status'}
@@ -239,7 +248,7 @@ export function DialogAlert({
         </div>
       </div>
       {onDismiss && (
-        <Button variant="tertiary" iconOnly aria-label="Dismiss" onClick={onDismiss}>
+        <Button variant="tertiary" iconOnly aria-label={labels.dismiss} onClick={onDismiss}>
           <CloseIcon />
         </Button>
       )}

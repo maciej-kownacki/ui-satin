@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Slider as SliderPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { Input } from './input'
+import { useSatinLabels } from './labels'
 import { TooltipBubble } from './tooltip'
 
 /**
@@ -28,8 +29,27 @@ import { TooltipBubble } from './tooltip'
  *
  * Built on the Radix Slider: arrow keys, Page Up/Down, Home/End, a native form value (`name`)
  * and a `slider` role per thumb, with `formatValue` as its spoken value.
+ *
+ * Other props, `ref` included, go to the Radix Slider root (the track and thumbs);
+ * `className` styles the wrapper around it with the label and fields.
  */
-export interface SliderProps {
+export interface SliderProps
+  extends Omit<
+    React.ComponentProps<typeof SliderPrimitive.Root>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onValueCommit'
+    | 'min'
+    | 'max'
+    | 'step'
+    | 'minStepsBetweenThumbs'
+    | 'orientation'
+    | 'disabled'
+    | 'name'
+    | 'children'
+    | 'asChild'
+  > {
   /** A number, or a `[from, to]` pair for a range. */
   value?: number | [number, number]
   defaultValue?: number | [number, number]
@@ -83,8 +103,12 @@ export function Slider({
   name,
   id,
   'aria-label': ariaLabel,
+  'aria-labelledby': labelledBy,
   className,
+  onPointerDown,
+  ...props
 }: SliderProps) {
+  const labels = useSatinLabels()
   const autoId = React.useId()
   const sliderId = id ?? autoId
   const labelId = `${sliderId}-label`
@@ -119,8 +143,8 @@ export function Slider({
   React.useEffect(() => () => clearTimeout(keyTimer.current), [])
 
   const readout = range ? `${formatValue(values[0])} – ${formatValue(values[1])}` : formatValue(values[0])
-  const thumbLabel = (i: number) => (range ? (i === 0 ? 'From' : 'To') : undefined)
-  const fieldLabel = (i: number) => (range ? (i === 0 ? 'From' : 'To') : 'Value')
+  const thumbLabel = (i: number) => (range ? (i === 0 ? labels.from : labels.to) : undefined)
+  const fieldLabel = (i: number) => (range ? (i === 0 ? labels.from : labels.to) : labels.value)
 
   // A typed value: clamped, snapped to the step and kept on its side of the other thumb.
   const commitTyped = (i: number, typed: number) => {
@@ -146,6 +170,7 @@ export function Slider({
 
   const slider = (
     <SliderPrimitive.Root
+      {...props}
       id={sliderId}
       data-slot="slider"
       value={values}
@@ -158,8 +183,11 @@ export function Slider({
       orientation={orientation}
       disabled={disabled}
       name={name}
-      aria-labelledby={label ? labelId : undefined}
-      onPointerDown={() => !disabled && setDragging(true)}
+      aria-labelledby={label ? labelId : labelledBy}
+      onPointerDown={(e) => {
+        onPointerDown?.(e)
+        if (!disabled) setDragging(true)
+      }}
       className={cn(
         'relative flex shrink-0 touch-none items-center select-none data-[disabled]:cursor-not-allowed',
         vertical ? 'h-40 w-5 flex-col' : 'h-5 w-full min-w-0 flex-1',

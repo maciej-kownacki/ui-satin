@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { cn } from '../lib/utils'
 import { Checkbox } from './checkbox'
+import { useSatinLabels } from './labels'
 
 /**
  * Table, 1:1 with the uiKit `Table` set (3411:21610) and its parts: table/header (3410:17835),
@@ -29,18 +30,28 @@ import { Checkbox } from './checkbox'
 
 export type Sort = { key: string; direction: 'asc' | 'desc' } | null
 
-export type Row = { id: string } & Record<string, unknown>
+/** A row: any object with a string `id`. Interfaces work too; no index signature needed. */
+export type Row = { id: string }
 
-export interface Column<R extends Row = Row> {
-  key: string
+interface ColumnBase<R extends Row> {
   header: React.ReactNode
   /** fr weight with overflow="fit" (default 1), pixels with overflow="scroll" (default 160). */
   width?: number
   sortable?: boolean
-  /** Renders the cell; defaults to the row's value at `key`. */
-  cell?: (row: R) => React.ReactNode
   align?: 'left' | 'right'
 }
+
+/**
+ * A column. Its `key` names a field of the row and the cell shows that field, so a typo in `key`
+ * is a type error. A computed column (a field the row doesn't have) gives its own `cell`.
+ */
+export type Column<R extends Row = Row> =
+  | (ColumnBase<R> & {
+      key: keyof R & string
+      /** Renders the cell; defaults to the row's value at `key`. */
+      cell?: (row: R) => React.ReactNode
+    })
+  | (ColumnBase<R> & { key: string; cell: (row: R) => React.ReactNode })
 
 export interface TableProps<R extends Row = Row> extends Omit<React.ComponentProps<'div'>, 'children'> {
   columns: Column<R>[]
@@ -126,6 +137,7 @@ export function Table<R extends Row = Row>({
   className,
   ...props
 }: TableProps<R>) {
+  const labels = useSatinLabels()
   const [sort, setSort] = React.useState<Sort>(defaultSort)
   const [selectedState, setSelectedState] = React.useState<string[]>([])
   const selected = selectedProp ?? selectedState
@@ -143,7 +155,8 @@ export function Table<R extends Row = Row>({
 
   const sortedRows = React.useMemo(() => {
     if (!sort || manualSort) return rows
-    const s = [...rows].sort((a, b) => compare(a[sort.key], b[sort.key]))
+    const field = (r: R) => (r as Record<string, unknown>)[sort.key]
+    const s = [...rows].sort((a, b) => compare(field(a), field(b)))
     return sort.direction === 'desc' ? s.reverse() : s
   }, [rows, sort, manualSort])
 
@@ -206,7 +219,7 @@ export function Table<R extends Row = Row>({
               className={cn('border-b border-border-subtle py-2 pl-2 align-middle', stickyFirst('left-0 bg-component-table-header'))}
             >
               <Checkbox
-                aria-label="Select all rows"
+                aria-label={labels.selectAllRows}
                 checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                 onCheckedChange={(v) => setSelected(v === true ? rows.map((r) => r.id) : [])}
                 className="align-middle"
@@ -258,7 +271,7 @@ export function Table<R extends Row = Row>({
               {selectable && (
                 <td className={cn('py-2 pl-2 align-middle', cellPosition(0, cellCount), stickyFirst(cn('left-0', rowBg)))}>
                   <Checkbox
-                    aria-label={`Select row ${r + 1}`}
+                    aria-label={`${labels.selectRow} ${r + 1}`}
                     checked={isSelected}
                     onCheckedChange={(v) =>
                       setSelected(v === true ? [...selected, row.id] : selected.filter((id) => id !== row.id))
@@ -268,7 +281,7 @@ export function Table<R extends Row = Row>({
                 </td>
               )}
               {columns.map((c, i) => {
-                const content = c.cell ? c.cell(row) : (row[c.key] as React.ReactNode)
+                const content = c.cell ? c.cell(row) : ((row as Record<string, unknown>)[c.key] as React.ReactNode)
                 const plain = typeof content === 'string' || typeof content === 'number'
                 return (
                   <td

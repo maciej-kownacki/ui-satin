@@ -5,6 +5,7 @@ import { ArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Badge } from './badge'
 import { Progress } from './progress'
+import { useSatinLabels } from './labels'
 
 /**
  * AgentSuggestion, 1:1 with the uiKit `AgentSuggestion` set (🆕 agent suggestions, 4126:3903):
@@ -155,14 +156,15 @@ export function AgentSuggestionMetric({
 
 /** Old text struck through on bg/muted, the new text in status/green below it. */
 export function AgentSuggestionDiff({ before, after, className }: { before: React.ReactNode; after: React.ReactNode; className?: string }) {
+  const labels = useSatinLabels()
   return (
     <div data-slot="agent-suggestion-diff" className={cn('flex flex-col gap-1 text-base', className)}>
       <del className="rounded-lg bg-bg-muted px-2 py-1.5 text-text-muted">
-        <span className="sr-only">Remove: </span>
+        <span className="sr-only">{labels.remove}: </span>
         {before}
       </del>
       <ins className="rounded-lg bg-status-green-bg px-2 py-1.5 text-status-green-fg no-underline">
-        <span className="sr-only">Add: </span>
+        <span className="sr-only">{labels.add}: </span>
         {after}
       </ins>
     </div>

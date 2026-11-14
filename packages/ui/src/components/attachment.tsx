@@ -5,6 +5,7 @@ import { HoverCard } from 'radix-ui'
 import { ArrowUpRight, NavArrowDown, NavArrowUp, Xmark } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 
 /**
  * Attachment, 1:1 with the uiKit `Attachment` set (3141:20409), plus `AttachmentGroup`
@@ -243,12 +244,13 @@ export function AttachmentPreviewPager({
   onPrevious?: () => void
   onNext?: () => void
 }) {
+  const labels = useSatinLabels()
   return (
     <>
-      <Button variant="tertiary" size="xs" shape="rounded" iconOnly aria-label="Previous section" disabled={page <= 1} onClick={onPrevious}>
+      <Button variant="tertiary" size="xs" shape="rounded" iconOnly aria-label={labels.previousSection} disabled={page <= 1} onClick={onPrevious}>
         <NavArrowUp aria-hidden />
       </Button>
-      <Button variant="tertiary" size="xs" shape="rounded" iconOnly aria-label="Next section" disabled={page >= total} onClick={onNext}>
+      <Button variant="tertiary" size="xs" shape="rounded" iconOnly aria-label={labels.nextSection} disabled={page >= total} onClick={onNext}>
         <NavArrowDown aria-hidden />
       </Button>
       <span className="text-xs whitespace-nowrap text-text-muted" aria-live="polite">
@@ -268,8 +270,9 @@ export function AttachmentPreviewSheets({
   value: string
   onValueChange?: (sheet: string) => void
 }) {
+  const labels = useSatinLabels()
   return (
-    <div role="tablist" aria-label="Sheets" className="flex items-center gap-1">
+    <div role="tablist" aria-label={labels.sheets} className="flex items-center gap-1">
       {sheets.map((sheet) => {
         const selected = sheet === value
         return (

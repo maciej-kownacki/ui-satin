@@ -1,5 +1,6 @@
 export { cn } from './lib/utils'
 export * from './theme'
+export * from './components/labels'
 
 // Components
 export * from './components/accordion'

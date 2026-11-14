@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { cn } from '../lib/utils'
 import { HoverCard } from './hover-card'
+import { useSatinLabels } from './labels'
 
 /**
  * Citations and sources, 1:1 with the uiKit design (🆕 citations): where an answer comes from.
@@ -36,21 +37,24 @@ function SourceIcon({ source }: { source: CitationSource }) {
   )
 }
 
-export interface CitationProps {
+/** The numbered chip. Other props, `ref` included, go to its `a` (an `aria-label` passed in replaces the default). */
+export interface CitationProps extends Omit<React.ComponentProps<'a'>, 'children'> {
   /** 1-based, as in the Sources list. */
   index: number
   source: CitationSource
   className?: string
 }
 
-export function Citation({ index, source, className }: CitationProps) {
+export function Citation({ index, source, className, 'aria-label': ariaLabel, ...props }: CitationProps) {
+  const labels = useSatinLabels()
   const chip = (
     <a
+      {...props}
       data-slot="citation"
       href={source.href}
       target={source.href ? '_blank' : undefined}
       rel={source.href ? 'noreferrer' : undefined}
-      aria-label={`Source ${index}: ${source.title}`}
+      aria-label={ariaLabel ?? `${labels.source} ${index}: ${source.title}`}
       className={cn(
         'mx-0.5 inline-grid h-4 min-w-4 translate-y-[-1px] place-items-center rounded-sm bg-bg-muted px-1 align-middle text-xs leading-none font-medium text-text-default no-underline tabular-nums outline-none',
         'transition-[background-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
@@ -73,18 +77,19 @@ export function Citation({ index, source, className }: CitationProps) {
   )
 }
 
-export interface SourcesProps {
+/** The sources pill and list. Other props, `ref` included, go to its root `div`. */
+export interface SourcesProps extends Omit<React.ComponentProps<'div'>, 'children'> {
   sources: CitationSource[]
   /** Start with the list open. */
   defaultOpen?: boolean
   className?: string
 }
 
-export function Sources({ sources, defaultOpen = false, className }: SourcesProps) {
+export function Sources({ sources, defaultOpen = false, className, ...props }: SourcesProps) {
   const [open, setOpen] = React.useState(defaultOpen)
   const listId = React.useId()
   return (
-    <div data-slot="sources" className={cn('flex flex-col gap-2', className)}>
+    <div {...props} data-slot="sources" className={cn('flex flex-col gap-2', className)}>
       <button
         type="button"
         aria-expanded={open}

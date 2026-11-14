@@ -48,6 +48,8 @@ export function Save() {
 - Props first: `variant`, `size`, `tone`, `shape` cover what the design system allows.
 - `className` takes your own classes and lands on the component's root. With Tailwind in your app, a utility there replaces the Satin class it conflicts with (`<Button className="px-6">` drops Satin's padding for yours). Without Tailwind, use your own CSS classes; a Tailwind class name alone does nothing, because Satin's stylesheet only contains its own prefixed classes.
 - Theme: brand colour and corners with `themeCss({ brand, radius })` or the customizer at https://uisatin.dev/theming. Semantic tokens (`--bg-card`, `--text-muted`, `--action-primary-bg`…) can be set in your CSS too.
+- Words: the labels components say on their own (Close, Increase, Select all rows…) are English by default. Wrap the app in `<SatinLabels labels={{ close: 'Zamknij' }}>` (from `@uisatin/ui/labels`) to translate or reword any of them.
+- HTML attributes and `ref`: every component passes `id`, `data-*`, `aria-*`, handlers and `ref` to its main element (the control for fields, the panel for overlays); each component's docs comment says which.
 - Satin's CSS sits in cascade layers (`theme`, `base`, `components`, `utilities`). Your unlayered rules win over it, so a global `p { margin: … }` also reaches a paragraph inside a Satin Card; scope those rules or put them in `@layer base`.
 
 **Font:** the tokens ask for Geist and Geist Mono; load them (for example with `@fontsource-variable/geist`) or the system font is used.

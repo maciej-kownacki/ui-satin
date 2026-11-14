@@ -7,6 +7,7 @@ import { cn } from '../lib/utils'
 import { Button } from './button'
 import { Checkbox } from './checkbox'
 import { SLIDE_MS } from './sliding-indicator'
+import { useSatinLabels } from './labels'
 
 /**
  * DecisionCard, 1:1 with the uiKit `DecisionCard` set (3096:1626) and its `decisionItem` rows
@@ -273,6 +274,7 @@ function Header({
   onPreviousStep?: () => void
   onNextStep?: () => void
 }) {
+  const labels = useSatinLabels()
   return (
     <div className="flex items-start gap-0.5 py-3 pr-px pl-3">
       {/* The title and hint move with the question; the step navigator stays. */}
@@ -291,7 +293,7 @@ function Header({
             size="xs"
             shape="rounded"
             iconOnly
-            aria-label="Previous question"
+            aria-label={labels.previousQuestion}
             disabled={!onPreviousStep}
             onClick={onPreviousStep}
           >
@@ -303,7 +305,7 @@ function Header({
             size="xs"
             shape="rounded"
             iconOnly
-            aria-label="Next question"
+            aria-label={labels.nextQuestion}
             disabled={!onNextStep}
             onClick={onNextStep}
           >
@@ -628,6 +630,7 @@ function Draft({
   continueLabel: string
   skipLabel: string
 }) {
+  const labels = useSatinLabels()
   const [editing, setEditing] = React.useState(false)
   const areaRef = React.useRef<HTMLTextAreaElement>(null)
 
@@ -653,7 +656,7 @@ function Draft({
           {editing ? (
             <textarea
               ref={areaRef}
-              aria-label="Draft"
+              aria-label={labels.draft}
               value={value}
               onChange={(e) => onValueChange(e.target.value)}
               className="w-full resize-none bg-transparent outline-none"

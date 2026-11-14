@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Toast as ToastPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 
 /**
  * Toast, 1:1 with the uiKit `Toast` set (3650:17696): intent neutral, info, success, warning or
@@ -188,6 +189,7 @@ function ToastContent({
   intent: ToastIntent
   onAction?: () => void
 }) {
+  const labels = useSatinLabels()
   return (
     <>
       {icon && (
@@ -218,7 +220,7 @@ function ToastContent({
           )}
           {closeButton && (
             <ToastPrimitive.Close asChild>
-              <Button variant="tertiary" size="xs" iconOnly aria-label="Close" className="rounded-md text-text-muted">
+              <Button variant="tertiary" size="xs" iconOnly aria-label={labels.close} className="rounded-md text-text-muted">
                 {/* 14px X at 1.09, from Figma. */}
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
                   <path

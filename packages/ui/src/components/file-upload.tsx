@@ -6,6 +6,7 @@ import { cn } from '../lib/utils'
 import { Attachment, FileIcon } from './attachment'
 import { Button } from './button'
 import { Progress } from './progress'
+import { useSatinLabels } from './labels'
 
 /**
  * FileUpload, 1:1 with the uiKit `FileUpload` set (4068:3717), its `FileUploadItem` rows
@@ -133,6 +134,7 @@ export function FileUpload({
   className,
   ...props
 }: FileUploadProps) {
+  const labels = useSatinLabels()
   const inputRef = React.useRef<HTMLInputElement>(null)
   const descriptionId = React.useId()
   const [dragging, setDragging] = React.useState(false)
@@ -226,7 +228,7 @@ export function FileUpload({
       </div>
 
       {rows.length > 0 && (
-        <ul className="flex flex-col gap-2" aria-label="Files">
+        <ul className="flex flex-col gap-2" aria-label={labels.files}>
           {rows.map((f) => (
             <li key={f.id}>
               <FileUploadItem file={f} onCancel={onCancel} onRemove={onRemove} />
@@ -236,7 +238,7 @@ export function FileUpload({
       )}
 
       {done.length > 0 && (
-        <ul className="flex flex-col gap-2" aria-label="Attached files">
+        <ul className="flex flex-col gap-2" aria-label={labels.attachedFiles}>
           {done.map((f) => (
             <li key={f.id}>
               <Attachment

@@ -26,8 +26,11 @@ import { FieldChrome, useFieldChrome } from './select'
  * and the browser's SMS autofill (`autocomplete="one-time-code"`) all work as in any field, and
  * screen readers hear one text box. Only digits by default (`pattern`); `onComplete` fires when
  * every cell is filled.
+ *
+ * Other props, `ref` included, go to that <input>; `className` styles the field around it.
  */
-export interface InputOTPProps {
+export interface InputOTPProps
+  extends Omit<React.ComponentProps<'input'>, 'value' | 'defaultValue' | 'pattern' | 'type' | 'maxLength' | 'children'> {
   /** How many characters. */
   length?: number
   /** Cells per group; groups are split by a dash. 0 for one group. */
@@ -70,6 +73,12 @@ export function InputOTP({
   id,
   name,
   className,
+  'aria-describedby': describedByProp,
+  ref,
+  onChange,
+  onFocus,
+  onBlur,
+  onSelect,
   ...props
 }: InputOTPProps) {
   // The message under the cells is drawn here, so the chrome only gets whether there is an error.
@@ -79,11 +88,20 @@ export function InputOTP({
   const successMessage = isSuccess && success !== true ? (success as React.ReactNode) : null
   const message = isError ? (error as React.ReactNode) : successMessage ?? (chrome.invalid ? null : hint)
   const messageId = message ? `${chrome.controlId}-message` : undefined
-  const describedBy = [chrome.describedBy, messageId].filter(Boolean).join(' ') || undefined
+  const describedBy = [describedByProp, chrome.describedBy, messageId].filter(Boolean).join(' ') || undefined
   const [inner, setInner] = React.useState(defaultValue)
   const value = (valueProp ?? inner).slice(0, length)
   const [focused, setFocused] = React.useState(false)
   const inputRef = React.useRef<HTMLInputElement>(null)
+  // The app's ref and ours, on the one <input>.
+  const setInput = React.useCallback(
+    (node: HTMLInputElement | null) => {
+      inputRef.current = node
+      if (typeof ref === 'function') ref(node)
+      else if (ref) ref.current = node
+    },
+    [ref],
+  )
 
   const set = (raw: string) => {
     const next = [...raw].filter((c) => pattern.test(c)).join('').slice(0, length)
@@ -134,19 +152,28 @@ export function InputOTP({
           )
         })}
         <input
-          ref={inputRef}
+          {...props}
+          ref={setInput}
           id={chrome.controlId}
           name={name}
           value={value}
-          onChange={(e) => set(e.target.value)}
+          onChange={(e) => {
+            onChange?.(e)
+            set(e.target.value)
+          }}
           onFocus={(e) => {
+            onFocus?.(e)
             setFocused(true)
             // Always type at the end: the cells show where.
             const end = e.currentTarget.value.length
             requestAnimationFrame(() => inputRef.current?.setSelectionRange(end, end))
           }}
-          onBlur={() => setFocused(false)}
+          onBlur={(e) => {
+            onBlur?.(e)
+            setFocused(false)
+          }}
           onSelect={(e) => {
+            onSelect?.(e)
             const end = e.currentTarget.value.length
             if (e.currentTarget.selectionStart !== end) e.currentTarget.setSelectionRange(end, end)
           }}
@@ -157,7 +184,6 @@ export function InputOTP({
           disabled={chrome.disabled}
           aria-invalid={chrome.invalid || undefined}
           aria-describedby={describedBy}
-          aria-label={props['aria-label']}
           spellCheck={false}
           className="absolute inset-0 w-full cursor-text bg-transparent text-transparent caret-transparent outline-none selection:bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:[box-shadow:none] disabled:cursor-not-allowed"
         />

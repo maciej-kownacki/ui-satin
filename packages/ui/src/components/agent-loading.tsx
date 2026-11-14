@@ -244,6 +244,7 @@ function useTetrisKeyframes() {
 const GRID = Array.from({ length: COLS * ROWS }, (_, i) => i)
 
 /** The tetris mark. Memoised: its 125 animated elements never re-render with their parent. */
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const TetrisMark = React.memo(function TetrisMark({ glimmer = 'color', className }: { glimmer?: Glimmer; className?: string }) {
   useTetrisKeyframes()
   let d = 0
@@ -321,6 +322,7 @@ const FLAPPY_PARTS: { role: 'body' | 'wing'; rect: [number, number, number, numb
 ]
 
 /** The flappy bird fitted into a `size` square; `run` plays the run in place. */
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export function FlappySprite({ size = 16, run = true, className }: { size?: number; run?: boolean; className?: string }) {
   const cols = 17
   const rows = 12

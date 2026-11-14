@@ -4,6 +4,7 @@ import * as React from 'react'
 import { MoreHoriz, NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { DropdownMenu, DropdownMenuItem } from './dropdown'
+import { useSatinLabels } from './labels'
 
 /**
  * Breadcrumb, 1:1 with the uiKit `Breadcrumb` set (4025:3711): the path to the current page,
@@ -53,6 +54,7 @@ function Separator() {
 }
 
 export function Breadcrumb({ items, maxItems, className, 'aria-label': ariaLabel = 'Breadcrumb', ...props }: BreadcrumbProps) {
+  const labels = useSatinLabels()
   const fold = maxItems != null && maxItems >= 2 && items.length > maxItems
   const head = fold ? items.slice(0, 1) : items
   const hidden = fold ? items.slice(1, items.length - (maxItems - 1)) : []
@@ -103,7 +105,7 @@ export function Breadcrumb({ items, maxItems, className, 'aria-label': ariaLabel
             <Separator />
             <li className="flex">
               <DropdownMenu
-                aria-label="Hidden pages"
+                aria-label={labels.hiddenPages}
                 align="start"
                 trigger={
                   <button

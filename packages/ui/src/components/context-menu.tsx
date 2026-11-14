@@ -15,8 +15,11 @@ import { MenuItemContent, menuItemClass, menuSurfaceClass, type MenuItemContentP
  *
  * Built on the Radix ContextMenu: arrow keys, typeahead, Escape, Shift+F10 / the menu key on the
  * focused target.
+ *
+ * Other props, `ref` included, go to the menu's panel (the Radix Content).
  */
-export interface ContextMenuProps {
+export interface ContextMenuProps
+  extends Omit<React.ComponentProps<typeof ContextPrimitive.Content>, 'children' | 'asChild' | 'onFocusOutside'> {
   /** What right-click opens the menu on. Rendered with `asChild`, so pass one element. */
   trigger: React.ReactNode
   /** `ContextMenuItem`s, `ContextMenuSub`s and `ContextMenuSeparator`s. */
@@ -45,14 +48,16 @@ export function ContextMenu({
   modal = true,
   onFocusOutside,
   className,
+  ...props
 }: ContextMenuProps) {
   return (
     <ContextPrimitive.Root onOpenChange={onOpenChange} modal={modal}>
       <ContextPrimitive.Trigger asChild>{trigger}</ContextPrimitive.Trigger>
       <ContextPrimitive.Portal container={container}>
         <ContextPrimitive.Content
-          data-slot="context-menu"
           collisionPadding={8}
+          {...props}
+          data-slot="context-menu"
           onFocusOutside={onFocusOutside}
           className={cn(contentClass, 'origin-(--radix-context-menu-content-transform-origin)', 'max-h-(--radix-context-menu-content-available-height)', className)}
         >
@@ -84,15 +89,22 @@ export function ContextMenuItem({ label, icon, shortcut, description, destructiv
   )
 }
 
-export interface ContextMenuSubProps extends Pick<MenuItemContentProps, 'icon'> {
+export interface ContextMenuSubProps
+  extends Omit<React.ComponentProps<typeof ContextPrimitive.SubContent>, 'children' | 'asChild'>,
+    Pick<MenuItemContentProps, 'icon'> {
   label: string
   /** The submenu's items. */
   children: React.ReactNode
   disabled?: boolean
 }
 
-/** A row that opens a submenu beside it (hover, →, or Enter). */
-export function ContextMenuSub({ label, icon, children, disabled }: ContextMenuSubProps) {
+/**
+ * A row that opens a submenu beside it (hover, →, or Enter).
+ *
+ * Other props, `ref` and `className` included, go to the submenu's panel (the Radix SubContent),
+ * not to the row.
+ */
+export function ContextMenuSub({ label, icon, children, disabled, className, ...props }: ContextMenuSubProps) {
   return (
     <ContextPrimitive.Sub>
       <ContextPrimitive.SubTrigger
@@ -109,7 +121,8 @@ export function ContextMenuSub({ label, icon, children, disabled }: ContextMenuS
           sideOffset={4}
           alignOffset={-5}
           collisionPadding={8}
-          className={cn(contentClass, 'w-[220px] origin-(--radix-context-menu-content-transform-origin)')}
+          {...props}
+          className={cn(contentClass, 'w-[220px] origin-(--radix-context-menu-content-transform-origin)', className)}
         >
           {children}
         </ContextPrimitive.SubContent>

@@ -16,9 +16,12 @@ import { KbdGroup } from './kbd'
  * Built on the Radix tooltip: it opens on hover after `delay` and at once on keyboard focus,
  * waits `closeDelay` after the pointer leaves before closing, closes on Escape, and links itself to the trigger with aria-describedby. It sits 8px from
  * the trigger and fades in from 4px towards it (`@starting-style`, ease-out, 150 ms).
+ *
+ * Other props, `ref` included, go to the visible bubble (the element `className` styles), not to
+ * the Radix Content around it.
  */
 
-export interface TooltipProps {
+export interface TooltipProps extends Omit<React.ComponentProps<'div'>, 'children'> {
   /** The action, in one or two words. */
   label: React.ReactNode
   /** Keys that run the action, e.g. "⌘K" or "⌃⇧V". */
@@ -48,6 +51,7 @@ export function TooltipBubble({
 }: Pick<TooltipProps, 'label' | 'shortcut' | 'shape' | 'className'> & React.ComponentProps<'div'>) {
   return (
     <div
+      {...props}
       data-slot="tooltip"
       className={cn(
         'flex items-center gap-2 bg-text-default py-1 pl-2.5 text-sm leading-(--text-sm--line-height) font-medium whitespace-nowrap text-bg-canvas',
@@ -56,7 +60,6 @@ export function TooltipBubble({
         shortcut ? 'pr-1.5' : 'pr-2.5',
         className,
       )}
-      {...props}
     >
       <span>{label}</span>
       {shortcut && <KbdGroup keys={shortcut} tone="inverse" />}
@@ -77,6 +80,7 @@ export function Tooltip({
   onOpenChange,
   container,
   className,
+  ...props
 }: TooltipProps) {
   // Open state lives here so closing can wait `closeDelay`; opening again cancels the wait.
   const [inner, setInner] = React.useState(defaultOpen)
@@ -108,7 +112,7 @@ export function Tooltip({
               'data-[side=left]:starting:translate-x-1 data-[side=right]:starting:-translate-x-1',
             )}
           >
-            <TooltipBubble label={label} shortcut={shortcut} shape={shape} className={className} />
+            <TooltipBubble {...props} label={label} shortcut={shortcut} shape={shape} className={className} />
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

@@ -5,6 +5,7 @@ import { cn } from '../lib/utils'
 import { Badge } from './badge'
 import { Floating } from './floating'
 import { Select } from './select'
+import { useSatinLabels } from './labels'
 
 /**
  * The parts every chart card shares, 1:1 with the uiKit `chart/barCard` (3607:18253) and `chart/channelCard`
@@ -121,11 +122,12 @@ function PeriodSelect({
   value?: string
   onValueChange?: (v: string) => void
 }) {
+  const labels = useSatinLabels()
   const groups: string[][] = Array.isArray(periods[0]) ? (periods as string[][]) : [periods as string[]]
   return (
     <Select
       size="sm"
-      aria-label="Period"
+      aria-label={labels.period}
       options={groups.map((g) => ({ options: g.map((p) => ({ value: p, label: p })) }))}
       value={value}
       onValueChange={onValueChange}

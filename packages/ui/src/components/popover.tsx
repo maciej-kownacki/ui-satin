@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Popover as PopoverPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
+import { useSatinLabels } from './labels'
 
 /**
  * Popover, 1:1 with the uiKit `Popover` component (613:18781): a 320px popover surface,
@@ -12,8 +13,14 @@ import { cn } from '../lib/utils'
  *
  * Built on the Radix Popover. `children` is the trigger (rendered with `asChild`, so pass a
  * Button); `body` fills the body slot. Pass `container` to portal it into the docs stage.
+ *
+ * Other props, `ref` included, go to the popover's panel (the Radix Content).
  */
-export interface PopoverProps {
+export interface PopoverProps
+  extends Omit<
+    React.ComponentProps<typeof PopoverPrimitive.Content>,
+    'title' | 'children' | 'asChild' | 'side' | 'align' | 'sideOffset' | 'onOpenAutoFocus' | 'onInteractOutside'
+  > {
   title: React.ReactNode
   description?: React.ReactNode
   /** The trigger. Rendered with `asChild`. */
@@ -88,19 +95,22 @@ export function Popover({
   onOpenAutoFocus,
   onInteractOutside,
   className,
+  ...props
 }: PopoverProps) {
+  const labels = useSatinLabels()
   const titleId = React.useId()
   return (
     <PopoverPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
       {children && <PopoverPrimitive.Trigger asChild>{children}</PopoverPrimitive.Trigger>}
       <PopoverPrimitive.Portal container={container}>
         <PopoverPrimitive.Content
+          collisionPadding={8}
+          {...props}
           data-slot="popover"
           aria-labelledby={titleId}
           side={side}
           align={align}
           sideOffset={sideOffset}
-          collisionPadding={8}
           onOpenAutoFocus={onOpenAutoFocus}
           onInteractOutside={onInteractOutside}
           className={cn(
@@ -113,7 +123,7 @@ export function Popover({
           {/* Radix Popover has no Title part; the content is labelled by the heading. */}
           <PanelBody titleId={titleId} title={title} description={description} body={body} closeButton={closeButton} />
           {closeButton && (
-            <PopoverPrimitive.Close aria-label="Close" className={closeClass}>
+            <PopoverPrimitive.Close aria-label={labels.close} className={closeClass}>
               {closeIcon}
             </PopoverPrimitive.Close>
           )}
@@ -123,9 +133,18 @@ export function Popover({
   )
 }
 
+export interface PopoverPanelProps
+  extends Omit<React.ComponentProps<'div'>, 'title' | 'children'>,
+    Pick<PopoverProps, 'title' | 'description' | 'body' | 'closeButton'> {
+  /** Called when the close button is pressed. */
+  onClose?: () => void
+}
+
 /**
  * The popover's panel on its own, in place: no trigger, no positioning. For docs, previews
  * and layers you anchor yourself. The close button calls `onClose`.
+ *
+ * Other props, `ref` included, go to the panel's root `div`.
  */
 export function PopoverPanel({
   title,
@@ -134,13 +153,15 @@ export function PopoverPanel({
   closeButton = true,
   onClose,
   className,
-}: Pick<PopoverProps, 'title' | 'description' | 'body' | 'closeButton' | 'className'> & { onClose?: () => void }) {
+  ...props
+}: PopoverPanelProps) {
+  const labels = useSatinLabels()
   const titleId = React.useId()
   return (
-    <div role="dialog" aria-labelledby={titleId} data-slot="popover" className={cn(panelClass, className)}>
+    <div {...props} role="dialog" aria-labelledby={titleId} data-slot="popover" className={cn(panelClass, className)}>
       <PanelBody titleId={titleId} title={title} description={description} body={body} closeButton={closeButton} />
       {closeButton && (
-        <button type="button" aria-label="Close" onClick={onClose} className={closeClass}>
+        <button type="button" aria-label={labels.close} onClick={onClose} className={closeClass}>
           {closeIcon}
         </button>
       )}

@@ -5,6 +5,7 @@ import { Dialog as DialogPrimitive } from 'radix-ui'
 import { Search } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { menuItemClass, MenuItemContent } from './dropdown'
+import { useSatinLabels } from './labels'
 import { Kbd, KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
 
 /**
@@ -23,6 +24,8 @@ import { Kbd, KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
  *
  * Built on the Radix Dialog (focus trap, Escape, focus back to where it was). With `hotkey`,
  * ⌘K or Ctrl+K anywhere on the page toggles it.
+ *
+ * Other props, `ref` included, go to the menu's panel (the Radix Content).
  */
 export interface CommandItem {
   id: string
@@ -42,13 +45,15 @@ export interface CommandGroup {
   items: CommandItem[]
 }
 
-export interface CommandMenuProps {
+export interface CommandMenuProps
+  extends Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'children' | 'asChild' | 'placeholder' | 'onOpenAutoFocus'> {
   groups: CommandGroup[]
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void
   /** Toggle the menu with ⌘K / Ctrl+K. */
   hotkey?: boolean
+  /** The search field's placeholder. Defaults to the `commandPlaceholder` label. */
   placeholder?: string
   /** Shown when nothing matches; gets the query. */
   emptyText?: (query: string) => React.ReactNode
@@ -74,14 +79,16 @@ export function CommandMenu({
   defaultOpen = false,
   onOpenChange,
   hotkey = true,
-  placeholder = 'Type a command or search…',
+  placeholder,
   emptyText = (q) => `No results for “${q}”`,
   hints = true,
   modal = true,
   container,
   onOpenAutoFocus,
   className,
+  ...props
 }: CommandMenuProps) {
+  const labels = useSatinLabels()
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
   const open = openProp ?? uncontrolledOpen
   const setOpen = React.useCallback(
@@ -141,8 +148,10 @@ export function CommandMenu({
         <DialogPrimitive.Overlay className={cn(position, 'inset-0 z-50 bg-black-a40')} />
         <div className={cn(position, 'pointer-events-none inset-0 z-50 flex items-center justify-center p-4')}>
           <DialogPrimitive.Content
-            data-slot="command-menu"
+            // No description: tell Radix on purpose, so it doesn't warn (an aria-describedby passed in still wins).
             aria-describedby={undefined}
+            {...props}
+            data-slot="command-menu"
             onOpenAutoFocus={onOpenAutoFocus}
             className={cn(
               'pointer-events-auto flex h-fit max-h-[min(480px,76vh)] w-[520px] max-w-full flex-col overflow-hidden',
@@ -152,7 +161,7 @@ export function CommandMenu({
               className,
             )}
           >
-            <DialogPrimitive.Title className="sr-only">Command menu</DialogPrimitive.Title>
+            <DialogPrimitive.Title className="sr-only">{labels.commandMenu}</DialogPrimitive.Title>
             <label className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-4 text-text-muted">
               <Search aria-hidden className="size-4 shrink-0 [stroke-width:1.875]" />
               <input
@@ -161,9 +170,9 @@ export function CommandMenu({
                 aria-controls={listId}
                 aria-autocomplete="list"
                 aria-activedescendant={flat[active] ? optionId(active) : undefined}
-                aria-label="Search commands"
+                aria-label={labels.searchCommands}
                 value={query}
-                placeholder={placeholder}
+                placeholder={placeholder ?? labels.commandPlaceholder}
                 onChange={(e) => {
                   setQuery(e.target.value)
                   setActive(0)
@@ -185,7 +194,7 @@ export function CommandMenu({
               </Kbd>
             </label>
 
-            <div ref={listRef} id={listId} role="listbox" aria-label="Commands" className="flex min-h-0 flex-col gap-2 overflow-y-auto p-2">
+            <div ref={listRef} id={listId} role="listbox" aria-label={labels.commands} className="flex min-h-0 flex-col gap-2 overflow-y-auto p-2">
               {flat.length === 0 ? (
                 <p className="px-2 py-8 text-center text-sm text-text-muted">{emptyText(query)}</p>
               ) : (
@@ -228,9 +237,9 @@ export function CommandMenu({
 
             {hints && (
               <div aria-hidden className="flex h-10 shrink-0 items-center gap-4 border-t border-border-subtle px-4">
-                <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label="Navigate" />
-                <KbdHint keys={[<KbdReturn key="return" />]} label="Open" />
-                <KbdHint className="ml-auto" keys={['Esc']} label="Close" />
+                <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
+                <KbdHint keys={[<KbdReturn key="return" />]} label={labels.openItem} />
+                <KbdHint className="ml-auto" keys={['Esc']} label={labels.close} />
               </div>
             )}
           </DialogPrimitive.Content>

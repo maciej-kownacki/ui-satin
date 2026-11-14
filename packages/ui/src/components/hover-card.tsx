@@ -13,8 +13,11 @@ import { cn } from '../lib/utils'
  *
  * Only for extra context the page works without: anything someone needs to act on belongs in a
  * Popover they open on purpose.
+ *
+ * Other props, `ref` included, go to the card itself (the Radix Content).
  */
-export interface HoverCardProps {
+export interface HoverCardProps
+  extends Omit<React.ComponentProps<typeof HoverCardPrimitive.Content>, 'children' | 'asChild' | 'side' | 'align'> {
   /** The link or name it previews. Rendered with `asChild`. */
   trigger: React.ReactNode
   children: React.ReactNode
@@ -43,12 +46,20 @@ export function HoverCard({
   onOpenChange,
   container,
   className,
+  ...props
 }: HoverCardProps) {
   return (
     <HoverCardPrimitive.Root openDelay={openDelay} closeDelay={closeDelay} open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
       <HoverCardPrimitive.Trigger asChild>{trigger}</HoverCardPrimitive.Trigger>
       <HoverCardPrimitive.Portal container={container}>
-        <HoverCardPrimitive.Content side={side} align={align} sideOffset={8} collisionPadding={8} className={cn(hoverCardClass, className)}>
+        <HoverCardPrimitive.Content
+          sideOffset={8}
+          collisionPadding={8}
+          {...props}
+          side={side}
+          align={align}
+          className={cn(hoverCardClass, className)}
+        >
           {children}
         </HoverCardPrimitive.Content>
       </HoverCardPrimitive.Portal>

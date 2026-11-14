@@ -12,6 +12,8 @@ import { useSlidingIndicator } from './sliding-indicator'
  * the labels to the new segment, as in Tabs and Pagination (sliding-indicator.tsx: 300 ms,
  * the leading edge first): a white card with Shadow/sm in Light. Arrow keys move between segments.
  * Values 1:1 with the uiKit `_segmentedControl/item` (3080:20278) and `SegmentedControl` (3080:21247) sets.
+ *
+ * Other props, `ref` included, go to the track (the Radix ToggleGroup root, a `group`).
  */
 type Size = 'xs' | 'md' | 'lg'
 type Shape = 'default' | 'rounded'
@@ -23,7 +25,7 @@ export interface SegmentedControlItem {
   disabled?: boolean
 }
 
-export interface SegmentedControlProps {
+export interface SegmentedControlProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'dir' | 'children'> {
   items: SegmentedControlItem[]
   value?: string
   defaultValue?: string
@@ -79,17 +81,28 @@ export function SegmentedControl({
   border = false,
   fullWidth = false,
   className,
-  ...aria
+  ref,
+  ...props
 }: SegmentedControlProps) {
   const [inner, setInner] = React.useState(defaultValue ?? items[0]?.value ?? '')
   const value = valueProp ?? inner
   const trackRef = React.useRef<HTMLDivElement>(null)
+  // The app's ref and ours, on the track.
+  const setTrack = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      trackRef.current = node
+      if (typeof ref === 'function') ref(node)
+      else if (ref) ref.current = node
+    },
+    [ref],
+  )
   // The pill slides under the selected segment (sliding-indicator.tsx).
   const pill = useSlidingIndicator(trackRef, '[data-state="on"]', `${value}|${size}|${fullWidth}|${items.length}`)
 
   return (
     <ToggleGroup.Root
-      ref={trackRef}
+      {...props}
+      ref={setTrack}
       type="single"
       value={value}
       onValueChange={(next) => {
@@ -100,7 +113,6 @@ export function SegmentedControl({
       }}
       data-slot="segmented-control"
       className={cn(track({ shape, border, fullWidth }), className)}
-      {...aria}
     >
       <span
         ref={pill.ref}

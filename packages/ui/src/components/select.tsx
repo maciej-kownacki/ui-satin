@@ -5,6 +5,7 @@ import { Select as SelectPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { MenuItemContent, menuGroupClass, menuGroupLabelClass, menuItemClass, menuSurfaceClass, type MenuItemContentProps } from './dropdown'
 import { useFormField } from './form-field'
+import { useSatinLabels } from './labels'
 
 /**
  * Select, 1:1 with the uiKit `Select` set (4022:3531): the field around it is Input's (a 13px
@@ -21,6 +22,8 @@ import { useFormField } from './form-field'
  * Built on the Radix Select: arrow keys, typeahead, Home/End, Escape, a native form value
  * (`name`), and focus back on the trigger. Inside a FormField, leave out `label`, `hint` and
  * `error`.
+ *
+ * Other props, `ref` included, go to the trigger button.
  */
 export interface SelectOption extends Omit<MenuItemContentProps, 'label' | 'selected' | 'renderLabel' | 'layout' | 'iconSize'> {
   value: string
@@ -33,12 +36,14 @@ export interface SelectGroup {
   options: SelectOption[]
 }
 
-export interface SelectProps {
+export interface SelectProps
+  extends Omit<React.ComponentProps<typeof SelectPrimitive.Trigger>, 'value' | 'defaultValue' | 'disabled' | 'name' | 'children' | 'asChild'> {
   /** Options, or titled groups of options. */
   options: SelectOption[] | SelectGroup[]
   value?: string
   defaultValue?: string
   onValueChange?: (value: string) => void
+  /** Shown while nothing is picked. Defaults to the `select` label ("Select…"). */
   placeholder?: string
   label?: React.ReactNode
   hint?: React.ReactNode
@@ -69,10 +74,12 @@ export interface SelectProps {
   'data-force'?: 'hover' | 'focus'
 }
 
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const isOptionGroups = <T,>(o: T[] | { options: T[] }[]): o is { options: T[] }[] =>
   o.length > 0 && typeof o[0] === 'object' && o[0] !== null && 'options' in o[0]
 
 /** Ids and state for a field with a label, a hint or an error, inside or outside a FormField. */
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export function useFieldChrome({
   id,
   disabled,
@@ -103,6 +110,7 @@ export function useFieldChrome({
 }
 
 /** Label 8px above the control, hint or error 8px under it: Input's field, for Select and Combobox. */
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export function FieldChrome({
   label,
   action,
@@ -139,6 +147,7 @@ export function FieldChrome({
 }
 
 /** The trigger's chevron, 16px in the icon colour. */
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export function SelectChevron({ className }: { className?: string }) {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className={cn('satin-field-icon text-text-muted', className)}>
@@ -152,7 +161,7 @@ export function Select({
   value,
   defaultValue,
   onValueChange,
-  placeholder = 'Select…',
+  placeholder,
   label,
   hint,
   error,
@@ -171,9 +180,11 @@ export function Select({
   wrapperClassName,
   className,
   'data-force': force,
+  'aria-describedby': describedBy,
   ...props
 }: SelectProps) {
   const chrome = useFieldChrome({ id, disabled, error, hint })
+  const labels = useSatinLabels()
 
   // Figma's `filled` and the check: track the value, controlled or not.
   const [uncontrolled, setUncontrolled] = React.useState(defaultValue)
@@ -198,6 +209,7 @@ export function Select({
         name={name}
       >
         <SelectPrimitive.Trigger
+          {...props}
           id={chrome.controlId}
           data-slot="select-trigger"
           data-size={size}
@@ -206,8 +218,7 @@ export function Select({
           data-disabled={chrome.disabled || undefined}
           data-force={force}
           aria-invalid={chrome.invalid || undefined}
-          aria-describedby={chrome.describedBy}
-          aria-label={props['aria-label']}
+          aria-describedby={[describedBy, chrome.describedBy].filter(Boolean).join(' ') || undefined}
           className={cn('satin-field satin-select', className)}
         >
           {lead && (
@@ -216,7 +227,7 @@ export function Select({
             </span>
           )}
           <span className="min-w-0 flex-1 truncate text-text-default">
-            <SelectPrimitive.Value placeholder={<span className="text-text-muted">{placeholder}</span>} />
+            <SelectPrimitive.Value placeholder={<span className="text-text-muted">{placeholder ?? labels.select}</span>} />
           </span>
           <SelectPrimitive.Icon asChild>
             <SelectChevron />

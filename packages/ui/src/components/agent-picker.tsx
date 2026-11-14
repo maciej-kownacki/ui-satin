@@ -6,6 +6,7 @@ import { Check, NavArrowDown, Plus } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import type { BadgeTone } from './badge'
+import { useSatinLabels } from './labels'
 
 /**
  * AgentPicker, from the uiKit Agent picker docs view (3890:47473): a rounded Button with the
@@ -79,6 +80,7 @@ export function AgentPicker({
   disablePortal = false,
   className,
 }: AgentPickerProps) {
+  const labels = useSatinLabels()
   const [inner, setInner] = React.useState(defaultValue ?? agents[0]?.id)
   const value = valueProp ?? inner
   const current = agents.find((a) => a.id === value)
@@ -110,7 +112,7 @@ export function AgentPicker({
         >
           {current && <AgentAvatar agent={current} size={16} />}
           <span className="truncate">
-            {current && <span className="sr-only">Agent: </span>}
+            {current && <span className="sr-only">{labels.agent}: </span>}
             {current ? current.name : placeholder}
           </span>
           <NavArrowDown aria-hidden data-chevron />

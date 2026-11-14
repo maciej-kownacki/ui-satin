@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Clock, Copy, DoubleCheck, Link, ThumbsDown, ThumbsUp } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 
 /**
  * MessageActions, 1:1 with uiKit `_chat/answerActions` (901:20164): the row under an assistant
@@ -42,6 +43,7 @@ export function MessageActions({
   className,
   ...props
 }: MessageActionsProps) {
+  const labels = useSatinLabels()
   const [feedback, setFeedback] = React.useState<MessageFeedback>(feedbackProp)
   React.useEffect(() => setFeedback(feedbackProp), [feedbackProp])
 
@@ -76,7 +78,7 @@ export function MessageActions({
           variant="tertiary"
           size="xs"
           iconOnly
-          aria-label="Good response"
+          aria-label={labels.goodResponse}
           aria-pressed={feedback === 'like'}
           onClick={() => toggle('like')}
           className={thumb}
@@ -87,14 +89,14 @@ export function MessageActions({
           variant="tertiary"
           size="xs"
           iconOnly
-          aria-label="Bad response"
+          aria-label={labels.badResponse}
           aria-pressed={feedback === 'dislike'}
           onClick={() => toggle('dislike')}
           className={thumb}
         >
           <ThumbsDown />
         </Button>
-        <Button variant="tertiary" size="xs" iconOnly aria-label="Copy" onClick={onCopy}>
+        <Button variant="tertiary" size="xs" iconOnly aria-label={labels.copy} onClick={onCopy}>
           <Copy />
         </Button>
       </span>

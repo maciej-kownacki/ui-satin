@@ -91,7 +91,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/badge.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Agent picker docs: https://uisatin.dev/ai-patterns/agent-picker",
       "meta": {
@@ -117,6 +118,7 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/progress.json"
       ],
       "docs": "Agent suggestion docs: https://uisatin.dev/ai-patterns/agent-suggestion",
@@ -143,7 +145,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/banner.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Announcement bar docs: https://uisatin.dev/components/announcement-bar",
       "meta": {
@@ -169,7 +172,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Attachment docs: https://uisatin.dev/ai-patterns/attachment",
       "meta": {
@@ -314,7 +318,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/dropdown.json"
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Breadcrumb docs: https://uisatin.dev/components/breadcrumb",
       "meta": {
@@ -413,6 +418,7 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/floating.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/select.json"
       ],
       "meta": {
@@ -484,7 +490,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/hover-card.json"
+        "https://uisatin.dev/r/hover-card.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Citations docs: https://uisatin.dev/ai-patterns/citations",
       "meta": {
@@ -538,6 +545,7 @@
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/chip.json",
         "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/select.json"
       ],
       "docs": "Combobox docs: https://uisatin.dev/components/combobox",
@@ -565,7 +573,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/dropdown.json",
-        "https://uisatin.dev/r/kbd.json"
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Command menu docs: https://uisatin.dev/components/command-menu",
       "meta": {
@@ -641,6 +650,7 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/select.json"
       ],
       "docs": "Date picker docs: https://uisatin.dev/components/date-picker",
@@ -669,6 +679,7 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Decision card docs: https://uisatin.dev/ai-patterns/decision-card",
@@ -694,7 +705,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Dialog docs: https://uisatin.dev/components/dialog",
       "meta": {
@@ -766,7 +778,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/kbd.json"
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Dropdown docs: https://uisatin.dev/components/dropdown",
       "meta": {
@@ -817,6 +830,7 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/attachment.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/progress.json"
       ],
       "docs": "File upload docs: https://uisatin.dev/components/file-upload",
@@ -971,6 +985,27 @@
       ]
     },
     {
+      "name": "labels",
+      "type": "registry:ui",
+      "title": "Labels",
+      "description": "The Satin Labels component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.2.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/labels.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "line-chart",
       "type": "registry:ui",
       "title": "Line chart",
@@ -1029,7 +1064,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Message actions docs: https://uisatin.dev/ai-patterns/message-actions",
       "meta": {
@@ -1054,6 +1090,7 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/select.json"
       ],
       "docs": "Number input docs: https://uisatin.dev/components/number-input",
@@ -1104,7 +1141,8 @@
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Popover docs: https://uisatin.dev/components/popover",
       "meta": {
@@ -1153,7 +1191,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/kbd.json"
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Prompt bar docs: https://uisatin.dev/ai-patterns/prompt-bar",
       "meta": {
@@ -1253,7 +1292,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/dropdown.json",
-        "https://uisatin.dev/r/form-field.json"
+        "https://uisatin.dev/r/form-field.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Select docs: https://uisatin.dev/components/select",
       "meta": {
@@ -1279,7 +1319,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/dialog.json"
+        "https://uisatin.dev/r/dialog.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Sheet docs: https://uisatin.dev/components/sheet",
       "meta": {
@@ -1352,6 +1393,7 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/tooltip.json"
       ],
       "docs": "Slider docs: https://uisatin.dev/components/slider",
@@ -1442,7 +1484,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/checkbox.json"
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Table docs: https://uisatin.dev/components/table",
       "meta": {
@@ -1541,7 +1584,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Toast docs: https://uisatin.dev/components/toast",
       "meta": {

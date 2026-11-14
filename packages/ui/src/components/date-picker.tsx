@@ -5,6 +5,7 @@ import { Popover as PopoverPrimitive } from 'radix-ui'
 import { Calendar as CalendarIcon, NavArrowDown, NavArrowLeft, NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 import { FieldChrome, Select, useFieldChrome } from './select'
 
 /**
@@ -23,6 +24,9 @@ import { FieldChrome, Select, useFieldChrome } from './select'
  *
  * Keyboard: the grid is one tab stop; arrows move a day or a week, Page Up / Down a month, Home /
  * End the week, Enter or Space picks.
+ *
+ * Other props, `ref` included, go to: Calendar's root, DatePicker's and DateRangePicker's trigger
+ * button (`className` styles it too), and the panels' surface.
  */
 
 export type DateRange = { from: Date | null; to: Date | null }
@@ -55,7 +59,7 @@ function weeksOf(month: Date) {
   return Array.from({ length: 6 }, (_, w) => Array.from({ length: 7 }, (_, i) => addDays(start, w * 7 + i)))
 }
 
-export interface CalendarProps {
+export interface CalendarProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'> {
   mode?: 'single' | 'range'
   /** single: the picked day. */
   value?: Date | null
@@ -90,7 +94,11 @@ export function Calendar({
   max,
   today: todayProp,
   className,
+  ref,
+  onPointerLeave,
+  ...props
 }: CalendarProps) {
+  const labels = useSatinLabels()
   const today = startOfDay(todayProp ?? new Date())
   const anchor = mode === 'range' ? range?.from : value
   const [innerMonth, setInnerMonth] = React.useState(() => addMonths(anchor ?? today, 0))
@@ -102,6 +110,15 @@ export function Calendar({
   const [focus, setFocus] = React.useState<Date>(() => startOfDay(anchor ?? today))
   const [hover, setHover] = React.useState<Date | null>(null)
   const gridRef = React.useRef<HTMLDivElement>(null)
+  // The app's ref and ours, on the root.
+  const setRoot = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      gridRef.current = node
+      if (typeof ref === 'function') ref(node)
+      else if (ref) ref.current = node
+    },
+    [ref],
+  )
 
   const disabled = (d: Date) => (min && d < startOfDay(min)) || (max && d > startOfDay(max)) || false
   const picking = mode === 'range' && !!range?.from && !range?.to
@@ -160,17 +177,17 @@ export function Calendar({
         {header === 'picker' && months === 1 ? (
           <div className="flex h-8 items-center gap-1">
             <div className="flex items-center gap-1">
-              {navBtn(-1, 'Previous month', () => setMonth(addMonths(month, -1)))}
+              {navBtn(-1, labels.previousMonth, () => setMonth(addMonths(month, -1)))}
               <span id={titleId} className="min-w-[72px] text-center text-sm leading-5 font-medium text-text-default">
                 {MONTHS[m.getMonth()]}
               </span>
-              {navBtn(1, 'Next month', () => setMonth(addMonths(month, 1)))}
+              {navBtn(1, labels.nextMonth, () => setMonth(addMonths(month, 1)))}
             </div>
             <span className="flex-1" />
             {/* The year: a plain Select, the shown year checked. */}
             <Select
               size="sm"
-              aria-label="Year"
+              aria-label={labels.year}
               value={String(m.getFullYear())}
               onValueChange={(y) => setMonth(new Date(Number(y), m.getMonth(), 1))}
               options={yearOptions(m.getFullYear(), today.getFullYear(), min, max)}
@@ -182,13 +199,13 @@ export function Calendar({
           <div className="flex h-8 items-center gap-1">
             {/* Two months: each title centred over its own month, an empty slot the arrow's size
                 balancing the arrow on the other side. */}
-            {months === 2 && (i === 0 ? navBtn(-1, 'Previous month', () => setMonth(addMonths(month, -1))) : <span aria-hidden className="size-6 shrink-0" />)}
+            {months === 2 && (i === 0 ? navBtn(-1, labels.previousMonth, () => setMonth(addMonths(month, -1))) : <span aria-hidden className="size-6 shrink-0" />)}
             <span id={titleId} className={cn('flex-1 text-sm leading-5 font-medium text-text-default', months === 2 && 'text-center')}>
               {MONTHS[m.getMonth()]} {m.getFullYear()}
             </span>
-            {months === 1 && navBtn(-1, 'Previous month', () => setMonth(addMonths(month, -1)))}
+            {months === 1 && navBtn(-1, labels.previousMonth, () => setMonth(addMonths(month, -1)))}
             {months === 2 && i === 0 && <span aria-hidden className="size-6 shrink-0" />}
-            {(months === 1 || i === 1) && navBtn(1, 'Next month', () => setMonth(addMonths(month, 1)))}
+            {(months === 1 || i === 1) && navBtn(1, labels.nextMonth, () => setMonth(addMonths(month, 1)))}
           </div>
         )}
 
@@ -266,7 +283,16 @@ export function Calendar({
   }
 
   return (
-    <div ref={gridRef} data-slot="calendar" className={cn('flex gap-6', className)} onPointerLeave={() => setHover(null)}>
+    <div
+      {...props}
+      ref={setRoot}
+      data-slot="calendar"
+      className={cn('flex gap-6', className)}
+      onPointerLeave={(e) => {
+        onPointerLeave?.(e)
+        setHover(null)
+      }}
+    >
       {Array.from({ length: months }, (_, i) => renderMonth(addMonths(month, i), i))}
     </div>
   )
@@ -298,6 +324,7 @@ interface FieldBits {
   label?: React.ReactNode
   hint?: React.ReactNode
   error?: React.ReactNode | boolean
+  /** Shown while nothing is picked. Defaults to the `pickDate` / `pickDates` label. */
   placeholder?: string
   disabled?: boolean
   id?: string
@@ -335,7 +362,7 @@ function Trigger({ text, placeholder, chrome, size, open, className, ...props }:
   )
 }
 
-export interface DatePickerPanelProps {
+export interface DatePickerPanelProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'> {
   value?: Date | null
   onValueChange?: (value: Date) => void
   min?: Date
@@ -344,16 +371,18 @@ export interface DatePickerPanelProps {
   className?: string
 }
 
-/** The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick. */
-export function DatePickerPanel({ value, onValueChange, min, max, today, className }: DatePickerPanelProps) {
+/** The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick. Other props, `ref` included, go to the surface. */
+export function DatePickerPanel({ value, onValueChange, min, max, today, className, ...props }: DatePickerPanelProps) {
   return (
-    <div data-slot="date-picker-panel" className={cn(surfaceClass, 'w-fit p-3', className)}>
+    <div {...props} data-slot="date-picker-panel" className={cn(surfaceClass, 'w-fit p-3', className)}>
       <Calendar header="picker" value={value} onValueChange={onValueChange} min={min} max={max} today={today} />
     </div>
   )
 }
 
-export interface DatePickerProps extends FieldBits {
+type TriggerAttributes = Omit<React.ComponentProps<'button'>, keyof FieldBits | 'value' | 'defaultValue' | 'type' | 'children'>
+
+export interface DatePickerProps extends FieldBits, TriggerAttributes {
   value?: Date | null
   defaultValue?: Date | null
   onValueChange?: (value: Date) => void
@@ -364,7 +393,10 @@ export interface DatePickerProps extends FieldBits {
   container?: HTMLElement | null
 }
 
-/** A date field: the kit Input's skin with a calendar icon; the Calendar opens 4px below, with month and year to pick. */
+/**
+ * A date field: the kit Input's skin with a calendar icon; the Calendar opens 4px below, with month and year to pick.
+ * Other props, `ref` included, go to the trigger button.
+ */
 export function DatePicker({
   value: valueProp,
   defaultValue = null,
@@ -375,23 +407,34 @@ export function DatePicker({
   label,
   hint,
   error,
-  placeholder = 'Pick a date',
+  placeholder,
   disabled,
   id,
   size = 'md',
   container,
   wrapperClassName,
   className,
+  'aria-describedby': describedBy,
+  ...props
 }: DatePickerProps) {
   const chrome = useFieldChrome({ id, disabled, error, hint })
+  const labels = useSatinLabels()
   const [inner, setInner] = React.useState<Date | null>(defaultValue)
   const value = valueProp !== undefined ? valueProp : inner
   const [open, setOpen] = React.useState(false)
   return (
     <FieldChrome label={label} chrome={chrome} className={wrapperClassName}>
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
-        <PopoverPrimitive.Trigger asChild>
-          <Trigger text={value ? formatDate(value) : ''} placeholder={placeholder} chrome={chrome} size={size} open={open} className={className} />
+        <PopoverPrimitive.Trigger asChild {...props}>
+          <Trigger
+            text={value ? formatDate(value) : ''}
+            placeholder={placeholder ?? labels.pickDate}
+            chrome={chrome}
+            size={size}
+            open={open}
+            aria-describedby={[describedBy, chrome.describedBy].filter(Boolean).join(' ') || undefined}
+            className={className}
+          />
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal container={container}>
           <PopoverPrimitive.Content data-slot="date-picker" align="start" sideOffset={4} collisionPadding={8} className={popClass}>
@@ -415,7 +458,7 @@ export function DatePicker({
 
 const todayDate = () => startOfDay(new Date())
 
-export interface DateRangePickerProps extends FieldBits {
+export interface DateRangePickerProps extends FieldBits, TriggerAttributes {
   value?: DateRange
   defaultValue?: DateRange
   /** Called on Apply. */
@@ -423,14 +466,16 @@ export interface DateRangePickerProps extends FieldBits {
   min?: Date
   max?: Date
   today?: Date
+  /** Defaults to the `apply` label. */
   applyLabel?: string
+  /** Defaults to the `cancel` label. */
   cancelLabel?: string
   container?: HTMLElement | null
 }
 
 /**
  * A range field: two months, Cancel and Apply in the footer. Picks wait for Apply. Picking an
- * end before the start swaps them.
+ * end before the start swaps them. Other props, `ref` included, go to the trigger button.
  */
 export function DateRangePicker({
   value: valueProp,
@@ -442,17 +487,20 @@ export function DateRangePicker({
   label,
   hint,
   error,
-  placeholder = 'Pick dates',
+  placeholder,
   disabled,
   id,
   size = 'md',
-  applyLabel = 'Apply',
-  cancelLabel = 'Cancel',
+  applyLabel,
+  cancelLabel,
   container,
   wrapperClassName,
   className,
+  'aria-describedby': describedBy,
+  ...props
 }: DateRangePickerProps) {
   const chrome = useFieldChrome({ id, disabled, error, hint })
+  const labels = useSatinLabels()
   const [inner, setInner] = React.useState<DateRange>(defaultValue)
   const value = valueProp ?? inner
   const [open, setOpen] = React.useState(false)
@@ -464,8 +512,16 @@ export function DateRangePicker({
   return (
     <FieldChrome label={label} chrome={chrome} className={wrapperClassName}>
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
-        <PopoverPrimitive.Trigger asChild>
-          <Trigger text={formatRange(value)} placeholder={placeholder} chrome={chrome} size={size} open={open} className={className} />
+        <PopoverPrimitive.Trigger asChild {...props}>
+          <Trigger
+            text={formatRange(value)}
+            placeholder={placeholder ?? labels.pickDates}
+            chrome={chrome}
+            size={size}
+            open={open}
+            aria-describedby={[describedBy, chrome.describedBy].filter(Boolean).join(' ') || undefined}
+            className={className}
+          />
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal container={container}>
           <PopoverPrimitive.Content data-slot="date-range-picker" align="start" sideOffset={4} collisionPadding={8} className={popClass}>
@@ -486,7 +542,7 @@ export function DateRangePicker({
   )
 }
 
-export interface DateRangePickerPanelProps {
+export interface DateRangePickerPanelProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'> {
   /** The range the panel starts from; picks stay in the panel until Apply. */
   value?: DateRange
   /** Apply. */
@@ -495,12 +551,14 @@ export interface DateRangePickerPanelProps {
   min?: Date
   max?: Date
   today?: Date
+  /** Defaults to the `apply` label. */
   applyLabel?: string
+  /** Defaults to the `cancel` label. */
   cancelLabel?: string
   className?: string
 }
 
-/** The range picker's panel on its own, in place: two months, Cancel and Apply. */
+/** The range picker's panel on its own, in place: two months, Cancel and Apply. Other props, `ref` included, go to the surface. */
 export function DateRangePickerPanel({
   value = { from: null, to: null },
   onApply,
@@ -508,23 +566,25 @@ export function DateRangePickerPanel({
   min,
   max,
   today,
-  applyLabel = 'Apply',
-  cancelLabel = 'Cancel',
+  applyLabel,
+  cancelLabel,
   className,
+  ...props
 }: DateRangePickerPanelProps) {
+  const labels = useSatinLabels()
   const [draft, setDraft] = React.useState<DateRange>(value)
   const [month, setMonth] = React.useState(() => addMonths(value.from ?? today ?? todayDate(), 0))
   return (
-    <div data-slot="date-range-picker-panel" className={cn(surfaceClass, 'flex w-fit shrink-0 flex-col overflow-hidden', className)}>
+    <div {...props} data-slot="date-range-picker-panel" className={cn(surfaceClass, 'flex w-fit shrink-0 flex-col overflow-hidden', className)}>
       <div className="p-3">
         <Calendar mode="range" months={2} range={draft} onRangeChange={setDraft} month={month} onMonthChange={setMonth} min={min} max={max} today={today} />
       </div>
       <div className="flex items-center justify-end gap-2 border-t border-border-subtle px-3 py-2">
         <Button variant="secondary" onClick={() => { setDraft(value); onCancel?.() }}>
-          {cancelLabel}
+          {cancelLabel ?? labels.cancel}
         </Button>
         <Button disabled={!draft.from || !draft.to} onClick={() => onApply?.(draft)}>
-          {applyLabel}
+          {applyLabel ?? labels.apply}
         </Button>
       </div>
     </div>

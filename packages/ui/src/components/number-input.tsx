@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Minus, Plus } from 'iconoir-react'
 import { cn } from '../lib/utils'
+import { useSatinLabels } from './labels'
 import { FieldChrome, useFieldChrome } from './select'
 
 /**
@@ -14,8 +15,11 @@ import { FieldChrome, useFieldChrome } from './select'
  * It's a spinbutton: ArrowUp / ArrowDown step, PageUp / PageDown step ten times, Home / End jump
  * to `min` / `max`. Typing is free while focused; Enter or leaving the field clamps it, snaps it to
  * `step` and commits; Escape puts the last value back.
+ *
+ * Other props, `ref` included, go to the <input>; `className` styles the field around it.
  */
-export interface NumberInputProps {
+export interface NumberInputProps
+  extends Omit<React.ComponentProps<'input'>, 'value' | 'defaultValue' | 'size' | 'min' | 'max' | 'step' | 'type' | 'children'> {
   value?: number
   defaultValue?: number
   onValueChange?: (value: number) => void
@@ -56,9 +60,14 @@ export function NumberInput({
   name,
   wrapperClassName,
   className,
+  'aria-describedby': describedBy,
+  onChange,
+  onBlur,
+  onKeyDown,
   ...props
 }: NumberInputProps) {
   const chrome = useFieldChrome({ id, disabled, error, hint })
+  const labels = useSatinLabels()
   const [inner, setInner] = React.useState(defaultValue)
   const value = valueProp ?? inner
   const [draft, setDraft] = React.useState<string | null>(null)
@@ -98,7 +107,7 @@ export function NumberInput({
         <button
           type="button"
           tabIndex={-1}
-          aria-label="Decrease"
+          aria-label={labels.decrease}
           aria-controls={chrome.controlId}
           disabled={chrome.disabled || atMin}
           onClick={() => by(-1)}
@@ -107,6 +116,7 @@ export function NumberInput({
           <Minus aria-hidden />
         </button>
         <input
+          {...props}
           id={chrome.controlId}
           name={name}
           role="spinbutton"
@@ -116,13 +126,21 @@ export function NumberInput({
           aria-valuemax={Number.isFinite(max) ? max : undefined}
           aria-valuetext={formatValue(value)}
           aria-invalid={chrome.invalid || undefined}
-          aria-describedby={chrome.describedBy}
-          aria-label={props['aria-label']}
+          aria-describedby={[describedBy, chrome.describedBy].filter(Boolean).join(' ') || undefined}
           disabled={chrome.disabled}
           value={draft ?? formatValue(value)}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={() => draft != null && commit(Number(draft.replace(',', '.').replace(/[^\d.-]/g, '')) || 0)}
+          onChange={(e) => {
+            onChange?.(e)
+            setDraft(e.target.value)
+          }}
+          onBlur={(e) => {
+            onBlur?.(e)
+            if (draft != null) commit(Number(draft.replace(',', '.').replace(/[^\d.-]/g, '')) || 0)
+          }}
           onKeyDown={(e) => {
+            // The app's handler runs first; `preventDefault()` there skips the spinbutton keys.
+            onKeyDown?.(e)
+            if (e.defaultPrevented) return
             const keys: Record<string, () => void> = {
               ArrowUp: () => by(1),
               ArrowDown: () => by(-1),
@@ -143,7 +161,7 @@ export function NumberInput({
         <button
           type="button"
           tabIndex={-1}
-          aria-label="Increase"
+          aria-label={labels.increase}
           aria-controls={chrome.controlId}
           disabled={chrome.disabled || atMax}
           onClick={() => by(1)}

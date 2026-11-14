@@ -6,6 +6,7 @@ import { ArrowUp, Attachment as AttachmentIcon, Check, Globe, Microphone, NavArr
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
+import { useSatinLabels } from './labels'
 
 /**
  * PromptBar, 1:1 with the uiKit `PromptBar` set (3158:21803), its input row
@@ -103,6 +104,7 @@ export function PromptBar({
   className,
   ...props
 }: PromptBarProps) {
+  const labels = useSatinLabels()
   const [innerValue, setInnerValue] = React.useState(defaultValue)
   const value = valueProp ?? innerValue
   const [files, setFiles] = React.useState<File[]>(attachmentsProp ?? [])
@@ -192,7 +194,7 @@ export function PromptBar({
           />
 
           {files.length > 0 && (
-            <ul aria-label="Attachments" className="flex flex-wrap gap-1 pb-1">
+            <ul aria-label={labels.attachments} className="flex flex-wrap gap-1 pb-1">
               {files.map((file, i) => (
                 <li key={`${file.name}-${i}`}>
                   <AttachmentChip
@@ -216,7 +218,7 @@ export function PromptBar({
                 shape={btnShape}
                 iconOnly
                 disabled={disabled}
-                aria-label="Add to conversation"
+                aria-label={labels.addToConversation}
                 className="data-[state=open]:bg-border-input"
               >
                 <Plus />
@@ -229,7 +231,7 @@ export function PromptBar({
               value={value}
               disabled={disabled}
               placeholder={placeholder}
-              aria-label="Message"
+              aria-label={labels.message}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -267,7 +269,7 @@ export function PromptBar({
                   onDictationChange?.(!recording)
                 }}
               />
-              <Button type="submit" variant="primary" size="md" shape={btnShape} iconOnly aria-label="Send" disabled={!canSend}>
+              <Button type="submit" variant="primary" size="md" shape={btnShape} iconOnly aria-label={labels.send} disabled={!canSend}>
                 <ArrowUp />
               </Button>
             </div>
@@ -281,7 +283,7 @@ export function PromptBar({
           align="start"
           sideOffset={8}
           avoidCollisions={false}
-          aria-label="Add to conversation"
+          aria-label={labels.addToConversation}
           className={cn(menuCard, 'z-50 flex w-(--radix-popper-anchor-width) flex-col')}
         >
           <AddMenu actions={actions} onAction={runAction} onAddAgent={onAddAgent} />
@@ -302,6 +304,7 @@ function AddMenu({
   onAction: (a: PromptBarAction) => void
   onAddAgent?: () => void
 }) {
+  const labels = useSatinLabels()
   const [query, setQuery] = React.useState('')
   const [active, setActive] = React.useState(0)
   const id = React.useId()
@@ -321,7 +324,7 @@ function AddMenu({
             aria-expanded
             aria-controls={`${id}-list`}
             aria-activedescendant={shown.length ? `${id}-${index}` : undefined}
-            aria-label="Search agents and tools"
+            aria-label={labels.searchAgentsAndTools}
             placeholder="Search agents and tools"
             value={query}
             onChange={(e) => {
@@ -343,12 +346,12 @@ function AddMenu({
             className="min-w-0 flex-1 bg-transparent text-sm text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0"
           />
         </label>
-        <Button variant="tertiary" size="xs" iconOnly aria-label="Add an agent" onClick={onAddAgent}>
+        <Button variant="tertiary" size="xs" iconOnly aria-label={labels.addAgent} onClick={onAddAgent}>
           <Plus />
         </Button>
       </div>
       <div aria-hidden className="h-px bg-border-subtle" />
-      <div id={`${id}-list`} role="listbox" aria-label="Agents and tools" className="flex flex-col p-1">
+      <div id={`${id}-list`} role="listbox" aria-label={labels.agentsAndTools} className="flex flex-col p-1">
         {shown.map((a, i) => (
           <div
             key={a.id}
@@ -397,6 +400,7 @@ function ModelSelect({
   disabled: boolean
   onChange: (value: string) => void
 }) {
+  const labels = useSatinLabels()
   if (!label) return null
   const trigger = (
     <Button
@@ -407,7 +411,7 @@ function ModelSelect({
       className="data-[state=open]:bg-border-input"
     >
       {icon && <span className="flex size-4 shrink-0 items-center justify-center [&>*]:size-4">{icon}</span>}
-      <span className="sr-only">Model: </span>
+      <span className="sr-only">{labels.model}: </span>
       {label}
       <NavArrowDown aria-hidden data-chevron />
     </Button>

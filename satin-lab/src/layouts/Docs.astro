@@ -16,7 +16,8 @@ interface Props {
 }
 const { current } = Astro.props
 const item = page(current)
-const title = current === 'introduction' ? 'Satin' : `${item.title} · Satin`
+// The home title is also the caption X and Slack show under the share image.
+const title = current === 'introduction' ? 'Satin: the React design system for your agents' : `${item.title} · Satin`
 ---
 
 <Layout title={title} description={item.description}>

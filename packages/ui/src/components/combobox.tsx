@@ -7,6 +7,7 @@ import { cn } from '../lib/utils'
 import { Button } from './button'
 import { Chip } from './chip'
 import { MenuItemContent, menuItemClass, menuSurfaceClass } from './dropdown'
+import { useSatinLabels } from './labels'
 import { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from './select'
 
 /**
@@ -27,8 +28,12 @@ import { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from '.
  *
  * Typing filters by label and description. Arrow keys move the highlight, Enter picks it, the
  * pointer highlights what it is over. The query field is a `combobox` that owns the `listbox`.
+ *
+ * Other props, `ref` included, go to the trigger button that covers the field (the element its
+ * label points at); `className` styles the field around it.
  */
-export interface ComboboxProps {
+export interface ComboboxProps
+  extends Omit<React.ComponentProps<typeof PopoverPrimitive.Trigger>, 'value' | 'defaultValue' | 'disabled' | 'children' | 'asChild'> {
   options: SelectOption[]
   /** The applied picks. */
   value?: string[]
@@ -37,12 +42,17 @@ export interface ComboboxProps {
   multiple?: boolean
   /** Cancel and Apply under the list; picks apply only with Apply. */
   footer?: boolean
+  /** Shown while nothing is picked. Defaults to the `select` label ("Select…"). */
   placeholder?: string
+  /** The query field's placeholder and name. Defaults to the `search` label. */
   searchPlaceholder?: string
-  /** Shown when nothing matches the query. */
+  /** Shown when nothing matches the query. Defaults to the `noResults` label. */
   emptyText?: React.ReactNode
+  /** Defaults to the `apply` label. */
   applyLabel?: string
+  /** Defaults to the `cancel` label. */
   cancelLabel?: string
+  /** Defaults to the `clear` label. */
   clearLabel?: string
   label?: React.ReactNode
   hint?: React.ReactNode
@@ -78,12 +88,12 @@ export function Combobox({
   onValueChange,
   multiple = false,
   footer = false,
-  placeholder = 'Select…',
-  searchPlaceholder = 'Search…',
-  emptyText = 'No results',
-  applyLabel = 'Apply',
-  cancelLabel = 'Cancel',
-  clearLabel = 'Clear',
+  placeholder: placeholderProp,
+  searchPlaceholder: searchPlaceholderProp,
+  emptyText: emptyTextProp,
+  applyLabel: applyLabelProp,
+  cancelLabel: cancelLabelProp,
+  clearLabel: clearLabelProp,
   label,
   hint,
   error,
@@ -99,9 +109,17 @@ export function Combobox({
   onInteractOutside,
   wrapperClassName,
   className,
+  'aria-describedby': describedBy,
   ...props
 }: ComboboxProps) {
   const chrome = useFieldChrome({ id, disabled, error, hint })
+  const labels = useSatinLabels()
+  const placeholder = placeholderProp ?? labels.select
+  const searchPlaceholder = searchPlaceholderProp ?? labels.search
+  const emptyText = emptyTextProp ?? labels.noResults
+  const applyLabel = applyLabelProp ?? labels.apply
+  const cancelLabel = cancelLabelProp ?? labels.cancel
+  const clearLabel = clearLabelProp ?? labels.clear
   const listId = `${chrome.controlId}-list`
 
   const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue)
@@ -177,12 +195,12 @@ export function Combobox({
             {/* The trigger covers the whole field under the chips, so a click anywhere but a
                 chip's remove button or Clear opens the list, and it takes no room in the rows. */}
             <PopoverPrimitive.Trigger
+              {...props}
               id={chrome.controlId}
               data-slot="combobox-trigger"
               disabled={chrome.disabled}
               aria-invalid={chrome.invalid || undefined}
-              aria-describedby={chrome.describedBy}
-              aria-label={props['aria-label']}
+              aria-describedby={[describedBy, chrome.describedBy].filter(Boolean).join(' ') || undefined}
               aria-haspopup="listbox"
               className="absolute inset-0 cursor-pointer rounded-[inherit] outline-none focus-visible:ring-0 disabled:cursor-not-allowed"
             >
@@ -201,7 +219,7 @@ export function Combobox({
                     size="sm"
                     variant="outline"
                     disabled={chrome.disabled}
-                    removeLabel={`Remove ${o.label}`}
+                    removeLabel={`${labels.remove} ${o.label}`}
                     onRemove={() => commit(applied.filter((v) => v !== o.value))}
                     className="relative"
                   >

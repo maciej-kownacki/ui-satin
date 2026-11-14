@@ -5,6 +5,7 @@ import { ArrowRight, Xmark } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { bannerMesh } from './banner'
+import { useSatinLabels } from './labels'
 
 /**
  * AnnouncementBar: one line of news across the top (or bottom) edge of the page, with a button
@@ -52,6 +53,7 @@ export function AnnouncementBar({
   className,
   ...props
 }: AnnouncementBarProps) {
+  const labels = useSatinLabels()
   const toneClass = {
     primary: 'bg-action-primary-bg text-action-primary-fg',
     inverse: 'bg-action-inverse-bg text-text-on-inverse',
@@ -72,7 +74,7 @@ export function AnnouncementBar({
   return (
     <div
       role="region"
-      aria-label="Announcement"
+      aria-label={labels.announcement}
       data-slot="announcement-bar"
       data-tone={tone}
       className={cn(

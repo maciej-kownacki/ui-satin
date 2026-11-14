@@ -4,6 +4,7 @@ import * as React from 'react'
 import { DropdownMenu as DropdownPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { KbdGroup } from './kbd'
+import { useSatinLabels } from './labels'
 
 /**
  * DropdownMenu, 1:1 with the uiKit `DropdownMenu` (654:19150) and `DropdownMenu/Item`
@@ -20,18 +21,26 @@ import { KbdGroup } from './kbd'
  * text/subtle and are 4px apart with a 1px bg/muted rule between them. Items are 4px apart.
  *
  * Built on the Radix DropdownMenu: arrow keys, typeahead, Escape, focus return.
+ *
+ * Other props on DropdownMenu, `ref` included, go to the menu's panel (the Radix Content).
  */
 /** The popover surface menus share: radius-xl, border/subtle, bg/popover, the shadcn `sm` shadow. */
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const menuSurfaceClass = cn(
   'rounded-xl border border-border-subtle bg-bg-popover',
   '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
 )
 /** A group of rows, with a 1px bg/muted rule under every group but the last. */
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const menuGroupClass = 'flex flex-col gap-1 not-last:after:block not-last:after:h-px not-last:after:bg-bg-muted'
 /** The 24px group header in 12px text/subtle. */
 export const menuGroupLabelClass = 'flex h-6 items-center px-3 text-xs leading-3 tracking-normal text-text-subtle'
 
-export interface DropdownMenuProps {
+export interface DropdownMenuProps
+  extends Omit<
+    React.ComponentProps<typeof DropdownPrimitive.Content>,
+    'children' | 'asChild' | 'side' | 'align' | 'sideOffset' | 'onFocusOutside'
+  > {
   /** The element that opens the menu. Rendered with `asChild`, so pass a Button. */
   trigger: React.ReactNode
   /** `DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s. */
@@ -73,12 +82,12 @@ export function DropdownMenu({
       <DropdownPrimitive.Trigger asChild>{trigger}</DropdownPrimitive.Trigger>
       <DropdownPrimitive.Portal container={container}>
         <DropdownPrimitive.Content
+          collisionPadding={8}
+          {...props}
           data-slot="dropdown-menu"
-          aria-label={props['aria-label']}
           side={side}
           align={align}
           sideOffset={sideOffset}
-          collisionPadding={8}
           onFocusOutside={onFocusOutside}
           className={cn(
             'pointer-events-auto z-50 flex w-[255px] max-w-[520px] flex-col gap-1 overflow-x-clip overflow-y-auto p-1',
@@ -125,6 +134,7 @@ export function DropdownMenuGroup({ label, children, className, ...props }: Drop
 /* ------------------------------------------------------------------------------------------ */
 
 /** The row skin every menu shares: Dropdown, Select, Combobox and the Command menu. */
+/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const menuItemClass = cn(
   'flex min-h-menu-row w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left outline-none select-none focus-visible:ring-0',
   'transition-colors duration-(--duration-fast) ease-(--ease-out)',
@@ -159,6 +169,7 @@ export function MenuItemContent({
   shortcut,
   renderLabel = (l) => l,
 }: MenuItemContentProps) {
+  const labels = useSatinLabels()
   return (
     <>
       {icon ? (
@@ -187,7 +198,7 @@ export function MenuItemContent({
       )}
 
       {shortcut && <KbdGroup keys={shortcut} aria-hidden />}
-      {selected && <span className="sr-only">(selected)</span>}
+      {selected && <span className="sr-only">({labels.selected})</span>}
       {selected && (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className="text-status-green-fg">
           <path
