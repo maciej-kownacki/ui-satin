@@ -1,4 +1,4 @@
-import { Avatar, type AvatarSize, type AvatarTone } from '@uisatin/ui/avatar'
+import { Avatar, AvatarGroup, type AvatarSize, type AvatarTone } from '@uisatin/ui/avatar'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 const people: { initials: string; tone: AvatarTone; name: string }[] = [
@@ -40,15 +40,17 @@ function code(v: Record<string, string>) {
   const named = v.tooltip === 'on'
   if (v.tone === 'all') {
     const rows = people.map((p) => `  { initials: '${p.initials}', tone: '${p.tone}'${named ? `, name: '${p.name}'` : ''} },`).join('\n')
-    return `import { Avatar } from '@uisatin/ui/avatar'
+    const list = `{people.map(({ initials, tone${named ? ', name' : ''} }) => (
+  <Avatar key={tone} initials={initials} tone={tone}${named ? ' name={name}' : ''}${attrs} />
+))}`
+    // Named avatars side by side share one tooltip that slides from face to face.
+    return `import { Avatar${named ? ', AvatarGroup' : ''} } from '@uisatin/ui/avatar'
 
 const people = [
 ${rows}
 ] as const
 
-{people.map(({ initials, tone${named ? ', name' : ''} }) => (
-  <Avatar key={tone} initials={initials} tone={tone}${named ? ' name={name}' : ''}${attrs} />
-))}`
+${named ? `<AvatarGroup className="flex-wrap justify-center">\n${list.replace(/^/gm, '  ')}\n</AvatarGroup>` : list}`
   }
   const p = people.find((p) => p.tone === v.tone)!
   const tone = p.tone === 'neutral' ? '' : ` tone="${p.tone}"`
@@ -72,7 +74,7 @@ export default function AvatarDemo({ codeHtml }: { codeHtml: Record<string, stri
       codeHtml={codeHtml}
       controls={controls}
       render={(_, v) => (
-        <div className="flex max-w-md flex-wrap items-center justify-center gap-2">
+        <AvatarGroup className="max-w-md flex-wrap justify-center">
           {people
             .filter((p) => v.tone === 'all' || v.tone === p.tone)
             .map((p) => (
@@ -85,7 +87,7 @@ export default function AvatarDemo({ codeHtml }: { codeHtml: Record<string, stri
                 shape={v.shape as 'circle' | 'rounded'}
               />
             ))}
-        </div>
+        </AvatarGroup>
       )}
     />
   )

@@ -19,7 +19,7 @@
   ],
   "docs": "Bar chart docs: https://uisatin.dev/components/bar-chart",
   "meta": {
-    "version": "0.1.0",
+    "version": "0.1.1",
     "edition": "free"
   }
 }

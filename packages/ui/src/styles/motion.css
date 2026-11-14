@@ -83,7 +83,9 @@
 }
 
 /* Accordion (components/accordion.tsx): the section grows downwards from under its header,
-   which never moves; the content inside settles in from its top edge. Closing is quicker. */
+   which never moves, revealing its content; closing is quicker. The text itself never scales:
+   Chrome draws scaled text as a bitmap, so it looked heavier until the animation ended, and it
+   played on every page load, since Radix skips the height animation on mount but not this one. */
 @keyframes satin-accordion-down {
   from { height: 0; }
   to { height: var(--radix-accordion-content-height); }
@@ -91,12 +93,6 @@
 @keyframes satin-accordion-up {
   from { height: var(--radix-accordion-content-height); }
   to { height: 0; }
-}
-@keyframes satin-accordion-content-in {
-  from { opacity: 0.92; transform: scale(0.98); }
-}
-@keyframes satin-accordion-content-out {
-  to { opacity: 0.92; transform: scale(0.98); }
 }
 .satin-accordion-content {
   overflow: hidden;
@@ -107,20 +103,11 @@
 .satin-accordion-content[data-state='closed'] {
   animation: satin-accordion-up var(--duration-base) var(--ease-out);
 }
-.satin-accordion-content > * {
-  transform-origin: top center;
-}
-.satin-accordion-content[data-state='open'] > * {
-  animation: satin-accordion-content-in var(--duration-slow) var(--ease-out);
-}
-.satin-accordion-content[data-state='closed'] > * {
-  animation: satin-accordion-content-out var(--duration-base) var(--ease-out);
-}
 
 /* Expanding groups (Sidebar groups, the docs sidebar): the same motion as the Accordion, for
    content that stays mounted. The group grows downwards from under its header, which never
-   moves (grid rows 0fr → 1fr, 250 ms in, 200 out, ease-out), and its content settles in from its
-   top edge (98% scale, 92% opacity). Closed, it is hidden from tab order and screen readers once
+   moves (grid rows 0fr → 1fr, 250 ms in, 200 out, ease-out), and its content fades from 92%
+   opacity. No scale, for the same reason as the Accordion. Closed, it is hidden from tab order and screen readers once
    it has folded. Wrap the content in one element: `.satin-expand > div`. */
 .satin-expand {
   display: grid;
@@ -141,18 +128,10 @@
   min-height: 0;
   overflow: hidden;
   opacity: 0.92;
-  scale: 0.98;
-  transform-origin: top center;
-  transition:
-    opacity var(--duration-base) var(--ease-out),
-    scale var(--duration-base) var(--ease-out);
+  transition: opacity var(--duration-base) var(--ease-out);
 }
 .satin-expand[data-state='open'] > * {
   opacity: 1;
-  /* none, not 1: at rest the content has no transform and no layer of its own. Safari keeps
-     text on a scaled layer it stops repainting, so an open group could show its rows'
-     backgrounds but none of their labels. */
-  scale: none;
   transition-duration: var(--duration-slow);
 }
 
