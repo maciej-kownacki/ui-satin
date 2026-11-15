@@ -70,6 +70,13 @@ export const defaultLabels = {
   navigate: 'Navigate',
   openItem: 'Open',
   source: 'Source',
+  moreOptions: 'More options',
+  loading: 'Loading',
+  submit: 'Submit',
+  done: 'Done',
+  opensInNewTab: '(opens in a new tab)',
+  showPassword: 'Show password',
+  hidePassword: 'Hide password',
 }
 
 export type SatinLabelSet = typeof defaultLabels

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "selectable-card",
+  "type": "registry:ui",
+  "title": "Selectable card",
+  "description": "The Satin Selectable card component.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/selectable-card.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\n\n/**\n * SelectableCard: what SelectableRadio and SelectableCheckbox share. A card with an optional\n * icon and a title over a description; the card's border shows the state\n * (styles/components.css): border/default, border/strong on hover, an action/primary border\n * with a 1px ring of the same when selected, the focus ring around the whole card.\n *\n * `icon` is a 16px glyph in a square muted tile as tall as the title and description; it takes\n * the text colour once the card is selected. `children` go under the description (a price,\n * Badges). Two sizes, the padding even on every side, every size on the scale:\n *\n * - `md` (default): 12px padding, radius-xl, 12px gap. Title 14/18 medium as in Banner, 2px,\n *   description in the theme's body size on a 20px line, muted: 40px of text, a 40px tile.\n * - `sm`: 8px padding, radius-lg, 10px gap. Title 13/18 medium over a 13/18 description:\n *   36px of text, a 36px tile.\n * - A title alone is one 20px line next to a 20px tile.\n */\nexport interface SelectableCardBaseProps {\n  title: React.ReactNode\n  description?: React.ReactNode\n  /** A 16px glyph, shown in a tile as tall as the title and description. */\n  icon?: React.ReactNode\n  size?: 'sm' | 'md'\n  className?: string\n  /** Extra content under the description. */\n  children?: React.ReactNode\n}\n\n/** @internal The icon tile and the text of a selectable card. */\nexport function SelectableCardBody({\n  id,\n  title,\n  description,\n  icon,\n  size = 'md',\n  children,\n}: Omit<SelectableCardBaseProps, 'className'> & { id: string }) {\n  const sm = size === 'sm'\n  // The tile is on the spacing scale, and the text is set to be exactly that tall:\n  // md 18 + 2 + 20 = 40, sm 18 + 18 = 36; a title alone is one 20px line on a 20px tile.\n  // A description that wraps grows the text; the tile stays put, top-aligned with the title.\n  const tile = description ? (sm ? 36 : 40) : 20\n  const titleLine = description ? 'sa:leading-[18px]' : 'sa:leading-5'\n\n  return (\n    <span className={cn('sa:flex sa:min-w-0 sa:flex-1 sa:items-start', sm ? 'sa:gap-2.5' : 'sa:gap-3')}>\n      {icon && (\n        <span\n          data-slot=\"selectable-card-icon\"\n          aria-hidden\n          style={{ width: tile, height: tile, borderRadius: tile === 20 ? 'var(--sa-radius-sm)' : sm ? 'var(--sa-radius-md)' : undefined }}\n        >\n          {icon}\n        </span>\n      )}\n      <span className=\"sa:min-w-0 sa:flex-1 sa:text-left\">\n        <span className={cn('sa:grid', !sm && 'sa:gap-0.5')}>\n          <span id={`${id}-title`} className={cn('sa:block sa:font-medium sa:text-text-default', sm ? 'sa:text-sm' : 'sa:text-base', titleLine)}>\n            {title}\n          </span>\n          {description && (\n            // md: the theme's body size, like Banner, Card and Alert; sm: 13px.\n            <span id={`${id}-description`} className={cn('sa:block sa:text-text-muted', sm ? 'sa:text-sm sa:leading-[18px]' : 'sa:text-body sa:leading-5')}>\n              {description}\n            </span>\n          )}\n        </span>\n        {children && <span className={cn('sa:block', sm ? 'sa:mt-1.5' : 'sa:mt-2')}>{children}</span>}\n      </span>\n    </span>\n  )\n}\n\n/** The ids SelectableRadio and SelectableCheckbox give the control, title and description. */\nexport function useSelectableIds(id: string | undefined, description: React.ReactNode) {\n  const autoId = React.useId()\n  const controlId = id ?? autoId\n  return {\n    controlId,\n    'aria-labelledby': `${controlId}-title`,\n    'aria-describedby': description ? `${controlId}-description` : undefined,\n  }\n}\n"
+    }
+  ],
+  "meta": {
+    "version": "0.3.0",
+    "edition": "free"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "link",
+  "type": "registry:ui",
+  "title": "Link",
+  "description": "Text that goes somewhere, calm in a paragraph, marked when it leaves the site.",
+  "dependencies": [
+    "radix-ui@^1.8.1"
+  ],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/labels.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/link.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { Slot } from 'radix-ui'\nimport { cn } from '@/lib/utils'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\n\n/**\n * Link: text that goes somewhere. Calm by default: the text colour with a border/strong\n * underline that takes the text colour on hover, so a paragraph full of links stays readable.\n * `brand` colours it for the one link that should stand out; `muted` is for footers and meta\n * lines and only underlines on hover. Focus draws the 2px focus ring around it.\n *\n * `external` (on by itself with `target=\"_blank\"`) adds a 12px ↗ after the text, says\n * \"(opens in a new tab)\" to screen readers and sets `rel=\"noopener noreferrer\"`.\n *\n * For a router's link (Next.js, React Router) pass `asChild` and put it inside: it gets the\n * styles, the router keeps the navigation.\n */\nexport interface LinkProps extends React.ComponentProps<'a'> {\n  variant?: 'default' | 'brand' | 'muted'\n  underline?: 'always' | 'hover' | 'none'\n  external?: boolean\n  asChild?: boolean\n}\n\nconst variantClass = {\n  default: 'sa:text-text-default sa:decoration-border-strong sa:hover:decoration-current',\n  brand: 'sa:text-status-brand-fg sa:decoration-status-brand-fg/40 sa:hover:decoration-current',\n  muted: 'sa:text-text-muted sa:decoration-current sa:hover:text-text-default',\n}\n\nexport function Link({\n  variant = 'default',\n  underline,\n  external,\n  asChild = false,\n  target,\n  rel,\n  className,\n  children,\n  ...props\n}: LinkProps) {\n  const labels = useSatinLabels()\n  const line = underline ?? (variant === 'muted' ? 'hover' : 'always')\n  const isExternal = external ?? target === '_blank'\n  const Comp = asChild ? Slot.Root : 'a'\n  return (\n    <Comp\n      data-slot=\"link\"\n      data-variant={variant}\n      target={target ?? (isExternal && !asChild ? '_blank' : undefined)}\n      rel={rel ?? (isExternal ? 'noopener noreferrer' : undefined)}\n      className={cn(\n        'sa:rounded-xs sa:font-medium sa:underline-offset-[3px] sa:outline-none sa:[text-decoration-thickness:1px]',\n        'sa:transition-[color,text-decoration-color,box-shadow] sa:duration-(--sa-duration-fast) sa:ease-(--sa-ease-out)',\n        'sa:focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',\n        line === 'always' && 'sa:underline',\n        line === 'hover' && 'sa:no-underline sa:hover:underline',\n        line === 'none' && 'sa:no-underline',\n        variantClass[variant],\n        className,\n      )}\n      {...props}\n    >\n      {asChild ? (\n        children\n      ) : (\n        <>\n          {children}\n          {isExternal && (\n            <>\n              <svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"none\" aria-hidden className=\"sa:ml-0.5 sa:inline-block sa:align-[-1px]\">\n                <path d=\"M4 3H9V8M9 3L3 9\" stroke=\"currentColor\" strokeLinecap=\"round\" strokeLinejoin=\"round\" style={{ strokeWidth: 1.1 }} />\n              </svg>\n              <span className=\"sa:sr-only\">{` ${labels.opensInNewTab}`}</span>\n            </>\n          )}\n        </>\n      )}\n    </Comp>\n  )\n}\n"
+    }
+  ],
+  "docs": "Link docs: https://uisatin.dev/components/link",
+  "meta": {
+    "version": "0.3.0",
+    "edition": "free"
+  }
+}

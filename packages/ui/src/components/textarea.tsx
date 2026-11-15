@@ -101,6 +101,7 @@ export function Textarea({
             onChange?.(e.target.value)
           }}
           {...props}
+          name={props.name ?? field?.name}
         />
         {/* Figma's resizeHandle, 7px at 1px in text/subtle. */}
         <svg className="satin-textarea-grip" viewBox="0 0 7 7" fill="none" aria-hidden>

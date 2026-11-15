@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Button, SearchBar, cn } from '@uisatin/ui'
-import { ArrowUpRight, Github, Menu, Minus } from 'iconoir-react'
+import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
 import { pagesOf, type NavGroup, type NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
 import { AiPatternsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
@@ -339,29 +339,6 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
 
           {/* The banner stays pinned under the list, which scrolls on its own. */}
           <div className="shrink-0">
-            {/* Where the code and the package live, for anyone sizing Satin up. */}
-            <div className="flex gap-1 px-2 pb-2">
-              {[
-                { href: 'https://github.com/maciej-kownacki/ui-satin', label: 'GitHub', icon: <Github className="size-4 shrink-0 text-text-muted" /> },
-                { href: 'https://www.npmjs.com/package/@uisatin/ui', label: 'npm', icon: null },
-              ].map((l) => (
-                <a
-                  key={l.label}
-                  href={l.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={cn(
-                    'flex h-8 items-center gap-2 rounded-pill px-3 text-[13px] leading-4 font-medium text-text-muted',
-                    'transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-hover hover:text-text-default',
-                    'focus-visible:shadow-border-focus focus-visible:outline-none',
-                  )}
-                >
-                  {l.icon}
-                  {l.label}
-                  <ArrowUpRight aria-hidden className="size-3.5 shrink-0 text-text-muted" />
-                </a>
-              ))}
-            </div>
             <HelpBanner />
           </div>
         </div>

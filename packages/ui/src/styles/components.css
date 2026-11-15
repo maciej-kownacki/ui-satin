@@ -127,3 +127,85 @@
 .satin-switch-thumb[data-state="checked"] {
   transform: translateX(14px);
 }
+
+/*
+ * SelectableCard (selectable-card.tsx): SelectableRadio is the card itself (a radio button, no
+ * circle); SelectableCheckbox is a card that is the checkbox's <label>, the box on the right.
+ * Card surface, border/default, radius-xl, shadow xs. Hover: border/strong. Selected: an
+ * action/primary border with a 1px ring of the same, so it reads 2px without moving the content.
+ * Keyboard focus draws the focus ring around the whole card (the box keeps only its border).
+ * Disabled: 50%, not-allowed.
+ */
+[data-slot="selectable-card"] {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  /* Even on every side: the icon tile sits as far from the left edge as from the top and bottom. */
+  padding: 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  background: var(--bg-card);
+  box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition-property: border-color, box-shadow, background-color, opacity;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+[data-slot="selectable-card"]:hover {
+  border-color: var(--border-strong);
+}
+[data-slot="selectable-card"]:is([data-state="checked"], :has([data-state="checked"], [data-state="indeterminate"])) {
+  border-color: var(--action-primary-bg);
+  box-shadow: 0 0 0 1px var(--action-primary-bg), 0 1px 2px 0 var(--effect-shadow-xs);
+}
+[data-slot="selectable-card"]:is(:focus-visible, :has(:focus-visible)) {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 1px var(--border-focus), 0 0 0 3px var(--action-focus-ring);
+}
+[data-slot="selectable-card"] .satin-checkbox:focus-visible {
+  box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
+}
+[data-slot="selectable-card"]:is(:disabled, [data-disabled], :has(:disabled, [data-disabled])) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+[data-slot="selectable-card"]:is(:disabled, [data-disabled], :has(:disabled, [data-disabled])):hover {
+  border-color: var(--border-default);
+}
+/* The checkbox on the middle of the title's line: 18px with a description, 20px without. */
+[data-slot="selectable-card"] > .satin-checkbox {
+  margin-top: 1px;
+}
+[data-slot="selectable-card"]:not(:has([id$="-description"])) > .satin-checkbox {
+  margin-top: 2px;
+}
+/* sm: 8px all round, radius-lg, 10px gaps. */
+[data-slot="selectable-card"][data-size="sm"] {
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-lg);
+}
+/* The icon tile: a square as tall as the title and description, 20, 36 or 40 (set inline). */
+[data-slot="selectable-card-icon"] {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  background: var(--bg-muted);
+  color: var(--text-muted);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+[data-slot="selectable-card-icon"] svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.875;
+}
+[data-slot="selectable-card"]:is([data-state="checked"], :has([data-state="checked"], [data-state="indeterminate"])) [data-slot="selectable-card-icon"] {
+  color: var(--text-default);
+}

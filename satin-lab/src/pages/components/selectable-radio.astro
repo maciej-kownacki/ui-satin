@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SelectableRadioDemo, { options } from '../../demos/selectable-radio'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="selectable-radio">
+  <DocSection item={page('selectable-radio')} api={api['selectable-radio']}>
+    <SelectableRadioDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

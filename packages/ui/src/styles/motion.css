@@ -224,3 +224,34 @@
     display: none;
   }
 }
+
+/* Spinner: one turn every 800ms. Under reduced motion it keeps turning, slower, since a still
+   arc would read as stuck; it's the only animation that does. */
+@keyframes satin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+[data-slot="spinner"] > svg {
+  animation: satin-spin 800ms linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="spinner"] > svg {
+    animation-duration: 1600ms !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+/* ActionButton's checkmark draws itself in once the action succeeds (pathLength = 1). */
+@keyframes satin-check-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+[data-slot="action-button-check"] path {
+  stroke-dasharray: 1;
+  animation: satin-check-draw 320ms var(--ease-out) 60ms both;
+}

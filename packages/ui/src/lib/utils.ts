@@ -1,5 +1,31 @@
 import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { extendTailwindMerge } from 'tailwind-merge'
+
+/**
+ * tailwind-merge, told about Satin's own theme names. Out of the box it only knows Tailwind's
+ * scales, so it took `text-body` for a text colour (and dropped it next to `text-text-muted`),
+ * and never saw that `rounded-lg` replaces `rounded-pill` or `h-8` replaces `h-control-height`.
+ * These are the names theme.css adds to Tailwind's text, radius, spacing and shadow scales.
+ */
+const twMerge = extendTailwindMerge({
+  extend: {
+    theme: {
+      text: ['body', 'body-lg', 'title', 'heading', 'display'],
+      radius: ['pill'],
+      spacing: [
+        'control-height',
+        'control-height-xs',
+        'control-height-lg',
+        'control-height-xl',
+        'icon-size',
+        'icon-size-sm',
+        'menu-row',
+        'toast-height',
+      ],
+      shadow: ['primary', 'primary-focus', 'destructive', 'destructive-focus', 'border-focus', 'xs-focus'],
+    },
+  },
+})
 
 /** Satin's class prefix in the npm build (`sa:flex`); the source and the docs site use none. */
 const PREFIX = 'sa:'

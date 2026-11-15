@@ -57,6 +57,31 @@
       ]
     },
     {
+      "name": "action-button",
+      "type": "registry:ui",
+      "title": "Action button",
+      "description": "Runs an action and shows how it went in place: a spinner, then a checkmark.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/spinner.json"
+      ],
+      "docs": "Action button docs: https://uisatin.dev/components/action-button",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/action-button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "agent-loading",
       "type": "registry:ui",
       "title": "Loading",
@@ -129,6 +154,30 @@
       "files": [
         {
           "path": "registry/satin/ui/agent-suggestion.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "title": "Alert",
+      "description": "A message that stays on the page until it is dealt with: info, success, warning or error.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Alert docs: https://uisatin.dev/components/alert",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/alert.tsx",
           "type": "registry:ui"
         }
       ]
@@ -344,7 +393,8 @@
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/spinner.json"
       ],
       "docs": "Button docs: https://uisatin.dev/components/button",
       "meta": {
@@ -354,6 +404,29 @@
       "files": [
         {
           "path": "registry/satin/ui/button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "button-group",
+      "type": "registry:ui",
+      "title": "Button group",
+      "description": "Buttons that belong together, joined into one block or spaced as a toolbar.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json"
+      ],
+      "docs": "Button group docs: https://uisatin.dev/components/button-group",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/button-group.tsx",
           "type": "registry:ui"
         }
       ]
@@ -705,7 +778,9 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/alert.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/dialog.json",
         "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Dialog docs: https://uisatin.dev/components/dialog",
@@ -818,6 +893,29 @@
       ]
     },
     {
+      "name": "field-group",
+      "type": "registry:ui",
+      "title": "Field group",
+      "description": "Fields or options that answer one question, under one legend, with one error.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/form-field.json"
+      ],
+      "docs": "Field group docs: https://uisatin.dev/components/field-group",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/field-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "file-upload",
       "type": "registry:ui",
       "title": "File upload",
@@ -864,6 +962,29 @@
       "files": [
         {
           "path": "registry/satin/ui/floating.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "form",
+      "type": "registry:ui",
+      "title": "Form",
+      "description": "Lays out fields, groups and sections, hands them errors by name and focuses the first one.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/form-field.json"
+      ],
+      "docs": "Form docs: https://uisatin.dev/components/form",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/form.tsx",
           "type": "registry:ui"
         }
       ]
@@ -933,6 +1054,30 @@
       "files": [
         {
           "path": "registry/satin/ui/input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "title": "Input group",
+      "description": "A field joined with an addon, a select or a button in one block.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/form-field.json"
+      ],
+      "docs": "Input group docs: https://uisatin.dev/components/input-group",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/input-group.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1025,6 +1170,53 @@
       "files": [
         {
           "path": "registry/satin/ui/line-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "link",
+      "type": "registry:ui",
+      "title": "Link",
+      "description": "Text that goes somewhere, calm in a paragraph, marked when it leaves the site.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Link docs: https://uisatin.dev/components/link",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/link.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "list",
+      "type": "registry:ui",
+      "title": "List",
+      "description": "Rows of people, files or settings, each with a title, meta and actions.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "List docs: https://uisatin.dev/components/list",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/list.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1127,6 +1319,33 @@
       "files": [
         {
           "path": "registry/satin/ui/pagination.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "password-input",
+      "type": "registry:ui",
+      "title": "Password input",
+      "description": "A password field with a show and hide button.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Password input docs: https://uisatin.dev/components/password-input",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/password-input.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1308,6 +1527,98 @@
       ]
     },
     {
+      "name": "selectable-card",
+      "type": "registry:ui",
+      "title": "Selectable card",
+      "description": "The Satin Selectable card component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/selectable-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "selectable-checkbox",
+      "type": "registry:ui",
+      "title": "Selectable checkbox",
+      "description": "Pick any number of options, each a card with a line of explanation and an icon.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/selectable-card.json"
+      ],
+      "docs": "Selectable checkbox docs: https://uisatin.dev/components/selectable-checkbox",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/selectable-checkbox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "selectable-radio",
+      "type": "registry:ui",
+      "title": "Selectable radio",
+      "description": "Pick one option from a few, each a card with a line of explanation and an icon.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/selectable-card.json"
+      ],
+      "docs": "Selectable radio docs: https://uisatin.dev/components/selectable-radio",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/selectable-radio.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "title": "Separator",
+      "description": "A thin rule between blocks, across or down, with an optional word in the middle.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "docs": "Separator docs: https://uisatin.dev/components/separator",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/separator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "sheet",
       "type": "registry:ui",
       "title": "Sheet",
@@ -1425,6 +1736,55 @@
       "files": [
         {
           "path": "registry/satin/ui/sliding-indicator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "title": "Spinner",
+      "description": "Says something is loading when there is no telling how long it takes.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Spinner docs: https://uisatin.dev/components/spinner",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/spinner.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "split-button",
+      "type": "registry:ui",
+      "title": "Split button",
+      "description": "The usual action, with an arrow that opens its variations.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/button-group.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Split button docs: https://uisatin.dev/components/split-button",
+      "meta": {
+        "version": "0.3.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/split-button.tsx",
           "type": "registry:ui"
         }
       ]

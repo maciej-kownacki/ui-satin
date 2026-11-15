@@ -5,6 +5,10 @@ import { Dialog as DialogPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { useSatinLabels } from './labels'
+import { CloseIcon, StatusIcon } from './alert'
+
+// Defined in alert.tsx; re-exported so existing imports from './dialog' keep working.
+export { CloseIcon, StatusIcon }
 
 /**
  * Dialog, 1:1 with the uiKit `Dialog` set (465:66873): variant default or destructive.
@@ -50,22 +54,6 @@ export interface DialogProps
   /** Called when focus moves into the dialog on open; `preventDefault()` keeps it where it was. */
   onOpenAutoFocus?: (event: Event) => void
   className?: string
-}
-
-/** The X from Figma's close button (`icon` 16px, 1.25 stroke). */
-/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
-export function CloseIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M4.50551 11.4951L8.0006 8M8.0006 8L11.4957 4.50491M8.0006 8L4.50551 4.50491M8.0006 8L11.4957 11.4951"
-        stroke="currentColor"
-        strokeWidth="1.25"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }
 
 export function Dialog({
@@ -192,34 +180,6 @@ const alertTint: Record<DialogAlertIntent, string> = {
   success: 'bg-status-green-bg text-status-green-fg',
   warning: 'bg-status-amber-bg text-status-amber-fg',
   error: 'bg-status-red-bg text-status-red-fg',
-}
-
-/** The four status glyphs from Figma (16px, 1.25 stroke), drawn in currentColor. */
-export function StatusIcon({ intent }: { intent: DialogAlertIntent }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className="shrink-0">
-      <g stroke="currentColor" style={{ strokeWidth: 1.25 }} strokeLinecap="round" strokeLinejoin="round">
-        {intent === 'success' ? (
-          <path d="M3.33333 8.66667L6 11.3333L12.6667 4.66667" />
-        ) : (
-          <>
-            {intent === 'info' ? (
-              <>
-                <path d="M8 7.70494V10.6557" />
-                <path d="M8 5.35022L8.0059 5.34366" />
-              </>
-            ) : (
-              <>
-                <path d="M8 5.34428V8.29506" />
-                <path d="M8 10.6563L8.0059 10.6498" />
-              </>
-            )}
-            <path d="M8 13.9015C11.2593 13.9015 13.9015 11.2593 13.9015 8C13.9015 4.74066 11.2593 2.09845 8 2.09845C4.74066 2.09845 2.09845 4.74066 2.09845 8C2.09845 11.2593 4.74066 13.9015 8 13.9015Z" />
-          </>
-        )}
-      </g>
-    </svg>
-  )
 }
 
 export function DialogAlert({

@@ -4,7 +4,7 @@ import * as React from 'react'
 import { Select as SelectPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { MenuItemContent, menuGroupClass, menuGroupLabelClass, menuItemClass, menuSurfaceClass, type MenuItemContentProps } from './dropdown'
-import { useFormField } from './form-field'
+import { FieldSizeContext, useFormField } from './form-field'
 import { useSatinLabels } from './labels'
 
 /**
@@ -102,6 +102,7 @@ export function useFieldChrome({
     disabled: disabled ?? field?.disabled ?? false,
     invalid: Boolean(error) || (field?.invalid ?? false),
     required: field?.required,
+    name: field?.name,
     describedBy: [field?.describedBy, messageId].filter(Boolean).join(' ') || undefined,
     message,
     messageId,
@@ -126,7 +127,7 @@ export function FieldChrome({
   children: React.ReactNode
 }) {
   return (
-    <div className={cn('grid w-full gap-2', className)}>
+    <div data-slot="field-chrome" className={cn('grid w-full gap-2', className)}>
       {label && (
         // The row keeps the label's 18px whatever the action, so the field never moves.
         <div className="flex h-[18px] items-center justify-between gap-2">
@@ -165,7 +166,7 @@ export function Select({
   label,
   hint,
   error,
-  size = 'md',
+  size: ownSize,
   leadingIcon,
   layout = 'inline',
   iconSize = 16,
@@ -184,6 +185,7 @@ export function Select({
   ...props
 }: SelectProps) {
   const chrome = useFieldChrome({ id, disabled, error, hint })
+  const size = ownSize ?? React.useContext(FieldSizeContext) ?? 'md'
   const labels = useSatinLabels()
 
   // Figma's `filled` and the check: track the value, controlled or not.
@@ -206,7 +208,7 @@ export function Select({
         onOpenChange={onOpenChange}
         disabled={chrome.disabled}
         required={required ?? chrome.required}
-        name={name}
+        name={name ?? chrome.name}
       >
         <SelectPrimitive.Trigger
           {...props}

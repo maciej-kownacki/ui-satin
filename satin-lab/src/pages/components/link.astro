@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import LinkDemo, { options } from '../../demos/link'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="link">
+  <DocSection item={page('link')} api={api['link']}>
+    <LinkDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

@@ -36,6 +36,7 @@ export const controls: ShowcaseControl[] = [
     default: 'icon',
     items: [{ value: 'none', label: 'None' }, { value: 'icon', label: 'With label' }, { value: 'only', label: 'Icon only' }],
   },
+  { id: 'loading', label: 'Loading', type: 'switch', default: 'off' },
 ]
 
 const props = ['size', 'shape']
@@ -46,7 +47,7 @@ const labelOf = (id: string, value: string) => {
 }
 
 function code(v: Record<string, string>) {
-  const attrs = props.filter((k) => v[k] !== defaults[k]).map((k) => ` ${k}="${v[k]}"`).join('')
+  const attrs = props.filter((k) => v[k] !== defaults[k]).map((k) => ` ${k}="${v[k]}"`).join('') + (v.loading === 'on' ? ' loading' : '')
   const icon = v.icon !== 'none'
   const only = v.icon === 'only'
   if (v.variant === 'all') {
@@ -86,6 +87,7 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   label: [
     ...['size', 'variant', 'shape'].map((k) => labelOf(k, v[k])),
     v.icon === 'none' ? 'No icon' : v.icon === 'icon' ? 'Icon' : 'Icon only',
+    v.loading === 'on' ? 'Loading' : 'Idle',
   ].join(' · '),
   code: code(v),
 }))
@@ -109,6 +111,7 @@ export default function ButtonDemo({ codeHtml }: { codeHtml: Record<string, stri
                 shape={v.shape as 'default' | 'rounded'}
                 iconOnly={v.icon === 'only'}
                 aria-label={v.icon === 'only' ? label : undefined}
+                loading={v.loading === 'on'}
               >
                 {v.icon !== 'none' && <Icon aria-hidden />}
                 {v.icon !== 'only' && label}

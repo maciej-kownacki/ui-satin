@@ -65,7 +65,8 @@ export function Checkbox({ className, label, description, placement = 'left', id
       className={cn('flex cursor-pointer items-start gap-2 has-disabled:cursor-not-allowed has-data-disabled:cursor-not-allowed [&>:first-child]:mt-0.5', placement === 'right' && 'flex-row-reverse justify-between')}
     >
       {box}
-      <div className="grid gap-0.5 text-base">
+      {/* Disabled (on the box, or a disabled fieldset around it) turns both texts text/subtle, as on Radio. */}
+      <div className="grid gap-0.5 text-base peer-disabled:*:text-text-subtle">
         {label && (
           <span id={labelId} className="block leading-5 font-medium text-text-default">
             {label}

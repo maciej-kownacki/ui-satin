@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input-group",
+  "type": "registry:ui",
+  "title": "Input group",
+  "description": "A field joined with an addon, a select or a button in one block.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/button.json",
+    "https://uisatin.dev/r/form-field.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/input-group.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\nimport { ButtonDefaultsContext } from '@/registry/satin/ui/button'\nimport { FieldSizeContext } from '@/registry/satin/ui/form-field'\n\n/**\n * InputGroup: a field joined with what belongs to it, in one block: an addon before or after\n * (`https://`, `.satin.dev`, a currency), a Select (country code, unit), or a Button (Copy,\n * Send, Subscribe). The inner corners go square and neighbours share one 1px border; the\n * focused field comes to the front so its ring is whole.\n *\n * `size` sizes every part to the same height: Inputs and Selects take it, Buttons take the\n * matching button size (sm 28 → md, md 32 → lg, lg 36 → xl) and secondary by default. In a\n * group a button draws its outline as a border, like the field, so both read the same height.\n *\n * Text that sits inside the field belongs on the Input itself (`leadingText`, `trailingText`,\n * icons); an addon is for a separate, boxed segment. Wrap the group in a FormField for the\n * label, description and error: the field inside picks them up.\n */\nexport interface InputGroupProps extends React.ComponentProps<'div'> {\n  size?: 'sm' | 'md' | 'lg'\n}\n\nconst buttonSize = { sm: 'md', md: 'lg', lg: 'xl' } as const\n\nexport function InputGroup({ size = 'md', className, ...props }: InputGroupProps) {\n  const buttons = React.useMemo(() => ({ size: buttonSize[size], variant: 'secondary' as const }), [size])\n  return (\n    <FieldSizeContext.Provider value={size}>\n      <ButtonDefaultsContext.Provider value={buttons}>\n        <div\n          role=\"group\"\n          data-slot=\"input-group\"\n          data-size={size}\n          className={cn('sa:flex sa:w-full sa:items-stretch', className)}\n          {...props}\n        />\n      </ButtonDefaultsContext.Provider>\n    </FieldSizeContext.Provider>\n  )\n}\n\n/** A boxed segment of an InputGroup: text (`https://`, `€`), an icon, or a Kbd. */\nexport function InputGroupAddon({ className, ...props }: React.ComponentProps<'div'>) {\n  return <div data-slot=\"input-group-addon\" className={cn('satin-input-addon', className)} {...props} />\n}\n"
+    }
+  ],
+  "docs": "Input group docs: https://uisatin.dev/components/input-group",
+  "meta": {
+    "version": "0.3.0",
+    "edition": "free"
+  }
+}

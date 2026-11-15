@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SeparatorDemo, { options } from '../../demos/separator'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="separator">
+  <DocSection item={page('separator')} api={api['separator']}>
+    <SeparatorDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

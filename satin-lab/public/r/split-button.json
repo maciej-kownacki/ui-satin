@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "split-button",
+  "type": "registry:ui",
+  "title": "Split button",
+  "description": "The usual action, with an arrow that opens its variations.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/button.json",
+    "https://uisatin.dev/r/button-group.json",
+    "https://uisatin.dev/r/dropdown.json",
+    "https://uisatin.dev/r/labels.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/split-button.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { Button, type ButtonProps } from '@/registry/satin/ui/button'\nimport { ButtonGroup } from '@/registry/satin/ui/button-group'\nimport { DropdownMenu, type DropdownMenuProps } from '@/registry/satin/ui/dropdown'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\n\n/**\n * SplitButton: the main action and, joined to it, an arrow that opens the related ones\n * (\"Publish\" ▾ Schedule, Save as draft). Built from an attached ButtonGroup, two Buttons and a\n * DropdownMenu, so it takes every Button variant, size and shape, and the menu takes\n * `DropdownMenuItem`s (`label`, `icon`, `shortcut`…) and groups like any other.\n *\n * Use it when one action is the usual one and the others are its variations; when the actions\n * are equals, use a DropdownMenu on its own. The arrow is named \"More options\" (`menuLabel`, or\n * `moreOptions` in SatinLabels) and disabling the button disables both halves.\n */\nexport interface SplitButtonProps extends Omit<ButtonProps, 'iconOnly' | 'asChild'> {\n  /** The related actions: `DropdownMenuItem`s, optionally in `DropdownMenuGroup`s. */\n  menu: React.ReactNode\n  /** Accessible name of the arrow. */\n  menuLabel?: string\n  /** Passed to the DropdownMenu: `align` (default `end`), `side`, `open`, `onOpenChange`… */\n  menuProps?: Omit<DropdownMenuProps, 'trigger' | 'children'>\n  /** Class names for the group around both halves. */\n  groupClassName?: string\n}\n\nexport function SplitButton({\n  menu,\n  menuLabel,\n  menuProps,\n  groupClassName,\n  variant = 'primary',\n  size,\n  shape,\n  disabled,\n  children,\n  ...props\n}: SplitButtonProps) {\n  const labels = useSatinLabels()\n  return (\n    <ButtonGroup variant={variant} size={size} shape={shape} className={groupClassName} data-slot=\"split-button\">\n      <Button disabled={disabled} {...props}>\n        {children}\n      </Button>\n      <DropdownMenu\n        align=\"end\"\n        {...menuProps}\n        trigger={\n          <Button iconOnly aria-label={menuLabel ?? labels.moreOptions} disabled={disabled}>\n            <svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" aria-hidden>\n              <path d=\"M4 6L8 10L12 6\" stroke=\"currentColor\" strokeWidth=\"1.25\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n            </svg>\n          </Button>\n        }\n      >\n        {menu}\n      </DropdownMenu>\n    </ButtonGroup>\n  )\n}\n"
+    }
+  ],
+  "docs": "Split button docs: https://uisatin.dev/components/split-button",
+  "meta": {
+    "version": "0.3.0",
+    "edition": "free"
+  }
+}

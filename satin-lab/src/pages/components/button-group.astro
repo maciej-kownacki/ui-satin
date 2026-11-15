@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ButtonGroupDemo, { options } from '../../demos/button-group'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="button-group">
+  <DocSection item={page('button-group')} api={api['button-group']}>
+    <ButtonGroupDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

@@ -63,8 +63,8 @@ export function Radio({ className, label, description, placement = 'left', id, d
       className={cn('flex cursor-pointer items-start gap-2 has-disabled:cursor-not-allowed has-data-disabled:cursor-not-allowed [&>:first-child]:mt-0.5', placement === 'right' && 'flex-row-reverse justify-between')}
     >
       {circle}
-      {/* Disabled (on the item or the whole group) turns both texts text/subtle. */}
-      <div className="grid min-w-0 gap-0.5 text-base text-text-default peer-data-disabled:text-text-subtle peer-data-disabled:*:text-text-subtle">
+      {/* Disabled (on the item, the group or a fieldset around it) turns both texts text/subtle. */}
+      <div className="grid min-w-0 gap-0.5 text-base text-text-default peer-data-disabled:text-text-subtle peer-data-disabled:*:text-text-subtle peer-disabled:*:text-text-subtle">
         {label && (
           <span id={labelId} className="block leading-5 font-medium">
             {label}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "selectable-radio",
+  "type": "registry:ui",
+  "title": "Selectable radio",
+  "description": "Pick one option from a few, each a card with a line of explanation and an icon.",
+  "dependencies": [
+    "radix-ui@^1.8.1"
+  ],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/selectable-card.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/selectable-radio.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { RadioGroup as RadioGroupPrimitive } from 'radix-ui'\nimport { cn } from '@/lib/utils'\nimport { SelectableCardBody, useSelectableIds, type SelectableCardBaseProps } from '@/registry/satin/ui/selectable-card'\n\n/**\n * SelectableRadio: one option of a RadioGroup drawn as a whole card, with no radio circle: the\n * card itself is the radio (`role=\"radio\"`), and the selected one is the card with the\n * action/primary border. For choices that need a line of explanation or an icon: plans,\n * roles, the mode an agent runs in.\n *\n * Put the cards in a `RadioGroup`, which owns the value: a click or Space picks a card, arrow\n * keys move between them, Tab enters and leaves the group. `icon` adds a 16px glyph in a tile\n * as tall as the title and description.\n */\nexport interface SelectableRadioProps\n  extends Omit<React.ComponentProps<typeof RadioGroupPrimitive.Item>, 'title' | 'children' | 'asChild'>,\n    SelectableCardBaseProps {}\n\nexport function SelectableRadio({ title, description, icon, size = 'md', className, children, id, ...props }: SelectableRadioProps) {\n  const { controlId, ...aria } = useSelectableIds(id, description)\n  return (\n    <RadioGroupPrimitive.Item\n      id={controlId}\n      data-slot=\"selectable-card\"\n      data-size={size}\n      data-kind=\"radio\"\n      {...aria}\n      {...props}\n      className={cn('sa:w-full sa:text-left', className)}\n    >\n      <SelectableCardBody id={controlId} title={title} description={description} icon={icon} size={size}>\n        {children}\n      </SelectableCardBody>\n    </RadioGroupPrimitive.Item>\n  )\n}\n"
+    }
+  ],
+  "docs": "Selectable radio docs: https://uisatin.dev/components/selectable-radio",
+  "meta": {
+    "version": "0.3.0",
+    "edition": "free"
+  }
+}

@@ -20,6 +20,7 @@ jobs:
       - run: npm pack ./packages/ui/dist --dry-run
       # The stylesheet shares no name with an app's Tailwind or shadcn theme.
       - run: node scripts/check-css.mjs
+      - run: node scripts/check-cn.mjs
       # The shadcn registry says which npm release its source matches; it must be this one.
       - name: Registry version matches the package
         run: node -e "const v=require('./packages/ui/package.json').version, r=require('./satin-lab/public/r/button.json').meta.version; if (v!==r) { console.error('registry meta.version', r, '!= package', v, '- run npm run registry'); process.exit(1) }"

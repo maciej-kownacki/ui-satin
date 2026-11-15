@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ActionButtonDemo, { options } from '../../demos/action-button'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="action-button">
+  <DocSection item={page('action-button')} api={api['action-button']}>
+    <ActionButtonDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

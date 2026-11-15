@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SpinnerDemo, { options } from '../../demos/spinner'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="spinner">
+  <DocSection item={page('spinner')} api={api['spinner']}>
+    <SpinnerDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SplitButtonDemo, { options } from '../../demos/split-button'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="split-button">
+  <DocSection item={page('split-button')} api={api['split-button']}>
+    <SplitButtonDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

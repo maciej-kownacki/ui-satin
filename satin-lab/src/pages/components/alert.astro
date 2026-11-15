@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import AlertDemo, { options } from '../../demos/alert'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="alert">
+  <DocSection item={page('alert')} api={api['alert']}>
+    <AlertDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

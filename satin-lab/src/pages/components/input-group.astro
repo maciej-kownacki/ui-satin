@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import InputGroupDemo, { options } from '../../demos/input-group'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="input-group">
+  <DocSection item={page('input-group')} api={api['input-group']}>
+    <InputGroupDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

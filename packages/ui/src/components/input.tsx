@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { cn } from '../lib/utils'
-import { useFormField } from './form-field'
+import { FieldSizeContext, useFormField } from './form-field'
 
 /**
  * Input, 1:1 with the uiKit `Input` set (820:51657): a label (medium), the field, and a hint
@@ -25,6 +25,10 @@ export interface InputProps extends Omit<React.ComponentProps<'input'>, 'size'> 
   size?: 'sm' | 'md' | 'lg'
   leadingIcon?: React.ReactNode
   trailingIcon?: React.ReactNode
+  /** Muted text inside the field before the value: `$`, `https://`. */
+  leadingText?: React.ReactNode
+  /** Muted text inside the field after the value: `USD`, `.satin.dev`, a counter. */
+  trailingText?: React.ReactNode
   /** Classes for the outer wrapper (label + field + hint). `className` styles the field. */
   wrapperClassName?: string
   /** Show a state without interacting, for state sheets. */
@@ -35,9 +39,11 @@ export function Input({
   label,
   hint,
   error,
-  size = 'md',
+  size: ownSize,
   leadingIcon,
   trailingIcon,
+  leadingText,
+  trailingText,
   className,
   wrapperClassName,
   id,
@@ -51,6 +57,7 @@ export function Input({
   ...props
 }: InputProps) {
   const field = useFormField()
+  const size = ownSize ?? React.useContext(FieldSizeContext) ?? 'md'
   const autoId = React.useId()
   const inputId = id ?? field?.id ?? autoId
   const isDisabled = disabled ?? field?.disabled ?? false
@@ -99,6 +106,12 @@ export function Input({
             {leadingIcon}
           </span>
         )}
+        {leadingText && (
+          // 2px from the value, not the field's 8: `https://` reads as part of the address.
+          <span data-slot="input-text" className="-mr-1.5 shrink-0 whitespace-nowrap text-text-muted select-none">
+            {leadingText}
+          </span>
+        )}
         <input
           ref={inputRef}
           id={inputId}
@@ -115,7 +128,13 @@ export function Input({
             onChange?.(e)
           }}
           {...props}
+          name={props.name ?? field?.name}
         />
+        {trailingText && (
+          <span data-slot="input-text" className="-ml-1.5 shrink-0 whitespace-nowrap text-text-muted select-none">
+            {trailingText}
+          </span>
+        )}
         {trailingIcon && (
           // Not aria-hidden: the trailing slot may hold an action, such as a clear button.
           <span className="satin-field-icon">

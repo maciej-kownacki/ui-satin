@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Slot } from 'radix-ui'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '../lib/utils'
+import { Spinner } from './spinner'
 
 /**
  * Button, 1:1 with the uiKit `button` component set (10:1838): five styles, four sizes
@@ -116,17 +117,59 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   /** Render the child element (a link, say) with the button's styles instead of a `<button>`. */
   asChild?: boolean
+  /**
+   * Busy: a Spinner takes the middle and the label and icons turn invisible but keep their room,
+   * so the button doesn't change width. Clicks (and Enter in a form) do nothing; the button
+   * keeps its focus and looks, with `aria-busy` and `aria-disabled` for screen readers.
+   */
+  loading?: boolean
 }
 
-export function Button({ className, variant, size, shape, iconOnly, asChild = false, type, ...props }: ButtonProps) {
+/**
+ * What a ButtonGroup hands its buttons: the variant, size and shape they take unless they set
+ * their own. Lives here so Button reads it without importing the group.
+ */
+export type ButtonDefaults = Pick<VariantProps<typeof buttonVariants>, 'variant' | 'size' | 'shape'>
+
+export const ButtonDefaultsContext = React.createContext<ButtonDefaults | null>(null)
+
+export function Button({ className, variant, size, shape, iconOnly, asChild = false, loading = false, type, onClick, children, 'aria-disabled': ariaDisabled, ...props }: ButtonProps) {
   const Comp = asChild ? Slot.Root : 'button'
+  const group = React.useContext(ButtonDefaultsContext)
+  const resolved = variant ?? group?.variant ?? 'primary'
   return (
     <Comp
       data-slot="button"
+      data-variant={resolved}
       type={asChild ? undefined : (type ?? 'button')}
-      className={cn(buttonVariants({ variant, size, shape, iconOnly }), className)}
+      aria-busy={loading || undefined}
+      aria-disabled={loading || ariaDisabled || undefined}
+      data-loading={loading || undefined}
+      className={cn(
+        buttonVariants({ variant: resolved, size: size ?? group?.size, shape: shape ?? group?.shape, iconOnly }),
+        loading && 'relative cursor-progress',
+        className,
+      )}
+      onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+        if (loading) {
+          event.preventDefault()
+          return
+        }
+        onClick?.(event)
+      }}
       {...props}
-    />
+    >
+      {loading && !asChild ? (
+        <>
+          <span className="invisible contents">{children}</span>
+          <span className="absolute inset-0 grid place-items-center">
+            <Spinner size={(size ?? group?.size) === 'xs' ? 'sm' : 'md'} label={null} />
+          </span>
+        </>
+      ) : (
+        children
+      )}
+    </Comp>
   )
 }
 

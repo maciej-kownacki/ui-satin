@@ -150,3 +150,85 @@
 .satin-combobox[data-multiple] [data-slot="chip"] {
   max-width: 100%;
 }
+
+/*
+ * InputGroup (input-group.tsx): fields, addons, selects and buttons joined into one block.
+ * Every part after the first steps 1px left so neighbours share a border; inner corners go
+ * square. Parts are matched by data-slot, not class, so the same rules hold in the prefixed
+ * npm build.
+ */
+[data-slot="input-group"] > * {
+  position: relative;
+}
+[data-slot="input-group"] > :not(:first-child) {
+  margin-left: -1px;
+}
+[data-slot="input-group"] > [data-slot="input-wrapper"] {
+  flex: 1;
+  min-width: 0;
+}
+[data-slot="input-group"] > :hover {
+  z-index: 1;
+}
+[data-slot="input-group"] > :focus-within,
+[data-slot="input-group"] > :focus-visible {
+  z-index: 2;
+}
+[data-slot="input-group"] > :not(:first-child),
+[data-slot="input-group"] > :not(:first-child) .satin-field {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+[data-slot="input-group"] > :not(:last-child),
+[data-slot="input-group"] > :not(:last-child) .satin-field {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.satin-input-addon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-muted);
+  color: var(--text-muted);
+  font-size: var(--text-base);
+  white-space: nowrap;
+}
+[data-slot="input-group"][data-size="sm"] .satin-input-addon {
+  font-size: var(--text-sm);
+}
+[data-slot="input-group"][data-size="lg"] > .satin-input-addon {
+  border-radius: var(--radius-xl);
+}
+.satin-input-addon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.875;
+}
+
+/* A button in a group draws its outline as a 1px border, like the field, so both are the same
+   height; the outer ring and drop shadow give way to the field's xs shadow. */
+[data-slot="input-group"] > [data-slot="button"] {
+  box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
+}
+[data-slot="input-group"] > [data-slot="button"][data-variant="secondary"] {
+  border-color: var(--border-default);
+}
+[data-slot="input-group"] > [data-slot="button"][data-variant="secondary"]:hover {
+  border-color: var(--border-strong);
+}
+[data-slot="input-group"] > [data-slot="button"]:focus-visible {
+  box-shadow: 0 0 0 2px var(--action-focus-ring);
+}
+[data-slot="input-group"] > [data-slot="button"]:active {
+  box-shadow: none;
+}
+/* A Select (or Combobox) in a group is as wide as its value, like an addon; the Input takes the rest. */
+[data-slot="input-group"] > [data-slot="field-chrome"] {
+  width: auto;
+  flex: none;
+}

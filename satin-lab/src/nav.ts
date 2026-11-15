@@ -27,6 +27,7 @@ export const nav: NavGroup[] = [
     title: 'Components',
     items: [
       { id: 'accordion', title: 'Accordion', href: '/components/accordion', description: 'Folds sections of content under their titles, one or many open at a time.' },
+      { id: 'alert', title: 'Alert', href: '/components/alert', description: 'A message that stays on the page until it is dealt with: info, success, warning or error.' },
       {
         id: 'announcements',
         title: 'Announcements',
@@ -40,7 +41,18 @@ export const nav: NavGroup[] = [
       { id: 'avatar', title: 'Avatar', href: '/components/avatar', description: 'Shows a person or workspace with initials on a tone colour.' },
       { id: 'badge', title: 'Badge', href: '/components/badge', description: 'A short label for a status or a category.' },
       { id: 'breadcrumb', title: 'Breadcrumb', href: '/components/breadcrumb', description: 'Shows where the page sits and leads back up the path.' },
-      { id: 'button', title: 'Button', href: '/components/button', description: 'Starts an action. One primary per screen; secondary and tertiary for the rest.' },
+      {
+        id: 'button-family',
+        title: 'Button',
+        href: '/components/button',
+        description: 'Buttons on their own, joined into a group, or split into an action and its variations.',
+        children: [
+          { id: 'button', title: 'Button', href: '/components/button', description: 'Starts an action. One primary per screen; secondary and tertiary for the rest.' },
+          { id: 'button-group', title: 'Button group', href: '/components/button-group', description: 'Buttons that belong together, joined into one block or spaced as a toolbar.' },
+          { id: 'split-button', title: 'Split button', href: '/components/split-button', description: 'The usual action, with an arrow that opens its variations.' },
+          { id: 'action-button', title: 'Action button', href: '/components/action-button', description: 'Runs an action and shows how it went in place: a spinner, then a checkmark.' },
+        ],
+      },
       { id: 'card', title: 'Card', href: '/components/card', description: 'Groups related content and actions under a title, with an optional footer.' },
       {
         id: 'chart',
@@ -74,7 +86,17 @@ export const nav: NavGroup[] = [
         ],
       },      { id: 'empty-state', title: 'Empty state', href: '/components/empty-state', description: 'Fills a space with no content yet: says why it is empty and offers the first step.' },
       { id: 'file-upload', title: 'File upload', href: '/components/file-upload', description: 'Takes files by drop or browse, shows each upload and what failed, then the attached files.' },
-      { id: 'form-field', title: 'Form field', href: '/components/form-field', description: 'Wraps a control with a label, a description and an error message.' },
+      {
+        id: 'form-family',
+        title: 'Form',
+        href: '/components/form',
+        description: 'Fields with labels and errors, grouped under a legend, laid out as one form.',
+        children: [
+          { id: 'form', title: 'Form', href: '/components/form', description: 'Lays out fields, groups and sections, hands them errors by name and focuses the first one.' },
+          { id: 'field-group', title: 'Field group', href: '/components/field-group', description: 'Fields or options that answer one question, under one legend, with one error.' },
+          { id: 'form-field', title: 'Form field', href: '/components/form-field', description: 'Wraps a control with a label, a description and an error message.' },
+        ],
+      },
       {
         id: 'input-group',
         title: 'Input',
@@ -82,11 +104,15 @@ export const nav: NavGroup[] = [
         description: 'Fields for text, codes and numbers.',
         children: [
           { id: 'input', title: 'Input', href: '/components/input', description: 'A single line of text, with a label, a hint and icons.' },
+          { id: 'input-group', title: 'Input group', href: '/components/input-group', description: 'A field joined with an addon, a select or a button in one block.' },
+          { id: 'password-input', title: 'Password input', href: '/components/password-input', description: 'A password field with a show and hide button.' },
           { id: 'date-picker', title: 'Date picker', href: '/components/date-picker', description: 'Picks a day or a range from a calendar, with a quick year.' },
           { id: 'input-otp', title: 'Input OTP', href: '/components/input-otp', description: 'A one-time code in separate cells, with paste and SMS autofill.' },
           { id: 'number-input', title: 'Number input', href: '/components/number-input', description: 'A number with − and + and the arrow keys, kept between a min and a max.' },
         ],
       },      { id: 'kbd', title: 'Kbd', href: '/components/kbd', description: 'A keyboard key, alone or as the keys of one shortcut.' },
+      { id: 'link', title: 'Link', href: '/components/link', description: 'Text that goes somewhere, calm in a paragraph, marked when it leaves the site.' },
+      { id: 'list', title: 'List', href: '/components/list', description: 'Rows of people, files or settings, each with a title, meta and actions.' },
       { id: 'pagination', title: 'Pagination', href: '/components/pagination', description: 'Moves through a long list one page at a time.' },
       {
         id: 'popover-group',
@@ -101,10 +127,22 @@ export const nav: NavGroup[] = [
       { id: 'radio', title: 'Radio', href: '/components/radio', description: 'Lets people pick exactly one option from a short list.' },
       { id: 'segmented-control', title: 'Segmented control', href: '/components/segmented-control', description: 'Switches between two to five views or filters in place.' },
       { id: 'select', title: 'Select', href: '/components/select', description: 'Picks one value from a list, with a label, a hint and an error like any field.' },
+      {
+        id: 'selectable-card',
+        title: 'Selectable card',
+        href: '/components/selectable-radio',
+        description: 'Radios and checkboxes as whole cards, with a description and an icon.',
+        children: [
+          { id: 'selectable-radio', title: 'Selectable radio', href: '/components/selectable-radio', description: 'Pick one option from a few, each a card with a line of explanation and an icon.' },
+          { id: 'selectable-checkbox', title: 'Selectable checkbox', href: '/components/selectable-checkbox', description: 'Pick any number of options, each a card with a line of explanation and an icon.' },
+        ],
+      },
+      { id: 'separator', title: 'Separator', href: '/components/separator', description: 'A thin rule between blocks, across or down, with an optional word in the middle.' },
       { id: 'sheet', title: 'Sheet', href: '/components/sheet', description: 'A panel that slides in from the edge for a task that needs more room than a dialog.' },
       { id: 'sidebar', title: 'Sidebar', href: '/components/sidebar', description: 'App navigation: pages with icons and counters, collapsible groups and an icon-only rail.' },
       { id: 'skeleton', title: 'Skeleton', href: '/components/skeleton', description: 'Holds the place of content that is still loading.' },
       { id: 'slider', title: 'Slider', href: '/components/slider', description: 'Picks a number or a range by dragging, with the value to read or type.' },
+      { id: 'spinner', title: 'Spinner', href: '/components/spinner', description: 'Says something is loading when there is no telling how long it takes.' },
       { id: 'switch', title: 'Switch', href: '/components/switch', description: 'Turns a setting on or off, with immediate effect.' },
       { id: 'table', title: 'Table', href: '/components/table', description: 'Rows of records with sortable columns, selection and sideways scroll.' },
       { id: 'tabs', title: 'Tabs', href: '/components/tabs', description: 'Switches between two to six views of the same page or panel.' },

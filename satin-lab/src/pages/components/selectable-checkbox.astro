@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SelectableCheckboxDemo, { options } from '../../demos/selectable-checkbox'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="selectable-checkbox">
+  <DocSection item={page('selectable-checkbox')} api={api['selectable-checkbox']}>
+    <SelectableCheckboxDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

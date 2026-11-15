@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "selectable-checkbox",
+  "type": "registry:ui",
+  "title": "Selectable checkbox",
+  "description": "Pick any number of options, each a card with a line of explanation and an icon.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/checkbox.json",
+    "https://uisatin.dev/r/selectable-card.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/selectable-checkbox.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { Checkbox, type CheckboxProps } from '@/registry/satin/ui/checkbox'\nimport { SelectableCardBody, useSelectableIds, type SelectableCardBaseProps } from '@/registry/satin/ui/selectable-card'\n\n/**\n * SelectableCheckbox: a Checkbox as a whole card, for picking several options that each need a\n * line of explanation or an icon: integrations to connect, tools an agent may use, add-ons.\n * The card is the checkbox's `<label>`, so a click anywhere on it toggles the box, which sits\n * at the card's right edge, on the middle of the title's first line. Checked cards take the\n * action/primary border. Lay them out in a grid, or a FieldGroup with `variant=\"choices\"` for\n * one legend and one error.\n */\nexport interface SelectableCheckboxProps\n  extends Omit<CheckboxProps, 'label' | 'description' | 'placement' | 'title' | 'children'>,\n    SelectableCardBaseProps {}\n\nexport function SelectableCheckbox({ title, description, icon, size = 'md', className, children, id, ...props }: SelectableCheckboxProps) {\n  const { controlId, ...aria } = useSelectableIds(id, description)\n  return (\n    <label htmlFor={controlId} data-slot=\"selectable-card\" data-size={size} data-kind=\"checkbox\" className={className}>\n      <SelectableCardBody id={controlId} title={title} description={description} icon={icon} size={size}>\n        {children}\n      </SelectableCardBody>\n      {/* A direct child of the label, so hovering the card hovers the box. */}\n      <Checkbox id={controlId} {...aria} {...props} />\n    </label>\n  )\n}\n"
+    }
+  ],
+  "docs": "Selectable checkbox docs: https://uisatin.dev/components/selectable-checkbox",
+  "meta": {
+    "version": "0.3.0",
+    "edition": "free"
+  }
+}
