@@ -4208,7 +4208,7 @@
           "name": "shortcut",
           "type": "boolean",
           "required": false,
-          "default": "true",
+          "default": "variant === 'field'",
           "description": "Show the ⌘K keycaps and listen for the shortcut."
         },
         {
@@ -4223,6 +4223,44 @@
           "type": "string",
           "required": false,
           "description": "Classes for the outer field; `className` styles the input."
+        },
+        {
+          "name": "variant",
+          "type": "'field' | 'panel'",
+          "required": false,
+          "default": "'field'",
+          "description": "`field`: the 32px bar. `panel`: the search row over its results and a footer of key hints."
+        },
+        {
+          "name": "groups",
+          "type": "CommandGroup[]",
+          "required": false,
+          "description": "panel: what can be found, grouped, as in CommandMenu."
+        },
+        {
+          "name": "idleText",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "panel: shown before anything is typed, e.g. what the search looks through. Without it, every item."
+        },
+        {
+          "name": "emptyText",
+          "type": "(query: string) => React.ReactNode",
+          "required": false,
+          "description": "panel: shown when nothing matches; gets the query. Defaults to the `noResultsFor` label."
+        },
+        {
+          "name": "meta",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "panel: on the right of the footer, e.g. \"59 settings indexed\"."
+        },
+        {
+          "name": "hints",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "panel: show the Navigate and Open key hints."
         }
       ]
     }

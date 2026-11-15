@@ -321,9 +321,11 @@ export const a11y: Record<string, A11y> = {
   },
   'search-bar': {
     summary:
-      'A native `input` of type search (`searchbox`) inside a `label` with only a hidden icon and hidden keycaps, so it has no name of its own: pass `aria-label` ("Search docs"); the placeholder alone is not a reliable name.',
+      'A native `input` of type search (`searchbox`) named "Search" (`searchField` in SatinLabels) unless you pass `aria-label` ("Search docs"); the icon and keycaps are hidden. In the panel the input is a `combobox` that controls the results `listbox`; the highlighted row is its `aria-activedescendant`, so focus stays in the field.',
     keyboard: [
       { keys: ['⌘K', 'Ctrl+K'], action: 'Focuses the field and selects its text, from anywhere on the page, unless `hotkey` is off.' },
+      { keys: ['↑', '↓'], action: 'Panel: moves the highlight through the results, wrapping at the ends.' },
+      { keys: ['Enter'], action: 'Panel: opens the highlighted result (its `onSelect`).' },
       { keys: ['Esc'], action: 'Clears the field when it has text.' },
     ],
   },

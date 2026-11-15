@@ -73,6 +73,90 @@ const hit = (item: CommandItem, q: string) => {
   return [item.label, item.description ?? '', ...(item.keywords ?? [])].some((s) => s.toLowerCase().includes(t))
 }
 
+/**
+ * @internal The search behind CommandMenu and SearchBar's `panel`: the groups filtered by the
+ * query (label, description, keywords), one highlighted row the arrows move and Enter runs, and
+ * the listbox that shows them. `inputProps` and `onKeyDown` go on the search input, which keeps
+ * focus; the rows are its `aria-activedescendant`.
+ */
+export function useCommandList(groups: CommandGroup[], query: string, onRun: (item: CommandItem) => void) {
+  const [active, setActive] = React.useState(0)
+  const listId = React.useId()
+  const listRef = React.useRef<HTMLDivElement>(null)
+  const shown = groups.map((g) => ({ ...g, items: g.items.filter((i) => hit(i, query)) })).filter((g) => g.items.length)
+  const flat = shown.flatMap((g) => g.items)
+  const optionId = (i: number) => `${listId}-${i}`
+
+  // A new query starts from its first match.
+  React.useEffect(() => setActive(0), [query])
+  // Keep the highlighted row in view as the arrows move it.
+  React.useEffect(() => {
+    listRef.current?.querySelector(`[id="${optionId(active)}"]`)?.scrollIntoView({ block: 'nearest' })
+  }, [active])
+
+  const run = (item: CommandItem | undefined) => {
+    if (!item || item.disabled) return
+    onRun(item)
+  }
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      const step = e.key === 'ArrowDown' ? 1 : -1
+      setActive((a) => (flat.length ? (a + step + flat.length) % flat.length : 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      run(flat[active])
+    }
+  }
+  const inputProps = {
+    role: 'combobox',
+    'aria-expanded': true,
+    'aria-controls': listId,
+    'aria-autocomplete': 'list',
+    'aria-activedescendant': flat[active] ? optionId(active) : undefined,
+  } as const
+
+  const renderList = ({ label, empty, className }: { label: string; empty: React.ReactNode; className?: string }) => {
+    let index = -1
+    return (
+      <div ref={listRef} id={listId} role="listbox" aria-label={label} className={cn('flex min-h-0 flex-col gap-2 overflow-y-auto p-2', className)}>
+        {flat.length === 0
+          ? empty
+          : shown.map((g, gi) => (
+              <div key={gi} role="group" aria-labelledby={`${listId}-g${gi}`} className="flex flex-col">
+                <div id={`${listId}-g${gi}`} className="flex h-6 items-center px-2 text-xs leading-3 font-medium tracking-normal text-text-muted">
+                  {g.label}
+                </div>
+                {g.items.map((item) => {
+                  index += 1
+                  const i = index
+                  return (
+                    <div
+                      key={item.id}
+                      id={optionId(i)}
+                      role="option"
+                      aria-selected={i === active}
+                      aria-disabled={item.disabled || undefined}
+                      data-highlighted={i === active ? '' : undefined}
+                      data-disabled={item.disabled ? '' : undefined}
+                      onPointerMove={() => setActive(i)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => run(item)}
+                      className={menuItemClass}
+                    >
+                      <MenuItemContent label={item.label} description={item.description} icon={item.icon} layout="inline" shortcut={item.shortcut} />
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
+      </div>
+    )
+  }
+
+  return { flat, inputProps, onKeyDown, renderList }
+}
+
 export function CommandMenu({
   groups,
   open: openProp,
@@ -100,9 +184,10 @@ export function CommandMenu({
   )
 
   const [query, setQuery] = React.useState('')
-  const [active, setActive] = React.useState(0)
-  const listId = React.useId()
-  const listRef = React.useRef<HTMLDivElement>(null)
+  const list = useCommandList(groups, query, (item) => {
+    setOpen(false)
+    item.onSelect?.()
+  })
 
   React.useEffect(() => {
     if (!hotkey) return
@@ -118,29 +203,10 @@ export function CommandMenu({
 
   // A fresh query every time it opens.
   React.useEffect(() => {
-    if (open) {
-      setQuery('')
-      setActive(0)
-    }
+    if (open) setQuery('')
   }, [open])
 
-  const shown = groups.map((g) => ({ ...g, items: g.items.filter((i) => hit(i, query)) })).filter((g) => g.items.length)
-  const flat = shown.flatMap((g) => g.items)
-  const optionId = (i: number) => `${listId}-${i}`
-
-  // Keep the highlighted row in view as the arrows move it.
-  React.useEffect(() => {
-    listRef.current?.querySelector(`[id="${optionId(active)}"]`)?.scrollIntoView({ block: 'nearest' })
-  }, [active])
-
-  const run = (item: CommandItem | undefined) => {
-    if (!item || item.disabled) return
-    setOpen(false)
-    item.onSelect?.()
-  }
-
   const position = container ? 'absolute' : 'fixed'
-  let index = -1
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen} modal={modal}>
@@ -165,28 +231,12 @@ export function CommandMenu({
             <label className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-4 text-text-muted">
               <Search aria-hidden className="size-4 shrink-0 [stroke-width:1.875]" />
               <input
-                role="combobox"
-                aria-expanded
-                aria-controls={listId}
-                aria-autocomplete="list"
-                aria-activedescendant={flat[active] ? optionId(active) : undefined}
+                {...list.inputProps}
                 aria-label={labels.searchCommands}
                 value={query}
                 placeholder={placeholder ?? labels.commandPlaceholder}
-                onChange={(e) => {
-                  setQuery(e.target.value)
-                  setActive(0)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                    e.preventDefault()
-                    const step = e.key === 'ArrowDown' ? 1 : -1
-                    setActive((a) => (flat.length ? (a + step + flat.length) % flat.length : 0))
-                  } else if (e.key === 'Enter') {
-                    e.preventDefault()
-                    run(flat[active])
-                  }
-                }}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={list.onKeyDown}
                 className="min-w-0 flex-1 bg-transparent text-base leading-[21px] text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0"
               />
               <Kbd size="md" aria-hidden>
@@ -194,46 +244,10 @@ export function CommandMenu({
               </Kbd>
             </label>
 
-            <div ref={listRef} id={listId} role="listbox" aria-label={labels.commands} className="flex min-h-0 flex-col gap-2 overflow-y-auto p-2">
-              {flat.length === 0 ? (
-                <p className="px-2 py-8 text-center text-sm text-text-muted">{(emptyText ?? labels.noResultsFor)(query)}</p>
-              ) : (
-                shown.map((g, gi) => (
-                  <div key={gi} role="group" aria-labelledby={`${listId}-g${gi}`} className="flex flex-col">
-                    <div id={`${listId}-g${gi}`} className="flex h-6 items-center px-2 text-xs leading-3 font-medium tracking-normal text-text-muted">
-                      {g.label}
-                    </div>
-                    {g.items.map((item) => {
-                      index += 1
-                      const i = index
-                      return (
-                        <div
-                          key={item.id}
-                          id={optionId(i)}
-                          role="option"
-                          aria-selected={i === active}
-                          aria-disabled={item.disabled || undefined}
-                          data-highlighted={i === active ? '' : undefined}
-                          data-disabled={item.disabled ? '' : undefined}
-                          onPointerMove={() => setActive(i)}
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => run(item)}
-                          className={menuItemClass}
-                        >
-                          <MenuItemContent
-                            label={item.label}
-                            description={item.description}
-                            icon={item.icon}
-                            layout="inline"
-                            shortcut={item.shortcut}
-                          />
-                        </div>
-                      )
-                    })}
-                  </div>
-                ))
-              )}
-            </div>
+            {list.renderList({
+              label: labels.commands,
+              empty: <p className="px-2 py-8 text-center text-sm text-text-muted">{(emptyText ?? labels.noResultsFor)(query)}</p>,
+            })}
 
             {hints && (
               <div aria-hidden className="flex h-10 shrink-0 items-center gap-4 border-t border-border-subtle px-4">
