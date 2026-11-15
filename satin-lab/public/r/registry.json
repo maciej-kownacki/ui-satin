@@ -46,7 +46,7 @@
       ],
       "docs": "Accordion docs: https://uisatin.dev/components/accordion",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -71,7 +71,7 @@
       ],
       "docs": "Action button docs: https://uisatin.dev/components/action-button",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -93,7 +93,7 @@
       ],
       "docs": "Loading docs: https://uisatin.dev/ai-patterns/agent-loading",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -121,7 +121,7 @@
       ],
       "docs": "Agent picker docs: https://uisatin.dev/ai-patterns/agent-picker",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -148,7 +148,7 @@
       ],
       "docs": "Agent suggestion docs: https://uisatin.dev/ai-patterns/agent-suggestion",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -172,7 +172,7 @@
       ],
       "docs": "Alert docs: https://uisatin.dev/components/alert",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -199,7 +199,7 @@
       ],
       "docs": "Announcement bar docs: https://uisatin.dev/components/announcement-bar",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -226,7 +226,7 @@
       ],
       "docs": "Attachment docs: https://uisatin.dev/ai-patterns/attachment",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -251,7 +251,7 @@
       ],
       "docs": "Avatar docs: https://uisatin.dev/components/avatar",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -275,7 +275,7 @@
       ],
       "docs": "Badge docs: https://uisatin.dev/components/badge",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -302,7 +302,7 @@
       ],
       "docs": "Banner docs: https://uisatin.dev/components/banner",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -323,7 +323,7 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -346,7 +346,7 @@
       ],
       "docs": "Bar chart docs: https://uisatin.dev/components/bar-chart",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -372,7 +372,7 @@
       ],
       "docs": "Breadcrumb docs: https://uisatin.dev/components/breadcrumb",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -398,7 +398,7 @@
       ],
       "docs": "Button docs: https://uisatin.dev/components/button",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -421,7 +421,7 @@
       ],
       "docs": "Button group docs: https://uisatin.dev/components/button-group",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -447,7 +447,7 @@
       ],
       "docs": "Card docs: https://uisatin.dev/components/card",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -470,7 +470,7 @@
       ],
       "docs": "Channel chart docs: https://uisatin.dev/components/channel-chart",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -495,7 +495,7 @@
         "https://uisatin.dev/r/select.json"
       ],
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -519,7 +519,7 @@
       ],
       "docs": "Checkbox docs: https://uisatin.dev/components/checkbox",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -544,7 +544,7 @@
       ],
       "docs": "Chip docs: https://uisatin.dev/components/chip",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -568,7 +568,7 @@
       ],
       "docs": "Citations docs: https://uisatin.dev/ai-patterns/citations",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -593,7 +593,7 @@
       ],
       "docs": "Code block docs: https://uisatin.dev/components/code-block",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -623,7 +623,7 @@
       ],
       "docs": "Combobox docs: https://uisatin.dev/components/combobox",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -651,7 +651,7 @@
       ],
       "docs": "Command menu docs: https://uisatin.dev/components/command-menu",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -677,7 +677,7 @@
       ],
       "docs": "Context menu docs: https://uisatin.dev/components/context-menu",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -700,7 +700,7 @@
       ],
       "docs": "Cookie consent docs: https://uisatin.dev/components/cookie-consent",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -728,7 +728,7 @@
       ],
       "docs": "Date picker docs: https://uisatin.dev/components/date-picker",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -757,7 +757,7 @@
       ],
       "docs": "Decision card docs: https://uisatin.dev/ai-patterns/decision-card",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -785,7 +785,7 @@
       ],
       "docs": "Dialog docs: https://uisatin.dev/components/dialog",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -808,7 +808,7 @@
       ],
       "docs": "Donut chart docs: https://uisatin.dev/components/donut-chart",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -832,7 +832,7 @@
       ],
       "docs": "Dot docs: https://uisatin.dev/components/dot",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -858,7 +858,7 @@
       ],
       "docs": "Dropdown docs: https://uisatin.dev/components/dropdown",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -882,7 +882,7 @@
       ],
       "docs": "Empty state docs: https://uisatin.dev/components/empty-state",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -905,7 +905,7 @@
       ],
       "docs": "Field group docs: https://uisatin.dev/components/field-group",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -933,7 +933,7 @@
       ],
       "docs": "File upload docs: https://uisatin.dev/components/file-upload",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -956,7 +956,7 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -979,7 +979,7 @@
       ],
       "docs": "Form docs: https://uisatin.dev/components/form",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1001,7 +1001,7 @@
       ],
       "docs": "Form field docs: https://uisatin.dev/components/form-field",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1025,7 +1025,7 @@
       ],
       "docs": "Hover card docs: https://uisatin.dev/components/hover-card",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1048,7 +1048,7 @@
       ],
       "docs": "Input docs: https://uisatin.dev/components/input",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1072,7 +1072,7 @@
       ],
       "docs": "Input group docs: https://uisatin.dev/components/input-group",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1097,7 +1097,7 @@
       ],
       "docs": "Input OTP docs: https://uisatin.dev/components/input-otp",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1119,7 +1119,7 @@
       ],
       "docs": "Kbd docs: https://uisatin.dev/components/kbd",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1140,7 +1140,7 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1164,7 +1164,7 @@
       ],
       "docs": "Line chart docs: https://uisatin.dev/components/line-chart",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1189,7 +1189,7 @@
       ],
       "docs": "Link docs: https://uisatin.dev/components/link",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1211,7 +1211,7 @@
       ],
       "docs": "List docs: https://uisatin.dev/components/list",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1235,7 +1235,7 @@
       ],
       "docs": "Message docs: https://uisatin.dev/ai-patterns/message",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1261,7 +1261,7 @@
       ],
       "docs": "Message actions docs: https://uisatin.dev/ai-patterns/message-actions",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1287,7 +1287,7 @@
       ],
       "docs": "Number input docs: https://uisatin.dev/components/number-input",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1313,7 +1313,7 @@
       ],
       "docs": "Pagination docs: https://uisatin.dev/components/pagination",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1340,7 +1340,7 @@
       ],
       "docs": "Password input docs: https://uisatin.dev/components/password-input",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1365,7 +1365,7 @@
       ],
       "docs": "Popover docs: https://uisatin.dev/components/popover",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1387,7 +1387,7 @@
       ],
       "docs": "Progress docs: https://uisatin.dev/components/progress",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1415,7 +1415,7 @@
       ],
       "docs": "Prompt bar docs: https://uisatin.dev/ai-patterns/prompt-bar",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1439,7 +1439,7 @@
       ],
       "docs": "Radio docs: https://uisatin.dev/components/radio",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1463,7 +1463,7 @@
         "https://uisatin.dev/r/kbd.json"
       ],
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1489,7 +1489,7 @@
       ],
       "docs": "Segmented control docs: https://uisatin.dev/components/segmented-control",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1516,7 +1516,7 @@
       ],
       "docs": "Select docs: https://uisatin.dev/components/select",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1537,7 +1537,7 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1561,7 +1561,7 @@
       ],
       "docs": "Selectable checkbox docs: https://uisatin.dev/components/selectable-checkbox",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1586,7 +1586,7 @@
       ],
       "docs": "Selectable radio docs: https://uisatin.dev/components/selectable-radio",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1608,7 +1608,7 @@
       ],
       "docs": "Separator docs: https://uisatin.dev/components/separator",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1635,7 +1635,7 @@
       ],
       "docs": "Sheet docs: https://uisatin.dev/components/sheet",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1660,7 +1660,7 @@
       ],
       "docs": "Sidebar docs: https://uisatin.dev/components/sidebar",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1682,7 +1682,7 @@
       ],
       "docs": "Skeleton docs: https://uisatin.dev/components/skeleton",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1709,7 +1709,7 @@
       ],
       "docs": "Slider docs: https://uisatin.dev/components/slider",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1730,7 +1730,7 @@
         "https://uisatin.dev/r/utils.json"
       ],
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1753,7 +1753,7 @@
       ],
       "docs": "Spinner docs: https://uisatin.dev/components/spinner",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1779,7 +1779,7 @@
       ],
       "docs": "Split button docs: https://uisatin.dev/components/split-button",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1801,7 +1801,7 @@
       ],
       "docs": "Streaming text docs: https://uisatin.dev/ai-patterns/streaming-text",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1825,7 +1825,7 @@
       ],
       "docs": "Switch docs: https://uisatin.dev/components/switch",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1849,7 +1849,7 @@
       ],
       "docs": "Table docs: https://uisatin.dev/components/table",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1875,7 +1875,7 @@
       ],
       "docs": "Tabs docs: https://uisatin.dev/components/tabs",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1898,7 +1898,7 @@
       ],
       "docs": "Textarea docs: https://uisatin.dev/components/textarea",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1923,7 +1923,7 @@
       ],
       "docs": "Thinking docs: https://uisatin.dev/ai-patterns/thinking",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1949,7 +1949,7 @@
       ],
       "docs": "Toast docs: https://uisatin.dev/components/toast",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1974,7 +1974,7 @@
       ],
       "docs": "Toggle docs: https://uisatin.dev/components/toggle",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
@@ -1999,7 +1999,7 @@
       ],
       "docs": "Tooltip docs: https://uisatin.dev/components/tooltip",
       "meta": {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "edition": "free"
       },
       "files": [
