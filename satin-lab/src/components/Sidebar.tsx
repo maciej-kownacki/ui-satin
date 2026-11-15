@@ -495,8 +495,10 @@ function HelpBanner() {
         <p className="leading-[18px] font-medium text-text-default">Need design help?</p>
         <p className="leading-[19.5px] text-text-muted">Get expert product design for your business.</p>
       </div>
-      <Button variant="secondary" shape="rounded" className={cn('relative w-full', fade)}>
-        Book a call
+      <Button asChild variant="secondary" shape="rounded" className={cn('relative w-full', fade)}>
+        <a href="https://cal.com/maciej-kownacki-22br6h/15min" target="_blank" rel="noreferrer">
+          Book a call
+        </a>
       </Button>
       <Button
         ref={swapRef}
