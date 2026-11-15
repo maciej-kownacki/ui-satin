@@ -12,7 +12,8 @@
  *   white text reads at 4.5:1 on rest and hover, in Light and Dark. Labels stay white for
  *   every brand, so buttons look the same family whatever the colour.
  * - `radius` scales every corner token, pill-shaped controls included; 1 is Satin's own, 0 is
- *   square. Circles (avatars, dots, switch and radio marks) stay round.
+ *   square, and pills become fully round only at 1.5. Circles (avatars, dots, switch and radio
+ *   marks) stay round.
  *
  * `themeVars()` returns the variables per mode; `themeCss()` the same as a stylesheet to load
  * after `@uisatin/ui/styles.css`.
@@ -162,8 +163,10 @@ function radiusVars(scale: number): Vars {
   const v: Vars = {}
   for (const [k, px] of Object.entries(RADII)) v[`--radius-${k}`] = `${Math.round(px * scale * 2) / 2}px`
   v['--radius'] = `${Math.round(10 * scale * 2) / 2}px`
-  // Pills follow the corners too: square at 0, a soft 8px at 0.5, a full pill from 1.
-  v['--radius-pill'] = scale >= 1 ? '9999px' : `${Math.round(16 * scale)}px`
+  // Pills follow the corners too, one step per choice: square at 0, 6px at 0.5, 12px at 1
+  // (Satin's own), a full pill only at 1.5. A 32px control is fully round from 16px, so a pill
+  // already at 1 would look the same at 1 and 1.5.
+  v['--radius-pill'] = scale >= 1.5 ? '9999px' : `${Math.round(12 * scale)}px`
   return v
 }
 

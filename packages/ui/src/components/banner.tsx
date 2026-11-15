@@ -15,8 +15,9 @@ import { bannerMesh, type Mesh } from './banner-mesh'
  *   button sit on the right, 4px apart.
  * - layout="sidebar": 222 wide (the navigation column's inner width), 12 padding, 12 gap; copy on
  *   top, the action stretched across the bottom, close pinned 3px from the top-right corner.
- * - shape="rounded" is radius-xl (12). shape="pill" is fully round on a one-line horizontal
- *   banner and radius-3xl (20) wherever the banner is taller.
+ * - shape="rounded" is radius-xl (12). shape="pill" takes the theme's pill corner on a one-line
+ *   horizontal banner (12px at Satin's default corners, fully round at Large) and radius-3xl
+ *   (20) wherever the banner is taller.
  * - background="mesh" lays two pre-rendered glows over the card: a light one in Multiply (shows
  *   on white, gone on dark) and a dark one in Screen (glows on dark, gone on white), so it follows
  *   the theme without variables. Figma renders one pair per layout and line count; they are

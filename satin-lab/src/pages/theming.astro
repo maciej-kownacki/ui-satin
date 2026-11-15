@@ -98,7 +98,7 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5 })`,
     <h2 id="corners-title" class={h2}>Corners</h2>
     <p class={prose}>
       One number scales every corner token: 0 is square, 1 is Satin's own, 1.5 is softer. Pill-shaped controls follow it
-      too, from square at 0 to a full pill from 1. Circles, like avatars and status dots, stay round.
+      too, one step per choice: square at 0, 6px at 0.5, 12px at 1 and a full pill only at 1.5. Circles, like avatars and status dots, stay round.
     </p>
     <ul class:list={[panel, 'grid grid-cols-3 gap-4 sm:grid-cols-6']} aria-label="Corner tokens">
       {
