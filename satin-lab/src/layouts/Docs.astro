@@ -1,14 +1,12 @@
 ---
 /**
- * Every page of the docs: the top bar (menu button on small screens, logo, Customize, GitHub), then the
+ * Every page of the docs: the top bar (menu button on small screens, logo, Customize), then the
  * card with the sidebar and a 720px column. On wide screens the card runs edge to edge with 20px
  * either side and down to the bottom of the window.
  */
 import Layout from './Layout.astro'
 import { Sidebar } from '../components/Sidebar'
 import { Customizer } from '../components/Customizer'
-import { buttonVariants } from '@uisatin/ui'
-import { Github } from 'iconoir-react'
 import { nav, page } from '../nav'
 
 interface Props {
@@ -34,19 +32,6 @@ const title = current === 'introduction' ? 'Satin: the React design system for y
     </div>
     <div class="flex items-center gap-2">
       <Customizer client:load transition:persist="customizer" />
-      {/* Where the code lives, in the Waitlist's place for now. A link with Button's classes:
-          asChild can't reach into children Astro hands React as HTML. */}
-      <a
-        href="https://github.com/maciej-kownacki/ui-satin"
-        target="_blank"
-        rel="noreferrer"
-        data-slot="button"
-        data-variant="primary"
-        class={buttonVariants({ variant: 'primary', size: 'lg', shape: 'rounded' })}
-      >
-        <Github aria-hidden />
-        GitHub
-      </a>
     </div>
   </header>
 
