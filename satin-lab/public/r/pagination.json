@@ -23,7 +23,7 @@
   ],
   "docs": "Pagination docs: https://uisatin.dev/components/pagination",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "Pagination": {

@@ -23,7 +23,7 @@
   ],
   "docs": "Attachment docs: https://uisatin.dev/ai-patterns/attachment",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "Attachment": {

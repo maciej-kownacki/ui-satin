@@ -21,7 +21,7 @@
   ],
   "docs": "Message docs: https://uisatin.dev/ai-patterns/message",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "Message": {

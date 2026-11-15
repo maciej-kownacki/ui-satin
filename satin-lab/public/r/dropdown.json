@@ -22,7 +22,7 @@
   ],
   "docs": "Dropdown docs: https://uisatin.dev/components/dropdown",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "DropdownMenu": {

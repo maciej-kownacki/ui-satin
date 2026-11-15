@@ -20,7 +20,7 @@
   ],
   "docs": "Empty state docs: https://uisatin.dev/components/empty-state",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "EmptyState": {

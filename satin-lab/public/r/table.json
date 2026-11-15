@@ -20,7 +20,7 @@
   ],
   "docs": "Table docs: https://uisatin.dev/components/table",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "Table": {
