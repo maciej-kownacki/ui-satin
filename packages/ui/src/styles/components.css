@@ -182,12 +182,12 @@
 [data-slot="selectable-card"]:is(:disabled, [data-disabled], :has(:disabled, [data-disabled])):hover {
   border-color: var(--border-default);
 }
-/* The checkbox on the middle of the title's line: 18px with a description, 20px without. */
+/* The checkbox on the middle of the title's line: 20px, or 18px in sm with a description. */
 [data-slot="selectable-card"] > .satin-checkbox {
-  margin-top: 1px;
-}
-[data-slot="selectable-card"]:not(:has([id$="-description"])) > .satin-checkbox {
   margin-top: 2px;
+}
+[data-slot="selectable-card"][data-size="sm"]:has([id$="-description"]) > .satin-checkbox {
+  margin-top: 1px;
 }
 /* sm: 8px all round, radius-lg, 10px gaps. */
 [data-slot="selectable-card"][data-size="sm"] {
