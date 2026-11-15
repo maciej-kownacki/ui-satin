@@ -166,7 +166,7 @@ function Preview({ v }: { v: Record<string, string> }) {
           sideOffset={0}
           aria-label="Status"
           onFocusOutside={(e) => e.preventDefault()}
-          trigger={<span aria-hidden tabIndex={-1} className="pointer-events-none block h-0 w-full" />}
+          trigger={<span aria-hidden tabIndex={-1} className="pointer-events-none block h-0 w-full outline-none focus-visible:shadow-none" />}
         >
           {on(v, 'groups')
             ? groups.map((g) => (

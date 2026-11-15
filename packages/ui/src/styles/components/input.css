@@ -1,8 +1,8 @@
 /*
  * The field skin shared by Input (uiKit 820:51657) and Textarea (3647:17812): surface fill, 1px
- * border/default, shadow xs, radius-lg. Hover: border/strong. Focus: border/focus and a 2px
- * action/focus-ring, no drop shadow. Error: action/destructive/bg border; with focus the ring
- * is action/destructive/glow. Disabled: bg/muted, border/default.
+ * border/default, shadow xs, radius-lg. Hover: border/strong. Focus: a 2px border/focus edge
+ * (the border and a 1px ring), at least 3:1 on every surface, no drop shadow. Error: an
+ * action/destructive/bg border, 2px with focus. Disabled: bg/muted, border/default.
  *
  * `.satin-field` is either a wrapper around an <input> (it reacts to :focus-within) or the
  * <textarea> itself (:focus-within matches the element too). Every state also answers to
@@ -34,14 +34,14 @@
 }
 .satin-field:not([data-disabled]):is(:focus-within, [data-force="focus"], [data-state="open"]) {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px var(--action-focus-ring);
+  box-shadow: 0 0 0 1px var(--border-focus);
 }
 .satin-field[data-invalid] {
   border-color: var(--action-destructive-bg);
 }
 .satin-field[data-invalid]:not([data-disabled]):is(:focus-within, [data-force="focus"], [data-state="open"]) {
   border-color: var(--action-destructive-bg);
-  box-shadow: 0 0 0 2px var(--action-destructive-glow);
+  box-shadow: 0 0 0 1px var(--action-destructive-bg);
 }
 .satin-field[data-disabled] {
   border-color: var(--border-default);
@@ -221,9 +221,6 @@
 }
 [data-slot="input-group"] > [data-slot="button"][data-variant="secondary"]:hover {
   border-color: var(--border-strong);
-}
-[data-slot="input-group"] > [data-slot="button"]:focus-visible {
-  box-shadow: 0 0 0 2px var(--action-focus-ring);
 }
 [data-slot="input-group"] > [data-slot="button"]:active {
   box-shadow: none;

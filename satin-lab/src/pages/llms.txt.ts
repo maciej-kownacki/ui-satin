@@ -51,6 +51,7 @@ Or copy a component's source with the shadcn CLI: \`npx shadcn@latest add ${url(
 - Overlays and groups have a props API and parts (\`Dialog\` or \`DialogRoot\` › \`DialogTrigger\` › \`DialogContent\`…); \`trigger\` props are rendered asChild, so pass a Button.
 - Words the components say on their own (aria-labels, defaults) come from \`SatinLabels\` (\`${pkg.name}/labels\`), English by default.
 - React 19 or newer only (refs are plain props). The package is ESM only.
+- Accessibility: the components support WCAG 2.2 AA; the app still names icon-only buttons and unlabelled fields, sets \`lang\`, landmarks and headings, and tests with its own content. Known gaps and their workarounds: ${url('/accessibility')}.
 - Every component page has a markdown twin at \`<page>.md\` with the props from the TypeScript types, an example and accessibility notes; [llms-full.txt](${url('/llms-full.txt')}) has them all.
 
 ${groups.join('\n\n')}

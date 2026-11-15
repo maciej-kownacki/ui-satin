@@ -139,7 +139,8 @@ export function SearchBar({
           'flex w-full flex-col overflow-clip rounded-2xl border border-border-subtle bg-bg-muted',
           // Keycaps take the sheet's colour: on bg/muted their own bg/muted would vanish.
           '[--component-kbd-bg:var(--bg-card)]',
-          'transition-[border-color] duration-(--duration-fast) ease-(--ease-out) has-[input:focus-visible]:border-border-strong',
+          'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
+          'has-[input:focus-visible]:border-border-focus has-[input:focus-visible]:[box-shadow:0_0_0_1px_var(--border-focus)]',
           wrapperClassName,
         )}
       >
@@ -182,7 +183,8 @@ export function SearchBar({
         'flex h-control-height-lg w-full cursor-text items-center gap-2 rounded-lg border border-border-default bg-bg-card px-2',
         '[box-shadow:0_1px_1px_0_var(--effect-shadow-xs)] transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
         'hover:border-border-strong',
-        'has-[input:focus-visible]:border-border-focus has-[input:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+        // Focus: a 2px border/focus edge, as on every field.
+        'has-[input:focus-visible]:border-border-focus has-[input:focus-visible]:[box-shadow:0_0_0_1px_var(--border-focus)]',
         wrapperClassName,
       )}
     >

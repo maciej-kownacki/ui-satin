@@ -21,6 +21,8 @@ jobs:
       # The stylesheet shares no name with an app's Tailwind or shadcn theme.
       - run: node scripts/check-css.mjs
       - run: node scripts/check-cn.mjs
+      # Text 4.5:1, focus and error edges 3:1, in Light and Dark and for themeCss() brands.
+      - run: npm run check:contrast
       # What an app ships for Button, Banner and Dialog with their dependencies, and the stylesheet (.size-limit.json).
       - run: npm run size
       # props.json (the props read from the types, in the registry and the markdown docs) is fresh,

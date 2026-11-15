@@ -114,7 +114,7 @@ export function Textarea({
         <div
           className={cn(
             'flex items-start gap-2 text-sm',
-            hasMessage ? 'text-action-destructive-bg' : 'text-text-muted',
+            hasMessage ? 'text-text-destructive' : 'text-text-muted',
           )}
         >
           <p id={messageId} className="min-w-0 flex-1">

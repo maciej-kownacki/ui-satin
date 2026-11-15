@@ -34,7 +34,8 @@ export const menuSurfaceClass = cn(
 /** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const menuGroupClass = 'flex flex-col gap-1 not-last:after:block not-last:after:h-px not-last:after:bg-bg-muted'
 /** The 24px group header in 12px text/subtle. */
-export const menuGroupLabelClass = 'flex h-6 items-center px-3 text-xs leading-3 tracking-normal text-text-subtle'
+// text/muted: a group's name is read to find a row, so it needs 4.5:1 (subtle is 2.6:1).
+export const menuGroupLabelClass = 'flex h-6 items-center px-3 text-xs leading-3 tracking-normal text-text-muted'
 
 export interface DropdownMenuProps
   extends Omit<
@@ -133,10 +134,16 @@ export function DropdownMenuGroup({ label, children, className, ...props }: Drop
 
 /* ------------------------------------------------------------------------------------------ */
 
-/** The row skin every menu shares: Dropdown, Select, Combobox and the Command menu. */
+/**
+ * The row skin every menu shares: Dropdown, Select, Combobox and the Command menu. The highlight
+ * is bg/selected; a row reached with the keyboard also gets the focus ring inside its edge, since
+ * the fill alone is too faint to find (1.2:1). Real focus (Radix menus) shows it through
+ * :focus-visible; lists that keep focus in a field (Combobox, Command menu) set data-keyboard.
+ */
 /** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const menuItemClass = cn(
-  'flex min-h-menu-row w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-start outline-none select-none focus-visible:ring-0',
+  'flex min-h-menu-row w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-start outline-none select-none',
+  'focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)] data-[keyboard]:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
   'transition-colors duration-(--duration-fast) ease-(--ease-out)',
   'data-[highlighted]:bg-bg-selected data-[force=hover]:bg-bg-selected data-[selected]:bg-bg-selected',
   'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',

@@ -29,7 +29,9 @@
 .satin-radio:focus-visible,
 .satin-radio[data-force="focus"] {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px var(--action-focus-ring);
+  box-shadow: none;
+  outline: 2px solid var(--action-focus-ring);
+  outline-offset: 2px;
 }
 .satin-radio:active,
 .satin-radio[data-force="pressed"] {
@@ -56,7 +58,9 @@
 .satin-radio[data-state="checked"]:is(:focus-visible, [data-force="focus"]) {
   border-color: var(--action-primary-bg);
   background: var(--action-primary-bg);
-  box-shadow: 0 0 0 2px var(--action-focus-ring);
+  box-shadow: none;
+  outline: 2px solid var(--action-focus-ring);
+  outline-offset: 2px;
 }
 .satin-radio[data-state="checked"]:is(:active, [data-force="pressed"]) {
   border-color: var(--action-primary-bg-pressed);

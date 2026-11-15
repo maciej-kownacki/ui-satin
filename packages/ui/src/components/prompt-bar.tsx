@@ -182,7 +182,9 @@ export function PromptBar({
           className={cn(
             'flex w-full flex-col gap-2 border border-border-default bg-bg-field p-2 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             'transition-[border-color,border-radius] duration-(--duration-fast) ease-(--ease-out)',
-            'has-[textarea:focus]:border-border-strong data-filled:border-border-strong',
+            'data-filled:border-border-strong',
+            // Focus: a 2px border/focus edge, as on every field.
+            'has-[textarea:focus-visible]:border-border-focus has-[textarea:focus-visible]:[box-shadow:0_0_0_1px_var(--border-focus)]',
             pill ? (files.length > 0 || expanded ? 'rounded-3xl' : 'rounded-pill') : 'rounded-xl',
             disabled && 'opacity-50',
             className,
@@ -315,6 +317,8 @@ function AddMenu({
   const labels = useSatinLabels()
   const [query, setQuery] = React.useState('')
   const [active, setActive] = React.useState(0)
+  // The highlight shows the focus ring only when the arrows put it there (see menuItemClass).
+  const [viaKeys, setViaKeys] = React.useState(false)
   const id = React.useId()
   const q = query.trim().toLowerCase()
   const shown = q
@@ -342,9 +346,11 @@ function AddMenu({
             onKeyDown={(e) => {
               if (e.key === 'ArrowDown') {
                 e.preventDefault()
+                setViaKeys(true)
                 setActive((index + 1) % Math.max(shown.length, 1))
               } else if (e.key === 'ArrowUp') {
                 e.preventDefault()
+                setViaKeys(true)
                 setActive((index - 1 + shown.length) % Math.max(shown.length, 1))
               } else if (e.key === 'Enter' && shown[index]) {
                 e.preventDefault()
@@ -366,11 +372,16 @@ function AddMenu({
             id={`${id}-${i}`}
             role="option"
             aria-selected={i === index}
-            onPointerMove={() => setActive(i)}
+            data-keyboard={i === index && viaKeys ? '' : undefined}
+            onPointerMove={() => {
+              setViaKeys(false)
+              setActive(i)
+            }}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => onAction(a)}
             className={cn(
               'flex min-h-8 items-center gap-2 rounded-lg px-2 py-1.5',
+              'data-[keyboard]:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
               '[&>svg]:size-icon-size [&>svg]:shrink-0 [&>svg]:text-text-muted [&>svg]:[stroke-width:1.875]',
               i === index && 'bg-bg-hover',
             )}
@@ -445,6 +456,7 @@ function ModelSelect({
                 className={cn(
                   'flex min-h-8 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 outline-none select-none',
                   'data-highlighted:bg-bg-hover data-[state=checked]:bg-bg-selected',
+                  'focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
                 )}
               >
                 <span className="flex size-5 shrink-0 items-center justify-center [&>*]:size-5">{m.icon}</span>

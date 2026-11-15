@@ -81,6 +81,8 @@ const hit = (item: CommandItem, q: string) => {
  */
 export function useCommandList(groups: CommandGroup[], query: string, onRun: (item: CommandItem) => void) {
   const [active, setActive] = React.useState(0)
+  // The highlight shows the focus ring only when the arrows put it there (see menuItemClass).
+  const [viaKeys, setViaKeys] = React.useState(false)
   const listId = React.useId()
   const listRef = React.useRef<HTMLDivElement>(null)
   const shown = groups.map((g) => ({ ...g, items: g.items.filter((i) => hit(i, query)) })).filter((g) => g.items.length)
@@ -101,6 +103,7 @@ export function useCommandList(groups: CommandGroup[], query: string, onRun: (it
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault()
+      setViaKeys(true)
       const step = e.key === 'ArrowDown' ? 1 : -1
       setActive((a) => (flat.length ? (a + step + flat.length) % flat.length : 0))
     } else if (e.key === 'Enter') {
@@ -138,8 +141,12 @@ export function useCommandList(groups: CommandGroup[], query: string, onRun: (it
                       aria-selected={i === active}
                       aria-disabled={item.disabled || undefined}
                       data-highlighted={i === active ? '' : undefined}
+                      data-keyboard={i === active && viaKeys ? '' : undefined}
                       data-disabled={item.disabled ? '' : undefined}
-                      onPointerMove={() => setActive(i)}
+                      onPointerMove={() => {
+                        setViaKeys(false)
+                        setActive(i)
+                      }}
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => run(item)}
                       className={menuItemClass}

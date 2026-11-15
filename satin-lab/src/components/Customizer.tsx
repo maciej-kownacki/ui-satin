@@ -82,11 +82,18 @@ export function Customizer() {
   }, [])
   const colorRef = React.useRef<HTMLInputElement>(null)
 
-  // Read what the reader chose last time.
+  // Read what the reader chose last time, and rebuild its stylesheet: the one saved with it was
+  // written by an older themeCss() and may be out of date. Satin's own theme needs none.
   React.useEffect(() => {
     const saved = load()
     setTheme(saved)
     if (JSON.stringify(saved) !== JSON.stringify(defaultTheme)) apply(saved)
+    else {
+      document.getElementById('satin-custom')?.remove()
+      try {
+        localStorage.removeItem(STORE_CSS)
+      } catch {}
+    }
   }, [])
 
   const update = (patch: Partial<SatinTheme>) =>

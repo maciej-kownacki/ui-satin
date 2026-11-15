@@ -20,6 +20,13 @@ Satin is a React design system: components on Radix, one precompiled stylesheet,
 - Forms: `Form` with `FormField`s; give each field a `name` and pass `errors` keyed by name to `Form`, which focuses the first invalid control after a submit.
 - Icon-only buttons need `aria-label`. Built-in words (Close, Select row…) come from `SatinLabels`; wrap the app in `<SatinLabels labels={{…}}>` to translate them.
 
+## Accessibility
+
+- The components support WCAG 2.2 AA: Radix gives roles, keys and focus management; Satin gives a 3:1 focus ring, 4.5:1 text, reduced motion, right-to-left and translatable built-in words.
+- Your part: an `aria-label` on every icon-only button and on any field without a visible label, `lang` on `<html>`, landmarks and headings, and announcements for changes the components don't know about.
+- Don't hide the focus ring (`outline: none` on Satin elements) or colour text with `--sa-text-subtle`, which is below 4.5:1.
+- Known gaps and what to do about them: https://uisatin.dev/accessibility. In chat UIs: label who speaks in each Message, give every Citation an `href`, and announce a reply's start and end from one status region.
+
 ## Theming and dark mode
 
 - Brand colour and corners: `themeCss({ brand: '#E5533D', radius: 1 })` from `@uisatin/ui/theme`, injected in a `<style>` after the stylesheet.

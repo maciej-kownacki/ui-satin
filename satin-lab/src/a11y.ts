@@ -222,7 +222,7 @@ export const a11y: Record<string, A11y> = {
   },
   'field-group': {
     summary:
-      'A native `fieldset`: the `legend` names the whole group for screen readers, and `disabled` reaches every control in it. The description and the error are linked with `aria-describedby`. The required mark is hidden, so set `required` on the controls too. The group itself gets no `aria-invalid`, so Form’s focus on the first error skips a group whose controls aren’t marked invalid.',
+      'A native `fieldset`: the `legend` names the whole group for screen readers, and `disabled` reaches every control in it. The description and the error are linked with `aria-describedby`. The required mark is hidden, so set `required` on the controls too. After a submit with errors, Form focuses the first control of an invalid group, in document order with the other fields.',
   },
   'form-field': {
     summary:
@@ -433,7 +433,7 @@ export const a11y: Record<string, A11y> = {
   },
   toast: {
     summary:
-      'Radix toasts in a `region` named "Notifications (F8)". Each toast is read out when it appears: errors and warnings at once (`aria-live="assertive"`), the others politely. The action button’s label is also its alternative text, and the close button is named "Close". Hovering or focusing the stack pauses the timers; a swipe to the right dismisses.',
+      'Radix toasts in a `region` named "Notifications (F8)". Each toast is read out when it appears: errors and warnings at once (`aria-live="assertive"`), the others politely. Give an action `altText` that says how to do the same without the toast ("Undo with Ctrl+Z"): Radix reads it instead of the button, which a screen reader user may not reach in time; without it the label is used. The close button is named "Close". Hovering or focusing the stack pauses the timers; a swipe to the right dismisses.',
     keyboard: [
       { keys: ['F8'], action: 'Moves focus to the toasts.' },
       { keys: ['Tab', 'Shift+Tab'], action: 'Moves through the toasts and their buttons.' },
@@ -488,7 +488,7 @@ export const a11y: Record<string, A11y> = {
   },
   'agent-loading': {
     summary:
-      'A `role="status"` region with `aria-live="polite"`: screen readers read the label ("Thinking…") and read it again when it changes. `time` sits inside the region too, so a clock that ticks every second is read out every second; update it rarely, or leave it out. The tetris mark and the bird are hidden, and under reduced motion they stop moving.',
+      'A `role="status"` region with `aria-live="polite"`: screen readers read the label ("Thinking…") and read it again when it changes. `time` is hidden from screen readers, so a clock that ticks every second stays quiet. Mount the component before the work starts, or it may not be announced: a live region filled at the moment it appears is the one screen readers miss most. The tetris mark and the bird are hidden, and under reduced motion they stop moving.',
   },
   message: {
     summary:

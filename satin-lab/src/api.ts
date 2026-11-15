@@ -839,7 +839,7 @@ export const api: Record<string, Api> = {
       { name: 'intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"neutral"' },
       { name: 'icon', type: ['boolean'], default: 'true' },
       { name: 'description', type: ['string'] },
-      { name: 'action', type: ['{ label, onClick }'] },
+      { name: 'action', type: ['{ label, onClick, altText }'] },
       { name: 'closeButton', type: ['boolean'], default: 'true' },
       { name: 'duration', type: ['number'], default: '5000' },
       { name: 'title', type: ['string'] },

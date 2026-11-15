@@ -149,7 +149,7 @@ export function RequiredMark() {
 /** @internal A field's or a group's error: Figma's 14px warning circle and the message, in red. */
 export function FieldError({ id, children, className }: { id?: string; children: React.ReactNode; className?: string }) {
   return (
-    <p id={id} className={cn('flex items-start gap-1.5 text-sm text-action-destructive-bg', className)}>
+    <p id={id} className={cn('flex items-start gap-1.5 text-sm text-text-destructive', className)}>
       <svg
         width="14"
         height="14"

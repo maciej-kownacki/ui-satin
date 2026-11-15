@@ -1,0 +1,257 @@
+---
+/**
+ * Accessibility: what Satin aims for (WCAG 2.2 AA support, never "compliant": conformance belongs
+ * to whole pages), who does what (Radix, Satin, the app), the foundations with their numbers, the
+ * known issues (accessibility.ts) and how the claims are checked. The contrast figures come from
+ * the same script that runs in CI (scripts/check-contrast.mjs), so the page can't drift from it.
+ */
+import Docs from '../layouts/Docs.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Chip from '../components/Chip.astro'
+import { page } from '../nav'
+import { knownIssues } from '../accessibility'
+import { contrastRows } from '../../../scripts/check-contrast.mjs'
+
+const REVIEWED = '15 November 2026'
+const rows: { theme: string; kind: string; fg: string; bg: string; r: number; ok: boolean | null }[] = await contrastRows({
+  root: process.cwd().endsWith('satin-lab') ? `${process.cwd()}/..` : process.cwd(),
+  brands: false,
+})
+const min = (theme: string, test: (r: (typeof rows)[number]) => boolean) =>
+  Math.min(...rows.filter((r) => r.theme === theme && test(r)).map((r) => r.r))
+const ratio = (n: number) => `${n.toFixed(2)}:1`
+const summary = [
+  { label: 'Text, muted text and error text on every surface', need: '4.5:1', test: (r) => r.kind === 'text' && /^text-(default|muted|destructive)$/.test(r.fg) && r.bg.startsWith('bg-') },
+  { label: 'Button labels on their fills, at rest, hover and pressed', need: '4.5:1', test: (r) => r.kind === 'text' && r.bg.startsWith('action-') },
+  { label: 'Tone text on its tone (Badge, Chip, Alert, Toast)', need: '4.5:1', test: (r) => r.kind === 'text' && r.bg.startsWith('status-') },
+  { label: 'Focus ring and focused field edge on every surface', need: '3:1', test: (r) => r.kind === 'focus' },
+  { label: 'Error edge of a field', need: '3:1', test: (r) => r.kind === 'edge' && r.ok !== null },
+  { label: 'Control borders (a known issue, below)', need: '3:1', test: (r) => r.ok === null },
+] satisfies { label: string; need: string; test: (r: (typeof rows)[number]) => boolean }[]
+const checked = rows.filter((r) => r.ok !== null).length
+
+const pages = Object.fromEntries(
+  knownIssues.flatMap((i) => i.components).map((id) => {
+    try {
+      return [id, page(id)]
+    } catch {
+      return [id, undefined]
+    }
+  }),
+)
+
+const h2 = 'text-lg font-medium text-text-default'
+const h3 = 'text-base font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+const panel = 'flex flex-col gap-2 rounded-2xl border border-border-subtle p-4 sm:p-5'
+const th = 'py-2 pr-4 text-left font-medium text-text-default'
+const td = 'py-3 pr-4 align-top'
+---
+
+<Docs current="accessibility">
+  <PageHeader id="accessibility" title={page('accessibility').title} description={page('accessibility').description} />
+
+  <section aria-labelledby="target-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="target-title" class={h2}>What Satin aims for</h2>
+    <p class={prose}>
+      Satin's components are designed and checked to support <strong class="font-medium text-text-default">WCAG 2.2 at level AA</strong>. A component
+      library can't be compliant on its own: WCAG applies to whole pages, and the result depends on your content, your labels, your colours and how you
+      put the parts together. WCAG 2.2 is also ISO/IEC 40500:2025, and EN 301 549 v4.1.1 (September 2026) adopts it for the EU.
+    </p>
+    <p class={prose}>
+      Where Satin falls short today, it says so below, under <a href="#issues-title" class={link}>Known issues</a>, with what to do until it's fixed.
+    </p>
+  </section>
+
+  <section aria-labelledby="split-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="split-title" class={h2}>Satin checks its part. You check yours.</h2>
+    <p class={prose}>Three layers build an accessible screen, and each one owns different things.</p>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class={panel}>
+        <h3 class={h3}>Radix provides</h3>
+        <ul class="flex list-disc flex-col gap-1.5 ps-5 text-base leading-6 text-text-muted">
+          <li>Roles and ARIA states, following the WAI-ARIA patterns.</li>
+          <li>Keyboard behaviour: arrows, Home and End, typeahead, Esc.</li>
+          <li>Focus management: trapped in a dialog, returned to the trigger.</li>
+        </ul>
+      </div>
+      <div class={panel}>
+        <h3 class={h3}>Satin provides</h3>
+        <ul class="flex list-disc flex-col gap-1.5 ps-5 text-base leading-6 text-text-muted">
+          <li>A focus ring that reads at 3:1 or more, and text at 4.5:1, in Light and Dark.</li>
+          <li>Labels, hints and errors wired to their controls.</li>
+          <li>Reduced motion, right-to-left and translatable built-in words.</li>
+          <li>Targets of at least 24px, with the exceptions listed below.</li>
+        </ul>
+      </div>
+      <div class={panel}>
+        <h3 class={h3}>Your app provides</h3>
+        <ul class="flex list-disc flex-col gap-1.5 ps-5 text-base leading-6 text-text-muted">
+          <li>Names for icon-only buttons and fields without a visible label.</li>
+          <li>Page structure: <Chip>lang</Chip>, landmarks, headings, titles.</li>
+          <li>Announcements for changes the components don't know about.</li>
+          <li>Testing with your content, your colours and assistive technology.</li>
+        </ul>
+      </div>
+    </div>
+    <p class={prose}>
+      Each component's page ends with an Accessibility section: its role and name, what it announces, what your app has to supply, and the keys it
+      answers to.
+    </p>
+  </section>
+
+  <section aria-labelledby="focus-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="focus-title" class={h2}>Focus</h2>
+    <p class={prose}>
+      Keyboard focus is a 2px ring in a solid colour that reads at 3:1 or more on every surface: <Chip>#4633D7</Chip> in Light and <Chip>#7075FE</Chip>
+      in Dark, or the colours <Chip>themeCss()</Chip> works out for your brand, held to the same minimum. Buttons, checkboxes, radios and switches draw
+      it 2px off the control, so it reads against the page whatever the fill; fields turn their edge into a 2px line in the same colour; a menu row
+      reached with the arrows takes the ring inside its edge. In forced-colors mode, which drops these rings, whatever has focus gets an outline in the
+      system's highlight colour.
+    </p>
+  </section>
+
+  <section aria-labelledby="contrast-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="contrast-title" class={h2}>Contrast</h2>
+    <p class={prose}>
+      The lowest ratio in each group, from the tokens, checked on every pull request ({checked} pairs). WCAG asks 4.5:1 for text and 3:1 for focus
+      indicators and the edges of controls. Disabled controls are exempt. <Chip>text/subtle</Chip> (about 2.6:1) is only for things nobody has to read,
+      like the separators in a breadcrumb.
+    </p>
+    <div class="overflow-x-auto rounded-md focus-visible:shadow-border-focus focus-visible:outline-none" tabindex="0" role="region" aria-label="Contrast by group">
+      <table class="w-full min-w-[560px] border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-border-default">
+            <th scope="col" class={th}>Group</th>
+            <th scope="col" class={`${th} w-[90px]`}>Needs</th>
+            <th scope="col" class={`${th} w-[100px]`}>Light</th>
+            <th scope="col" class={`${th} w-[100px] pr-0`}>Dark</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            summary.map((s) => (
+              <tr class="border-b border-border-default">
+                <th scope="row" class={`${td} text-left font-normal text-text-default`}>{s.label}</th>
+                <td class={`${td} text-text-muted`}>{s.need}</td>
+                {['Light', 'Dark'].map((theme) => (
+                  <td class={`${td} tabular-nums text-text-default ${theme === 'Dark' ? 'pr-0' : ''}`}>{ratio(min(theme, s.test))}</td>
+                ))}
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <details class="group rounded-2xl border border-border-subtle">
+      <summary class="cursor-pointer rounded-2xl px-4 py-3 text-base text-text-default focus-visible:shadow-border-focus focus-visible:outline-none">
+        Every pair
+      </summary>
+      <div class="overflow-x-auto px-4 pb-4" tabindex="0" role="region" aria-label="Every contrast pair">
+        <table class="w-full min-w-[560px] border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-border-default">
+              <th scope="col" class={th}>Theme</th>
+              <th scope="col" class={th}>Colour</th>
+              <th scope="col" class={th}>On</th>
+              <th scope="col" class={`${th} pr-0`}>Ratio</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rows.map((r) => (
+                <tr class="border-b border-border-default">
+                  <td class={`${td} text-text-muted`}>{r.theme}</td>
+                  <td class={td}><Chip>{`--sa-${r.fg}`}</Chip></td>
+                  <td class={td}><Chip>{`--sa-${r.bg}`}</Chip></td>
+                  <td class={`${td} pr-0 tabular-nums text-text-default`}>{ratio(r.r)}{r.ok === null ? ' (known issue)' : ''}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <section aria-labelledby="more-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="more-title" class={h2}>Size, motion and language</h2>
+    <p class={prose}>
+      <strong class="font-medium text-text-default">Targets.</strong> The smallest Button, <Chip>xs</Chip>, is 24×24px, WCAG 2.2's minimum; checkboxes,
+      radios and switches count their label as part of the target. Two smaller buttons are listed below.
+    </p>
+    <p class={prose}>
+      <strong class="font-medium text-text-default">Motion.</strong> With reduced motion set in the system, Satin's transitions and animations stop at
+      once, and only Satin's: your own motion stays your call. The Spinner keeps turning, slower, because a still arc reads as stuck.
+    </p>
+    <p class={prose}>
+      <strong class="font-medium text-text-default">Language and direction.</strong> Every word a component says on its own, accessible names
+      included, comes from <Chip>SatinLabels</Chip>, so it can be translated, and dates follow its locale. Components lay out with logical properties
+      and mirror in right-to-left (<a href="/recipes/rtl" class={link}>recipe</a>).
+    </p>
+  </section>
+
+  <section aria-labelledby="issues-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="issues-title" class={h2}>Known issues</h2>
+    <p class={prose}>
+      What doesn't work yet, who it affects and what to do until it's fixed. Each is on the list to fix; this page changes when one is.
+    </p>
+    <ul class="flex flex-col gap-4">
+      {
+        knownIssues.map((issue) => (
+          <li id={issue.id} class={panel}>
+            <h3 class={h3}>{issue.title}</h3>
+            <p class="flex flex-wrap items-center gap-1.5 text-sm text-text-muted">
+              {issue.components.map((id) =>
+                pages[id] ? (
+                  <a href={pages[id].href} class={link}>
+                    {pages[id].title}
+                  </a>
+                ) : (
+                  <Chip>{id}</Chip>
+                ),
+              )}
+              {issue.wcag && <span>· WCAG {issue.wcag.join(', ')}</span>}
+            </p>
+            <dl class="grid gap-x-4 gap-y-2 text-base leading-6 sm:grid-cols-[120px_1fr]">
+              <dt class="text-text-default">What happens</dt>
+              <dd class="text-text-muted">{issue.problem}</dd>
+              <dt class="text-text-default">Who it affects</dt>
+              <dd class="text-text-muted">{issue.affects}</dd>
+              <dt class="text-text-default">Until it's fixed</dt>
+              <dd class="text-text-muted">{issue.workaround}</dd>
+            </dl>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="method-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="method-title" class={h2}>How this is checked</h2>
+    <ul class="flex list-disc flex-col gap-1.5 ps-5 text-base leading-6 text-text-muted">
+      <li>Every component's Accessibility section was written by reading its code and the Radix primitive under it, against the WAI-ARIA patterns.</li>
+      <li>
+        The contrast table above runs on every pull request (<Chip>npm run check:contrast</Chip>), in Light and Dark and for a spread of brands through
+        <Chip>themeCss()</Chip>.
+      </li>
+      <li>Radix tests its primitives' roles and keyboard behaviour; Satin doesn't yet run its own automated (axe) or keyboard tests.</li>
+      <li>
+        Not tested yet: screen readers (VoiceOver, NVDA, JAWS, TalkBack), Windows forced colors, and zoom to 400%. When they are, the results go on each
+        component's page with the version and date.
+      </li>
+    </ul>
+    <p class={prose}>Last reviewed {REVIEWED}, against the code on main.</p>
+  </section>
+
+  <section aria-labelledby="report-title" class="flex flex-col gap-3 pt-10 pb-4">
+    <h2 id="report-title" class={h2}>Report a problem</h2>
+    <p class={prose}>
+      Found something that doesn't work with your keyboard, screen reader or settings? <a
+        href="https://github.com/maciej-kownacki/ui-satin/issues/new?title=%5Ba11y%5D%20"
+        class={link}>Open an issue</a
+      > with <Chip>[a11y]</Chip> in the title: the component, what you did, what happened, and your browser and assistive technology.
+    </p>
+  </section>
+</Docs>

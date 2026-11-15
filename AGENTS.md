@@ -13,6 +13,7 @@ npm run registry       # build, props.json, sizes.json, then the registry in sat
 npm run size           # size budgets (.size-limit.json)
 npm run check:types    # the packed types under node16, nodenext and bundler
 npm run check:docs     # props.json is fresh; nav, registry and package exports agree
+npm run check:contrast # text 4.5:1, focus and error edges 3:1, Light and Dark, themeCss brands
 node scripts/check-css.mjs && node scripts/check-cn.mjs
 ```
 
@@ -28,6 +29,7 @@ node scripts/check-css.mjs && node scripts/check-cn.mjs
 
 - Components take `ref` as a prop and spread the rest onto their main element; document where in the component's JSDoc ("Other props, `ref` included, go to …").
 - Words a component says on its own go through `SatinLabels` (`labels.tsx`), never as English literals.
+- Focus: never remove it without drawing it. Use the `--action-focus-ring` colour (solid, 3:1 on every surface): an outline 2px off for standalone controls, a 2px edge for fields. Text colours need 4.5:1 on every surface they sit on; `npm run check:contrast` checks the tokens. Known gaps live in `satin-lab/src/accessibility.ts` and on /accessibility: add one when you find it, delete it when you fix it.
 - Props for the common case, parts for composition (see `dialog.tsx`, `segmented-control.tsx`).
 - Every change to `packages/ui` that users see needs a changeset (`npm run changeset`).
 - Docs: a component page is `satin-lab/src/pages/components/<id>.astro` with a demo in `satin-lab/src/demos/<id>.tsx`, its sidebar entry in `nav.ts`, its API description in `api.ts`, accessibility notes in `a11y.ts`. Props come from the types (`scripts/props.mjs` → `props.json`); regenerate it when props change.

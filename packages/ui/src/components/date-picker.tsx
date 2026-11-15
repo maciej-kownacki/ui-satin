@@ -374,7 +374,7 @@ function Trigger({ text, placeholder, chrome, size, open, className, ...props }:
       <span className="satin-field-icon" aria-hidden>
         <CalendarIcon />
       </span>
-      <span className={cn('min-w-0 flex-1 truncate', text ? 'text-text-default' : 'text-text-placeholder')}>{text || placeholder}</span>
+      <span className={cn('min-w-0 flex-1 truncate', text ? 'text-text-default' : 'text-text-muted')}>{text || placeholder}</span>
       <span className="satin-field-icon" aria-hidden>
         <NavArrowDown className={cn('transition-transform duration-(--duration-fast) ease-(--ease-out)', open && 'rotate-180')} />
       </span>

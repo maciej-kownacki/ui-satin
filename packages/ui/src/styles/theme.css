@@ -150,7 +150,7 @@
   --color-primary-dark: #493DD6;
   --color-primary-hover-dark: #554FE7;
   --color-primary-pressed-dark: #3E2AC5;
-  --color-primary-focus-dark: #493DD633;
+  --color-primary-focus-dark: #7075FE;
   --color-white: #FFFFFF;
   --color-black: #000000;
   --color-transparent: #FFFFFF00;
@@ -202,6 +202,7 @@
   --text-muted: var(--color-text-muted-light);
   --text-subtle: var(--color-zinc-400);
   --text-placeholder: var(--color-zinc-300);
+  --text-destructive: var(--color-red-700);
   --text-on-solid: var(--color-white);
   --text-on-inverse: var(--bg-canvas);
   --border-default: var(--color-zinc-200);
@@ -220,8 +221,8 @@
   --action-secondary-bg-hover: var(--color-zinc-100);
   --action-secondary-bg-pressed: var(--color-zinc-200);
   --action-destructive-bg: var(--color-red-600);
-  --action-destructive-bg-hover: var(--color-red-500);
-  --action-destructive-bg-pressed: var(--color-red-700);
+  --action-destructive-bg-hover: var(--color-red-700);
+  --action-destructive-bg-pressed: var(--color-red-900);
   --action-destructive-border: var(--color-red-400);
   --action-destructive-glow: var(--color-white-a24);
   --action-destructive-fg: var(--color-red-soft-700);
@@ -230,7 +231,7 @@
   --action-inverse-border: var(--color-zinc-500);
   --action-inverse-glow: var(--color-white-a24);
   --action-inverse-bg: var(--text-default);
-  --action-focus-ring: var(--color-blue-600-a20);
+  --action-focus-ring: var(--color-blue-600);
   --status-neutral-bg: var(--color-zinc-100);
   --status-neutral-border: var(--color-zinc-200);
   --status-neutral-fg: var(--color-zinc-600);
@@ -302,13 +303,14 @@
   --text-muted: var(--color-zinc-400);
   --text-subtle: var(--color-zinc-500);
   --text-placeholder: var(--color-zinc-600);
+  --text-destructive: var(--color-red-400);
   --text-on-solid: var(--color-white);
   --text-on-inverse: var(--bg-canvas);
   --border-default: var(--color-border-dark);
   --border-subtle: var(--color-border-subtle-dark);
   --border-strong: var(--color-border-strong-dark);
   --border-input: var(--color-border-strong-dark);
-  --border-focus: var(--color-primary-hover-dark);
+  --border-focus: var(--color-primary-focus-dark);
   --action-primary-bg: var(--color-primary-dark);
   --action-primary-bg-hover: var(--color-primary-hover-dark);
   --action-primary-bg-pressed: var(--color-primary-pressed-dark);
@@ -320,8 +322,8 @@
   --action-secondary-bg-hover: var(--color-secondary-hover-dark);
   --action-secondary-bg-pressed: var(--color-secondary-pressed-dark);
   --action-destructive-bg: var(--color-red-600);
-  --action-destructive-bg-hover: var(--color-red-400);
-  --action-destructive-bg-pressed: var(--color-red-600);
+  --action-destructive-bg-hover: var(--color-red-700);
+  --action-destructive-bg-pressed: var(--color-red-900);
   --action-destructive-border: var(--color-red-300);
   --action-destructive-glow: var(--color-white-a24);
   --action-destructive-fg: var(--color-red-400);
@@ -395,13 +397,14 @@
     --text-muted: var(--color-zinc-400);
     --text-subtle: var(--color-zinc-500);
     --text-placeholder: var(--color-zinc-600);
+    --text-destructive: var(--color-red-400);
     --text-on-solid: var(--color-white);
     --text-on-inverse: var(--bg-canvas);
     --border-default: var(--color-border-dark);
     --border-subtle: var(--color-border-subtle-dark);
     --border-strong: var(--color-border-strong-dark);
     --border-input: var(--color-border-strong-dark);
-    --border-focus: var(--color-primary-hover-dark);
+    --border-focus: var(--color-primary-focus-dark);
     --action-primary-bg: var(--color-primary-dark);
     --action-primary-bg-hover: var(--color-primary-hover-dark);
     --action-primary-bg-pressed: var(--color-primary-pressed-dark);
@@ -413,8 +416,8 @@
     --action-secondary-bg-hover: var(--color-secondary-hover-dark);
     --action-secondary-bg-pressed: var(--color-secondary-pressed-dark);
     --action-destructive-bg: var(--color-red-600);
-    --action-destructive-bg-hover: var(--color-red-400);
-    --action-destructive-bg-pressed: var(--color-red-600);
+    --action-destructive-bg-hover: var(--color-red-700);
+    --action-destructive-bg-pressed: var(--color-red-900);
     --action-destructive-border: var(--color-red-300);
     --action-destructive-glow: var(--color-white-a24);
     --action-destructive-fg: var(--color-red-400);
@@ -584,6 +587,7 @@
   --color-text-muted: var(--text-muted);
   --color-text-subtle: var(--text-subtle);
   --color-text-placeholder: var(--text-placeholder);
+  --color-text-destructive: var(--text-destructive);
   --color-text-on-solid: var(--text-on-solid);
   --color-text-on-inverse: var(--text-on-inverse);
   --color-border-default: var(--border-default);

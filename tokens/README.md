@@ -31,7 +31,7 @@ these, never primitives. One value has one name (the shadcn `*-foreground` copie
 | Role | Tokens |
 |---|---|
 | `bg/` | `canvas`, `card`, `field`, `popover`, `muted`, `hover`, `selected`, `card-fade` |
-| `text/` | `default`, `muted`, `subtle`, `placeholder`, `on-solid`, `on-inverse` |
+| `text/` | `default`, `muted`, `subtle`, `placeholder`, `destructive`, `on-solid`, `on-inverse` |
 | `border/` | `default`, `subtle`, `strong`, `input`, `focus` |
 | `action/` | `primary/{bg,bg-hover,bg-pressed,border,glow,shadow}`, `secondary/{bg,bg-hover,bg-pressed}`, `destructive/{bg,bg-hover,bg-pressed}`, `inverse/{bg,bg-hover,bg-pressed,border,glow}`, `focus-ring` |
 | `status/` | `{neutral,brand,sky,green,amber,red,fuchsia,plum}/{bg,border,fg}` |
@@ -70,8 +70,12 @@ Inverse button: `action/inverse/bg` aliases `text/default`, its label is `text/o
 Text levels: `text/default` (primary) → `text/muted` (secondary) → `text/subtle` (tertiary,
 zinc-400 / zinc-500). Tertiary is 2.5:1 on white in Light, so use it only for non-essential meta
 (timestamps, counters, hints), never for body text or labels.
-Placeholders use `text/placeholder` (zinc-300 / zinc-600), one step lighter again
-(1.5:1 in Light, 2.6:1 in Dark). In code: `placeholder:text-text-placeholder`.
+Placeholders use `text/muted`, like hints, because a placeholder is text a user reads (WCAG
+1.4.3); `text/placeholder` (zinc-300 / zinc-600, 1.5:1 in Light) is for nothing essential.
+Error text uses `text/destructive` (red-700 / red-400, at least 4.5:1 on every surface), not
+the destructive fill, which reads only 3.3:1 as text in Dark. In code: `text-text-destructive`.
+Focus: `border/focus` and `action/focus-ring` are the same solid colour (blue-600 / a lighter
+primary in Dark), at least 3:1 on every surface; `npm run check:contrast` holds every pair.
 Tones (badge, avatar, chip, toast): theme `status/{neutral,brand,sky,green,amber,red,fuchsia,plum}/{bg,border,fg}`
 (calm `soft-*` steps per hue: same hue as the ramp, lower OKLCH chroma — Light soft-50 / soft-200 / soft-700, Dark soft-950 / soft-900 / soft-300;
 text on its tone 5.5–6:1 Light, ~9.5:1 Dark; neutral stays zinc; brand = blue, like primary; plum = pink), and a `tone` collection with one mode per tone

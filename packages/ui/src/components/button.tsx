@@ -32,7 +32,10 @@ const buttonVariants = cva(
     // transform transition), so the menu measures the button's real edge and never jumps.
     'not-aria-expanded:active:scale-[0.97] aria-expanded:[transition-property:background-color,border-color,color,box-shadow]',
     'disabled:pointer-events-none disabled:opacity-50',
-    'focus-visible:outline-none [&_svg]:pointer-events-none [&_svg]:shrink-0',
+    // Focus: the ring 2px off the button, so it reads against the page whatever the fill.
+    // (outline-solid too: the base focus rule sets the outline style to none.)
+    'satin-focus:outline-2 satin-focus:outline-solid satin-focus:outline-offset-2 satin-focus:outline-action-focus-ring',
+    '[&_svg]:pointer-events-none [&_svg]:shrink-0',
     // Figma icons are 1.25px at 16 and 1.09px at 14; on Iconoir's 24 grid both are 1.875.
     '[&_svg]:[stroke-width:1.875]',
   ],
@@ -43,25 +46,22 @@ const buttonVariants = cva(
           'border border-action-primary-border bg-action-primary-bg text-action-primary-fg',
           '[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow)]',
           'satin-hover:bg-action-primary-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-primary-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-focus:[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring)]',
+          'satin-focus:[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow)]',
           'satin-pressed:bg-action-primary-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-primary-bg-pressed)]',
-          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-primary-bg-pressed),0_0_0_2px_var(--action-focus-ring)]',
         ],
         destructive: [
           'border border-action-destructive-border bg-action-destructive-bg text-text-on-solid',
           '[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow)]',
           'satin-hover:bg-action-destructive-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-destructive-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-focus:[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring)]',
+          'satin-focus:[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow)]',
           'satin-pressed:bg-action-destructive-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-destructive-bg-pressed)]',
-          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-destructive-bg-pressed),0_0_0_2px_var(--action-focus-ring)]',
         ],
         inverse: [
           'border border-action-inverse-border bg-action-inverse-bg text-text-on-inverse',
           '[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow)]',
           'satin-hover:bg-action-inverse-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-inverse-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-focus:[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow),0_0_0_2px_var(--action-focus-ring)]',
+          'satin-focus:[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow)]',
           'satin-pressed:bg-action-inverse-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed)]',
-          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed),0_0_0_2px_var(--action-focus-ring)]',
         ],
         // The outline is a 1px ring outside the box, like the filled variants' ring, so all of
         // them read the same height; the border underneath takes the fill.
@@ -70,16 +70,14 @@ const buttonVariants = cva(
           '[box-shadow:0_0_0_1px_var(--border-default),0_1px_2px_1px_var(--effect-shadow-xs)]',
           'disabled:[box-shadow:0_0_0_1px_var(--border-strong)]',
           'satin-hover:bg-action-secondary-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--border-strong),0_1px_2px_1px_var(--effect-shadow-xs)]',
-          'satin-focus:bg-bg-popover satin-focus:[box-shadow:0_0_0_1px_var(--border-strong),0_0_0_2px_var(--action-focus-ring)]',
+          'satin-focus:bg-bg-popover satin-focus:[box-shadow:0_0_0_1px_var(--border-strong),0_1px_2px_1px_var(--effect-shadow-xs)]',
           'satin-pressed:bg-action-secondary-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--border-strong)]',
-          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_1px_var(--border-strong),0_0_0_2px_var(--action-focus-ring)]',
         ],
         tertiary: [
           'bg-transparent text-text-default [&_svg]:text-text-muted',
           'satin-hover:bg-bg-hover',
-          'satin-focus:bg-bg-hover satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+          'satin-focus:bg-bg-hover satin-focus:[box-shadow:none]',
           'satin-pressed:bg-border-input',
-          '[&[aria-haspopup][aria-expanded=true]:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
         ],
       },
       size: {

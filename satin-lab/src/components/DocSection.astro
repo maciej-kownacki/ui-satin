@@ -137,7 +137,9 @@ const card =
                       ))}
                     </span>
                   </th>
-                  <td class="py-3 text-base leading-6 text-text-muted">{row.action}</td>
+                  <td class="py-3 text-base leading-6 text-text-muted">
+                    {row.action.split(/(`[^`]+`)/).filter(Boolean).map((p) => (p.startsWith('`') ? <Chip>{p.slice(1, -1)}</Chip> : p))}
+                  </td>
                 </tr>
               ))}
             </tbody>

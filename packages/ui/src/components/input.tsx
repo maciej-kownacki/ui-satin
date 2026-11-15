@@ -155,7 +155,7 @@ export function Input({
       {message && (
         <p
           id={messageId}
-          className={cn('text-sm', typeof error === 'string' || React.isValidElement(error) ? 'text-action-destructive-bg' : 'text-text-muted')}
+          className={cn('text-sm', typeof error === 'string' || React.isValidElement(error) ? 'text-text-destructive' : 'text-text-muted')}
         >
           {message}
         </p>

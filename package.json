@@ -20,7 +20,8 @@
     "check:types": "node scripts/check-types.mjs",
     "size": "size-limit",
     "props": "node scripts/props.mjs",
-    "check:docs": "node scripts/props.mjs --check && node --no-warnings scripts/check-docs.mjs"
+    "check:docs": "node scripts/props.mjs --check && node --no-warnings scripts/check-docs.mjs",
+    "check:contrast": "node scripts/check-contrast.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.1",

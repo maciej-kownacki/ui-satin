@@ -137,6 +137,8 @@ export function Combobox({
   const picks = footer ? pending : applied
   const [query, setQuery] = React.useState('')
   const [active, setActive] = React.useState(0)
+  // The highlight shows the focus ring only when the arrows put it there (see menuItemClass).
+  const [viaKeys, setViaKeys] = React.useState(false)
 
   const setOpen = (next: boolean) => {
     if (next) {
@@ -281,6 +283,7 @@ export function Combobox({
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    setViaKeys(true)
                     e.preventDefault()
                     const step = e.key === 'ArrowDown' ? 1 : -1
                     setActive((a) => (shown.length ? (a + step + shown.length) % shown.length : 0))
@@ -312,8 +315,12 @@ export function Combobox({
                       aria-selected={picked}
                       aria-disabled={o.disabled || undefined}
                       data-highlighted={i === active ? '' : undefined}
+                      data-keyboard={i === active && viaKeys ? '' : undefined}
                       data-disabled={o.disabled ? '' : undefined}
-                      onPointerMove={() => setActive(i)}
+                      onPointerMove={() => {
+                        setViaKeys(false)
+                        setActive(i)
+                      }}
                       // Keep focus in the query field.
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => !o.disabled && pick(o.value)}

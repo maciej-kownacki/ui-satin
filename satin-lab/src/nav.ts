@@ -20,6 +20,7 @@ export const nav: NavGroup[] = [
       { id: 'introduction', title: 'Introduction', href: '/', description: 'A design system for calm product interfaces, with patterns for AI agents.' },
       { id: 'installation', title: 'Installation', href: '/installation', description: 'Install Satin from npm in three lines, have your agent do it, or copy the source with the shadcn CLI.' },
       { id: 'theming', title: 'Theming', href: '/theming', description: 'One small config sets the brand and the corners for every component.' },
+      { id: 'accessibility', title: 'Accessibility', href: '/accessibility', description: 'What Satin supports for WCAG 2.2 AA, what your app has to do, and what doesn’t work yet.' },
     ],
   },
   {

@@ -31,7 +31,10 @@
 .satin-checkbox:focus-visible,
 .satin-checkbox[data-force="focus"] {
   border-color: var(--action-primary-bg);
-  box-shadow: 0 0 0 2px var(--action-focus-ring);
+  /* The ring 2px off the box, so it reads next to a checked fill of the same colour. */
+  box-shadow: none;
+  outline: 2px solid var(--action-focus-ring);
+  outline-offset: 2px;
 }
 .satin-checkbox:active,
 .satin-checkbox[data-force="pressed"] {
@@ -60,7 +63,9 @@
 .satin-checkbox:is([data-state="checked"], [data-state="indeterminate"]):is(:focus-visible, [data-force="focus"]) {
   border-color: var(--action-primary-bg);
   background: var(--action-primary-bg);
-  box-shadow: 0 0 0 2px var(--action-focus-ring);
+  box-shadow: none;
+  outline: 2px solid var(--action-focus-ring);
+  outline-offset: 2px;
 }
 .satin-checkbox:is([data-state="checked"], [data-state="indeterminate"]):is(:active, [data-force="pressed"]) {
   border-color: transparent;
@@ -100,7 +105,9 @@
   background: var(--component-switch-on-hover);
 }
 .satin-switch:is(:focus-visible, [data-force="focus"]) {
-  box-shadow: 0 0 0 2px var(--action-focus-ring);
+  box-shadow: none;
+  outline: 2px solid var(--action-focus-ring);
+  outline-offset: 2px;
 }
 .satin-switch:disabled {
   cursor: not-allowed;
@@ -168,12 +175,16 @@
   border-color: var(--action-primary-bg);
   box-shadow: 0 0 0 1px var(--action-primary-bg), 0 1px 2px 0 var(--effect-shadow-xs);
 }
+/* Focus: the card's edge turns border/focus and doubles to 2px, as on a field; the checkbox inside
+   leaves its own ring to the card. */
 [data-slot="selectable-card"]:is(:focus-visible, :has(:focus-visible)) {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 1px var(--border-focus), 0 0 0 3px var(--action-focus-ring);
+  box-shadow: 0 0 0 1px var(--border-focus);
+  outline: 2px solid transparent;
 }
 [data-slot="selectable-card"] .satin-checkbox:focus-visible {
   box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
+  outline: 2px solid transparent;
 }
 [data-slot="selectable-card"]:is(:disabled, [data-disabled], :has(:disabled, [data-disabled])) {
   opacity: 0.5;

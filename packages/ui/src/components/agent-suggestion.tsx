@@ -188,7 +188,7 @@ export function AgentSuggestionChanges({ changes, className }: { changes: AgentS
           <dd className="m-0 flex min-w-0 items-center gap-2">
             {c.from != null && (
               <>
-                <del className="text-text-subtle">{c.from}</del>
+                <del className="text-text-muted">{c.from}</del>
                 <ArrowRight aria-hidden className="size-4 shrink-0 text-text-subtle [stroke-width:1.875] rtl:-scale-x-100" />
               </>
             )}

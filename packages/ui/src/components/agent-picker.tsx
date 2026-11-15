@@ -201,6 +201,8 @@ const agentRowClass = cn(
   'flex min-h-8 w-full items-center gap-2 rounded-lg px-2 py-1.5 text-start outline-none select-none',
   'transition-[background-color] duration-(--duration-fast) ease-(--ease-out)',
   'data-highlighted:bg-bg-selected data-[force=hover]:bg-bg-selected data-[state=checked]:bg-bg-selected',
+  // A row reached with the keyboard shows the focus ring inside its edge (see dropdown's menuItemClass).
+  'focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
 )
 
 function AgentRowText({ agent, stacked }: { agent: Agent; stacked: boolean }) {

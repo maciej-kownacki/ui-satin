@@ -33,6 +33,12 @@ export type ToastIntent = 'neutral' | 'info' | 'success' | 'warning' | 'error'
 export interface ToastAction {
   label: string
   onClick?: () => void
+  /**
+   * How to do the same without the toast, read to screen readers in place of the button, which
+   * they may never reach before it's gone: "Undo with Ctrl+Z", "Restore it from Trash".
+   * Defaults to the label.
+   */
+  altText?: string
 }
 
 export interface ToastOptions {
@@ -115,7 +121,7 @@ const tile: Record<ToastIntent, string> = {
   success: 'bg-status-green-bg text-status-green-fg',
   warning: 'bg-status-amber-bg text-status-amber-fg',
   // Figma draws the error glyph in action/destructive (#DC2626), not status-red-fg.
-  error: 'bg-status-red-bg text-action-destructive-bg',
+  error: 'bg-status-red-bg text-text-destructive',
 }
 
 function IntentIcon({ intent }: { intent: ToastIntent }) {
@@ -206,7 +212,7 @@ function ToastContent({
       {(action || closeButton) && (
         <div className="flex shrink-0 items-center gap-1">
           {action && (
-            <ToastPrimitive.Action asChild altText={action.label}>
+            <ToastPrimitive.Action asChild altText={action.altText ?? action.label}>
               <Button
                 variant="secondary"
                 onClick={() => {

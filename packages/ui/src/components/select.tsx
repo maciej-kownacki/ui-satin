@@ -139,7 +139,7 @@ export function FieldChrome({
       )}
       {children}
       {chrome.message && (
-        <p id={chrome.messageId} className={cn('text-sm', chrome.isError ? 'text-action-destructive-bg' : 'text-text-muted')}>
+        <p id={chrome.messageId} className={cn('text-sm', chrome.isError ? 'text-text-destructive' : 'text-text-muted')}>
           {chrome.message}
         </p>
       )}

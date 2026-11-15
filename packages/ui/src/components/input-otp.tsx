@@ -137,12 +137,13 @@ export function InputOTP({
                   '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
                   'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
                   chrome.invalid ? 'border-action-destructive-bg' : isSuccess ? 'border-status-green-fg' : 'border-border-default',
+                  // The cell taking the next digit: its edge doubles to 2px, in the field's state colour.
                   isActive &&
                     (chrome.invalid
-                      ? '[box-shadow:0_0_0_2px_var(--action-destructive-glow)]'
+                      ? '[box-shadow:0_0_0_1px_var(--action-destructive-bg)]'
                       : isSuccess
-                        ? '[box-shadow:0_0_0_2px_var(--status-green-border)]'
-                        : 'border-border-focus [box-shadow:0_0_0_2px_var(--action-focus-ring)]'),
+                        ? '[box-shadow:0_0_0_1px_var(--status-green-fg)]'
+                        : 'border-border-focus [box-shadow:0_0_0_1px_var(--border-focus)]'),
                 )}
               >
                 {value[i] ?? ''}
@@ -196,7 +197,7 @@ export function InputOTP({
         aria-live="polite"
         className={cn(
           'flex min-h-5 w-0 min-w-full items-start gap-1.5 text-sm leading-5',
-          isError ? 'text-action-destructive-bg' : successMessage ? 'text-status-green-fg' : 'text-text-muted',
+          isError ? 'text-text-destructive' : successMessage ? 'text-status-green-fg' : 'text-text-muted',
         )}
       >
         {successMessage && <CheckCircle aria-hidden className="mt-0.5 size-4 shrink-0 [stroke-width:1.875]" />}

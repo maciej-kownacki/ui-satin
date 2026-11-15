@@ -151,8 +151,23 @@ function brandVars(brand: string): Vars {
   }
   root['--color-blue-600-a20'] = `${root['--color-blue-600']}33`
   root['--color-blue-500-a20'] = `${root['--color-blue-500']}33`
-  root['--color-primary-focus-dark'] = `${root['--color-primary-dark']}33`
+  root['--color-primary-focus-dark'] = focusDark(bc, bh)
   return root
+}
+
+/** The lightest Dark surface (bg/selected): a focus colour that reads on it reads on all of them. */
+const LIGHTEST_DARK_SURFACE = '#2F2F32'
+
+// The focus colour in Dark: the brand's hue, lightened until it reads at 3:1 on every Dark
+// surface, the focus ring's WCAG 1.4.11 minimum (aimed at 3.5, to leave room for custom
+// surfaces). Satin's own brand gives #7075FE, primitives.extra.primary-focus-dark in tokens.json.
+// In Light the focus colour is the solid fill itself, which already reads at 4.5:1 on white.
+function focusDark(c: number, h: number) {
+  for (let L = 0.5; L <= 0.97; L += 0.01) {
+    const hex = oklchToHex([L, Math.min(c, 0.2), h])
+    if (contrast(hex, LIGHTEST_DARK_SURFACE) >= 3.5) return hex
+  }
+  return '#FFFFFF'
 }
 
 /* ---------- Radius ---------- */
@@ -203,14 +218,14 @@ const SCOPED_LIGHT: Vars = {
   '--action-primary-bg-hover': 'var(--color-blue-500)',
   '--action-primary-bg-pressed': 'var(--color-blue-700)',
   '--action-primary-border': 'var(--color-primary-border-light)',
-  '--action-focus-ring': 'var(--color-blue-600-a20)',
+  '--action-focus-ring': 'var(--color-blue-600)',
   '--status-brand-bg': 'var(--color-blue-soft-50)',
   '--status-brand-border': 'var(--color-blue-soft-200)',
   '--status-brand-fg': 'var(--color-blue-soft-700)',
   '--radius-lg': 'var(--radius)',
 }
 const SCOPED_DARK: Vars = {
-  '--border-focus': 'var(--color-primary-hover-dark)',
+  '--border-focus': 'var(--color-primary-focus-dark)',
   '--action-primary-bg': 'var(--color-primary-dark)',
   '--action-primary-bg-hover': 'var(--color-primary-hover-dark)',
   '--action-primary-bg-pressed': 'var(--color-primary-pressed-dark)',
