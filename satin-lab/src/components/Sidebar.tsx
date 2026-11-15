@@ -390,6 +390,12 @@ function NavParent({
         <span className="min-w-0 flex-1 truncate">
           <Highlight text={item.title} query={query} />
         </span>
+        {/* How many pages fold under it, in the group header's counter. */}
+        <span data-tone="neutral" className="shrink-0 rounded-sm px-1.5 py-0.5 text-sm leading-[19.5px] text-tone-fg">
+          <span className="sr-only">, </span>
+          {item.children!.length}
+          <span className="sr-only"> pages</span>
+        </span>
         {open ? <ChevronDown className="shrink-0 text-text-muted" /> : <ChevronRight className="shrink-0 text-text-muted" />}
       </button>
       <div id={listId} data-state={open ? 'open' : 'closed'} className="satin-expand">
