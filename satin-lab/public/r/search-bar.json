@@ -22,7 +22,7 @@
   ],
   "docs": "Search bar docs: https://uisatin.dev/components/search-bar",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "SearchBar": {

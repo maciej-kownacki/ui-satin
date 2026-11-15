@@ -20,7 +20,7 @@
   ],
   "docs": "Alert docs: https://uisatin.dev/components/alert",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "Alert": {

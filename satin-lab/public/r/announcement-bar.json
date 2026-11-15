@@ -23,7 +23,7 @@
   ],
   "docs": "Announcement bar docs: https://uisatin.dev/components/announcement-bar",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "AnnouncementBar": {

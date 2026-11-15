@@ -19,7 +19,7 @@
   ],
   "docs": "Button group docs: https://uisatin.dev/components/button-group",
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "edition": "free",
     "props": {
       "ButtonGroup": {
