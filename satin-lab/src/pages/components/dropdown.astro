@@ -2,36 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import DropdownDemo, { options } from '../../demos/dropdown'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-// Until nav.ts has a `dropdown` entry, the page item is passed inline.
-const item = {
-  id: 'dropdown',
-  title: 'Dropdown',
-  href: '/components/dropdown',
-  description: 'Opens a short list of actions or values from a button.',
-}
-
-const api = {
-  description:
-    'The `DropdownMenu` component wraps the Radix dropdown menu in a `div` that opens a list of `DropdownMenuItem` under its trigger. Group items with `DropdownMenuGroup`; the `item.*` props below belong to `DropdownMenuItem`.',
-  props: [
-    { name: 'trigger', type: ['ReactNode'] },
-    { name: 'children', type: ['DropdownMenuItem[]'] },
-    { name: 'item.label', type: ['string'] },
-    { name: 'item.description', type: ['string'] },
-    { name: 'item.icon', type: ['ReactNode'] },
-    { name: 'item.selected', type: ['boolean'], default: 'false' },
-    { name: 'item.layout', type: ['"stacked"', '"inline"'], default: '"stacked"' },
-    { name: 'item.onSelect', type: ['(event: Event) => void'] },
-  ],
-}
 ---
 
 <Docs current="dropdown">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('dropdown')} api={api['dropdown']}>
     <DropdownDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

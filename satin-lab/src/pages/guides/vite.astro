@@ -1,0 +1,110 @@
+---
+/**
+ * Guide: Satin in a Vite React app. The stylesheet from main.tsx, the theme from the customizer
+ * or themeCss, dark mode set by a head script before the first paint, and Geist under the names
+ * the tokens ask for.
+ */
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import CodeFrame from '../../components/CodeFrame.astro'
+import { page } from '../../nav'
+
+const install = `npm i @uisatin/ui @fontsource-variable/geist @fontsource-variable/geist-mono`
+const main = `// src/main.tsx
+import '@uisatin/ui/styles.css'
+import './app.css'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { App } from './App'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)`
+const appCss = `/* src/app.css */
+
+/* Geist under the names Satin's tokens ask for. @fontsource-variable/geist registers it as
+   "Geist Variable", so its own stylesheet alone leaves Satin on the system font. */
+@font-face {
+  font-family: 'Geist';
+  src: url('@fontsource-variable/geist/files/geist-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* Satin styles its own elements, not the page: paint the page from its tokens so dark mode reaches it. */
+body {
+  margin: 0;
+  background: var(--sa-bg-canvas);
+  color: var(--sa-text-default);
+}`
+const indexHtml = `<!doctype html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My app</title>
+    <script>
+      // Runs before the first paint: the saved choice, or follow the system.
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem('theme') || 'system'
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`
+const theme = `// src/main.tsx, after the styles
+import './satin-theme.css' // from the customizer on /theming: Export → Download
+
+// Or build it in code from the same two values:
+import { themeCss } from '@uisatin/ui/theme'
+
+const style = document.createElement('style')
+style.textContent = themeCss({ brand: '#E5533D', radius: 1 })
+document.head.append(style)`
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<Docs current="vite">
+  <PageHeader id="vite" title={page('vite').title} description={page('vite').description} />
+
+  <section aria-labelledby="install-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="install-title" class={h2}>Install</h2>
+    <p class={prose}> Start from <Chip>npm create vite@latest</Chip> with the React template, on React 19. The fonts are optional; without them Satin falls back to the system font. </p>
+    <CodeFrame code={install} label="Terminal" lang="bash" copyLabel="Copy command" />
+  </section>
+
+  <section aria-labelledby="styles-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="styles-title" class={h2}>Styles</h2>
+    <p class={prose}> Import <Chip>@uisatin/ui/styles.css</Chip> once, at the entry point, before your own CSS so your rules come later in the cascade. Then import each component from its own entry, <Chip>@uisatin/ui/button</Chip>. </p>
+    <CodeFrame code={main} label="src/main.tsx" />
+    <p class={prose}> Your own stylesheet loads the fonts and paints the page. Vite resolves the package paths inside <Chip>url()</Chip>, so the font files are bundled like any other asset. </p>
+    <CodeFrame code={appCss} label="src/app.css" lang="css" />
+  </section>
+
+  <section aria-labelledby="dark-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="dark-title" class={h2}>Dark mode without a flash</h2>
+    <p class={prose}> A Vite app renders in the browser, so the theme has to be on <Chip>&lt;html&gt;</Chip> before React starts. A small script in <Chip>index.html</Chip> runs before the first paint and sets <Chip>data-theme</Chip> from the saved choice; with nothing saved, <Chip>system</Chip> follows the operating system without any script. The toggle that saves the choice is in the <a class={link} href="/guides/dark-mode">Dark mode</a> guide. </p>
+    <CodeFrame code={indexHtml} label="index.html" lang="html" />
+  </section>
+
+  <section aria-labelledby="theme-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="theme-title" class={h2}>Theme</h2>
+    <p class={prose}> Load your brand and corners after Satin's styles: the file the <a class={link} href="/theming">customizer</a> exports, or the same stylesheet built with <Chip>themeCss</Chip>. </p>
+    <CodeFrame code={theme} label="src/main.tsx" />
+  </section>
+</Docs>

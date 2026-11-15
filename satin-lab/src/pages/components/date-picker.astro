@@ -2,28 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import Demo, { options } from '../../demos/date-picker'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-const api = {
-  description: "`DatePicker` and `DateRangePicker` are fields with the Input skin that open a `Calendar` in a popover. The range picker waits for Apply. `Calendar` works on its own too, as one month or two.",
-  props: [
-    {name: 'DatePicker.value', type: ['Date', 'null']},
-    {name: 'DatePicker.onValueChange', type: ['(value: Date) => void']},
-    {name: 'DateRangePicker.value', type: ['{ from: Date | null, to: Date | null }']},
-    {name: 'DateRangePicker.onValueChange', type: ['(range: DateRange) => void']},
-    {name: 'Calendar.mode', type: ['"single"', '"range"'], default: '"single"'},
-    {name: 'Calendar.header', type: ['"title"', '"picker"'], default: '"title"'},
-    {name: 'Calendar.months', type: ['1', '2'], default: '1'},
-    {name: 'min / max', type: ['Date']},
-    {name: 'label / hint / error', type: ['ReactNode']},
-  ],
-}
 ---
 
 <Docs current="date-picker">
-  <DocSection item={page('date-picker')} api={api}>
+  <DocSection item={page('date-picker')} api={api['date-picker']}>
     <Demo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

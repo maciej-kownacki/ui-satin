@@ -1,0 +1,5561 @@
+{
+  "accordion": {
+    "Accordion": {
+      "type": "AccordionProps",
+      "extends": [
+        "React.ComponentProps<typeof AccordionPrimitive.Root>"
+      ],
+      "props": []
+    },
+    "AccordionItem": {
+      "type": "AccordionItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof AccordionPrimitive.Item>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 16px icon before the title."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
+  "action-button": {
+    "ActionButton": {
+      "type": "ActionButtonProps",
+      "extends": [
+        "Omit<ButtonProps, 'loading' | 'onClick' | 'iconOnly' | 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "onAction",
+          "type": "(event: React.MouseEvent<HTMLButtonElement>) => Promise<unknown> | unknown",
+          "required": false,
+          "description": "Runs on click. The spinner stays until its promise settles."
+        },
+        {
+          "name": "state",
+          "type": "ActionButtonState",
+          "required": false,
+          "description": "Drive the state from outside instead."
+        },
+        {
+          "name": "onStateChange",
+          "type": "(state: ActionButtonState) => void",
+          "required": false
+        },
+        {
+          "name": "minLoading",
+          "type": "number",
+          "required": false,
+          "default": "900",
+          "description": "Shortest time the spinner shows, in ms."
+        },
+        {
+          "name": "resetAfter",
+          "type": "number | null",
+          "required": false,
+          "default": "1800",
+          "description": "How long the checkmark stays before the button is ready again, in ms; `null` keeps it."
+        },
+        {
+          "name": "onError",
+          "type": "(error: unknown) => void",
+          "required": false,
+          "description": "Called when `onAction` rejects; without it the error is rethrown."
+        },
+        {
+          "name": "trailingIcon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The icon after the label; `null` for none. Defaults to an arrow."
+        },
+        {
+          "name": "onClick",
+          "type": "React.MouseEventHandler<HTMLButtonElement>",
+          "required": false
+        }
+      ]
+    }
+  },
+  "agent-loading": {
+    "TetrisStill": {
+      "description": "The tetris mark at rest, every dot filled: the finished header's mark.",
+      "extends": [],
+      "props": [
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "TetrisLabel": {
+      "description": "The label beside the mark: a shimmer, and on top a copy of the text the band crosses after the mark, on the same loop, so the light runs from the icon on through the word.",
+      "extends": [],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "glimmer",
+          "type": "Glimmer",
+          "required": false,
+          "default": "'color'"
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "ShimmerLabel": {
+      "description": "The label shimmer alone (a band of ink passing through muted text), for the flappy header.",
+      "extends": [],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "FlappySprite": {
+      "description": "@internal Shared by Satin's own components; not part of the public API and may change in any release.",
+      "extends": [],
+      "props": [
+        {
+          "name": "size",
+          "type": "number",
+          "required": false,
+          "default": "16"
+        },
+        {
+          "name": "run",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "AgentLoading": {
+      "type": "AgentLoadingProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The live label. Defaults to the `thinking` label (\"Thinking…\")."
+        },
+        {
+          "name": "time",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Elapsed time after the label, e.g. \"1.2s\"."
+        },
+        {
+          "name": "indicator",
+          "type": "AgentLoadingIndicator",
+          "required": false,
+          "default": "'tetris'",
+          "description": "The mark beside the label."
+        },
+        {
+          "name": "glimmer",
+          "type": "Glimmer",
+          "required": false,
+          "default": "'color'",
+          "description": "The light that crosses the tetris mark and its label as rows clear: glimm's prism, or neutral."
+        }
+      ]
+    }
+  },
+  "agent-picker": {
+    "AgentPicker": {
+      "type": "AgentPickerProps",
+      "extends": [],
+      "props": [
+        {
+          "name": "agents",
+          "type": "Agent[]",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The selected agent's id."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(id: string) => void",
+          "required": false
+        },
+        {
+          "name": "showDescription",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Show the one-line description under each name. Turn it off once agents are familiar."
+        },
+        {
+          "name": "variant",
+          "type": "'secondary' | 'tertiary'",
+          "required": false,
+          "default": "'secondary'",
+          "description": "Secondary under the composer, Tertiary inside dense toolbars."
+        },
+        {
+          "name": "size",
+          "type": "'md' | 'xs'",
+          "required": false,
+          "default": "'md'",
+          "description": "md is the 28px trigger, xs the 24px one."
+        },
+        {
+          "name": "onCreate",
+          "type": "() => void",
+          "required": false,
+          "description": "Adds a \"New agent\" action under the list."
+        },
+        {
+          "name": "createLabel",
+          "type": "string",
+          "required": false,
+          "description": "Label for the create action. Defaults to the `newAgent` label."
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Shown on the trigger when nothing is selected. Defaults to the `chooseAgent` label."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "Controlled open state, e.g. to show the menu open on a docs stage."
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "disablePortal",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Render the menu in place instead of in a portal."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "AgentMenuItem": {
+      "description": "One row of the menu, `DropdownMenu/Item`. Must sit inside the picker's radio group.",
+      "type": "AgentMenuItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownMenu.RadioItem>, 'value' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "agent",
+          "type": "Agent",
+          "required": true
+        },
+        {
+          "name": "showDescription",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "data-force",
+          "type": "'hover'",
+          "required": false
+        }
+      ]
+    },
+    "AgentPickerRow": {
+      "description": "A static menu row for state sheets and docs (no menu around it): the same look as a menu item, with `state` forced to default, hover or selected.",
+      "extends": [],
+      "props": [
+        {
+          "name": "agent",
+          "type": "Agent",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "'default' | 'hover' | 'selected'",
+          "required": false,
+          "default": "'default'"
+        },
+        {
+          "name": "showDescription",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "AgentAvatar": {
+      "description": "Initials on a Badge hue pair, round. 16px uses semibold 7/8, 20px semibold 9/10, as on the uiKit Avatar. These sizes have no type token, so they stay raw. `avatar=\"flappy\"` draws the flappy bird instead, in the agent's tone.",
+      "extends": [],
+      "props": [
+        {
+          "name": "agent",
+          "type": "Agent",
+          "required": true
+        },
+        {
+          "name": "size",
+          "type": "16 | 20",
+          "required": false,
+          "default": "16"
+        }
+      ]
+    }
+  },
+  "agent-suggestion": {
+    "AgentSuggestion": {
+      "type": "AgentSuggestionProps",
+      "extends": [
+        "Omit<React.ComponentProps<'section'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "kind",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "What kind of suggestion: \"Email suggestion\", \"Next steps\", \"CRM update\"."
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 14px icon or app logo before the kind."
+        },
+        {
+          "name": "meta",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Right of the kind: avatars of the people it concerns, or a small Badge with the source."
+        },
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Buttons, right-aligned: the alternative first, the primary action last."
+        }
+      ]
+    },
+    "AgentSuggestionQuote": {
+      "description": "The message the suggestion answers: who sent it and what they wrote, on bg/muted.",
+      "extends": [],
+      "props": [
+        {
+          "name": "from",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The sender's name."
+        },
+        {
+          "name": "avatar",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 20px Avatar."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "AgentSuggestionMetric": {
+      "description": "A number against its limit: the value in Display/sm, its unit, and a 6px bar of how much is used.",
+      "extends": [],
+      "props": [
+        {
+          "name": "value",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "As shown: \"47 / 50\"."
+        },
+        {
+          "name": "unit",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "used",
+          "type": "number",
+          "required": false,
+          "description": "With `max`, draws the bar."
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "AgentSuggestionDiff": {
+      "description": "Old text struck through on bg/muted, the new text in status/green below it.",
+      "extends": [],
+      "props": [
+        {
+          "name": "before",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "after",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "AgentSuggestionChanges": {
+      "description": "Fields the agent will change: name, the old value struck through, an arrow and the new one.",
+      "extends": [],
+      "props": [
+        {
+          "name": "changes",
+          "type": "AgentSuggestionChange[]",
+          "required": true
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "alert": {
+    "Alert": {
+      "type": "AlertProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "intent",
+          "type": "AlertIntent",
+          "required": false,
+          "default": "'neutral'"
+        },
+        {
+          "name": "variant",
+          "type": "'soft' | 'outline'",
+          "required": false,
+          "default": "'soft'"
+        },
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "icon",
+          "type": "boolean | React.ReactNode",
+          "required": false,
+          "default": "true",
+          "description": "`false` hides the status icon; a node replaces it."
+        },
+        {
+          "name": "action",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A Button or Link, or a few in a fragment."
+        },
+        {
+          "name": "onDismiss",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows the close button; called when it is pressed."
+        }
+      ]
+    },
+    "StatusIcon": {
+      "description": "@internal The status glyphs from Figma (16px, 1.25 stroke), drawn in currentColor. Neutral uses the info glyph.",
+      "extends": [],
+      "props": [
+        {
+          "name": "intent",
+          "type": "AlertIntent",
+          "required": true
+        }
+      ]
+    },
+    "CloseIcon": {
+      "description": "@internal Shared by Satin's own components; not part of the public API and may change in any release.",
+      "extends": [],
+      "props": []
+    }
+  },
+  "announcement-bar": {
+    "AnnouncementBar": {
+      "type": "AnnouncementBarProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "action",
+          "type": "{ label: React.ReactNode; href?: string; onClick?: () => void }",
+          "required": false,
+          "description": "The button after the message; with `href` it renders as a link."
+        },
+        {
+          "name": "onDismiss",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "dismissLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `dismissAnnouncement` label."
+        },
+        {
+          "name": "sticky",
+          "type": "'top' | 'bottom'",
+          "required": false,
+          "description": "Sticks to the top or bottom edge of its scroll container."
+        },
+        {
+          "name": "tone",
+          "type": "'primary' | 'inverse' | 'default'",
+          "required": false,
+          "default": "'primary'",
+          "description": "`primary`: action/primary/bg (the default). `inverse`: action/inverse/bg, near-black in light and near-white in dark. `default`: bg/card with border/subtle rules above and below, like a Banner."
+        },
+        {
+          "name": "background",
+          "type": "'plain' | 'mesh'",
+          "required": false,
+          "default": "'plain'",
+          "description": "`mesh` lays the Banner's glow over the bar: lighter on primary and inverse, coloured on default."
+        },
+        {
+          "name": "shimmer",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Now and then a soft band of light crosses the bar (off under reduced motion)."
+        }
+      ]
+    }
+  },
+  "attachment": {
+    "Attachment": {
+      "type": "AttachmentProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "meta",
+          "type": "string",
+          "required": false,
+          "description": "Type and size, e.g. \"PDF · 2.4 MB\". Shown on `lg` only."
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "File type icon. Defaults to the PDF icon."
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'lg'",
+          "required": false,
+          "default": "'lg'"
+        },
+        {
+          "name": "shape",
+          "type": "'default' | 'rounded'",
+          "required": false,
+          "default": "'default'",
+          "description": "Rounded inside the composer and chat, Default inside cards and tables."
+        },
+        {
+          "name": "onRemove",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows the remove button. Leave it out once the message is sent."
+        },
+        {
+          "name": "onOpen",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "preview",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Content for the hover preview, usually an `<AttachmentPreview>`."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'pressed' | 'focus'",
+          "required": false
+        }
+      ]
+    },
+    "AttachmentGroup": {
+      "description": "AttachmentGroup: files wrap onto new rows at 576px, 4px apart.",
+      "type": "AttachmentGroupProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "AttachmentPreview": {
+      "description": "AttachmentPreview: 296 wide, bg/popover, border/default, radius-xl, shadcn md shadow. A header with the file, a 176px scrolling viewport with a fade at the bottom, a border/subtle divider and a footer that moves between pages or sheets and opens the file.",
+      "type": "AttachmentPreviewProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The first page or the first rows. Scrolls inside a fixed 176px viewport."
+        },
+        {
+          "name": "navigation",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Left side of the footer: an `AttachmentPreviewPager` or `AttachmentPreviewSheets`."
+        },
+        {
+          "name": "onOpen",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "openLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `openItem` label."
+        }
+      ]
+    },
+    "AttachmentPreviewPager": {
+      "description": "Document footer: previous / next section and \"Page 1 of 3\".",
+      "extends": [],
+      "props": [
+        {
+          "name": "page",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "onPrevious",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "onNext",
+          "type": "() => void",
+          "required": false
+        }
+      ]
+    },
+    "AttachmentPreviewSheets": {
+      "description": "Spreadsheet footer: one tab per sheet; the current one is filled bg/muted.",
+      "extends": [],
+      "props": [
+        {
+          "name": "sheets",
+          "type": "string[]",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "onValueChange",
+          "type": "(sheet: string) => void",
+          "required": false
+        }
+      ]
+    },
+    "FileIcon": {
+      "description": "File type icons from uiKit `icon`. They keep their own colours (library primitives), so they don't follow currentColor.",
+      "extends": [],
+      "props": [
+        {
+          "name": "type",
+          "type": "'pdf' | 'xlsx'",
+          "required": true
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "avatar": {
+    "Avatar": {
+      "type": "AvatarProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>",
+        "Omit<VariantProps<typeof avatarVariants>, 'size'>"
+      ],
+      "props": [
+        {
+          "name": "initials",
+          "type": "string",
+          "required": true,
+          "description": "One or two letters, or a count like \"+3\" at the end of a group."
+        },
+        {
+          "name": "tone",
+          "type": "AvatarTone",
+          "required": false,
+          "default": "'neutral'"
+        },
+        {
+          "name": "size",
+          "type": "AvatarSize",
+          "required": false,
+          "default": "32"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The person's name: shown in a tooltip on hover and focus, and read by screen readers."
+        }
+      ]
+    },
+    "AvatarGroup": {
+      "description": "A row of avatars sharing one name tooltip. It opens after AVATAR_TOOLTIP_DELAY on the first person; while it's open, the next person gets it at once: it slides along the row (transform, 200 ms, ease-out) and its width eases to the new name, which fades in. It closes AVATAR_TOOLTIP_CLOSE after the pointer leaves the row, so the gaps between faces don't close it. Focus shows it at once, Escape and blur hide it.",
+      "type": "AvatarGroupProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "side",
+          "type": "'top' | 'bottom'",
+          "required": false,
+          "default": "'top'",
+          "description": "Where the shared name tooltip sits."
+        }
+      ]
+    }
+  },
+  "badge": {
+    "Badge": {
+      "type": "BadgeProps",
+      "extends": [
+        "React.ComponentProps<'span'>",
+        "VariantProps<typeof badgeVariants>"
+      ],
+      "props": [
+        {
+          "name": "tone",
+          "type": "BadgeTone",
+          "required": false,
+          "default": "'neutral'"
+        }
+      ]
+    }
+  },
+  "banner": {
+    "Banner": {
+      "type": "BannerProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title'>",
+        "Omit<VariantProps<typeof bannerVariants>, 'lines'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "One action, usually `<Button variant=\"secondary\">`. Stretches across a sidebar banner."
+        },
+        {
+          "name": "background",
+          "type": "'mesh' | 'plain'",
+          "required": false,
+          "default": "'mesh'"
+        },
+        {
+          "name": "tone",
+          "type": "'default' | 'primary'",
+          "required": false,
+          "default": "'default'",
+          "description": "`primary`: action/primary/bg with action/primary/fg text; its mesh glows lighter on top."
+        },
+        {
+          "name": "shimmer",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Now and then a soft band of light crosses the banner (off under reduced motion)."
+        },
+        {
+          "name": "onDismiss",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows the close button."
+        },
+        {
+          "name": "dismissLabel",
+          "type": "string",
+          "required": false,
+          "description": "Accessible name of the close button. Defaults to the `dismiss` label."
+        },
+        {
+          "name": "mesh",
+          "type": "Mesh",
+          "required": false,
+          "description": "Replace the mesh images."
+        }
+      ]
+    }
+  },
+  "bar-chart": {
+    "BarCard": {
+      "type": "BarCardProps",
+      "extends": [
+        "ChartCardBaseProps"
+      ],
+      "props": [
+        {
+          "name": "legend",
+          "type": "{ label: string; value?: string; note?: string }",
+          "required": false,
+          "description": "The legend row under the plot."
+        },
+        {
+          "name": "unit",
+          "type": "string",
+          "required": false,
+          "description": "Unit after the value in the tooltip (\"covers\")."
+        },
+        {
+          "name": "reducedMotion",
+          "type": "boolean",
+          "required": false,
+          "description": "Swap the bars without motion when the data changes, as under prefers-reduced-motion."
+        }
+      ]
+    }
+  },
+  "breadcrumb": {
+    "Breadcrumb": {
+      "type": "BreadcrumbProps",
+      "extends": [
+        "Omit<React.ComponentProps<'nav'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "items",
+          "type": "BreadcrumbItem[]",
+          "required": true,
+          "description": "From the top level down; the last one is the current page."
+        },
+        {
+          "name": "maxItems",
+          "type": "number",
+          "required": false,
+          "description": "Fold the middle into \"…\" when there are more items than this."
+        }
+      ]
+    }
+  },
+  "button-group": {
+    "ButtonGroup": {
+      "type": "ButtonGroupProps",
+      "extends": [
+        "React.ComponentProps<'div'>",
+        "ButtonDefaults"
+      ],
+      "props": [
+        {
+          "name": "orientation",
+          "type": "'horizontal' | 'vertical'",
+          "required": false,
+          "default": "'horizontal'"
+        },
+        {
+          "name": "attached",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Join the buttons into one block."
+        }
+      ]
+    },
+    "ButtonGroupSeparator": {
+      "description": "A thin rule between sets of buttons in a loose (`attached={false}`) group or a toolbar.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    }
+  },
+  "button": {
+    "Button": {
+      "type": "ButtonProps",
+      "extends": [
+        "React.ComponentProps<'button'>",
+        "VariantProps<typeof buttonVariants>"
+      ],
+      "props": [
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Render the child element (a link, say) with the button's styles instead of a `<button>`."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Busy: a Spinner takes the middle and the label and icons turn invisible but keep their room, so the button doesn't change width. Clicks (and Enter in a form) do nothing; the button keeps its focus and looks, with `aria-busy` and `aria-disabled` for screen readers."
+        }
+      ]
+    }
+  },
+  "card": {
+    "Card": {
+      "type": "CardProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title'>",
+        "VariantProps<typeof cardVariants>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows the close button."
+        },
+        {
+          "name": "closeLabel",
+          "type": "string",
+          "required": false,
+          "description": "Accessible name of the close button. Defaults to the `close` label."
+        }
+      ]
+    }
+  },
+  "channel-chart": {
+    "ChannelCard": {
+      "type": "ChannelCardProps",
+      "extends": [
+        "ChartCardBaseProps"
+      ],
+      "props": []
+    }
+  },
+  "chart": {
+    "ChartCard": {
+      "description": "The card every chart sits in: bg/card, 1px border-default, radius-2xl, 16px in and 16 between rows. Row one: the title (16/24 medium, text/default) and, when there are `periods`, a small Select for the period at the right. Row two: the KPI (text/xl semibold) with its change badge, and the range under it in text/muted, 2px apart; without a KPI the range sits 4px under the title. Then the chart. The card is a size container, so a chart can lay itself out wider from 560px (`@min-[560px]:`).",
+      "extends": [
+        "Omit<ChartCardBaseProps, 'data' | 'formatValue' | 'highlight'>"
+      ],
+      "props": []
+    },
+    "ChartLegendPill": {
+      "description": "chart/legendPill. - `outline`: an outline pill with no fill — 8px swatch, label, value 6 apart, 6 / 10 in. Active turns the ring border-strong. - `plain` (the Donut legend): no ring and no value, 6 / 8 in; active fills bg/hover, as plain controls do on hover. Dimmed fades the content to 45%, never the ground.",
+      "extends": [
+        "React.ComponentProps<'div'>",
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "color",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "variant",
+          "type": "'outline' | 'plain'",
+          "required": false,
+          "default": "'outline'"
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "dimmed",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "ChartTooltip": {
+      "description": "The chart tooltip pill with its pointer. Exported for custom charts. With `anchor` it floats over the page (see Floating): it never gets cut off by the card, flips below when there's no room above, slides in from the screen edge, and its pointer keeps pointing at the anchor. Without it, it renders in place.",
+      "extends": [
+        "React.ComponentProps<'div'>",
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "anchor",
+          "type": "Element | null",
+          "required": false,
+          "description": "The element it points at."
+        },
+        {
+          "name": "sideOffset",
+          "type": "number",
+          "required": false,
+          "default": "4",
+          "description": "Gap between the anchor and the pointer's tip."
+        }
+      ]
+    },
+    "ChartLegendRow": {
+      "description": "One legend row: 8px swatch, label, value and an optional note.",
+      "extends": [
+        "React.ComponentProps<'div'>",
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "color",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "note",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "dimmed",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    }
+  },
+  "checkbox": {
+    "Checkbox": {
+      "type": "CheckboxProps",
+      "extends": [
+        "React.ComponentProps<typeof CheckboxPrimitive.Root>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "placement",
+          "type": "'left' | 'right'",
+          "required": false,
+          "default": "'left'",
+          "description": "Which side of the text the box sits on."
+        }
+      ]
+    }
+  },
+  "chip": {
+    "Chip": {
+      "type": "ChipProps",
+      "extends": [
+        "ChipBaseProps",
+        "Omit<React.ComponentProps<'button'>, keyof ChipBaseProps>",
+        "ChipBaseProps",
+        "Omit<React.ComponentProps<'button'>, keyof ChipBaseProps>"
+      ],
+      "props": [
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus' | 'pressed'",
+          "required": false
+        }
+      ]
+    },
+    "ChipAvatar": {
+      "description": "The 16px initials avatar from Figma: tone-bg, 7px semibold tone-fg.",
+      "extends": [],
+      "props": [
+        {
+          "name": "initials",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "tone",
+          "type": "BadgeTone",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "citations": {
+    "Citation": {
+      "type": "CitationProps",
+      "extends": [
+        "Omit<React.ComponentProps<'a'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "index",
+          "type": "number",
+          "required": true,
+          "description": "1-based, as in the Sources list."
+        },
+        {
+          "name": "source",
+          "type": "CitationSource",
+          "required": true
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "Sources": {
+      "type": "SourcesProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "sources",
+          "type": "CitationSource[]",
+          "required": true
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Start with the list open."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "code-block": {
+    "CodeBlock": {
+      "type": "CodeBlockProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "code",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "view",
+          "type": "'code' | 'diff'",
+          "required": false,
+          "default": "'code'"
+        },
+        {
+          "name": "showHeader",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "showActions",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "highlightLines",
+          "type": "number[]",
+          "required": false,
+          "default": "[]",
+          "description": "1-based line numbers to mark (code view)."
+        },
+        {
+          "name": "highlight",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Turn syntax colours off for plain output such as logs."
+        }
+      ]
+    }
+  },
+  "combobox": {
+    "Combobox": {
+      "type": "ComboboxProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof PopoverPrimitive.Trigger>, 'value' | 'defaultValue' | 'disabled' | 'children' | 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "options",
+          "type": "SelectOption[]",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string[]",
+          "required": false,
+          "description": "The applied picks."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "footer",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Cancel and Apply under the list; picks apply only with Apply."
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Shown while nothing is picked. Defaults to the `select` label (\"Select…\")."
+        },
+        {
+          "name": "searchPlaceholder",
+          "type": "string",
+          "required": false,
+          "description": "The query field's placeholder and name. Defaults to the `search` label."
+        },
+        {
+          "name": "emptyText",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown when nothing matches the query. Defaults to the `noResults` label."
+        },
+        {
+          "name": "applyLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `apply` label."
+        },
+        {
+          "name": "cancelLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `cancel` label."
+        },
+        {
+          "name": "clearLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `clear` label."
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md' | 'lg'",
+          "required": false,
+          "default": "'md'"
+        },
+        {
+          "name": "leadingIcon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "onOpenAutoFocus",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "Keep focus where it is when the panel opens (inline previews)."
+        },
+        {
+          "name": "onInteractOutside",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "A press outside the panel; `preventDefault()` keeps it open."
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "command-menu": {
+    "CommandMenu": {
+      "type": "CommandMenuProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'children' | 'asChild' | 'placeholder' | 'onOpenAutoFocus'>"
+      ],
+      "props": [
+        {
+          "name": "groups",
+          "type": "CommandGroup[]",
+          "required": true
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "hotkey",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Toggle the menu with ⌘K / Ctrl+K."
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "The search field's placeholder. Defaults to the `commandPlaceholder` label."
+        },
+        {
+          "name": "emptyText",
+          "type": "(query: string) => React.ReactNode",
+          "required": false,
+          "description": "Shown when nothing matches; gets the query. Defaults to the `noResultsFor` label."
+        },
+        {
+          "name": "hints",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Show the footer of key hints."
+        },
+        {
+          "name": "modal",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Modal blocks the page and shows the overlay; turn it off for inline previews."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "onOpenAutoFocus",
+          "type": "(event: Event) => void",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "context-menu": {
+    "ContextMenu": {
+      "type": "ContextMenuProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof ContextPrimitive.Content>, 'children' | 'asChild' | 'onFocusOutside'>"
+      ],
+      "props": [
+        {
+          "name": "trigger",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "What right-click opens the menu on. Rendered with `asChild`, so pass one element."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "`ContextMenuItem`s, `ContextMenuSub`s and `ContextMenuSeparator`s."
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "modal",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Modal menus block the rest of the page while open."
+        },
+        {
+          "name": "onFocusOutside",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "Focus moved outside a non-modal menu; call `preventDefault()` to keep it open."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "ContextMenuItem": {
+      "type": "ContextMenuItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof ContextPrimitive.Item>, 'children'>",
+        "Pick<MenuItemContentProps, 'icon' | 'shortcut' | 'description'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "destructive",
+          "type": "boolean",
+          "required": false,
+          "description": "Deletes or removes: action/destructive/fg, and best placed last."
+        }
+      ]
+    },
+    "ContextMenuSub": {
+      "description": "A row that opens a submenu beside it (hover, →, or Enter). Other props, `ref` and `className` included, go to the submenu's panel (the Radix SubContent), not to the row.",
+      "type": "ContextMenuSubProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof ContextPrimitive.SubContent>, 'children' | 'asChild'>",
+        "Pick<MenuItemContentProps, 'icon'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The submenu's items."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "ContextMenuSeparator": {
+      "description": "A 1px bg/muted rule between groups of rows.",
+      "extends": [],
+      "props": [
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "cookie-consent": {
+    "CookieConsent": {
+      "type": "CookieConsentProps",
+      "extends": [
+        "Omit<React.ComponentProps<'section'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What the site stores and why. Defaults to the `cookieNotice` label."
+        },
+        {
+          "name": "onAccept",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "onReject",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "onCustomize",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Customize; open your settings from here."
+        },
+        {
+          "name": "acceptLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `acceptAll` label."
+        },
+        {
+          "name": "rejectLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `rejectAll` label."
+        },
+        {
+          "name": "customizeLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `customize` label."
+        },
+        {
+          "name": "floating",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Fixed to the bottom of the viewport, centred, 16px up."
+        }
+      ]
+    }
+  },
+  "date-picker": {
+    "Calendar": {
+      "type": "CalendarProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "mode",
+          "type": "'single' | 'range'",
+          "required": false,
+          "default": "'single'"
+        },
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false,
+          "description": "single: the picked day."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false
+        },
+        {
+          "name": "range",
+          "type": "DateRange",
+          "required": false,
+          "description": "range: the picked range."
+        },
+        {
+          "name": "onRangeChange",
+          "type": "(range: DateRange) => void",
+          "required": false
+        },
+        {
+          "name": "month",
+          "type": "Date",
+          "required": false,
+          "description": "The first month shown. Defaults to the value's month, or today's."
+        },
+        {
+          "name": "onMonthChange",
+          "type": "(month: Date) => void",
+          "required": false
+        },
+        {
+          "name": "months",
+          "type": "1 | 2",
+          "required": false,
+          "default": "1",
+          "description": "Two months side by side (the range picker)."
+        },
+        {
+          "name": "header",
+          "type": "'title' | 'picker'",
+          "required": false,
+          "default": "'title'"
+        },
+        {
+          "name": "min",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "today",
+          "type": "Date",
+          "required": false,
+          "description": "Today, for the dash. Defaults to now."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "DatePickerPanel": {
+      "description": "The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick. Other props, `ref` included, go to the surface.",
+      "type": "DatePickerPanelProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false
+        },
+        {
+          "name": "min",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "today",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "DatePicker": {
+      "description": "A date field: the kit Input's skin with a calendar icon; the Calendar opens 4px below, with month and year to pick. Other props, `ref` included, go to the trigger button.",
+      "type": "DatePickerProps",
+      "extends": [
+        "FieldBits",
+        "TriggerAttributes"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "Date | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false
+        },
+        {
+          "name": "min",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "today",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target."
+        }
+      ]
+    },
+    "DateRangePicker": {
+      "description": "A range field: two months, Cancel and Apply in the footer. Picks wait for Apply. Picking an end before the start swaps them. Other props, `ref` included, go to the trigger button.",
+      "type": "DateRangePickerProps",
+      "extends": [
+        "FieldBits",
+        "TriggerAttributes"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "DateRange",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "DateRange",
+          "required": false,
+          "default": "{ from: null, to: null }"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: DateRange) => void",
+          "required": false,
+          "description": "Called on Apply."
+        },
+        {
+          "name": "min",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "today",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "applyLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `apply` label."
+        },
+        {
+          "name": "cancelLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `cancel` label."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false
+        }
+      ]
+    },
+    "DateRangePickerPanel": {
+      "description": "The range picker's panel on its own, in place: two months, Cancel and Apply. Other props, `ref` included, go to the surface.",
+      "type": "DateRangePickerPanelProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "DateRange",
+          "required": false,
+          "default": "{ from: null, to: null }",
+          "description": "The range the panel starts from; picks stay in the panel until Apply."
+        },
+        {
+          "name": "onApply",
+          "type": "(value: DateRange) => void",
+          "required": false,
+          "description": "Apply."
+        },
+        {
+          "name": "onCancel",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "min",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "today",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "applyLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `apply` label."
+        },
+        {
+          "name": "cancelLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `cancel` label."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "decision-card": {
+    "DecisionCard": {
+      "type": "DecisionCardProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title' | 'defaultValue' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "type",
+          "type": "'radio' | 'checkbox' | 'chips' | 'ranking' | 'draft' | 'summary'",
+          "required": false,
+          "default": "'radio'"
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "step",
+          "type": "string",
+          "required": false,
+          "description": "\"1/3\". Shows the step navigator."
+        },
+        {
+          "name": "onPreviousStep",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "onNextStep",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "string",
+          "required": false,
+          "description": "A muted line under the title, e.g. \"Select up to 5\"."
+        },
+        {
+          "name": "options",
+          "type": "DecisionOption[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "value",
+          "type": "DecisionValue",
+          "required": false,
+          "description": "radio: the chosen value. checkbox / chips: the chosen values. ranking: every value in order. draft: the text. summary: the values to list."
+        },
+        {
+          "name": "defaultValue",
+          "type": "DecisionValue",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: DecisionValue) => void",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false,
+          "description": "chips: how many can be picked."
+        },
+        {
+          "name": "draftTitle",
+          "type": "string",
+          "required": false,
+          "description": "draft: the bold first line of the draft, e.g. the subject."
+        },
+        {
+          "name": "onContinue",
+          "type": "(value: DecisionValue) => void",
+          "required": false
+        },
+        {
+          "name": "onSkip",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "onEdit",
+          "type": "() => void",
+          "required": false,
+          "description": "summary: reopens the question."
+        },
+        {
+          "name": "onRewrite",
+          "type": "() => void",
+          "required": false,
+          "description": "draft: called when Rewrite is pressed, after the field becomes editable."
+        },
+        {
+          "name": "continueLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `continue` label, or `useReply` on a draft."
+        },
+        {
+          "name": "skipLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `skip` label."
+        }
+      ]
+    },
+    "DecisionItemPreview": {
+      "description": "A static `decisionItem` row in its hover state, for state sheets.",
+      "extends": [],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "hover",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    }
+  },
+  "dialog": {
+    "Dialog": {
+      "type": "DialogProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'title' | 'children' | 'asChild' | 'onOpenAutoFocus'>"
+      ],
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "trigger",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Optional element that opens the dialog (rendered with `asChild`, so pass a Button)."
+        },
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "variant",
+          "type": "DialogVariant",
+          "required": false,
+          "default": "'default'"
+        },
+        {
+          "name": "alert",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A `DialogAlert` shown under the body, for a side effect the user must know about."
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The actions on the right of the footer. Leave it out for a read-only dialog."
+        },
+        {
+          "name": "footerStart",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Figma's `footerSlot`: content on the left of the footer, e.g. a \"Don't ask again\" checkbox."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Body. A string renders as body text (13px, text/default)."
+        },
+        {
+          "name": "closeButton",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Show the close button in the corner."
+        },
+        {
+          "name": "modal",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Modal blocks the page and shows the overlay; turn it off for inline previews."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "onOpenAutoFocus",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "Called when focus moves into the dialog on open; `preventDefault()` keeps it where it was."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "DialogRoot": {
+      "description": "Holds the open state: `open`, `defaultOpen`, `onOpenChange`, `modal`.",
+      "extends": [
+        "React.ComponentProps<typeof DialogPrimitive.Root>"
+      ],
+      "props": []
+    },
+    "DialogTrigger": {
+      "description": "Opens the dialog. With `asChild` it lends its behaviour to your own Button.",
+      "extends": [
+        "React.ComponentProps<typeof DialogPrimitive.Trigger>"
+      ],
+      "props": []
+    },
+    "DialogContent": {
+      "description": "The overlay and the panel, portaled; the panel takes the header, body and footer as children.",
+      "type": "DialogContentProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "variant",
+          "type": "DialogVariant",
+          "required": false,
+          "default": "'default'"
+        },
+        {
+          "name": "closeButton",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Show the close button in the corner."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`; inside it the dialog centres on that element."
+        }
+      ]
+    },
+    "DialogHeader": {
+      "description": "The title and description, 16 / 16 / 8 in, clear of the close button.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "DialogTitle": {
+      "description": "The dialog's accessible name: 14px medium.",
+      "extends": [
+        "React.ComponentProps<typeof DialogPrimitive.Title>"
+      ],
+      "props": []
+    },
+    "DialogDescription": {
+      "description": "One line under the title, read out after it: body size, muted.",
+      "extends": [
+        "React.ComponentProps<typeof DialogPrimitive.Description>"
+      ],
+      "props": []
+    },
+    "DialogBody": {
+      "description": "The content between header and footer; it scrolls when the dialog meets the screen's edge.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "DialogFooter": {
+      "description": "The actions, right-aligned, 16px in.",
+      "type": "DialogFooterProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "start",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Content on the left (Figma's `footerSlot`), e.g. a \"Don't ask again\" checkbox."
+        }
+      ]
+    },
+    "DialogAlert": {
+      "type": "DialogAlertProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "intent",
+          "type": "DialogAlertIntent",
+          "required": false,
+          "default": "'info'"
+        },
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "icon",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Hide the status icon."
+        },
+        {
+          "name": "onDismiss",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows the close button; called when it is pressed."
+        }
+      ]
+    }
+  },
+  "donut-chart": {
+    "DonutCard": {
+      "type": "DonutCardProps",
+      "extends": [
+        "Omit<ChartCardBaseProps, 'total' | 'change'>"
+      ],
+      "props": [
+        {
+          "name": "centerLabel",
+          "type": "string",
+          "required": false,
+          "description": "Under the sum in the middle. Defaults to the `total` label."
+        }
+      ]
+    }
+  },
+  "dot": {
+    "Dot": {
+      "type": "DotProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>",
+        "VariantProps<typeof dotVariants>"
+      ],
+      "props": [
+        {
+          "name": "tone",
+          "type": "DotTone",
+          "required": false,
+          "default": "'fuchsia'"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible name, e.g. \"Running\". Leave it out when visible text already says it."
+        }
+      ]
+    }
+  },
+  "dropdown": {
+    "DropdownMenu": {
+      "type": "DropdownMenuProps",
+      "extends": [
+        "Omit< React.ComponentProps<typeof DropdownPrimitive.Content>, 'children' | 'asChild' | 'side' | 'align' | 'sideOffset' | 'onFocusOutside' >"
+      ],
+      "props": [
+        {
+          "name": "trigger",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The element that opens the menu. Rendered with `asChild`, so pass a Button."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "`DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "modal",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Modal menus block the rest of the page while open."
+        },
+        {
+          "name": "side",
+          "type": "'top' | 'right' | 'bottom' | 'left'",
+          "required": false,
+          "default": "'bottom'"
+        },
+        {
+          "name": "align",
+          "type": "'start' | 'center' | 'end'",
+          "required": false,
+          "default": "'start'"
+        },
+        {
+          "name": "sideOffset",
+          "type": "number",
+          "required": false,
+          "default": "8"
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible name for the menu, when the trigger's text doesn't say enough."
+        },
+        {
+          "name": "onFocusOutside",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "Focus moved outside a non-modal menu; call `preventDefault()` to keep it open."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "DropdownMenuGroup": {
+      "description": "A titled group of items (Figma `_dropdown/group`). Groups get a rule between them.",
+      "type": "DropdownMenuGroupProps",
+      "extends": [
+        "React.ComponentProps<typeof DropdownPrimitive.Group>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The 24px group header."
+        }
+      ]
+    },
+    "MenuItemContent": {
+      "description": "What sits inside a menu row: icon, label and description, then shortcut and check.",
+      "type": "MenuItemContentProps",
+      "extends": [],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Leading icon. 16px by default; stacked two-line items may use 20px (`iconSize={20}`)."
+        },
+        {
+          "name": "iconSize",
+          "type": "16 | 20",
+          "required": false,
+          "default": "16"
+        },
+        {
+          "name": "selected",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Marks the current value: a trailing check."
+        },
+        {
+          "name": "layout",
+          "type": "'stacked' | 'inline'",
+          "required": false,
+          "default": "'stacked'"
+        },
+        {
+          "name": "shortcut",
+          "type": "string",
+          "required": false,
+          "description": "Keys that run the item, e.g. \"⌘N\", shown on the right (Figma's `showShortcut`)."
+        },
+        {
+          "name": "renderLabel",
+          "type": "(label: React.ReactNode) => React.ReactNode",
+          "required": false,
+          "default": "(l) => l",
+          "description": "Wraps the label, e.g. in Radix Select's `ItemText`."
+        }
+      ]
+    },
+    "DropdownMenuItem": {
+      "type": "DropdownMenuItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownPrimitive.Item>, 'children'>",
+        "Omit<MenuItemContentProps, 'label' | 'renderLabel'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        }
+      ]
+    }
+  },
+  "empty-state": {
+    "EmptyState": {
+      "type": "EmptyStateProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title'>",
+        "VariantProps<typeof emptyStateVariants>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 16px icon, e.g. from iconoir-react."
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "One or two Buttons."
+        }
+      ]
+    }
+  },
+  "field-group": {
+    "FieldGroup": {
+      "type": "FieldGroupProps",
+      "extends": [
+        "Omit<React.ComponentProps<'fieldset'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "legend",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Picks the group's message out of the Form's `errors`."
+        },
+        {
+          "name": "required",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "variant",
+          "type": "'fields' | 'choices'",
+          "required": false,
+          "default": "'fields'"
+        },
+        {
+          "name": "columns",
+          "type": "1 | 2 | 3",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "layout",
+          "type": "'vertical' | 'horizontal'",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        }
+      ]
+    }
+  },
+  "file-upload": {
+    "FileUpload": {
+      "type": "FileUploadProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title' | 'onDrop'>"
+      ],
+      "props": [
+        {
+          "name": "files",
+          "type": "FileUploadFile[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "accept",
+          "type": "string",
+          "required": false,
+          "description": "As on `<input type=\"file\">`: MIME types, `image/*` or extensions, comma separated."
+        },
+        {
+          "name": "maxSize",
+          "type": "number",
+          "required": false,
+          "description": "Largest file, in bytes."
+        },
+        {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Defaults to the `dropFilesHere` label."
+        },
+        {
+          "name": "dropTitle",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown while files are dragged over the zone. Defaults to the `dropToUpload` label."
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What the zone takes, e.g. \"PDF, images, CSV · up to 10 MB\"."
+        },
+        {
+          "name": "browseLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `browseFiles` label."
+        },
+        {
+          "name": "onBrowse",
+          "type": "() => void",
+          "required": false,
+          "description": "Called instead of opening the file picker (demos, or an app that brings its own picker)."
+        },
+        {
+          "name": "onFilesAdded",
+          "type": "(files: File[]) => void",
+          "required": false
+        },
+        {
+          "name": "onFilesRejected",
+          "type": "(rejections: FileUploadRejection[]) => void",
+          "required": false
+        },
+        {
+          "name": "onCancel",
+          "type": "(file: FileUploadFile) => void",
+          "required": false,
+          "description": "Cancel on an uploading row."
+        },
+        {
+          "name": "onRemove",
+          "type": "(file: FileUploadFile) => void",
+          "required": false,
+          "description": "Remove on an error row or a done chip."
+        },
+        {
+          "name": "onOpen",
+          "type": "(file: FileUploadFile) => void",
+          "required": false
+        },
+        {
+          "name": "data-force",
+          "type": "'drag'",
+          "required": false,
+          "description": "Shows the drag-over look (state sheets, docs)."
+        }
+      ]
+    },
+    "FileUploadItem": {
+      "description": "One file while it uploads or after it failed.",
+      "extends": [],
+      "props": [
+        {
+          "name": "file",
+          "type": "FileUploadFile",
+          "required": true
+        },
+        {
+          "name": "onCancel",
+          "type": "(file: FileUploadFile) => void",
+          "required": false
+        },
+        {
+          "name": "onRemove",
+          "type": "(file: FileUploadFile) => void",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "floating": {
+    "Floating": {
+      "type": "FloatingProps",
+      "extends": [],
+      "props": [
+        {
+          "name": "anchor",
+          "type": "Element | null",
+          "required": true,
+          "description": "The element it points at. Nothing renders while it's null."
+        },
+        {
+          "name": "side",
+          "type": "FloatingSide",
+          "required": false,
+          "default": "'top'"
+        },
+        {
+          "name": "sideOffset",
+          "type": "number",
+          "required": false,
+          "default": "8",
+          "description": "Gap between the anchor and the layer, pointer included."
+        },
+        {
+          "name": "collisionPadding",
+          "type": "number",
+          "required": false,
+          "default": "8",
+          "description": "How close to the viewport edge it may go."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "(state: { side: FloatingSide arrowRef: React.RefObject<HTMLElement | null> arrowStyle: React.CSSProperties }) => React.ReactNode",
+          "required": true,
+          "description": "Gets the side it ended up on and the pointer's props (ref and position)."
+        }
+      ]
+    }
+  },
+  "form-field": {
+    "FormField": {
+      "type": "FormFieldProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Names the control and picks this field's message out of the Form's `errors`."
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "An error message. It replaces the description and marks the control invalid."
+        },
+        {
+          "name": "layout",
+          "type": "'vertical' | 'horizontal'",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "required",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Shows the required mark after the label and sets `required` on the control."
+        },
+        {
+          "name": "htmlFor",
+          "type": "string",
+          "required": false,
+          "description": "The id given to the control. Generated when left out."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        }
+      ]
+    },
+    "RequiredMark": {
+      "description": "@internal The required mark from Figma (the `sparkle 2` glyph in _label), 6px, in the label colour.",
+      "extends": [],
+      "props": []
+    },
+    "FieldError": {
+      "description": "@internal A field's or a group's error: Figma's 14px warning circle and the message, in red.",
+      "extends": [],
+      "props": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "FieldDescription": {
+      "description": "@internal A field's or a group's description, muted.",
+      "extends": [],
+      "props": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "form": {
+    "Form": {
+      "type": "FormProps",
+      "extends": [
+        "React.ComponentProps<'form'>"
+      ],
+      "props": [
+        {
+          "name": "layout",
+          "type": "'vertical' | 'horizontal'",
+          "required": false,
+          "default": "'vertical'"
+        },
+        {
+          "name": "errors",
+          "type": "FormContextValue['errors']",
+          "required": false,
+          "description": "Error messages by field `name`."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onSubmitValues",
+          "type": "(values: FormValues, event: React.FormEvent<HTMLFormElement>) => void",
+          "required": false,
+          "description": "Called on submit with the form's values; the default submit (a page load) is prevented."
+        }
+      ]
+    },
+    "FormSection": {
+      "type": "FormSectionProps",
+      "extends": [
+        "Omit<React.ComponentProps<'section'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        }
+      ]
+    },
+    "FormActions": {
+      "type": "FormActionsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "align",
+          "type": "'start' | 'end' | 'between'",
+          "required": false,
+          "default": "'end'"
+        }
+      ]
+    }
+  },
+  "hover-card": {
+    "HoverCard": {
+      "type": "HoverCardProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof HoverCardPrimitive.Content>, 'children' | 'asChild' | 'side' | 'align'>"
+      ],
+      "props": [
+        {
+          "name": "trigger",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The link or name it previews. Rendered with `asChild`."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "side",
+          "type": "'top' | 'right' | 'bottom' | 'left'",
+          "required": false,
+          "default": "'bottom'"
+        },
+        {
+          "name": "align",
+          "type": "'start' | 'center' | 'end'",
+          "required": false,
+          "default": "'start'"
+        },
+        {
+          "name": "openDelay",
+          "type": "number",
+          "required": false,
+          "default": "400",
+          "description": "ms the pointer rests before it opens."
+        },
+        {
+          "name": "closeDelay",
+          "type": "number",
+          "required": false,
+          "default": "150",
+          "description": "ms after the pointer leaves before it closes."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "input-group": {
+    "InputGroup": {
+      "type": "InputGroupProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "size",
+          "type": "'sm' | 'md' | 'lg'",
+          "required": false,
+          "default": "'md'"
+        }
+      ]
+    },
+    "InputGroupAddon": {
+      "description": "A boxed segment of an InputGroup: text (`https://`, `€`), an icon, or a Kbd.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    }
+  },
+  "input-otp": {
+    "InputOTP": {
+      "type": "InputOTPProps",
+      "extends": [
+        "Omit<React.ComponentProps<'input'>, 'value' | 'defaultValue' | 'pattern' | 'type' | 'maxLength' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "length",
+          "type": "number",
+          "required": false,
+          "default": "6",
+          "description": "How many characters."
+        },
+        {
+          "name": "groupSize",
+          "type": "number",
+          "required": false,
+          "default": "3",
+          "description": "Cells per group; groups are split by a dash. 0 for one group."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "default": "''"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false
+        },
+        {
+          "name": "onComplete",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Every cell is filled."
+        },
+        {
+          "name": "pattern",
+          "type": "RegExp",
+          "required": false,
+          "default": "/^\\d$/",
+          "description": "Which characters are allowed. Digits by default."
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the cells invalid without one."
+        },
+        {
+          "name": "success",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "The code checked out: a message under the cells (replaces the hint), or `true` for green cells alone. Ignored while there is an error."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "input": {
+    "Input": {
+      "type": "InputProps",
+      "extends": [
+        "Omit<React.ComponentProps<'input'>, 'size'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md' | 'lg'",
+          "required": false
+        },
+        {
+          "name": "leadingIcon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "trailingIcon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "leadingText",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Muted text inside the field before the value: `$`, `https://`."
+        },
+        {
+          "name": "trailingText",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Muted text inside the field after the value: `USD`, `.satin.dev`, a counter."
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer wrapper (label + field + hint). `className` styles the field."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
+  "kbd": {
+    "Kbd": {
+      "type": "KbdProps",
+      "extends": [
+        "React.ComponentProps<'kbd'>"
+      ],
+      "props": [
+        {
+          "name": "size",
+          "type": "'sm' | 'md'",
+          "required": false,
+          "default": "'sm'"
+        },
+        {
+          "name": "tone",
+          "type": "'default' | 'inverse'",
+          "required": false,
+          "default": "'default'"
+        }
+      ]
+    },
+    "KbdGroup": {
+      "description": "The keys of one shortcut, 2px apart.",
+      "type": "KbdGroupProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "keys",
+          "type": "string | React.ReactNode[]",
+          "required": true,
+          "description": "A shortcut such as \"⌘K\" or \"⌃⇧V\", split into keys, or the keys themselves."
+        },
+        {
+          "name": "size",
+          "type": "KbdProps['size']",
+          "required": false
+        },
+        {
+          "name": "tone",
+          "type": "KbdProps['tone']",
+          "required": false
+        }
+      ]
+    },
+    "KbdHint": {
+      "description": "A key hint for a menu footer: keys, then what they do in 12px text/muted, 6px apart.",
+      "type": "KbdHintProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "keys",
+          "type": "React.ReactNode[]",
+          "required": true
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true
+        }
+      ]
+    }
+  },
+  "labels": {
+    "SatinLabels": {
+      "type": "SatinLabelsProps",
+      "extends": [],
+      "props": [
+        {
+          "name": "labels",
+          "type": "Partial<SatinLabelSet>",
+          "required": true,
+          "description": "The words to change; the rest stay as they are (from a parent SatinLabels, or English)."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        }
+      ]
+    }
+  },
+  "line-chart": {
+    "LineCard": {
+      "type": "LineCardProps",
+      "extends": [
+        "ChartCardBaseProps"
+      ],
+      "props": [
+        {
+          "name": "unit",
+          "type": "string",
+          "required": false,
+          "description": "Unit after the value in the tooltip (\"orders\")."
+        },
+        {
+          "name": "area",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Fill under the line. `AreaCard` sets it."
+        },
+        {
+          "name": "reducedMotion",
+          "type": "boolean",
+          "required": false,
+          "description": "Swap the plot without the fade when the data changes, as under prefers-reduced-motion."
+        }
+      ]
+    },
+    "AreaCard": {
+      "description": "The Line chart with the gradient under its line.",
+      "extends": [
+        "Omit<LineCardProps, 'area'>"
+      ],
+      "props": []
+    }
+  },
+  "link": {
+    "Link": {
+      "type": "LinkProps",
+      "extends": [
+        "React.ComponentProps<'a'>"
+      ],
+      "props": [
+        {
+          "name": "variant",
+          "type": "'default' | 'brand' | 'muted'",
+          "required": false,
+          "default": "'default'"
+        },
+        {
+          "name": "underline",
+          "type": "'always' | 'hover' | 'none'",
+          "required": false
+        },
+        {
+          "name": "external",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        }
+      ]
+    }
+  },
+  "list": {
+    "Item": {
+      "type": "ItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title' | 'onClick'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A glyph shown in a muted tile."
+        },
+        {
+          "name": "media",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown as is, in place of the tile: an Avatar, an image."
+        },
+        {
+          "name": "meta",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "Link target, e.g. `_blank`."
+        },
+        {
+          "name": "onClick",
+          "type": "React.MouseEventHandler<HTMLButtonElement>",
+          "required": false
+        },
+        {
+          "name": "selected",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md'",
+          "required": false
+        },
+        {
+          "name": "variant",
+          "type": "'plain' | 'outline'",
+          "required": false,
+          "default": "'plain'",
+          "description": "`outline` draws a card border, for a row on its own. Rows in a List take the List's look."
+        }
+      ]
+    },
+    "List": {
+      "type": "ListProps",
+      "extends": [
+        "React.ComponentProps<'ul'>"
+      ],
+      "props": [
+        {
+          "name": "variant",
+          "type": "'plain' | 'divided' | 'card'",
+          "required": false,
+          "default": "'plain'"
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md'",
+          "required": false,
+          "default": "'md'"
+        }
+      ]
+    }
+  },
+  "message-actions": {
+    "MessageActions": {
+      "type": "MessageActionsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "timestamp",
+          "type": "string",
+          "required": false,
+          "description": "\"20 minutes ago\". Leave it out to drop the status and time."
+        },
+        {
+          "name": "status",
+          "type": "'sending' | 'delivered'",
+          "required": false,
+          "default": "'delivered'"
+        },
+        {
+          "name": "feedback",
+          "type": "MessageFeedback",
+          "required": false,
+          "default": "null",
+          "description": "The pressed thumb. Pass it with onFeedback to control it, or once to start from it."
+        },
+        {
+          "name": "showShare",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "onFeedback",
+          "type": "(value: MessageFeedback) => void",
+          "required": false
+        },
+        {
+          "name": "onCopy",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "onShare",
+          "type": "() => void",
+          "required": false
+        }
+      ]
+    }
+  },
+  "message": {
+    "Message": {
+      "type": "MessageProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "role",
+          "type": "'user' | 'assistant'",
+          "required": false,
+          "default": "'assistant'"
+        },
+        {
+          "name": "thinking",
+          "type": "ThinkingStep[]",
+          "required": false,
+          "description": "The steps the agent ran; shows a collapsed Thinking above an assistant answer."
+        },
+        {
+          "name": "thinkingLabel",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The summary on that Thinking header. Defaults to the `thoughtForAMoment` label."
+        },
+        {
+          "name": "source",
+          "type": "MessageSource",
+          "required": false,
+          "description": "A page or message the user brought in, shown as a card above their bubble."
+        },
+        {
+          "name": "actions",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Feedback, copy and share under an assistant answer. Off while it streams."
+        },
+        {
+          "name": "timestamp",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "onFeedback",
+          "type": "(value: MessageFeedback) => void",
+          "required": false
+        },
+        {
+          "name": "onCopy",
+          "type": "() => void",
+          "required": false
+        },
+        {
+          "name": "onShare",
+          "type": "() => void",
+          "required": false
+        }
+      ]
+    }
+  },
+  "number-input": {
+    "NumberInput": {
+      "type": "NumberInputProps",
+      "extends": [
+        "Omit<React.ComponentProps<'input'>, 'value' | 'defaultValue' | 'size' | 'min' | 'max' | 'step' | 'type' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: number) => void",
+          "required": false
+        },
+        {
+          "name": "min",
+          "type": "number",
+          "required": false,
+          "default": "-Infinity"
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false,
+          "default": "Infinity"
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md' | 'lg'",
+          "required": false,
+          "default": "'md'"
+        },
+        {
+          "name": "formatValue",
+          "type": "(value: number) => string",
+          "required": false,
+          "default": "String",
+          "description": "How the value reads in the field and to screen readers."
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer wrapper (label + field + hint). `className` styles the field."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "pagination": {
+    "Pagination": {
+      "type": "PaginationProps",
+      "extends": [
+        "Omit<React.ComponentProps<'nav'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "pageCount",
+          "type": "number",
+          "required": true,
+          "description": "How many pages there are."
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "required": false,
+          "description": "The current page, from 1."
+        },
+        {
+          "name": "defaultPage",
+          "type": "number",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "onPageChange",
+          "type": "(page: number) => void",
+          "required": false
+        },
+        {
+          "name": "getHref",
+          "type": "(page: number) => string",
+          "required": false,
+          "description": "Each page's URL: pages become links."
+        },
+        {
+          "name": "layout",
+          "type": "'full' | 'compact'",
+          "required": false,
+          "default": "'full'"
+        },
+        {
+          "name": "siblings",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "Pages shown on each side of the current one (full layout)."
+        },
+        {
+          "name": "previousLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `previous` label."
+        },
+        {
+          "name": "nextLabel",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `next` label."
+        },
+        {
+          "name": "motion",
+          "type": "'slide' | 'scroll' | 'none'",
+          "required": false,
+          "default": "'scroll'",
+          "description": "How the row moves when the page changes."
+        }
+      ]
+    }
+  },
+  "password-input": {
+    "PasswordInput": {
+      "type": "PasswordInputProps",
+      "extends": [
+        "Omit<InputProps, 'type' | 'trailingIcon' | 'trailingText'>"
+      ],
+      "props": [
+        {
+          "name": "visible",
+          "type": "boolean",
+          "required": false,
+          "description": "Show the password; leave out to let the button control it."
+        },
+        {
+          "name": "onVisibleChange",
+          "type": "(visible: boolean) => void",
+          "required": false
+        }
+      ]
+    }
+  },
+  "popover": {
+    "Popover": {
+      "type": "PopoverProps",
+      "extends": [
+        "Omit< React.ComponentProps<typeof PopoverPrimitive.Content>, 'title' | 'children' | 'asChild' | 'side' | 'align' | 'sideOffset' | 'onOpenAutoFocus' | 'onInteractOutside' >"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The trigger. Rendered with `asChild`."
+        },
+        {
+          "name": "body",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Figma's body slot: actions or a small form. Keep it to one task."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "side",
+          "type": "'top' | 'right' | 'bottom' | 'left'",
+          "required": false,
+          "default": "'bottom'"
+        },
+        {
+          "name": "align",
+          "type": "'start' | 'center' | 'end'",
+          "required": false,
+          "default": "'start'"
+        },
+        {
+          "name": "sideOffset",
+          "type": "number",
+          "required": false,
+          "default": "8"
+        },
+        {
+          "name": "closeButton",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Show the close glyph in the corner."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "onOpenAutoFocus",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "Called when focus moves into the popover on open; `preventDefault()` keeps it where it was."
+        },
+        {
+          "name": "onInteractOutside",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "A press or focus outside the popover; `preventDefault()` keeps it open."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "PopoverPanel": {
+      "description": "The popover's panel on its own, in place: no trigger, no positioning. For docs, previews and layers you anchor yourself. The close button calls `onClose`. Other props, `ref` included, go to the panel's root `div`.",
+      "type": "PopoverPanelProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title' | 'children'>",
+        "Pick<PopoverProps, 'title' | 'description' | 'body' | 'closeButton'>"
+      ],
+      "props": [
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "required": false,
+          "description": "Called when the close button is pressed."
+        }
+      ]
+    }
+  },
+  "progress": {
+    "Progress": {
+      "type": "ProgressProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "number | null",
+          "required": false,
+          "description": "0 to `max`; left out, the bar is indeterminate."
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false,
+          "default": "100"
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "showValue",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "The percentage at the right of the label row."
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md'",
+          "required": false,
+          "default": "'sm'"
+        },
+        {
+          "name": "formatValue",
+          "type": "(value: number, max: number) => string",
+          "required": false,
+          "default": "percent",
+          "description": "How the value reads on the right and to screen readers. Defaults to a whole percentage."
+        }
+      ]
+    }
+  },
+  "prompt-bar": {
+    "PromptBar": {
+      "type": "PromptBarProps",
+      "extends": [
+        "Omit<React.ComponentProps<'form'>, 'onSubmit'>"
+      ],
+      "props": [
+        {
+          "name": "shape",
+          "type": "'pill' | 'default'",
+          "required": false,
+          "default": "'pill'"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The text. Pass it with onValueChange to control it."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "default": "''"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to the `writeMessage` label."
+        },
+        {
+          "name": "attachments",
+          "type": "File[]",
+          "required": false,
+          "description": "Files shown as chips above the field; people can remove them before sending."
+        },
+        {
+          "name": "onAttachmentsChange",
+          "type": "(files: File[]) => void",
+          "required": false
+        },
+        {
+          "name": "model",
+          "type": "string",
+          "required": false,
+          "description": "The selected model's value (or its label, when there is no `models` list)."
+        },
+        {
+          "name": "models",
+          "type": "PromptBarModel[]",
+          "required": false,
+          "description": "The models menu. Without it the select shows `model` and opens nothing."
+        },
+        {
+          "name": "onModelChange",
+          "type": "(value: string) => void",
+          "required": false
+        },
+        {
+          "name": "modelIcon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Icon on the select when `models` doesn't give one."
+        },
+        {
+          "name": "actions",
+          "type": "PromptBarAction[]",
+          "required": false,
+          "description": "Rows of the + menu. Defaults to Upload a file and Web search, in the `uploadFile` and `webSearch` labels."
+        },
+        {
+          "name": "onAddAgent",
+          "type": "() => void",
+          "required": false,
+          "description": "The + at the end of the menu's search row."
+        },
+        {
+          "name": "onDictationChange",
+          "type": "(recording: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onSubmit",
+          "type": "(value: string, attachments: File[]) => void",
+          "required": false
+        }
+      ]
+    }
+  },
+  "radio": {
+    "RadioGroup": {
+      "type": "RadioGroupProps",
+      "extends": [
+        "React.ComponentProps<typeof RadioGroupPrimitive.Root>"
+      ],
+      "props": []
+    },
+    "Radio": {
+      "type": "RadioProps",
+      "extends": [
+        "React.ComponentProps<typeof RadioGroupPrimitive.Item>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "placement",
+          "type": "'left' | 'right'",
+          "required": false,
+          "default": "'left'",
+          "description": "Which side of the text the circle sits on."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus' | 'pressed'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
+  "search-bar": {
+    "SearchBar": {
+      "type": "SearchBarProps",
+      "extends": [
+        "Omit<React.ComponentProps<'input'>, 'size'>"
+      ],
+      "props": [
+        {
+          "name": "shortcut",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Show the ⌘K keycaps and listen for the shortcut."
+        },
+        {
+          "name": "hotkey",
+          "type": "boolean",
+          "required": false,
+          "default": "shortcut",
+          "description": "Listen for ⌘K / Ctrl+K. Defaults to `shortcut`; turn it off when something else owns the shortcut (a Command menu this bar opens) but the keycaps should still show."
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer field; `className` styles the input."
+        }
+      ]
+    }
+  },
+  "segmented-control": {
+    "SegmentedControlSegment": {
+      "description": "One segment, for SegmentedControl's children. Takes its size and shape from the control.",
+      "type": "SegmentedControlSegmentProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof ToggleGroup.Item>, 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false
+        }
+      ]
+    },
+    "SegmentedControl": {
+      "type": "SegmentedControlProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'dir' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "items",
+          "type": "SegmentedControlItem[]",
+          "required": false,
+          "description": "The segments as data. Or leave it out and write them as `SegmentedControlSegment` children."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The segments as elements, when they need more than a label and an icon (a Badge, a Tooltip around one)."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "Size",
+          "required": false,
+          "default": "'md'"
+        },
+        {
+          "name": "shape",
+          "type": "Shape",
+          "required": false,
+          "default": "'default'"
+        },
+        {
+          "name": "border",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "A 1px border-subtle outline around the track."
+        },
+        {
+          "name": "fullWidth",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Required when the segments have no visible text of their own."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "select": {
+    "FieldChrome": {
+      "description": "@internal Shared by Satin's own components; not part of the public API and may change in any release.",
+      "extends": [],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "On the label's line, at the field's right edge: the smallest button, e.g. Clear."
+        },
+        {
+          "name": "chrome",
+          "type": "ReturnType<typeof useFieldChrome>",
+          "required": true
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true
+        }
+      ]
+    },
+    "SelectChevron": {
+      "description": "@internal Shared by Satin's own components; not part of the public API and may change in any release.",
+      "extends": [],
+      "props": [
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "Select": {
+      "type": "SelectProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof SelectPrimitive.Trigger>, 'value' | 'defaultValue' | 'disabled' | 'name' | 'children' | 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "options",
+          "type": "SelectOption[] | SelectGroup[]",
+          "required": true,
+          "description": "Options, or titled groups of options."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Shown while nothing is picked. Defaults to the `select` label (\"Select…\")."
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md' | 'lg'",
+          "required": false
+        },
+        {
+          "name": "leadingIcon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 16px icon before the value. Left out, the picked option's own icon shows there."
+        },
+        {
+          "name": "layout",
+          "type": "MenuItemContentProps['layout']",
+          "required": false,
+          "default": "'inline'",
+          "description": "Row layout of every option: description under the label, or after it."
+        },
+        {
+          "name": "iconSize",
+          "type": "MenuItemContentProps['iconSize']",
+          "required": false,
+          "default": "16",
+          "description": "Option icon size; 20 suits stacked two-line options."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "required",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Form field name, for a native form submit."
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer wrapper (label + field + hint). `className` styles the trigger."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
+  "selectable-card": {
+    "SelectableCardBody": {
+      "description": "@internal The icon tile and the text of a selectable card.",
+      "extends": [
+        "Omit<SelectableCardBaseProps, 'className'>",
+        "Omit<SelectableCardBaseProps, 'className'>"
+      ],
+      "props": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true
+        }
+      ]
+    }
+  },
+  "selectable-checkbox": {
+    "SelectableCheckbox": {
+      "type": "SelectableCheckboxProps",
+      "extends": [
+        "Omit<CheckboxProps, 'label' | 'description' | 'placement' | 'title' | 'children'>",
+        "SelectableCardBaseProps"
+      ],
+      "props": []
+    }
+  },
+  "selectable-radio": {
+    "SelectableRadio": {
+      "type": "SelectableRadioProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof RadioGroupPrimitive.Item>, 'title' | 'children' | 'asChild'>",
+        "SelectableCardBaseProps"
+      ],
+      "props": []
+    }
+  },
+  "separator": {
+    "Separator": {
+      "type": "SeparatorProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "orientation",
+          "type": "'horizontal' | 'vertical'",
+          "required": false,
+          "default": "'horizontal'"
+        },
+        {
+          "name": "decorative",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A word in the middle of a horizontal rule."
+        }
+      ]
+    }
+  },
+  "sheet": {
+    "Sheet": {
+      "type": "SheetProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'title' | 'children' | 'asChild' | 'onOpenAutoFocus'>"
+      ],
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "trigger",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Optional element that opens the sheet (rendered with `asChild`, so pass a Button)."
+        },
+        {
+          "name": "side",
+          "type": "'bottom' | 'right' | 'left'",
+          "required": false,
+          "default": "'right'"
+        },
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The buttons at the bottom. Wrap one in `SheetClose` to make it close the sheet."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "modal",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Modal blocks the page and shows the overlay; turn it off for inline previews."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "onOpenAutoFocus",
+          "type": "(event: Event) => void",
+          "required": false
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "sidebar": {
+    "Sidebar": {
+      "description": "The navigation landmark. Name it with `aria-label` when a page has more than one nav.",
+      "type": "SidebarProps",
+      "extends": [
+        "React.ComponentProps<'nav'>"
+      ],
+      "props": []
+    },
+    "SidebarItem": {
+      "type": "SidebarItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<'a'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The current page. Sets `aria-current=\"page\"`."
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "description": "Unread or pending work. Hidden at 0."
+        },
+        {
+          "name": "iconOnly",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The collapsed rail: icon only, label in a tooltip."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Render your router's link instead of `<a>`."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false
+        }
+      ]
+    },
+    "SidebarGroup": {
+      "type": "SidebarGroupProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof Collapsible.Root>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "description": "How many items the group holds."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "triggerProps",
+          "type": "React.ComponentProps<'button'> & { 'data-force'?: string }",
+          "required": false,
+          "description": "Forwarded to the header button, e.g. `data-force=\"hover\"` on a state sheet."
+        }
+      ]
+    },
+    "SidebarSubItem": {
+      "type": "SidebarSubItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<'a'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false
+        }
+      ]
+    },
+    "SidebarSubGroup": {
+      "type": "SidebarSubGroupProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Its `SidebarSubItem`s; they sit 12px further in."
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "One of its sub-items is the current page: opens it by default and marks the label."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        }
+      ]
+    }
+  },
+  "skeleton": {
+    "Skeleton": {
+      "type": "SkeletonProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "shape",
+          "type": "'text' | 'circle' | 'rect'",
+          "required": false,
+          "default": "'text'"
+        },
+        {
+          "name": "animated",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "width",
+          "type": "number | string",
+          "required": false
+        },
+        {
+          "name": "height",
+          "type": "number | string",
+          "required": false
+        }
+      ]
+    }
+  },
+  "slider": {
+    "Slider": {
+      "type": "SliderProps",
+      "extends": [
+        "Omit< React.ComponentProps<typeof SliderPrimitive.Root>, | 'value' | 'defaultValue' | 'onValueChange' | 'onValueCommit' | 'min' | 'max' | 'step' | 'minStepsBetweenThumbs' | 'orientation' | 'disabled' | 'name' | 'children' | 'asChild' >"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "number | [number, number]",
+          "required": false,
+          "description": "A number, or a `[from, to]` pair for a range."
+        },
+        {
+          "name": "defaultValue",
+          "type": "number | [number, number]",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: number | [number, number]) => void",
+          "required": false,
+          "description": "Every change while it moves. Gets a number or a pair, as given."
+        },
+        {
+          "name": "onValueCommit",
+          "type": "(value: number | [number, number]) => void",
+          "required": false,
+          "description": "Once, when a drag ends or a key or a typed value changes it."
+        },
+        {
+          "name": "min",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false,
+          "default": "100"
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "minStepsBetweenThumbs",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "Smallest gap between the range's thumbs, in steps."
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "showValue",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "The picked value at the right of the label's line. Hidden while `inputs` are on."
+        },
+        {
+          "name": "inputs",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Small number fields beside the track to type the value."
+        },
+        {
+          "name": "tooltip",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The value in a bubble over the thumb while it moves."
+        },
+        {
+          "name": "orientation",
+          "type": "'horizontal' | 'vertical'",
+          "required": false,
+          "default": "'horizontal'"
+        },
+        {
+          "name": "formatValue",
+          "type": "(value: number) => string",
+          "required": false,
+          "default": "String",
+          "description": "How a value reads in the readout, the bubble, the fields' neighbours and to screen readers."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Form field name, for a native form submit."
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Names the slider when there is no `label`."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer wrapper."
+        }
+      ]
+    }
+  },
+  "spinner": {
+    "Spinner": {
+      "type": "SpinnerProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "size",
+          "type": "'xs' | 'sm' | 'md' | 'lg'",
+          "required": false,
+          "default": "'md'"
+        },
+        {
+          "name": "label",
+          "type": "string | null",
+          "required": false,
+          "description": "What's loading, for screen readers. `null` hides the spinner from them."
+        }
+      ]
+    }
+  },
+  "split-button": {
+    "SplitButton": {
+      "type": "SplitButtonProps",
+      "extends": [
+        "Omit<ButtonProps, 'iconOnly' | 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "menu",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The related actions: `DropdownMenuItem`s, optionally in `DropdownMenuGroup`s."
+        },
+        {
+          "name": "menuLabel",
+          "type": "string",
+          "required": false,
+          "description": "Accessible name of the arrow."
+        },
+        {
+          "name": "menuProps",
+          "type": "Omit<DropdownMenuProps, 'trigger' | 'children'>",
+          "required": false,
+          "description": "Passed to the DropdownMenu: `align` (default `end`), `side`, `open`, `onOpenChange`…"
+        },
+        {
+          "name": "groupClassName",
+          "type": "string",
+          "required": false,
+          "description": "Class names for the group around both halves."
+        }
+      ]
+    }
+  },
+  "streaming-text": {
+    "StreamingText": {
+      "type": "StreamingTextProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "Everything received so far. Grow it as chunks arrive."
+        },
+        {
+          "name": "streaming",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "More is coming: keeps the caret and the pace going."
+        },
+        {
+          "name": "speed",
+          "type": "number",
+          "required": false,
+          "default": "80",
+          "description": "Letters written a second at the even pace."
+        },
+        {
+          "name": "reveal",
+          "type": "'blur' | 'fade' | 'word' | 'none'",
+          "required": false,
+          "default": "'blur'"
+        },
+        {
+          "name": "caret",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "The caret at the end while it writes."
+        },
+        {
+          "name": "onDone",
+          "type": "() => void",
+          "required": false,
+          "description": "Called once everything received is written and `streaming` is off."
+        }
+      ]
+    }
+  },
+  "switch": {
+    "Switch": {
+      "type": "SwitchProps",
+      "extends": [
+        "React.ComponentProps<typeof SwitchPrimitive.Root>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "placement",
+          "type": "'left' | 'right'",
+          "required": false,
+          "default": "'left'"
+        }
+      ]
+    }
+  },
+  "table": {
+    "Table": {
+      "type": "TableProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "columns",
+          "type": "Column<R>[]",
+          "required": true
+        },
+        {
+          "name": "rows",
+          "type": "R[]",
+          "required": true
+        },
+        {
+          "name": "selectable",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "zebra",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "overflow",
+          "type": "'fit' | 'scroll'",
+          "required": false,
+          "default": "'fit'"
+        },
+        {
+          "name": "onSortChange",
+          "type": "(sort: Sort) => void",
+          "required": false,
+          "description": "Called with the new sort; rows are sorted by value unless `manualSort` is set."
+        },
+        {
+          "name": "defaultSort",
+          "type": "Sort",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "manualSort",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Leave rows in the order given (sort them yourself in onSortChange)."
+        },
+        {
+          "name": "selected",
+          "type": "string[]",
+          "required": false
+        },
+        {
+          "name": "onSelectedChange",
+          "type": "(ids: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible name of the table."
+        },
+        {
+          "name": "rowLabel",
+          "type": "(row: R, index: number) => string",
+          "required": false,
+          "description": "Names a row for its select checkbox (\"Select Acme Corp\" instead of \"Select row 3\"), e.g. `(row) => row.name`. `index` is the row's place as shown, from 0. Without it the checkbox says the row's number, which changes when the table is sorted."
+        },
+        {
+          "name": "renderCell",
+          "type": "(cell: { row: R; column: Column<R>; index: number; content: React.ReactNode }) => React.ReactNode",
+          "required": false,
+          "description": "Draws every body cell's content, after the column's own `cell`: `content` is what the cell would show. Wrap it (a link to the row's page), or replace it; the cell keeps its padding, alignment and truncation."
+        },
+        {
+          "name": "renderRow",
+          "type": "(row: { row: R; index: number; selected: boolean; rowProps: React.ComponentProps<'tr'>; children: React.ReactNode }) => React.ReactNode",
+          "required": false,
+          "description": "Draws each body row. Spread `rowProps` (state and styles) on your `<tr>` and put `children` (the cells) inside, to add a handler, a data attribute or a context provider: `renderRow={({ row, rowProps, children }) => <tr {...rowProps} onClick={() => open(row)}>{children}</tr>}`."
+        }
+      ]
+    }
+  },
+  "tabs": {
+    "Tabs": {
+      "type": "TabsProps",
+      "extends": [
+        "Omit< React.ComponentProps<typeof TabsPrimitive.Root>, 'value' | 'defaultValue' | 'onValueChange' | 'children' | 'asChild' | 'aria-label' >"
+      ],
+      "props": [
+        {
+          "name": "items",
+          "type": "TabItem[]",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false
+        },
+        {
+          "name": "variant",
+          "type": "'underline' | 'pill'",
+          "required": false,
+          "default": "'underline'"
+        },
+        {
+          "name": "size",
+          "type": "'md' | 'sm'",
+          "required": false,
+          "default": "'md'"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Disable every tab."
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible name for the tab list."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "`TabsContent` panels, one per item value."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "TabsContent": {
+      "description": "The panel for one tab value.",
+      "extends": [
+        "React.ComponentProps<typeof TabsPrimitive.Content>"
+      ],
+      "props": []
+    }
+  },
+  "textarea": {
+    "Textarea": {
+      "type": "TextareaProps",
+      "extends": [
+        "Omit<React.ComponentProps<'textarea'>, 'onChange' | 'maxLength'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "optional",
+          "type": "boolean",
+          "required": false,
+          "description": "Adds a muted \"(Optional)\" after the label: the `optional` label."
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+        },
+        {
+          "name": "maxLength",
+          "type": "number",
+          "required": false,
+          "description": "Shows a `length/maxLength` counter."
+        },
+        {
+          "name": "onChange",
+          "type": "(value: string) => void",
+          "required": false
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer wrapper (label + field + hint row). `className` styles the field."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
+  "thinking": {
+    "Thinking": {
+      "type": "ThinkingProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'onToggle'>"
+      ],
+      "props": [
+        {
+          "name": "state",
+          "type": "ThinkingState",
+          "required": false,
+          "default": "'collapsed'",
+          "description": "collapsed once the agent is done, expanded when people open it."
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The summary, e.g. \"Thought for 2m 45s\". Defaults to the `thought` label (\"Thought\")."
+        },
+        {
+          "name": "steps",
+          "type": "ThinkingStep[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "indicator",
+          "type": "ThinkingIndicator",
+          "required": false,
+          "default": "'tetris'",
+          "description": "The mark beside the summary."
+        },
+        {
+          "name": "onToggle",
+          "type": "(open: boolean) => void",
+          "required": false
+        }
+      ]
+    }
+  },
+  "toast": {
+    "Toast": {
+      "description": "A single toast on its own. Lives inside `<Toaster>` (it needs the Radix toast provider).",
+      "type": "ToastProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof ToastPrimitive.Root>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "intent",
+          "type": "ToastIntent",
+          "required": false,
+          "default": "'neutral'"
+        },
+        {
+          "name": "action",
+          "type": "ToastAction",
+          "required": false
+        },
+        {
+          "name": "closeButton",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        },
+        {
+          "name": "icon",
+          "type": "boolean",
+          "required": false,
+          "default": "true"
+        }
+      ]
+    },
+    "Toaster": {
+      "type": "ToasterProps",
+      "extends": [],
+      "props": [
+        {
+          "name": "className",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the viewport; `absolute` instead of `fixed` keeps it inside a positioned parent."
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "required": false,
+          "default": "3",
+          "description": "Most toasts on screen at once; the rest wait behind."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Your own controlled `<Toast>`s, rendered alongside the ones from `toast()`."
+        }
+      ]
+    }
+  },
+  "toggle": {
+    "Toggle": {
+      "type": "ToggleProps",
+      "extends": [
+        "React.ComponentProps<typeof TogglePrimitive.Root>",
+        "VariantProps<typeof toggleVariants>"
+      ],
+      "props": [
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 16px icon before the label, or the only content when `iconOnly` (then pass an aria-label)."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
+  "tooltip": {
+    "TooltipBubble": {
+      "extends": [
+        "Pick<TooltipProps, 'label' | 'shortcut' | 'shape' | 'className'>",
+        "React.ComponentProps<'div'>",
+        "Pick<TooltipProps, 'label' | 'shortcut' | 'shape' | 'className'>",
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "Tooltip": {
+      "type": "TooltipProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The action, in one or two words."
+        },
+        {
+          "name": "shortcut",
+          "type": "string",
+          "required": false,
+          "description": "Keys that run the action, e.g. \"⌘K\" or \"⌃⇧V\"."
+        },
+        {
+          "name": "shape",
+          "type": "'default' | 'rounded'",
+          "required": false,
+          "default": "'default'"
+        },
+        {
+          "name": "side",
+          "type": "'top' | 'right' | 'bottom' | 'left'",
+          "required": false,
+          "default": "'top'"
+        },
+        {
+          "name": "delay",
+          "type": "number",
+          "required": false,
+          "default": "300",
+          "description": "Hover delay in ms before it opens."
+        },
+        {
+          "name": "closeDelay",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "How long it stays after the pointer leaves, in ms, so a quick slip off the trigger doesn't flicker it."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The trigger. It must be focusable (a button, a link)."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  }
+}

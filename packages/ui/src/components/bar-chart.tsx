@@ -66,7 +66,8 @@ export function BarCard({
   return (
     <ChartCard total={total ?? defaultFormat(sum)} {...props}>
       <div className="pt-2">
-        <div className="relative flex h-[206px] items-end gap-2 pl-8" onPointerLeave={() => setHovered(null)}>
+        {/* Time runs left to right in any page, as on the line chart, with the scale on the left. */}
+        <div dir="ltr" className="relative flex h-[206px] items-end gap-2 pl-8" onPointerLeave={() => setHovered(null)}>
           {/* Gridlines at each tick but zero, dashed border-subtle. */}
           {ticks.slice(0, 4).map((_, i) => (
             <span

@@ -4,6 +4,7 @@ import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '../lib/utils'
 import type { BadgeTone } from './badge'
+import { useSatinLabels } from './labels'
 
 /**
  * Chip, 1:1 with the uiKit `Chip` set (3206:79959): Subtle or Outline, md (28, control-height)
@@ -105,7 +106,7 @@ type ChipBaseProps = Omit<VariantProps<typeof chipVariants>, 'neutral'> & {
   avatar?: React.ReactNode
   /** Shows the close button; called when it's clicked. */
   onRemove?: () => void
-  /** Accessible name of the remove button. Defaults to "Remove <label>". */
+  /** Accessible name of the remove button. Defaults to the `removeItem` label with the chip's text ("Remove Design"). */
   removeLabel?: string
   disabled?: boolean
   children?: React.ReactNode
@@ -146,6 +147,7 @@ export function Chip({
   type,
   ...props
 }: ChipProps) {
+  const labels = useSatinLabels()
   const neutral = tone === 'neutral'
   const iconSize = size === 'sm' ? 14 : 16
   const classes = cn(chipVariants({ variant, size, neutral }), className)
@@ -155,7 +157,7 @@ export function Chip({
     <>
       {dot && (
         // Dot slot: 4px in, a 16px box with an 8px status dot (status/green fg in Figma).
-        <span data-slot="chip-dot" className="-mr-1 flex shrink-0 items-center pl-1" aria-hidden>
+        <span data-slot="chip-dot" className="-me-1 flex shrink-0 items-center ps-1" aria-hidden>
           <span className="grid size-4 place-items-center">
             <span className="size-2 rounded-full bg-status-green-fg" />
           </span>
@@ -164,21 +166,21 @@ export function Chip({
       {avatar && (
         <span
           data-slot="chip-avatar"
-          className="-mr-1 flex shrink-0 items-center pl-1 [&>*]:size-4 [&>*]:rounded-full"
+          className="-me-1 flex shrink-0 items-center ps-1 [&>*]:size-4 [&>*]:rounded-full"
         >
           {avatar}
         </span>
       )}
-      <span data-slot="chip-label" className={cn('flex shrink-0 items-center px-2', onRemove && '-mr-1')}>
+      <span data-slot="chip-label" className={cn('flex shrink-0 items-center px-2', onRemove && '-me-1')}>
         {children}
       </span>
       {onRemove && (
-        <span className="flex shrink-0 items-center pr-1">
+        <span className="flex shrink-0 items-center pe-1">
           <button
             type="button"
             data-slot="chip-remove"
             disabled={disabled}
-            aria-label={removeLabel ?? (label ? `Remove ${label}` : 'Remove')}
+            aria-label={removeLabel ?? (label ? labels.removeItem(label) : labels.remove)}
             onClick={onRemove}
             className={cn(
               'grid shrink-0 place-items-center rounded-pill focus-visible:outline-none',
@@ -193,12 +195,12 @@ export function Chip({
   )
 
   if (onRemove) {
-    const { 'data-force': force } = props
+    // The chip is a span holding the remove button; id, aria-*, data-* and handlers go on it too.
     return (
       <span
+        {...(props as React.ComponentProps<'span'>)}
         data-slot="chip"
         data-tone={tone}
-        data-force={force}
         data-disabled={disabled || undefined}
         className={classes}
       >

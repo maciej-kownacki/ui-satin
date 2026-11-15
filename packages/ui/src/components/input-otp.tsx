@@ -115,8 +115,10 @@ export function InputOTP({
 
   return (
     <FieldChrome label={label} chrome={chrome} className={cn('w-fit', className)}>
+      {/* A code reads left to right in any page, digit by digit. */}
       <div
         data-slot="input-otp"
+        dir="ltr"
         data-disabled={chrome.disabled || undefined}
         className={cn('relative flex w-fit items-center gap-2', chrome.disabled && 'opacity-50')}
       >
@@ -145,7 +147,7 @@ export function InputOTP({
               >
                 {value[i] ?? ''}
                 {isActive && value.length < length && (
-                  <span className="absolute h-[18px] w-px animate-[satin-caret_1s_steps(1)_infinite] bg-text-default" />
+                  <span data-slot="input-otp-caret" aria-hidden className="absolute h-[18px] w-px bg-text-default" />
                 )}
               </span>
             </React.Fragment>

@@ -2,15 +2,27 @@
 /**
  * A component page, laid out like the docs template (uiKit 3857:6009): name and description,
  * then the Showcase island (Preview / Code tabs, full screen, the stage), then Installation (the
- * shadcn registry command), then the API Reference,
- * then Previous / Next cards (uiKit `pager`) that walk the sidebar order across both groups.
+ * shadcn registry command), then Props or parts (Composition.astro, where a component has both),
+ * then the API Reference, then Accessibility (a11y.ts: roles, names
+ * and the keys it answers to), then Previous / Next cards (uiKit `pager`) that walk the sidebar
+ * order across the component and AI-pattern groups.
+ *
+ * The API table ends with the rows every component shares, read from its TypeScript props
+ * (props.json): `className`, `ref` and the other HTML attributes, and where they land (the
+ * `<button>`, the Radix part), plus `asChild` when it takes one.
  */
+import { Kbd } from '@uisatin/ui/kbd'
 import Chip from './Chip.astro'
+import Composition from './Composition.astro'
 import Installation from './Installation.astro'
 import PageHeader from './PageHeader.astro'
 import { ChevronRight } from './icons'
 import { nav, pagesOf, type NavItem } from '../nav'
-import type { Api } from '../api'
+import type { Api, ApiProp } from '../api'
+import { a11y } from '../a11y'
+import props from '../props.json'
+import { ALIASES } from '../lib/examples'
+import { passthrough } from '../lib/markdown'
 
 interface Props {
   item: NavItem
@@ -19,7 +31,30 @@ interface Props {
 const { item, api } = Astro.props
 const parts = api.description.split(/(`[^`]+`)/).filter(Boolean)
 
-const pages = nav.filter((g) => g.id !== 'docs').flatMap((g) => pagesOf(g.items))
+// The rows every component shares, from its props type: the page's own component, else the file's first.
+type Component = { extends: string[]; props: { name: string }[] }
+const file = (props as unknown as Record<string, Record<string, Component>>)[ALIASES[item.id] ?? item.id] ?? {}
+const pascal = item.id.replace(/(^|-)(\w)/g, (_, __, c: string) => c.toUpperCase())
+const main = file[pascal] ?? file[`${pascal}Card`] ?? Object.values(file)[0]
+const found = main && passthrough(main.extends)
+const through = found && !('stateOnly' in found) ? found : undefined
+const has = (name: string) => api.props.some((p) => p.name === name)
+const ELEMENTS: Record<string, string> = { a: 'Anchor', button: 'Button', div: 'Div', input: 'Input', label: 'Label', span: 'Span', textarea: 'TextArea', form: 'Form', fieldset: 'FieldSet', table: 'Table', ul: 'UList', ol: 'OList', li: 'LI', p: 'Paragraph', nav: '', section: '', svg: '' }
+const tag = through?.element.match(/^<(\w+)>$/)?.[1]
+const refType = tag ? `Ref<${tag === 'svg' ? 'SVGSVGElement' : `HTML${ELEMENTS[tag] ?? ''}Element`}>` : 'Ref<HTMLElement>'
+const shared: (ApiProp & { note?: string })[] = through
+  ? [
+      ...(has('asChild') || !main.props.some((p) => p.name === 'asChild') ? [] : [{ name: 'asChild', type: ['boolean'], default: 'false' }]),
+      ...(has('className') ? [] : [{ name: 'className', type: ['string'] }]),
+      { name: 'ref', type: [refType] },
+      { name: '...props', type: [through.type.replace(/^React\./, '')], note: `Other attributes go to ${through.element}` },
+    ]
+  : []
+const rows = [...api.props, ...shared]
+const access = a11y[item.id]
+
+// Previous / Next stay among the component pages; guides and recipes have their own order.
+const pages = nav.filter((g) => g.id === 'components' || g.id === 'ai-patterns').flatMap((g) => pagesOf(g.items))
 const at = pages.findIndex((p) => p.id === item.id)
 const prev = pages[at - 1]
 const next = pages[at + 1]
@@ -32,6 +67,8 @@ const card =
 <slot />
 
 <Installation id={item.id} title={item.title} />
+
+<Composition id={item.id} />
 
 <section aria-labelledby="api-title" class="flex flex-col gap-4 pt-8">
   <h2 id="api-title" class="text-lg font-medium text-text-default">API Reference</h2>
@@ -49,7 +86,7 @@ const card =
       </thead>
       <tbody>
         {
-          api.props.map((prop) => (
+          rows.map((prop) => (
             <tr class="border-b border-border-default align-top">
               <th scope="row" class="py-3 pr-4 font-normal">
                 <Chip>{prop.name}</Chip>
@@ -60,6 +97,7 @@ const card =
                     <Chip>{t}</Chip>
                   ))}
                 </div>
+                {'note' in prop && prop.note && <p class="pt-1.5 text-sm text-text-muted">{prop.note}</p>}
               </td>
               <td class="py-3">{prop.default ? <Chip>{prop.default}</Chip> : <span class="text-text-subtle">—</span>}</td>
             </tr>
@@ -69,6 +107,46 @@ const card =
     </table>
   </div>
 </section>
+
+{
+  access && (
+    <section aria-labelledby="a11y-title" class="flex flex-col gap-4 pt-8">
+      <h2 id="a11y-title" class="text-lg font-medium text-text-default">Accessibility</h2>
+      <p class="text-base leading-6 text-text-muted">
+        {access.summary.split(/(`[^`]+`)/).filter(Boolean).map((p) => (p.startsWith('`') ? <Chip>{p.slice(1, -1)}</Chip> : p))}
+      </p>
+      {access.keyboard?.length ? (
+        <div class="overflow-x-auto rounded-md focus-visible:shadow-border-focus focus-visible:outline-none" tabindex="0" role="region" aria-label="Keyboard">
+          <table class="w-full min-w-[480px] border-collapse text-left text-sm">
+            <thead>
+              <tr class="border-b border-border-default">
+                <th scope="col" class="w-[180px] py-2 pr-4 font-medium text-text-default">Key</th>
+                <th scope="col" class="py-2 font-medium text-text-default">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {access.keyboard.map((row) => (
+                <tr class="border-b border-border-default align-top">
+                  <th scope="row" class="py-3 pr-4 font-normal">
+                    <span class="flex flex-wrap items-center gap-1.5 text-sm text-text-muted">
+                      {row.keys.map((k, i) => (
+                        <>
+                          {i > 0 && <span>or</span>}
+                          <Kbd size="md">{k}</Kbd>
+                        </>
+                      ))}
+                    </span>
+                  </th>
+                  <td class="py-3 text-base leading-6 text-text-muted">{row.action}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </section>
+  )
+}
 
 {
   (prev || next) && (

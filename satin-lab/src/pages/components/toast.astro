@@ -2,35 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import ToastDemo, { options } from '../../demos/toast'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-// Until nav.ts has a `toast` entry, the page item is passed inline.
-const item = {
-  id: 'toast',
-  title: 'Toast',
-  href: '/components/toast',
-  description: 'A short, passing message about something that just happened.',
-}
-
-const api = {
-  description:
-    'The `Toast` component wraps the Radix toast in an `li` element rendered by the `toast()` function. Mount `Toaster` once; then call `toast()`, `toast.info()`, `toast.success()`, `toast.warning()` or `toast.error()` with a title and these options.',
-  props: [
-    { name: 'intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"neutral"' },
-    { name: 'icon', type: ['boolean'], default: 'true' },
-    { name: 'description', type: ['string'] },
-    { name: 'action', type: ['{ label, onClick }'] },
-    { name: 'closeButton', type: ['boolean'], default: 'true' },
-    { name: 'duration', type: ['number'], default: '5000' },
-    { name: 'title', type: ['string'] },
-  ],
-}
 ---
 
 <Docs current="toast">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('toast')} api={api['toast']}>
     <ToastDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

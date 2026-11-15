@@ -65,6 +65,28 @@ export function prefixSource(code, classes, file = '') {
   }
 
   // Strings in class positions; cva's variant names (object keys) are never classes.
+  // Variables the source hands to cn() or className hold classes, whatever they're called:
+  // `const position = container ? 'absolute' : 'fixed'` … `cn(position, …)`. Single words like
+  // these don't look like classes on their own, so collect the names first.
+  const classVars = new Set()
+  const collect = (node, inClassArg = false) => {
+    if (!node || typeof node.type !== 'string') return
+    if (inClassArg && node.type === 'Identifier') classVars.add(node.name)
+    const classArg =
+      (node.type === 'CallExpression' && CLASS_CALLS.has(node.callee?.name)) ||
+      (node.type === 'JSXAttribute' && CLASS_NAME.test(node.name?.name ?? ''))
+    for (const key of Object.keys(node)) {
+      if (key === 'loc' || key === 'start' || key === 'end' || key === 'callee') continue
+      const child = node[key]
+      // Through conditionals and && / ||, not into calls or members (their results aren't the variable).
+      const pass = (c) => (classArg || (inClassArg && /^(ConditionalExpression|LogicalExpression|JSXExpressionContainer|ArrayExpression)$/.test(node.type)) ? collect(c, true) : collect(c, false))
+      if (Array.isArray(child)) child.forEach(pass)
+      else if (child && typeof child === 'object') pass(child)
+    }
+  }
+  collect(ast.program)
+  const LITERAL_INIT = /^(StringLiteral|TemplateLiteral|ConditionalExpression|LogicalExpression|ArrayExpression)$/
+
   const visit = (node, inClass, inStyle = false) => {
     if (!node || typeof node.type !== 'string') return
     if (!inClass && !inStyle && node.type === 'StringLiteral' && looksLikeClasses(code.slice(node.start + 1, node.end - 1))) inClass = true
@@ -90,6 +112,7 @@ export function prefixSource(code, classes, file = '') {
     if (node.type === 'JSXAttribute' && CLASS_NAME.test(node.name?.name ?? '')) classy = true
     if (node.type === 'CallExpression' && CLASS_CALLS.has(node.callee?.name)) classy = true
     if (node.type === 'VariableDeclarator' && CLASS_NAME.test(node.id?.name ?? '')) classy = true
+    if (node.type === 'VariableDeclarator' && classVars.has(node.id?.name) && LITERAL_INIT.test(node.init?.type ?? '')) classy = true
     if ((node.type === 'ObjectProperty' || node.type === 'ClassProperty') && CLASS_NAME.test(node.key?.name ?? node.key?.value ?? '')) classy = true
     for (const key of Object.keys(node)) {
       if (key === 'loc' || key === 'start' || key === 'end') continue

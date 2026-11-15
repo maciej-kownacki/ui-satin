@@ -1,0 +1,60 @@
+---
+/**
+ * Recipe: Satin's Form, FormField, Input, Select and Checkbox with React Hook Form and Zod.
+ * A live sign-up form (demos/recipes/react-hook-form.tsx), then how the pieces connect:
+ * register for Input, Controller for the Radix controls, errors by name, focus.
+ */
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import CodeFrame from '../../components/CodeFrame.astro'
+import ReactHookFormDemo, { options } from '../../demos/recipes/react-hook-form'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+
+const install = `npm i react-hook-form zod @hookform/resolvers`
+const serverErrors = `async function onValid(values: SignUp) {
+  const res = await fetch('/api/sign-up', { method: 'POST', body: JSON.stringify(values) })
+  if (res.status === 409) setError('email', { message: 'This email already has an account.' })
+}`
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<Docs current="react-hook-form">
+  <PageHeader id="react-hook-form" title={page('react-hook-form').title} description={page('react-hook-form').description} />
+
+  <section aria-label="Demo" class="flex flex-col gap-3 pt-4">
+    <p class={prose}> React Hook Form keeps the values and runs the checks; Zod describes them once, with the messages. Satin's <a class={link} href="/components/form">Form</a> only shows the result: it takes the messages by field name, marks each control invalid and moves focus to the first one. Submit the empty form to see it, then try an address at example.com for an error that comes back from the server. </p>
+    <ReactHookFormDemo client:load codeHtml={codeHtml} />
+  </section>
+
+  <section aria-labelledby="install-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="install-title" class={h2}>Install</h2>
+    <p class={prose}>Zod 4 and React Hook Form 7; <Chip>@hookform/resolvers</Chip> connects the two.</p>
+    <CodeFrame code={install} label="Terminal" lang="bash" copyLabel="Copy command" />
+  </section>
+
+  <section aria-labelledby="fields-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="fields-title" class={h2}>Inputs register, Radix controls use Controller</h2>
+    <p class={prose}> <Chip>Input</Chip> passes <Chip>name</Chip>, <Chip>onChange</Chip>, <Chip>onBlur</Chip> and <Chip>ref</Chip> to its <Chip>&lt;input&gt;</Chip>, so <Chip>{"{...register('email')}"}</Chip> goes straight on it. The field stays uncontrolled and typing doesn't re-render the form. </p>
+    <p class={prose}> <Chip>Select</Chip> and <Chip>Checkbox</Chip> are Radix buttons, not native inputs, so React Hook Form can't read them from the DOM. Wrap them in a <Chip>Controller</Chip> and pass its <Chip>value</Chip> and <Chip>onChange</Chip>; its <Chip>ref</Chip> reaches the button, so <Chip>setFocus</Chip> works too. Checkbox reports <Chip>'indeterminate'</Chip> as well as true and false, hence <Chip>checked === true</Chip>. </p>
+  </section>
+
+  <section aria-labelledby="errors-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="errors-title" class={h2}>Errors by name</h2>
+    <p class={prose}> Form's <Chip>errors</Chip> is a plain record of messages, <Chip>{"{ email: 'Enter an email' }"}</Chip>. React Hook Form keeps an object per field, so <Chip>messages()</Chip> turns one into the other. Each <Chip>FormField</Chip> and <Chip>FieldGroup</Chip> with a matching <Chip>name</Chip> shows its message in place of the description and wires it to the control with <Chip>aria-describedby</Chip> and <Chip>aria-invalid</Chip>. The helper covers flat forms; for nested values, name the fields by their path (<Chip>address.city</Chip>) and flatten the errors the same way. </p>
+    <p class={prose}> A Checkbox doesn't read the group around it, so pass <Chip>aria-invalid</Chip> from <Chip>fieldState</Chip> yourself. That is also what lets Form find it and move focus to it. </p>
+  </section>
+
+  <section aria-labelledby="focus-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="focus-title" class={h2}>Focus and server errors</h2>
+    <p class={prose}> Satin's Form moves focus to the first invalid control after a submit, in the order they appear on the page, and again whenever errors appear where there were none. React Hook Form would do the same on its own, so <Chip>shouldFocusError: false</Chip> leaves it to one of them. Errors that clear as people type never move focus. </p>
+    <p class={prose}> An error from your API is one more message: <Chip>setError</Chip> puts it under the field, and Form takes focus there as it would after a failed check. While saving, show <Chip>loading</Chip> on the submit button rather than disabling the whole Form: a disabled field can't take the focus when the answer comes back. A loading button ignores clicks, so the form isn't sent twice. </p>
+    <CodeFrame code={serverErrors} label="SignUpForm.tsx" />
+  </section>
+</Docs>

@@ -2,34 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import MessageActionsDemo, { options } from '../../demos/message-actions'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const item = {
-  id: 'message-actions',
-  title: 'Message actions',
-  href: '/ai-patterns/message-actions',
-  description: 'Status, feedback, copy and share under an assistant reply.',
-}
-
-const api = {
-  description:
-    'The `MessageActions` component is a wrapper around the `div` element that renders the status, feedback, copy and share actions.',
-  props: [
-    { name: 'timestamp', type: ['string'] },
-    { name: 'status', type: ['"sending"', '"delivered"'], default: '"delivered"' },
-    { name: 'feedback', type: ['"like"', '"dislike"', 'null'], default: 'null' },
-    { name: 'showShare', type: ['boolean'], default: 'true' },
-    { name: 'onFeedback', type: ['(value) => void'] },
-    { name: 'onCopy', type: ['() => void'] },
-    { name: 'onShare', type: ['() => void'] },
-  ],
-}
 ---
 
 <Docs current="message-actions">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('message-actions')} api={api['message-actions']}>
     <MessageActionsDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

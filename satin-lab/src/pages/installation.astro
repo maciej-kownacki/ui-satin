@@ -60,12 +60,12 @@ export function Save() {
 }`
 const agentPrompt = `Set up the Satin design system (https://uisatin.dev) in this React project.
 
-1. Check the project uses React 19 or newer. Satin doesn't need Tailwind; don't add it.
+1. Check the project uses React 19 or newer (React 18 isn't supported: Satin passes refs as plain props). Satin doesn't need Tailwind; don't add it.
 2. Install the package: npm i @uisatin/ui
 3. Import the styles once at the app's entry point (main.tsx, or app/layout.tsx in Next.js): import '@uisatin/ui/styles.css'
 4. Load the Geist and Geist Mono fonts, or the system font is used.
-5. For dark mode, put the "dark" class on any parent element.
-6. Import each component from its own entry point, for example: import { Button } from '@uisatin/ui/button'. The components are listed at https://uisatin.dev/r/registry.json and documented at https://uisatin.dev. They're marked 'use client', so Next.js Server Components can render them.
+5. For dark mode, put the "dark" class or data-theme="dark" on any parent element; data-theme="system" follows the OS. Satin's CSS variables are all --sa-* (for example --sa-bg-card).
+6. Import each component from its own entry point, for example: import { Button } from '@uisatin/ui/button'. The components are listed at https://uisatin.dev/r/registry.json and documented at https://uisatin.dev. They're marked 'use client', so Next.js Server Components can render them; themeCss() comes from '@uisatin/ui/theme', which Server Components can call. Rules for agents: https://uisatin.dev/AGENTS.md, every component as markdown: https://uisatin.dev/llms-full.txt.
 7. Use the components as they come. Colour, radius, type and motion come from Satin's tokens; don't restyle them with raw values.
 
 When you're done, render a Button to check the styles load, and tell me what you set up.`
@@ -80,7 +80,7 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
   <section aria-labelledby="npm-title" class="flex flex-col gap-3 pt-4">
     <h2 id="npm-title" class={h2}>Install from npm</h2>
     <p class={prose}>
-      Satin needs React 19. No Tailwind, no config: <Chip>@uisatin/ui</Chip> ships compiled components and one precompiled stylesheet.
+      Satin needs React 19 or newer; React 18 isn't supported, because every component takes <Chip>ref</Chip> as a plain prop. No Tailwind, no config: <Chip>@uisatin/ui</Chip> ships compiled components and one precompiled stylesheet.
     </p>
     <p class={prose}>
       Already on Tailwind or shadcn/ui? They don't clash. Satin's classes carry a prefix (<Chip>sa:flex</Chip>), its variables are <Chip>--sa-*</Chip> and its reset only touches Satin's elements, so your <Chip>text-sm</Chip>, <Chip>--spacing</Chip> and <Chip>--radius</Chip> stay yours whichever stylesheet loads first. Your Tailwind classes in a component's <Chip>className</Chip> still override Satin's.
@@ -88,7 +88,7 @@ const link = 'rounded-sm text-text-default underline underline-offset-2 focus-vi
     <CodeFrame code="npm i @uisatin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
     <CodeFrame code={packageUsage} label="Usage" />
     <p class={prose}>
-      Each component has its own import, shown on its page. They're marked <Chip>'use client'</Chip>, so Next.js Server Components can render them. For dark mode, put the <Chip>dark</Chip> class on any parent. Load Geist and Geist Mono, or the system font is used.
+      Each component has its own import, shown on its page. They're marked <Chip>'use client'</Chip>, so Next.js Server Components can render them. For dark mode, put the <Chip>dark</Chip> class or <Chip>data-theme="dark"</Chip> on any parent, or <Chip>data-theme="system"</Chip> to follow the OS (<a href="/guides/dark-mode" class="rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none">dark mode guide</a>). Load Geist and Geist Mono, or the system font is used.
     </p>
   </section>
 

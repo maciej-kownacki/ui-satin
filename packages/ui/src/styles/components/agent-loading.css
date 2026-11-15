@@ -68,8 +68,13 @@
   --satin-glimm-text: linear-gradient(90deg, transparent 40%, #00c0e8 45%, #6155f5 50%, #cb30e0 55%, transparent 60%);
 }
 
-.dark :is(.satin-tetris, .satin-tetris-label) {
+:is(.dark, [data-theme='dark']) :is(.satin-tetris, .satin-tetris-label) {
   --satin-glimm-peak: 0.85;
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme='system'] :is(.satin-tetris, .satin-tetris-label) {
+    --satin-glimm-peak: 0.85;
+  }
 }
 
 :is(.satin-tetris, .satin-tetris-label)[data-glimmer='neutral'] {

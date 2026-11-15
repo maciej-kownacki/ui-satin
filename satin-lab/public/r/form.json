@@ -14,12 +14,77 @@
     {
       "path": "registry/satin/ui/form.tsx",
       "type": "registry:ui",
-      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\nimport { FieldDescription, FormContext, useFormContext, type FormContextValue } from '@/registry/satin/ui/form-field'\n\n/**\n * Form: a `<form>` that lays out FormFields, FieldGroups and FormSections and sets them once.\n *\n * - `layout` places every field's label above its control (vertical) or in a 160px column to the\n *   left (horizontal, for settings pages); a field's own `layout` still wins.\n * - `errors` holds messages by field `name` (`{ email: 'Enter an email' }`); each FormField or\n *   FieldGroup with that `name` shows its message and marks its control invalid. Feed it from\n *   your own validation, a server response, or a form library (`errors.email?.message`).\n * - After a submit, and whenever errors appear where there were none, focus moves to the first\n *   invalid control, so a screen reader and the keyboard land on what needs fixing.\n * - `disabled` greys out and disables every field and button inside (a native fieldset), for a\n *   form that is saving or read-only.\n * - `onSubmitValues` hands over the values as an object (repeated names become arrays) and\n *   prevents the page reload; plain `onSubmit` works as usual.\n */\nexport type FormValues = Record<string, FormDataEntryValue | FormDataEntryValue[]>\n\nexport interface FormProps extends React.ComponentProps<'form'> {\n  layout?: 'vertical' | 'horizontal'\n  /** Error messages by field `name`. */\n  errors?: FormContextValue['errors']\n  disabled?: boolean\n  /** Called on submit with the form's values; the default submit (a page load) is prevented. */\n  onSubmitValues?: (values: FormValues, event: React.FormEvent<HTMLFormElement>) => void\n}\n\n/** The form's values as an object; a name that appears more than once (checkboxes) becomes an array. */\nexport function formValues(form: HTMLFormElement): FormValues {\n  const values: FormValues = {}\n  for (const [key, value] of new FormData(form)) {\n    const prev = values[key]\n    values[key] = prev === undefined ? value : Array.isArray(prev) ? [...prev, value] : [prev, value]\n  }\n  return values\n}\n\nconst hasErrors = (errors?: FormContextValue['errors']) => !!errors && Object.values(errors).some(Boolean)\n\nexport function Form({\n  layout = 'vertical',\n  errors,\n  disabled,\n  onSubmit,\n  onSubmitValues,\n  noValidate = true,\n  className,\n  children,\n  ref,\n  ...props\n}: FormProps) {\n  const formRef = React.useRef<HTMLFormElement>(null)\n  const [submits, setSubmits] = React.useState(0)\n  const context = React.useMemo<FormContextValue>(() => ({ layout, disabled, errors }), [layout, disabled, errors])\n\n  // Errors that are new (after a submit, or arriving from a server) take the focus to the first\n  // invalid control; errors clearing as the user types never move it.\n  const hadErrors = React.useRef(false)\n  const lastSubmit = React.useRef(0)\n  React.useEffect(() => {\n    const now = hasErrors(errors)\n    const submitted = submits !== lastSubmit.current\n    if (now && (submitted || !hadErrors.current)) {\n      const first = formRef.current?.querySelector<HTMLElement>('[aria-invalid=\"true\"]')\n      // Only once there's been a submit, so a form that opens with errors (a demo, a draft) doesn't grab focus.\n      if (submits > 0) first?.focus()\n    }\n    hadErrors.current = now\n    lastSubmit.current = submits\n  }, [errors, submits])\n\n  const setRefs = (node: HTMLFormElement | null) => {\n    formRef.current = node\n    if (typeof ref === 'function') ref(node)\n    else if (ref) ref.current = node\n  }\n\n  return (\n    <FormContext.Provider value={context}>\n      <form\n        ref={setRefs}\n        data-slot=\"form\"\n        data-layout={layout}\n        noValidate={noValidate}\n        onSubmit={(event) => {\n          setSubmits((n) => n + 1)\n          if (onSubmitValues) {\n            event.preventDefault()\n            onSubmitValues(formValues(event.currentTarget), event)\n          }\n          onSubmit?.(event)\n        }}\n        className={cn('sa:w-full', className)}\n        {...props}\n      >\n        {/* A fieldset carries `disabled` to every native control and button inside. */}\n        <fieldset disabled={disabled} className=\"sa:m-0 sa:grid sa:min-w-0 sa:gap-6 sa:border-0 sa:p-0\">\n          {children}\n        </fieldset>\n      </form>\n    </FormContext.Provider>\n  )\n}\n\n/**\n * A titled part of a longer form (Profile, Notifications): a 16px title, an optional\n * description, then its fields. Sections after the first are set off by a rule.\n */\nexport interface FormSectionProps extends Omit<React.ComponentProps<'section'>, 'title'> {\n  title: React.ReactNode\n  description?: React.ReactNode\n}\n\nexport function FormSection({ title, description, className, children, ...props }: FormSectionProps) {\n  const id = React.useId()\n  return (\n    <section\n      aria-labelledby={`${id}-title`}\n      data-slot=\"form-section\"\n      className={cn(\n        'sa:grid sa:gap-5 sa:not-first:border-t sa:not-first:border-border-default sa:not-first:pt-6',\n        className,\n      )}\n      {...props}\n    >\n      <header className=\"sa:grid sa:gap-1\">\n        <h3 id={`${id}-title`} className=\"sa:text-base sa:font-medium sa:text-text-default\">\n          {title}\n        </h3>\n        {description && <FieldDescription>{description}</FieldDescription>}\n      </header>\n      <div className=\"sa:grid sa:gap-5\">{children}</div>\n    </section>\n  )\n}\n\n/**\n * The form's buttons, usually a ButtonGroup or a Cancel + Submit pair. `align=\"end\"` (default)\n * puts them on the right; `start` lines them up with the controls, past the label column in a\n * horizontal form; `between` pushes the first child left (Delete) and the rest right.\n */\nexport interface FormActionsProps extends React.ComponentProps<'div'> {\n  align?: 'start' | 'end' | 'between'\n}\n\nexport function FormActions({ align = 'end', className, ...props }: FormActionsProps) {\n  const form = useFormContext()\n  return (\n    <div\n      data-slot=\"form-actions\"\n      className={cn(\n        'sa:flex sa:flex-wrap sa:items-center sa:gap-2',\n        align === 'end' && 'sa:justify-end',\n        align === 'between' && 'sa:justify-end sa:[&>:first-child]:mr-auto',\n        align === 'start' && form?.layout === 'horizontal' && 'sa:pl-46',\n        className,\n      )}\n      {...props}\n    />\n  )\n}\n"
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\nimport { FieldDescription, FormContext, useFormContext, type FormContextValue } from '@/registry/satin/ui/form-field'\n\n/**\n * Form: a `<form>` that lays out FormFields, FieldGroups and FormSections and sets them once.\n *\n * - `layout` places every field's label above its control (vertical) or in a 160px column to the\n *   left (horizontal, for settings pages); a field's own `layout` still wins.\n * - `errors` holds messages by field `name` (`{ email: 'Enter an email' }`); each FormField or\n *   FieldGroup with that `name` shows its message and marks its control invalid. Feed it from\n *   your own validation, a server response, or a form library (`errors.email?.message`).\n * - After a submit, and whenever errors appear where there were none, focus moves to the first\n *   invalid control, so a screen reader and the keyboard land on what needs fixing.\n * - `disabled` greys out and disables every field and button inside (a native fieldset), for a\n *   form that is saving or read-only.\n * - `onSubmitValues` hands over the values as an object (repeated names become arrays) and\n *   prevents the page reload; plain `onSubmit` works as usual.\n */\nexport type FormValues = Record<string, FormDataEntryValue | FormDataEntryValue[]>\n\nexport interface FormProps extends React.ComponentProps<'form'> {\n  layout?: 'vertical' | 'horizontal'\n  /** Error messages by field `name`. */\n  errors?: FormContextValue['errors']\n  disabled?: boolean\n  /** Called on submit with the form's values; the default submit (a page load) is prevented. */\n  onSubmitValues?: (values: FormValues, event: React.FormEvent<HTMLFormElement>) => void\n}\n\n/** The form's values as an object; a name that appears more than once (checkboxes) becomes an array. */\nexport function formValues(form: HTMLFormElement): FormValues {\n  const values: FormValues = {}\n  for (const [key, value] of new FormData(form)) {\n    const prev = values[key]\n    values[key] = prev === undefined ? value : Array.isArray(prev) ? [...prev, value] : [prev, value]\n  }\n  return values\n}\n\nconst hasErrors = (errors?: FormContextValue['errors']) => !!errors && Object.values(errors).some(Boolean)\n\nexport function Form({\n  layout = 'vertical',\n  errors,\n  disabled,\n  onSubmit,\n  onSubmitValues,\n  noValidate = true,\n  className,\n  children,\n  ref,\n  ...props\n}: FormProps) {\n  const formRef = React.useRef<HTMLFormElement>(null)\n  const [submits, setSubmits] = React.useState(0)\n  const context = React.useMemo<FormContextValue>(() => ({ layout, disabled, errors }), [layout, disabled, errors])\n\n  // Errors that are new (after a submit, or arriving from a server) take the focus to the first\n  // invalid control; errors clearing as the user types never move it.\n  const hadErrors = React.useRef(false)\n  const lastSubmit = React.useRef(0)\n  React.useEffect(() => {\n    const now = hasErrors(errors)\n    const submitted = submits !== lastSubmit.current\n    if (now && (submitted || !hadErrors.current)) {\n      // A field marked invalid, or the first control of an invalid FieldGroup (a fieldset can't be).\n      const first = formRef.current?.querySelector<HTMLElement>(\n        '[aria-invalid=\"true\"], [data-slot=\"field-group\"][data-invalid] :is(input:not([type=\"hidden\"]), button, select, textarea, [tabindex]:not([tabindex=\"-1\"]))',\n      )\n      // Only once there's been a submit, so a form that opens with errors (a demo, a draft) doesn't grab focus.\n      if (submits > 0) first?.focus()\n    }\n    hadErrors.current = now\n    lastSubmit.current = submits\n  }, [errors, submits])\n\n  const setRefs = (node: HTMLFormElement | null) => {\n    formRef.current = node\n    if (typeof ref === 'function') ref(node)\n    else if (ref) ref.current = node\n  }\n\n  return (\n    <FormContext.Provider value={context}>\n      <form\n        ref={setRefs}\n        data-slot=\"form\"\n        data-layout={layout}\n        noValidate={noValidate}\n        onSubmit={(event) => {\n          setSubmits((n) => n + 1)\n          if (onSubmitValues) {\n            event.preventDefault()\n            onSubmitValues(formValues(event.currentTarget), event)\n          }\n          onSubmit?.(event)\n        }}\n        className={cn('sa:w-full', className)}\n        {...props}\n      >\n        {/* A fieldset carries `disabled` to every native control and button inside. */}\n        <fieldset disabled={disabled} className=\"sa:m-0 sa:grid sa:min-w-0 sa:gap-6 sa:border-0 sa:p-0\">\n          {children}\n        </fieldset>\n      </form>\n    </FormContext.Provider>\n  )\n}\n\n/**\n * A titled part of a longer form (Profile, Notifications): a 16px title, an optional\n * description, then its fields. Sections after the first are set off by a rule.\n */\nexport interface FormSectionProps extends Omit<React.ComponentProps<'section'>, 'title'> {\n  title: React.ReactNode\n  description?: React.ReactNode\n}\n\nexport function FormSection({ title, description, className, children, ...props }: FormSectionProps) {\n  const id = React.useId()\n  return (\n    <section\n      aria-labelledby={`${id}-title`}\n      data-slot=\"form-section\"\n      className={cn(\n        'sa:grid sa:gap-5 sa:not-first:border-t sa:not-first:border-border-default sa:not-first:pt-6',\n        className,\n      )}\n      {...props}\n    >\n      <header className=\"sa:grid sa:gap-1\">\n        <h3 id={`${id}-title`} className=\"sa:text-base sa:font-medium sa:text-text-default\">\n          {title}\n        </h3>\n        {description && <FieldDescription>{description}</FieldDescription>}\n      </header>\n      <div className=\"sa:grid sa:gap-5\">{children}</div>\n    </section>\n  )\n}\n\n/**\n * The form's buttons, usually a ButtonGroup or a Cancel + Submit pair. `align=\"end\"` (default)\n * puts them on the right; `start` lines them up with the controls, past the label column in a\n * horizontal form; `between` pushes the first child left (Delete) and the rest right.\n */\nexport interface FormActionsProps extends React.ComponentProps<'div'> {\n  align?: 'start' | 'end' | 'between'\n}\n\nexport function FormActions({ align = 'end', className, ...props }: FormActionsProps) {\n  const form = useFormContext()\n  return (\n    <div\n      data-slot=\"form-actions\"\n      className={cn(\n        'sa:flex sa:flex-wrap sa:items-center sa:gap-2',\n        align === 'end' && 'sa:justify-end',\n        align === 'between' && 'sa:justify-end sa:[&>:first-child]:me-auto',\n        align === 'start' && form?.layout === 'horizontal' && 'sa:ps-46',\n        className,\n      )}\n      {...props}\n    />\n  )\n}\n"
     }
   ],
   "docs": "Form docs: https://uisatin.dev/components/form",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Form": {
+        "type": "FormProps",
+        "extends": [
+          "React.ComponentProps<'form'>"
+        ],
+        "props": [
+          {
+            "name": "layout",
+            "type": "'vertical' | 'horizontal'",
+            "required": false,
+            "default": "'vertical'"
+          },
+          {
+            "name": "errors",
+            "type": "FormContextValue['errors']",
+            "required": false,
+            "description": "Error messages by field `name`."
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onSubmitValues",
+            "type": "(values: FormValues, event: React.FormEvent<HTMLFormElement>) => void",
+            "required": false,
+            "description": "Called on submit with the form's values; the default submit (a page load) is prevented."
+          }
+        ]
+      },
+      "FormSection": {
+        "type": "FormSectionProps",
+        "extends": [
+          "Omit<React.ComponentProps<'section'>, 'title'>"
+        ],
+        "props": [
+          {
+            "name": "title",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "React.ReactNode",
+            "required": false
+          }
+        ]
+      },
+      "FormActions": {
+        "type": "FormActionsProps",
+        "extends": [
+          "React.ComponentProps<'div'>"
+        ],
+        "props": [
+          {
+            "name": "align",
+            "type": "'start' | 'end' | 'between'",
+            "required": false,
+            "default": "'end'"
+          }
+        ]
+      }
+    }
   }
 }

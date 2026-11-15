@@ -15,6 +15,8 @@ import { join } from 'node:path'
 import Chip from './Chip.astro'
 import CodeFrame from './CodeFrame.astro'
 import InstallSwitch from './InstallSwitch'
+import sizes from '../sizes.json'
+import { ALIASES } from '../lib/examples'
 
 interface Props {
   id: string
@@ -64,6 +66,9 @@ const componentName = title.replace(/\s+(\w)/g, (_, c) => c.toUpperCase())
 const importLine =
   shortest?.match(new RegExp(`^import .* from '@uisatin/ui/${id}'$`, 'm'))?.[0] ?? `import { ${componentName} } from '@uisatin/ui/${id}'`
 
+// What the component adds to the app's JavaScript (scripts/sizes.mjs): gzipped, React aside.
+const size = (sizes as Record<string, number>)[ALIASES[id] ?? id]
+
 const list = (names: string[]) => names.map((n, i) => ({ n, sep: i === 0 ? '' : i === names.length - 1 ? ' and ' : ', ' }))
 ---
 
@@ -73,6 +78,14 @@ const list = (names: string[]) => names.map((n, i) => ({ n, sep: i === 0 ? '' : 
     <div slot="npm" class="flex flex-col gap-3">
       <CodeFrame code="npm i @uisatin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
       <CodeFrame code={importLine} label="Import" />
+      {
+        size && (
+          <p class="text-base leading-6 text-text-muted">
+            About <Chip>{(size / 1000).toFixed(1)} kB</Chip> of JavaScript, minified and gzipped, with what it imports (React aside). The
+            stylesheet is one file for every component.
+          </p>
+        )
+      }
     </div>
     <div slot="shadcn" class="flex flex-col gap-3">
       <CodeFrame code={command} label="Terminal" lang="bash" copyLabel="Copy command" />

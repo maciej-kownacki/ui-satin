@@ -21,6 +21,46 @@
   "docs": "Radio docs: https://uisatin.dev/components/radio",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "RadioGroup": {
+        "type": "RadioGroupProps",
+        "extends": [
+          "React.ComponentProps<typeof RadioGroupPrimitive.Root>"
+        ],
+        "props": []
+      },
+      "Radio": {
+        "type": "RadioProps",
+        "extends": [
+          "React.ComponentProps<typeof RadioGroupPrimitive.Item>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "description",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "placement",
+            "type": "'left' | 'right'",
+            "required": false,
+            "default": "'left'",
+            "description": "Which side of the text the circle sits on."
+          },
+          {
+            "name": "data-force",
+            "type": "'hover' | 'focus' | 'pressed'",
+            "required": false,
+            "description": "Show a state without interacting, for state sheets."
+          }
+        ]
+      }
+    }
   }
 }

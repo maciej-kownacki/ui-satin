@@ -19,6 +19,55 @@
   "docs": "Streaming text docs: https://uisatin.dev/ai-patterns/streaming-text",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "StreamingText": {
+        "type": "StreamingTextProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'children'>"
+        ],
+        "props": [
+          {
+            "name": "text",
+            "type": "string",
+            "required": true,
+            "description": "Everything received so far. Grow it as chunks arrive."
+          },
+          {
+            "name": "streaming",
+            "type": "boolean",
+            "required": false,
+            "default": "false",
+            "description": "More is coming: keeps the caret and the pace going."
+          },
+          {
+            "name": "speed",
+            "type": "number",
+            "required": false,
+            "default": "80",
+            "description": "Letters written a second at the even pace."
+          },
+          {
+            "name": "reveal",
+            "type": "'blur' | 'fade' | 'word' | 'none'",
+            "required": false,
+            "default": "'blur'"
+          },
+          {
+            "name": "caret",
+            "type": "boolean",
+            "required": false,
+            "default": "true",
+            "description": "The caret at the end while it writes."
+          },
+          {
+            "name": "onDone",
+            "type": "() => void",
+            "required": false,
+            "description": "Called once everything received is written and `streaming` is off."
+          }
+        ]
+      }
+    }
   }
 }

@@ -115,7 +115,7 @@
 .satin-switch-thumb {
   position: absolute;
   top: 2px;
-  left: 2px;
+  inset-inline-start: 2px;
   width: 14px;
   height: 14px;
   border-radius: 9999px;
@@ -126,6 +126,10 @@
 }
 .satin-switch-thumb[data-state="checked"] {
   transform: translateX(14px);
+}
+/* translateX has no logical form: right to left, on is to the left. */
+.satin-switch-thumb[data-state="checked"]:dir(rtl) {
+  transform: translateX(-14px);
 }
 
 /*
@@ -142,7 +146,7 @@
   gap: 12px;
   width: 100%;
   margin: 0;
-  /* Even on every side: the icon tile sits as far from the left edge as from the top and bottom. */
+  /* Even on every side: the icon tile sits as far from the side edge as from the top and bottom. */
   padding: 12px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
@@ -150,7 +154,7 @@
   box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
   color: inherit;
   font: inherit;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   outline: none;
   transition-property: border-color, box-shadow, background-color, opacity;

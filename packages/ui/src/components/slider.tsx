@@ -231,7 +231,8 @@ export function Slider({
               className={cn(
                 'pointer-events-none absolute tabular-nums opacity-0 transition-[opacity,translate] duration-(--duration-fast) ease-(--ease-out) data-[visible]:opacity-100',
                 vertical
-                  ? 'top-1/2 left-full ml-2 -translate-x-0.5 -translate-y-1/2 data-[visible]:translate-x-0'
+                  ? // Beside the thumb on the end side; it eases out away from the thumb either way.
+                    'start-full top-1/2 ms-2 -translate-x-0.5 -translate-y-1/2 rtl:translate-x-0.5 data-[visible]:translate-x-0'
                   : 'bottom-full left-1/2 mb-2 -translate-x-1/2 translate-y-0.5 data-[visible]:translate-y-0',
               )}
             />

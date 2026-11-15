@@ -1,0 +1,134 @@
+---
+/**
+ * "Props or parts": for components with both APIs (Dialog, Segmented control, Table), the same
+ * thing written both ways, between Installation and the API Reference (DocSection places it).
+ * The data is in COMPOSITION below, keyed by page id; a page without an entry renders nothing.
+ */
+import Chip from './Chip.astro'
+import CodeFrame from './CodeFrame.astro'
+
+interface Props {
+  id: string
+}
+const { id } = Astro.props
+
+const COMPOSITION: Record<string, { intro: string; props: string; parts: string; partsLabel: string }> = {
+  dialog: {
+    intro:
+      'Props cover the usual dialog: a title, a body, actions. When you need the structure itself, say a form around the body and the footer so Enter submits it, build it from the parts Dialog is made of; they look and behave the same.',
+    props: `import { Button } from '@uisatin/ui/button'
+import { Dialog, DialogClose } from '@uisatin/ui/dialog'
+
+<Dialog
+  trigger={<Button variant="secondary">Rename</Button>}
+  title="Rename file"
+  footer={
+    <DialogClose asChild>
+      <Button>Save</Button>
+    </DialogClose>
+  }
+>
+  Names stay unique in a folder.
+</Dialog>`,
+    partsLabel: 'Parts',
+    parts: `import { Button } from '@uisatin/ui/button'
+import { Input } from '@uisatin/ui/input'
+import {
+  DialogRoot, DialogTrigger, DialogContent, DialogHeader,
+  DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose,
+} from '@uisatin/ui/dialog'
+
+<DialogRoot>
+  <DialogTrigger asChild>
+    <Button variant="secondary">Rename</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <form onSubmit={rename}>
+      <DialogHeader>
+        <DialogTitle>Rename file</DialogTitle>
+        <DialogDescription>Names stay unique in a folder.</DialogDescription>
+      </DialogHeader>
+      <DialogBody>
+        <Input name="name" aria-label="Name" defaultValue="Q3 report" />
+      </DialogBody>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button variant="secondary">Cancel</Button>
+        </DialogClose>
+        <Button type="submit">Save</Button>
+      </DialogFooter>
+    </form>
+  </DialogContent>
+</DialogRoot>`,
+  },
+  'segmented-control': {
+    intro:
+      'Pass the segments as `items` when each is a label and maybe an icon. When one needs more (a count, a Tooltip around it), write them as `SegmentedControlSegment` children instead; size, shape and the sliding pill work the same.',
+    props: `import { SegmentedControl } from '@uisatin/ui/segmented-control'
+
+<SegmentedControl
+  aria-label="View"
+  items={[
+    { value: 'list', label: 'List' },
+    { value: 'board', label: 'Board' },
+  ]}
+/>`,
+    partsLabel: 'Children',
+    parts: `import { Badge } from '@uisatin/ui/badge'
+import { SegmentedControl, SegmentedControlSegment } from '@uisatin/ui/segmented-control'
+
+<SegmentedControl aria-label="View" defaultValue="list">
+  <SegmentedControlSegment value="list">List</SegmentedControlSegment>
+  <SegmentedControlSegment value="inbox">
+    Inbox <Badge size="sm">4</Badge>
+  </SegmentedControlSegment>
+</SegmentedControl>`,
+  },
+  table: {
+    intro:
+      "Columns and rows as data cover most tables: a column's `cell` draws its own content. For what goes across every cell or row, a link to the row's page, a handler on the row, use `renderCell` and `renderRow`; the cells keep their padding, hover and truncation.",
+    props: `import { Table, type Column } from '@uisatin/ui/table'
+
+type Account = { id: string; name: string; seats: number }
+
+const columns: Column<Account>[] = [
+  { key: 'name', header: 'Name', sortable: true },
+  { key: 'seats', header: 'Seats', align: 'right' },
+]
+
+<Table columns={columns} rows={accounts} selectable rowLabel={(row) => row.name} />`,
+    partsLabel: 'Slots',
+    parts: `<Table
+  columns={columns}
+  rows={accounts}
+  renderCell={({ row, column, content }) =>
+    column.key === 'name' ? <a href={\`/accounts/\${row.id}\`}>{content}</a> : content
+  }
+  renderRow={({ row, rowProps, children }) => (
+    <tr {...rowProps} onDoubleClick={() => open(row)}>
+      {children}
+    </tr>
+  )}
+/>`,
+  },
+}
+const entry = COMPOSITION[id]
+const parts = entry?.intro.split(/(`[^`]+`)/).filter(Boolean) ?? []
+---
+
+{
+  entry && (
+    <section aria-labelledby="composition-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="composition-title" class="text-lg font-medium text-text-default">
+        Props or parts
+      </h2>
+      <p class="text-base leading-6 text-text-muted">
+        {parts.map((p) =>
+          p.startsWith('`') ? <Chip>{p.slice(1, -1)}</Chip> : p,
+        )}
+      </p>
+      <CodeFrame code={entry.props} label="Props" />
+      <CodeFrame code={entry.parts} label={entry.partsLabel} />
+    </section>
+  )
+}

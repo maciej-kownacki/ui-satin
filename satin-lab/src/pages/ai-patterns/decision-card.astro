@@ -2,33 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import DecisionCardDemo, { options } from '../../demos/decision-card'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-// Inline until the lead adds 'decision-card' to nav.ts and api.ts.
-const item = {
-  id: 'decision-card',
-  title: 'Decision card',
-  href: '/ai-patterns/decision-card',
-  description: 'One question from the agent, with answers to pick, rank or rewrite, and Skip or Continue.',
-}
-const api = {
-  description: 'The `DecisionCard` component is a wrapper around the `div` that holds one question, its answers and the Skip and Continue actions.',
-  props: [
-    { name: 'type', type: ['"radio"', '"checkbox"', '"chips"', '"ranking"', '"draft"', '"summary"'], default: '"radio"' },
-    { name: 'title', type: ['string'] },
-    { name: 'step', type: ['string'] },
-    { name: 'options', type: ['Option[]'] },
-    { name: 'value', type: ['string | string[]'] },
-    { name: 'onContinue', type: ['(value) => void'] },
-    { name: 'onSkip', type: ['() => void'] },
-  ],
-}
 ---
 
 <Docs current="decision-card">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('decision-card')} api={api['decision-card']}>
     <DecisionCardDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

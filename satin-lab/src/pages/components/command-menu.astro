@@ -2,32 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import CommandMenuDemo, { options } from '../../demos/command-menu'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const api = {
-  description:
-    "The `CommandMenu` component wraps the Radix dialog in a `div` with a search `input` (`role=\"combobox\"`) and a `listbox` of grouped commands. ⌘K or Ctrl+K toggles it unless `hotkey` is off.",
-  props: [
-    {name: "groups", type: ["CommandGroup[]"]},
-    {name: "item.label", type: ["string"]},
-    {name: "item.icon", type: ["ReactNode"]},
-    {name: "item.description", type: ["string"]},
-    {name: "item.shortcut", type: ["string"]},
-    {name: "item.onSelect", type: ["() => void"]},
-    {name: "hotkey", type: ["boolean"], default: "true"},
-    {name: "hints", type: ["boolean"], default: "true"},
-    {name: "placeholder", type: ["string"]},
-    {name: "open", type: ["boolean"]},
-    {name: "onOpenChange", type: ["(open: boolean) => void"]},
-  ],
-}
 ---
 
 <Docs current="command-menu">
-  <DocSection item={page('command-menu')} api={api}>
+  <DocSection item={page('command-menu')} api={api['command-menu']}>
     <CommandMenuDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

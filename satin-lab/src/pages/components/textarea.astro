@@ -2,29 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import TextareaDemo, { options } from '../../demos/textarea'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-// Inline until the lead adds 'textarea' to nav.ts / api.ts.
-const item = { id: 'textarea', title: 'Textarea', href: '/components/textarea', description: 'Multi-line text input for notes, requests and longer answers.' }
-const api = {
-  description: 'The `Textarea` component is a wrapper around the `textarea` element with a label, hint and character counter. `maxLength` only drives the counter: it does not stop typing or pasting past it, so check the length in your form validation.',
-  props: [
-    { name: 'label', type: ['string'] },
-    { name: 'optional', type: ['boolean'], default: 'false' },
-    { name: 'hint', type: ['string'] },
-    { name: 'maxLength', type: ['number'] },
-    { name: 'error', type: ['boolean', 'string'], default: 'false' },
-    { name: 'disabled', type: ['boolean'], default: 'false' },
-    { name: 'value', type: ['string'] },
-    { name: 'onChange', type: ['(value: string) => void'] },
-    { name: 'placeholder', type: ['string'] },
-  ],
-}
 ---
 
 <Docs current="textarea">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('textarea')} api={api['textarea']}>
     <TextareaDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

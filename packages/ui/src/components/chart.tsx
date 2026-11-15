@@ -291,7 +291,7 @@ export function ChartLegendRow({
       <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: color }} />
       <span className="min-w-0 flex-1 text-text-default">{label}</span>
       <span className="shrink-0 font-medium whitespace-nowrap text-text-default">{value}</span>
-      {note && <span className="shrink-0 text-right whitespace-nowrap text-text-muted">{note}</span>}
+      {note && <span className="shrink-0 text-end whitespace-nowrap text-text-muted">{note}</span>}
     </div>
   )
 }

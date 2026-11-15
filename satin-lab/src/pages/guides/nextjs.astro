@@ -1,0 +1,138 @@
+---
+/**
+ * Guide: Satin in the Next.js App Router. Styles and the theme in the root layout (a Server
+ * Component), components rendered from Server Components, dark mode read from a cookie on the
+ * server, and the fonts from Fontsource.
+ */
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import CodeFrame from '../../components/CodeFrame.astro'
+import { page } from '../../nav'
+
+const install = `npm i @uisatin/ui`
+const layout = `// app/layout.tsx
+import '@uisatin/ui/styles.css'
+import './globals.css'
+import { cookies } from 'next/headers'
+import { themeCss } from '@uisatin/ui/theme'
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // light, dark or system, saved by the theme toggle. system follows the OS in CSS, no script.
+  const theme = (await cookies()).get('theme')?.value ?? 'system'
+
+  return (
+    <html lang="en" data-theme={theme}>
+      <head>
+        <style>{themeCss({ brand: '#E5533D', radius: 1 })}</style>
+      </head>
+      <body>{children}</body>
+    </html>
+  )
+}`
+const serverPage = `// app/page.tsx: a Server Component, no 'use client' here
+import { Button } from '@uisatin/ui/button'
+import { Badge } from '@uisatin/ui/badge'
+import { SaveButton } from './save-button'
+
+export default function Page() {
+  return (
+    <main>
+      <Badge>Beta</Badge>
+      <Button variant="secondary" asChild>
+        <a href="/docs">Read the docs</a>
+      </Button>
+      <SaveButton />
+    </main>
+  )
+}`
+const clientPart = `// app/save-button.tsx
+'use client'
+
+import { Button } from '@uisatin/ui/button'
+
+export function SaveButton() {
+  return <Button onClick={() => fetch('/api/save', { method: 'POST' })}>Save</Button>
+}`
+const toggle = `// app/theme-toggle.tsx
+'use client'
+
+import * as React from 'react'
+import { SegmentedControl } from '@uisatin/ui/segmented-control'
+
+export function ThemeToggle({ initial }: { initial: string }) {
+  const [theme, setTheme] = React.useState(initial)
+
+  return (
+    <SegmentedControl
+      aria-label="Theme"
+      size="xs"
+      value={theme}
+      onValueChange={(next) => {
+        setTheme(next)
+        document.documentElement.dataset.theme = next
+        // The layout reads this on the next request, so the page arrives in the right theme.
+        document.cookie = \`theme=\${next}; path=/; max-age=31536000; samesite=lax\`
+      }}
+      items={[
+        { value: 'light', label: 'Light' },
+        { value: 'dark', label: 'Dark' },
+        { value: 'system', label: 'System' },
+      ]}
+    />
+  )
+}`
+const fontFiles = `npm i @fontsource-variable/geist @fontsource-variable/geist-mono`
+const globals = `/* app/globals.css */
+/* Geist and Geist Mono, the families Satin's tokens ask for. */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+/* Satin styles its own elements, not the page: paint the page from its tokens so dark mode reaches it. */
+body {
+  margin: 0;
+  background: var(--sa-bg-canvas);
+  color: var(--sa-text-default);
+}`
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<Docs current="nextjs">
+  <PageHeader id="nextjs" title={page('nextjs').title} description={page('nextjs').description} />
+
+  <section aria-labelledby="install-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="install-title" class={h2}>Install</h2>
+    <p class={prose}>Satin needs React 19, which the App Router ships with since Next.js 15. No Tailwind or PostCSS config: the package brings one compiled stylesheet.</p>
+    <CodeFrame code={install} label="Terminal" lang="bash" copyLabel="Copy command" />
+  </section>
+
+  <section aria-labelledby="layout-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="layout-title" class={h2}>Root layout</h2>
+    <p class={prose}> Import <Chip>@uisatin/ui/styles.css</Chip> once, in <Chip>app/layout.tsx</Chip>. The layout is a Server Component, and it can call <Chip>themeCss</Chip>: <Chip>@uisatin/ui/theme</Chip> is plain functions, not marked <Chip>'use client'</Chip>, so the theme is rendered into the HTML and there's no unstyled first frame. </p>
+    <p class={prose}> The layout also sets <Chip>data-theme</Chip> on <Chip>&lt;html&gt;</Chip> from a cookie. The page then arrives in the reader's theme and never flashes light before turning dark. Reading a cookie renders each request on the server; for statically rendered pages, use the head script from the <a class={link} href="/guides/dark-mode">Dark mode</a> guide instead. </p>
+    <CodeFrame code={layout} label="app/layout.tsx" />
+  </section>
+
+  <section aria-labelledby="server-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="server-title" class={h2}>Server Components</h2>
+    <p class={prose}> Every component entry is marked <Chip>'use client'</Chip>, so a Server Component can import and render them directly. What can't cross from the server is a function: an <Chip>onClick</Chip> or <Chip>onValueChange</Chip> belongs in a file of your own marked <Chip>'use client'</Chip>. </p>
+    <CodeFrame code={serverPage} label="app/page.tsx" />
+    <CodeFrame code={clientPart} label="app/save-button.tsx" />
+  </section>
+
+  <section aria-labelledby="toggle-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="toggle-title" class={h2}>Theme toggle</h2>
+    <p class={prose}> The toggle changes the attribute at once and saves the choice in the cookie the layout reads. Render it from the layout or a page with <Chip>{'<ThemeToggle initial={theme} />'}</Chip>, passing the value the layout read. </p>
+    <CodeFrame code={toggle} label="app/theme-toggle.tsx" />
+  </section>
+
+  <section aria-labelledby="fonts-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="fonts-title" class={h2}>Fonts</h2>
+    <p class={prose}> Satin's tokens ask for Geist and Geist Mono by name, or as the variable packages call them. Import the Fontsource packages in your global CSS; <Chip>next/font</Chip> gives each font a generated family name the tokens can't see. Without them the system font is used. </p>
+    <CodeFrame code={fontFiles} label="Terminal" lang="bash" copyLabel="Copy command" />
+    <CodeFrame code={globals} label="app/globals.css" lang="css" />
+  </section>
+</Docs>

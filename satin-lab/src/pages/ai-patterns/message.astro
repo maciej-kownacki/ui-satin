@@ -2,33 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import MessageDemo, { options } from '../../demos/message'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const item = {
-  id: 'message',
-  title: 'Message',
-  href: '/ai-patterns/message',
-  description: 'One chat turn: a bubble for the user, plain text with actions for the assistant.',
-}
-
-const api = {
-  description: 'The `Message` component is a wrapper around the `div` that lays out one chat turn by role.',
-  props: [
-    { name: 'role', type: ['"user"', '"assistant"'], default: '"assistant"' },
-    { name: 'children', type: ['ReactNode'] },
-    { name: 'thinking', type: ['ThinkingStep[]'] },
-    { name: 'source', type: ['Source'] },
-    { name: 'actions', type: ['boolean'], default: 'true' },
-    { name: 'timestamp', type: ['string'] },
-    { name: 'onFeedback', type: ['(value: "like" | "dislike") => void'] },
-  ],
-}
 ---
 
 <Docs current="message">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('message')} api={api['message']}>
     <MessageDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

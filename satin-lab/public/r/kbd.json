@@ -19,6 +19,72 @@
   "docs": "Kbd docs: https://uisatin.dev/components/kbd",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Kbd": {
+        "type": "KbdProps",
+        "extends": [
+          "React.ComponentProps<'kbd'>"
+        ],
+        "props": [
+          {
+            "name": "size",
+            "type": "'sm' | 'md'",
+            "required": false,
+            "default": "'sm'"
+          },
+          {
+            "name": "tone",
+            "type": "'default' | 'inverse'",
+            "required": false,
+            "default": "'default'"
+          }
+        ]
+      },
+      "KbdGroup": {
+        "description": "The keys of one shortcut, 2px apart.",
+        "type": "KbdGroupProps",
+        "extends": [
+          "Omit<React.ComponentProps<'span'>, 'children'>"
+        ],
+        "props": [
+          {
+            "name": "keys",
+            "type": "string | React.ReactNode[]",
+            "required": true,
+            "description": "A shortcut such as \"⌘K\" or \"⌃⇧V\", split into keys, or the keys themselves."
+          },
+          {
+            "name": "size",
+            "type": "KbdProps['size']",
+            "required": false
+          },
+          {
+            "name": "tone",
+            "type": "KbdProps['tone']",
+            "required": false
+          }
+        ]
+      },
+      "KbdHint": {
+        "description": "A key hint for a menu footer: keys, then what they do in 12px text/muted, 6px apart.",
+        "type": "KbdHintProps",
+        "extends": [
+          "Omit<React.ComponentProps<'span'>, 'children'>"
+        ],
+        "props": [
+          {
+            "name": "keys",
+            "type": "React.ReactNode[]",
+            "required": true
+          },
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": true
+          }
+        ]
+      }
+    }
   }
 }

@@ -68,6 +68,24 @@ export interface TableProps<R extends Row = Row> extends Omit<React.ComponentPro
   onSelectedChange?: (ids: string[]) => void
   /** Accessible name of the table. */
   label?: string
+  /**
+   * Names a row for its select checkbox ("Select Acme Corp" instead of "Select row 3"), e.g.
+   * `(row) => row.name`. `index` is the row's place as shown, from 0. Without it the checkbox
+   * says the row's number, which changes when the table is sorted.
+   */
+  rowLabel?: (row: R, index: number) => string
+  /**
+   * Draws every body cell's content, after the column's own `cell`: `content` is what the cell
+   * would show. Wrap it (a link to the row's page), or replace it; the cell keeps its padding,
+   * alignment and truncation.
+   */
+  renderCell?: (cell: { row: R; column: Column<R>; index: number; content: React.ReactNode }) => React.ReactNode
+  /**
+   * Draws each body row. Spread `rowProps` (state and styles) on your `<tr>` and put `children`
+   * (the cells) inside, to add a handler, a data attribute or a context provider:
+   * `renderRow={({ row, rowProps, children }) => <tr {...rowProps} onClick={() => open(row)}>{children}</tr>}`.
+   */
+  renderRow?: (row: { row: R; index: number; selected: boolean; rowProps: React.ComponentProps<'tr'>; children: React.ReactNode }) => React.ReactNode
 }
 
 /** The Figma sort arrow, 14 at 1.09. Pointing down for descending. */
@@ -93,19 +111,24 @@ function SortIcon({ direction }: { direction: 'asc' | 'desc' }) {
 }
 
 // Hover styles for the cells of a hovered (or data-force="hover") row. Written out in full so
-// Tailwind sees every class.
+// Tailwind sees every class. Corners are logical, so the outline mirrors right to left.
 const cellHover = {
   first: [
-    'group-hover/row:rounded-l-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rounded-l-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:rounded-s-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rounded-s-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    // An inset shadow has no logical form: right to left, the start line is on the right.
+    'group-hover/row:rtl:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rtl:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
   ].join(' '),
   middle: [
     'group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
     'group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
   ].join(' '),
   last: [
-    'group-hover/row:rounded-r-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rounded-r-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:rounded-e-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rounded-e-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:rtl:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rtl:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
   ].join(' '),
   only: [
     'group-hover/row:rounded-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_0_0_1px_var(--border-strong)]',
@@ -134,6 +157,9 @@ export function Table<R extends Row = Row>({
   selected: selectedProp,
   onSelectedChange,
   label,
+  rowLabel,
+  renderCell,
+  renderRow,
   className,
   ...props
 }: TableProps<R>) {
@@ -178,7 +204,8 @@ export function Table<R extends Row = Row>({
     const update = () => {
       const size = el.clientWidth / el.scrollWidth
       const max = el.scrollWidth - el.clientWidth
-      setBar({ size, offset: max > 0 ? el.scrollLeft / el.scrollWidth : 0, atEnd: el.scrollLeft >= max - 1 })
+      // Right to left, scrollLeft runs from 0 down to -max; the thumb moves from the start the same way.
+      setBar({ size, offset: max > 0 ? el.scrollLeft / el.scrollWidth : 0, atEnd: Math.abs(el.scrollLeft) >= max - 1 })
     }
     update()
     el.addEventListener('scroll', update, { passive: true })
@@ -190,9 +217,9 @@ export function Table<R extends Row = Row>({
     }
   }, [scroll, columns, rows])
 
-  // The leading column(s) stay put while the rest scroll.
+  // The leading column(s) stay put while the rest scroll, at the start side.
   const stickyFirst = (bg: string) => (scroll ? cn('sticky z-[1]', bg) : '')
-  const firstDataLeft = selectable ? 'left-6' : 'left-0'
+  const firstDataStart = selectable ? 'start-6' : 'start-0'
 
   const cellPosition = (index: number, count: number) =>
     count === 1 ? cellHover.only : index === 0 ? cellHover.first : index === count - 1 ? cellHover.last : cellHover.middle
@@ -201,7 +228,9 @@ export function Table<R extends Row = Row>({
   const table = (
     <table
       aria-label={label}
-      className="w-full table-fixed border-separate border-spacing-0 text-left"
+      // Not text-start: a <th> centres its text unless the table sets an alignment, so it's
+      // explicit, and right to left it's the right.
+      className="w-full table-fixed border-separate border-spacing-0 text-left rtl:text-right"
       // With overflow="fit" the columns keep at least 120px each, so a phone scrolls instead of crushing them.
       style={tableWidth ? { width: tableWidth, minWidth: '100%' } : { minWidth: columns.length * 120 + (selectable ? 24 : 0) }}
     >
@@ -216,7 +245,7 @@ export function Table<R extends Row = Row>({
           {selectable && (
             <th
               scope="col"
-              className={cn('border-b border-border-subtle py-2 pl-2 align-middle', stickyFirst('left-0 bg-component-table-header'))}
+              className={cn('border-b border-border-subtle py-2 ps-2 align-middle', stickyFirst('start-0 bg-component-table-header'))}
             >
               <Checkbox
                 aria-label={labels.selectAllRows}
@@ -236,9 +265,10 @@ export function Table<R extends Row = Row>({
                 scope="col"
                 aria-sort={c.sortable ? (active === 'asc' ? 'ascending' : active === 'desc' ? 'descending' : 'none') : undefined}
                 className={cn(
-                  'h-8 overflow-hidden border-b border-border-subtle py-1 pr-2 pl-1 align-middle font-medium',
-                  c.align === 'right' && 'text-right',
-                  i === 0 && stickyFirst(cn(firstDataLeft, 'bg-component-table-header')),
+                  'h-8 overflow-hidden border-b border-border-subtle py-1 ps-1 pe-2 align-middle font-medium',
+                  // 'right' lines up at the end: the left in right-to-left, like the numbers it is for.
+                  c.align === 'right' && 'text-end',
+                  i === 0 && stickyFirst(cn(firstDataStart, 'bg-component-table-header')),
                 )}
               >
                 {c.sortable ? (
@@ -266,12 +296,13 @@ export function Table<R extends Row = Row>({
         {sortedRows.map((row, r) => {
           const isSelected = selected.includes(row.id)
           const rowBg = zebra && r % 2 === 1 ? 'bg-component-table-zebra' : 'bg-bg-card'
-          return (
-            <tr key={row.id} data-state={isSelected ? 'selected' : undefined} className={cn('group/row', rowBg, rowHover)}>
+          const rowProps: React.ComponentProps<'tr'> = { 'data-state': isSelected ? 'selected' : undefined, className: cn('group/row', rowBg, rowHover) } as React.ComponentProps<'tr'>
+          const cells = (
+            <>
               {selectable && (
-                <td className={cn('py-2 pl-2 align-middle', cellPosition(0, cellCount), stickyFirst(cn('left-0', rowBg)))}>
+                <td className={cn('py-2 ps-2 align-middle', cellPosition(0, cellCount), stickyFirst(cn('start-0', rowBg)))}>
                   <Checkbox
-                    aria-label={`${labels.selectRow} ${r + 1}`}
+                    aria-label={rowLabel ? labels.selectNamedRow(rowLabel(row, r)) : labels.selectRow(r + 1)}
                     checked={isSelected}
                     onCheckedChange={(v) =>
                       setSelected(v === true ? [...selected, row.id] : selected.filter((id) => id !== row.id))
@@ -281,16 +312,17 @@ export function Table<R extends Row = Row>({
                 </td>
               )}
               {columns.map((c, i) => {
-                const content = c.cell ? c.cell(row) : ((row as Record<string, unknown>)[c.key] as React.ReactNode)
+                const own = c.cell ? c.cell(row) : ((row as Record<string, unknown>)[c.key] as React.ReactNode)
+                const content = renderCell ? renderCell({ row, column: c, index: r, content: own }) : own
                 const plain = typeof content === 'string' || typeof content === 'number'
                 return (
                   <td
                     key={c.key}
                     className={cn(
-                      'h-10 overflow-hidden py-2 pr-2.5 pl-3 align-middle text-body leading-(--text-body--line-height) text-text-default',
-                      c.align === 'right' && 'text-right',
+                      'h-10 overflow-hidden py-2 ps-3 pe-2.5 align-middle text-body leading-(--text-body--line-height) text-text-default',
+                      c.align === 'right' && 'text-end',
                       cellPosition(i + (selectable ? 1 : 0), cellCount),
-                      i === 0 && stickyFirst(cn(firstDataLeft, rowBg)),
+                      i === 0 && stickyFirst(cn(firstDataStart, rowBg)),
                     )}
                   >
                     {plain ? (
@@ -303,6 +335,13 @@ export function Table<R extends Row = Row>({
                   </td>
                 )
               })}
+            </>
+          )
+          return renderRow ? (
+            <React.Fragment key={row.id}>{renderRow({ row, index: r, selected: isSelected, rowProps, children: cells })}</React.Fragment>
+          ) : (
+            <tr key={row.id} {...rowProps}>
+              {cells}
             </tr>
           )
         })}
@@ -323,7 +362,7 @@ export function Table<R extends Row = Row>({
               ref={viewport}
               tabIndex={0}
               role="region"
-              aria-label={label ? `${label}, scrolls sideways` : 'Table, scrolls sideways'}
+              aria-label={labels.tableRegion(label)}
               className="overflow-x-auto [scrollbar-width:none] focus-visible:outline-none [&::-webkit-scrollbar]:hidden"
             >
               {table}
@@ -331,7 +370,8 @@ export function Table<R extends Row = Row>({
             <div
               aria-hidden
               className={cn(
-                'pointer-events-none absolute inset-y-0 right-0 w-16 bg-linear-to-r from-bg-card-fade to-bg-card',
+                // The fade sits at the end, where more columns wait; a gradient has no logical form.
+                'pointer-events-none absolute inset-y-0 end-0 w-16 bg-linear-to-r from-bg-card-fade to-bg-card rtl:bg-linear-to-l',
                 'transition-opacity duration-(--duration-fast) ease-(--ease-out)',
                 bar.atEnd && 'opacity-0',
               )}
@@ -340,7 +380,7 @@ export function Table<R extends Row = Row>({
           <div aria-hidden className="px-3 pt-1.5 pb-1">
             <div className="relative h-1.5 overflow-hidden rounded-full bg-bg-muted">
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-border-strong"
+                className="absolute inset-y-0 start-0 rounded-full bg-border-strong"
                 style={{ width: `${bar.size * 100}%`, transform: `translateX(${(bar.offset / bar.size) * 100}%)` }}
               />
             </div>

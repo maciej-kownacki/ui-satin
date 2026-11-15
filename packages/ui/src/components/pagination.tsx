@@ -4,6 +4,7 @@ import * as React from 'react'
 import { NavArrowLeft, NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 import { SLIDE_MS, useSlidingIndicator } from './sliding-indicator'
 
 /**
@@ -28,7 +29,8 @@ import { SLIDE_MS, useSlidingIndicator } from './sliding-indicator'
  * Previous and Next are disabled at the ends. With `getHref`, every page is a link (for pages
  * the server renders); without it they are buttons that call `onPageChange`.
  *
- * A `nav` named "Pagination"; the current page has aria-current="page".
+ * A `nav` named by the `pagination` label ("Pagination"); the current page has aria-current="page".
+ * Pages are named by `page` ("Page 3") and the compact count reads `pageOf` ("Page 5 of 12").
  */
 export interface PaginationProps extends Omit<React.ComponentProps<'nav'>, 'children'> {
   /** How many pages there are. */
@@ -42,7 +44,9 @@ export interface PaginationProps extends Omit<React.ComponentProps<'nav'>, 'chil
   layout?: 'full' | 'compact'
   /** Pages shown on each side of the current one (full layout). */
   siblings?: number
+  /** Defaults to the `previous` label. */
   previousLabel?: string
+  /** Defaults to the `next` label. */
   nextLabel?: string
   /** How the row moves when the page changes. */
   motion?: 'slide' | 'scroll' | 'none'
@@ -121,13 +125,14 @@ export function Pagination({
   getHref,
   layout = 'full',
   siblings = 1,
-  previousLabel = 'Previous',
-  nextLabel = 'Next',
+  previousLabel,
+  nextLabel,
   motion = 'scroll',
   className,
-  'aria-label': ariaLabel = 'Pagination',
+  'aria-label': ariaLabel,
   ...props
 }: PaginationProps) {
+  const labels = useSatinLabels()
   const [uncontrolled, setUncontrolled] = React.useState(defaultPage)
   const page = Math.min(Math.max(pageProp ?? uncontrolled, 1), Math.max(pageCount, 1))
   const go = (p: number) => {
@@ -178,7 +183,8 @@ export function Pagination({
     const list = listRef.current
     if (!prev || !list || motion !== 'scroll' || layout !== 'full') return
     if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
-    const sign = dir === 'next' ? 1 : -1
+    // Later pages are to the right, or to the left in right-to-left.
+    const sign = (dir === 'next' ? 1 : -1) * (getComputedStyle(list).direction === 'rtl' ? -1 : 1)
     const timing: KeyframeAnimationOptions = { duration: STRIP_MS, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
     const seen = new Set<string>()
     list.querySelectorAll<HTMLElement>('[data-cell]').forEach((li) => {
@@ -228,8 +234,9 @@ export function Pagination({
   const step = (dir: -1 | 1) => {
     const to = page + dir
     const disabled = to < 1 || to > pageCount
-    const label = dir < 0 ? previousLabel : nextLabel
-    const icon = dir < 0 ? <NavArrowLeft aria-hidden /> : <NavArrowRight aria-hidden />
+    const label = dir < 0 ? (previousLabel ?? labels.previous) : (nextLabel ?? labels.next)
+    // Mirrored right to left, where Previous points right.
+    const icon = dir < 0 ? <NavArrowLeft aria-hidden className="rtl:-scale-x-100" /> : <NavArrowRight aria-hidden className="rtl:-scale-x-100" />
     const compact = layout === 'compact'
     const content = compact ? icon : dir < 0 ? <>{icon}{label}</> : <>{label}{icon}</>
     // A link can't be disabled: at the ends it is a disabled button instead.
@@ -247,12 +254,12 @@ export function Pagination({
   }
 
   return (
-    <nav data-slot="pagination" data-layout={layout} aria-label={ariaLabel} className={cn('flex items-center', className)} {...props}>
+    <nav data-slot="pagination" data-layout={layout} aria-label={ariaLabel ?? labels.pagination} className={cn('flex items-center', className)} {...props}>
       {layout === 'compact' ? (
         <div className="flex items-center gap-2">
           {step(-1)}
           <span className="text-sm text-text-muted tabular-nums" aria-live="polite">
-            Page <PageText text={String(page)} dir={dir} motion={motion === 'scroll' ? 'scroll' : textMotion} /> of {pageCount}
+            {labels.pageOf(<PageText text={String(page)} dir={dir} motion={motion === 'scroll' ? 'scroll' : textMotion} />, pageCount)}
           </span>
           {step(1)}
         </div>
@@ -280,7 +287,7 @@ export function Pagination({
                     ) : (
                       target(p, pageClass, p, {
                         'aria-current': p === page ? 'page' : undefined,
-                        'aria-label': `Page ${p}`,
+                        'aria-label': labels.page(p),
                       } as React.HTMLAttributes<HTMLElement>)
                     )}
                   </li>
@@ -304,7 +311,7 @@ export function Pagination({
                         })
                       : target(p, pageClass, text, {
                           'aria-current': p === page ? 'page' : undefined,
-                          'aria-label': `Page ${p}`,
+                          'aria-label': labels.page(p),
                         } as React.HTMLAttributes<HTMLElement>)}
                   </li>
                 )

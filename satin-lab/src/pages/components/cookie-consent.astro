@@ -2,27 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import Demo, { options } from '../../demos/cookie-consent'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-const api = {
-  description: 'The `CookieConsent` component is a card that asks what the site may store: the message, then Customize, Reject all and Accept all. It is a labelled region, not a modal.',
-  props: [
-    {name: 'children', type: ['ReactNode']},
-    {name: 'onAccept', type: ['() => void']},
-    {name: 'onReject', type: ['() => void']},
-    {name: 'onCustomize', type: ['() => void']},
-    {name: 'acceptLabel', type: ['string'], default: '"Accept all"'},
-    {name: 'rejectLabel', type: ['string'], default: '"Reject all"'},
-    {name: 'customizeLabel', type: ['string'], default: '"Customize"'},
-    {name: 'floating', type: ['boolean'], default: 'false'},
-  ],
-}
 ---
 
 <Docs current="cookie-consent">
-  <DocSection item={page('cookie-consent')} api={api}>
+  <DocSection item={page('cookie-consent')} api={api['cookie-consent']}>
     <Demo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

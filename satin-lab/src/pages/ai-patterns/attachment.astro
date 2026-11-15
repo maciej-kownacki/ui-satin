@@ -2,33 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import AttachmentDemo, { options } from '../../demos/attachment'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-// Inline until the lead adds 'attachment' to nav.ts and api.ts.
-const item = {
-  id: 'attachment',
-  title: 'Attachment',
-  href: '/ai-patterns/attachment',
-  description: 'A file attached to a prompt or a message, with its type, size and a preview.',
-}
-const api = {
-  description: 'The `Attachment` component is a wrapper around the `button` that shows a file name, type and size.',
-  props: [
-    { name: 'name', type: ['string'] },
-    { name: 'meta', type: ['string'] },
-    { name: 'icon', type: ['ReactNode'], default: 'file icon' },
-    { name: 'size', type: ['"sm"', '"lg"'], default: '"lg"' },
-    { name: 'shape', type: ['"default"', '"rounded"'], default: '"default"' },
-    { name: 'onRemove', type: ['() => void'] },
-    { name: 'onOpen', type: ['() => void'] },
-  ],
-}
 ---
 
 <Docs current="attachment">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('attachment')} api={api['attachment']}>
     <AttachmentDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

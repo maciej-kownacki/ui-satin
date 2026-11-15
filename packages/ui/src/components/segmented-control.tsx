@@ -14,6 +14,13 @@ import { useSlidingIndicator } from './sliding-indicator'
  * Values 1:1 with the uiKit `_segmentedControl/item` (3080:20278) and `SegmentedControl` (3080:21247) sets.
  *
  * Other props, `ref` included, go to the track (the Radix ToggleGroup root, a `group`).
+ *
+ * The segments come as `items` (data) or as children, one `SegmentedControlSegment` each:
+ *
+ *   <SegmentedControl defaultValue="list" aria-label="View">
+ *     <SegmentedControlSegment value="list" icon={<List />}>List</SegmentedControlSegment>
+ *     <SegmentedControlSegment value="board">Board</SegmentedControlSegment>
+ *   </SegmentedControl>
  */
 type Size = 'xs' | 'md' | 'lg'
 type Shape = 'default' | 'rounded'
@@ -26,7 +33,10 @@ export interface SegmentedControlItem {
 }
 
 export interface SegmentedControlProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'dir' | 'children'> {
-  items: SegmentedControlItem[]
+  /** The segments as data. Or leave it out and write them as `SegmentedControlSegment` children. */
+  items?: SegmentedControlItem[]
+  /** The segments as elements, when they need more than a label and an icon (a Badge, a Tooltip around one). */
+  children?: React.ReactNode
   value?: string
   defaultValue?: string
   onValueChange?: (value: string) => void
@@ -71,8 +81,46 @@ const segment = cva(
   },
 )
 
+type SegmentContext = { size: Size; shape: Shape; fullWidth: boolean; measured: boolean }
+const SegmentContext = React.createContext<SegmentContext>({ size: 'md', shape: 'default', fullWidth: false, measured: false })
+
+export interface SegmentedControlSegmentProps extends Omit<React.ComponentProps<typeof ToggleGroup.Item>, 'asChild'> {
+  value: string
+  icon?: React.ReactNode
+}
+
+/** One segment, for SegmentedControl's children. Takes its size and shape from the control. */
+export function SegmentedControlSegment({ icon, className, children, ...props }: SegmentedControlSegmentProps) {
+  const { size, shape, fullWidth, measured } = React.useContext(SegmentContext)
+  return (
+    <ToggleGroup.Item
+      data-slot="segmented-control-segment"
+      {...props}
+      className={cn(
+        segment({ size, shape, fullWidth }),
+        // Unselected focus: bg/muted under the ring. Selected focus keeps the pill's fill.
+        'data-[state=off]:satin-focus:bg-bg-muted',
+        // Before the pill is measured (server render), the selected segment paints its own fill.
+        !measured && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+        className,
+      )}
+    >
+      {icon}
+      {children}
+    </ToggleGroup.Item>
+  )
+}
+
+/** The first segment's value, from `items` or the children. */
+function firstValue(items: SegmentedControlItem[] | undefined, children: React.ReactNode) {
+  if (items) return items[0]?.value ?? ''
+  const first = React.Children.toArray(children).find(React.isValidElement) as React.ReactElement<{ value?: string }> | undefined
+  return first?.props.value ?? ''
+}
+
 export function SegmentedControl({
   items,
+  children,
   value: valueProp,
   defaultValue,
   onValueChange,
@@ -84,7 +132,7 @@ export function SegmentedControl({
   ref,
   ...props
 }: SegmentedControlProps) {
-  const [inner, setInner] = React.useState(defaultValue ?? items[0]?.value ?? '')
+  const [inner, setInner] = React.useState(() => defaultValue ?? firstValue(items, children))
   const value = valueProp ?? inner
   const trackRef = React.useRef<HTMLDivElement>(null)
   // The app's ref and ours, on the track.
@@ -96,8 +144,10 @@ export function SegmentedControl({
     },
     [ref],
   )
+  const count = items ? items.length : React.Children.count(children)
   // The pill slides under the selected segment (sliding-indicator.tsx).
-  const pill = useSlidingIndicator(trackRef, '[data-state="on"]', `${value}|${size}|${fullWidth}|${items.length}`)
+  const pill = useSlidingIndicator(trackRef, '[data-state="on"]', `${value}|${size}|${fullWidth}|${count}`)
+  const context = React.useMemo(() => ({ size, shape, fullWidth, measured: pill.ready }), [size, shape, fullWidth, pill.ready])
 
   return (
     <ToggleGroup.Root
@@ -122,23 +172,15 @@ export function SegmentedControl({
           shape === 'rounded' ? 'rounded-pill' : 'rounded-sm',
         )}
       />
-      {items.map((item) => (
-        <ToggleGroup.Item
-          key={item.value}
-          value={item.value}
-          disabled={item.disabled}
-          className={cn(
-            segment({ size, shape, fullWidth }),
-            // Unselected focus: bg/muted under the ring. Selected focus keeps the pill's fill.
-            'data-[state=off]:satin-focus:bg-bg-muted',
-            // Before the pill is measured (server render), the selected segment paints its own fill.
-            !pill.ready && 'data-[state=on]:bg-component-segmented-selected data-[state=on]:[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
-          )}
-        >
-          {item.icon}
-          {item.label}
-        </ToggleGroup.Item>
-      ))}
+      <SegmentContext.Provider value={context}>
+        {items
+          ? items.map((item) => (
+              <SegmentedControlSegment key={item.value} value={item.value} disabled={item.disabled} icon={item.icon}>
+                {item.label}
+              </SegmentedControlSegment>
+            ))
+          : children}
+      </SegmentContext.Provider>
     </ToggleGroup.Root>
   )
 }

@@ -21,6 +21,39 @@
   "docs": "Empty state docs: https://uisatin.dev/components/empty-state",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "EmptyState": {
+        "type": "EmptyStateProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'title'>",
+          "VariantProps<typeof emptyStateVariants>"
+        ],
+        "props": [
+          {
+            "name": "title",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "icon",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "A 16px icon, e.g. from iconoir-react."
+          },
+          {
+            "name": "actions",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "One or two Buttons."
+          }
+        ]
+      }
+    }
   }
 }

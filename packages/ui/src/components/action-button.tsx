@@ -119,7 +119,8 @@ export function ActionButton({
   const icon =
     trailingIcon === undefined ? (
       // Iconoir's ArrowRight, drawn here so the button needs no icon package.
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+      // Mirrored right to left, where forward is to the left.
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden className="rtl:-scale-x-100">
         <path d="M3 12H21M21 12L14 5M21 12L14 19" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ) : (

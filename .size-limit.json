@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Button (with cva, clsx, tailwind-merge, Radix Slot)",
+    "path": "packages/ui/dist/components/button.js",
+    "import": "{ Button }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "14 kB"
+  },
+  {
+    "name": "Banner (meshes inlined)",
+    "path": "packages/ui/dist/components/banner.js",
+    "import": "{ Banner }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "30 kB"
+  },
+  {
+    "name": "Dialog",
+    "path": "packages/ui/dist/components/dialog.js",
+    "import": "{ Dialog }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "30 kB"
+  },
+  {
+    "name": "styles.css",
+    "path": "packages/ui/dist/styles.css",
+    "gzip": true,
+    "limit": "26 kB",
+    "rolldown": false
+  }
+]

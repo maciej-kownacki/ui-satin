@@ -114,7 +114,7 @@ export function ContextMenuSub({ label, icon, children, disabled, className, ...
         className={cn(menuItemClass, 'data-[state=open]:bg-bg-selected')}
       >
         <MenuItemContent label={label} icon={icon} layout="inline" />
-        <NavArrowRight aria-hidden className="size-4 text-text-muted [stroke-width:1.875]" />
+        <NavArrowRight aria-hidden className="size-4 text-text-muted [stroke-width:1.875] rtl:-scale-x-100" />
       </ContextPrimitive.SubTrigger>
       <ContextPrimitive.Portal>
         <ContextPrimitive.SubContent

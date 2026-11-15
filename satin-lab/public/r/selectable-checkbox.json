@@ -21,6 +21,16 @@
   "docs": "Selectable checkbox docs: https://uisatin.dev/components/selectable-checkbox",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "SelectableCheckbox": {
+        "type": "SelectableCheckboxProps",
+        "extends": [
+          "Omit<CheckboxProps, 'label' | 'description' | 'placement' | 'title' | 'children'>",
+          "SelectableCardBaseProps"
+        ],
+        "props": []
+      }
+    }
   }
 }

@@ -14,12 +14,70 @@
     {
       "path": "registry/satin/ui/field-group.tsx",
       "type": "registry:ui",
-      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\nimport { FieldDescription, FieldError, FormContext, RequiredMark, useFormContext, type FormContextValue } from '@/registry/satin/ui/form-field'\n\n/**\n * FieldGroup: fields or options that answer one question, under one legend: an address, a date\n * range, \"Notify me about\" with a list of checkboxes. It is a `<fieldset>`, so the legend names\n * the whole group for screen readers and `disabled` reaches every control in it.\n *\n * - `variant=\"fields\"` (default) is a block of FormFields under a 16px heading; `columns` puts\n *   them side by side (City | Postcode) from the `sm` breakpoint up.\n * - `variant=\"choices\"` is a list of Checkboxes, Switches or Radios under a label set like a\n *   FormField's, 12px apart, with one description and one error for the whole list.\n * - In a horizontal Form the legend takes the label column and the fields inside stack\n *   vertically next to it.\n * - `error` (or the Form's `errors[name]`) shows under the group and marks it invalid.\n */\nexport interface FieldGroupProps extends Omit<React.ComponentProps<'fieldset'>, 'children'> {\n  legend: React.ReactNode\n  description?: React.ReactNode\n  error?: React.ReactNode\n  /** Picks the group's message out of the Form's `errors`. */\n  name?: string\n  required?: boolean\n  variant?: 'fields' | 'choices'\n  columns?: 1 | 2 | 3\n  layout?: 'vertical' | 'horizontal'\n  children: React.ReactNode\n}\n\nconst columnClass = { 1: '', 2: 'sa:sm:grid-cols-2', 3: 'sa:sm:grid-cols-3' }\n\nexport function FieldGroup({\n  legend,\n  description,\n  error: ownError,\n  name,\n  required,\n  variant = 'fields',\n  columns = 1,\n  layout: ownLayout,\n  disabled: ownDisabled,\n  className,\n  children,\n  ...props\n}: FieldGroupProps) {\n  const form = useFormContext()\n  const id = React.useId()\n  const error = ownError ?? (name ? form?.errors?.[name] : undefined)\n  const layout = ownLayout ?? form?.layout ?? 'vertical'\n  const disabled = ownDisabled ?? form?.disabled\n  const invalid = Boolean(error)\n  const horizontal = layout === 'horizontal'\n  const choices = variant === 'choices'\n  const descriptionId = description ? `${id}-description` : undefined\n  const errorId = invalid ? `${id}-error` : undefined\n\n  // Fields inside a group stack under (or beside) its legend, never in a label column of their own.\n  const inner = React.useMemo<FormContextValue>(\n    () => ({ ...form, layout: 'vertical', disabled }),\n    [form, disabled],\n  )\n\n  return (\n    <fieldset\n      data-slot=\"field-group\"\n      data-variant={variant}\n      data-layout={layout}\n      data-invalid={invalid || undefined}\n      disabled={disabled}\n      aria-describedby={[descriptionId, errorId].filter(Boolean).join(' ') || undefined}\n      className={cn('sa:m-0 sa:min-w-0 sa:border-0 sa:p-0', className)}\n      {...props}\n    >\n      {/* A floated legend lays out like any block, which a fieldset's own legend does not. */}\n      <legend\n        className={cn(\n          'sa:float-left sa:p-0 sa:text-text-default',\n          horizontal ? 'sa:w-40' : 'sa:w-full',\n          choices ? 'sa:text-sm sa:leading-[18px] sa:font-medium' : 'sa:text-base sa:font-medium',\n          disabled && 'sa:opacity-50',\n        )}\n      >\n        <span className=\"sa:flex sa:items-start sa:gap-0.5\">\n          {legend}\n          {required && <RequiredMark />}\n        </span>\n        {description && (\n          <FieldDescription id={descriptionId} className=\"sa:mt-1 sa:font-normal\">\n            {description}\n          </FieldDescription>\n        )}\n      </legend>\n      <div\n        className={cn(\n          'sa:grid sa:min-w-0',\n          horizontal ? 'sa:ml-46' : cn('sa:clear-both', choices ? 'sa:pt-2' : 'sa:pt-4'),\n          choices ? 'sa:gap-3' : cn('sa:gap-5', columnClass[columns]),\n        )}\n      >\n        <FormContext.Provider value={inner}>{children}</FormContext.Provider>\n        {invalid && <FieldError id={errorId} className={cn(columns > 1 && 'sa:sm:col-span-full')}>{error}</FieldError>}\n      </div>\n    </fieldset>\n  )\n}\n"
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\nimport { FieldDescription, FieldError, FormContext, RequiredMark, useFormContext, type FormContextValue } from '@/registry/satin/ui/form-field'\n\n/**\n * FieldGroup: fields or options that answer one question, under one legend: an address, a date\n * range, \"Notify me about\" with a list of checkboxes. It is a `<fieldset>`, so the legend names\n * the whole group for screen readers and `disabled` reaches every control in it.\n *\n * - `variant=\"fields\"` (default) is a block of FormFields under a 16px heading; `columns` puts\n *   them side by side (City | Postcode) from the `sm` breakpoint up.\n * - `variant=\"choices\"` is a list of Checkboxes, Switches or Radios under a label set like a\n *   FormField's, 12px apart, with one description and one error for the whole list.\n * - In a horizontal Form the legend takes the label column and the fields inside stack\n *   vertically next to it.\n * - `error` (or the Form's `errors[name]`) shows under the group and marks it invalid.\n */\nexport interface FieldGroupProps extends Omit<React.ComponentProps<'fieldset'>, 'children'> {\n  legend: React.ReactNode\n  description?: React.ReactNode\n  error?: React.ReactNode\n  /** Picks the group's message out of the Form's `errors`. */\n  name?: string\n  required?: boolean\n  variant?: 'fields' | 'choices'\n  columns?: 1 | 2 | 3\n  layout?: 'vertical' | 'horizontal'\n  children: React.ReactNode\n}\n\nconst columnClass = { 1: '', 2: 'sa:sm:grid-cols-2', 3: 'sa:sm:grid-cols-3' }\n\nexport function FieldGroup({\n  legend,\n  description,\n  error: ownError,\n  name,\n  required,\n  variant = 'fields',\n  columns = 1,\n  layout: ownLayout,\n  disabled: ownDisabled,\n  className,\n  children,\n  ...props\n}: FieldGroupProps) {\n  const form = useFormContext()\n  const id = React.useId()\n  const error = ownError ?? (name ? form?.errors?.[name] : undefined)\n  const layout = ownLayout ?? form?.layout ?? 'vertical'\n  const disabled = ownDisabled ?? form?.disabled\n  const invalid = Boolean(error)\n  const horizontal = layout === 'horizontal'\n  const choices = variant === 'choices'\n  const descriptionId = description ? `${id}-description` : undefined\n  const errorId = invalid ? `${id}-error` : undefined\n\n  // Fields inside a group stack under (or beside) its legend, never in a label column of their own.\n  const inner = React.useMemo<FormContextValue>(\n    () => ({ ...form, layout: 'vertical', disabled }),\n    [form, disabled],\n  )\n\n  return (\n    <fieldset\n      data-slot=\"field-group\"\n      data-variant={variant}\n      data-layout={layout}\n      data-invalid={invalid || undefined}\n      disabled={disabled}\n      aria-describedby={[descriptionId, errorId].filter(Boolean).join(' ') || undefined}\n      className={cn('sa:m-0 sa:min-w-0 sa:border-0 sa:p-0', className)}\n      {...props}\n    >\n      {/* A floated legend lays out like any block, which a fieldset's own legend does not. */}\n      <legend\n        className={cn(\n          // Logical: the legend column sits at the start side, the right in right-to-left.\n          'sa:float-start sa:p-0 sa:text-text-default',\n          horizontal ? 'sa:w-40' : 'sa:w-full',\n          choices ? 'sa:text-sm sa:leading-[18px] sa:font-medium' : 'sa:text-base sa:font-medium',\n          disabled && 'sa:opacity-50',\n        )}\n      >\n        <span className=\"sa:flex sa:items-start sa:gap-0.5\">\n          {legend}\n          {required && <RequiredMark />}\n        </span>\n        {description && (\n          <FieldDescription id={descriptionId} className=\"sa:mt-1 sa:font-normal\">\n            {description}\n          </FieldDescription>\n        )}\n      </legend>\n      <div\n        className={cn(\n          'sa:grid sa:min-w-0',\n          horizontal ? 'sa:ms-46' : cn('sa:clear-both', choices ? 'sa:pt-2' : 'sa:pt-4'),\n          choices ? 'sa:gap-3' : cn('sa:gap-5', columnClass[columns]),\n        )}\n      >\n        <FormContext.Provider value={inner}>{children}</FormContext.Provider>\n        {invalid && <FieldError id={errorId} className={cn(columns > 1 && 'sa:sm:col-span-full')}>{error}</FieldError>}\n      </div>\n    </fieldset>\n  )\n}\n"
     }
   ],
   "docs": "Field group docs: https://uisatin.dev/components/field-group",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "FieldGroup": {
+        "type": "FieldGroupProps",
+        "extends": [
+          "Omit<React.ComponentProps<'fieldset'>, 'children'>"
+        ],
+        "props": [
+          {
+            "name": "legend",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "error",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "Picks the group's message out of the Form's `errors`."
+          },
+          {
+            "name": "required",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "variant",
+            "type": "'fields' | 'choices'",
+            "required": false,
+            "default": "'fields'"
+          },
+          {
+            "name": "columns",
+            "type": "1 | 2 | 3",
+            "required": false,
+            "default": "1"
+          },
+          {
+            "name": "layout",
+            "type": "'vertical' | 'horizontal'",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true
+          }
+        ]
+      }
+    }
   }
 }

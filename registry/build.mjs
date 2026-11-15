@@ -55,7 +55,7 @@ items.push({
   type: 'registry:item',
   title: 'Satin styles',
   description:
-    'Satin tokens, motion and every class the components use, precompiled. Import it once (for example in main.tsx); wrap a subtree in `.dark` for dark mode. No Tailwind needed.',
+    'Satin tokens, motion and every class the components use, precompiled. Import it once (for example in main.tsx); `.dark` or `data-theme="dark"` on a parent for dark mode, `data-theme="system"` to follow the OS. No Tailwind needed.',
   files: [
     {
       path: 'registry/satin/styles/satin.css',
@@ -86,11 +86,18 @@ const components = readdirSync(join(ui, 'src/components'))
   .map((f) => f.replace(/\.tsx$/, ''))
   .sort()
 
+// What each file's components take, from the TypeScript source (scripts/props.mjs).
+const props = JSON.parse(readFileSync(join(root, 'satin-lab/src/props.json'), 'utf8'))
+// Docs pages whose component lives in another file: the Area chart is line-chart.tsx's AreaCard.
+const ALIASES = { 'area-chart': 'line-chart' }
+// The imports, read with the comments taken out: a comment that mentions "from './dialog'" isn't one.
+const importsOf = (code) => code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"])\/\/.*$/gm, '$1')
+
 for (const name of components) {
   const raw = readFileSync(join(ui, 'src/components', `${name}.tsx`), 'utf8')
-  const local = [...raw.matchAll(/from\s+'\.\/([^']+)'/g)].map((m) => m[1])
+  const local = [...importsOf(raw).matchAll(/from\s+'\.\/([^']+)'/g)].map((m) => m[1]).filter((d) => d !== name)
   for (const dep of local) if (!components.includes(dep)) throw new Error(`${name} imports ./${dep}, which is not a component`)
-  const others = [...raw.matchAll(/from\s+'(\.\.?\/[^']+)'/g)].map((m) => m[1]).filter((s) => s !== '../lib/utils' && !s.startsWith('./'))
+  const others = [...importsOf(raw).matchAll(/from\s+'(\.\.?\/[^']+)'/g)].map((m) => m[1]).filter((s) => s !== '../lib/utils' && !s.startsWith('./'))
   if (others.length) throw new Error(`${name} imports ${others.join(', ')}; the registry only knows ../lib/utils and ./<component>`)
 
   const content = prefixed(raw, name)
@@ -106,10 +113,34 @@ for (const name of components) {
     registryDependencies: [url('satin-styles'), url('utils'), ...[...new Set(local)].sort().map(url)],
     files: [{ path: `registry/satin/ui/${name}.tsx`, type: 'registry:ui', content }],
     ...(page ? { docs: `${page.title} docs: https://uisatin.dev${page.href}` } : {}),
-    // The npm release this source matches, and the edition: Free (open source) or Pro.
-    meta: { version: pkg.version, edition: pkg.satin?.edition ?? 'free' },
+    // The npm release this source matches, the edition (Free, open source, or Pro), and the
+    // props of every component in the file, from its TypeScript types.
+    meta: { version: pkg.version, edition: pkg.satin?.edition ?? 'free', ...(props[name] ? { props: props[name] } : {}) },
   })
 }
+
+// A page whose component sits in another file gets an item of its own that installs that file.
+for (const [alias, file] of Object.entries(ALIASES)) {
+  const target = items.find((i) => i.name === file)
+  const page = pages[alias]
+  if (!target || !page) throw new Error(`registry alias ${alias} → ${file}: no item or no page`)
+  items.push({ ...target, name: alias, title: page.title, description: page.description, docs: `${page.title} docs: https://uisatin.dev${page.href}` })
+}
+
+// Examples: one registry:example per component with a docs demo, its shortest usage, served by
+// the docs site (satin-lab/src/pages/r/[name]-demo.json.ts reads the demo). Listed here so the
+// index has them.
+const examples = components
+  .concat(Object.keys(ALIASES))
+  .filter((name) => existsSync(join(root, 'satin-lab/src/demos', `${name}.tsx`)) && pages[name])
+  .map((name) => ({
+    name: `${name}-demo`,
+    type: 'registry:example',
+    title: `${pages[name].title} example`,
+    description: `The shortest use of ${pages[name].title}, from its docs page.`,
+    registryDependencies: [url(name)],
+    files: [{ path: `registry/satin/examples/${name}-demo.tsx`, type: 'registry:example' }],
+  }))
 
 rmSync(out, { recursive: true, force: true })
 mkdirSync(out, { recursive: true })
@@ -127,10 +158,14 @@ writeFileSync(
       $schema: 'https://ui.shadcn.com/schema/registry.json',
       name: 'satin',
       homepage: 'https://uisatin.dev',
-      items: items.map(({ files, ...item }) => ({ ...item, files: files.map(({ content, ...f }) => f) })),
+      items: [...items, ...examples].map(({ files, meta, ...item }) => ({
+        ...item,
+        ...(meta ? { meta: { version: meta.version, edition: meta.edition } } : {}),
+        files: files.map(({ content, ...f }) => f),
+      })),
     },
     null,
     2,
   ) + '\n',
 )
-console.log(`${items.length} registry items → ${out} (${base})`)
+console.log(`${items.length} registry items and ${examples.length} examples → ${out} (${base})`)

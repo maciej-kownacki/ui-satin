@@ -21,6 +21,29 @@
   "docs": "Input group docs: https://uisatin.dev/components/input-group",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "InputGroup": {
+        "type": "InputGroupProps",
+        "extends": [
+          "React.ComponentProps<'div'>"
+        ],
+        "props": [
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false,
+            "default": "'md'"
+          }
+        ]
+      },
+      "InputGroupAddon": {
+        "description": "A boxed segment of an InputGroup: text (`https://`, `€`), an icon, or a Kbd.",
+        "extends": [
+          "React.ComponentProps<'div'>"
+        ],
+        "props": []
+      }
+    }
   }
 }

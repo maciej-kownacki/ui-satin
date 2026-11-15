@@ -78,7 +78,8 @@ export function Progress({
             style={{ width: `${(v / max) * 100}%` }}
           />
         ) : (
-          <div className="absolute inset-y-0 left-0 w-1/3 rounded-full bg-action-primary-bg animate-[satin-progress-indeterminate_1.4s_var(--ease-in-out)_infinite]" />
+          // Starts at the reading side; right to left it slides the other way (motion.css).
+          <div className="absolute inset-y-0 start-0 w-1/3 rounded-full bg-action-primary-bg animate-[satin-progress-indeterminate_1.4s_var(--ease-in-out)_infinite] rtl:animate-[satin-progress-indeterminate-rtl_1.4s_var(--ease-in-out)_infinite]" />
         )}
       </div>
     </div>

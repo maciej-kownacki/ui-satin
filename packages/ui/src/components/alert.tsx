@@ -92,7 +92,7 @@ export function Alert({
       </div>
       {action && !actionBelow && <div className="-my-1 flex shrink-0 items-center gap-2">{action}</div>}
       {onDismiss && (
-        <Button variant="tertiary" size="xs" iconOnly aria-label={labels.dismiss} onClick={onDismiss} className="-my-0.5 -mr-1.5">
+        <Button variant="tertiary" size="xs" iconOnly aria-label={labels.dismiss} onClick={onDismiss} className="-my-0.5 -me-1.5">
           <CloseIcon />
         </Button>
       )}

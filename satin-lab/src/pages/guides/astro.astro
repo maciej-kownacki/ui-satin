@@ -1,0 +1,125 @@
+---
+/**
+ * Guide: Satin in Astro. The React integration, the stylesheet and the theme in a layout,
+ * components as static HTML or as islands with client:* directives, and what each island being
+ * its own React root means for providers.
+ */
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import CodeFrame from '../../components/CodeFrame.astro'
+import { page } from '../../nav'
+
+const install = `npx astro add react
+npm i @uisatin/ui @fontsource-variable/geist @fontsource-variable/geist-mono`
+const layout = `---
+// src/layouts/Layout.astro
+import '@uisatin/ui/styles.css'
+import '../styles/app.css'
+import { themeCss } from '@uisatin/ui/theme'
+
+const theme = themeCss({ brand: '#E5533D', radius: 1 })
+---
+
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      // Runs before the first paint: the saved choice, or follow the system.
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem('theme') || 'system'
+      } catch {}
+    </script>
+    <style is:inline set:html={theme}></style>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>`
+const islands = `---
+// src/pages/index.astro
+import Layout from '../layouts/Layout.astro'
+import { Badge } from '@uisatin/ui/badge'
+import { Button } from '@uisatin/ui/button'
+import { Tabs } from '@uisatin/ui/tabs'
+import { SignUpForm } from '../components/SignUpForm'
+---
+
+<Layout>
+  <!-- No directive: rendered to HTML at build time, no JavaScript sent. -->
+  <Badge>Beta</Badge>
+  <Button asChild><a href="/docs">Read the docs</a></Button>
+
+  <!-- Interactive: hydrated on load, or once scrolled into view. -->
+  <Tabs client:load aria-label="Plan" items={['Monthly', 'Yearly']} />
+  <SignUpForm client:visible />
+</Layout>`
+const appCss = `/* src/styles/app.css */
+
+/* Geist and Geist Mono, the families Satin's tokens ask for. */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+/* Satin styles its own elements, not the page: paint the page from its tokens so dark mode reaches it. */
+body {
+  margin: 0;
+  background: var(--sa-bg-canvas);
+  color: var(--sa-text-default);
+}`
+const providers = `// src/components/Notifications.tsx: one island, so the provider and its users share a React root
+import { Toaster, toast } from '@uisatin/ui/toast'
+import { Button } from '@uisatin/ui/button'
+
+export function Notifications() {
+  return (
+    <>
+      <Button onClick={() => toast('Saved')}>Save</Button>
+      <Toaster />
+    </>
+  )
+}`
+const transitions = `<script is:inline>
+  // With <ClientRouter />, each navigation swaps in a new <html>: put the theme back on it.
+  document.addEventListener('astro:after-swap', () => {
+    try {
+      document.documentElement.dataset.theme = localStorage.getItem('theme') || 'system'
+    } catch {}
+  })
+</script>`
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<Docs current="astro">
+  <PageHeader id="astro" title={page('astro').title} description={page('astro').description} />
+
+  <section aria-labelledby="install-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="install-title" class={h2}>Install</h2>
+    <p class={prose}> Satin is React, so Astro needs its React integration (React 19). This site is built the same way. </p>
+    <CodeFrame code={install} label="Terminal" lang="bash" copyLabel="Copy commands" />
+  </section>
+
+  <section aria-labelledby="layout-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="layout-title" class={h2}>Layout</h2>
+    <p class={prose}> Import the stylesheet in the layout every page uses; Astro bundles it into the page's CSS. <Chip>themeCss</Chip> runs in the frontmatter, at build time or on the server, and <Chip>set:html</Chip> writes its output into a <Chip>&lt;style&gt;</Chip>; <Chip>is:inline</Chip> tells Astro to leave that tag as it is. The inline script sets the theme before the first paint. </p>
+    <CodeFrame code={layout} label="src/layouts/Layout.astro" lang="astro" />
+    <CodeFrame code={appCss} label="src/styles/app.css" lang="css" />
+  </section>
+
+  <section aria-labelledby="islands-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="islands-title" class={h2}>Components as islands</h2>
+    <p class={prose}> A Satin component without a directive is rendered to static HTML: it looks right and costs no JavaScript, but it doesn't respond. Anything that opens, switches or validates needs <Chip>client:load</Chip>, or <Chip>client:visible</Chip> to wait until it scrolls into view. Props from <Chip>.astro</Chip> files must be serializable, so handlers like <Chip>onClick</Chip> live inside a React component of your own. </p>
+    <CodeFrame code={islands} label="src/pages/index.astro" lang="astro" />
+    <p class={prose}> Each island is a separate React root, and React context doesn't cross between them. A provider and the components that read it go in the same island: <Chip>Toaster</Chip> with the buttons that call <Chip>toast()</Chip>, <Chip>SatinLabels</Chip> or Radix's <Chip>DirectionProvider</Chip> with what they wrap. </p>
+    <CodeFrame code={providers} label="src/components/Notifications.tsx" />
+  </section>
+
+  <section aria-labelledby="dark-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="dark-title" class={h2}>Dark mode with view transitions</h2>
+    <p class={prose}> The toggle is in the <a class={link} href="/guides/dark-mode">Dark mode</a> guide. If you use Astro's <Chip>&lt;ClientRouter /&gt;</Chip>, the new page's <Chip>&lt;html&gt;</Chip> replaces the old one's attributes on every navigation, so set the theme again after each swap. </p>
+    <CodeFrame code={transitions} label="src/layouts/Layout.astro" lang="astro" />
+  </section>
+</Docs>

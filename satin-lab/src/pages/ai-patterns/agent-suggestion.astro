@@ -2,30 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import Demo, { options } from '../../demos/agent-suggestion'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-const api = {
-  description: 'The `AgentSuggestion` component is a card around something the agent prepared: its kind, who it concerns, a title and text, any content of its own and the actions that carry it out. `AgentSuggestionQuote`, `AgentSuggestionMetric`, `AgentSuggestionDiff` and `AgentSuggestionChanges` cover the usual bodies.',
-  props: [
-    {name: 'kind', type: ['ReactNode']},
-    {name: 'icon', type: ['ReactNode']},
-    {name: 'meta', type: ['ReactNode']},
-    {name: 'title', type: ['ReactNode']},
-    {name: 'description', type: ['ReactNode']},
-    {name: 'actions', type: ['ReactNode']},
-    {name: 'children', type: ['ReactNode']},
-    {name: 'AgentSuggestionQuote', type: ['{ from, avatar?, children }']},
-    {name: 'AgentSuggestionMetric', type: ['{ value, unit?, used?, max? }']},
-    {name: 'AgentSuggestionDiff', type: ['{ before, after }']},
-    {name: 'AgentSuggestionChanges', type: ['{ changes: { field, from?, to }[] }']},
-  ],
-}
 ---
 
 <Docs current="agent-suggestion">
-  <DocSection item={page('agent-suggestion')} api={api}>
+  <DocSection item={page('agent-suggestion')} api={api['agent-suggestion']}>
     <Demo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

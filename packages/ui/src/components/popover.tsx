@@ -50,7 +50,7 @@ const panelClass = cn(
   '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
 )
 const closeClass = cn(
-  'absolute top-2.5 right-2.5 grid size-4 place-items-center rounded-sm text-text-subtle',
+  'absolute end-2.5 top-2.5 grid size-4 place-items-center rounded-sm text-text-subtle',
   'transition-colors duration-(--duration-fast) ease-(--ease-out)',
   'satin-hover:text-text-default focus-visible:outline-none satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
 )
@@ -71,7 +71,7 @@ function PanelBody({ titleId, title, description, body, closeButton }: { titleId
   return (
     <>
       <div className="flex flex-col gap-0.5 px-2.5 pt-2.5 text-sm">
-        <p id={titleId} className={cn('leading-[18px] font-medium text-text-default', closeButton && 'pr-6')}>{title}</p>
+        <p id={titleId} className={cn('leading-[18px] font-medium text-text-default', closeButton && 'pe-6')}>{title}</p>
         {description ? <p className="text-text-muted">{description}</p> : null}
       </div>
       {body ? <div className="flex flex-col gap-4 px-2.5 pt-4">{body}</div> : null}

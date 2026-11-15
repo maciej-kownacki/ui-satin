@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { cn } from '../lib/utils'
+import { useSatinLabels } from './labels'
 import { MessageActions, type MessageFeedback } from './message-actions'
 import { Thinking, type ThinkingStep } from './thinking'
 
@@ -31,7 +32,7 @@ export interface MessageProps extends React.ComponentProps<'div'> {
   role?: 'user' | 'assistant'
   /** The steps the agent ran; shows a collapsed Thinking above an assistant answer. */
   thinking?: ThinkingStep[]
-  /** The summary on that Thinking header. */
+  /** The summary on that Thinking header. Defaults to the `thoughtForAMoment` label. */
   thinkingLabel?: React.ReactNode
   /** A page or message the user brought in, shown as a card above their bubble. */
   source?: MessageSource
@@ -46,7 +47,7 @@ export interface MessageProps extends React.ComponentProps<'div'> {
 export function Message({
   role = 'assistant',
   thinking,
-  thinkingLabel = 'Thought for a moment',
+  thinkingLabel,
   source,
   actions = true,
   timestamp,
@@ -57,11 +58,12 @@ export function Message({
   children,
   ...props
 }: MessageProps) {
+  const labels = useSatinLabels()
   if (role === 'user') {
     return (
       <div data-slot="message" data-role="user" className={cn('flex flex-col items-end gap-2', className)} {...props}>
         {source && <SourceCard source={source} />}
-        <div className="max-w-full rounded-xl rounded-br-xs bg-action-inverse-bg px-3 py-2">
+        <div className="max-w-full rounded-xl rounded-ee-xs bg-action-inverse-bg px-3 py-2">
           <div className="max-w-64 text-body break-words text-text-on-inverse">{children}</div>
         </div>
       </div>
@@ -70,7 +72,7 @@ export function Message({
 
   return (
     <div data-slot="message" data-role="assistant" className={cn('flex flex-col items-start gap-3', className)} {...props}>
-      {thinking && thinking.length > 0 && <Thinking state="collapsed" label={thinkingLabel} steps={thinking} />}
+      {thinking && thinking.length > 0 && <Thinking state="collapsed" label={thinkingLabel ?? labels.thoughtForAMoment} steps={thinking} />}
       <div className="w-full text-body break-words text-text-default">{children}</div>
       {actions && <MessageActions timestamp={timestamp} onFeedback={onFeedback} onCopy={onCopy} onShare={onShare} />}
     </div>
@@ -89,7 +91,7 @@ function SourceCard({ source }: { source: MessageSource }) {
       </span>
     </>
   )
-  const cls = 'flex max-w-full items-center gap-2.5 overflow-clip rounded-lg border border-border-subtle bg-bg-canvas py-2 pr-3 pl-2.5'
+  const cls = 'flex max-w-full items-center gap-2.5 overflow-clip rounded-lg border border-border-subtle bg-bg-canvas py-2 ps-2.5 pe-3'
   return source.href ? (
     <a href={source.href} className={cls}>
       {body}

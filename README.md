@@ -12,7 +12,10 @@ The React components are published as [`@uisatin/ui`](https://www.npmjs.com/pack
 |---|---|
 | `tokens/` | The source of truth: `tokens.json` (W3C design tokens, Light/Dark), mirrored from the uiKit Figma file. `npm run tokens` regenerates `packages/ui/src/styles/theme.css`. |
 | `packages/ui/` | `@uisatin/ui`: React components built on shadcn/ui and Radix, themed with the tokens. Motion rules: `packages/ui/MOTION.md`. |
-| `satin-lab/` | The docs site (Astro + React islands), deployed to uisatin.dev. One page per intro item and component: `src/pages/{intro,components,ai-patterns}/`, listed in `src/nav.ts`. |
+| `satin-lab/` | The docs site (Astro + React islands), deployed to uisatin.dev. One page per component, guide and recipe: `src/pages/{components,ai-patterns,guides,recipes}/`, listed in `src/nav.ts`; each component page also as markdown (`/components/<name>.md`) and all of them in `/llms-full.txt`. |
+| `registry/` | Builds the shadcn registry (`satin-lab/public/r`) from the package, with each component's props from its types (`scripts/props.mjs`). |
+
+Coding agents: [AGENTS.md](AGENTS.md) for this repo, [packages/ui/AGENTS.md](packages/ui/AGENTS.md) for apps that use the package.
 
 ## Develop
 

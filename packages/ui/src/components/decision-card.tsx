@@ -68,7 +68,9 @@ export interface DecisionCardProps
   onEdit?: () => void
   /** draft: called when Rewrite is pressed, after the field becomes editable. */
   onRewrite?: () => void
+  /** Defaults to the `continue` label, or `useReply` on a draft. */
   continueLabel?: string
+  /** Defaults to the `skip` label. */
   skipLabel?: string
 }
 
@@ -91,9 +93,11 @@ export function DecisionCard({
   onEdit,
   onRewrite,
   continueLabel,
-  skipLabel = 'Skip',
+  skipLabel: skipLabelProp,
   ...props
 }: DecisionCardProps) {
+  const labels = useSatinLabels()
+  const skipLabel = skipLabelProp ?? labels.skip
   const [inner, setInner] = React.useState<DecisionValue>(
     () => defaultValue ?? initialValue(type, options),
   )
@@ -123,20 +127,20 @@ export function DecisionCard({
 
   if (type === 'summary') {
     const values = asArray(value)
-    const labels = values.map((v) => options.find((o) => o.value === v)?.label ?? v)
+    const picked = values.map((v) => options.find((o) => o.value === v)?.label ?? v)
     return (
       <div data-slot="decision-card" data-type="summary" className={card} {...props}>
-        <div className="flex items-center gap-2.5 py-2.5 pr-2.5 pl-3">
+        <div className="flex items-center gap-2.5 py-2.5 ps-3 pe-2.5">
           <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-action-primary-bg text-action-primary-fg">
             <Check aria-hidden className="size-icon-size-sm [stroke-width:1.875]" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-xs text-text-muted">{title}</span>
-            <span className="truncate text-sm font-medium text-text-default">{labels.join(' · ')}</span>
+            <span className="truncate text-sm font-medium text-text-default">{picked.join(' · ')}</span>
           </div>
           {onEdit && (
-            <Button variant="tertiary" onClick={onEdit} className="text-text-muted" aria-label={`Change ${title}`}>
-              Change
+            <Button variant="tertiary" onClick={onEdit} className="text-text-muted" aria-label={labels.changeItem(title)}>
+              {labels.change}
             </Button>
           )}
         </div>
@@ -233,7 +237,7 @@ export function DecisionCard({
           onRewrite={onRewrite}
           onSkip={onSkip}
           onContinue={() => onContinue?.(value)}
-          continueLabel={continueLabel ?? 'Use reply'}
+          continueLabel={continueLabel ?? labels.useReply}
           skipLabel={skipLabel}
         />
       )}
@@ -249,7 +253,7 @@ export function DecisionCard({
             </Button>
           )}
           <Button onClick={() => onContinue?.(value)} disabled={empty}>
-            {continueLabel ?? 'Continue'}
+            {continueLabel ?? labels.continue}
           </Button>
         </div>
       )}
@@ -276,7 +280,7 @@ function Header({
 }) {
   const labels = useSatinLabels()
   return (
-    <div className="flex items-start gap-0.5 py-3 pr-px pl-3">
+    <div className="flex items-start gap-0.5 py-3 ps-3 pe-px">
       {/* The title and hint move with the question; the step navigator stays. */}
       <div className="relative min-w-0 flex-1">
         <div ref={titleRef} className="flex flex-col gap-0.5">
@@ -287,7 +291,7 @@ function Header({
         </div>
       </div>
       {step && (
-        <div className="flex h-[21px] shrink-0 items-center gap-1 pr-2">
+        <div className="flex h-[21px] shrink-0 items-center gap-1 pe-2">
           <Button
             variant="tertiary"
             size="xs"
@@ -297,7 +301,8 @@ function Header({
             disabled={!onPreviousStep}
             onClick={onPreviousStep}
           >
-            <NavArrowLeft aria-hidden />
+            {/* Mirrored right to left, where the previous question is to the right. */}
+            <NavArrowLeft aria-hidden className="rtl:-scale-x-100" />
           </Button>
           <span aria-live="polite" className="text-sm whitespace-nowrap text-text-muted tabular-nums">{step}</span>
           <Button
@@ -309,7 +314,7 @@ function Header({
             disabled={!onNextStep}
             onClick={onNextStep}
           >
-            <NavArrowRight aria-hidden />
+            <NavArrowRight aria-hidden className="rtl:-scale-x-100" />
           </Button>
         </div>
       )}
@@ -343,7 +348,8 @@ function useStepSlide(
     const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
     if (card && prev && prev.key !== key) {
-      const sign = index < prev.index ? -1 : 1
+      // The next question comes in from the end side: the right, or the left in right-to-left.
+      const sign = (index < prev.index ? -1 : 1) * (getComputedStyle(card).direction === 'rtl' ? -1 : 1)
       // Under reduced motion the parts only cross-fade, quicker, and the card snaps to its height.
       const dx = reduce ? 0 : SLIDE_PX
       const timing: KeyframeAnimationOptions = { duration: reduce ? 150 : SLIDE_MS, easing: EASE }
@@ -465,7 +471,7 @@ function DecisionChip({
       disabled={disabled}
       onClick={() => onPressedChange(!selected)}
       className={cn(
-        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-pill border pr-2.5 pl-2 text-base font-medium outline-none select-none',
+        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-pill border ps-2 pe-2.5 text-base font-medium outline-none select-none',
         'transition-[background-color,border-color,color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out) active:scale-[0.97]',
         '[&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
         'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
@@ -492,6 +498,7 @@ function Ranking({
   onValueChange: (value: string[]) => void
   labelledBy: string
 }) {
+  const labels = useSatinLabels()
   const order = value.length ? value : options.map((o) => o.value)
   const [dragging, setDragging] = React.useState<string | null>(null)
   const [announcement, setAnnouncement] = React.useState('')
@@ -526,7 +533,7 @@ function Ranking({
     if (to !== from) move(from, to)
   }
   const onPointerUp = () => {
-    if (dragging) setAnnouncement(`${label(dragging)}, position ${order.indexOf(dragging) + 1} of ${order.length}`)
+    if (dragging) setAnnouncement(labels.positionOf(label(dragging), order.indexOf(dragging) + 1, order.length))
     setDragging(null)
   }
 
@@ -537,7 +544,7 @@ function Ranking({
     if (e.altKey) {
       const next = move(index, to)
       if (next) {
-        setAnnouncement(`${label(next[to])}, position ${to + 1} of ${next.length}`)
+        setAnnouncement(labels.positionOf(label(next[to]), to + 1, next.length))
         requestAnimationFrame(() => (listRef.current?.children[to] as HTMLElement | undefined)?.focus())
       }
     } else {
@@ -554,8 +561,8 @@ function Ranking({
             <li
               key={item}
               tabIndex={0}
-              aria-roledescription="sortable item"
-              aria-description="Alt and arrow keys to move"
+              aria-roledescription={labels.sortableItem}
+              aria-description={labels.sortableHint}
               data-dragging={lifted || undefined}
               onPointerDown={(e) => onPointerDown(e, item)}
               onPointerMove={onPointerMove}
@@ -563,7 +570,7 @@ function Ranking({
               onPointerCancel={onPointerUp}
               onKeyDown={(e) => onKeyDown(e, i)}
               className={cn(
-                'group/rank flex cursor-grab touch-none items-center gap-2 rounded-lg border border-border-default bg-bg-popover py-2 pr-2.5 pl-2 outline-none select-none',
+                'group/rank flex cursor-grab touch-none items-center gap-2 rounded-lg border border-border-default bg-bg-popover py-2 ps-2 pe-2.5 outline-none select-none',
                 'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
                 'hover:border-border-strong focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
                 'data-dragging:cursor-grabbing data-dragging:border-border-strong',
@@ -646,7 +653,7 @@ function Draft({
       <div className="px-3 pb-1">
         <div
           className={cn(
-            'flex flex-col gap-2 rounded-2xl rounded-tl-[4px] border border-border-default bg-bg-popover px-3 py-2.5 text-base text-text-default',
+            'flex flex-col gap-2 rounded-2xl rounded-ss-[4px] border border-border-default bg-bg-popover px-3 py-2.5 text-base text-text-default',
             '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             'transition-[box-shadow,border-color] duration-(--duration-fast) ease-(--ease-out)',
             'has-[textarea:focus-visible]:border-border-strong has-[textarea:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
@@ -678,7 +685,7 @@ function Draft({
           }}
         >
           <EditPencil aria-hidden />
-          Rewrite
+          {labels.rewrite}
         </Button>
         <div className="flex items-center gap-2">
           {onSkip && (

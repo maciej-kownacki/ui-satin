@@ -2,28 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import AccordionDemo, { options } from '../../demos/accordion'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const api = {
-  description:
-    "The `Accordion` component wraps the Radix accordion in a `div` that holds `AccordionItem`s; each item renders a `button` header with `aria-expanded` and its content under it. The `item.*` props belong to `AccordionItem`.",
-  props: [
-    {name: "type", type: ["\"single\"", "\"multiple\""]},
-    {name: "collapsible", type: ["boolean"], default: "false"},
-    {name: "defaultValue", type: ["string", "string[]"]},
-    {name: "item.value", type: ["string"]},
-    {name: "item.title", type: ["ReactNode"]},
-    {name: "item.icon", type: ["ReactNode"]},
-    {name: "item.children", type: ["ReactNode"]},
-  ],
-}
 ---
 
 <Docs current="accordion">
-  <DocSection item={page('accordion')} api={api}>
+  <DocSection item={page('accordion')} api={api['accordion']}>
     <AccordionDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

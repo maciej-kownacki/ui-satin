@@ -3,7 +3,7 @@ import { Button, SearchBar, cn } from '@uisatin/ui'
 import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
 import { pagesOf, type NavGroup, type NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
-import { AiPatternsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, IntroIcon } from './icons'
+import { AiPatternsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, GuidesIcon, IntroIcon, RecipesIcon } from './icons'
 
 /**
  * navigationSidebar from the docs template (uiKit 3857:5977): group headers with an icon,
@@ -17,6 +17,8 @@ const groupIcons: Record<string, typeof IntroIcon> = {
   components: ComponentsIcon,
   charts: ChartsIcon,
   'ai-patterns': AiPatternsIcon,
+  guides: GuidesIcon,
+  recipes: RecipesIcon,
 }
 
 export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; current: string }) {

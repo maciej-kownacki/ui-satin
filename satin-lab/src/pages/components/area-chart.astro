@@ -2,33 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import AreaChartDemo, { options } from '../../demos/area-chart'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
 ---
 
 <Docs current="area-chart">
-  <DocSection
-    item={page('area-chart')}
-    api={{
-      description: 'The `AreaCard` component is `LineCard` with the area under the line filled: chart/3 fading from 28% at the line to nothing at the baseline.',
-      props: [
-        { name: 'title', type: ['string'] },
-        { name: 'range', type: ['string'] },
-        { name: 'data', type: ['ChartDatum[]'] },
-        { name: 'total', type: ['string'] },
-        { name: 'change', type: ['string'] },
-        { name: 'periods', type: ['string[]', 'string[][]'] },
-        { name: 'value', type: ['string'] },
-        { name: 'onPeriodChange', type: ['(period) => void'] },
-        { name: 'unit', type: ['string'] },
-        { name: 'formatValue', type: ['(value) => string'] },
-        { name: 'reducedMotion', type: ['boolean'] },
-        { name: 'highlight', type: ['number'] },
-      ],
-    }}
-  >
+  <DocSection item={page('area-chart')} api={api['area-chart']}>
     <AreaChartDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

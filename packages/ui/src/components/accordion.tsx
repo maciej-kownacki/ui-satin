@@ -40,7 +40,7 @@ export function AccordionItem({ title, icon, children, className, 'data-force': 
         <AccordionPrimitive.Trigger
           data-force={force}
           className={cn(
-            'group flex h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-2 text-left outline-none',
+            'group flex h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-2 text-start outline-none',
             'transition-[background-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
             'hover:bg-bg-hover data-[force=hover]:bg-bg-hover',
             'focus-visible:bg-bg-hover focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
@@ -69,9 +69,9 @@ export function AccordionItem({ title, icon, children, className, 'data-force': 
       <AccordionPrimitive.Content data-slot="accordion-content" className="satin-accordion-content">
         <div
           className={cn(
-            'pt-1 pr-2 pb-3 text-base leading-[21px] text-text-muted',
+            'pt-1 pe-2 pb-3 text-base leading-[21px] text-text-muted',
             // Lined up with the title: past the icon and its gap when there is one.
-            icon ? 'pl-9' : 'pl-2',
+            icon ? 'ps-9' : 'ps-2',
           )}
         >
           {children}

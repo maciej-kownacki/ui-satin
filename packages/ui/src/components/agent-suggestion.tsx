@@ -189,7 +189,7 @@ export function AgentSuggestionChanges({ changes, className }: { changes: AgentS
             {c.from != null && (
               <>
                 <del className="text-text-subtle">{c.from}</del>
-                <ArrowRight aria-hidden className="size-4 shrink-0 text-text-subtle [stroke-width:1.875]" />
+                <ArrowRight aria-hidden className="size-4 shrink-0 text-text-subtle [stroke-width:1.875] rtl:-scale-x-100" />
               </>
             )}
             {typeof c.to === 'string' ? <span className="font-medium text-text-default">{c.to}</span> : c.to}

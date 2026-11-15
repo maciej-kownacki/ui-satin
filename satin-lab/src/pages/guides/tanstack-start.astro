@@ -1,0 +1,100 @@
+---
+/**
+ * Guide: Satin in TanStack Start. The stylesheet linked from __root.tsx as a ?url import, the
+ * theme rendered into the head, and dark mode on <html> set by a head script before the first paint.
+ */
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import CodeFrame from '../../components/CodeFrame.astro'
+import { page } from '../../nav'
+
+const install = `npm i @uisatin/ui @fontsource-variable/geist @fontsource-variable/geist-mono`
+const root = `// src/routes/__root.tsx
+/// <reference types="vite/client" />
+import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
+import { themeCss } from '@uisatin/ui/theme'
+import satinCss from '@uisatin/ui/styles.css?url'
+import appCss from '../app.css?url'
+
+export const Route = createRootRoute({
+  head: () => ({
+    meta: [{ charSet: 'utf-8' }, { name: 'viewport', content: 'width=device-width, initial-scale=1' }],
+    links: [
+      { rel: 'stylesheet', href: satinCss },
+      { rel: 'stylesheet', href: appCss },
+    ],
+  }),
+  component: RootComponent,
+})
+
+const theme = themeCss({ brand: '#E5533D', radius: 1 })
+// Runs before the first paint: the saved choice, or follow the system.
+const themeScript = \`try { document.documentElement.dataset.theme = localStorage.getItem('theme') || 'system' } catch {}\`
+
+function RootComponent() {
+  return (
+    // The script may change data-theme before React hydrates; that difference is expected.
+    <html lang="en" data-theme="system" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <style dangerouslySetInnerHTML={{ __html: theme }} />
+      </head>
+      <body>
+        <Outlet />
+        <Scripts />
+      </body>
+    </html>
+  )
+}`
+const appCss = `/* src/app.css */
+
+/* Geist under the names Satin's tokens ask for; @fontsource-variable/geist registers "Geist Variable". */
+@font-face {
+  font-family: 'Geist';
+  src: url('@fontsource-variable/geist/files/geist-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* Satin styles its own elements, not the page: paint the page from its tokens so dark mode reaches it. */
+body {
+  margin: 0;
+  background: var(--sa-bg-canvas);
+  color: var(--sa-text-default);
+}`
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<Docs current="tanstack-start">
+  <PageHeader id="tanstack-start" title={page('tanstack-start').title} description={page('tanstack-start').description} />
+
+  <section aria-labelledby="install-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="install-title" class={h2}>Install</h2>
+    <p class={prose}>TanStack Start renders on the server and builds with Vite. Satin needs React 19; the fonts are optional.</p>
+    <CodeFrame code={install} label="Terminal" lang="bash" copyLabel="Copy command" />
+  </section>
+
+  <section aria-labelledby="root-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="root-title" class={h2}>Root route</h2>
+    <p class={prose}> Import the stylesheet with <Chip>?url</Chip> and list it in the root route's <Chip>head</Chip>. <Chip>&lt;HeadContent /&gt;</Chip> renders it as a <Chip>&lt;link&gt;</Chip> in the server-rendered HTML, so the first paint is already styled. </p>
+    <p class={prose}> The root component renders <Chip>&lt;html&gt;</Chip> itself, so <Chip>data-theme</Chip> goes there, with the theme stylesheet and a script that applies the saved choice before the first paint. With nothing saved, <Chip>system</Chip> follows the operating system in CSS alone. </p>
+    <CodeFrame code={root} label="src/routes/__root.tsx" />
+    <CodeFrame code={appCss} label="src/app.css" lang="css" />
+  </section>
+
+  <section aria-labelledby="toggle-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="toggle-title" class={h2}>Theme toggle</h2>
+    <p class={prose}> The toggle that saves the choice is in the <a class={link} href="/guides/dark-mode">Dark mode</a> guide. To render the theme on the server instead of in a script, read the same value from a cookie in the root route and set the attribute from it, as the <a class={link} href="/guides/react-router">React Router</a> guide does. </p>
+  </section>
+</Docs>

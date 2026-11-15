@@ -11,13 +11,20 @@
   --duration-slow: 250ms;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+/* Reduced motion stops Satin's own elements and what's inside them, nothing else: the rest of
+   the app's motion is the app's call. Satin's elements carry data-slot (portaled content too)
+   and, from npm, sa: classes. In the base layer, so a utility can't undo it; a near-zero
+   duration (not none) still fires animationend and transitionend, so whatever waits for them
+   carries on. The Spinner's exception sits in the same layer, further down. */
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-slot], [data-slot] *, [class*='sa:']),
+    :where([data-slot], [data-slot] *, [class*='sa:'])::before,
+    :where([data-slot], [data-slot] *, [class*='sa:'])::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
   }
 }
 
@@ -81,6 +88,10 @@
   background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text-default) 6%, transparent), transparent);
   animation: satin-skeleton 1.6s var(--ease-in-out) infinite;
 }
+/* Right to left the band runs the reading way too. */
+.satin-skeleton[data-animated]:dir(rtl)::after {
+  animation-direction: reverse;
+}
 
 /* Accordion (components/accordion.tsx): the section grows downwards from under its header,
    which never moves, revealing its content; closing is quicker. The text itself never scales:
@@ -135,10 +146,15 @@
   transition-duration: var(--duration-slow);
 }
 
-/* Progress (components/progress.tsx) without a value: a third of the track slides across. */
+/* Progress (components/progress.tsx) without a value: a third of the track slides across,
+   from the start side, so right to left it runs the other way. */
 @keyframes satin-progress-indeterminate {
   from { transform: translateX(-100%); }
   to { transform: translateX(300%); }
+}
+@keyframes satin-progress-indeterminate-rtl {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-300%); }
 }
 
 /* Pagination (components/pagination.tsx): a page number changing in place.
@@ -159,6 +175,11 @@
 .satin-page-text[data-motion='scroll'][data-phase='in'][data-dir='prev'] { animation-name: satin-page-in-prev; }
 .satin-page-text[data-motion='scroll'][data-phase='out'][data-dir='next'] { animation-name: satin-page-out-next; }
 .satin-page-text[data-motion='scroll'][data-phase='out'][data-dir='prev'] { animation-name: satin-page-out-prev; }
+/* Right to left, later pages are to the left: the numbers roll the other way. */
+.satin-page-text[data-motion='scroll'][data-phase='in'][data-dir='next']:dir(rtl) { animation-name: satin-page-in-prev; }
+.satin-page-text[data-motion='scroll'][data-phase='in'][data-dir='prev']:dir(rtl) { animation-name: satin-page-in-next; }
+.satin-page-text[data-motion='scroll'][data-phase='out'][data-dir='next']:dir(rtl) { animation-name: satin-page-out-prev; }
+.satin-page-text[data-motion='scroll'][data-phase='out'][data-dir='prev']:dir(rtl) { animation-name: satin-page-out-next; }
 
 /* Streaming text (components/streaming-text.tsx): a letter or word waits unseen and comes in
    when the stream reaches it. Only the ones arriving animate (blur is never left on the rest). */
@@ -178,7 +199,9 @@
 .satin-stream-caret::after {
   content: '';
   position: absolute;
-  inset: -0.05em auto -0.05em 1px;
+  /* Logical: 1px after the last letter, on its left in right-to-left. */
+  inset-block: -0.05em;
+  inset-inline-start: 1px;
   width: 2px;
   border-radius: 1px;
   background: var(--action-primary-bg);
@@ -188,8 +211,11 @@
 @keyframes satin-caret {
   50% { opacity: 0; }
 }
+[data-slot='input-otp-caret'] {
+  animation: satin-caret 1s steps(1) infinite;
+}
 @media (prefers-reduced-motion: reduce) {
-  [data-slot='input-otp'] .animate-\[satin-caret_1s_steps\(1\)_infinite\] { animation: none; }
+  [data-slot='input-otp-caret'] { animation: none; }
 }
 
 /* Sheen (Banner, AnnouncementBar `shimmer`): now and then a soft band of light crosses the
@@ -235,10 +261,13 @@
 [data-slot="spinner"] > svg {
   animation: satin-spin 800ms linear infinite;
 }
-@media (prefers-reduced-motion: reduce) {
-  [data-slot="spinner"] > svg {
-    animation-duration: 1600ms !important;
-    animation-iteration-count: infinite !important;
+/* In the reduced-motion reset's layer, where its selector outranks the reset's :where(). */
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot="spinner"] > svg {
+      animation-duration: 1600ms !important;
+      animation-iteration-count: infinite !important;
+    }
   }
 }
 

@@ -1,0 +1,101 @@
+---
+/**
+ * Guide: Satin in React Router v7 framework mode. The stylesheet linked from app/root.tsx, the
+ * theme rendered into the head, and dark mode from a cookie set on <html> in the Layout export.
+ */
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import CodeFrame from '../../components/CodeFrame.astro'
+import { page } from '../../nav'
+
+const install = `npm i @uisatin/ui @fontsource-variable/geist @fontsource-variable/geist-mono`
+const root = `// app/root.tsx
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from 'react-router'
+import { themeCss } from '@uisatin/ui/theme'
+import satinCss from '@uisatin/ui/styles.css?url'
+import appCss from './app.css?url'
+import type { Route } from './+types/root'
+
+export const links: Route.LinksFunction = () => [
+  { rel: 'stylesheet', href: satinCss },
+  { rel: 'stylesheet', href: appCss },
+]
+
+// light, dark or system, saved by the theme toggle. system follows the OS in CSS, no script.
+export function loader({ request }: Route.LoaderArgs) {
+  const theme = request.headers.get('Cookie')?.match(/(?:^|;\\s*)theme=(light|dark|system)/)?.[1]
+  return { theme: theme ?? 'system' }
+}
+
+const theme = themeCss({ brand: '#E5533D', radius: 1 })
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  // Layout also renders the error page, when the loader may not have run.
+  const data = useRouteLoaderData<typeof loader>('root')
+
+  return (
+    <html lang="en" data-theme={data?.theme ?? 'system'}>
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+        <style dangerouslySetInnerHTML={{ __html: theme }} />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  )
+}
+
+export default function App() {
+  return <Outlet />
+}`
+const appCss = `/* app/app.css */
+
+/* Geist and Geist Mono, the families Satin's tokens ask for. */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+/* Satin styles its own elements, not the page: paint the page from its tokens so dark mode reaches it. */
+body {
+  margin: 0;
+  background: var(--sa-bg-canvas);
+  color: var(--sa-text-default);
+}`
+const saveChoice = `// In the toggle's onValueChange, next to setting the attribute:
+document.documentElement.dataset.theme = next
+document.cookie = \`theme=\${next}; path=/; max-age=31536000; samesite=lax\``
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<Docs current="react-router">
+  <PageHeader id="react-router" title={page('react-router').title} description={page('react-router').description} />
+
+  <section aria-labelledby="install-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="install-title" class={h2}>Install</h2>
+    <p class={prose}> This is React Router 7 in framework mode (<Chip>npx create-react-router@latest</Chip>), which renders on the server and runs on Vite. The fonts are optional. </p>
+    <CodeFrame code={install} label="Terminal" lang="bash" copyLabel="Copy command" />
+  </section>
+
+  <section aria-labelledby="root-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="root-title" class={h2}>Root route</h2>
+    <p class={prose}> Link the stylesheet from <Chip>links</Chip> with Vite's <Chip>?url</Chip> import, so it's a <Chip>&lt;link&gt;</Chip> in the server-rendered head and the page never paints unstyled. A side-effect <Chip>import '@uisatin/ui/styles.css'</Chip> in <Chip>root.tsx</Chip> works too. </p>
+    <p class={prose}> <Chip>themeCss</Chip> runs once, at module level, and lands in a <Chip>&lt;style&gt;</Chip> in the head. The <Chip>Layout</Chip> export renders <Chip>&lt;html&gt;</Chip>, so that's where <Chip>data-theme</Chip> goes: the root loader reads the reader's choice from a cookie and the page arrives in the right theme, with no flash. </p>
+    <CodeFrame code={root} label="app/root.tsx" />
+    <CodeFrame code={appCss} label="app/app.css" lang="css" />
+  </section>
+
+  <section aria-labelledby="toggle-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="toggle-title" class={h2}>Saving the choice</h2>
+    <p class={prose}> Use the toggle from the <a class={link} href="/guides/dark-mode">Dark mode</a> guide and save the choice in the cookie the loader reads, instead of (or as well as) <Chip>localStorage</Chip>. </p>
+    <CodeFrame code={saveChoice} label="Theme toggle" />
+  </section>
+</Docs>

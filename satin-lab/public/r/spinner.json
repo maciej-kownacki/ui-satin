@@ -20,6 +20,28 @@
   "docs": "Spinner docs: https://uisatin.dev/components/spinner",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Spinner": {
+        "type": "SpinnerProps",
+        "extends": [
+          "Omit<React.ComponentProps<'span'>, 'children'>"
+        ],
+        "props": [
+          {
+            "name": "size",
+            "type": "'xs' | 'sm' | 'md' | 'lg'",
+            "required": false,
+            "default": "'md'"
+          },
+          {
+            "name": "label",
+            "type": "string | null",
+            "required": false,
+            "description": "What's loading, for screen readers. `null` hides the spinner from them."
+          }
+        ]
+      }
+    }
   }
 }

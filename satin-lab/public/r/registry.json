@@ -7,7 +7,7 @@
       "name": "satin-styles",
       "type": "registry:item",
       "title": "Satin styles",
-      "description": "Satin tokens, motion and every class the components use, precompiled. Import it once (for example in main.tsx); wrap a subtree in `.dark` for dark mode. No Tailwind needed.",
+      "description": "Satin tokens, motion and every class the components use, precompiled. Import it once (for example in main.tsx); `.dark` or `data-theme=\"dark\"` on a parent for dark mode, `data-theme=\"system\"` to follow the OS. No Tailwind needed.",
       "files": [
         {
           "path": "registry/satin/styles/satin.css",
@@ -89,7 +89,8 @@
       "dependencies": [],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Loading docs: https://uisatin.dev/ai-patterns/agent-loading",
       "meta": {
@@ -298,7 +299,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/banner-mesh.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Banner docs: https://uisatin.dev/components/banner",
       "meta": {
@@ -443,7 +445,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Card docs: https://uisatin.dev/components/card",
       "meta": {
@@ -540,7 +543,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/badge.json"
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Chip docs: https://uisatin.dev/components/chip",
       "meta": {
@@ -589,7 +593,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Code block docs: https://uisatin.dev/components/code-block",
       "meta": {
@@ -696,7 +701,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json"
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Cookie consent docs: https://uisatin.dev/components/cookie-consent",
       "meta": {
@@ -780,7 +786,6 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/alert.json",
         "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/dialog.json",
         "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Dialog docs: https://uisatin.dev/components/dialog",
@@ -804,7 +809,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/chart.json"
+        "https://uisatin.dev/r/chart.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Donut chart docs: https://uisatin.dev/components/donut-chart",
       "meta": {
@@ -1160,7 +1166,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/bar-chart.json",
-        "https://uisatin.dev/r/chart.json"
+        "https://uisatin.dev/r/chart.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Line chart docs: https://uisatin.dev/components/line-chart",
       "meta": {
@@ -1230,6 +1237,7 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/message-actions.json",
         "https://uisatin.dev/r/thinking.json"
       ],
@@ -1309,6 +1317,7 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Pagination docs: https://uisatin.dev/components/pagination",
@@ -1453,15 +1462,17 @@
       "name": "search-bar",
       "type": "registry:ui",
       "title": "Search bar",
-      "description": "The Satin Search bar component.",
+      "description": "A search field for the sidebar or a toolbar, with ⌘K to focus it from anywhere.",
       "dependencies": [
         "iconoir-react@^7.12.2"
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/kbd.json"
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json"
       ],
+      "docs": "Search bar docs: https://uisatin.dev/components/search-bar",
       "meta": {
         "version": "0.5.0",
         "edition": "free"
@@ -1894,7 +1905,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/form-field.json"
+        "https://uisatin.dev/r/form-field.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Textarea docs: https://uisatin.dev/components/textarea",
       "meta": {
@@ -1919,7 +1931,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/agent-loading.json"
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Thinking docs: https://uisatin.dev/ai-patterns/thinking",
       "meta": {
@@ -2006,6 +2019,1156 @@
         {
           "path": "registry/satin/ui/tooltip.tsx",
           "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "area-chart",
+      "type": "registry:ui",
+      "title": "Area chart",
+      "description": "The line chart with its area filled down to the baseline in a fading gradient.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/bar-chart.json",
+        "https://uisatin.dev/r/chart.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Area chart docs: https://uisatin.dev/components/area-chart",
+      "meta": {
+        "version": "0.5.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/line-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "accordion-demo",
+      "type": "registry:example",
+      "title": "Accordion example",
+      "description": "The shortest use of Accordion, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/accordion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/accordion-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "action-button-demo",
+      "type": "registry:example",
+      "title": "Action button example",
+      "description": "The shortest use of Action button, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/action-button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/action-button-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-loading-demo",
+      "type": "registry:example",
+      "title": "Loading example",
+      "description": "The shortest use of Loading, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-loading.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-loading-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-picker-demo",
+      "type": "registry:example",
+      "title": "Agent picker example",
+      "description": "The shortest use of Agent picker, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-picker.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-picker-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-suggestion-demo",
+      "type": "registry:example",
+      "title": "Agent suggestion example",
+      "description": "The shortest use of Agent suggestion, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-suggestion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-suggestion-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "alert-demo",
+      "type": "registry:example",
+      "title": "Alert example",
+      "description": "The shortest use of Alert, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/alert.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/alert-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "announcement-bar-demo",
+      "type": "registry:example",
+      "title": "Announcement bar example",
+      "description": "The shortest use of Announcement bar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/announcement-bar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/announcement-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "attachment-demo",
+      "type": "registry:example",
+      "title": "Attachment example",
+      "description": "The shortest use of Attachment, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/attachment.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/attachment-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "avatar-demo",
+      "type": "registry:example",
+      "title": "Avatar example",
+      "description": "The shortest use of Avatar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/avatar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/avatar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "badge-demo",
+      "type": "registry:example",
+      "title": "Badge example",
+      "description": "The shortest use of Badge, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/badge.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/badge-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "banner-demo",
+      "type": "registry:example",
+      "title": "Banner example",
+      "description": "The shortest use of Banner, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/banner.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/banner-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "bar-chart-demo",
+      "type": "registry:example",
+      "title": "Bar chart example",
+      "description": "The shortest use of Bar chart, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/bar-chart.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/bar-chart-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "breadcrumb-demo",
+      "type": "registry:example",
+      "title": "Breadcrumb example",
+      "description": "The shortest use of Breadcrumb, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/breadcrumb.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/breadcrumb-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "button-demo",
+      "type": "registry:example",
+      "title": "Button example",
+      "description": "The shortest use of Button, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/button-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "button-group-demo",
+      "type": "registry:example",
+      "title": "Button group example",
+      "description": "The shortest use of Button group, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/button-group.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/button-group-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "card-demo",
+      "type": "registry:example",
+      "title": "Card example",
+      "description": "The shortest use of Card, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/card.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/card-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "channel-chart-demo",
+      "type": "registry:example",
+      "title": "Channel chart example",
+      "description": "The shortest use of Channel chart, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/channel-chart.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/channel-chart-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "checkbox-demo",
+      "type": "registry:example",
+      "title": "Checkbox example",
+      "description": "The shortest use of Checkbox, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/checkbox.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/checkbox-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "chip-demo",
+      "type": "registry:example",
+      "title": "Chip example",
+      "description": "The shortest use of Chip, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/chip.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/chip-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "citations-demo",
+      "type": "registry:example",
+      "title": "Citations example",
+      "description": "The shortest use of Citations, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/citations.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/citations-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "code-block-demo",
+      "type": "registry:example",
+      "title": "Code block example",
+      "description": "The shortest use of Code block, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/code-block.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/code-block-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "combobox-demo",
+      "type": "registry:example",
+      "title": "Combobox example",
+      "description": "The shortest use of Combobox, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/combobox.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/combobox-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "command-menu-demo",
+      "type": "registry:example",
+      "title": "Command menu example",
+      "description": "The shortest use of Command menu, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/command-menu.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/command-menu-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "context-menu-demo",
+      "type": "registry:example",
+      "title": "Context menu example",
+      "description": "The shortest use of Context menu, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/context-menu.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/context-menu-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "cookie-consent-demo",
+      "type": "registry:example",
+      "title": "Cookie consent example",
+      "description": "The shortest use of Cookie consent, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/cookie-consent.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/cookie-consent-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "date-picker-demo",
+      "type": "registry:example",
+      "title": "Date picker example",
+      "description": "The shortest use of Date picker, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/date-picker.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/date-picker-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "decision-card-demo",
+      "type": "registry:example",
+      "title": "Decision card example",
+      "description": "The shortest use of Decision card, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/decision-card.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/decision-card-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "dialog-demo",
+      "type": "registry:example",
+      "title": "Dialog example",
+      "description": "The shortest use of Dialog, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/dialog.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/dialog-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "donut-chart-demo",
+      "type": "registry:example",
+      "title": "Donut chart example",
+      "description": "The shortest use of Donut chart, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/donut-chart.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/donut-chart-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "dot-demo",
+      "type": "registry:example",
+      "title": "Dot example",
+      "description": "The shortest use of Dot, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/dot.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/dot-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "dropdown-demo",
+      "type": "registry:example",
+      "title": "Dropdown example",
+      "description": "The shortest use of Dropdown, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/dropdown.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/dropdown-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "empty-state-demo",
+      "type": "registry:example",
+      "title": "Empty state example",
+      "description": "The shortest use of Empty state, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/empty-state.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/empty-state-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "field-group-demo",
+      "type": "registry:example",
+      "title": "Field group example",
+      "description": "The shortest use of Field group, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/field-group.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/field-group-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "file-upload-demo",
+      "type": "registry:example",
+      "title": "File upload example",
+      "description": "The shortest use of File upload, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/file-upload.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/file-upload-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "form-demo",
+      "type": "registry:example",
+      "title": "Form example",
+      "description": "The shortest use of Form, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/form.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/form-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "form-field-demo",
+      "type": "registry:example",
+      "title": "Form field example",
+      "description": "The shortest use of Form field, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/form-field.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/form-field-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "hover-card-demo",
+      "type": "registry:example",
+      "title": "Hover card example",
+      "description": "The shortest use of Hover card, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/hover-card.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/hover-card-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "input-demo",
+      "type": "registry:example",
+      "title": "Input example",
+      "description": "The shortest use of Input, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/input-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "input-group-demo",
+      "type": "registry:example",
+      "title": "Input group example",
+      "description": "The shortest use of Input group, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/input-group.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/input-group-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "input-otp-demo",
+      "type": "registry:example",
+      "title": "Input OTP example",
+      "description": "The shortest use of Input OTP, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/input-otp.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/input-otp-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "kbd-demo",
+      "type": "registry:example",
+      "title": "Kbd example",
+      "description": "The shortest use of Kbd, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/kbd.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/kbd-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "line-chart-demo",
+      "type": "registry:example",
+      "title": "Line chart example",
+      "description": "The shortest use of Line chart, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/line-chart.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/line-chart-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "link-demo",
+      "type": "registry:example",
+      "title": "Link example",
+      "description": "The shortest use of Link, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/link.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/link-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "list-demo",
+      "type": "registry:example",
+      "title": "List example",
+      "description": "The shortest use of List, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/list.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/list-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "message-demo",
+      "type": "registry:example",
+      "title": "Message example",
+      "description": "The shortest use of Message, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/message.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/message-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "message-actions-demo",
+      "type": "registry:example",
+      "title": "Message actions example",
+      "description": "The shortest use of Message actions, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/message-actions.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/message-actions-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "number-input-demo",
+      "type": "registry:example",
+      "title": "Number input example",
+      "description": "The shortest use of Number input, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/number-input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/number-input-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "pagination-demo",
+      "type": "registry:example",
+      "title": "Pagination example",
+      "description": "The shortest use of Pagination, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/pagination.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/pagination-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "password-input-demo",
+      "type": "registry:example",
+      "title": "Password input example",
+      "description": "The shortest use of Password input, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/password-input.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/password-input-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "popover-demo",
+      "type": "registry:example",
+      "title": "Popover example",
+      "description": "The shortest use of Popover, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/popover.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/popover-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "progress-demo",
+      "type": "registry:example",
+      "title": "Progress example",
+      "description": "The shortest use of Progress, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/progress.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/progress-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "prompt-bar-demo",
+      "type": "registry:example",
+      "title": "Prompt bar example",
+      "description": "The shortest use of Prompt bar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/prompt-bar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/prompt-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "radio-demo",
+      "type": "registry:example",
+      "title": "Radio example",
+      "description": "The shortest use of Radio, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/radio.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/radio-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "search-bar-demo",
+      "type": "registry:example",
+      "title": "Search bar example",
+      "description": "The shortest use of Search bar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/search-bar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/search-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "segmented-control-demo",
+      "type": "registry:example",
+      "title": "Segmented control example",
+      "description": "The shortest use of Segmented control, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/segmented-control.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/segmented-control-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "select-demo",
+      "type": "registry:example",
+      "title": "Select example",
+      "description": "The shortest use of Select, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/select.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/select-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "selectable-checkbox-demo",
+      "type": "registry:example",
+      "title": "Selectable checkbox example",
+      "description": "The shortest use of Selectable checkbox, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/selectable-checkbox.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/selectable-checkbox-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "selectable-radio-demo",
+      "type": "registry:example",
+      "title": "Selectable radio example",
+      "description": "The shortest use of Selectable radio, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/selectable-radio.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/selectable-radio-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "separator-demo",
+      "type": "registry:example",
+      "title": "Separator example",
+      "description": "The shortest use of Separator, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/separator.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/separator-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "sheet-demo",
+      "type": "registry:example",
+      "title": "Sheet example",
+      "description": "The shortest use of Sheet, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/sheet.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/sheet-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "sidebar-demo",
+      "type": "registry:example",
+      "title": "Sidebar example",
+      "description": "The shortest use of Sidebar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/sidebar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/sidebar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "skeleton-demo",
+      "type": "registry:example",
+      "title": "Skeleton example",
+      "description": "The shortest use of Skeleton, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/skeleton.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/skeleton-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "slider-demo",
+      "type": "registry:example",
+      "title": "Slider example",
+      "description": "The shortest use of Slider, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/slider.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/slider-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "spinner-demo",
+      "type": "registry:example",
+      "title": "Spinner example",
+      "description": "The shortest use of Spinner, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/spinner.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/spinner-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "split-button-demo",
+      "type": "registry:example",
+      "title": "Split button example",
+      "description": "The shortest use of Split button, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/split-button.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/split-button-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "streaming-text-demo",
+      "type": "registry:example",
+      "title": "Streaming text example",
+      "description": "The shortest use of Streaming text, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/streaming-text.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/streaming-text-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "switch-demo",
+      "type": "registry:example",
+      "title": "Switch example",
+      "description": "The shortest use of Switch, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/switch.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/switch-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "table-demo",
+      "type": "registry:example",
+      "title": "Table example",
+      "description": "The shortest use of Table, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/table.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/table-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "tabs-demo",
+      "type": "registry:example",
+      "title": "Tabs example",
+      "description": "The shortest use of Tabs, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/tabs.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/tabs-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "textarea-demo",
+      "type": "registry:example",
+      "title": "Textarea example",
+      "description": "The shortest use of Textarea, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/textarea.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/textarea-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "thinking-demo",
+      "type": "registry:example",
+      "title": "Thinking example",
+      "description": "The shortest use of Thinking, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/thinking.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/thinking-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "toast-demo",
+      "type": "registry:example",
+      "title": "Toast example",
+      "description": "The shortest use of Toast, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/toast-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "toggle-demo",
+      "type": "registry:example",
+      "title": "Toggle example",
+      "description": "The shortest use of Toggle, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/toggle.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/toggle-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "tooltip-demo",
+      "type": "registry:example",
+      "title": "Tooltip example",
+      "description": "The shortest use of Tooltip, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/tooltip-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "area-chart-demo",
+      "type": "registry:example",
+      "title": "Area chart example",
+      "description": "The shortest use of Area chart, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/area-chart.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/area-chart-demo.tsx",
+          "type": "registry:example"
         }
       ]
     }

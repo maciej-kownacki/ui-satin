@@ -36,7 +36,8 @@ const td = 'py-3 pr-4 align-middle'
         {g.tokens.map((t) => (
           <tr class="border-b border-border-default">
             <th scope="row" class={`${td} text-left font-normal`}>
-              <Chip>{t.css}</Chip>
+              {/* The name an app writes: npm and the registry ship every Satin variable as --sa-*. */}
+              <Chip>{t.css.replace(/^--/, '--sa-')}</Chip>
             </th>
             {[t.light, t.dark].map((value, i) => (
               <td class={`${td} ${i === 1 ? 'pr-0' : ''}`}>

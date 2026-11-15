@@ -2,10 +2,12 @@
  * Checks that @uisatin/ui's stylesheet keeps to itself, so it can sit next to an app's own
  * Tailwind in either order (see packages/ui/build/prefix.mjs):
  *
- * - no custom property an app may already define: Tailwind's default theme (--text-sm,
- *   --spacing, --color-*…) or shadcn/ui's (--radius, --chart-1…) — Satin's are --sa-*;
- * - every utility class carries the `sa:` prefix;
- * - every base rule is scoped to Satin's elements (nothing styles html, body, * or bare tags).
+ * - every custom property it declares is Satin's own, --sa-* (or Tailwind's internal --tw-*):
+ *   none an app may define too, like Tailwind's --text-sm, shadcn/ui's --radius or a --bg-card;
+ * - every utility class carries the `sa:` prefix, and no hand-written rule names an unprefixed
+ *   utility class (it would never match the prefixed markup);
+ * - every base rule is scoped to Satin's elements, by class or data-slot (nothing styles html,
+ *   body, * or bare tags).
  *
  *   node scripts/check-css.mjs [packages/ui/dist/styles.css]
  */
@@ -17,13 +19,22 @@ const require = createRequire(import.meta.url)
 // Names an app may already use: Tailwind's default theme, and shadcn/ui's theme variables.
 const tailwindTheme = new Set([...readFileSync(require.resolve('tailwindcss/theme.css'), 'utf8').matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]))
 const SHADCN = /^--(radius|background|foreground|card|card-foreground|popover|popover-foreground|primary|primary-foreground|secondary|secondary-foreground|muted|muted-foreground|accent|accent-foreground|destructive|destructive-foreground|border|input|ring|chart-\d|sidebar(-[\w-]+)?)$/
-const SCOPED = /\[class\*=["']?sa\\?:/
+const SCOPED = /\[class\*=["']?sa\\?:|\[data-slot[\]=]/
 
 const file = process.argv[2] ?? 'packages/ui/dist/styles.css'
 const root = postcss.parse(readFileSync(file, 'utf8'))
 const problems = []
 root.walkDecls((d) => {
   if (tailwindTheme.has(d.prop) || SHADCN.test(d.prop)) problems.push(`variable an app may own: ${d.prop}`)
+  else if (d.prop.startsWith('--') && !/^--(sa|tw)-/.test(d.prop)) problems.push(`variable without the prefix: ${d.prop}`)
+})
+// A Tailwind-style class (escaped : [ ( / .) that isn't sa: in a hand-written selector.
+root.walkRules((r) => {
+  if (r.parent?.type === 'atrule' && r.parent.name === 'layer' && r.parent.params === 'utilities') return
+  if (r.parent?.type === 'atrule' && /keyframes/.test(r.parent.name)) return
+  for (const m of r.selector.matchAll(/\.((?:\\.|[\w-])+)/g)) {
+    if (/\\[:[(/.]/.test(m[1]) && !m[1].startsWith('sa\\:')) problems.push(`selector names an unprefixed utility: .${m[1]}`)
+  }
 })
 root.walkAtRules('layer', (layer) => {
   if (layer.params === 'utilities') {

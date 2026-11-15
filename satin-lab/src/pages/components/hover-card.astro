@@ -2,26 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import Demo, { options } from '../../demos/hover-card'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-const api = {
-  description: "The `HoverCard` component opens after the pointer rests 400 ms on its `trigger` (NN/g recommends 0.3–0.5 s) and closes 150 ms after it leaves; keyboard focus opens it too.",
-  props: [
-    {name: 'trigger', type: ['ReactNode']},
-    {name: 'children', type: ['ReactNode']},
-    {name: 'openDelay', type: ['number'], default: '400'},
-    {name: 'closeDelay', type: ['number'], default: '150'},
-    {name: 'side', type: ['"top"', '"right"', '"bottom"', '"left"'], default: '"bottom"'},
-    {name: 'align', type: ['"start"', '"center"', '"end"'], default: '"start"'},
-    {name: 'open', type: ['boolean']},
-  ],
-}
 ---
 
 <Docs current="hover-card">
-  <DocSection item={page('hover-card')} api={api}>
+  <DocSection item={page('hover-card')} api={api['hover-card']}>
     <Demo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

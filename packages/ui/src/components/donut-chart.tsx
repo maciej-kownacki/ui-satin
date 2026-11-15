@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { ChartCard, ChartLegendPill, defaultFormat, type ChartCardBaseProps } from './chart'
+import { useSatinLabels } from './labels'
 
 /**
  * Donut chart, 1:1 with the uiKit `chart/donutCard` (4067:7096), in the shared ChartCard
@@ -17,7 +18,7 @@ import { ChartCard, ChartLegendPill, defaultFormat, type ChartCardBaseProps } fr
  * pills' content to 45% (the hovered one fills bg/hover), and the middle shows the hovered value over "Label · 20%".
  */
 export interface DonutCardProps extends Omit<ChartCardBaseProps, 'total' | 'change'> {
-  /** Under the sum in the middle. */
+  /** Under the sum in the middle. Defaults to the `total` label. */
   centerLabel?: string
 }
 
@@ -27,9 +28,12 @@ const R = (SIZE - STROKE) / 2
 const C = 2 * Math.PI * R
 const GAP = 2
 
-const seriesColor = (i: number) => `var(--chart-${(i % 5) + 1})`
+// Written out whole, so the npm build can point each at its --sa-chart-* name.
+const SERIES = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)']
+const seriesColor = (i: number) => SERIES[i % SERIES.length]
 
-export function DonutCard({ data, formatValue = defaultFormat, highlight, centerLabel = 'Total', ...props }: DonutCardProps) {
+export function DonutCard({ data, formatValue = defaultFormat, highlight, centerLabel, ...props }: DonutCardProps) {
+  const labels = useSatinLabels()
   const [hovered, setHovered] = React.useState<number | null>(null)
   const active = (hovered != null && hovered < data.length ? hovered : null) ?? highlight ?? null
   const sum = data.reduce((s, d) => s + Math.max(0, d.value), 0) || 1
@@ -73,7 +77,7 @@ export function DonutCard({ data, formatValue = defaultFormat, highlight, center
               {formatValue(active != null ? data[active].value : sum)}
             </span>
             <span className="text-sm leading-(--text-sm--line-height) text-text-muted">
-              {active != null ? `${data[active].label} · ${share(data[active].value)}%` : centerLabel}
+              {active != null ? `${data[active].label} · ${share(data[active].value)}%` : (centerLabel ?? labels.total)}
             </span>
           </div>
         </div>

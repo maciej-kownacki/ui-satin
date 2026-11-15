@@ -2,28 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import FormFieldDemo, { options } from '../../demos/form-field'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-// Inline until the lead adds 'form-field' to nav.ts / api.ts.
-const item = { id: 'form-field', title: 'Form field', href: '/components/form-field', description: 'Wraps a control with a label, a description and an error message.' }
-const api = {
-  description: 'The `FormField` component is a wrapper around the `div` element that adds a label, a description and an error to its control.',
-  props: [
-    { name: 'layout', type: ['"vertical"', '"horizontal"'], default: '"vertical"' },
-    { name: 'label', type: ['string'] },
-    { name: 'name', type: ['string'] },
-    { name: 'description', type: ['string'] },
-    { name: 'required', type: ['boolean'], default: 'false' },
-    { name: 'error', type: ['string'] },
-    { name: 'disabled', type: ['boolean'], default: 'false' },
-    { name: 'children', type: ['ReactNode'] },
-  ],
-}
 ---
 
 <Docs current="form-field">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('form-field')} api={api['form-field']}>
     <FormFieldDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

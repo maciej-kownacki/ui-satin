@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Search } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Kbd } from './kbd'
+import { useSatinLabels } from './labels'
 
 /**
  * SearchBar, 1:1 with the uiKit `searchBar` (3233:18871): a 32px field for the sidebar that
@@ -12,7 +13,10 @@ import { Kbd } from './kbd'
  * border/strong, focus border/focus with the 2px focus ring. The ⌘K keys (Kbd sm) can be hidden
  * with `shortcut={false}`.
  *
- * With `shortcut`, ⌘K or Ctrl+K anywhere on the page focuses it; Escape clears it.
+ * With `shortcut`, ⌘K or Ctrl+K anywhere on the page focuses it; Escape clears it. The
+ * placeholder defaults to the `search` label ("Search…").
+ *
+ * Other props, `ref` included, go to the input; `wrapperClassName` styles the field around it.
  */
 export interface SearchBarProps extends Omit<React.ComponentProps<'input'>, 'size'> {
   /** Show the ⌘K keycaps and listen for the shortcut. */
@@ -24,10 +28,8 @@ export interface SearchBarProps extends Omit<React.ComponentProps<'input'>, 'siz
   wrapperClassName?: string
 }
 
-export const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(function SearchBar(
-  { shortcut = true, hotkey = shortcut, wrapperClassName, className, placeholder = 'Search...', onKeyDown, ...props },
-  forwarded,
-) {
+export function SearchBar({ shortcut = true, hotkey = shortcut, wrapperClassName, className, placeholder, onKeyDown, ref: forwarded, ...props }: SearchBarProps) {
+  const labels = useSatinLabels()
   const inner = React.useRef<HTMLInputElement>(null)
   React.useImperativeHandle(forwarded, () => inner.current as HTMLInputElement)
 
@@ -59,7 +61,9 @@ export const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(func
       <input
         ref={inner}
         type="search"
-        placeholder={placeholder}
+        // A name of its own: a placeholder isn't one every screen reader reads. Your aria-label wins.
+        aria-label={labels.searchField}
+        placeholder={placeholder ?? labels.search}
         onKeyDown={(e) => {
           if (e.key === 'Escape' && e.currentTarget.value) {
             e.preventDefault()
@@ -84,4 +88,4 @@ export const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(func
       )}
     </label>
   )
-})
+}

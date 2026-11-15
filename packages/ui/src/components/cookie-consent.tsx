@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 
 /**
  * CookieConsent: what the site stores and the three answers, in one floating card at the
@@ -16,36 +17,40 @@ import { Button } from './button'
  * card yourself. It is a labelled region, not a modal: the page stays usable behind it.
  */
 export interface CookieConsentProps extends Omit<React.ComponentProps<'section'>, 'children'> {
-  /** What the site stores and why. */
+  /** What the site stores and why. Defaults to the `cookieNotice` label. */
   children?: React.ReactNode
   onAccept?: () => void
   onReject?: () => void
   /** Shows Customize; open your settings from here. */
   onCustomize?: () => void
+  /** Defaults to the `acceptAll` label. */
   acceptLabel?: string
+  /** Defaults to the `rejectAll` label. */
   rejectLabel?: string
+  /** Defaults to the `customize` label. */
   customizeLabel?: string
   /** Fixed to the bottom of the viewport, centred, 16px up. */
   floating?: boolean
 }
 
 export function CookieConsent({
-  children = "We use essential cookies to run this site. With your OK, we'd also use optional ones to remember settings and learn what helps.",
+  children,
   onAccept,
   onReject,
   onCustomize,
-  acceptLabel = 'Accept all',
-  rejectLabel = 'Reject all',
-  customizeLabel = 'Customize',
+  acceptLabel,
+  rejectLabel,
+  customizeLabel,
   floating = false,
   className,
-  'aria-label': ariaLabel = 'Cookie consent',
+  'aria-label': ariaLabel,
   ...props
 }: CookieConsentProps) {
+  const labels = useSatinLabels()
   return (
     <section
       data-slot="cookie-consent"
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? labels.cookieConsent}
       className={cn(
         'flex w-fit max-w-full flex-wrap items-center gap-x-5 gap-y-3 rounded-3xl border border-border-subtle bg-bg-popover px-5 py-4 [box-shadow:0_1px_3px_0_var(--effect-shadow-ambient),0_16px_40px_-12px_var(--effect-shadow-lg)]',
         floating && 'fixed inset-x-4 bottom-4 z-50 mx-auto max-w-[calc(100vw-32px)]',
@@ -53,18 +58,18 @@ export function CookieConsent({
       )}
       {...props}
     >
-      <p className="m-0 w-[280px] max-w-full min-w-0 shrink text-base text-text-muted">{children}</p>
-      <div className="ml-auto flex shrink-0 items-center gap-2">
+      <p className="m-0 w-[280px] max-w-full min-w-0 shrink text-base text-text-muted">{children ?? labels.cookieNotice}</p>
+      <div className="ms-auto flex shrink-0 items-center gap-2">
         {onCustomize && (
           <Button variant="tertiary" size="lg" shape="rounded" className="text-text-muted" onClick={onCustomize}>
-            {customizeLabel}
+            {customizeLabel ?? labels.customize}
           </Button>
         )}
         <Button variant="secondary" size="lg" shape="rounded" onClick={onReject}>
-          {rejectLabel}
+          {rejectLabel ?? labels.rejectAll}
         </Button>
         <Button variant="primary" size="lg" shape="rounded" onClick={onAccept}>
-          {acceptLabel}
+          {acceptLabel ?? labels.acceptAll}
         </Button>
       </div>
     </section>

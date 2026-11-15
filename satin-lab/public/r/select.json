@@ -24,6 +24,191 @@
   "docs": "Select docs: https://uisatin.dev/components/select",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "FieldChrome": {
+        "description": "@internal Shared by Satin's own components; not part of the public API and may change in any release.",
+        "extends": [],
+        "props": [
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "action",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "On the label's line, at the field's right edge: the smallest button, e.g. Clear."
+          },
+          {
+            "name": "chrome",
+            "type": "ReturnType<typeof useFieldChrome>",
+            "required": true
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true
+          }
+        ]
+      },
+      "SelectChevron": {
+        "description": "@internal Shared by Satin's own components; not part of the public API and may change in any release.",
+        "extends": [],
+        "props": [
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "Select": {
+        "type": "SelectProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof SelectPrimitive.Trigger>, 'value' | 'defaultValue' | 'disabled' | 'name' | 'children' | 'asChild'>"
+        ],
+        "props": [
+          {
+            "name": "options",
+            "type": "SelectOption[] | SelectGroup[]",
+            "required": true,
+            "description": "Options, or titled groups of options."
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "defaultValue",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: string) => void",
+            "required": false
+          },
+          {
+            "name": "placeholder",
+            "type": "string",
+            "required": false,
+            "description": "Shown while nothing is picked. Defaults to the `select` label (\"Select…\")."
+          },
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "hint",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "error",
+            "type": "React.ReactNode | boolean",
+            "required": false,
+            "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "leadingIcon",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "A 16px icon before the value. Left out, the picked option's own icon shows there."
+          },
+          {
+            "name": "layout",
+            "type": "MenuItemContentProps['layout']",
+            "required": false,
+            "default": "'inline'",
+            "description": "Row layout of every option: description under the label, or after it."
+          },
+          {
+            "name": "iconSize",
+            "type": "MenuItemContentProps['iconSize']",
+            "required": false,
+            "default": "16",
+            "description": "Option icon size; 20 suits stacked two-line options."
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "required",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "Form field name, for a native form submit."
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "open",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "defaultOpen",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onOpenChange",
+            "type": "(open: boolean) => void",
+            "required": false
+          },
+          {
+            "name": "container",
+            "type": "HTMLElement | null",
+            "required": false,
+            "description": "Portal target. Defaults to `document.body`."
+          },
+          {
+            "name": "aria-label",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "wrapperClassName",
+            "type": "string",
+            "required": false,
+            "description": "Classes for the outer wrapper (label + field + hint). `className` styles the trigger."
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "data-force",
+            "type": "'hover' | 'focus'",
+            "required": false,
+            "description": "Show a state without interacting, for state sheets."
+          }
+        ]
+      }
+    }
   }
 }

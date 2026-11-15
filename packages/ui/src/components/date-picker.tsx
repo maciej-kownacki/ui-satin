@@ -25,28 +25,43 @@ import { FieldChrome, Select, useFieldChrome } from './select'
  * Keyboard: the grid is one tab stop; arrows move a day or a week, Page Up / Down a month, Home /
  * End the week, Enter or Space picks.
  *
+ * Month and weekday names and the dates on the triggers are written in the `dateLocale` label
+ * (en-US by default). The week still starts on Monday.
+ *
  * Other props, `ref` included, go to: Calendar's root, DatePicker's and DateRangePicker's trigger
  * button (`className` styles it too), and the panels' surface.
  */
 
 export type DateRange = { from: Date | null; to: Date | null }
 
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-const DOW_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
 const sameDay = (a?: Date | null, b?: Date | null) => !!a && !!b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n)
 const addMonths = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth() + n, 1)
-const fullDate = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-export const formatDate = (d: Date) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d)
-export const formatRange = ({ from, to }: DateRange) => {
+export const formatDate = (d: Date, locale = 'en-US') =>
+  new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' }).format(d)
+export const formatRange = ({ from, to }: DateRange, locale = 'en-US') => {
   if (!from) return ''
-  if (!to || sameDay(from, to)) return formatDate(from)
+  if (!to || sameDay(from, to)) return formatDate(from, locale)
   const sameYear = from.getFullYear() === to.getFullYear()
-  const f = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }) }).format(from)
-  return `${f} – ${formatDate(to)}`
+  const f = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }) }).format(from)
+  return `${f} – ${formatDate(to, locale)}`
+}
+
+/** The calendar's words in `locale`: month titles, weekday letters (Monday first) and each day's full date. */
+function calendarWords(locale: string) {
+  const month = new Intl.DateTimeFormat(locale, { month: 'long' })
+  const monthYear = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' })
+  const narrow = new Intl.DateTimeFormat(locale, { weekday: 'narrow' })
+  const long = new Intl.DateTimeFormat(locale, { weekday: 'long' })
+  // 1 January 2024 was a Monday.
+  const week = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + i))
+  return {
+    month: (d: Date) => month.format(d),
+    monthYear: (d: Date) => monthYear.format(d),
+    weekdays: week.map((d) => ({ letter: narrow.format(d), name: long.format(d) })),
+    fullDate: new Intl.DateTimeFormat(locale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+  }
 }
 
 /**
@@ -99,6 +114,7 @@ export function Calendar({
   ...props
 }: CalendarProps) {
   const labels = useSatinLabels()
+  const words = React.useMemo(() => calendarWords(labels.dateLocale), [labels.dateLocale])
   const today = startOfDay(todayProp ?? new Date())
   const anchor = mode === 'range' ? range?.from : value
   const [innerMonth, setInnerMonth] = React.useState(() => addMonths(anchor ?? today, 0))
@@ -139,9 +155,11 @@ export function Calendar({
   }
 
   const onKeyDown = (e: React.KeyboardEvent) => {
+    // Right to left the week runs leftwards, so Left is the next day; Page, Home and End stay.
+    const step = getComputedStyle(e.currentTarget).direction === 'rtl' ? -1 : 1
     const map: Record<string, () => Date> = {
-      ArrowLeft: () => addDays(focus, -1),
-      ArrowRight: () => addDays(focus, 1),
+      ArrowLeft: () => addDays(focus, -step),
+      ArrowRight: () => addDays(focus, step),
       ArrowUp: () => addDays(focus, -7),
       ArrowDown: () => addDays(focus, 7),
       PageUp: () => new Date(focus.getFullYear(), focus.getMonth() - 1, focus.getDate()),
@@ -162,7 +180,8 @@ export function Calendar({
 
   const navBtn = (dir: -1 | 1, label: string, onClick: () => void) => (
     <Button variant="tertiary" size="xs" iconOnly aria-label={label} onClick={onClick}>
-      {dir < 0 ? <NavArrowLeft aria-hidden /> : <NavArrowRight aria-hidden />}
+      {/* Mirrored right to left, where the previous month is to the right. */}
+      {dir < 0 ? <NavArrowLeft aria-hidden className="rtl:-scale-x-100" /> : <NavArrowRight aria-hidden className="rtl:-scale-x-100" />}
     </Button>
   )
 
@@ -179,7 +198,7 @@ export function Calendar({
             <div className="flex items-center gap-1">
               {navBtn(-1, labels.previousMonth, () => setMonth(addMonths(month, -1)))}
               <span id={titleId} className="min-w-[72px] text-center text-sm leading-5 font-medium text-text-default">
-                {MONTHS[m.getMonth()]}
+                {words.month(m)}
               </span>
               {navBtn(1, labels.nextMonth, () => setMonth(addMonths(month, 1)))}
             </div>
@@ -201,7 +220,7 @@ export function Calendar({
                 balancing the arrow on the other side. */}
             {months === 2 && (i === 0 ? navBtn(-1, labels.previousMonth, () => setMonth(addMonths(month, -1))) : <span aria-hidden className="size-6 shrink-0" />)}
             <span id={titleId} className={cn('flex-1 text-sm leading-5 font-medium text-text-default', months === 2 && 'text-center')}>
-              {MONTHS[m.getMonth()]} {m.getFullYear()}
+              {words.monthYear(m)}
             </span>
             {months === 1 && navBtn(-1, labels.previousMonth, () => setMonth(addMonths(month, -1)))}
             {months === 2 && i === 0 && <span aria-hidden className="size-6 shrink-0" />}
@@ -212,9 +231,9 @@ export function Calendar({
         {(
           <div role="grid" aria-labelledby={titleId} className="flex flex-col gap-1" onKeyDown={onKeyDown}>
             <div role="row" className="flex">
-              {DOW.map((d, k) => (
-                <span key={k} role="columnheader" aria-label={DOW_FULL[k]} className="grid h-6 w-10 place-items-center text-xs text-text-muted">
-                  {d}
+              {words.weekdays.map((d, k) => (
+                <span key={k} role="columnheader" aria-label={d.name} className="grid h-6 w-10 place-items-center text-xs text-text-muted">
+                  {d.letter}
                 </span>
               ))}
             </div>
@@ -225,8 +244,9 @@ export function Calendar({
                   const isSingle = mode === 'single' && sameDay(d, value)
                   const isEnd = mode === 'range' && !out && (sameDay(d, range?.from) || sameDay(d, range?.to))
                   const inBand = mode === 'range' && !out && lo && hi && !sameDay(lo, hi) && d >= lo && d <= hi
-                  const bandFrom = inBand && sameDay(d, lo) ? 'left-1/2' : 'left-0'
-                  const bandTo = inBand && sameDay(d, hi) ? 'right-1/2' : 'right-0'
+                  // Logical: the band runs from the first day towards the last, leftwards in right-to-left.
+                  const bandFrom = inBand && sameDay(d, lo) ? 'start-1/2' : 'start-0'
+                  const bandTo = inBand && sameDay(d, hi) ? 'end-1/2' : 'end-0'
                   const isHoverEnd = picking && !out && sameDay(d, hover) && !isEnd
                   const isToday = sameDay(d, today)
                   const off = disabled(d)
@@ -247,7 +267,7 @@ export function Calendar({
                         tabIndex={focused ? 0 : -1}
                         data-focus={focused || undefined}
                         disabled={off}
-                        aria-label={fullDate.format(d)}
+                        aria-label={words.fullDate.format(d)}
                         aria-current={isToday ? 'date' : undefined}
                         onClick={() => {
                           setFocus(d)
@@ -348,7 +368,7 @@ function Trigger({ text, placeholder, chrome, size, open, className, ...props }:
       disabled={chrome.disabled}
       aria-invalid={chrome.invalid || undefined}
       aria-describedby={chrome.describedBy}
-      className={cn('satin-field cursor-pointer text-left', className)}
+      className={cn('satin-field cursor-pointer text-start', className)}
       {...props}
     >
       <span className="satin-field-icon" aria-hidden>
@@ -427,7 +447,7 @@ export function DatePicker({
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Trigger asChild {...props}>
           <Trigger
-            text={value ? formatDate(value) : ''}
+            text={value ? formatDate(value, labels.dateLocale) : ''}
             placeholder={placeholder ?? labels.pickDate}
             chrome={chrome}
             size={size}
@@ -514,7 +534,7 @@ export function DateRangePicker({
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Trigger asChild {...props}>
           <Trigger
-            text={formatRange(value)}
+            text={formatRange(value, labels.dateLocale)}
             placeholder={placeholder ?? labels.pickDates}
             chrome={chrome}
             size={size}

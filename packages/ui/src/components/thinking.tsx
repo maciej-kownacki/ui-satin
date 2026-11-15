@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Check, EditPencil, NavArrowDown } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { FlappySprite, TetrisStill, type AgentLoadingIndicator } from './agent-loading'
+import { useSatinLabels } from './labels'
 
 /**
  * Thinking, 1:1 with the uiKit `Thinking` set (3239:20908) and its parts thinking/header
@@ -46,7 +47,7 @@ export type ThinkingIndicator = AgentLoadingIndicator
 export interface ThinkingProps extends Omit<React.ComponentProps<'div'>, 'onToggle'> {
   /** collapsed once the agent is done, expanded when people open it. */
   state?: ThinkingState
-  /** The summary, e.g. "Thought for 2m 45s". */
+  /** The summary, e.g. "Thought for 2m 45s". Defaults to the `thought` label ("Thought"). */
   label?: React.ReactNode
   steps?: ThinkingStep[]
   /** The mark beside the summary. */
@@ -56,13 +57,15 @@ export interface ThinkingProps extends Omit<React.ComponentProps<'div'>, 'onTogg
 
 export function Thinking({
   state = 'collapsed',
-  label = 'Thought',
+  label: labelProp,
   steps = [],
   indicator = 'tetris',
   onToggle,
   className,
   ...props
 }: ThinkingProps) {
+  const labels = useSatinLabels()
+  const label = labelProp ?? labels.thought
   const [open, setOpen] = React.useState(state === 'expanded')
   React.useEffect(() => setOpen(state === 'expanded'), [state])
   const bodyId = `${React.useId()}-steps`
@@ -93,7 +96,7 @@ export function Thinking({
           never moves, and its steps settle in from the top edge; closing is quicker. */}
       <div id={bodyId} data-state={open ? 'open' : 'closed'} className="satin-expand">
         <div>
-          <div className="flex gap-3 pt-2 pl-1">
+          <div className="flex gap-3 ps-1 pt-2">
             <div aria-hidden className="relative w-4 shrink-0 self-stretch">
               <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-linear-to-b from-component-rail-edge via-component-rail-center to-component-rail-edge" />
             </div>

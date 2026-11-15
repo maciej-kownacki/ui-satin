@@ -2,27 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import Demo, { options } from '../../demos/announcement-bar'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-const api = {
-  description: 'The `AnnouncementBar` component is a full-width bar for one line of news across the top or bottom of the page, with a link to read more and an optional close.',
-  props: [
-    {name: 'children', type: ['ReactNode']},
-    {name: 'action', type: ['{ label, href?, onClick? }']},
-    {name: 'onDismiss', type: ['() => void']},
-    {name: 'dismissLabel', type: ['string'], default: '"Dismiss announcement"'},
-    {name: 'tone', type: ['"primary"', '"inverse"', '"default"'], default: '"primary"'},
-    {name: 'background', type: ['"plain"', '"mesh"'], default: '"plain"'},
-    {name: 'shimmer', type: ['boolean'], default: 'false'},
-    {name: 'sticky', type: ['"top"', '"bottom"']},
-  ],
-}
 ---
 
 <Docs current="announcement-bar">
-  <DocSection item={page('announcement-bar')} api={api}>
+  <DocSection item={page('announcement-bar')} api={api['announcement-bar']}>
     <Demo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

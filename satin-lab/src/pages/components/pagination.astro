@@ -2,31 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import PaginationDemo, { options } from '../../demos/pagination'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const api = {
-  description:
-    "The `Pagination` component renders a `nav` named \"Pagination\" around a list of pages. The current page has `aria-current=\"page\"`; Previous and Next are disabled at the ends. With `getHref` the pages are links, otherwise buttons.",
-  props: [
-    {name: "pageCount", type: ["number"]},
-    {name: "page", type: ["number"]},
-    {name: "defaultPage", type: ["number"], default: "1"},
-    {name: "onPageChange", type: ["(page: number) => void"]},
-    {name: "getHref", type: ["(page: number) => string"]},
-    {name: "layout", type: ["\"full\"", "\"compact\""], default: "\"full\""},
-    {name: "siblings", type: ["number"], default: "1"},
-    {name: "motion", type: ["\"scroll\"", "\"slide\"", "\"none\""], default: "\"scroll\""},
-    {name: "previousLabel", type: ["string"], default: "\"Previous\""},
-    {name: "nextLabel", type: ["string"], default: "\"Next\""},
-  ],
-}
 ---
 
 <Docs current="pagination">
-  <DocSection item={page('pagination')} api={api}>
+  <DocSection item={page('pagination')} api={api['pagination']}>
     <PaginationDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

@@ -51,6 +51,7 @@ export function Attachment({
   preview,
   ...props
 }: AttachmentProps) {
+  const labels = useSatinLabels()
   const fileIcon = icon ?? <FileIcon type="pdf" />
   const lg = size === 'lg'
   const rounded = shape === 'rounded'
@@ -62,8 +63,8 @@ export function Attachment({
         'group/attachment relative inline-flex max-w-full shrink-0 items-center border border-border-default bg-bg-popover',
         '[box-shadow:0_1px_1px_0_var(--effect-shadow-xs)]',
         'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
-        lg ? 'gap-2.5 px-2' : 'h-control-height gap-1.5 pl-2',
-        !lg && (onRemove ? 'pr-0.5' : 'pr-2.5'),
+        lg ? 'gap-2.5 px-2' : 'h-control-height gap-1.5 ps-2',
+        !lg && (onRemove ? 'pe-0.5' : 'pe-2.5'),
         lg && (rounded ? 'rounded-pill py-1' : 'rounded-xl py-1.5'),
         !lg && (rounded ? 'rounded-pill' : 'rounded-md'),
         // Hover (satin-pressed, declared later, wins while pressed)
@@ -85,7 +86,7 @@ export function Attachment({
         data-attachment-main=""
         onClick={onOpen}
         className={cn(
-          'flex min-w-0 items-center text-left outline-none',
+          'flex min-w-0 items-center text-start outline-none',
           // The whole chip is the click target; the remove button sits above it.
           'after:absolute after:inset-0 after:rounded-[inherit]',
           lg ? 'gap-2.5' : 'gap-1.5',
@@ -122,7 +123,7 @@ export function Attachment({
           size="xs"
           shape="rounded"
           iconOnly
-          aria-label={`Remove ${name}`}
+          aria-label={labels.removeItem(name)}
           onClick={onRemove}
           className="relative z-10"
         >
@@ -171,6 +172,7 @@ export interface AttachmentPreviewProps extends Omit<React.ComponentProps<'div'>
   /** Left side of the footer: an `AttachmentPreviewPager` or `AttachmentPreviewSheets`. */
   navigation?: React.ReactNode
   onOpen?: () => void
+  /** Defaults to the `openItem` label. */
   openLabel?: string
 }
 
@@ -186,9 +188,10 @@ export function AttachmentPreview({
   children,
   navigation,
   onOpen,
-  openLabel = 'Open',
+  openLabel,
   ...props
 }: AttachmentPreviewProps) {
+  const labels = useSatinLabels()
   return (
     <div
       data-slot="attachment-preview"
@@ -206,9 +209,9 @@ export function AttachmentPreview({
       <div className="relative">
         <div
           tabIndex={0}
-          aria-label={`Preview of ${name}`}
+          aria-label={labels.previewOf(name)}
           className={cn(
-            'h-[176px] overflow-x-clip overflow-y-auto pr-4 pl-3 outline-none',
+            'h-[176px] overflow-x-clip overflow-y-auto ps-3 pe-4 outline-none',
             '[scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin]',
             'focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
           )}
@@ -217,15 +220,17 @@ export function AttachmentPreview({
         </div>
         <div
           aria-hidden
-          className="pointer-events-none absolute right-2.5 bottom-0 left-0 h-8 bg-linear-to-b from-transparent to-bg-popover"
+          // Clear of the scrollbar, which right to left is on the left.
+          className="pointer-events-none absolute start-0 end-2.5 bottom-0 h-8 bg-linear-to-b from-transparent to-bg-popover"
         />
       </div>
       <div className="h-px bg-border-subtle" />
       <div className="flex items-center gap-2 px-2 py-1.5">
         <div className="flex min-w-0 flex-1 items-center gap-1">{navigation}</div>
         <Button variant="tertiary" size="xs" onClick={onOpen}>
-          {openLabel}
-          <ArrowUpRight aria-hidden />
+          {openLabel ?? labels.openItem}
+          {/* Out and forward: ↖ in right-to-left. */}
+          <ArrowUpRight aria-hidden className="rtl:-scale-x-100" />
         </Button>
       </div>
     </div>
@@ -254,7 +259,7 @@ export function AttachmentPreviewPager({
         <NavArrowDown aria-hidden />
       </Button>
       <span className="text-xs whitespace-nowrap text-text-muted" aria-live="polite">
-        Page {page} of {total}
+        {labels.pageOf(page, total)}
       </span>
     </>
   )

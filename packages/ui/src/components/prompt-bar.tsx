@@ -6,7 +6,7 @@ import { ArrowUp, Attachment as AttachmentIcon, Check, Globe, Microphone, NavArr
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
-import { useSatinLabels } from './labels'
+import { defaultLabels, useSatinLabels, type SatinLabelSet } from './labels'
 
 /**
  * PromptBar, 1:1 with the uiKit `PromptBar` set (3158:21803), its input row
@@ -50,6 +50,7 @@ export interface PromptBarProps extends Omit<React.ComponentProps<'form'>, 'onSu
   value?: string
   defaultValue?: string
   onValueChange?: (value: string) => void
+  /** Defaults to the `writeMessage` label. */
   placeholder?: string
   /** Files shown as chips above the field; people can remove them before sending. */
   attachments?: File[]
@@ -61,7 +62,7 @@ export interface PromptBarProps extends Omit<React.ComponentProps<'form'>, 'onSu
   onModelChange?: (value: string) => void
   /** Icon on the select when `models` doesn't give one. */
   modelIcon?: React.ReactNode
-  /** Rows of the + menu. Defaults to Upload a file and Web search. */
+  /** Rows of the + menu. Defaults to Upload a file and Web search, in the `uploadFile` and `webSearch` labels. */
   actions?: PromptBarAction[]
   /** The + at the end of the menu's search row. */
   onAddAgent?: () => void
@@ -70,11 +71,17 @@ export interface PromptBarProps extends Omit<React.ComponentProps<'form'>, 'onSu
   onSubmit?: (value: string, attachments: File[]) => void
 }
 
-/** Upload a file and Web search: spread them into `actions` to add your own rows after them. */
-export const defaultActions: PromptBarAction[] = [
-  { id: 'upload', label: 'Upload a file', description: 'Select a file from your computer', icon: <AttachmentIcon /> },
-  { id: 'web', label: 'Web search', description: 'Research and find on the internet', icon: <Globe /> },
+/** Upload a file and Web search, in the words of `labels`. */
+const actionsIn = (labels: SatinLabelSet): PromptBarAction[] => [
+  { id: 'upload', label: labels.uploadFile, description: labels.uploadFileDescription, icon: <AttachmentIcon /> },
+  { id: 'web', label: labels.webSearch, description: labels.webSearchDescription, icon: <Globe /> },
 ]
+
+/**
+ * Upload a file and Web search: spread them into `actions` to add your own rows after them.
+ * These are the English rows; left without `actions`, PromptBar shows them in the SatinLabels words.
+ */
+export const defaultActions: PromptBarAction[] = actionsIn(defaultLabels)
 
 /** Menu card: bg/popover, border/subtle, radius 12, shadow/sm. */
 const menuCard = [
@@ -89,14 +96,14 @@ export function PromptBar({
   value: valueProp,
   defaultValue = '',
   onValueChange,
-  placeholder = 'Write a message',
+  placeholder,
   attachments: attachmentsProp,
   onAttachmentsChange,
   model: modelProp,
   models,
   onModelChange,
   modelIcon,
-  actions = defaultActions,
+  actions: actionsProp,
   onAddAgent,
   onDictationChange,
   disabled = false,
@@ -105,6 +112,7 @@ export function PromptBar({
   ...props
 }: PromptBarProps) {
   const labels = useSatinLabels()
+  const actions = React.useMemo(() => actionsProp ?? actionsIn(labels), [actionsProp, labels])
   const [innerValue, setInnerValue] = React.useState(defaultValue)
   const value = valueProp ?? innerValue
   const [files, setFiles] = React.useState<File[]>(attachmentsProp ?? [])
@@ -230,7 +238,7 @@ export function PromptBar({
               rows={1}
               value={value}
               disabled={disabled}
-              placeholder={placeholder}
+              placeholder={placeholder ?? labels.writeMessage}
               aria-label={labels.message}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => {
@@ -316,7 +324,7 @@ function AddMenu({
 
   return (
     <>
-      <div className="flex items-center gap-1 pr-1.5">
+      <div className="flex items-center gap-1 pe-1.5">
         <label className="flex flex-1 items-center gap-2 px-3 py-1.5">
           <Search aria-hidden className="size-icon-size shrink-0 text-text-muted [stroke-width:1.875]" />
           <input
@@ -325,7 +333,7 @@ function AddMenu({
             aria-controls={`${id}-list`}
             aria-activedescendant={shown.length ? `${id}-${index}` : undefined}
             aria-label={labels.searchAgentsAndTools}
-            placeholder="Search agents and tools"
+            placeholder={labels.searchAgentsAndTools}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)
@@ -374,7 +382,7 @@ function AddMenu({
             </span>
           </div>
         ))}
-        {shown.length === 0 && <p className="px-2 py-1.5 text-sm text-text-muted">No matches</p>}
+        {shown.length === 0 && <p className="px-2 py-1.5 text-sm text-text-muted">{labels.noMatches}</p>}
       </div>
       <ShortcutHints />
     </>
@@ -459,10 +467,11 @@ function ModelSelect({
  * border/default rule. Keys are Kbd sm.
  */
 function ShortcutHints() {
+  const labels = useSatinLabels()
   return (
     <div aria-hidden className="flex items-center gap-3 border-t border-border-default bg-bg-popover px-3 py-1.5">
-      <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label="Navigate" />
-      <KbdHint keys={[<KbdReturn key="return" />]} label="Select" />
+      <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
+      <KbdHint keys={[<KbdReturn key="return" />]} label={labels.selectItem} />
     </div>
   )
 }
@@ -480,6 +489,7 @@ function DictationButton({
   disabled: boolean
   onToggle: () => void
 }) {
+  const labels = useSatinLabels()
   const waveRef = React.useRef<SVGSVGElement>(null)
 
   // The three bars of the wave breathe out of step while recording (transform only).
@@ -504,7 +514,7 @@ function DictationButton({
       shape={shape}
       iconOnly
       disabled={disabled}
-      aria-label={recording ? 'Stop dictation' : 'Dictate'}
+      aria-label={recording ? labels.stopDictation : labels.dictate}
       aria-pressed={recording}
       onClick={onToggle}
     >
@@ -534,11 +544,12 @@ function AttachmentChip({
   disabled: boolean
   onRemove: () => void
 }) {
+  const labels = useSatinLabels()
   return (
     <span
       data-slot="attachment"
       className={cn(
-        'flex h-control-height items-center gap-1.5 border border-border-default bg-bg-popover pr-0.5 pl-2',
+        'flex h-control-height items-center gap-1.5 border border-border-default bg-bg-popover ps-2 pe-0.5',
         '[filter:drop-shadow(0_1px_1px_var(--effect-shadow-xs))]',
         'transition-[background-color,border-color] duration-(--duration-fast) ease-(--ease-out)',
         'hover:border-border-strong hover:bg-bg-canvas active:border-border-strong active:bg-bg-muted',
@@ -553,7 +564,7 @@ function AttachmentChip({
         shape="rounded"
         iconOnly
         disabled={disabled}
-        aria-label={`Remove ${file.name}`}
+        aria-label={labels.removeItem(file.name)}
         onClick={onRemove}
       >
         <Xmark className="![stroke-width:1.64]" />

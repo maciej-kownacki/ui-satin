@@ -2,36 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import FileUploadDemo, { options } from '../../demos/file-upload'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const api = {
-  description:
-    "The `FileUpload` component renders a drop zone with a Browse files button over a hidden `<input type=\"file\">`, then a list of the files the app is handling. Dropped and picked files are checked against `accept` and `maxSize`; the upload itself is yours, kept in `files`.",
-  props: [
-    {name: "files", type: ["FileUploadFile[]"], default: "[]"},
-    {name: "accept", type: ["string"]},
-    {name: "maxSize", type: ["number"]},
-    {name: "multiple", type: ["boolean"], default: "true"},
-    {name: "disabled", type: ["boolean"], default: "false"},
-    {name: "title", type: ["ReactNode"], default: "\"Drop files here\""},
-    {name: "dropTitle", type: ["ReactNode"], default: "\"Drop to upload\""},
-    {name: "description", type: ["ReactNode"]},
-    {name: "browseLabel", type: ["string"], default: "\"Browse files\""},
-    {name: "onBrowse", type: ["() => void"]},
-    {name: "onFilesAdded", type: ["(files: File[]) => void"]},
-    {name: "onFilesRejected", type: ["(rejections: FileUploadRejection[]) => void"]},
-    {name: "onCancel", type: ["(file: FileUploadFile) => void"]},
-    {name: "onRemove", type: ["(file: FileUploadFile) => void"]},
-    {name: "onOpen", type: ["(file: FileUploadFile) => void"]},
-  ],
-}
 ---
 
 <Docs current="file-upload">
-  <DocSection item={page('file-upload')} api={api}>
+  <DocSection item={page('file-upload')} api={api['file-upload']}>
     <FileUploadDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

@@ -15,7 +15,9 @@ import { ChartCard, ChartLegendRow, ChartTooltip, defaultFormat, type ChartCardB
  */
 export interface ChannelCardProps extends ChartCardBaseProps {}
 
-const seriesColor = (i: number) => `var(--chart-${(i % 5) + 1})`
+// Written out whole, so the npm build can point each at its --sa-chart-* name.
+const SERIES = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)']
+const seriesColor = (i: number) => SERIES[i % SERIES.length]
 
 export function ChannelCard({
   data,
@@ -45,8 +47,9 @@ export function ChannelCard({
               onPointerEnter={() => setHovered(i)}
               className={cn(
                 'relative rounded-[1.5px] transition-opacity duration-(--duration-fast) ease-(--ease-out)',
-                i === 0 && 'rounded-l-[4px]',
-                i === last && 'rounded-r-[4px]',
+                // The shares read from the start side, so the outer corners are logical.
+                i === 0 && 'rounded-s-[4px]',
+                i === last && 'rounded-e-[4px]',
                 active !== null && active !== i && 'opacity-15',
               )}
               style={{ background: seriesColor(i) }}

@@ -170,7 +170,7 @@ export interface ToastProps extends Omit<React.ComponentProps<typeof ToastPrimit
 /** The card surface: popover bg, border/default, radius-xl, the shadcn `lg` shadow. */
 const card = (intent: ToastIntent) =>
   cn(
-    'relative flex w-full items-center gap-2.5 overflow-clip pr-2 pl-2.5',
+    'relative flex w-full items-center gap-2.5 overflow-clip ps-2.5 pe-2',
     intent === 'neutral' ? 'py-2.5' : 'pt-2.5 pb-3',
     'rounded-xl border border-border-default bg-bg-popover',
     '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
@@ -408,6 +408,7 @@ export interface ToasterProps {
 }
 
 export function Toaster({ className, limit = 3, children }: ToasterProps) {
+  const labels = useSatinLabels()
   const all = React.useSyncExternalStore(subscribe, snapshot, snapshot)
   // Newest first: index 0 is the front of the stack.
   const stack = React.useMemo(() => [...all].reverse(), [all])
@@ -438,6 +439,14 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
     }
   }, [])
   const expanded = (hovered || focused) && stack.some((r) => r.open)
+
+  // The stack sits at the end of the row, so it swipes away towards it: to the left in
+  // right-to-left. Read from the page, so `dir` alone is enough.
+  const [rtl, setRtl] = React.useState(false)
+  React.useLayoutEffect(() => {
+    const el = viewportRef.current
+    if (el) setRtl(getComputedStyle(el).direction === 'rtl')
+  })
 
   const [heights, setHeights] = React.useState<Record<string, number>>({})
   const measure = React.useCallback((id: string, h: number) => setHeights((c) => (c[id] === h ? c : { ...c, [id]: h })), [])
@@ -481,7 +490,7 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
       : 0
 
   return (
-    <ToastPrimitive.Provider swipeDirection="right" label="Notifications">
+    <ToastPrimitive.Provider swipeDirection={rtl ? 'left' : 'right'} label={labels.notifications}>
       {children}
       {placed.map(({ record, index }) => {
         const slot = Math.min(index, depth - 1)
@@ -504,7 +513,7 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
         ref={viewportRef}
         style={{ height, transition: `height ${MOTION_MS}ms var(--ease-out)` }}
         className={cn(
-          'fixed right-4 bottom-4 z-[100] m-0 w-[397px] max-w-[calc(100%-32px)] list-none p-0 outline-none',
+          'fixed end-4 bottom-4 z-[100] m-0 w-[397px] max-w-[calc(100%-32px)] list-none p-0 outline-none',
           className,
         )}
       />

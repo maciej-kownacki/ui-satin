@@ -2,30 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import Demo, { options } from '../../demos/input-otp'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-const api = {
-  description: "The `InputOTP` component renders one `input` with `autocomplete=\"one-time-code\"` over the cells, so typing, paste and SMS autofill work as in any field.",
-  props: [
-    {name: 'length', type: ['number'], default: '6'},
-    {name: 'groupSize', type: ['number'], default: '3'},
-    {name: 'value', type: ['string']},
-    {name: 'onValueChange', type: ['(value: string) => void']},
-    {name: 'onComplete', type: ['(value: string) => void']},
-    {name: 'pattern', type: ['RegExp'], default: '/^\\d$/'},
-    {name: 'label', type: ['ReactNode']},
-    {name: 'hint', type: ['ReactNode']},
-    {name: 'error', type: ['ReactNode', 'boolean']},
-    {name: 'success', type: ['ReactNode', 'boolean']},
-    {name: 'disabled', type: ['boolean']},
-  ],
-}
 ---
 
 <Docs current="input-otp">
-  <DocSection item={page('input-otp')} api={api}>
+  <DocSection item={page('input-otp')} api={api['input-otp']}>
     <Demo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

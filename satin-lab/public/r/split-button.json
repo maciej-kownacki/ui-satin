@@ -23,6 +23,40 @@
   "docs": "Split button docs: https://uisatin.dev/components/split-button",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "SplitButton": {
+        "type": "SplitButtonProps",
+        "extends": [
+          "Omit<ButtonProps, 'iconOnly' | 'asChild'>"
+        ],
+        "props": [
+          {
+            "name": "menu",
+            "type": "React.ReactNode",
+            "required": true,
+            "description": "The related actions: `DropdownMenuItem`s, optionally in `DropdownMenuGroup`s."
+          },
+          {
+            "name": "menuLabel",
+            "type": "string",
+            "required": false,
+            "description": "Accessible name of the arrow."
+          },
+          {
+            "name": "menuProps",
+            "type": "Omit<DropdownMenuProps, 'trigger' | 'children'>",
+            "required": false,
+            "description": "Passed to the DropdownMenu: `align` (default `end`), `side`, `open`, `onOpenChange`…"
+          },
+          {
+            "name": "groupClassName",
+            "type": "string",
+            "required": false,
+            "description": "Class names for the group around both halves."
+          }
+        ]
+      }
+    }
   }
 }

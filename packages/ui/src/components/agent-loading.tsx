@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { cn } from '../lib/utils'
+import { useSatinLabels } from './labels'
 
 /**
  * Loading: what shows while an agent works, before there is anything to read. The mark playing,
@@ -354,7 +355,7 @@ export function FlappySprite({ size = 16, run = true, className }: { size?: numb
 export type AgentLoadingIndicator = 'tetris' | 'flappy'
 
 export interface AgentLoadingProps extends React.ComponentProps<'div'> {
-  /** The live label. */
+  /** The live label. Defaults to the `thinking` label ("Thinking…"). */
   label?: React.ReactNode
   /** Elapsed time after the label, e.g. "1.2s". */
   time?: React.ReactNode
@@ -364,7 +365,9 @@ export interface AgentLoadingProps extends React.ComponentProps<'div'> {
   glimmer?: Glimmer
 }
 
-export function AgentLoading({ label = 'Thinking…', time, indicator = 'tetris', glimmer = 'color', className, ...props }: AgentLoadingProps) {
+export function AgentLoading({ label: labelProp, time, indicator = 'tetris', glimmer = 'color', className, ...props }: AgentLoadingProps) {
+  const labels = useSatinLabels()
+  const label = labelProp ?? labels.thinking
   return (
     <div data-slot="agent-loading" role="status" aria-live="polite" className={cn('flex items-center gap-3 p-1', className)} {...props}>
       {indicator === 'flappy' ? <FlappySprite size={16} /> : <TetrisMark glimmer={glimmer} />}
@@ -375,7 +378,12 @@ export function AgentLoading({ label = 'Thinking…', time, indicator = 'tetris'
       ) : (
         <ShimmerLabel className="text-sm whitespace-nowrap">{label}</ShimmerLabel>
       )}
-      {time != null && <span className="text-sm whitespace-nowrap text-text-subtle tabular-nums">{time}</span>}
+      {/* A ticking clock read out on every tick would drown the label: screen readers hear the label only. */}
+      {time != null && (
+        <span aria-hidden className="text-sm whitespace-nowrap text-text-subtle tabular-nums">
+          {time}
+        </span>
+      )}
     </div>
   )
 }

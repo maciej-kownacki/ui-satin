@@ -18,12 +18,93 @@
     {
       "path": "registry/satin/ui/sheet.tsx",
       "type": "registry:ui",
-      "content": "'use client'\n\nimport * as React from 'react'\nimport { Dialog as DialogPrimitive } from 'radix-ui'\nimport { cn } from '@/lib/utils'\nimport { Button } from '@/registry/satin/ui/button'\nimport { CloseIcon } from '@/registry/satin/ui/dialog'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\n\n/**\n * Sheet, 1:1 with the uiKit `Sheet` set (4025:3504): a panel that slides in from an edge and sits\n * flush with it, square and borderless on that side. bottom for phones (full width, radius-2xl\n * on the top corners, a 24px handle band with a 36 × 4 border/strong grip); right or left for\n * wider screens (400px, full height, radius-2xl on the inner corners, the Dialog's 36px close\n * button 7px from the top-right corner). Both are bg/card with a\n * border/subtle edge on the open side and the shadcn `lg` shadow, 16px in and 16px between a\n * header (14px medium title over a 13px muted description, 2px apart), the content and a\n * right-aligned footer of buttons 8px apart (on the bottom sheet they share the width).\n *\n * Built on the Radix Dialog: focus moves in on open and back to the trigger on close; Escape,\n * the backdrop or the handle closes it. It slides in over 250 ms on ease-out and out over 200.\n *\n * Other props, `ref` included, go to the sheet's panel.\n */\nexport interface SheetProps\n  extends Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'title' | 'children' | 'asChild' | 'onOpenAutoFocus'> {\n  open?: boolean\n  defaultOpen?: boolean\n  onOpenChange?: (open: boolean) => void\n  /** Optional element that opens the sheet (rendered with `asChild`, so pass a Button). */\n  trigger?: React.ReactNode\n  side?: 'bottom' | 'right' | 'left'\n  title: React.ReactNode\n  description?: React.ReactNode\n  /** The buttons at the bottom. Wrap one in `SheetClose` to make it close the sheet. */\n  footer?: React.ReactNode\n  children?: React.ReactNode\n  /** Modal blocks the page and shows the overlay; turn it off for inline previews. */\n  modal?: boolean\n  /** Portal target. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  onOpenAutoFocus?: (event: Event) => void\n  className?: string\n}\n\nexport function Sheet({\n  open,\n  defaultOpen,\n  onOpenChange,\n  trigger,\n  side = 'right',\n  title,\n  description,\n  footer,\n  children,\n  modal = true,\n  container,\n  onOpenAutoFocus,\n  className,\n  ...props\n}: SheetProps) {\n  const labels = useSatinLabels()\n  const position = container ? 'absolute' : 'fixed'\n  return (\n    <DialogPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} modal={modal}>\n      {trigger && <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>}\n      <DialogPrimitive.Portal container={container}>\n        <DialogPrimitive.Overlay\n          className={cn(\n            position,\n            'sa:inset-0 sa:z-50 sa:bg-black-a40',\n            'sa:data-[state=open]:animate-[satin-fade-in_var(--sa-duration-slow)_var(--sa-ease-out)]',\n            'sa:data-[state=closed]:animate-[satin-fade-out_var(--sa-duration-base)_var(--sa-ease-out)]',\n          )}\n        />\n        <DialogPrimitive.Content\n          // No description: tell Radix on purpose, so it doesn't warn (an aria-describedby passed in still wins).\n          {...(description ? {} : { 'aria-describedby': undefined })}\n          {...props}\n          data-slot=\"sheet\"\n          data-side={side}\n          onOpenAutoFocus={onOpenAutoFocus}\n          className={cn(\n            position,\n            'sa:z-50 sa:flex sa:flex-col sa:gap-4 sa:bg-bg-card sa:p-4 sa:outline-none',\n            'sa:[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',\n            // Flush with its edge: no radius and no border on the side that touches it.\n            side === 'bottom' && 'sa:inset-x-0 sa:bottom-0 sa:max-h-[85%] sa:rounded-t-2xl sa:border-t sa:border-border-subtle sa:pt-6',\n            side === 'right' && 'sa:inset-y-0 sa:right-0 sa:w-[400px] sa:max-w-[calc(100%-32px)] sa:rounded-l-2xl sa:border-l sa:border-border-subtle',\n            side === 'left' && 'sa:inset-y-0 sa:left-0 sa:w-[400px] sa:max-w-[calc(100%-32px)] sa:rounded-r-2xl sa:border-r sa:border-border-subtle',\n            side === 'bottom' &&\n              'sa:data-[state=open]:animate-[satin-sheet-up_var(--sa-duration-slow)_var(--sa-ease-out)] sa:data-[state=closed]:animate-[satin-sheet-down_var(--sa-duration-base)_var(--sa-ease-out)]',\n            side === 'right' &&\n              'sa:data-[state=open]:animate-[satin-sheet-left_var(--sa-duration-slow)_var(--sa-ease-out)] sa:data-[state=closed]:animate-[satin-sheet-right_var(--sa-duration-base)_var(--sa-ease-out)]',\n            side === 'left' &&\n              'sa:data-[state=open]:animate-[satin-sheet-from-left_var(--sa-duration-slow)_var(--sa-ease-out)] sa:data-[state=closed]:animate-[satin-sheet-to-left_var(--sa-duration-base)_var(--sa-ease-out)]',\n            className,\n          )}\n        >\n          {side === 'bottom' && (\n            <DialogPrimitive.Close\n              aria-label={labels.close}\n              className=\"sa:absolute sa:inset-x-4 sa:top-0 sa:flex sa:h-6 sa:cursor-pointer sa:items-center sa:justify-center sa:rounded-lg sa:outline-none sa:focus-visible:ring-2 sa:focus-visible:ring-action-focus-ring\"\n            >\n              <span aria-hidden className=\"sa:h-1 sa:w-9 sa:rounded-full sa:bg-border-strong\" />\n            </DialogPrimitive.Close>\n          )}\n\n          <div className={cn('sa:flex sa:flex-col sa:gap-0.5', side !== 'bottom' && 'sa:pr-8')}>\n            <DialogPrimitive.Title className=\"sa:text-base sa:leading-[21px] sa:font-medium sa:text-text-default\">{title}</DialogPrimitive.Title>\n            {description ? (\n              <DialogPrimitive.Description className=\"sa:text-sm sa:text-text-muted\">{description}</DialogPrimitive.Description>\n            ) : null}\n          </div>\n\n          {children != null && <div className=\"sa:flex sa:min-h-0 sa:flex-1 sa:flex-col sa:overflow-y-auto\">{children}</div>}\n\n          {footer && (\n            <div className={cn('sa:flex sa:shrink-0 sa:items-center sa:justify-end sa:gap-2', side === 'bottom' && 'sa:*:flex-1')}>{footer}</div>\n          )}\n\n          {side !== 'bottom' && (\n            <DialogPrimitive.Close asChild>\n              <Button variant=\"tertiary\" size=\"xl\" iconOnly aria-label={labels.close} className=\"sa:absolute sa:top-[7px] sa:right-[7px] sa:rounded-lg\">\n                <CloseIcon />\n              </Button>\n            </DialogPrimitive.Close>\n          )}\n        </DialogPrimitive.Content>\n      </DialogPrimitive.Portal>\n    </DialogPrimitive.Root>\n  )\n}\n\n/** Wrap a footer button in this to make it close the sheet: `<SheetClose asChild><Button…/></SheetClose>`. */\nexport const SheetClose = DialogPrimitive.Close\n"
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { Dialog as DialogPrimitive } from 'radix-ui'\nimport { cn } from '@/lib/utils'\nimport { Button } from '@/registry/satin/ui/button'\nimport { CloseIcon } from '@/registry/satin/ui/dialog'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\n\n/**\n * Sheet, 1:1 with the uiKit `Sheet` set (4025:3504): a panel that slides in from an edge and sits\n * flush with it, square and borderless on that side. bottom for phones (full width, radius-2xl\n * on the top corners, a 24px handle band with a 36 × 4 border/strong grip); right or left for\n * wider screens (400px, full height, radius-2xl on the inner corners, the Dialog's 36px close\n * button 7px from the top-right corner). Both are bg/card with a\n * border/subtle edge on the open side and the shadcn `lg` shadow, 16px in and 16px between a\n * header (14px medium title over a 13px muted description, 2px apart), the content and a\n * right-aligned footer of buttons 8px apart (on the bottom sheet they share the width).\n *\n * Built on the Radix Dialog: focus moves in on open and back to the trigger on close; Escape,\n * the backdrop or the handle closes it. It slides in over 250 ms on ease-out and out over 200.\n *\n * Other props, `ref` included, go to the sheet's panel.\n */\nexport interface SheetProps\n  extends Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'title' | 'children' | 'asChild' | 'onOpenAutoFocus'> {\n  open?: boolean\n  defaultOpen?: boolean\n  onOpenChange?: (open: boolean) => void\n  /** Optional element that opens the sheet (rendered with `asChild`, so pass a Button). */\n  trigger?: React.ReactNode\n  side?: 'bottom' | 'right' | 'left'\n  title: React.ReactNode\n  description?: React.ReactNode\n  /** The buttons at the bottom. Wrap one in `SheetClose` to make it close the sheet. */\n  footer?: React.ReactNode\n  children?: React.ReactNode\n  /** Modal blocks the page and shows the overlay; turn it off for inline previews. */\n  modal?: boolean\n  /** Portal target. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  onOpenAutoFocus?: (event: Event) => void\n  className?: string\n}\n\nexport function Sheet({\n  open,\n  defaultOpen,\n  onOpenChange,\n  trigger,\n  side = 'right',\n  title,\n  description,\n  footer,\n  children,\n  modal = true,\n  container,\n  onOpenAutoFocus,\n  className,\n  ...props\n}: SheetProps) {\n  const labels = useSatinLabels()\n  const position = container ? 'sa:absolute' : 'sa:fixed'\n  return (\n    <DialogPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} modal={modal}>\n      {trigger && <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>}\n      <DialogPrimitive.Portal container={container}>\n        <DialogPrimitive.Overlay\n          className={cn(\n            position,\n            'sa:inset-0 sa:z-50 sa:bg-black-a40',\n            'sa:data-[state=open]:animate-[satin-fade-in_var(--sa-duration-slow)_var(--sa-ease-out)]',\n            'sa:data-[state=closed]:animate-[satin-fade-out_var(--sa-duration-base)_var(--sa-ease-out)]',\n          )}\n        />\n        <DialogPrimitive.Content\n          // No description: tell Radix on purpose, so it doesn't warn (an aria-describedby passed in still wins).\n          {...(description ? {} : { 'aria-describedby': undefined })}\n          {...props}\n          data-slot=\"sheet\"\n          data-side={side}\n          onOpenAutoFocus={onOpenAutoFocus}\n          className={cn(\n            position,\n            'sa:z-50 sa:flex sa:flex-col sa:gap-4 sa:bg-bg-card sa:p-4 sa:outline-none',\n            'sa:[box-shadow:0_4px_6px_-4px_var(--sa-effect-shadow-sm),0_10px_15px_-3px_var(--sa-effect-shadow-sm)]',\n            // Flush with its edge: no radius and no border on the side that touches it.\n            side === 'bottom' && 'sa:inset-x-0 sa:bottom-0 sa:max-h-[85%] sa:rounded-t-2xl sa:border-t sa:border-border-subtle sa:pt-6',\n            side === 'right' && 'sa:inset-y-0 sa:right-0 sa:w-[400px] sa:max-w-[calc(100%-32px)] sa:rounded-l-2xl sa:border-l sa:border-border-subtle',\n            side === 'left' && 'sa:inset-y-0 sa:left-0 sa:w-[400px] sa:max-w-[calc(100%-32px)] sa:rounded-r-2xl sa:border-r sa:border-border-subtle',\n            side === 'bottom' &&\n              'sa:data-[state=open]:animate-[satin-sheet-up_var(--sa-duration-slow)_var(--sa-ease-out)] sa:data-[state=closed]:animate-[satin-sheet-down_var(--sa-duration-base)_var(--sa-ease-out)]',\n            side === 'right' &&\n              'sa:data-[state=open]:animate-[satin-sheet-left_var(--sa-duration-slow)_var(--sa-ease-out)] sa:data-[state=closed]:animate-[satin-sheet-right_var(--sa-duration-base)_var(--sa-ease-out)]',\n            side === 'left' &&\n              'sa:data-[state=open]:animate-[satin-sheet-from-left_var(--sa-duration-slow)_var(--sa-ease-out)] sa:data-[state=closed]:animate-[satin-sheet-to-left_var(--sa-duration-base)_var(--sa-ease-out)]',\n            className,\n          )}\n        >\n          {side === 'bottom' && (\n            <DialogPrimitive.Close\n              aria-label={labels.close}\n              className=\"sa:absolute sa:inset-x-4 sa:top-0 sa:flex sa:h-6 sa:cursor-pointer sa:items-center sa:justify-center sa:rounded-lg sa:outline-none sa:focus-visible:ring-2 sa:focus-visible:ring-action-focus-ring\"\n            >\n              <span aria-hidden className=\"sa:h-1 sa:w-9 sa:rounded-full sa:bg-border-strong\" />\n            </DialogPrimitive.Close>\n          )}\n\n          <div className={cn('sa:flex sa:flex-col sa:gap-0.5', side !== 'bottom' && 'sa:pe-8')}>\n            <DialogPrimitive.Title className=\"sa:text-base sa:leading-[21px] sa:font-medium sa:text-text-default\">{title}</DialogPrimitive.Title>\n            {description ? (\n              <DialogPrimitive.Description className=\"sa:text-sm sa:text-text-muted\">{description}</DialogPrimitive.Description>\n            ) : null}\n          </div>\n\n          {children != null && <div className=\"sa:flex sa:min-h-0 sa:flex-1 sa:flex-col sa:overflow-y-auto\">{children}</div>}\n\n          {footer && (\n            <div className={cn('sa:flex sa:shrink-0 sa:items-center sa:justify-end sa:gap-2', side === 'bottom' && 'sa:*:flex-1')}>{footer}</div>\n          )}\n\n          {side !== 'bottom' && (\n            <DialogPrimitive.Close asChild>\n              <Button variant=\"tertiary\" size=\"xl\" iconOnly aria-label={labels.close} className=\"sa:absolute sa:end-[7px] sa:top-[7px] sa:rounded-lg\">\n                <CloseIcon />\n              </Button>\n            </DialogPrimitive.Close>\n          )}\n        </DialogPrimitive.Content>\n      </DialogPrimitive.Portal>\n    </DialogPrimitive.Root>\n  )\n}\n\n/** Wrap a footer button in this to make it close the sheet: `<SheetClose asChild><Button…/></SheetClose>`. */\nexport const SheetClose = DialogPrimitive.Close\n"
     }
   ],
   "docs": "Sheet docs: https://uisatin.dev/components/sheet",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Sheet": {
+        "type": "SheetProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'title' | 'children' | 'asChild' | 'onOpenAutoFocus'>"
+        ],
+        "props": [
+          {
+            "name": "open",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "defaultOpen",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onOpenChange",
+            "type": "(open: boolean) => void",
+            "required": false
+          },
+          {
+            "name": "trigger",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "Optional element that opens the sheet (rendered with `asChild`, so pass a Button)."
+          },
+          {
+            "name": "side",
+            "type": "'bottom' | 'right' | 'left'",
+            "required": false,
+            "default": "'right'"
+          },
+          {
+            "name": "title",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "footer",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "The buttons at the bottom. Wrap one in `SheetClose` to make it close the sheet."
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "modal",
+            "type": "boolean",
+            "required": false,
+            "default": "true",
+            "description": "Modal blocks the page and shows the overlay; turn it off for inline previews."
+          },
+          {
+            "name": "container",
+            "type": "HTMLElement | null",
+            "required": false,
+            "description": "Portal target. Defaults to `document.body`."
+          },
+          {
+            "name": "onOpenAutoFocus",
+            "type": "(event: Event) => void",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      }
+    }
   }
 }

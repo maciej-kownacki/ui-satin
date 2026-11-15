@@ -66,7 +66,7 @@ export function MessageActions({
               ) : (
                 <DoubleCheck aria-hidden className="size-icon-size [stroke-width:1.875]" />
               )}
-              <span className="sr-only">{status === 'sending' ? 'Sending' : 'Delivered'}</span>
+              <span className="sr-only">{status === 'sending' ? labels.sending : labels.delivered}</span>
             </span>
             <span className="text-sm font-medium whitespace-nowrap text-text-muted">{timestamp}</span>
           </span>
@@ -105,7 +105,7 @@ export function MessageActions({
           {divider}
           <Button variant="tertiary" size="xs" onClick={onShare}>
             <Link />
-            Share
+            {labels.share}
           </Button>
         </>
       )}

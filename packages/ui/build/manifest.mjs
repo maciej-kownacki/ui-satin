@@ -28,6 +28,10 @@ const manifest = {
   exports: {
     '.': { types: './index.d.ts', import: './index.js', default: './index.js' },
     './styles.css': './styles.css',
+    // The token names from before 0.6 as aliases of the --sa-* ones; goes away in 0.7.
+    './compat.css': './compat.css',
+    // The design tokens (W3C format, Light and Dark), the source theme.css is generated from.
+    './tokens.json': './tokens.json',
     './package.json': './package.json',
     // themeCss / themeVars on their own, and the cn helper, for apps that compose their own parts.
     './theme': { types: './theme/index.d.ts', import: './theme/index.js', default: './theme/index.js' },
@@ -46,6 +50,8 @@ writeFileSync('dist/package.json', JSON.stringify(manifest, null, 2) + '\n')
 if (existsSync('README.md')) copyFileSync('README.md', 'dist/README.md')
 if (existsSync('LICENSE')) copyFileSync('LICENSE', 'dist/LICENSE')
 if (existsSync('CHANGELOG.md')) copyFileSync('CHANGELOG.md', 'dist/CHANGELOG.md')
+copyFileSync('../../tokens/tokens.json', 'dist/tokens.json')
+if (existsSync('AGENTS.md')) copyFileSync('AGENTS.md', 'dist/AGENTS.md')
 console.log('dist/package.json written')
 
 // tsc writes relative imports in the .d.ts files as they are in the source ('./button'). Under
@@ -72,10 +78,26 @@ for (const file of declarations('dist')) {
 }
 console.log(`.d.ts imports with extensions: ${rewritten}`)
 
+// The JSDoc in the source points at the Figma frames each part follows, by node id: '(3822:3475)',
+// 'Avatar 992:20199'. Useful in the repo, noise in an app's editor: the published types drop
+// them (a parenthesis that holds one goes whole), and the build fails if one is left.
+const FIGMA_ID = /\b\d{1,5}:\d{2,6}\b/
+let figmaRefs = 0
+for (const file of declarations('dist')) {
+  const src = readFileSync(file, 'utf8')
+  const out = src
+    .replace(/ ?\((?:[^()]|\([^()]*\))*?\b\d{1,5}:\d{2,6}\b(?:[^()]|\([^()]*\))*\)/g, () => (figmaRefs++, ''))
+    .replace(/,? ?\b\d{1,5}:\d{2,6}\b/g, () => (figmaRefs++, ''))
+  if (out !== src) writeFileSync(file, out)
+  const left = out.match(FIGMA_ID)
+  if (left) throw new Error(`${relative('dist', file)}: Figma node id left in the types: ${left[0]}`)
+}
+console.log(`Figma node ids dropped from the types: ${figmaRefs}`)
+
 // esbuild drops 'use client' when it bundles, so put it back on every entry a React Server
-// Components app can import: the barrel and each component. Same line as the first statement,
-// so the source maps stay aligned.
-const entries = ['dist/index.js', 'dist/theme/index.js', ...readdirSync('dist/components').filter((f) => f.endsWith('.js')).map((f) => `dist/components/${f}`)]
+// Components app can import: the barrel and each component. Not on theme/ (themeCss, themeVars)
+// or lib/utils (cn): plain functions a Server Component calls, e.g. themeCss() in a root layout.
+const entries = ['dist/index.js', ...readdirSync('dist/components').filter((f) => f.endsWith('.js')).map((f) => `dist/components/${f}`)]
 for (const f of entries) {
   const js = readFileSync(f, 'utf8')
   if (!js.startsWith("'use client'")) writeFileSync(f, `'use client';${js}`)

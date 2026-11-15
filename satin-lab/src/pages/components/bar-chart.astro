@@ -2,38 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import BarChartDemo, { options } from '../../demos/bar-chart'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
 ---
 
 <Docs current="bar-chart">
-  <DocSection
-    item={{
-      id: 'bar-chart',
-      title: 'Bar chart',
-      href: '/components/bar-chart',
-      description: 'One metric over a period as bars, with a tooltip on the hovered one.',
-    }}
-    api={{
-      description: 'The `BarCard` component is a wrapper around the `div` element with a title, a range, an optional period Select and the bars. New data regrows the bars from the baseline; `reducedMotion` (or the reader\'s reduced-motion setting) swaps them at once.',
-      props: [
-        { name: 'title', type: ['string'] },
-        { name: 'range', type: ['string'] },
-        { name: 'data', type: ['ChartDatum[]'] },
-        { name: 'total', type: ['string'] },
-        { name: 'change', type: ['string'] },
-        { name: 'periods', type: ['string[]'] },
-        { name: 'value', type: ['string'] },
-        { name: 'onPeriodChange', type: ['(period) => void'] },
-        { name: 'unit', type: ['string'] },
-        { name: 'formatValue', type: ['(value) => string'] },
-        { name: 'legend', type: ['{ label, value?, note? }'] },
-        { name: 'reducedMotion', type: ['boolean'] },
-        { name: 'highlight', type: ['number'] },
-      ],
-    }}
-  >
+  <DocSection item={page('bar-chart')} api={api['bar-chart']}>
     <BarChartDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

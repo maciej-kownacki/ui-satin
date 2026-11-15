@@ -21,6 +21,29 @@
   "docs": "Dot docs: https://uisatin.dev/components/dot",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Dot": {
+        "type": "DotProps",
+        "extends": [
+          "Omit<React.ComponentProps<'span'>, 'children'>",
+          "VariantProps<typeof dotVariants>"
+        ],
+        "props": [
+          {
+            "name": "tone",
+            "type": "DotTone",
+            "required": false,
+            "default": "'fuchsia'"
+          },
+          {
+            "name": "label",
+            "type": "string",
+            "required": false,
+            "description": "Accessible name, e.g. \"Running\". Leave it out when visible text already says it."
+          }
+        ]
+      }
+    }
   }
 }

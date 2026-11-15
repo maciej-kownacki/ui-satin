@@ -2,32 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import ThinkingDemo, { options } from '../../demos/thinking'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const item = {
-  id: 'thinking',
-  title: 'Thinking',
-  href: '/ai-patterns/thinking',
-  description: 'What an agent did, folded into a summary that opens onto its steps.',
-}
-
-const api = {
-  description: 'The `Thinking` component is a wrapper around the `details` element with a header and a rail of reasoning steps. While the agent works, show `AgentLoading` instead.',
-  props: [
-    { name: 'steps', type: ['ThinkingStep[]'], default: '[]' },
-    { name: 'indicator', type: ['"tetris"', '"flappy"'], default: '"tetris"' },
-    { name: 'state', type: ['"collapsed"', '"expanded"'], default: '"collapsed"' },
-    { name: 'label', type: ['string'], default: '"Thought"' },
-    { name: 'onToggle', type: ['(open: boolean) => void'] },
-    { name: 'step.type', type: ['"task"', '"text"', '"source"', '"tool"', '"more"'], default: '"task"' },
-  ],
-}
 ---
 
 <Docs current="thinking">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('thinking')} api={api['thinking']}>
     <ThinkingDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

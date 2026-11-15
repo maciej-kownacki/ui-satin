@@ -20,6 +20,51 @@
   ],
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Floating": {
+        "type": "FloatingProps",
+        "extends": [],
+        "props": [
+          {
+            "name": "anchor",
+            "type": "Element | null",
+            "required": true,
+            "description": "The element it points at. Nothing renders while it's null."
+          },
+          {
+            "name": "side",
+            "type": "FloatingSide",
+            "required": false,
+            "default": "'top'"
+          },
+          {
+            "name": "sideOffset",
+            "type": "number",
+            "required": false,
+            "default": "8",
+            "description": "Gap between the anchor and the layer, pointer included."
+          },
+          {
+            "name": "collisionPadding",
+            "type": "number",
+            "required": false,
+            "default": "8",
+            "description": "How close to the viewport edge it may go."
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "(state: { side: FloatingSide arrowRef: React.RefObject<HTMLElement | null> arrowStyle: React.CSSProperties }) => React.ReactNode",
+            "required": true,
+            "description": "Gets the side it ended up on and the pointer's props (ref and position)."
+          }
+        ]
+      }
+    }
   }
 }

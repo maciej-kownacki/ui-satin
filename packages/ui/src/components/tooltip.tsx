@@ -54,10 +54,10 @@ export function TooltipBubble({
       {...props}
       data-slot="tooltip"
       className={cn(
-        'flex items-center gap-2 bg-text-default py-1 pl-2.5 text-sm leading-(--text-sm--line-height) font-medium whitespace-nowrap text-bg-canvas',
+        'flex items-center gap-2 bg-text-default py-1 ps-2.5 text-sm leading-(--text-sm--line-height) font-medium whitespace-nowrap text-bg-canvas',
         '[box-shadow:0_8px_12px_0_var(--effect-shadow-md),0_1px_1.5px_0_var(--effect-shadow-ambient),inset_0_1px_0_0_var(--effect-highlight-top)]',
         shape === 'rounded' ? 'rounded-pill' : 'rounded-lg',
-        shortcut ? 'pr-1.5' : 'pr-2.5',
+        shortcut ? 'pe-1.5' : 'pe-2.5',
         className,
       )}
     >

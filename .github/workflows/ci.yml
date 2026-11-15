@@ -21,9 +21,14 @@ jobs:
       # The stylesheet shares no name with an app's Tailwind or shadcn theme.
       - run: node scripts/check-css.mjs
       - run: node scripts/check-cn.mjs
+      # What an app ships for Button, Banner and Dialog with their dependencies, and the stylesheet (.size-limit.json).
+      - run: npm run size
+      # props.json (the props read from the types, in the registry and the markdown docs) is fresh,
+      # and the docs pages, registry items and package entries agree.
+      - run: npm run check:docs
       # The shadcn registry says which npm release its source matches; it must be this one.
       - name: Registry version matches the package
         run: node -e "const v=require('./packages/ui/package.json').version, r=require('./satin-lab/public/r/button.json').meta.version; if (v!==r) { console.error('registry meta.version', r, '!= package', v, '- run npm run registry'); process.exit(1) }"
       # The package's types under moduleResolution node16, nodenext and bundler, every entry point.
       - run: npm run check:types
-      - run: npx -y @arethetypeswrong/cli --pack ./packages/ui/dist --exclude-entrypoints ./styles.css --ignore-rules cjs-resolves-to-esm
+      - run: npx -y @arethetypeswrong/cli --pack ./packages/ui/dist --exclude-entrypoints ./styles.css ./compat.css ./tokens.json --ignore-rules cjs-resolves-to-esm

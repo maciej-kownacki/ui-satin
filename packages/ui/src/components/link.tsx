@@ -70,7 +70,7 @@ export function Link({
           {children}
           {isExternal && (
             <>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden className="ml-0.5 inline-block align-[-1px]">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden className="ms-0.5 inline-block align-[-1px] rtl:-scale-x-100">
                 <path d="M4 3H9V8M9 3L3 9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" style={{ strokeWidth: 1.1 }} />
               </svg>
               <span className="sr-only">{` ${labels.opensInNewTab}`}</span>

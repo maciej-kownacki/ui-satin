@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Collapsible, Slot, Tooltip } from 'radix-ui'
+import { Collapsible, Direction, Slot, Tooltip } from 'radix-ui'
 import { NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 
@@ -67,6 +67,8 @@ export function SidebarItem({
 }: SidebarItemProps) {
   const Comp = asChild ? Slot.Root : 'a'
   const showCount = typeof count === 'number' && count > 0
+  // The tooltip opens away from the sidebar: to its left in right-to-left.
+  const dir = Direction.useDirection()
 
   const row = (
     <Comp
@@ -98,7 +100,7 @@ export function SidebarItem({
           {!iconOnly && <span className="min-w-0 flex-1 truncate">{label}</span>}
           {showCount && !iconOnly && <SidebarCount count={count} />}
           {showCount && iconOnly && (
-            <span aria-hidden className="absolute top-1 right-1 size-1.5 rounded-full bg-action-destructive-bg" />
+            <span aria-hidden className="absolute end-1 top-1 size-1.5 rounded-full bg-action-destructive-bg" />
           )}
         </>
       )}
@@ -112,7 +114,7 @@ export function SidebarItem({
         <Tooltip.Trigger asChild>{row}</Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content
-            side="right"
+            side={dir === 'rtl' ? 'left' : 'right'}
             sideOffset={6}
             collisionPadding={8}
             className="z-50 rounded-md bg-action-inverse-bg px-2 py-1 text-xs font-medium text-text-on-inverse [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]"
@@ -178,7 +180,7 @@ export function SidebarGroup({
         aria-controls={regionId}
         {...triggerProps}
         className={cn(
-          'flex h-8 w-full shrink-0 items-center gap-2 rounded-lg px-3 text-left text-text-muted',
+          'flex h-8 w-full shrink-0 items-center gap-2 rounded-lg px-3 text-start text-text-muted',
           'transition-[background-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
           '[&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
           'not-data-active:satin-hover:bg-bg-muted',
@@ -195,9 +197,11 @@ export function SidebarGroup({
             {count}
           </span>
         )}
+        {/* Points to the start when closed and down when open; right to left it starts turned
+            to the left and turns the other way. */}
         <NavArrowRight
           aria-hidden
-          className="transition-transform duration-(--duration-base) ease-(--ease-out) group-data-[state=open]/sidebar-group:rotate-90 motion-reduce:transition-none"
+          className="transition-transform duration-(--duration-base) ease-(--ease-out) group-data-[state=open]/sidebar-group:rotate-90 motion-reduce:transition-none rtl:rotate-180"
         />
       </Collapsible.Trigger>
       {/* Always mounted so it can fold away: grows downwards from under the header (motion.css). */}
@@ -236,7 +240,7 @@ export function SidebarSubItem({
       href={disabled ? undefined : href}
       tabIndex={disabled ? -1 : undefined}
       className={cn(
-        'flex h-8 shrink-0 items-center rounded-lg pr-3 pl-[34px] text-sm font-normal text-text-muted no-underline select-none',
+        'flex h-8 shrink-0 items-center rounded-lg ps-[34px] pe-3 text-sm font-normal text-text-muted no-underline select-none',
         'transition-[background-color,color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
         'not-data-active:satin-hover:bg-bg-muted not-data-active:satin-hover:text-text-default',
         rowFocus,
@@ -287,7 +291,7 @@ export function SidebarSubGroup({
           onOpenChange?.(!open)
         }}
         className={cn(
-          'flex h-8 w-full shrink-0 items-center gap-2 rounded-lg pr-3 pl-[34px] text-left text-sm font-normal text-text-muted select-none',
+          'flex h-8 w-full shrink-0 items-center gap-2 rounded-lg ps-[34px] pe-3 text-start text-sm font-normal text-text-muted select-none',
           'transition-[background-color,color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
           'satin-hover:bg-bg-muted satin-hover:text-text-default data-active:text-text-default',
           '[&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
@@ -297,11 +301,11 @@ export function SidebarSubGroup({
         <span className="min-w-0 flex-1 truncate">{label}</span>
         <NavArrowRight
           aria-hidden
-          className="text-text-muted transition-transform duration-(--duration-base) ease-(--ease-out) group-data-[state=open]/sub-group:rotate-90 motion-reduce:transition-none"
+          className="text-text-muted transition-transform duration-(--duration-base) ease-(--ease-out) group-data-[state=open]/sub-group:rotate-90 motion-reduce:transition-none rtl:rotate-180"
         />
       </button>
       <div id={regionId} data-state={open ? 'open' : 'closed'} className="satin-expand">
-        <div className="flex flex-col gap-0.5 [&>[data-slot=sidebar-sub-item]]:pl-[46px]">{children}</div>
+        <div className="flex flex-col gap-0.5 [&>[data-slot=sidebar-sub-item]]:ps-[46px]">{children}</div>
       </div>
     </div>
   )

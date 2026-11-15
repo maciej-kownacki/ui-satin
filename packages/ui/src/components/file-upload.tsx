@@ -38,7 +38,7 @@ export interface FileUploadFile {
   status: FileUploadStatus
   /** 0–100 while uploading; left out, the bar runs indeterminate and the meta says "Waiting…". */
   progress?: number
-  /** What went wrong, for `error`. */
+  /** What went wrong, for `error`. Defaults to the `uploadFailed` label. */
   error?: React.ReactNode
   /** Type icon; picked from the name when left out. */
   icon?: React.ReactNode
@@ -47,7 +47,7 @@ export interface FileUploadFile {
 export interface FileUploadRejection {
   file: File
   reason: 'type' | 'size'
-  /** A ready message, e.g. "Type not supported" or "Larger than 10 MB". */
+  /** A ready message from the `typeNotSupported` or `largerThan` label, e.g. "Larger than 10 MB". */
   message: string
 }
 
@@ -59,11 +59,13 @@ export interface FileUploadProps extends Omit<React.ComponentProps<'div'>, 'titl
   maxSize?: number
   multiple?: boolean
   disabled?: boolean
+  /** Defaults to the `dropFilesHere` label. */
   title?: React.ReactNode
-  /** Shown while files are dragged over the zone. */
+  /** Shown while files are dragged over the zone. Defaults to the `dropToUpload` label. */
   dropTitle?: React.ReactNode
   /** What the zone takes, e.g. "PDF, images, CSV · up to 10 MB". */
   description?: React.ReactNode
+  /** Defaults to the `browseFiles` label. */
   browseLabel?: string
   /** Called instead of opening the file picker (demos, or an app that brings its own picker). */
   onBrowse?: () => void
@@ -121,10 +123,10 @@ export function FileUpload({
   maxSize,
   multiple = true,
   disabled = false,
-  title = 'Drop files here',
-  dropTitle = 'Drop to upload',
+  title,
+  dropTitle,
   description,
-  browseLabel = 'Browse files',
+  browseLabel,
   onBrowse,
   onFilesAdded,
   onFilesRejected,
@@ -149,8 +151,8 @@ export function FileUpload({
     const ok: File[] = []
     const rejected: FileUploadRejection[] = []
     for (const file of picked) {
-      if (!accepts(file, accept)) rejected.push({ file, reason: 'type', message: 'Type not supported' })
-      else if (maxSize != null && file.size > maxSize) rejected.push({ file, reason: 'size', message: `Larger than ${formatBytes(maxSize)}` })
+      if (!accepts(file, accept)) rejected.push({ file, reason: 'type', message: labels.typeNotSupported })
+      else if (maxSize != null && file.size > maxSize) rejected.push({ file, reason: 'size', message: labels.largerThan(formatBytes(maxSize)) })
       else ok.push(file)
     }
     if (ok.length) onFilesAdded?.(ok)
@@ -197,7 +199,7 @@ export function FileUpload({
       >
         <UploadMark over={over} />
         <div className="flex w-full flex-col items-center gap-1">
-          <p className="text-base font-medium text-text-default">{over ? dropTitle : title}</p>
+          <p className="text-base font-medium text-text-default">{over ? (dropTitle ?? labels.dropToUpload) : (title ?? labels.dropFilesHere)}</p>
           {description && (
             <p id={descriptionId} className="text-sm text-text-muted">
               {description}
@@ -210,7 +212,7 @@ export function FileUpload({
           aria-describedby={description ? descriptionId : undefined}
           onClick={() => (onBrowse ? onBrowse() : inputRef.current?.click())}
         >
-          {browseLabel}
+          {browseLabel ?? labels.browseFiles}
         </Button>
         <input
           ref={inputRef}
@@ -271,19 +273,20 @@ export function FileUploadItem({
   onRemove?: (file: FileUploadFile) => void
   className?: string
 }) {
+  const labels = useSatinLabels()
   if (file.status === 'error') {
     return (
       <div
         data-slot="file-upload-item"
         data-status="error"
         role="alert"
-        className={cn('flex items-center gap-2 rounded-xl border border-status-red-border bg-status-red-bg py-2 pr-2 pl-3 text-sm', className)}
+        className={cn('flex items-center gap-2 rounded-xl border border-status-red-border bg-status-red-bg py-2 ps-3 pe-2 text-sm', className)}
       >
         <WarningCircle aria-hidden className="size-icon-size shrink-0 text-status-red-fg [stroke-width:1.875]" />
         <span className="min-w-0 flex-1 truncate font-medium text-text-default">{file.name}</span>
-        <span className="shrink-0 text-status-red-fg">{file.error ?? 'Upload failed'}</span>
+        <span className="shrink-0 text-status-red-fg">{file.error ?? labels.uploadFailed}</span>
         {onRemove && (
-          <Button variant="tertiary" size="xs" shape="rounded" iconOnly aria-label={`Remove ${file.name}`} onClick={() => onRemove(file)}>
+          <Button variant="tertiary" size="xs" shape="rounded" iconOnly aria-label={labels.removeItem(file.name)} onClick={() => onRemove(file)}>
             <Xmark aria-hidden />
           </Button>
         )}
@@ -294,9 +297,9 @@ export function FileUploadItem({
   const known = file.progress != null
   const p = known ? Math.min(100, Math.max(0, file.progress!)) : 0
   const meta = !known
-    ? 'Waiting…'
+    ? labels.waiting
     : file.size != null
-      ? `${sentOf(file.size, p)} of ${formatBytes(file.size)} · ${Math.round(p)}%`
+      ? `${labels.sentOfTotal(sentOf(file.size, p), formatBytes(file.size))} · ${Math.round(p)}%`
       : `${Math.round(p)}%`
 
   return (
@@ -313,10 +316,10 @@ export function FileUploadItem({
           <span className="min-w-0 flex-1 truncate font-medium text-text-default">{file.name}</span>
           <span className="shrink-0 text-text-muted tabular-nums">{meta}</span>
         </div>
-        <Progress value={known ? p : undefined} showValue={false} aria-label={`Uploading ${file.name}`} />
+        <Progress value={known ? p : undefined} showValue={false} aria-label={labels.uploading(file.name)} />
       </div>
       {onCancel && (
-        <Button variant="tertiary" size="xs" shape="rounded" iconOnly aria-label={`Cancel ${file.name}`} onClick={() => onCancel(file)}>
+        <Button variant="tertiary" size="xs" shape="rounded" iconOnly aria-label={labels.cancelItem(file.name)} onClick={() => onCancel(file)}>
           <Xmark aria-hidden />
         </Button>
       )}

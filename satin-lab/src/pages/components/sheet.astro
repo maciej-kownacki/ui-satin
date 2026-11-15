@@ -2,29 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import SheetDemo, { options } from '../../demos/sheet'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const api = {
-  description:
-    "The `Sheet` component wraps the Radix dialog in a `div` with `role=\"dialog\"` that slides in from the right, the left or the bottom. Wrap footer buttons in `SheetClose` to close it.",
-  props: [
-    {name: "side", type: ["\"right\"", "\"left\"", "\"bottom\""], default: "\"right\""},
-    {name: "trigger", type: ["ReactNode"]},
-    {name: "title", type: ["ReactNode"]},
-    {name: "description", type: ["ReactNode"]},
-    {name: "children", type: ["ReactNode"]},
-    {name: "footer", type: ["ReactNode"]},
-    {name: "open", type: ["boolean"]},
-    {name: "onOpenChange", type: ["(open: boolean) => void"]},
-  ],
-}
 ---
 
 <Docs current="sheet">
-  <DocSection item={page('sheet')} api={api}>
+  <DocSection item={page('sheet')} api={api['sheet']}>
     <SheetDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

@@ -53,6 +53,7 @@ export function HoverCard({
       <HoverCardPrimitive.Trigger asChild>{trigger}</HoverCardPrimitive.Trigger>
       <HoverCardPrimitive.Portal container={container}>
         <HoverCardPrimitive.Content
+          data-slot="hover-card"
           sideOffset={8}
           collisionPadding={8}
           {...props}

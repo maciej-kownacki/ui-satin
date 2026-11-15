@@ -1,0 +1,11 @@
+---
+"@uisatin/ui": minor
+---
+
+Every word a component says on its own now comes from `SatinLabels`, so an app can translate all of it. New in the set: the accessible names that wrap data (Remove and Preview of a file, Change in DecisionCard, Uploading and Cancel in FileUpload, Breadcrumb's Show N more, a line chart's point count, Pagination's pages and "Page 5 of 12", Table's scroll region), screen-reader text (Textarea's character count, CodeBlock's added and removed lines, DecisionCard's ranking moves) and the English defaults of props: AgentPicker's `createLabel` and `placeholder`, AgentLoading's and Thinking's `label`, Attachment's `openLabel`, AnnouncementBar's and Banner's `dismissLabel`, Breadcrumb's, Pagination's and CookieConsent's `aria-label`, Card's `closeLabel`, CookieConsent's message and buttons, DecisionCard's Skip, Continue and Rewrite, DonutCard's `centerLabel`, FileUpload's titles and rejection messages, Message's `thinkingLabel`, Pagination's Previous and Next, PromptBar's placeholder and + menu rows, CommandMenu's `emptyText` and Toaster's region name. A prop still wins over its label. Calendar and the date pickers name months and weekdays and write dates in the new `dateLocale` label (en-US by default), and `formatDate` and `formatRange` take a locale.
+
+Labels that wrap data are functions, so a translation puts the words in its own order: `removeItem`, `cancelItem`, `changeItem`, `previewOf`, `uploading`, `largerThan`, `sentOfTotal`, `showMore`, `noResultsFor`, `selectRow`, `selectNamedRow`, `tableRegion`, `codeRegion`, `chartPoints`, `positionOf`, `page` and `pageOf`. `pageOf` gets Pagination's animated number as a node, so write it with JSX.
+
+Table takes `rowLabel(row, index)`: each row's select checkbox then says "Select Acme Corp" instead of "Select row 3", which also stays true when the table is sorted.
+
+Breaking for apps that set `selectRow`: it is now a function `(row) => string` instead of the word Table put before the number, so a language can place the number where it belongs. Write ``selectRow: (n) => `Zaznacz wiersz ${n}` `` instead of `selectRow: 'Zaznacz wiersz'`. SearchBar's placeholder is now the `search` label, "Search…" with an ellipsis like the other fields.

@@ -5,18 +5,23 @@ import pkg from '../../../packages/ui/package.json'
 
 /**
  * llms.txt (llmstxt.org): what Satin is, how to install it, the rules an agent should follow, and
- * every docs page with its one-line description. A component with a shadcn registry item also
- * links its JSON, which carries the full source.
+ * every docs page with its one-line description. A component page links its markdown twin
+ * (props, example, accessibility) and its registry JSON, which carries the full source.
+ * llms-full.txt is this plus every component page in markdown.
  */
-export const GET: APIRoute = ({ site }) => {
+export const GET: APIRoute = ({ site }) =>
+  new Response(llmsText(site), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+
+export function llmsText(site: URL | undefined) {
   const url = (path: string) => new URL(path, site).toString()
+  const markdown = (href: string) => (/^\/(components|ai-patterns)\//.test(href) ? ` ([markdown](${url(`${href}.md`)}))` : '')
   const registry = (href: string) => {
     const name = href.split('/').pop()
     return name && existsSync(`public/r/${name}.json`) ? ` ([source](${url(`/r/${name}.json`)}))` : ''
   }
   const groups = nav.map((g) => {
     const pages = [...new Map(pagesOf(g.items).map((p) => [p.href, p])).values()]
-    return `## ${g.title}\n\n${pages.map((p) => `- [${p.title}](${url(p.href)}): ${p.description}${registry(p.href)}`).join('\n')}`
+    return `## ${g.title}\n\n${pages.map((p) => `- [${p.title}](${url(p.href)}): ${p.description}${markdown(p.href)}${registry(p.href)}`).join('\n')}`
   })
   const text = `# Satin
 
@@ -41,8 +46,12 @@ Or copy a component's source with the shadcn CLI: \`npx shadcn@latest add ${url(
 - Import \`${pkg.name}/styles.css\` once. Don't add Tailwind for Satin's sake; if the app has Tailwind or shadcn/ui already, they coexist (Satin's classes are \`sa:*\`, its variables \`--sa-*\`).
 - Tailwind classes in \`className\` override Satin's only when the app has its own Tailwind; otherwise use the app's CSS.
 - Style with the components' props (variant, size, tone, shape) and the Satin tokens (CSS variables), not raw colours.
-- Dark mode: the \`dark\` class on \`<html>\` or any parent.
-- React 19 or newer. The package is ESM only.
+- Every Satin CSS variable is \`--sa-*\` (\`--sa-bg-card\`, \`--sa-action-primary-bg\`). Set them after styles.css to change a token; the theme (brand, corners) comes from \`themeCss()\` in \`${pkg.name}/theme\`, which Server Components can call.
+- Dark mode: the \`dark\` class or \`data-theme="dark"\` on \`<html>\` or any parent; \`data-theme="system"\` follows the OS.
+- Overlays and groups have a props API and parts (\`Dialog\` or \`DialogRoot\` › \`DialogTrigger\` › \`DialogContent\`…); \`trigger\` props are rendered asChild, so pass a Button.
+- Words the components say on their own (aria-labels, defaults) come from \`SatinLabels\` (\`${pkg.name}/labels\`), English by default.
+- React 19 or newer only (refs are plain props). The package is ESM only.
+- Every component page has a markdown twin at \`<page>.md\` with the props from the TypeScript types, an example and accessibility notes; [llms-full.txt](${url('/llms-full.txt')}) has them all.
 
 ${groups.join('\n\n')}
 
@@ -51,5 +60,5 @@ ${groups.join('\n\n')}
 - [npm package](https://www.npmjs.com/package/${pkg.name})
 - [shadcn registry index](${url('/r/registry.json')})
 `
-  return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+  return text
 }

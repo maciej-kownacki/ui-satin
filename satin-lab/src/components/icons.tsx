@@ -36,6 +36,20 @@ export const ChartsIcon = ({ className }: IconProps) => (
   </svg>
 )
 
+/** Guides: an open book, drawn to the same 14px, 1.09 stroke grid. */
+export const GuidesIcon = ({ className }: IconProps) => (
+  <svg {...icon14} className={className}>
+    <path {...stroke14} d="M7 3.5C5.8 2.6 4.1 2.2 1.75 2.33V11.08C4.1 10.96 5.8 11.36 7 12.25C8.2 11.36 9.9 10.96 12.25 11.08V2.33C9.9 2.2 8.2 2.6 7 3.5ZM7 3.5V12.25" />
+  </svg>
+)
+
+/** Recipes: code brackets, the same grid; a recipe is a pattern you copy into your app. */
+export const RecipesIcon = ({ className }: IconProps) => (
+  <svg {...icon14} className={className}>
+    <path {...stroke14} d="M4.96 4.08L2.04 7L4.96 9.92M9.04 4.08L11.96 7L9.04 9.92" />
+  </svg>
+)
+
 export const ChevronRight = ({ className }: IconProps) => (
   <svg {...icon14} className={className}>
     <path {...stroke14} d="M5.25 3.5L8.75 7L5.25 10.5" />

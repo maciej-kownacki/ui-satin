@@ -5,6 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { Xmark } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 import { bannerMesh, type Mesh } from './banner-mesh'
 
 /**
@@ -72,7 +73,7 @@ export interface BannerProps
   shimmer?: boolean
   /** Shows the close button. */
   onDismiss?: () => void
-  /** Accessible name of the close button. */
+  /** Accessible name of the close button. Defaults to the `dismiss` label. */
   dismissLabel?: string
   /** Replace the mesh images. */
   mesh?: Mesh
@@ -89,10 +90,11 @@ export function Banner({
   shimmer = false,
   shape = 'rounded',
   onDismiss,
-  dismissLabel = 'Dismiss',
+  dismissLabel,
   mesh,
   ...props
 }: BannerProps) {
+  const labels = useSatinLabels()
   const lines = description ? 'two' : 'one'
   const layoutKey = layout ?? 'horizontal'
   const glow = mesh ?? bannerMesh[layoutKey][lines]
@@ -104,10 +106,10 @@ export function Banner({
       variant="tertiary"
       shape="rounded"
       iconOnly
-      aria-label={dismissLabel}
+      aria-label={dismissLabel ?? labels.dismiss}
       onClick={onDismiss}
       className={cn(
-        sidebar && 'absolute top-[3px] right-[3px] z-10',
+        sidebar && 'absolute end-[3px] top-[3px] z-10',
         primary && 'text-action-primary-fg [&_svg]:text-action-primary-fg satin-hover:bg-action-primary-bg-hover',
       )}
     >

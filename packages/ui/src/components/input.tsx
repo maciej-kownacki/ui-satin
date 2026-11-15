@@ -54,6 +54,7 @@ export function Input({
   onChange,
   'aria-describedby': ariaDescribedBy,
   'data-force': force,
+  ref,
   ...props
 }: InputProps) {
   const field = useFormField()
@@ -73,6 +74,15 @@ export function Input({
   const filled = value != null ? String(value).length > 0 : uncontrolledFilled
 
   const inputRef = React.useRef<HTMLInputElement>(null)
+  // Ours (a click on the padding focuses the input) and the app's (a form library's register()).
+  const setInput = React.useCallback(
+    (node: HTMLInputElement | null) => {
+      inputRef.current = node
+      if (typeof ref === 'function') ref(node)
+      else if (ref) ref.current = node
+    },
+    [ref],
+  )
 
   return (
     <div data-slot="input-wrapper" className={cn('grid w-full gap-2', wrapperClassName)}>
@@ -108,12 +118,12 @@ export function Input({
         )}
         {leadingText && (
           // 2px from the value, not the field's 8: `https://` reads as part of the address.
-          <span data-slot="input-text" className="-mr-1.5 shrink-0 whitespace-nowrap text-text-muted select-none">
+          <span data-slot="input-text" className="-me-1.5 shrink-0 whitespace-nowrap text-text-muted select-none">
             {leadingText}
           </span>
         )}
         <input
-          ref={inputRef}
+          ref={setInput}
           id={inputId}
           data-slot="input"
           className="satin-field-input"
@@ -131,7 +141,7 @@ export function Input({
           name={props.name ?? field?.name}
         />
         {trailingText && (
-          <span data-slot="input-text" className="-ml-1.5 shrink-0 whitespace-nowrap text-text-muted select-none">
+          <span data-slot="input-text" className="-ms-1.5 shrink-0 whitespace-nowrap text-text-muted select-none">
             {trailingText}
           </span>
         )}

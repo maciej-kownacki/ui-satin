@@ -136,7 +136,7 @@ export function DropdownMenuGroup({ label, children, className, ...props }: Drop
 /** The row skin every menu shares: Dropdown, Select, Combobox and the Command menu. */
 /** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const menuItemClass = cn(
-  'flex min-h-menu-row w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-left outline-none select-none focus-visible:ring-0',
+  'flex min-h-menu-row w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-start outline-none select-none focus-visible:ring-0',
   'transition-colors duration-(--duration-fast) ease-(--ease-out)',
   'data-[highlighted]:bg-bg-selected data-[force=hover]:bg-bg-selected data-[selected]:bg-bg-selected',
   'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',

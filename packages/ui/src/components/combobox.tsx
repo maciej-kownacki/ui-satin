@@ -219,7 +219,7 @@ export function Combobox({
                     size="sm"
                     variant="outline"
                     disabled={chrome.disabled}
-                    removeLabel={`${labels.remove} ${o.label}`}
+                    removeLabel={labels.removeItem(o.label)}
                     onRemove={() => commit(applied.filter((v) => v !== o.value))}
                     className="relative"
                   >
@@ -237,7 +237,7 @@ export function Combobox({
                   variant="tertiary"
                   size="xs"
                   disabled={chrome.disabled}
-                  className="relative ml-auto"
+                  className="relative ms-auto"
                   onClick={() => commit([])}
                 >
                   {clearLabel}

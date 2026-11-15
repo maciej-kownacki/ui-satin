@@ -2,27 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import ProgressDemo, { options } from '../../demos/progress'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const api = {
-  description:
-    "The `Progress` component renders a `div` with `role=\"progressbar\"`, named by its label. It has `aria-valuenow` while `value` is set and none while the amount is unknown.",
-  props: [
-    {name: "value", type: ["number", "null"]},
-    {name: "max", type: ["number"], default: "100"},
-    {name: "label", type: ["ReactNode"]},
-    {name: "showValue", type: ["boolean"], default: "true"},
-    {name: "size", type: ["\"sm\"", "\"md\""], default: "\"sm\""},
-    {name: "formatValue", type: ["(value: number, max: number) => string"]},
-  ],
-}
 ---
 
 <Docs current="progress">
-  <DocSection item={page('progress')} api={api}>
+  <DocSection item={page('progress')} api={api['progress']}>
     <ProgressDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

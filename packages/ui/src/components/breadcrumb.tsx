@@ -18,7 +18,8 @@ import { useSatinLabels } from './labels'
  * With more items than `maxItems`, the middle ones fold into a "…" button (24px) that lists
  * them in a Dropdown; the first item and the last `maxItems - 1` stay.
  *
- * A `nav` named "Breadcrumb" around an ordered list; the current page has aria-current="page".
+ * A `nav` named by the `breadcrumb` label ("Breadcrumb") around an ordered list; the current page
+ * has aria-current="page".
  */
 export interface BreadcrumbItem {
   label: string
@@ -48,12 +49,13 @@ const linkClass = 'cursor-pointer hover:text-text-default'
 function Separator() {
   return (
     <li role="presentation" aria-hidden className="flex text-text-subtle [&_svg]:size-3.5 [&_svg]:[stroke-width:1.875]">
-      <NavArrowRight />
+      {/* Points to the next level, so it mirrors right to left. */}
+      <NavArrowRight className="rtl:-scale-x-100" />
     </li>
   )
 }
 
-export function Breadcrumb({ items, maxItems, className, 'aria-label': ariaLabel = 'Breadcrumb', ...props }: BreadcrumbProps) {
+export function Breadcrumb({ items, maxItems, className, 'aria-label': ariaLabel, ...props }: BreadcrumbProps) {
   const labels = useSatinLabels()
   const fold = maxItems != null && maxItems >= 2 && items.length > maxItems
   const head = fold ? items.slice(0, 1) : items
@@ -92,7 +94,7 @@ export function Breadcrumb({ items, maxItems, className, 'aria-label': ariaLabel
   }
 
   return (
-    <nav data-slot="breadcrumb" aria-label={ariaLabel} className={className} {...props}>
+    <nav data-slot="breadcrumb" aria-label={ariaLabel ?? labels.breadcrumb} className={className} {...props}>
       <ol className="flex flex-wrap items-center gap-1">
         {head.map((item, i) => (
           <React.Fragment key={`h${i}`}>
@@ -110,7 +112,7 @@ export function Breadcrumb({ items, maxItems, className, 'aria-label': ariaLabel
                 trigger={
                   <button
                     type="button"
-                    aria-label={`Show ${hidden.length} more`}
+                    aria-label={labels.showMore(hidden.length)}
                     className={cn(itemClass, linkClass, 'w-6 justify-center px-0 hover:bg-bg-hover [&_svg]:size-4')}
                   >
                     <MoreHoriz aria-hidden />

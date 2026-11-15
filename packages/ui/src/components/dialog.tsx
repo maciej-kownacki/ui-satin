@@ -71,85 +71,149 @@ export function Dialog({
   closeButton = true,
   modal = true,
   container,
-  onOpenAutoFocus,
-  className,
   ...props
 }: DialogProps) {
-  const labels = useSatinLabels()
-  // Inside a container the dialog is laid out against it, not the viewport.
-  const position = container ? 'absolute' : 'fixed'
   const hasBody = children != null || alert != null
 
   return (
-    <DialogPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} modal={modal}>
-      {trigger && <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>}
-      <DialogPrimitive.Portal container={container}>
-        {/* No overlay in Figma; black-a40 is the kit's scrim colour. Only drawn when modal. */}
-        <DialogPrimitive.Overlay
+    <DialogRoot open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} modal={modal}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent
+        // No description: tell Radix on purpose, so it doesn't warn (an aria-describedby passed in still wins).
+        {...(description ? {} : { 'aria-describedby': undefined })}
+        {...props}
+        variant={variant}
+        closeButton={closeButton}
+        container={container}
+      >
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          {description ? <DialogDescription>{description}</DialogDescription> : null}
+        </DialogHeader>
+        {hasBody && (
+          <DialogBody>
+            {typeof children === 'string' ? <p className="text-body text-text-default">{children}</p> : children}
+            {alert}
+          </DialogBody>
+        )}
+        {(footer || footerStart) && <DialogFooter start={footerStart}>{footer}</DialogFooter>}
+      </DialogContent>
+    </DialogRoot>
+  )
+}
+
+/* ---------- Parts ----------------------------------------------------------------------------
+ * The same dialog in pieces, for layouts the props don't cover (a form around the body and the
+ * footer, a header with an icon, a trigger elsewhere in the tree). Dialog above is built from
+ * them, so both look and behave the same:
+ *
+ *   <DialogRoot>
+ *     <DialogTrigger asChild><Button>Rename</Button></DialogTrigger>
+ *     <DialogContent>
+ *       <DialogHeader><DialogTitle>Rename file</DialogTitle></DialogHeader>
+ *       <DialogBody>…</DialogBody>
+ *       <DialogFooter><DialogClose asChild><Button>Save</Button></DialogClose></DialogFooter>
+ *     </DialogContent>
+ *   </DialogRoot>
+ *
+ * DialogTitle is required (Radix warns without one); DialogDescription is optional, and without
+ * it pass `aria-describedby={undefined}` to DialogContent.
+ */
+
+/** Holds the open state: `open`, `defaultOpen`, `onOpenChange`, `modal`. */
+export function DialogRoot(props: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  return <DialogPrimitive.Root {...props} />
+}
+
+/** Opens the dialog. With `asChild` it lends its behaviour to your own Button. */
+export function DialogTrigger(props: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
+  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+}
+
+export interface DialogContentProps extends Omit<React.ComponentProps<typeof DialogPrimitive.Content>, 'asChild'> {
+  variant?: DialogVariant
+  /** Show the close button in the corner. */
+  closeButton?: boolean
+  /** Portal target. Defaults to `document.body`; inside it the dialog centres on that element. */
+  container?: HTMLElement | null
+}
+
+/** The overlay and the panel, portaled; the panel takes the header, body and footer as children. */
+export function DialogContent({ variant = 'default', closeButton = true, container, className, children, ...props }: DialogContentProps) {
+  const labels = useSatinLabels()
+  // Inside a container the dialog is laid out against it, not the viewport.
+  const position = container ? 'absolute' : 'fixed'
+  return (
+    <DialogPrimitive.Portal container={container}>
+      {/* No overlay in Figma; black-a40 is the kit's scrim colour. Only drawn when modal. */}
+      <DialogPrimitive.Overlay data-slot="dialog-overlay" className={cn(position, 'inset-0 z-50 bg-black-a40')} />
+      <div className={cn(position, 'pointer-events-none inset-0 z-50 grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)] place-items-center p-4')}>
+        <DialogPrimitive.Content
+          {...props}
+          role={variant === 'destructive' ? 'alertdialog' : 'dialog'}
+          data-slot="dialog"
+          data-variant={variant}
           className={cn(
-            position,
-            'inset-0 z-50 bg-black-a40',
+            'pointer-events-auto relative flex max-h-full w-[425px] max-w-[min(560px,100%)] min-w-[min(360px,100%)] flex-col overflow-clip',
+            'rounded-2xl border border-border-default bg-bg-popover',
+            '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+            'focus-visible:outline-none',
+            'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
+            className,
           )}
-        />
-        <div className={cn(position, 'pointer-events-none inset-0 z-50 grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)] place-items-center p-4')}>
-          <DialogPrimitive.Content
-            // No description: tell Radix on purpose, so it doesn't warn (an aria-describedby passed in still wins).
-            {...(description ? {} : { 'aria-describedby': undefined })}
-            {...props}
-            role={variant === 'destructive' ? 'alertdialog' : 'dialog'}
-            data-slot="dialog"
-            data-variant={variant}
-            onOpenAutoFocus={onOpenAutoFocus}
-            className={cn(
-              'pointer-events-auto relative flex max-h-full w-[425px] max-w-[min(560px,100%)] min-w-[min(360px,100%)] flex-col overflow-clip',
-              'rounded-2xl border border-border-default bg-bg-popover',
-              '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
-              'focus-visible:outline-none',
-              'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
-              className,
-            )}
-          >
-            <div className="flex min-h-0 flex-col gap-3">
-              <div className="flex shrink-0 flex-col gap-0.5 px-4 pt-4 pb-2">
-                <DialogPrimitive.Title className="pr-8 text-base leading-[14px] font-medium tracking-normal text-text-default">
-                  {title}
-                </DialogPrimitive.Title>
-                {description ? (
-                  <DialogPrimitive.Description className="text-body text-text-muted">{description}</DialogPrimitive.Description>
-                ) : null}
-              </div>
-              {hasBody && (
-                <div className="flex min-h-0 flex-col gap-3 overflow-y-auto px-4 pb-3">
-                  {typeof children === 'string' ? <p className="text-body text-text-default">{children}</p> : children}
-                  {alert}
-                </div>
-              )}
-            </div>
+        >
+          {children}
+          {closeButton && (
+            <DialogPrimitive.Close asChild>
+              <Button variant="tertiary" size="xl" iconOnly aria-label={labels.close} className="absolute end-[7px] top-[7px] rounded-lg">
+                <CloseIcon />
+              </Button>
+            </DialogPrimitive.Close>
+          )}
+        </DialogPrimitive.Content>
+      </div>
+    </DialogPrimitive.Portal>
+  )
+}
 
-            {(footer || footerStart) && (
-              <div className="flex shrink-0 flex-wrap items-center justify-end gap-3 p-4">
-                {footerStart && <div className="flex min-w-0 flex-1 items-center">{footerStart}</div>}
-                <div className="flex shrink-0 items-center gap-2">{footer}</div>
-              </div>
-            )}
+/** The title and description, 16 / 16 / 8 in, clear of the close button. */
+export function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
+  return <div data-slot="dialog-header" className={cn('flex shrink-0 flex-col gap-0.5 px-4 pt-4 pb-2', className)} {...props} />
+}
 
-            {closeButton && (
-              <DialogPrimitive.Close asChild>
-                <Button
-                  variant="tertiary"
-                  size="xl"
-                  iconOnly
-                  aria-label={labels.close}
-                  className="absolute top-[7px] right-[7px] rounded-lg"
-                >
-                  <CloseIcon />
-                </Button>
-              </DialogPrimitive.Close>
-            )}
-          </DialogPrimitive.Content>
-        </div>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+/** The dialog's accessible name: 14px medium. */
+export function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
+  return (
+    <DialogPrimitive.Title
+      data-slot="dialog-title"
+      className={cn('pe-8 text-base leading-[14px] font-medium tracking-normal text-text-default', className)}
+      {...props}
+    />
+  )
+}
+
+/** One line under the title, read out after it: body size, muted. */
+export function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
+  return <DialogPrimitive.Description data-slot="dialog-description" className={cn('text-body text-text-muted', className)} {...props} />
+}
+
+/** The content between header and footer; it scrolls when the dialog meets the screen's edge. */
+export function DialogBody({ className, ...props }: React.ComponentProps<'div'>) {
+  return <div data-slot="dialog-body" className={cn('flex min-h-0 flex-col gap-3 overflow-y-auto px-4 pt-3 pb-3', className)} {...props} />
+}
+
+export interface DialogFooterProps extends React.ComponentProps<'div'> {
+  /** Content on the left (Figma's `footerSlot`), e.g. a "Don't ask again" checkbox. */
+  start?: React.ReactNode
+}
+
+/** The actions, right-aligned, 16px in. */
+export function DialogFooter({ start, className, children, ...props }: DialogFooterProps) {
+  return (
+    <div data-slot="dialog-footer" className={cn('flex shrink-0 flex-wrap items-center justify-end gap-3 p-4', className)} {...props}>
+      {start && <div className="flex min-w-0 flex-1 items-center">{start}</div>}
+      <div className="flex shrink-0 items-center gap-2">{children}</div>
+    </div>
   )
 }
 

@@ -55,7 +55,7 @@ export interface CommandMenuProps
   hotkey?: boolean
   /** The search field's placeholder. Defaults to the `commandPlaceholder` label. */
   placeholder?: string
-  /** Shown when nothing matches; gets the query. */
+  /** Shown when nothing matches; gets the query. Defaults to the `noResultsFor` label. */
   emptyText?: (query: string) => React.ReactNode
   /** Show the footer of key hints. */
   hints?: boolean
@@ -80,7 +80,7 @@ export function CommandMenu({
   onOpenChange,
   hotkey = true,
   placeholder,
-  emptyText = (q) => `No results for “${q}”`,
+  emptyText,
   hints = true,
   modal = true,
   container,
@@ -196,7 +196,7 @@ export function CommandMenu({
 
             <div ref={listRef} id={listId} role="listbox" aria-label={labels.commands} className="flex min-h-0 flex-col gap-2 overflow-y-auto p-2">
               {flat.length === 0 ? (
-                <p className="px-2 py-8 text-center text-sm text-text-muted">{emptyText(query)}</p>
+                <p className="px-2 py-8 text-center text-sm text-text-muted">{(emptyText ?? labels.noResultsFor)(query)}</p>
               ) : (
                 shown.map((g, gi) => (
                   <div key={gi} role="group" aria-labelledby={`${listId}-g${gi}`} className="flex flex-col">
@@ -239,7 +239,7 @@ export function CommandMenu({
               <div aria-hidden className="flex h-10 shrink-0 items-center gap-4 border-t border-border-subtle px-4">
                 <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
                 <KbdHint keys={[<KbdReturn key="return" />]} label={labels.openItem} />
-                <KbdHint className="ml-auto" keys={['Esc']} label={labels.close} />
+                <KbdHint className="ms-auto" keys={['Esc']} label={labels.close} />
               </div>
             )}
           </DialogPrimitive.Content>

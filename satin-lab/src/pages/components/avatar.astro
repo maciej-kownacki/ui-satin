@@ -2,31 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import AvatarDemo, { options } from '../../demos/avatar'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-const tones = ['"neutral"', '"brand"', '"sky"', '"green"', '"amber"', '"red"', '"fuchsia"', '"plum"']
 ---
 
 <Docs current="avatar">
-  <DocSection
-    item={{
-      id: 'avatar',
-      title: 'Avatar',
-      href: '/components/avatar',
-      description: 'Shows a person or workspace with initials on a tone colour.',
-    }}
-    api={{
-      description: 'The `Avatar` component is a wrapper around the `span` element that renders initials on a tone background.',
-      props: [
-        { name: 'initials', type: ['string'] },
-        { name: 'size', type: ['16', '20', '24', '32', '40', '48'], default: '32' },
-        { name: 'shape', type: ['"circle"', '"rounded"'], default: '"circle"' },
-        { name: 'tone', type: tones, default: '"neutral"' },
-        { name: 'name', type: ['string'] },
-      ],
-    }}
-  >
+  <DocSection item={page('avatar')} api={api['avatar']}>
     <AvatarDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

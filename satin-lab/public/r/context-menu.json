@@ -17,12 +17,120 @@
     {
       "path": "registry/satin/ui/context-menu.tsx",
       "type": "registry:ui",
-      "content": "'use client'\n\nimport * as React from 'react'\nimport { ContextMenu as ContextPrimitive } from 'radix-ui'\nimport { NavArrowRight } from 'iconoir-react'\nimport { cn } from '@/lib/utils'\nimport { MenuItemContent, menuItemClass, menuSurfaceClass, type MenuItemContentProps } from '@/registry/satin/ui/dropdown'\n\n/**\n * ContextMenu, 1:1 with the uiKit design (🆕 context menu & hover card): DropdownMenu's surface\n * and rows, opened by right-click (or a long press) on its target, at the pointer. 255 wide, 4px\n * in, rows 0 apart, separators a 1px bg/muted rule. Shortcuts on the right as Kbd; a submenu row\n * ends in a text/muted chevron (the kit's `showSubmenu`) and opens beside it, 4px off; destructive\n * rows are action/destructive/fg (red-400 in dark), icon included, and go last.\n *\n * Built on the Radix ContextMenu: arrow keys, typeahead, Escape, Shift+F10 / the menu key on the\n * focused target.\n *\n * Other props, `ref` included, go to the menu's panel (the Radix Content).\n */\nexport interface ContextMenuProps\n  extends Omit<React.ComponentProps<typeof ContextPrimitive.Content>, 'children' | 'asChild' | 'onFocusOutside'> {\n  /** What right-click opens the menu on. Rendered with `asChild`, so pass one element. */\n  trigger: React.ReactNode\n  /** `ContextMenuItem`s, `ContextMenuSub`s and `ContextMenuSeparator`s. */\n  children: React.ReactNode\n  onOpenChange?: (open: boolean) => void\n  /** Portal target. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  /** Modal menus block the rest of the page while open. */\n  modal?: boolean\n  /** Focus moved outside a non-modal menu; call `preventDefault()` to keep it open. */\n  onFocusOutside?: (event: Event) => void\n  className?: string\n}\n\nconst contentClass = cn(\n  'sa:pointer-events-auto sa:z-50 sa:flex sa:w-[255px] sa:max-w-[calc(100vw-16px)] sa:flex-col sa:overflow-x-clip sa:overflow-y-auto sa:p-1',\n  menuSurfaceClass,\n  'sa:outline-none sa:data-[state=open]:animate-[satin-enter_var(--sa-duration-base)_var(--sa-ease-out)]',\n)\n\nexport function ContextMenu({\n  trigger,\n  children,\n  onOpenChange,\n  container,\n  modal = true,\n  onFocusOutside,\n  className,\n  ...props\n}: ContextMenuProps) {\n  return (\n    <ContextPrimitive.Root onOpenChange={onOpenChange} modal={modal}>\n      <ContextPrimitive.Trigger asChild>{trigger}</ContextPrimitive.Trigger>\n      <ContextPrimitive.Portal container={container}>\n        <ContextPrimitive.Content\n          collisionPadding={8}\n          {...props}\n          data-slot=\"context-menu\"\n          onFocusOutside={onFocusOutside}\n          className={cn(contentClass, 'sa:origin-(--radix-context-menu-content-transform-origin)', 'sa:max-h-(--radix-context-menu-content-available-height)', className)}\n        >\n          {children}\n        </ContextPrimitive.Content>\n      </ContextPrimitive.Portal>\n    </ContextPrimitive.Root>\n  )\n}\n\nexport interface ContextMenuItemProps\n  extends Omit<React.ComponentProps<typeof ContextPrimitive.Item>, 'children'>,\n    Pick<MenuItemContentProps, 'icon' | 'shortcut' | 'description'> {\n  label: string\n  /** Deletes or removes: action/destructive/fg, and best placed last. */\n  destructive?: boolean\n}\n\nexport function ContextMenuItem({ label, icon, shortcut, description, destructive, className, ...props }: ContextMenuItemProps) {\n  return (\n    <ContextPrimitive.Item\n      data-slot=\"context-menu-item\"\n      textValue={label}\n      className={cn(menuItemClass, destructive && 'sa:[&_*]:text-action-destructive-fg', className)}\n      {...props}\n    >\n      <MenuItemContent label={label} icon={icon} shortcut={shortcut} description={description} layout=\"inline\" />\n    </ContextPrimitive.Item>\n  )\n}\n\nexport interface ContextMenuSubProps\n  extends Omit<React.ComponentProps<typeof ContextPrimitive.SubContent>, 'children' | 'asChild'>,\n    Pick<MenuItemContentProps, 'icon'> {\n  label: string\n  /** The submenu's items. */\n  children: React.ReactNode\n  disabled?: boolean\n}\n\n/**\n * A row that opens a submenu beside it (hover, →, or Enter).\n *\n * Other props, `ref` and `className` included, go to the submenu's panel (the Radix SubContent),\n * not to the row.\n */\nexport function ContextMenuSub({ label, icon, children, disabled, className, ...props }: ContextMenuSubProps) {\n  return (\n    <ContextPrimitive.Sub>\n      <ContextPrimitive.SubTrigger\n        data-slot=\"context-menu-sub\"\n        disabled={disabled}\n        textValue={label}\n        className={cn(menuItemClass, 'sa:data-[state=open]:bg-bg-selected')}\n      >\n        <MenuItemContent label={label} icon={icon} layout=\"inline\" />\n        <NavArrowRight aria-hidden className=\"sa:size-4 sa:text-text-muted sa:[stroke-width:1.875]\" />\n      </ContextPrimitive.SubTrigger>\n      <ContextPrimitive.Portal>\n        <ContextPrimitive.SubContent\n          sideOffset={4}\n          alignOffset={-5}\n          collisionPadding={8}\n          {...props}\n          className={cn(contentClass, 'sa:w-[220px] sa:origin-(--radix-context-menu-content-transform-origin)', className)}\n        >\n          {children}\n        </ContextPrimitive.SubContent>\n      </ContextPrimitive.Portal>\n    </ContextPrimitive.Sub>\n  )\n}\n\n/** A 1px bg/muted rule between groups of rows. */\nexport function ContextMenuSeparator({ className }: { className?: string }) {\n  return <ContextPrimitive.Separator className={cn('sa:-mx-1 sa:my-1 sa:h-px sa:bg-bg-muted', className)} />\n}\n"
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { ContextMenu as ContextPrimitive } from 'radix-ui'\nimport { NavArrowRight } from 'iconoir-react'\nimport { cn } from '@/lib/utils'\nimport { MenuItemContent, menuItemClass, menuSurfaceClass, type MenuItemContentProps } from '@/registry/satin/ui/dropdown'\n\n/**\n * ContextMenu, 1:1 with the uiKit design (🆕 context menu & hover card): DropdownMenu's surface\n * and rows, opened by right-click (or a long press) on its target, at the pointer. 255 wide, 4px\n * in, rows 0 apart, separators a 1px bg/muted rule. Shortcuts on the right as Kbd; a submenu row\n * ends in a text/muted chevron (the kit's `showSubmenu`) and opens beside it, 4px off; destructive\n * rows are action/destructive/fg (red-400 in dark), icon included, and go last.\n *\n * Built on the Radix ContextMenu: arrow keys, typeahead, Escape, Shift+F10 / the menu key on the\n * focused target.\n *\n * Other props, `ref` included, go to the menu's panel (the Radix Content).\n */\nexport interface ContextMenuProps\n  extends Omit<React.ComponentProps<typeof ContextPrimitive.Content>, 'children' | 'asChild' | 'onFocusOutside'> {\n  /** What right-click opens the menu on. Rendered with `asChild`, so pass one element. */\n  trigger: React.ReactNode\n  /** `ContextMenuItem`s, `ContextMenuSub`s and `ContextMenuSeparator`s. */\n  children: React.ReactNode\n  onOpenChange?: (open: boolean) => void\n  /** Portal target. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  /** Modal menus block the rest of the page while open. */\n  modal?: boolean\n  /** Focus moved outside a non-modal menu; call `preventDefault()` to keep it open. */\n  onFocusOutside?: (event: Event) => void\n  className?: string\n}\n\nconst contentClass = cn(\n  'sa:pointer-events-auto sa:z-50 sa:flex sa:w-[255px] sa:max-w-[calc(100vw-16px)] sa:flex-col sa:overflow-x-clip sa:overflow-y-auto sa:p-1',\n  menuSurfaceClass,\n  'sa:outline-none sa:data-[state=open]:animate-[satin-enter_var(--sa-duration-base)_var(--sa-ease-out)]',\n)\n\nexport function ContextMenu({\n  trigger,\n  children,\n  onOpenChange,\n  container,\n  modal = true,\n  onFocusOutside,\n  className,\n  ...props\n}: ContextMenuProps) {\n  return (\n    <ContextPrimitive.Root onOpenChange={onOpenChange} modal={modal}>\n      <ContextPrimitive.Trigger asChild>{trigger}</ContextPrimitive.Trigger>\n      <ContextPrimitive.Portal container={container}>\n        <ContextPrimitive.Content\n          collisionPadding={8}\n          {...props}\n          data-slot=\"context-menu\"\n          onFocusOutside={onFocusOutside}\n          className={cn(contentClass, 'sa:origin-(--radix-context-menu-content-transform-origin)', 'sa:max-h-(--radix-context-menu-content-available-height)', className)}\n        >\n          {children}\n        </ContextPrimitive.Content>\n      </ContextPrimitive.Portal>\n    </ContextPrimitive.Root>\n  )\n}\n\nexport interface ContextMenuItemProps\n  extends Omit<React.ComponentProps<typeof ContextPrimitive.Item>, 'children'>,\n    Pick<MenuItemContentProps, 'icon' | 'shortcut' | 'description'> {\n  label: string\n  /** Deletes or removes: action/destructive/fg, and best placed last. */\n  destructive?: boolean\n}\n\nexport function ContextMenuItem({ label, icon, shortcut, description, destructive, className, ...props }: ContextMenuItemProps) {\n  return (\n    <ContextPrimitive.Item\n      data-slot=\"context-menu-item\"\n      textValue={label}\n      className={cn(menuItemClass, destructive && 'sa:[&_*]:text-action-destructive-fg', className)}\n      {...props}\n    >\n      <MenuItemContent label={label} icon={icon} shortcut={shortcut} description={description} layout=\"inline\" />\n    </ContextPrimitive.Item>\n  )\n}\n\nexport interface ContextMenuSubProps\n  extends Omit<React.ComponentProps<typeof ContextPrimitive.SubContent>, 'children' | 'asChild'>,\n    Pick<MenuItemContentProps, 'icon'> {\n  label: string\n  /** The submenu's items. */\n  children: React.ReactNode\n  disabled?: boolean\n}\n\n/**\n * A row that opens a submenu beside it (hover, →, or Enter).\n *\n * Other props, `ref` and `className` included, go to the submenu's panel (the Radix SubContent),\n * not to the row.\n */\nexport function ContextMenuSub({ label, icon, children, disabled, className, ...props }: ContextMenuSubProps) {\n  return (\n    <ContextPrimitive.Sub>\n      <ContextPrimitive.SubTrigger\n        data-slot=\"context-menu-sub\"\n        disabled={disabled}\n        textValue={label}\n        className={cn(menuItemClass, 'sa:data-[state=open]:bg-bg-selected')}\n      >\n        <MenuItemContent label={label} icon={icon} layout=\"inline\" />\n        <NavArrowRight aria-hidden className=\"sa:size-4 sa:text-text-muted sa:[stroke-width:1.875] sa:rtl:-scale-x-100\" />\n      </ContextPrimitive.SubTrigger>\n      <ContextPrimitive.Portal>\n        <ContextPrimitive.SubContent\n          sideOffset={4}\n          alignOffset={-5}\n          collisionPadding={8}\n          {...props}\n          className={cn(contentClass, 'sa:w-[220px] sa:origin-(--radix-context-menu-content-transform-origin)', className)}\n        >\n          {children}\n        </ContextPrimitive.SubContent>\n      </ContextPrimitive.Portal>\n    </ContextPrimitive.Sub>\n  )\n}\n\n/** A 1px bg/muted rule between groups of rows. */\nexport function ContextMenuSeparator({ className }: { className?: string }) {\n  return <ContextPrimitive.Separator className={cn('sa:-mx-1 sa:my-1 sa:h-px sa:bg-bg-muted', className)} />\n}\n"
     }
   ],
   "docs": "Context menu docs: https://uisatin.dev/components/context-menu",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "ContextMenu": {
+        "type": "ContextMenuProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof ContextPrimitive.Content>, 'children' | 'asChild' | 'onFocusOutside'>"
+        ],
+        "props": [
+          {
+            "name": "trigger",
+            "type": "React.ReactNode",
+            "required": true,
+            "description": "What right-click opens the menu on. Rendered with `asChild`, so pass one element."
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true,
+            "description": "`ContextMenuItem`s, `ContextMenuSub`s and `ContextMenuSeparator`s."
+          },
+          {
+            "name": "onOpenChange",
+            "type": "(open: boolean) => void",
+            "required": false
+          },
+          {
+            "name": "container",
+            "type": "HTMLElement | null",
+            "required": false,
+            "description": "Portal target. Defaults to `document.body`."
+          },
+          {
+            "name": "modal",
+            "type": "boolean",
+            "required": false,
+            "default": "true",
+            "description": "Modal menus block the rest of the page while open."
+          },
+          {
+            "name": "onFocusOutside",
+            "type": "(event: Event) => void",
+            "required": false,
+            "description": "Focus moved outside a non-modal menu; call `preventDefault()` to keep it open."
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "ContextMenuItem": {
+        "type": "ContextMenuItemProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof ContextPrimitive.Item>, 'children'>",
+          "Pick<MenuItemContentProps, 'icon' | 'shortcut' | 'description'>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "destructive",
+            "type": "boolean",
+            "required": false,
+            "description": "Deletes or removes: action/destructive/fg, and best placed last."
+          }
+        ]
+      },
+      "ContextMenuSub": {
+        "description": "A row that opens a submenu beside it (hover, →, or Enter). Other props, `ref` and `className` included, go to the submenu's panel (the Radix SubContent), not to the row.",
+        "type": "ContextMenuSubProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof ContextPrimitive.SubContent>, 'children' | 'asChild'>",
+          "Pick<MenuItemContentProps, 'icon'>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true,
+            "description": "The submenu's items."
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          }
+        ]
+      },
+      "ContextMenuSeparator": {
+        "description": "A 1px bg/muted rule between groups of rows.",
+        "extends": [],
+        "props": [
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      }
+    }
   }
 }

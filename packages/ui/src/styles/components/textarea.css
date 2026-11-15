@@ -33,12 +33,16 @@
 }
 .satin-textarea-grip {
   position: absolute;
-  right: 4px;
+  /* Logical: right to left the browser's resizer is in the bottom-left corner, so the grip follows. */
+  inset-inline-end: 4px;
   bottom: 4px;
   width: 7px;
   height: 7px;
   color: var(--text-subtle);
   pointer-events: none;
+}
+.satin-textarea-grip:dir(rtl) {
+  transform: scaleX(-1);
 }
 .satin-textarea-root[data-disabled] {
   opacity: 0.6;

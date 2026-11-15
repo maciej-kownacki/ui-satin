@@ -21,12 +21,178 @@
     {
       "path": "registry/satin/ui/combobox.tsx",
       "type": "registry:ui",
-      "content": "'use client'\n\nimport * as React from 'react'\nimport { Popover as PopoverPrimitive } from 'radix-ui'\nimport { Search } from 'iconoir-react'\nimport { cn } from '@/lib/utils'\nimport { Button } from '@/registry/satin/ui/button'\nimport { Chip } from '@/registry/satin/ui/chip'\nimport { MenuItemContent, menuItemClass, menuSurfaceClass } from '@/registry/satin/ui/dropdown'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\nimport { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from '@/registry/satin/ui/select'\n\n/**\n * Combobox, 1:1 with the uiKit `Combobox` set (4023:3549): Select's field, opening a searchable\n * list. The panel is the menu surface at the field's width (240 at least): a 36px search row\n * (16px icon, 14px query, 12px in) over a border/subtle rule, then the matching options as\n * inline menu rows 2px apart in 4px of padding.\n *\n * Single: a pick fills the field with its label and closes the list. Multiple: each pick\n * toggles and the list stays open; the field shows the picks as small outline chips, 4px\n * apart, each with its own remove button, and grows a row at a time as they wrap. The chips sit\n * 3px from the field's edge, so their labels start where a value's text would. With more than\n * one pick, Clear (the xs tertiary button) shows on the label's line at the field's right edge.\n *\n * `footer` adds Cancel (secondary) and Apply (primary) under a border/subtle rule, 8px in: picks\n * then wait for Apply, which stays disabled until something is picked; Cancel or Escape drops\n * them.\n *\n * Typing filters by label and description. Arrow keys move the highlight, Enter picks it, the\n * pointer highlights what it is over. The query field is a `combobox` that owns the `listbox`.\n *\n * Other props, `ref` included, go to the trigger button that covers the field (the element its\n * label points at); `className` styles the field around it.\n */\nexport interface ComboboxProps\n  extends Omit<React.ComponentProps<typeof PopoverPrimitive.Trigger>, 'value' | 'defaultValue' | 'disabled' | 'children' | 'asChild'> {\n  options: SelectOption[]\n  /** The applied picks. */\n  value?: string[]\n  defaultValue?: string[]\n  onValueChange?: (value: string[]) => void\n  multiple?: boolean\n  /** Cancel and Apply under the list; picks apply only with Apply. */\n  footer?: boolean\n  /** Shown while nothing is picked. Defaults to the `select` label (\"Select…\"). */\n  placeholder?: string\n  /** The query field's placeholder and name. Defaults to the `search` label. */\n  searchPlaceholder?: string\n  /** Shown when nothing matches the query. Defaults to the `noResults` label. */\n  emptyText?: React.ReactNode\n  /** Defaults to the `apply` label. */\n  applyLabel?: string\n  /** Defaults to the `cancel` label. */\n  cancelLabel?: string\n  /** Defaults to the `clear` label. */\n  clearLabel?: string\n  label?: React.ReactNode\n  hint?: React.ReactNode\n  error?: React.ReactNode | boolean\n  size?: 'sm' | 'md' | 'lg'\n  leadingIcon?: React.ReactNode\n  disabled?: boolean\n  id?: string\n  open?: boolean\n  defaultOpen?: boolean\n  onOpenChange?: (open: boolean) => void\n  /** Portal target. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  /** Keep focus where it is when the panel opens (inline previews). */\n  onOpenAutoFocus?: (event: Event) => void\n  /** A press outside the panel; `preventDefault()` keeps it open. */\n  onInteractOutside?: (event: Event) => void\n  'aria-label'?: string\n  wrapperClassName?: string\n  className?: string\n}\n\nconst matches = (o: SelectOption, q: string) => {\n  const t = q.trim().toLowerCase()\n  if (!t) return true\n  return o.label.toLowerCase().includes(t) || (typeof o.description === 'string' && o.description.toLowerCase().includes(t))\n}\n\nexport function Combobox({\n  options,\n  value,\n  defaultValue = [],\n  onValueChange,\n  multiple = false,\n  footer = false,\n  placeholder: placeholderProp,\n  searchPlaceholder: searchPlaceholderProp,\n  emptyText: emptyTextProp,\n  applyLabel: applyLabelProp,\n  cancelLabel: cancelLabelProp,\n  clearLabel: clearLabelProp,\n  label,\n  hint,\n  error,\n  size = 'md',\n  leadingIcon,\n  disabled,\n  id,\n  open: openProp,\n  defaultOpen = false,\n  onOpenChange,\n  container,\n  onOpenAutoFocus,\n  onInteractOutside,\n  wrapperClassName,\n  className,\n  'aria-describedby': describedBy,\n  ...props\n}: ComboboxProps) {\n  const chrome = useFieldChrome({ id, disabled, error, hint })\n  const labels = useSatinLabels()\n  const placeholder = placeholderProp ?? labels.select\n  const searchPlaceholder = searchPlaceholderProp ?? labels.search\n  const emptyText = emptyTextProp ?? labels.noResults\n  const applyLabel = applyLabelProp ?? labels.apply\n  const cancelLabel = cancelLabelProp ?? labels.cancel\n  const clearLabel = clearLabelProp ?? labels.clear\n  const listId = `${chrome.controlId}-list`\n\n  const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue)\n  const applied = value ?? uncontrolledValue\n  const commit = (next: string[]) => {\n    if (value == null) setUncontrolledValue(next)\n    onValueChange?.(next)\n  }\n\n  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)\n  const open = openProp ?? uncontrolledOpen\n\n  // With a footer, picks wait here for Apply; without one they apply at once.\n  const [pending, setPending] = React.useState<string[]>(applied)\n  const picks = footer ? pending : applied\n  const [query, setQuery] = React.useState('')\n  const [active, setActive] = React.useState(0)\n\n  const setOpen = (next: boolean) => {\n    if (next) {\n      setPending(applied)\n      setQuery('')\n      setActive(0)\n    }\n    if (openProp == null) setUncontrolledOpen(next)\n    onOpenChange?.(next)\n  }\n\n  const shown = options.filter((o) => matches(o, query))\n  const pick = (v: string) => {\n    const next = multiple ? (picks.includes(v) ? picks.filter((x) => x !== v) : [...picks, v]) : picks[0] === v && footer ? [] : [v]\n    if (footer) return setPending(next)\n    commit(next)\n    if (!multiple) setOpen(false)\n  }\n  const apply = () => {\n    commit(pending)\n    setOpen(false)\n  }\n\n  const chosen = applied.map((v) => options.find((o) => o.value === v)).filter(Boolean) as SelectOption[]\n  const chips = multiple && chosen.length > 0\n  const triggerText = !multiple && chosen[0] ? chosen[0].label : chips ? null : placeholder\n  // As in Select: left out, a single pick's own icon leads the field.\n  const lead = leadingIcon ?? (!multiple ? chosen[0]?.icon : undefined)\n\n  return (\n    <FieldChrome\n      label={label}\n      chrome={chrome}\n      className={wrapperClassName}\n      action={\n        label && multiple && chosen.length > 1 ? (\n          <Button variant=\"tertiary\" size=\"xs\" disabled={chrome.disabled} onClick={() => commit([])}>\n            {clearLabel}\n          </Button>\n        ) : undefined\n      }\n    >\n      <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>\n        <PopoverPrimitive.Anchor asChild>\n          <div\n            data-slot=\"combobox-field\"\n            data-size={size}\n            data-multiple={chips || undefined}\n            data-leading={lead ? true : undefined}\n            data-filled={chosen.length ? true : undefined}\n            data-invalid={chrome.invalid || undefined}\n            data-disabled={chrome.disabled || undefined}\n            data-state={open ? 'open' : 'closed'}\n            className={cn('satin-field satin-select satin-combobox sa:relative', className)}\n          >\n            {/* The trigger covers the whole field under the chips, so a click anywhere but a\n                chip's remove button or Clear opens the list, and it takes no room in the rows. */}\n            <PopoverPrimitive.Trigger\n              {...props}\n              id={chrome.controlId}\n              data-slot=\"combobox-trigger\"\n              disabled={chrome.disabled}\n              aria-invalid={chrome.invalid || undefined}\n              aria-describedby={[describedBy, chrome.describedBy].filter(Boolean).join(' ') || undefined}\n              aria-haspopup=\"listbox\"\n              className=\"sa:absolute sa:inset-0 sa:cursor-pointer sa:rounded-[inherit] sa:outline-none sa:focus-visible:ring-0 sa:disabled:cursor-not-allowed\"\n            >\n              <span className=\"sa:sr-only\">{chosen.length ? chosen.map((o) => o.label).join(', ') : placeholder}</span>\n            </PopoverPrimitive.Trigger>\n            {lead && (\n              <span className=\"satin-field-icon satin-combobox-icon sa:pointer-events-none\" aria-hidden>\n                {lead}\n              </span>\n            )}\n            <div className=\"sa:pointer-events-none sa:flex sa:min-w-0 sa:flex-1 sa:flex-wrap sa:items-center sa:gap-1 sa:*:pointer-events-auto\">\n              {chips &&\n                chosen.map((o) => (\n                  <Chip\n                    key={o.value}\n                    size=\"sm\"\n                    variant=\"outline\"\n                    disabled={chrome.disabled}\n                    removeLabel={`${labels.remove} ${o.label}`}\n                    onRemove={() => commit(applied.filter((v) => v !== o.value))}\n                    className=\"sa:relative\"\n                  >\n                    {o.label}\n                  </Chip>\n                ))}\n              {triggerText && (\n                <span aria-hidden className={cn('sa:pointer-events-none! sa:min-w-0 sa:flex-1 sa:truncate', chosen.length ? 'sa:text-text-default' : 'sa:text-text-muted')}>\n                  {triggerText}\n                </span>\n              )}\n              {/* Without a label there is no line above the field for Clear: it follows the chips. */}\n              {!label && chips && chosen.length > 1 && (\n                <Button\n                  variant=\"tertiary\"\n                  size=\"xs\"\n                  disabled={chrome.disabled}\n                  className=\"sa:relative sa:ml-auto\"\n                  onClick={() => commit([])}\n                >\n                  {clearLabel}\n                </Button>\n              )}\n            </div>\n            <SelectChevron className=\"satin-combobox-icon sa:pointer-events-none\" />\n          </div>\n        </PopoverPrimitive.Anchor>\n\n        <PopoverPrimitive.Portal container={container}>\n          <PopoverPrimitive.Content\n            data-slot=\"combobox\"\n            side=\"bottom\"\n            align=\"start\"\n            sideOffset={4}\n            collisionPadding={8}\n            onOpenAutoFocus={onOpenAutoFocus}\n            onInteractOutside={onInteractOutside}\n            className={cn(\n              'sa:pointer-events-auto sa:z-50 sa:flex sa:w-(--radix-popover-trigger-width) sa:min-w-60 sa:max-w-[520px] sa:flex-col sa:overflow-hidden',\n              menuSurfaceClass,\n              'sa:origin-(--radix-popover-content-transform-origin) sa:outline-none',\n              'sa:data-[state=open]:animate-[satin-enter_var(--sa-duration-base)_var(--sa-ease-out)]',\n            )}\n          >\n            <label className=\"sa:flex sa:h-9 sa:shrink-0 sa:items-center sa:gap-2 sa:border-b sa:border-border-subtle sa:px-3 sa:text-text-muted\">\n              <Search aria-hidden className=\"sa:size-4 sa:shrink-0 sa:[stroke-width:1.875]\" />\n              <input\n                role=\"combobox\"\n                aria-expanded\n                aria-controls={listId}\n                aria-autocomplete=\"list\"\n                aria-activedescendant={shown[active] ? `${listId}-${shown[active].value}` : undefined}\n                aria-label={searchPlaceholder}\n                value={query}\n                placeholder={searchPlaceholder}\n                onChange={(e) => {\n                  setQuery(e.target.value)\n                  setActive(0)\n                }}\n                onKeyDown={(e) => {\n                  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {\n                    e.preventDefault()\n                    const step = e.key === 'ArrowDown' ? 1 : -1\n                    setActive((a) => (shown.length ? (a + step + shown.length) % shown.length : 0))\n                  } else if (e.key === 'Enter' && shown[active]) {\n                    e.preventDefault()\n                    if (!shown[active].disabled) pick(shown[active].value)\n                  }\n                }}\n                className=\"sa:min-w-0 sa:flex-1 sa:bg-transparent sa:text-base sa:leading-[21px] sa:text-text-default sa:outline-none sa:placeholder:text-text-muted sa:focus-visible:ring-0\"\n              />\n            </label>\n\n            <div\n              id={listId}\n              role=\"listbox\"\n              aria-multiselectable={multiple || undefined}\n              className=\"sa:flex sa:max-h-60 sa:flex-col sa:gap-0.5 sa:overflow-y-auto sa:p-1\"\n            >\n              {shown.length === 0 ? (\n                <p className=\"sa:px-3 sa:py-6 sa:text-center sa:text-sm sa:text-text-muted\">{emptyText}</p>\n              ) : (\n                shown.map((o, i) => {\n                  const picked = picks.includes(o.value)\n                  return (\n                    <div\n                      key={o.value}\n                      id={`${listId}-${o.value}`}\n                      role=\"option\"\n                      aria-selected={picked}\n                      aria-disabled={o.disabled || undefined}\n                      data-highlighted={i === active ? '' : undefined}\n                      data-disabled={o.disabled ? '' : undefined}\n                      onPointerMove={() => setActive(i)}\n                      // Keep focus in the query field.\n                      onMouseDown={(e) => e.preventDefault()}\n                      onClick={() => !o.disabled && pick(o.value)}\n                      className={cn(menuItemClass, picked && 'sa:bg-bg-selected')}\n                    >\n                      <MenuItemContent\n                        label={o.label}\n                        description={o.description}\n                        icon={o.icon}\n                        layout=\"inline\"\n                        shortcut={o.shortcut}\n                        selected={picked}\n                      />\n                    </div>\n                  )\n                })\n              )}\n            </div>\n\n            {footer && (\n              <div className=\"sa:flex sa:shrink-0 sa:items-center sa:justify-end sa:gap-2 sa:border-t sa:border-border-subtle sa:p-2\">\n                <Button variant=\"secondary\" onClick={() => setOpen(false)}>\n                  {cancelLabel}\n                </Button>\n                <Button disabled={pending.length === 0} onClick={apply}>\n                  {applyLabel}\n                </Button>\n              </div>\n            )}\n          </PopoverPrimitive.Content>\n        </PopoverPrimitive.Portal>\n      </PopoverPrimitive.Root>\n    </FieldChrome>\n  )\n}\n"
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { Popover as PopoverPrimitive } from 'radix-ui'\nimport { Search } from 'iconoir-react'\nimport { cn } from '@/lib/utils'\nimport { Button } from '@/registry/satin/ui/button'\nimport { Chip } from '@/registry/satin/ui/chip'\nimport { MenuItemContent, menuItemClass, menuSurfaceClass } from '@/registry/satin/ui/dropdown'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\nimport { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from '@/registry/satin/ui/select'\n\n/**\n * Combobox, 1:1 with the uiKit `Combobox` set (4023:3549): Select's field, opening a searchable\n * list. The panel is the menu surface at the field's width (240 at least): a 36px search row\n * (16px icon, 14px query, 12px in) over a border/subtle rule, then the matching options as\n * inline menu rows 2px apart in 4px of padding.\n *\n * Single: a pick fills the field with its label and closes the list. Multiple: each pick\n * toggles and the list stays open; the field shows the picks as small outline chips, 4px\n * apart, each with its own remove button, and grows a row at a time as they wrap. The chips sit\n * 3px from the field's edge, so their labels start where a value's text would. With more than\n * one pick, Clear (the xs tertiary button) shows on the label's line at the field's right edge.\n *\n * `footer` adds Cancel (secondary) and Apply (primary) under a border/subtle rule, 8px in: picks\n * then wait for Apply, which stays disabled until something is picked; Cancel or Escape drops\n * them.\n *\n * Typing filters by label and description. Arrow keys move the highlight, Enter picks it, the\n * pointer highlights what it is over. The query field is a `combobox` that owns the `listbox`.\n *\n * Other props, `ref` included, go to the trigger button that covers the field (the element its\n * label points at); `className` styles the field around it.\n */\nexport interface ComboboxProps\n  extends Omit<React.ComponentProps<typeof PopoverPrimitive.Trigger>, 'value' | 'defaultValue' | 'disabled' | 'children' | 'asChild'> {\n  options: SelectOption[]\n  /** The applied picks. */\n  value?: string[]\n  defaultValue?: string[]\n  onValueChange?: (value: string[]) => void\n  multiple?: boolean\n  /** Cancel and Apply under the list; picks apply only with Apply. */\n  footer?: boolean\n  /** Shown while nothing is picked. Defaults to the `select` label (\"Select…\"). */\n  placeholder?: string\n  /** The query field's placeholder and name. Defaults to the `search` label. */\n  searchPlaceholder?: string\n  /** Shown when nothing matches the query. Defaults to the `noResults` label. */\n  emptyText?: React.ReactNode\n  /** Defaults to the `apply` label. */\n  applyLabel?: string\n  /** Defaults to the `cancel` label. */\n  cancelLabel?: string\n  /** Defaults to the `clear` label. */\n  clearLabel?: string\n  label?: React.ReactNode\n  hint?: React.ReactNode\n  error?: React.ReactNode | boolean\n  size?: 'sm' | 'md' | 'lg'\n  leadingIcon?: React.ReactNode\n  disabled?: boolean\n  id?: string\n  open?: boolean\n  defaultOpen?: boolean\n  onOpenChange?: (open: boolean) => void\n  /** Portal target. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  /** Keep focus where it is when the panel opens (inline previews). */\n  onOpenAutoFocus?: (event: Event) => void\n  /** A press outside the panel; `preventDefault()` keeps it open. */\n  onInteractOutside?: (event: Event) => void\n  'aria-label'?: string\n  wrapperClassName?: string\n  className?: string\n}\n\nconst matches = (o: SelectOption, q: string) => {\n  const t = q.trim().toLowerCase()\n  if (!t) return true\n  return o.label.toLowerCase().includes(t) || (typeof o.description === 'string' && o.description.toLowerCase().includes(t))\n}\n\nexport function Combobox({\n  options,\n  value,\n  defaultValue = [],\n  onValueChange,\n  multiple = false,\n  footer = false,\n  placeholder: placeholderProp,\n  searchPlaceholder: searchPlaceholderProp,\n  emptyText: emptyTextProp,\n  applyLabel: applyLabelProp,\n  cancelLabel: cancelLabelProp,\n  clearLabel: clearLabelProp,\n  label,\n  hint,\n  error,\n  size = 'md',\n  leadingIcon,\n  disabled,\n  id,\n  open: openProp,\n  defaultOpen = false,\n  onOpenChange,\n  container,\n  onOpenAutoFocus,\n  onInteractOutside,\n  wrapperClassName,\n  className,\n  'aria-describedby': describedBy,\n  ...props\n}: ComboboxProps) {\n  const chrome = useFieldChrome({ id, disabled, error, hint })\n  const labels = useSatinLabels()\n  const placeholder = placeholderProp ?? labels.select\n  const searchPlaceholder = searchPlaceholderProp ?? labels.search\n  const emptyText = emptyTextProp ?? labels.noResults\n  const applyLabel = applyLabelProp ?? labels.apply\n  const cancelLabel = cancelLabelProp ?? labels.cancel\n  const clearLabel = clearLabelProp ?? labels.clear\n  const listId = `${chrome.controlId}-list`\n\n  const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue)\n  const applied = value ?? uncontrolledValue\n  const commit = (next: string[]) => {\n    if (value == null) setUncontrolledValue(next)\n    onValueChange?.(next)\n  }\n\n  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)\n  const open = openProp ?? uncontrolledOpen\n\n  // With a footer, picks wait here for Apply; without one they apply at once.\n  const [pending, setPending] = React.useState<string[]>(applied)\n  const picks = footer ? pending : applied\n  const [query, setQuery] = React.useState('')\n  const [active, setActive] = React.useState(0)\n\n  const setOpen = (next: boolean) => {\n    if (next) {\n      setPending(applied)\n      setQuery('')\n      setActive(0)\n    }\n    if (openProp == null) setUncontrolledOpen(next)\n    onOpenChange?.(next)\n  }\n\n  const shown = options.filter((o) => matches(o, query))\n  const pick = (v: string) => {\n    const next = multiple ? (picks.includes(v) ? picks.filter((x) => x !== v) : [...picks, v]) : picks[0] === v && footer ? [] : [v]\n    if (footer) return setPending(next)\n    commit(next)\n    if (!multiple) setOpen(false)\n  }\n  const apply = () => {\n    commit(pending)\n    setOpen(false)\n  }\n\n  const chosen = applied.map((v) => options.find((o) => o.value === v)).filter(Boolean) as SelectOption[]\n  const chips = multiple && chosen.length > 0\n  const triggerText = !multiple && chosen[0] ? chosen[0].label : chips ? null : placeholder\n  // As in Select: left out, a single pick's own icon leads the field.\n  const lead = leadingIcon ?? (!multiple ? chosen[0]?.icon : undefined)\n\n  return (\n    <FieldChrome\n      label={label}\n      chrome={chrome}\n      className={wrapperClassName}\n      action={\n        label && multiple && chosen.length > 1 ? (\n          <Button variant=\"tertiary\" size=\"xs\" disabled={chrome.disabled} onClick={() => commit([])}>\n            {clearLabel}\n          </Button>\n        ) : undefined\n      }\n    >\n      <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>\n        <PopoverPrimitive.Anchor asChild>\n          <div\n            data-slot=\"combobox-field\"\n            data-size={size}\n            data-multiple={chips || undefined}\n            data-leading={lead ? true : undefined}\n            data-filled={chosen.length ? true : undefined}\n            data-invalid={chrome.invalid || undefined}\n            data-disabled={chrome.disabled || undefined}\n            data-state={open ? 'open' : 'closed'}\n            className={cn('satin-field satin-select satin-combobox sa:relative', className)}\n          >\n            {/* The trigger covers the whole field under the chips, so a click anywhere but a\n                chip's remove button or Clear opens the list, and it takes no room in the rows. */}\n            <PopoverPrimitive.Trigger\n              {...props}\n              id={chrome.controlId}\n              data-slot=\"combobox-trigger\"\n              disabled={chrome.disabled}\n              aria-invalid={chrome.invalid || undefined}\n              aria-describedby={[describedBy, chrome.describedBy].filter(Boolean).join(' ') || undefined}\n              aria-haspopup=\"listbox\"\n              className=\"sa:absolute sa:inset-0 sa:cursor-pointer sa:rounded-[inherit] sa:outline-none sa:focus-visible:ring-0 sa:disabled:cursor-not-allowed\"\n            >\n              <span className=\"sa:sr-only\">{chosen.length ? chosen.map((o) => o.label).join(', ') : placeholder}</span>\n            </PopoverPrimitive.Trigger>\n            {lead && (\n              <span className=\"satin-field-icon satin-combobox-icon sa:pointer-events-none\" aria-hidden>\n                {lead}\n              </span>\n            )}\n            <div className=\"sa:pointer-events-none sa:flex sa:min-w-0 sa:flex-1 sa:flex-wrap sa:items-center sa:gap-1 sa:*:pointer-events-auto\">\n              {chips &&\n                chosen.map((o) => (\n                  <Chip\n                    key={o.value}\n                    size=\"sm\"\n                    variant=\"outline\"\n                    disabled={chrome.disabled}\n                    removeLabel={labels.removeItem(o.label)}\n                    onRemove={() => commit(applied.filter((v) => v !== o.value))}\n                    className=\"sa:relative\"\n                  >\n                    {o.label}\n                  </Chip>\n                ))}\n              {triggerText && (\n                <span aria-hidden className={cn('sa:pointer-events-none! sa:min-w-0 sa:flex-1 sa:truncate', chosen.length ? 'sa:text-text-default' : 'sa:text-text-muted')}>\n                  {triggerText}\n                </span>\n              )}\n              {/* Without a label there is no line above the field for Clear: it follows the chips. */}\n              {!label && chips && chosen.length > 1 && (\n                <Button\n                  variant=\"tertiary\"\n                  size=\"xs\"\n                  disabled={chrome.disabled}\n                  className=\"sa:relative sa:ms-auto\"\n                  onClick={() => commit([])}\n                >\n                  {clearLabel}\n                </Button>\n              )}\n            </div>\n            <SelectChevron className=\"satin-combobox-icon sa:pointer-events-none\" />\n          </div>\n        </PopoverPrimitive.Anchor>\n\n        <PopoverPrimitive.Portal container={container}>\n          <PopoverPrimitive.Content\n            data-slot=\"combobox\"\n            side=\"bottom\"\n            align=\"start\"\n            sideOffset={4}\n            collisionPadding={8}\n            onOpenAutoFocus={onOpenAutoFocus}\n            onInteractOutside={onInteractOutside}\n            className={cn(\n              'sa:pointer-events-auto sa:z-50 sa:flex sa:w-(--radix-popover-trigger-width) sa:min-w-60 sa:max-w-[520px] sa:flex-col sa:overflow-hidden',\n              menuSurfaceClass,\n              'sa:origin-(--radix-popover-content-transform-origin) sa:outline-none',\n              'sa:data-[state=open]:animate-[satin-enter_var(--sa-duration-base)_var(--sa-ease-out)]',\n            )}\n          >\n            <label className=\"sa:flex sa:h-9 sa:shrink-0 sa:items-center sa:gap-2 sa:border-b sa:border-border-subtle sa:px-3 sa:text-text-muted\">\n              <Search aria-hidden className=\"sa:size-4 sa:shrink-0 sa:[stroke-width:1.875]\" />\n              <input\n                role=\"combobox\"\n                aria-expanded\n                aria-controls={listId}\n                aria-autocomplete=\"list\"\n                aria-activedescendant={shown[active] ? `${listId}-${shown[active].value}` : undefined}\n                aria-label={searchPlaceholder}\n                value={query}\n                placeholder={searchPlaceholder}\n                onChange={(e) => {\n                  setQuery(e.target.value)\n                  setActive(0)\n                }}\n                onKeyDown={(e) => {\n                  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {\n                    e.preventDefault()\n                    const step = e.key === 'ArrowDown' ? 1 : -1\n                    setActive((a) => (shown.length ? (a + step + shown.length) % shown.length : 0))\n                  } else if (e.key === 'Enter' && shown[active]) {\n                    e.preventDefault()\n                    if (!shown[active].disabled) pick(shown[active].value)\n                  }\n                }}\n                className=\"sa:min-w-0 sa:flex-1 sa:bg-transparent sa:text-base sa:leading-[21px] sa:text-text-default sa:outline-none sa:placeholder:text-text-muted sa:focus-visible:ring-0\"\n              />\n            </label>\n\n            <div\n              id={listId}\n              role=\"listbox\"\n              aria-multiselectable={multiple || undefined}\n              className=\"sa:flex sa:max-h-60 sa:flex-col sa:gap-0.5 sa:overflow-y-auto sa:p-1\"\n            >\n              {shown.length === 0 ? (\n                <p className=\"sa:px-3 sa:py-6 sa:text-center sa:text-sm sa:text-text-muted\">{emptyText}</p>\n              ) : (\n                shown.map((o, i) => {\n                  const picked = picks.includes(o.value)\n                  return (\n                    <div\n                      key={o.value}\n                      id={`${listId}-${o.value}`}\n                      role=\"option\"\n                      aria-selected={picked}\n                      aria-disabled={o.disabled || undefined}\n                      data-highlighted={i === active ? '' : undefined}\n                      data-disabled={o.disabled ? '' : undefined}\n                      onPointerMove={() => setActive(i)}\n                      // Keep focus in the query field.\n                      onMouseDown={(e) => e.preventDefault()}\n                      onClick={() => !o.disabled && pick(o.value)}\n                      className={cn(menuItemClass, picked && 'sa:bg-bg-selected')}\n                    >\n                      <MenuItemContent\n                        label={o.label}\n                        description={o.description}\n                        icon={o.icon}\n                        layout=\"inline\"\n                        shortcut={o.shortcut}\n                        selected={picked}\n                      />\n                    </div>\n                  )\n                })\n              )}\n            </div>\n\n            {footer && (\n              <div className=\"sa:flex sa:shrink-0 sa:items-center sa:justify-end sa:gap-2 sa:border-t sa:border-border-subtle sa:p-2\">\n                <Button variant=\"secondary\" onClick={() => setOpen(false)}>\n                  {cancelLabel}\n                </Button>\n                <Button disabled={pending.length === 0} onClick={apply}>\n                  {applyLabel}\n                </Button>\n              </div>\n            )}\n          </PopoverPrimitive.Content>\n        </PopoverPrimitive.Portal>\n      </PopoverPrimitive.Root>\n    </FieldChrome>\n  )\n}\n"
     }
   ],
   "docs": "Combobox docs: https://uisatin.dev/components/combobox",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Combobox": {
+        "type": "ComboboxProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof PopoverPrimitive.Trigger>, 'value' | 'defaultValue' | 'disabled' | 'children' | 'asChild'>"
+        ],
+        "props": [
+          {
+            "name": "options",
+            "type": "SelectOption[]",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "string[]",
+            "required": false,
+            "description": "The applied picks."
+          },
+          {
+            "name": "defaultValue",
+            "type": "string[]",
+            "required": false,
+            "default": "[]"
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: string[]) => void",
+            "required": false
+          },
+          {
+            "name": "multiple",
+            "type": "boolean",
+            "required": false,
+            "default": "false"
+          },
+          {
+            "name": "footer",
+            "type": "boolean",
+            "required": false,
+            "default": "false",
+            "description": "Cancel and Apply under the list; picks apply only with Apply."
+          },
+          {
+            "name": "placeholder",
+            "type": "string",
+            "required": false,
+            "description": "Shown while nothing is picked. Defaults to the `select` label (\"Select…\")."
+          },
+          {
+            "name": "searchPlaceholder",
+            "type": "string",
+            "required": false,
+            "description": "The query field's placeholder and name. Defaults to the `search` label."
+          },
+          {
+            "name": "emptyText",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "Shown when nothing matches the query. Defaults to the `noResults` label."
+          },
+          {
+            "name": "applyLabel",
+            "type": "string",
+            "required": false,
+            "description": "Defaults to the `apply` label."
+          },
+          {
+            "name": "cancelLabel",
+            "type": "string",
+            "required": false,
+            "description": "Defaults to the `cancel` label."
+          },
+          {
+            "name": "clearLabel",
+            "type": "string",
+            "required": false,
+            "description": "Defaults to the `clear` label."
+          },
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "hint",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "error",
+            "type": "React.ReactNode | boolean",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false,
+            "default": "'md'"
+          },
+          {
+            "name": "leadingIcon",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "open",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "defaultOpen",
+            "type": "boolean",
+            "required": false,
+            "default": "false"
+          },
+          {
+            "name": "onOpenChange",
+            "type": "(open: boolean) => void",
+            "required": false
+          },
+          {
+            "name": "container",
+            "type": "HTMLElement | null",
+            "required": false,
+            "description": "Portal target. Defaults to `document.body`."
+          },
+          {
+            "name": "onOpenAutoFocus",
+            "type": "(event: Event) => void",
+            "required": false,
+            "description": "Keep focus where it is when the panel opens (inline previews)."
+          },
+          {
+            "name": "onInteractOutside",
+            "type": "(event: Event) => void",
+            "required": false,
+            "description": "A press outside the panel; `preventDefault()` keeps it open."
+          },
+          {
+            "name": "aria-label",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "wrapperClassName",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      }
+    }
   }
 }

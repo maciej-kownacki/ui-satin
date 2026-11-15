@@ -19,6 +19,113 @@
   "docs": "Form field docs: https://uisatin.dev/components/form-field",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "FormField": {
+        "type": "FormFieldProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'children'>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "Names the control and picks this field's message out of the Form's `errors`."
+          },
+          {
+            "name": "description",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "error",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "An error message. It replaces the description and marks the control invalid."
+          },
+          {
+            "name": "layout",
+            "type": "'vertical' | 'horizontal'",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "required",
+            "type": "boolean",
+            "required": false,
+            "default": "false",
+            "description": "Shows the required mark after the label and sets `required` on the control."
+          },
+          {
+            "name": "htmlFor",
+            "type": "string",
+            "required": false,
+            "description": "The id given to the control. Generated when left out."
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true
+          }
+        ]
+      },
+      "RequiredMark": {
+        "description": "@internal The required mark from Figma (the `sparkle 2` glyph in _label), 6px, in the label colour.",
+        "extends": [],
+        "props": []
+      },
+      "FieldError": {
+        "description": "@internal A field's or a group's error: Figma's 14px warning circle and the message, in red.",
+        "extends": [],
+        "props": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "FieldDescription": {
+        "description": "@internal A field's or a group's description, muted.",
+        "extends": [],
+        "props": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      }
+    }
   }
 }

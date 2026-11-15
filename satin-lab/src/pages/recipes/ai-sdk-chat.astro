@@ -1,0 +1,111 @@
+---
+/**
+ * Recipe: a chat from PromptBar, Message and StreamingText wired to useChat (@ai-sdk/react 4,
+ * AI SDK 7). The live demo streams scripted replies through a ChatTransport of its own; the code
+ * shows the real setup, with a /api/chat route that streams from a model.
+ */
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import CodeFrame from '../../components/CodeFrame.astro'
+import AiSdkChatDemo, { options } from '../../demos/recipes/ai-sdk-chat'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+
+const install = `npm i ai @ai-sdk/react`
+const route = `// app/api/chat/route.ts (Next.js; any server that returns a Response works)
+import { convertToModelMessages, streamText, type UIMessage } from 'ai'
+
+export async function POST(req: Request) {
+  const { messages }: { messages: UIMessage[] } = await req.json()
+
+  const result = streamText({
+    // A model through the Vercel AI Gateway (AI_GATEWAY_API_KEY), or any AI SDK provider's model.
+    model: 'anthropic/claude-opus-5.5',
+    instructions: 'You are a helpful assistant. Answer in short plain-text paragraphs.',
+    messages: await convertToModelMessages(messages),
+  })
+
+  return result.toUIMessageStreamResponse()
+}`
+const transport = `import { simulateReadableStream, type ChatTransport, type UIMessage, type UIMessageChunk } from 'ai'
+
+// The demo's stand-in for /api/chat: the same chunks, from a script.
+const scriptedTransport: ChatTransport<UIMessage> = {
+  async sendMessages({ messages }) {
+    const reply = pickReply(messages.at(-1))
+    const words = reply.match(/\\S+\\s*/g) ?? []
+    return simulateReadableStream<UIMessageChunk>({
+      initialDelayInMs: 900,
+      chunkDelayInMs: 45,
+      chunks: [
+        { type: 'start' },
+        { type: 'text-start', id: 'text' },
+        ...words.map((delta) => ({ type: 'text-delta' as const, id: 'text', delta })),
+        { type: 'text-end', id: 'text' },
+        { type: 'finish' },
+      ],
+    })
+  },
+  async reconnectToStream() {
+    return null
+  },
+}
+
+const chat = useChat({ transport: scriptedTransport })`
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<Docs current="ai-sdk-chat">
+  <PageHeader id="ai-sdk-chat" title={page('ai-sdk-chat').title} description={page('ai-sdk-chat').description} />
+
+  <section aria-label="Demo" class="flex flex-col gap-3 pt-4">
+    <p class={prose}>
+      <Chip>useChat</Chip> keeps the conversation and its status; Satin draws it. <a class={link} href="/ai-patterns/prompt-bar">PromptBar</a> sends the text, every turn is a <a class={link} href="/ai-patterns/message">Message</a>, and the reply that is still arriving goes through <a class={link} href="/ai-patterns/streaming-text">StreamingText</a>, which writes it at an even pace however unevenly the model sends it.
+    </p>
+    <p class={prose}>
+      This page has no model behind it. The demo below gives <Chip>useChat</Chip> a transport that picks a scripted reply and streams it word by word, as the same chunks a real <Chip>/api/chat</Chip> sends. Everything else is the code in the Code tab.
+    </p>
+    <AiSdkChatDemo client:load codeHtml={codeHtml} />
+  </section>
+
+  <section aria-labelledby="install-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="install-title" class={h2}>Install</h2>
+    <p class={prose}>This recipe is written for AI SDK 7 (<Chip>ai</Chip>) and <Chip>@ai-sdk/react</Chip> 4. Messages there are lists of typed parts, and <Chip>useChat</Chip> talks to the server through a transport rather than an <Chip>api</Chip> option.</p>
+    <CodeFrame code={install} label="Terminal" lang="bash" copyLabel="Copy command" />
+  </section>
+
+  <section aria-labelledby="route-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="route-title" class={h2}>The route</h2>
+    <p class={prose}>
+      <Chip>DefaultChatTransport</Chip> posts the conversation to <Chip>/api/chat</Chip>. The route turns the UI messages into model messages, streams the answer and sends it back as a UI message stream, the format <Chip>useChat</Chip> reads. The model id below goes through the Vercel AI Gateway; a provider package such as <Chip>@ai-sdk/anthropic</Chip> works the same way.
+    </p>
+    <CodeFrame code={route} label="app/api/chat/route.ts" />
+  </section>
+
+  <section aria-labelledby="wiring-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="wiring-title" class={h2}>How the parts fit</h2>
+    <p class={prose}>
+      <Chip>status</Chip> is <Chip>submitted</Chip> until the first words arrive, then <Chip>streaming</Chip>, then <Chip>ready</Chip>. While it's submitted there's nothing to write yet, so <a class={link} href="/ai-patterns/agent-loading">AgentLoading</a> fills the gap. Only the last assistant message streams: it gets <Chip>streaming</Chip> while the status says so, and older ones stay as they are.
+    </p>
+    <p class={prose}>
+      StreamingText keeps writing for a moment after the stream ends, because it paces the text. Its <Chip>onDone</Chip> says when the reply is fully on screen; that's when the message's actions (copy, feedback) appear, so they never show under a half-written answer. Keep each message under its <Chip>id</Chip> as the key: StreamingText starts over when it mounts, and a stable key means a reply is written out once.
+    </p>
+    <p class={prose}>
+      PromptBar is disabled while a reply arrives, and a Stop button calls <Chip>stop()</Chip>; what was received so far stays. StreamingText renders plain text; for Markdown answers, render the finished text with your own Markdown component once <Chip>onDone</Chip> fires.
+    </p>
+  </section>
+
+  <section aria-labelledby="mock-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="mock-title" class="text-lg font-medium text-text-default">The demo's transport</h2>
+    <p class={prose}>
+      A <Chip>ChatTransport</Chip> is the one place <Chip>useChat</Chip> touches the network, so it's also where to swap the server for a script: in a demo, a test or a story. This one returns the chunks a route sends, spaced out with <Chip>simulateReadableStream</Chip> from <Chip>ai</Chip>.
+    </p>
+    <CodeFrame code={transport} label="Scripted transport" />
+  </section>
+</Docs>

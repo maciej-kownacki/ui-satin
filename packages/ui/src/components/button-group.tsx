@@ -53,9 +53,12 @@ export function ButtonGroup({
                 '[&>*]:relative [&>*:hover]:z-10 [&>*:focus-visible]:z-20 [&>*:focus-visible]:[clip-path:none]!',
                 horizontal
                   ? [
-                      '[&>*:not(:first-child)]:rounded-l-none [&>*:not(:last-child)]:rounded-r-none [&>*:not(:last-child)]:border-r-0',
-                      '[&>[data-variant=secondary]:not(:first-child)]:border-l-border-default',
+                      // Logical sides, so the block joins the same way right to left.
+                      '[&>*:not(:first-child)]:rounded-s-none [&>*:not(:last-child)]:rounded-e-none [&>*:not(:last-child)]:border-e-0',
+                      '[&>[data-variant=secondary]:not(:first-child)]:border-s-border-default',
                       '[&>*:not(:last-child)]:[clip-path:inset(-12px_0_-12px_-12px)] [&>*:not(:first-child)]:[clip-path:inset(-12px_-12px_-12px_0)]',
+                      // clip-path has no logical form: right to left, the shared side is the other one.
+                      '[&>*:not(:last-child)]:rtl:[clip-path:inset(-12px_-12px_-12px_0)] [&>*:not(:first-child)]:rtl:[clip-path:inset(-12px_0_-12px_-12px)]',
                       '[&>*:not(:first-child):not(:last-child)]:[clip-path:inset(-12px_0)]',
                     ]
                   : [

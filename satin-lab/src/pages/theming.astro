@@ -41,11 +41,32 @@ import './satin-theme.css' // from the customizer: Export → Download`,
   },
   {
     id: 'code',
-    label: 'In code',
-    code: `import { themeCss } from '@uisatin/ui'
+    label: 'In code: app/layout.tsx',
+    code: `// @uisatin/ui/theme is plain functions, safe in a Server Component.
+import { themeCss } from '@uisatin/ui/theme'
 
-// Inject once, e.g. in a <style> in your root layout.
-const css = themeCss({ brand: '#E5533D', radius: 1.5 })`,
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <style>{themeCss({ brand: '#E5533D', radius: 1.5 })}</style>
+      </head>
+      <body>{children}</body>
+    </html>
+  )
+}`,
+  },
+  {
+    id: 'override',
+    label: 'One token, in your CSS',
+    code: `/* After @uisatin/ui/styles.css. Every Satin variable is --sa-*. */
+:root {
+  --sa-action-primary-bg: #0f766e;
+}
+.dark,
+[data-theme='dark'] {
+  --sa-action-primary-bg: #2dd4bf;
+}`,
   },
 ])
 ---
@@ -57,7 +78,7 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5 })`,
     <h2 id="how-title" class={h2}>How theming works</h2>
     <p class={prose}>
       Satin's tokens come in three layers. <strong class="font-medium text-text-default">Primitives</strong> are raw colours and
-      sizes. <strong class="font-medium text-text-default">Semantic tokens</strong> give them a job, like
+      sizes. <strong class="font-medium text-text-default">Semantic tokens</strong> give them a job, like{' '}
       <Chip>action/primary-bg</Chip> or <Chip>text/muted</Chip>, once for Light and once for Dark.{' '}
       <strong class="font-medium text-text-default">Components</strong> only ever read semantic tokens, never a raw value.
     </p>
@@ -166,10 +187,24 @@ const css = themeCss({ brand: '#E5533D', radius: 1.5 })`,
     <h2 id="code-title" class={h2}>Use it in your app</h2>
     <p class={prose}>
       The theme is a short stylesheet of variables. Export it from the customizer and load it after Satin's styles, or build
-      it in code from the same two values with <Chip>themeCss</Chip>.
+      it in code from the same two values with <Chip>themeCss</Chip> from <Chip>@uisatin/ui/theme</Chip>, which a Server
+      Component can call.
     </p>
     {
       ['file', 'code'].map((id) => (
+        <div class="overflow-hidden rounded-2xl border border-border-subtle bg-bg-field">
+          <div class="code-block overflow-x-auto py-3" set:html={snippets[id]} />
+        </div>
+      ))
+    }
+    <p class={prose}>
+      To change one token rather than the brand, set its variable after Satin's styles. In the package and the registry every
+      variable is prefixed, <Chip>--sa-bg-card</Chip>, <Chip>--sa-text-muted</Chip>, so it never meets your own; the token
+      pages below list them. Code that read the unprefixed names before 0.6 keeps working for one minor version with{' '}
+      <Chip>@uisatin/ui/compat.css</Chip>.
+    </p>
+    {
+      ['override'].map((id) => (
         <div class="overflow-hidden rounded-2xl border border-border-subtle bg-bg-field">
           <div class="code-block overflow-x-auto py-3" set:html={snippets[id]} />
         </div>

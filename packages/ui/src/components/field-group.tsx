@@ -77,7 +77,8 @@ export function FieldGroup({
       {/* A floated legend lays out like any block, which a fieldset's own legend does not. */}
       <legend
         className={cn(
-          'float-left p-0 text-text-default',
+          // Logical: the legend column sits at the start side, the right in right-to-left.
+          'float-start p-0 text-text-default',
           horizontal ? 'w-40' : 'w-full',
           choices ? 'text-sm leading-[18px] font-medium' : 'text-base font-medium',
           disabled && 'opacity-50',
@@ -96,7 +97,7 @@ export function FieldGroup({
       <div
         className={cn(
           'grid min-w-0',
-          horizontal ? 'ml-46' : cn('clear-both', choices ? 'pt-2' : 'pt-4'),
+          horizontal ? 'ms-46' : cn('clear-both', choices ? 'pt-2' : 'pt-4'),
           choices ? 'gap-3' : cn('gap-5', columnClass[columns]),
         )}
       >

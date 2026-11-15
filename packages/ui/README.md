@@ -10,7 +10,7 @@ Satin's React components: shadcn-based, built on Radix, themed with Satin tokens
 
 **Satin Free.** This package is the free, open-source edition of Satin, under the MIT license. Satin Pro, with more components, patterns and templates, will ship separately as its own licensed package; nothing here changes when it does.
 
-You don't need Tailwind. Satin ships one precompiled stylesheet with the tokens and every class the components use. If your app has its own Tailwind (v3 or v4) or a shadcn/ui theme, the two don't touch: Satin's classes are prefixed (`sa:flex`), its variables are `--sa-*`, and its reset only applies to Satin's elements, so your `text-sm`, `--spacing` or `--radius` stay yours in either import order.
+You don't need Tailwind. Satin ships one precompiled stylesheet with the tokens and every class the components use. If your app has its own Tailwind (v3 or v4) or a shadcn/ui theme, the two don't touch: Satin's classes are prefixed (`sa:flex`), every variable it declares is `--sa-*` (`--sa-bg-card`, `--sa-text-sm`), and its reset and reduced-motion rule only apply to Satin's elements, so your `text-sm`, `--spacing`, `--radius` or `--bg-card` stay yours in either import order.
 
 ## Install
 
@@ -18,7 +18,7 @@ You don't need Tailwind. Satin ships one precompiled stylesheet with the tokens 
 npm i @uisatin/ui
 ```
 
-Requirements: React 19 or newer (peer dependency). The package is ESM only; Node 20.19 or newer can also `require()` it. Every entry point is marked `'use client'`, so it works in React Server Components apps (Next.js App Router).
+Requirements: **React 19 or newer, React 18 isn't supported.** Every component takes `ref` as a plain prop and hands it to its main element, the React 19 way; React 18 drops a `ref` passed to a function component, so refs (and Radix's focus management that relies on them) would silently break, and supporting both would mean a `forwardRef` wrapper and a second set of types around every component. The package is ESM only; Node 20.19 or newer can also `require()` it. The components and the root entry are marked `'use client'`, so Server Components can render them (Next.js App Router); `@uisatin/ui/theme` (`themeCss`, `themeVars`) and `@uisatin/ui/lib/utils` (`cn`) aren't, so a Server Component can call them.
 
 Versions: Satin is 0.x. Until 1.0 a minor release (0.2 → 0.3) may change an API; patches don't. Every change is in the changelog.
 
@@ -41,13 +41,15 @@ export function Save() {
 }
 ```
 
-**Dark mode:** add the `dark` class to `<html>` or any parent element.
+**Dark mode:** add the `dark` class or `data-theme="dark"` to `<html>` or any parent element. `data-theme="system"` follows the operating system (`prefers-color-scheme`), with no script; set the attribute on the server to avoid a flash. Guide: https://uisatin.dev/guides/dark-mode.
 
 **Customizing:**
 
 - Props first: `variant`, `size`, `tone`, `shape` cover what the design system allows.
 - `className` takes your own classes and lands on the component's root. With Tailwind in your app, a utility there replaces the Satin class it conflicts with (`<Button className="px-6">` drops Satin's padding for yours). Without Tailwind, use your own CSS classes; a Tailwind class name alone does nothing, because Satin's stylesheet only contains its own prefixed classes.
-- Theme: brand colour and corners with `themeCss({ brand, radius })` or the customizer at https://uisatin.dev/theming. Semantic tokens (`--bg-card`, `--text-muted`, `--action-primary-bg`…) can be set in your CSS too.
+- Theme: brand colour and corners with `themeCss({ brand, radius })` from `@uisatin/ui/theme`, or the customizer at https://uisatin.dev/theming. Any semantic token (`--sa-bg-card`, `--sa-text-muted`, `--sa-action-primary-bg`…) can be set in your CSS too, after `styles.css`. The tokens themselves, Light and Dark, are in `@uisatin/ui/tokens.json` (W3C design tokens format).
+- Before 0.6 the semantic tokens weren't prefixed (`--bg-card`). If your CSS reads them, import `@uisatin/ui/compat.css` after `styles.css` until you rename them; it goes away in 0.7.
+- Composition: overlays and groups come with props for the common case and parts for the rest, e.g. `Dialog` (title, footer… as props) or `DialogRoot` › `DialogTrigger` › `DialogContent` › `DialogHeader` / `DialogBody` / `DialogFooter`; `SegmentedControl` with `items` or `SegmentedControlSegment` children. Every `trigger` prop is rendered `asChild`, so pass your own Button.
 - Words: the labels components say on their own (Close, Increase, Select all rows…) are English by default. Wrap the app in `<SatinLabels labels={{ close: 'Zamknij' }}>` (from `@uisatin/ui/labels`) to translate or reword any of them.
 - HTML attributes and `ref`: every component passes `id`, `data-*`, `aria-*`, handlers and `ref` to its main element (the control for fields, the panel for overlays); each component's docs comment says which.
 - Satin's CSS sits in cascade layers (`theme`, `base`, `components`, `utilities`). Your unlayered rules win over it, so a global `p { margin: … }` also reaches a paragraph inside a Satin Card; scope those rules or put them in `@layer base`.

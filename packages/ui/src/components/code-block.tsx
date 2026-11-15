@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Check, Copy } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 
 /**
  * CodeBlock, 1:1 with the uiKit `CodeBlock` set (3179:20414) and its `CodeLine` rows
@@ -157,6 +158,7 @@ export function CodeBlock({
   className,
   ...props
 }: CodeBlockProps) {
+  const labels = useSatinLabels()
   const lines = React.useMemo(() => parse(code, view, highlightLines), [code, view, highlightLines])
   const [copied, setCopied] = React.useState(false)
   const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -191,7 +193,7 @@ export function CodeBlock({
       {...props}
     >
       {showHeader && (
-        <div className="flex items-center gap-2 pt-2 pr-2 pb-1 pl-4">
+        <div className="flex items-center gap-2 ps-4 pe-2 pt-2 pb-1">
           <FileCodeIcon />
           <span className="min-w-0 flex-1 truncate text-sm leading-[18px] font-medium text-text-default">{filename}</span>
           {diff && (
@@ -203,16 +205,18 @@ export function CodeBlock({
           {showActions && (
             <Button variant="tertiary" size="xs" onClick={copy} className="text-text-default">
               {copied ? <Check /> : <Copy />}
-              <span aria-live="polite">{copied ? 'Copied' : 'Copy'}</span>
+              <span aria-live="polite">{copied ? labels.copied : labels.copy}</span>
             </Button>
           )}
         </div>
       )}
-      {/* Long lines scroll sideways, so the code is a focusable region keyboard users can scroll. */}
+      {/* Long lines scroll sideways, so the code is a focusable region keyboard users can scroll.
+          Code reads left to right in any page. */}
       <pre
+        dir="ltr"
         tabIndex={0}
         role="region"
-        aria-label={filename ? `${filename} code` : 'Code'}
+        aria-label={labels.codeRegion(filename)}
         className={cn(
           'outline-none focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
           'overflow-x-auto font-mono text-sm leading-(--text-sm--line-height) font-normal tracking-normal',
@@ -252,8 +256,8 @@ export function CodeBlock({
                 >
                   {line.kind === 'added' ? '+' : line.kind === 'removed' ? '−' : ' '}
                   {/* Screen readers hear the change, not the glyph. */}
-                  {line.kind === 'added' && <span className="sr-only"> added</span>}
-                  {line.kind === 'removed' && <span className="sr-only"> removed</span>}
+                  {line.kind === 'added' && <span className="sr-only"> {labels.added}</span>}
+                  {line.kind === 'removed' && <span className="sr-only"> {labels.removed}</span>}
                 </span>
               )}
               <span className="whitespace-pre">

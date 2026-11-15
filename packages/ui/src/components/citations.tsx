@@ -86,6 +86,7 @@ export interface SourcesProps extends Omit<React.ComponentProps<'div'>, 'childre
 }
 
 export function Sources({ sources, defaultOpen = false, className, ...props }: SourcesProps) {
+  const labels = useSatinLabels()
   const [open, setOpen] = React.useState(defaultOpen)
   const listId = React.useId()
   return (
@@ -96,7 +97,7 @@ export function Sources({ sources, defaultOpen = false, className, ...props }: S
         aria-controls={listId}
         onClick={() => setOpen(!open)}
         className={cn(
-          'inline-flex h-8 w-fit items-center gap-2 rounded-pill border border-border-default py-1 pr-3 pl-1.5 text-sm font-medium text-text-default outline-none',
+          'inline-flex h-8 w-fit items-center gap-2 rounded-pill border border-border-default py-1 ps-1.5 pe-3 text-sm font-medium text-text-default outline-none',
           'transition-[border-color,background-color] duration-(--duration-fast) ease-(--ease-out)',
           'hover:border-border-strong focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
           open && 'bg-bg-hover',
@@ -107,7 +108,7 @@ export function Sources({ sources, defaultOpen = false, className, ...props }: S
             <SourceIcon key={i} source={s} />
           ))}
         </span>
-        {sources.length} {sources.length === 1 ? 'source' : 'sources'}
+        {labels.sourcesCount(sources.length)}
       </button>
       <div id={listId} data-state={open ? 'open' : 'closed'} className="satin-expand">
         <div>

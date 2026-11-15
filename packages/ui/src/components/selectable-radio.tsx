@@ -29,7 +29,7 @@ export function SelectableRadio({ title, description, icon, size = 'md', classNa
       data-kind="radio"
       {...aria}
       {...props}
-      className={cn('w-full text-left', className)}
+      className={cn('w-full text-start', className)}
     >
       <SelectableCardBody id={controlId} title={title} description={description} icon={icon} size={size}>
         {children}

@@ -2,28 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import DotDemo, { options } from '../../demos/dot'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
 ---
 
 <Docs current="dot">
-  <DocSection
-    item={{
-      id: 'dot',
-      title: 'Dot',
-      href: '/components/dot',
-      description: 'A small status dot that marks state or category next to a label.',
-    }}
-    api={{
-      description: 'The `Dot` component is a wrapper around the `span` element that renders a status dot with an accessible label.',
-      props: [
-        { name: 'variant', type: ['"solid"', '"outline"'], default: '"solid"' },
-        { name: 'tone', type: ['"fuchsia"', '"sky"', '"plum"', '"green"'], default: '"fuchsia"' },
-        { name: 'label', type: ['string'] },
-      ],
-    }}
-  >
+  <DocSection item={page('dot')} api={api['dot']}>
     <DotDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

@@ -50,9 +50,9 @@ export interface AgentPickerProps {
   size?: 'md' | 'xs'
   /** Adds a "New agent" action under the list. */
   onCreate?: () => void
-  /** Label for the create action. */
+  /** Label for the create action. Defaults to the `newAgent` label. */
   createLabel?: string
-  /** Shown on the trigger when nothing is selected. */
+  /** Shown on the trigger when nothing is selected. Defaults to the `chooseAgent` label. */
   placeholder?: string
   /** Controlled open state, e.g. to show the menu open on a docs stage. */
   open?: boolean
@@ -72,8 +72,8 @@ export function AgentPicker({
   variant = 'secondary',
   size = 'md',
   onCreate,
-  createLabel = 'New agent',
-  placeholder = 'Choose an agent',
+  createLabel,
+  placeholder,
   open,
   defaultOpen,
   onOpenChange,
@@ -97,7 +97,7 @@ export function AgentPicker({
       onValueChange={select}
       showDescription={showDescription}
       onCreate={onCreate}
-      createLabel={createLabel}
+      createLabel={createLabel ?? labels.newAgent}
     />
   )
 
@@ -113,7 +113,7 @@ export function AgentPicker({
           {current && <AgentAvatar agent={current} size={16} />}
           <span className="truncate">
             {current && <span className="sr-only">{labels.agent}: </span>}
-            {current ? current.name : placeholder}
+            {current ? current.name : (placeholder ?? labels.chooseAgent)}
           </span>
           <NavArrowDown aria-hidden data-chevron />
         </Button>
@@ -140,6 +140,7 @@ function AgentMenu({
 }) {
   return (
     <DropdownMenu.Content
+      data-slot="agent-picker-menu"
       align="start"
       sideOffset={8}
       className={cn(
@@ -197,7 +198,7 @@ export function AgentMenuItem({ agent, showDescription = true, className, ...pro
 }
 
 const agentRowClass = cn(
-  'flex min-h-8 w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left outline-none select-none',
+  'flex min-h-8 w-full items-center gap-2 rounded-lg px-2 py-1.5 text-start outline-none select-none',
   'transition-[background-color] duration-(--duration-fast) ease-(--ease-out)',
   'data-highlighted:bg-bg-selected data-[force=hover]:bg-bg-selected data-[state=checked]:bg-bg-selected',
 )

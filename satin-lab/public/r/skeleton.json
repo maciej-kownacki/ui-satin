@@ -19,6 +19,38 @@
   "docs": "Skeleton docs: https://uisatin.dev/components/skeleton",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Skeleton": {
+        "type": "SkeletonProps",
+        "extends": [
+          "React.ComponentProps<'div'>"
+        ],
+        "props": [
+          {
+            "name": "shape",
+            "type": "'text' | 'circle' | 'rect'",
+            "required": false,
+            "default": "'text'"
+          },
+          {
+            "name": "animated",
+            "type": "boolean",
+            "required": false,
+            "default": "false"
+          },
+          {
+            "name": "width",
+            "type": "number | string",
+            "required": false
+          },
+          {
+            "name": "height",
+            "type": "number | string",
+            "required": false
+          }
+        ]
+      }
+    }
   }
 }

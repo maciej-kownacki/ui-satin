@@ -2,28 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import BreadcrumbDemo, { options } from '../../demos/breadcrumb'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const api = {
-  description:
-    "The `Breadcrumb` component renders a `nav` named \"Breadcrumb\" around an ordered list. The last item is the current page, with `aria-current=\"page\"` and no link. Folded items open from a menu button.",
-  props: [
-    {name: "items", type: ["BreadcrumbItem[]"]},
-    {name: "item.label", type: ["string"]},
-    {name: "item.icon", type: ["ReactNode"]},
-    {name: "item.hideLabel", type: ["boolean"], default: "false"},
-    {name: "item.href", type: ["string"]},
-    {name: "item.onSelect", type: ["() => void"]},
-    {name: "maxItems", type: ["number"]},
-  ],
-}
 ---
 
 <Docs current="breadcrumb">
-  <DocSection item={page('breadcrumb')} api={api}>
+  <DocSection item={page('breadcrumb')} api={api['breadcrumb']}>
     <BreadcrumbDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

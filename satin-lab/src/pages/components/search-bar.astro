@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SearchBarDemo, { options } from '../../demos/search-bar'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+import { api } from '../../api'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="search-bar">
+  <DocSection item={page('search-bar')} api={api['search-bar']}>
+    <SearchBarDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

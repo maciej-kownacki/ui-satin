@@ -79,7 +79,7 @@ export function Item({
       {titleText}
     </a>
   ) : onClick && !disabled ? (
-    <button type="button" data-slot="item-target" aria-pressed={selected || undefined} onClick={onClick} className={cn(target_, 'block w-full cursor-pointer text-left')}>
+    <button type="button" data-slot="item-target" aria-pressed={selected || undefined} onClick={onClick} className={cn(target_, 'block w-full cursor-pointer text-start')}>
       {titleText}
     </button>
   ) : (

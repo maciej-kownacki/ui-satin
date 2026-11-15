@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { cn } from '../lib/utils'
 import { useFormField } from './form-field'
+import { useSatinLabels } from './labels'
 
 /**
  * Textarea, 1:1 with the uiKit `Textarea` set (3647:17812): the Input skin (surface fill,
@@ -19,7 +20,7 @@ import { useFormField } from './form-field'
  */
 export interface TextareaProps extends Omit<React.ComponentProps<'textarea'>, 'onChange' | 'maxLength'> {
   label?: React.ReactNode
-  /** Adds a muted "(Optional)" after the label. */
+  /** Adds a muted "(Optional)" after the label: the `optional` label. */
   optional?: boolean
   hint?: React.ReactNode
   /** An error message (replaces the hint), or `true` to mark the field invalid without one. */
@@ -51,6 +52,7 @@ export function Textarea({
   'data-force': force,
   ...props
 }: TextareaProps) {
+  const labels = useSatinLabels()
   const field = useFormField()
   const autoId = React.useId()
   const textareaId = id ?? field?.id ?? autoId
@@ -78,7 +80,7 @@ export function Textarea({
           <label htmlFor={textareaId} className="text-sm leading-[18px] font-medium text-text-default">
             {label}
           </label>
-          {optional && <span className="text-sm text-text-muted">(Optional)</span>}
+          {optional && <span className="text-sm text-text-muted">{labels.optional}</span>}
         </div>
       )}
       <div className="relative flex">
@@ -120,7 +122,7 @@ export function Textarea({
           </p>
           {maxLength != null && (
             <p id={counterId} className={cn('shrink-0 whitespace-nowrap', !hasMessage && 'text-text-muted')}>
-              <span className="sr-only">Characters used: </span>
+              <span className="sr-only">{labels.charactersUsed}: </span>
               {text.length}/{maxLength}
             </p>
           )}

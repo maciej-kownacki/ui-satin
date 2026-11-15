@@ -1,0 +1,111 @@
+---
+/**
+ * Recipe: right-to-left. dir="rtl" on <html> and Radix's DirectionProvider, a live Arabic screen
+ * (demos/recipes/rtl.tsx) with a switch back to LTR, then what mirrors in each component and the
+ * few things that stay left to right on purpose.
+ */
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import CodeFrame from '../../components/CodeFrame.astro'
+import RtlDemo, { options } from '../../demos/recipes/rtl'
+import { highlight } from '../../lib/highlight'
+import { page } from '../../nav'
+
+const codeHtml = await highlight(options)
+
+const html = `<html lang="ar" dir="rtl">`
+const provider = `// The root of your app
+import { Direction } from 'radix-ui'
+import { SatinLabels } from '@uisatin/ui/labels'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <Direction.Provider dir="rtl">
+      <SatinLabels labels={{ close: 'إغلاق', previous: 'السابق', next: 'التالي' }}>{children}</SatinLabels>
+    </Direction.Provider>
+  )
+}`
+
+// Every component sets its spacing, corners and alignment with start and end, so all of it
+// mirrors; these are the parts worth knowing about.
+const ready = [
+  ['Button, Button group, Split button, Input group', 'Icons and label swap sides; joined parts line up from the right, round on the outside and square where they meet.'],
+  ['Input, Select, Combobox, Date picker', 'Values and placeholders start at the right; leading and trailing icons and text (https://, USD) sit on their own side of the value.'],
+  ['Textarea', 'The resize grip is in the bottom-left corner, where the browser puts the resizer.'],
+  ['Checkbox, Radio, Switch', "The control sits before the label, on the right; a Switch that's on has its thumb on the left."],
+  ['Tabs, Segmented control', 'Order, the sliding indicator, and Left/Right arrow keys.'],
+  ['Breadcrumb, Pagination, Context menu, Sidebar, Decision card, Date picker', 'Arrows point the right-to-left way, and Pagination rolls the next page in from the left.'],
+  ['Link, Attachment, Announcement bar, Action button, Agent suggestion', 'Forward arrows point left, and the arrow for a link that opens elsewhere points up and to the left.'],
+  ['Date picker', 'Left moves to the next day and Right to the one before; Page Up, Page Down, Home and End work as before. The range band runs leftwards.'],
+  ['Dialog, Sheet, Popover, Card, Alert, Banner, Announcement bar', 'The close button is in the top-left corner; footer buttons end on the left, primary last.'],
+  ['Toast', 'The stack sits in the bottom-left corner and swipes away to the left.'],
+  ['Table', 'The first column sticks on the right; the row hover outline, columns with align "right", the scroll fade and the scroll bar all mirror.'],
+  ['Form, Field group', 'In the horizontal layout the labels are in the right column.'],
+  ['Menus, Accordion, Chip, Message, Attachment, Tooltip, Prompt bar, Citations, File upload, List', "Paddings and indents mirror; the user's message bubble has its tail on the left."],
+  ['Progress, Skeleton, Streaming text', "The indeterminate bar and Skeleton's shimmer run right to left; the caret follows the last letter."],
+]
+// Left to right on purpose, or decided by Radix.
+const kept = [
+  ['Code block', 'Code reads left to right in any page; its header (file name, Copy) follows the page.'],
+  ['Input OTP', 'A code reads left to right, digit by digit.'],
+  ['Line, Area and Bar chart', 'Time runs left to right, with the scale on the left, as is usual for charts in right-to-left interfaces. Channel and Donut charts follow the page.'],
+  ['Sheet', 'Its side is physical: side="right" stays on the right. For a sheet at the end of a right-to-left page, use side="left".'],
+  ['Slider, icon-only Sidebar', "Radix takes the direction from DirectionProvider: without it a Slider fills from the left, and the Sidebar's tooltips open to the right (they still flip at the screen's edge)."],
+]
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+---
+
+<Docs current="rtl">
+  <PageHeader id="rtl" title={page('rtl').title} description={page('rtl').description} />
+
+  <section aria-label="Demo" class="flex flex-col gap-3 pt-4">
+    <p class={prose}>A settings screen in Arabic, right to left. Switch Direction to LTR to compare. Every component follows the direction; the lists under the setup say what mirrors and the few things that stay left to right.</p>
+    <RtlDemo client:load codeHtml={codeHtml} />
+  </section>
+
+  <section aria-labelledby="dir-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="dir-title" class={h2}>Set the direction on html</h2>
+    <p class={prose}>Put <Chip>dir="rtl"</Chip> and the language on <Chip>&lt;html&gt;</Chip>, not on a wrapper. The browser then lays out every row from the right and aligns text to it, and menus, dialogs and toasts, which render at the end of <Chip>&lt;body&gt;</Chip>, inherit the direction too. A wrapper <Chip>div</Chip> would leave them left to right.</p>
+    <CodeFrame code={html} label="index.html" lang="html" />
+  </section>
+
+  <section aria-labelledby="provider-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="provider-title" class={h2}>Tell Radix with DirectionProvider</h2>
+    <p class={prose}>Satin's interactive parts are built on Radix, which reads the direction from React context rather than the DOM. Without the provider, the layout is right to left but the arrow keys in Tabs, menus, Segmented control and Slider still move the LTR way. <Chip>radix-ui</Chip> comes with <Chip>@uisatin/ui</Chip>; with pnpm or another strict package manager, add it to your own dependencies before importing it.</p>
+    <p class={prose}><Chip>SatinLabels</Chip> translates the words components say on their own, such as Close, Previous and Next, so the screen doesn't fall back to English.</p>
+    <CodeFrame code={provider} label="providers.tsx" />
+  </section>
+
+  <section aria-labelledby="ready-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="ready-title" class={h2}>What mirrors</h2>
+    <p class={prose}>Spacing, corners and alignment use start and end throughout, so they mirror with no extra setup. Beyond that:</p>
+    <ul class="flex flex-col divide-y divide-border-subtle rounded-2xl border border-border-subtle">
+      {
+        ready.map(([name, note]) => (
+          <li class="flex flex-col gap-0.5 px-4 py-3 sm:flex-row sm:gap-4">
+            <span class="shrink-0 text-base font-medium text-text-default sm:w-44">{name}</span>
+            <span class="text-base leading-6 text-text-muted">{note}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="kept-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="kept-title" class={h2}>What stays left to right</h2>
+    <p class={prose}>A few things keep their left-to-right shape in a right-to-left page: on purpose, or until Radix is told the direction.</p>
+    <ul class="flex flex-col divide-y divide-border-subtle rounded-2xl border border-border-subtle">
+      {
+        kept.map(([name, note]) => (
+          <li class="flex flex-col gap-0.5 px-4 py-3 sm:flex-row sm:gap-4">
+            <span class="shrink-0 text-base font-medium text-text-default sm:w-44">{name}</span>
+            <span class="text-base leading-6 text-text-muted">{note}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Docs>

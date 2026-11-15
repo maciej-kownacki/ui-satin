@@ -21,6 +21,33 @@
   "docs": "Checkbox docs: https://uisatin.dev/components/checkbox",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Checkbox": {
+        "type": "CheckboxProps",
+        "extends": [
+          "React.ComponentProps<typeof CheckboxPrimitive.Root>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "description",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "placement",
+            "type": "'left' | 'right'",
+            "required": false,
+            "default": "'left'",
+            "description": "Which side of the text the box sits on."
+          }
+        ]
+      }
+    }
   }
 }

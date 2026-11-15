@@ -13,12 +13,114 @@
     {
       "path": "registry/satin/ui/list.tsx",
       "type": "registry:ui",
-      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\n\n/**\n * Item: one row of a list. The thing almost every screen repeats: a person, a file, a project,\n * a setting, a search result, a notification. Left to right:\n *\n * - `icon` in a 32px muted tile (28 at sm), or `media` as it is (an Avatar, a thumbnail);\n * - `title` (13px medium) over `description` (13px muted), each on one line, cut with an ellipsis;\n *   `children` go under them for anything longer (Chips, a Progress);\n * - `meta` on the right in muted 13px: a time, a size, a Badge, a Kbd;\n * - `actions` at the far right: Buttons, a Switch, a DropdownMenu `⋯`.\n *\n * With `href` (or `onClick`) the row is a link (or a button) and the whole row is its target,\n * with a hover and a focus ring; `actions` stay their own controls on top of it. `selected`\n * marks the current row. Rows go in a `List`, or stand alone with `variant=\"outline\"`.\n */\nexport interface ItemProps extends Omit<React.ComponentProps<'div'>, 'title' | 'onClick'> {\n  title: React.ReactNode\n  description?: React.ReactNode\n  /** A glyph shown in a muted tile. */\n  icon?: React.ReactNode\n  /** Shown as is, in place of the tile: an Avatar, an image. */\n  media?: React.ReactNode\n  meta?: React.ReactNode\n  actions?: React.ReactNode\n  href?: string\n  /** Link target, e.g. `_blank`. */\n  target?: string\n  onClick?: React.MouseEventHandler<HTMLButtonElement>\n  selected?: boolean\n  disabled?: boolean\n  size?: 'sm' | 'md'\n  /** `outline` draws a card border, for a row on its own. Rows in a List take the List's look. */\n  variant?: 'plain' | 'outline'\n}\n\ninterface ListContextValue {\n  variant: 'plain' | 'divided' | 'card'\n  size: 'sm' | 'md'\n}\n\nconst ListContext = React.createContext<ListContextValue | null>(null)\n\nexport function Item({\n  title,\n  description,\n  icon,\n  media,\n  meta,\n  actions,\n  href,\n  target,\n  onClick,\n  selected = false,\n  disabled = false,\n  size: ownSize,\n  variant = 'plain',\n  className,\n  children,\n  ...props\n}: ItemProps) {\n  const list = React.useContext(ListContext)\n  const size = ownSize ?? list?.size ?? 'md'\n  const sm = size === 'sm'\n  const interactive = (href !== undefined || onClick !== undefined) && !disabled\n  // An li in a List; the ref types differ only by element, so it's typed as the div it is alone.\n  const Root = (list ? 'li' : 'div') as 'div'\n  // Edge to edge inside a divided list or a card, rounded on its own.\n  const flush = list?.variant === 'divided' || list?.variant === 'card'\n\n  // The title is the link or button; its ::after stretches over the row, so the row is the target.\n  const target_ = 'sa:outline-none sa:after:absolute sa:after:inset-0'\n  const titleText = <span className=\"sa:block sa:truncate\">{title}</span>\n  const titleNode = href !== undefined && !disabled ? (\n    <a href={href} target={target} rel={target === '_blank' ? 'noopener noreferrer' : undefined} data-slot=\"item-target\" aria-current={selected ? 'page' : undefined} className={cn(target_, 'sa:no-underline sa:text-inherit')}>\n      {titleText}\n    </a>\n  ) : onClick && !disabled ? (\n    <button type=\"button\" data-slot=\"item-target\" aria-pressed={selected || undefined} onClick={onClick} className={cn(target_, 'sa:block sa:w-full sa:cursor-pointer sa:text-left')}>\n      {titleText}\n    </button>\n  ) : (\n    titleText\n  )\n\n  return (\n    <Root\n      data-slot=\"item\"\n      data-size={size}\n      data-selected={selected || undefined}\n      data-disabled={disabled || undefined}\n      className={cn(\n        'sa:relative sa:flex sa:min-w-0 sa:items-center',\n        sm ? 'sa:min-h-10 sa:gap-2.5 sa:px-2 sa:py-1.5' : 'sa:min-h-14 sa:gap-3 sa:px-3 sa:py-2.5',\n        flush ? (list?.variant === 'card' ? (sm ? 'sa:px-3' : 'sa:px-4') : 'sa:px-0') : 'sa:rounded-lg',\n        variant === 'sa:outline' && !list && 'sa:border sa:border-border-default sa:bg-bg-card sa:[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',\n        'sa:transition-colors sa:duration-(--sa-duration-fast) sa:ease-(--sa-ease-out)',\n        interactive && 'sa:hover:bg-bg-hover',\n        interactive && flush && list?.variant === 'divided' && 'sa:hover:bg-transparent sa:[&:hover_[data-slot=item-title]]:underline',\n        selected && 'sa:bg-bg-selected sa:hover:bg-bg-selected',\n        // The focus ring of the stretched link, drawn on the row.\n        'sa:has-[[data-slot=item-target]:focus-visible]:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',\n        disabled && 'sa:opacity-50',\n        className,\n      )}\n      {...props}\n    >\n      {media ? (\n        <span className=\"sa:flex sa:shrink-0 sa:items-center\">{media}</span>\n      ) : icon ? (\n        <span\n          aria-hidden\n          className={cn(\n            'sa:grid sa:shrink-0 sa:place-items-center sa:rounded-lg sa:bg-bg-muted sa:text-text-muted sa:[&_svg]:size-icon-size sa:[&_svg]:[stroke-width:1.875]',\n            sm ? 'sa:size-7' : 'sa:size-8',\n          )}\n        >\n          {icon}\n        </span>\n      ) : null}\n      <div className=\"sa:min-w-0 sa:flex-1\">\n        <div data-slot=\"item-title\" className=\"sa:text-sm sa:leading-5 sa:font-medium sa:text-text-default sa:underline-offset-[3px]\">\n          {titleNode}\n        </div>\n        {description && <p className=\"sa:truncate sa:text-sm sa:leading-5 sa:text-text-muted\">{description}</p>}\n        {children && <div className=\"sa:mt-1.5\">{children}</div>}\n      </div>\n      {meta && <div className=\"sa:shrink-0 sa:text-sm sa:text-text-muted sa:tabular-nums\">{meta}</div>}\n      {actions && (\n        // Above the stretched target, so they stay their own controls.\n        <div className=\"sa:relative sa:z-10 sa:flex sa:shrink-0 sa:items-center sa:gap-1\">{actions}</div>\n      )}\n    </Root>\n  )\n}\n\n/**\n * List: Items under each other. `plain` (default) keeps them apart by 2px with rounded hovers,\n * for menus of links and search results; `divided` runs a rule between rows, edge to edge, for\n * feeds and settings; `card` puts the divided rows in a bordered card. `size` is passed to every\n * Item. It's a `ul`; give it an `aria-label` when the heading above doesn't name it.\n */\nexport interface ListProps extends React.ComponentProps<'ul'> {\n  variant?: 'plain' | 'divided' | 'card'\n  size?: 'sm' | 'md'\n}\n\nexport function List({ variant = 'plain', size = 'md', className, ...props }: ListProps) {\n  const context = React.useMemo(() => ({ variant, size }), [variant, size])\n  return (\n    <ListContext.Provider value={context}>\n      <ul\n        role=\"list\"\n        data-slot=\"list\"\n        data-variant={variant}\n        className={cn(\n          'sa:m-0 sa:flex sa:w-full sa:list-none sa:flex-col sa:p-0',\n          variant === 'plain' && 'sa:gap-0.5',\n          variant !== 'plain' && 'sa:divide-y sa:divide-border-default',\n          variant === 'card' &&\n            'sa:overflow-hidden sa:rounded-xl sa:border sa:border-border-default sa:bg-bg-card sa:[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',\n          className,\n        )}\n        {...props}\n      />\n    </ListContext.Provider>\n  )\n}\n"
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\n\n/**\n * Item: one row of a list. The thing almost every screen repeats: a person, a file, a project,\n * a setting, a search result, a notification. Left to right:\n *\n * - `icon` in a 32px muted tile (28 at sm), or `media` as it is (an Avatar, a thumbnail);\n * - `title` (13px medium) over `description` (13px muted), each on one line, cut with an ellipsis;\n *   `children` go under them for anything longer (Chips, a Progress);\n * - `meta` on the right in muted 13px: a time, a size, a Badge, a Kbd;\n * - `actions` at the far right: Buttons, a Switch, a DropdownMenu `⋯`.\n *\n * With `href` (or `onClick`) the row is a link (or a button) and the whole row is its target,\n * with a hover and a focus ring; `actions` stay their own controls on top of it. `selected`\n * marks the current row. Rows go in a `List`, or stand alone with `variant=\"outline\"`.\n */\nexport interface ItemProps extends Omit<React.ComponentProps<'div'>, 'title' | 'onClick'> {\n  title: React.ReactNode\n  description?: React.ReactNode\n  /** A glyph shown in a muted tile. */\n  icon?: React.ReactNode\n  /** Shown as is, in place of the tile: an Avatar, an image. */\n  media?: React.ReactNode\n  meta?: React.ReactNode\n  actions?: React.ReactNode\n  href?: string\n  /** Link target, e.g. `_blank`. */\n  target?: string\n  onClick?: React.MouseEventHandler<HTMLButtonElement>\n  selected?: boolean\n  disabled?: boolean\n  size?: 'sm' | 'md'\n  /** `outline` draws a card border, for a row on its own. Rows in a List take the List's look. */\n  variant?: 'plain' | 'outline'\n}\n\ninterface ListContextValue {\n  variant: 'plain' | 'divided' | 'card'\n  size: 'sm' | 'md'\n}\n\nconst ListContext = React.createContext<ListContextValue | null>(null)\n\nexport function Item({\n  title,\n  description,\n  icon,\n  media,\n  meta,\n  actions,\n  href,\n  target,\n  onClick,\n  selected = false,\n  disabled = false,\n  size: ownSize,\n  variant = 'plain',\n  className,\n  children,\n  ...props\n}: ItemProps) {\n  const list = React.useContext(ListContext)\n  const size = ownSize ?? list?.size ?? 'md'\n  const sm = size === 'sm'\n  const interactive = (href !== undefined || onClick !== undefined) && !disabled\n  // An li in a List; the ref types differ only by element, so it's typed as the div it is alone.\n  const Root = (list ? 'li' : 'div') as 'div'\n  // Edge to edge inside a divided list or a card, rounded on its own.\n  const flush = list?.variant === 'divided' || list?.variant === 'card'\n\n  // The title is the link or button; its ::after stretches over the row, so the row is the target.\n  const target_ = 'sa:outline-none sa:after:absolute sa:after:inset-0'\n  const titleText = <span className=\"sa:block sa:truncate\">{title}</span>\n  const titleNode = href !== undefined && !disabled ? (\n    <a href={href} target={target} rel={target === '_blank' ? 'noopener noreferrer' : undefined} data-slot=\"item-target\" aria-current={selected ? 'page' : undefined} className={cn(target_, 'sa:no-underline sa:text-inherit')}>\n      {titleText}\n    </a>\n  ) : onClick && !disabled ? (\n    <button type=\"button\" data-slot=\"item-target\" aria-pressed={selected || undefined} onClick={onClick} className={cn(target_, 'sa:block sa:w-full sa:cursor-pointer sa:text-start')}>\n      {titleText}\n    </button>\n  ) : (\n    titleText\n  )\n\n  return (\n    <Root\n      data-slot=\"item\"\n      data-size={size}\n      data-selected={selected || undefined}\n      data-disabled={disabled || undefined}\n      className={cn(\n        'sa:relative sa:flex sa:min-w-0 sa:items-center',\n        sm ? 'sa:min-h-10 sa:gap-2.5 sa:px-2 sa:py-1.5' : 'sa:min-h-14 sa:gap-3 sa:px-3 sa:py-2.5',\n        flush ? (list?.variant === 'card' ? (sm ? 'sa:px-3' : 'sa:px-4') : 'sa:px-0') : 'sa:rounded-lg',\n        variant === 'sa:outline' && !list && 'sa:border sa:border-border-default sa:bg-bg-card sa:[box-shadow:0_1px_2px_0_var(--sa-effect-shadow-xs)]',\n        'sa:transition-colors sa:duration-(--sa-duration-fast) sa:ease-(--sa-ease-out)',\n        interactive && 'sa:hover:bg-bg-hover',\n        interactive && flush && list?.variant === 'divided' && 'sa:hover:bg-transparent sa:[&:hover_[data-slot=item-title]]:underline',\n        selected && 'sa:bg-bg-selected sa:hover:bg-bg-selected',\n        // The focus ring of the stretched link, drawn on the row.\n        'sa:has-[[data-slot=item-target]:focus-visible]:[box-shadow:inset_0_0_0_2px_var(--sa-action-focus-ring)]',\n        disabled && 'sa:opacity-50',\n        className,\n      )}\n      {...props}\n    >\n      {media ? (\n        <span className=\"sa:flex sa:shrink-0 sa:items-center\">{media}</span>\n      ) : icon ? (\n        <span\n          aria-hidden\n          className={cn(\n            'sa:grid sa:shrink-0 sa:place-items-center sa:rounded-lg sa:bg-bg-muted sa:text-text-muted sa:[&_svg]:size-icon-size sa:[&_svg]:[stroke-width:1.875]',\n            sm ? 'sa:size-7' : 'sa:size-8',\n          )}\n        >\n          {icon}\n        </span>\n      ) : null}\n      <div className=\"sa:min-w-0 sa:flex-1\">\n        <div data-slot=\"item-title\" className=\"sa:text-sm sa:leading-5 sa:font-medium sa:text-text-default sa:underline-offset-[3px]\">\n          {titleNode}\n        </div>\n        {description && <p className=\"sa:truncate sa:text-sm sa:leading-5 sa:text-text-muted\">{description}</p>}\n        {children && <div className=\"sa:mt-1.5\">{children}</div>}\n      </div>\n      {meta && <div className=\"sa:shrink-0 sa:text-sm sa:text-text-muted sa:tabular-nums\">{meta}</div>}\n      {actions && (\n        // Above the stretched target, so they stay their own controls.\n        <div className=\"sa:relative sa:z-10 sa:flex sa:shrink-0 sa:items-center sa:gap-1\">{actions}</div>\n      )}\n    </Root>\n  )\n}\n\n/**\n * List: Items under each other. `plain` (default) keeps them apart by 2px with rounded hovers,\n * for menus of links and search results; `divided` runs a rule between rows, edge to edge, for\n * feeds and settings; `card` puts the divided rows in a bordered card. `size` is passed to every\n * Item. It's a `ul`; give it an `aria-label` when the heading above doesn't name it.\n */\nexport interface ListProps extends React.ComponentProps<'ul'> {\n  variant?: 'plain' | 'divided' | 'card'\n  size?: 'sm' | 'md'\n}\n\nexport function List({ variant = 'plain', size = 'md', className, ...props }: ListProps) {\n  const context = React.useMemo(() => ({ variant, size }), [variant, size])\n  return (\n    <ListContext.Provider value={context}>\n      <ul\n        role=\"list\"\n        data-slot=\"list\"\n        data-variant={variant}\n        className={cn(\n          'sa:m-0 sa:flex sa:w-full sa:list-none sa:flex-col sa:p-0',\n          variant === 'plain' && 'sa:gap-0.5',\n          variant !== 'plain' && 'sa:divide-y sa:divide-border-default',\n          variant === 'card' &&\n            'sa:overflow-hidden sa:rounded-xl sa:border sa:border-border-default sa:bg-bg-card sa:[box-shadow:0_1px_2px_0_var(--sa-effect-shadow-xs)]',\n          className,\n        )}\n        {...props}\n      />\n    </ListContext.Provider>\n  )\n}\n"
     }
   ],
   "docs": "List docs: https://uisatin.dev/components/list",
   "meta": {
     "version": "0.5.0",
-    "edition": "free"
+    "edition": "free",
+    "props": {
+      "Item": {
+        "type": "ItemProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'title' | 'onClick'>"
+        ],
+        "props": [
+          {
+            "name": "title",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "icon",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "A glyph shown in a muted tile."
+          },
+          {
+            "name": "media",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "Shown as is, in place of the tile: an Avatar, an image."
+          },
+          {
+            "name": "meta",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "actions",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "href",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "target",
+            "type": "string",
+            "required": false,
+            "description": "Link target, e.g. `_blank`."
+          },
+          {
+            "name": "onClick",
+            "type": "React.MouseEventHandler<HTMLButtonElement>",
+            "required": false
+          },
+          {
+            "name": "selected",
+            "type": "boolean",
+            "required": false,
+            "default": "false"
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false,
+            "default": "false"
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md'",
+            "required": false
+          },
+          {
+            "name": "variant",
+            "type": "'plain' | 'outline'",
+            "required": false,
+            "default": "'plain'",
+            "description": "`outline` draws a card border, for a row on its own. Rows in a List take the List's look."
+          }
+        ]
+      },
+      "List": {
+        "type": "ListProps",
+        "extends": [
+          "React.ComponentProps<'ul'>"
+        ],
+        "props": [
+          {
+            "name": "variant",
+            "type": "'plain' | 'divided' | 'card'",
+            "required": false,
+            "default": "'plain'"
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md'",
+            "required": false,
+            "default": "'md'"
+          }
+        ]
+      }
+    }
   }
 }

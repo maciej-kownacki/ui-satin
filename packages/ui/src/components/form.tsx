@@ -66,7 +66,10 @@ export function Form({
     const now = hasErrors(errors)
     const submitted = submits !== lastSubmit.current
     if (now && (submitted || !hadErrors.current)) {
-      const first = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')
+      // A field marked invalid, or the first control of an invalid FieldGroup (a fieldset can't be).
+      const first = formRef.current?.querySelector<HTMLElement>(
+        '[aria-invalid="true"], [data-slot="field-group"][data-invalid] :is(input:not([type="hidden"]), button, select, textarea, [tabindex]:not([tabindex="-1"]))',
+      )
       // Only once there's been a submit, so a form that opens with errors (a demo, a draft) doesn't grab focus.
       if (submits > 0) first?.focus()
     }
@@ -156,8 +159,8 @@ export function FormActions({ align = 'end', className, ...props }: FormActionsP
       className={cn(
         'flex flex-wrap items-center gap-2',
         align === 'end' && 'justify-end',
-        align === 'between' && 'justify-end [&>:first-child]:mr-auto',
-        align === 'start' && form?.layout === 'horizontal' && 'pl-46',
+        align === 'between' && 'justify-end [&>:first-child]:me-auto',
+        align === 'start' && form?.layout === 'horizontal' && 'ps-46',
         className,
       )}
       {...props}

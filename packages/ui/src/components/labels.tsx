@@ -11,6 +11,15 @@ import * as React from 'react'
  *
  * Anything left out keeps its English default. A component's own prop (Select's `placeholder`)
  * still wins over these.
+ *
+ * Labels that carry data (a file name, a row number, a count) are functions, so a translation can
+ * put the words in its own order:
+ *
+ *   <SatinLabels labels={{ removeItem: (name) => `Usuń ${name}`, selectRow: (n) => `Zaznacz wiersz ${n}` }}>
+ *
+ * `pageOf` gets the page as a node, because Pagination animates the number; write it with JSX
+ * (`(page, count) => <>Strona {page} z {count}</>`), not a template string. `dateLocale` is a
+ * locale, not a word: Calendar and the date pickers name months and days and write dates in it.
  */
 export const defaultLabels = {
   close: 'Close',
@@ -53,9 +62,12 @@ export const defaultLabels = {
   remove: 'Remove',
   add: 'Add',
   selectAllRows: 'Select all rows',
-  selectRow: 'Select row',
   select: 'Select…',
   search: 'Search…',
+  /** SearchBar's accessible name, when the app doesn't give one. */
+  searchField: 'Search',
+  /** The Sources pill: "3 sources". */
+  sourcesCount: (count: number) => (count === 1 ? '1 source' : `${count} sources`),
   noResults: 'No results',
   clear: 'Clear',
   apply: 'Apply',
@@ -77,6 +89,78 @@ export const defaultLabels = {
   opensInNewTab: '(opens in a new tab)',
   showPassword: 'Show password',
   hidePassword: 'Hide password',
+  breadcrumb: 'Breadcrumb',
+  pagination: 'Pagination',
+  notifications: 'Notifications',
+  dismissAnnouncement: 'Dismiss announcement',
+  optional: '(Optional)',
+  charactersUsed: 'Characters used',
+  copied: 'Copied',
+  added: 'added',
+  removed: 'removed',
+  total: 'Total',
+  thinking: 'Thinking…',
+  thought: 'Thought',
+  thoughtForAMoment: 'Thought for a moment',
+  newAgent: 'New agent',
+  chooseAgent: 'Choose an agent',
+  writeMessage: 'Write a message',
+  uploadFile: 'Upload a file',
+  uploadFileDescription: 'Select a file from your computer',
+  webSearch: 'Web search',
+  webSearchDescription: 'Research and find on the internet',
+  noMatches: 'No matches',
+  selectItem: 'Select',
+  dictate: 'Dictate',
+  stopDictation: 'Stop dictation',
+  sending: 'Sending',
+  delivered: 'Delivered',
+  share: 'Share',
+  skip: 'Skip',
+  continue: 'Continue',
+  useReply: 'Use reply',
+  rewrite: 'Rewrite',
+  change: 'Change',
+  sortableItem: 'sortable item',
+  sortableHint: 'Alt and arrow keys to move',
+  dropFilesHere: 'Drop files here',
+  dropToUpload: 'Drop to upload',
+  browseFiles: 'Browse files',
+  typeNotSupported: 'Type not supported',
+  uploadFailed: 'Upload failed',
+  waiting: 'Waiting…',
+  cookieConsent: 'Cookie consent',
+  cookieNotice: "We use essential cookies to run this site. With your OK, we'd also use optional ones to remember settings and learn what helps.",
+  acceptAll: 'Accept all',
+  rejectAll: 'Reject all',
+  customize: 'Customize',
+  dateLocale: 'en-US',
+  removeItem: (name: string) => `Remove ${name}`,
+  cancelItem: (name: string) => `Cancel ${name}`,
+  changeItem: (name: string) => `Change ${name}`,
+  previewOf: (name: string) => `Preview of ${name}`,
+  uploading: (name: string) => `Uploading ${name}`,
+  largerThan: (size: string) => `Larger than ${size}`,
+  /** "1.0 of 2.4 MB": the part sent and the total, both already formatted. */
+  sentOfTotal: (sent: string, total: string) => `${sent} of ${total}`,
+  showMore: (count: number) => `Show ${count} more`,
+  noResultsFor: (query: string) => `No results for “${query}”`,
+  selectRow: (row: number) => `Select row ${row}`,
+  selectNamedRow: (name: string) => `Select ${name}`,
+  /** The scroll region around a sideways-scrolling Table, named after the table when it has a label. */
+  tableRegion: (name?: string) => (name ? `${name}, scrolls sideways` : 'Table, scrolls sideways'),
+  /** The scroll region around a CodeBlock, named after its file when it has one. */
+  codeRegion: (filename?: string) => (filename ? `${filename} code` : 'Code'),
+  chartPoints: (title: string, count: number) => `${title}, ${count} ${count === 1 ? 'point' : 'points'}`,
+  /** Read out after a ranking row moves. */
+  positionOf: (item: string, position: number, count: number) => `${item}, position ${position} of ${count}`,
+  page: (page: number) => `Page ${page}`,
+  /** "Page 5 of 12". `page` can be an element (Pagination's animated number). */
+  pageOf: (page: React.ReactNode, count: number): React.ReactNode => (
+    <>
+      Page {page} of {count}
+    </>
+  ),
 }
 
 export type SatinLabelSet = typeof defaultLabels

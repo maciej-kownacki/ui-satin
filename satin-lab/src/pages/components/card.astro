@@ -2,31 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import CardDemo, { options } from '../../demos/card'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
 ---
 
 <Docs current="card">
-  <DocSection
-    item={{
-      id: 'card',
-      title: 'Card',
-      href: '/components/card',
-      description: 'Groups related content and actions under a title, with an optional footer.',
-    }}
-    api={{
-      description: 'The `Card` component is a wrapper around the `div` element with a header, a body and an optional footer.',
-      props: [
-        { name: 'size', type: ['"md"', '"sm"'], default: '"md"' },
-        { name: 'title', type: ['string'] },
-        { name: 'description', type: ['string'] },
-        { name: 'onClose', type: ['() => void'] },
-        { name: 'footer', type: ['ReactNode'] },
-        { name: 'children', type: ['ReactNode'] },
-      ],
-    }}
-  >
+  <DocSection item={page('card')} api={api['card']}>
     <CardDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

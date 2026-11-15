@@ -2,35 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import TabsDemo, { options } from '../../demos/tabs'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-// Until nav.ts has a `tabs` entry, the page item is passed inline.
-const item = {
-  id: 'tabs',
-  title: 'Tabs',
-  href: '/components/tabs',
-  description: 'Switches between two to six views of the same page or panel.',
-}
-
-const api = {
-  description:
-    'The `Tabs` component wraps the Radix tabs in a `div` with a tablist of buttons. An item is a string or `{ value, label, icon, disabled }`; put `TabsContent` panels in `children`.',
-  props: [
-    { name: 'size', type: ['"md"', '"sm"'], default: '"md"' },
-    { name: 'variant', type: ['"underline"', '"pill"'], default: '"underline"' },
-    { name: 'items', type: ['TabItem[]'] },
-    { name: 'value', type: ['string'] },
-    { name: 'onValueChange', type: ['(value: string) => void'] },
-    { name: 'disabled', type: ['boolean'], default: 'false' },
-    { name: 'icon', type: ['ReactNode'] },
-  ],
-}
 ---
 
 <Docs current="tabs">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('tabs')} api={api['tabs']}>
     <TabsDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

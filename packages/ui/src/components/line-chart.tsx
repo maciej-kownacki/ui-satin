@@ -4,6 +4,7 @@ import * as React from 'react'
 import { cn } from '../lib/utils'
 import { niceMax } from './bar-chart'
 import { ChartCard, ChartTooltip, defaultFormat, type ChartCardBaseProps } from './chart'
+import { useSatinLabels } from './labels'
 
 /**
  * Line and Area chart, 1:1 with the uiKit `chart/lineCard` (4076:6759) and `chart/areaCard`
@@ -76,6 +77,7 @@ export function LineCard({
   total,
   ...props
 }: LineCardProps) {
+  const labels = useSatinLabels()
   const gradientId = React.useId()
   const [hovered, setHovered] = React.useState<number | null>(null)
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
@@ -129,7 +131,7 @@ export function LineCard({
         ))}
         <div
           role="group"
-          aria-label={`${props.title}, ${n} points`}
+          aria-label={labels.chartPoints(props.title, n)}
           tabIndex={0}
           className="relative rounded-md outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]"
           style={{ height: TRACK }}

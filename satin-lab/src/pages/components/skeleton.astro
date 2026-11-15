@@ -2,25 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import SkeletonDemo, { options } from '../../demos/skeleton'
-import { highlight } from '../../lib/highlight'
+import { api } from '../../api'
 import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-const api = {
-  description:
-    "The `Skeleton` component renders an `aria-hidden` `div` in one of three shapes. Put `aria-busy` on the region that is loading.",
-  props: [
-    {name: "shape", type: ["\"text\"", "\"circle\"", "\"rect\""], default: "\"text\""},
-    {name: "animated", type: ["boolean"], default: "false"},
-    {name: "width", type: ["number", "string"]},
-    {name: "height", type: ["number", "string"]},
-  ],
-}
 ---
 
 <Docs current="skeleton">
-  <DocSection item={page('skeleton')} api={api}>
+  <DocSection item={page('skeleton')} api={api['skeleton']}>
     <SkeletonDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

@@ -106,7 +106,7 @@ export function Sheet({
             </DialogPrimitive.Close>
           )}
 
-          <div className={cn('flex flex-col gap-0.5', side !== 'bottom' && 'pr-8')}>
+          <div className={cn('flex flex-col gap-0.5', side !== 'bottom' && 'pe-8')}>
             <DialogPrimitive.Title className="text-base leading-[21px] font-medium text-text-default">{title}</DialogPrimitive.Title>
             {description ? (
               <DialogPrimitive.Description className="text-sm text-text-muted">{description}</DialogPrimitive.Description>
@@ -121,7 +121,7 @@ export function Sheet({
 
           {side !== 'bottom' && (
             <DialogPrimitive.Close asChild>
-              <Button variant="tertiary" size="xl" iconOnly aria-label={labels.close} className="absolute top-[7px] right-[7px] rounded-lg">
+              <Button variant="tertiary" size="xl" iconOnly aria-label={labels.close} className="absolute end-[7px] top-[7px] rounded-lg">
                 <CloseIcon />
               </Button>
             </DialogPrimitive.Close>

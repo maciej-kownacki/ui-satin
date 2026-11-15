@@ -1,0 +1,163 @@
+---
+/**
+ * Guide: dark mode. The three ways to turn it on (the dark class or data-theme="dark" on any
+ * parent, data-theme="system"), a Light / Dark / System toggle, the head script that avoids a
+ * flash, the attribute rendered on the server, a dark panel inside a light page, and what the
+ * app's own Tailwind dark: variant does. The live panel is static HTML: no island needed.
+ */
+import Docs from '../../layouts/Docs.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Chip from '../../components/Chip.astro'
+import CodeFrame from '../../components/CodeFrame.astro'
+import { Button } from '@uisatin/ui/button'
+import { Badge } from '@uisatin/ui/badge'
+import { page } from '../../nav'
+
+const ways = `<!-- Dark, always -->
+<html class="dark">
+<html data-theme="dark">
+
+<!-- Follows the operating system's setting, in CSS alone -->
+<html data-theme="system">
+
+<!-- Light: no attribute, or data-theme="light" -->
+<html>`
+const toggle = `'use client' // for Next.js; harmless elsewhere
+
+import * as React from 'react'
+import { SegmentedControl } from '@uisatin/ui/segmented-control'
+
+const themes = [
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System' },
+]
+
+export function ThemeToggle() {
+  // The head script has already set the attribute; read it once mounted, so the server
+  // and the first client render agree.
+  const [theme, setTheme] = React.useState('system')
+  React.useEffect(() => setTheme(document.documentElement.dataset.theme ?? 'system'), [])
+
+  return (
+    <SegmentedControl
+      aria-label="Theme"
+      size="xs"
+      value={theme}
+      onValueChange={(next) => {
+        setTheme(next)
+        document.documentElement.dataset.theme = next
+        try {
+          localStorage.setItem('theme', next)
+        } catch {}
+      }}
+      items={themes}
+    />
+  )
+}`
+const script = `<html lang="en" data-theme="system">
+  <head>
+    <script>
+      // Inline, before any stylesheet or app script, so it runs before the first paint.
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem('theme') || 'system'
+      } catch {}
+    </script>
+    …`
+const cookie = `// In the toggle: save the choice where the server can read it.
+document.cookie = \`theme=\${next}; path=/; max-age=31536000; samesite=lax\`
+
+// On the server: render the attribute from it (Next.js app/layout.tsx).
+const theme = (await cookies()).get('theme')?.value ?? 'system'
+return <html lang="en" data-theme={theme}>…</html>`
+const nested = `<section data-theme="dark" style={{ background: 'var(--sa-bg-card)', borderRadius: 16, padding: 20 }}>
+  <Badge tone="brand">New</Badge>
+  <Button>Upgrade</Button>
+  <Button variant="secondary">Later</Button>
+</section>`
+const pageCss = `/* Satin styles its own elements, not the page: paint the page from its tokens. */
+body {
+  background: var(--sa-bg-canvas);
+  color: var(--sa-text-default);
+}
+
+/* Native scrollbars and form controls follow the theme too. */
+:root { color-scheme: light; }
+:root:is(.dark, [data-theme='dark']) { color-scheme: dark; }
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='system'] { color-scheme: dark; }
+}`
+const tailwind = `/* Your Tailwind v4 CSS: make your own dark: follow the same attribute as Satin. */
+@custom-variant dark {
+  &:where(.dark, .dark *, [data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where([data-theme='system'], [data-theme='system'] *) {
+      @slot;
+    }
+  }
+}`
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<Docs current="dark-mode">
+  <PageHeader id="dark-mode" title={page('dark-mode').title} description={page('dark-mode').description} />
+
+  <section aria-labelledby="ways-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="ways-title" class={h2}>Turning it on</h2>
+    <p class={prose}> Every Satin colour is a token with a Light and a Dark value. Which one applies depends on an attribute on any parent, usually <Chip>&lt;html&gt;</Chip>: the <Chip>dark</Chip> class or <Chip>data-theme="dark"</Chip> for dark, and <Chip>data-theme="system"</Chip> to follow the operating system. <Chip>system</Chip> is a <Chip>prefers-color-scheme</Chip> media query, so it needs no JavaScript and changes the moment the system does. </p>
+    <CodeFrame code={ways} label="index.html" lang="html" />
+  </section>
+
+  <section aria-labelledby="toggle-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="toggle-title" class={h2}>A Light / Dark / System toggle</h2>
+    <p class={prose}> The toggle sets the attribute and remembers the choice. Keep <Chip>system</Chip> as an option and as the default: most people never change it, and their page then follows the time of day on its own. </p>
+    <CodeFrame code={toggle} label="ThemeToggle.tsx" />
+  </section>
+
+  <section aria-labelledby="flash-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="flash-title" class={h2}>No flash on load</h2>
+    <p class={prose}> If the attribute is set by your app's JavaScript, the page paints light first and turns dark a moment later. Set it before the first paint instead, with a few lines inline at the top of <Chip>&lt;head&gt;</Chip>. They read the saved choice and fall back to <Chip>system</Chip>; if storage is blocked, the page still follows the system. </p>
+    <CodeFrame code={script} label="index.html" lang="html" />
+    <p class={prose}> In React, the attribute on <Chip>&lt;html&gt;</Chip> may now differ from what the server rendered; add <Chip>suppressHydrationWarning</Chip> to <Chip>&lt;html&gt;</Chip> to tell React that's expected. </p>
+  </section>
+
+  <section aria-labelledby="server-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="server-title" class={h2}>Rendered on the server</h2>
+    <p class={prose}> When pages render per request, the server can set the attribute itself: the toggle saves the choice in a cookie as well, and the root layout reads it. No script runs and nothing has to match after hydration. The <a class={link} href="/guides/nextjs">Next.js</a> and <a class={link} href="/guides/react-router">React Router</a> guides do it this way. </p>
+    <CodeFrame code={cookie} label="Cookie" />
+  </section>
+
+  <section aria-labelledby="nested-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="nested-title" class={h2}>A dark panel in a light page</h2>
+    <p class={prose}> The attribute works on any element, not only <Chip>&lt;html&gt;</Chip>. Put <Chip>data-theme="dark"</Chip> on a panel and everything inside it turns dark, while the rest of the page stays light. The panel paints its own background from the tokens, since Satin doesn't paint the element that carries the attribute. It works one way only: there is no light scope inside a dark page. </p>
+    <section
+      data-theme="dark"
+      aria-label="Dark panel example"
+      class="flex flex-wrap items-center gap-3 rounded-2xl border border-border-subtle bg-bg-card p-5"
+    >
+      <Badge tone="brand">New</Badge>
+      <span class="mr-auto text-base text-text-default">Satin Pro is coming</span>
+      <Button variant="secondary">Later</Button>
+      <Button>Upgrade</Button>
+    </section>
+    <CodeFrame code={nested} label="Nested" />
+  </section>
+
+  <section aria-labelledby="page-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="page-title" class={h2}>The page around Satin</h2>
+    <p class={prose}> Satin's stylesheet styles Satin's elements and leaves the page to you, so a dark theme doesn't reach your <Chip>&lt;body&gt;</Chip> by itself. Paint it from the same tokens, and set <Chip>color-scheme</Chip> so scrollbars and native inputs match. </p>
+    <CodeFrame code={pageCss} label="app.css" lang="css" />
+  </section>
+
+  <section aria-labelledby="tailwind-title" class="flex flex-col gap-3 pt-10">
+    <h2 id="tailwind-title" class={h2}>Your own Tailwind and dark:</h2>
+    <p class={prose}> Satin's dark styles are its own prefixed classes (<Chip>sa:dark:…</Chip>), so they don't depend on your Tailwind and your <Chip>dark:</Chip> utilities don't change Satin. Your <Chip>dark:</Chip> keeps its own rule: by default that's <Chip>prefers-color-scheme</Chip>, which ignores the toggle. To make both switch together, point your variant at the same attribute. </p>
+    <CodeFrame code={tailwind} label="app.css" lang="css" />
+    <p class={prose}> On Tailwind v3.4, <Chip>{"darkMode: ['selector', '[data-theme=\"dark\"]']"}</Chip> in <Chip>tailwind.config.js</Chip> follows an explicit Dark; <Chip>system</Chip> then needs the media query in your own CSS. </p>
+  </section>
+</Docs>

@@ -173,20 +173,20 @@ function radiusVars(scale: number): Vars {
 /* ---------- Output ---------- */
 
 /**
- * The prefix on Satin's primitive variables (the colour ramp and the corners). The npm package
- * ships them as `--sa-color-*` and `--sa-radius-*`, so they never touch an app's own Tailwind
- * or shadcn theme; the build sets it to 'sa-' (tsup.config.ts). In the source it's empty.
+ * The prefix on Satin's variables. The npm package ships every one as `--sa-*` (`--sa-color-*`,
+ * `--sa-radius-*`, `--sa-bg-card`…), so they never touch an app's own Tailwind, shadcn theme or
+ * tokens; the build sets it to 'sa-' (tsup.config.ts). In the source it's empty.
  */
 const VAR_PREFIX = ''
 
 export interface ThemeOptions {
-  /** Prefix for the primitive variables. Defaults to the one the installed build uses. */
+  /** Prefix for the variables. Defaults to the one the installed build uses. */
   prefix?: string
 }
 
-/** `--color-x` → `--sa-color-x`, `var(--radius)` → `var(--sa-radius)`; semantic tokens stay. */
+/** `--color-x` → `--sa-color-x`, `var(--bg-card)` → `var(--sa-bg-card)`; names already prefixed stay. */
 const prefixed = (text: string, prefix: string) =>
-  prefix ? text.replace(/--(?=color-|radius)/g, `--${prefix}`) : text
+  prefix ? text.replace(new RegExp(`--(?!${prefix}|tw-)(?=[a-z])`, 'g'), `--${prefix}`) : text
 const prefixVars = (vars: Vars, prefix: string): Vars =>
   Object.fromEntries(Object.entries(vars).map(([k, v]) => [prefixed(k, prefix), prefixed(v, prefix)]))
 
@@ -231,15 +231,20 @@ export function themeCss(theme: SatinTheme, scope?: string, options: ThemeOption
   const vars = themeVars(theme, { prefix })
   const root = scope ? { ...vars.root, ...prefixVars(SCOPED_LIGHT, prefix) } : vars.root
   const dark = scope ? { ...vars.dark, ...prefixVars(SCOPED_DARK, prefix) } : vars.dark
-  const block = (sel: string, vars: Vars) =>
-    `${sel} {\n${Object.entries(vars)
-      .map(([k, v]) => `  ${k}: ${v};`)
-      .join('\n')}\n}`
+  const block = (sel: string, vars: Vars, indent = '') =>
+    `${indent}${sel} {\n${Object.entries(vars)
+      .map(([k, v]) => `${indent}  ${k}: ${v};`)
+      .join('\n')}\n${indent}}`
+  // Dark mode is the `dark` class or data-theme="dark" on a parent, or data-theme="system" with a dark OS.
+  const darkSel = scope ? `.dark ${scope}, [data-theme="dark"] ${scope}` : ':root:is(.dark, [data-theme="dark"])'
+  const systemSel = scope ? `[data-theme="system"] ${scope}` : ':root[data-theme="system"]'
   return [
     `/* Satin theme: brand ${theme.brand.toUpperCase()}, radius ${theme.radius}. */`,
     // :root:root outranks Satin's own :root, so the theme wins wherever the file is loaded.
     block(scope ?? ':root:root', root),
-    ...(Object.keys(dark).length ? [block(scope ? `.dark ${scope}` : ':root.dark', dark)] : []),
+    ...(Object.keys(dark).length
+      ? [block(darkSel, dark), `@media (prefers-color-scheme: dark) {\n${block(systemSel, dark, '  ')}\n}`]
+      : []),
     '',
   ].join('\n\n')
 }

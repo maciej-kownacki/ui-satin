@@ -2,32 +2,15 @@
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
 import SidebarDemo, { options } from '../../demos/sidebar'
+import { api } from '../../api'
+import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-
-// Inline until the lead adds 'sidebar' to nav.ts and api.ts.
-const item = {
-  id: 'sidebar',
-  title: 'Sidebar',
-  href: '/components/sidebar',
-  description: 'App navigation: pages with icons and counters, collapsible groups and an icon-only rail.',
-}
-const api = {
-  description: 'The `SidebarItem` component is a wrapper around the `a` element that links to a page; nest `SidebarSubItem` in `SidebarGroup` for sub-items, and in `SidebarSubGroup` for a sub-item that folds open onto pages of its own.',
-  props: [
-    { name: 'label', type: ['string'] },
-    { name: 'icon', type: ['ReactNode'] },
-    { name: 'active', type: ['boolean'], default: 'false' },
-    { name: 'count', type: ['number'] },
-    { name: 'iconOnly', type: ['boolean'], default: 'false' },
-    { name: 'disabled', type: ['boolean'], default: 'false' },
-  ],
-}
 ---
 
 <Docs current="sidebar">
-  <DocSection item={item} api={api}>
+  <DocSection item={page('sidebar')} api={api['sidebar']}>
     <SidebarDemo client:load codeHtml={codeHtml} />
   </DocSection>
 </Docs>

@@ -8,15 +8,20 @@
     "preview": "astro preview"
   },
   "dependencies": {
+    "@ai-sdk/react": "^4.0.177",
     "@astrojs/react": "^7.1.4",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
-    "@uisatin/ui": "^0.5.0",
+    "@hookform/resolvers": "^7.0.6",
     "@tailwindcss/vite": "^4.3.4",
+    "@uisatin/ui": "^0.5.0",
+    "ai": "^7.0.173",
     "astro": "^7.4.7",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-hook-form": "^7.92.0",
     "shiki": "^4.6.0",
-    "tailwindcss": "^4.3.4"
+    "tailwindcss": "^4.3.4",
+    "zod": "^4.6.7"
   }
 }

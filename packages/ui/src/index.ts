@@ -24,7 +24,26 @@ export { Chip, ChipAvatar, chipVariants, type ChipProps } from './components/chi
 export { Combobox, type ComboboxProps } from './components/combobox'
 export { CommandMenu, type CommandMenuProps, type CommandItem, type CommandGroup } from './components/command-menu'
 export { CodeBlock, type CodeBlockProps } from './components/code-block'
-export { Dialog, DialogClose, DialogAlert, CloseIcon, type DialogProps, type DialogVariant, type DialogAlertProps, type DialogAlertIntent } from './components/dialog'
+export {
+  Dialog,
+  DialogRoot,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
+  DialogFooter,
+  DialogClose,
+  DialogAlert,
+  CloseIcon,
+  type DialogProps,
+  type DialogContentProps,
+  type DialogFooterProps,
+  type DialogVariant,
+  type DialogAlertProps,
+  type DialogAlertIntent,
+} from './components/dialog'
 export * from './components/dot'
 export { Floating, type FloatingProps, type FloatingSide } from './components/floating'
 export { DropdownMenu, DropdownMenuGroup, DropdownMenuItem, MenuItemContent, menuItemClass, menuSurfaceClass, menuGroupClass, menuGroupLabelClass, type DropdownMenuProps, type DropdownMenuGroupProps, type DropdownMenuItemProps, type MenuItemContentProps } from './components/dropdown'
@@ -43,7 +62,7 @@ export { Progress, type ProgressProps } from './components/progress'
 export { Radio, RadioGroup, type RadioProps, type RadioGroupProps } from './components/radio'
 export { SearchBar, type SearchBarProps } from './components/search-bar'
 export { Select, FieldChrome, useFieldChrome, SelectChevron, type SelectProps, type SelectOption, type SelectGroup } from './components/select'
-export { SegmentedControl, type SegmentedControlItem, type SegmentedControlProps } from './components/segmented-control'
+export { SegmentedControl, SegmentedControlSegment, type SegmentedControlItem, type SegmentedControlProps, type SegmentedControlSegmentProps } from './components/segmented-control'
 export { SelectableRadio, type SelectableRadioProps } from './components/selectable-radio'
 export { SelectableCheckbox, type SelectableCheckboxProps } from './components/selectable-checkbox'
 export { Separator, type SeparatorProps } from './components/separator'

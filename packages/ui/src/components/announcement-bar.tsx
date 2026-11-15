@@ -27,6 +27,7 @@ export interface AnnouncementBarProps extends React.ComponentProps<'div'> {
   /** The button after the message; with `href` it renders as a link. */
   action?: { label: React.ReactNode; href?: string; onClick?: () => void }
   onDismiss?: () => void
+  /** Defaults to the `dismissAnnouncement` label. */
   dismissLabel?: string
   /** Sticks to the top or bottom edge of its scroll container. */
   sticky?: 'top' | 'bottom'
@@ -44,7 +45,7 @@ export interface AnnouncementBarProps extends React.ComponentProps<'div'> {
 export function AnnouncementBar({
   action,
   onDismiss,
-  dismissLabel = 'Dismiss announcement',
+  dismissLabel,
   sticky,
   tone = 'primary',
   background = 'plain',
@@ -67,7 +68,8 @@ export function AnnouncementBar({
   const label = action && (
     <>
       {action.label}
-      <ArrowRight aria-hidden />
+      {/* Points forward, so it mirrors right to left. */}
+      <ArrowRight aria-hidden className="rtl:-scale-x-100" />
     </>
   )
 
@@ -121,10 +123,10 @@ export function AnnouncementBar({
       {onDismiss && (
         <button
           type="button"
-          aria-label={dismissLabel}
+          aria-label={dismissLabel ?? labels.dismissAnnouncement}
           onClick={onDismiss}
           className={cn(
-            'absolute top-1/2 right-3 grid size-7 -translate-y-1/2 place-items-center rounded-md outline-none',
+            'absolute end-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-md outline-none',
             closeClass,
             'transition-[opacity,background-color] duration-(--duration-fast) ease-(--ease-out)',
             'focus-visible:opacity-100 focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',

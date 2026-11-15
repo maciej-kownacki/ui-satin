@@ -5,6 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { Xmark } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { useSatinLabels } from './labels'
 
 /**
  * Card, 1:1 with the uiKit `Card` set (1122:20156): bg/card, 1px border/default, radius-2xl (16),
@@ -37,7 +38,7 @@ export interface CardProps extends Omit<React.ComponentProps<'div'>, 'title'>, V
   footer?: React.ReactNode
   /** Shows the close button. */
   onClose?: () => void
-  /** Accessible name of the close button. */
+  /** Accessible name of the close button. Defaults to the `close` label. */
   closeLabel?: string
 }
 
@@ -48,10 +49,11 @@ export function Card({
   description,
   footer,
   onClose,
-  closeLabel = 'Close',
+  closeLabel,
   children,
   ...props
 }: CardProps) {
+  const labels = useSatinLabels()
   const titleId = React.useId()
   const hasHeader = title != null || description != null
   return (
@@ -63,7 +65,7 @@ export function Card({
       {...props}
     >
       {hasHeader && (
-        <div data-slot="card-header" className={cn('flex flex-col gap-0.5 px-(--card-pad) pt-(--card-pad)', onClose && 'pr-10')}>
+        <div data-slot="card-header" className={cn('flex flex-col gap-0.5 px-(--card-pad) pt-(--card-pad)', onClose && 'pe-10')}>
           {title != null && (
             <div id={titleId} className="text-base leading-[14px] font-medium tracking-normal text-text-default">
               {title}
@@ -86,9 +88,9 @@ export function Card({
         <Button
           variant="tertiary"
           iconOnly
-          aria-label={closeLabel}
+          aria-label={closeLabel ?? labels.close}
           onClick={onClose}
-          className="absolute top-[7px] right-[7px]"
+          className="absolute end-[7px] top-[7px]"
         >
           <Xmark aria-hidden />
         </Button>
