@@ -833,6 +833,18 @@ export const api: Record<string, Api> = {
       { name: 'placeholder', type: ['string'] },
     ],
   },
+  notification: {
+    description: 'The `Notification` component is an `article` named by its title, with a picture on the left, a title and description, a badge on the right, optional cards stacked behind and a close button on its top-right corner. Several go in a `NotificationStack`, newest first, each with a `key`: it folds them into a pile and unfolds them on hover, focus or a tap (`expanded` keeps it open); a removed one fades out while the rest move up.',
+    props: [
+      { name: 'title', type: ['ReactNode'] },
+      { name: 'description', type: ['ReactNode'] },
+      { name: 'media', type: ['ReactNode'] },
+      { name: 'badge', type: ['ReactNode'] },
+      { name: 'stacked', type: ['0', '1', '2'], default: '0' },
+      { name: 'onDismiss', type: ['() => void'] },
+      { name: 'dismissVisibility', type: ['"hover"', '"always"'], default: '"hover"' },
+    ],
+  },
   toast: {
     description: 'The `Toast` component wraps the Radix toast in an `li` element rendered by the `toast()` function. Mount `Toaster` once; then call `toast()`, `toast.info()`, `toast.success()`, `toast.warning()` or `toast.error()` with a title and these options.',
     props: [

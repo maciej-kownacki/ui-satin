@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import NotificationDemo, { options } from '../../demos/notification'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="notification">
+  <DocSection item={page('notification')} api={api['notification']}>
+    <NotificationDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

@@ -3703,6 +3703,79 @@
       ]
     }
   },
+  "notification": {
+    "Notification": {
+      "type": "NotificationProps",
+      "extends": [
+        "Omit<React.ComponentProps<'article'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "media",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The picture on the left: an Avatar at size 40, an app icon or an image."
+        },
+        {
+          "name": "badge",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "On the right of the title. A string becomes a small rounded neutral Badge."
+        },
+        {
+          "name": "stacked",
+          "type": "0 | 1 | 2",
+          "required": false,
+          "default": "0",
+          "description": "Plain cards peeking below it, for a folded group: 0, 1 or 2. Ignored inside a NotificationStack."
+        },
+        {
+          "name": "onDismiss",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows the close button on the top-right corner; called when it is pressed."
+        },
+        {
+          "name": "dismissVisibility",
+          "type": "'hover' | 'always'",
+          "required": false,
+          "default": "'hover'",
+          "description": "`hover` (default) shows the close button on hover and focus, `always` keeps it on."
+        }
+      ]
+    },
+    "NotificationStack": {
+      "type": "NotificationStackProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Notifications, newest first, each with a key."
+        },
+        {
+          "name": "expanded",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Unfolded from the start and kept unfolded."
+        }
+      ]
+    }
+  },
   "number-input": {
     "NumberInput": {
       "type": "NumberInputProps",

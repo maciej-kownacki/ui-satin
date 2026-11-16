@@ -1280,6 +1280,30 @@
       ]
     },
     {
+      "name": "notification",
+      "type": "registry:ui",
+      "title": "Notification",
+      "description": "A card for something the app did or heard about, with a picture, a badge and a close on its corner.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Notification docs: https://uisatin.dev/components/notification",
+      "meta": {
+        "version": "0.6.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/notification.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "number-input",
       "type": "registry:ui",
       "title": "Number input",
@@ -2734,6 +2758,21 @@
       "files": [
         {
           "path": "registry/satin/examples/message-actions-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "notification-demo",
+      "type": "registry:example",
+      "title": "Notification example",
+      "description": "The shortest use of Notification, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/notification.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/notification-demo.tsx",
           "type": "registry:example"
         }
       ]

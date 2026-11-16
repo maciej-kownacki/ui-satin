@@ -56,6 +56,7 @@ export { PasswordInput, type PasswordInputProps } from './components/password-in
 export { Item, List, type ItemProps, type ListProps } from './components/list'
 export { Link, type LinkProps } from './components/link'
 export * from './components/kbd'
+export { Notification, NotificationStack, type NotificationProps, type NotificationStackProps } from './components/notification'
 export { Pagination, paginationRange, type PaginationProps } from './components/pagination'
 export { Popover, PopoverClose, PopoverPanel, type PopoverProps } from './components/popover'
 export { Progress, type ProgressProps } from './components/progress'

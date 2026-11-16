@@ -431,6 +431,14 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A native `textarea`. `label` points at it; the hint, or the error in its place, and the counter are linked with `aria-describedby`, and an error sets `aria-invalid`. The counter reads as "Characters used: 34/120". `maxLength` is not set on the element, so typing past it is allowed and only the counter says so; the grip is hidden.',
   },
+  notification: {
+    summary:
+      'An `article` named by its title and described by its description; the media and the cards stacked behind are hidden from screen readers unless the media names itself (an Avatar with `name`). It is not a live region: announce a new notification from the app, or use Toast. The close button is a 24px `button` named "Dismiss" (`dismiss` in SatinLabels); it shows on hover and whenever focus is inside the card, and on touch screens always.',
+    keyboard: [
+      { keys: ['Enter', 'Space'], action: 'On the close button, dismisses the notification.' },
+      { keys: ['Tab'], action: 'In a NotificationStack, moving focus into it unfolds it; then Tab goes through every card’s close button. Folded, the cards behind are inert and hidden from screen readers.' },
+    ],
+  },
   toast: {
     summary:
       'Radix toasts in a `region` named "Notifications (F8)". Each toast is read out when it appears: errors and warnings at once (`aria-live="assertive"`), the others politely. Give an action `altText` that says how to do the same without the toast ("Undo with Ctrl+Z"): Radix reads it instead of the button, which a screen reader user may not reach in time; without it the label is used. The close button is named "Close". Hovering or focusing the stack pauses the timers; a swipe to the right dismisses.',
