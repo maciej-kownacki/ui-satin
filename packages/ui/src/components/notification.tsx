@@ -128,7 +128,7 @@ export function Notification({
         className={cn(
           'flex items-start overflow-clip p-3',
           surface,
-          '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+          '[box-shadow:0_4px_6px_-1px_var(--effect-shadow-sm),0_2px_4px_-2px_var(--effect-shadow-sm)]',
         )}
         style={item ? { height: item.height, transition: `height 150ms ${ease}` } : undefined}
       >
