@@ -8,7 +8,7 @@ import { Button } from './button'
 import { useSatinLabels } from './labels'
 
 /**
- * Card, 1:1 with the uiKit `Card` set (1122:20156): bg/card, 1px border/default, radius-2xl (16),
+ * Card, 1:1 with the uiKit `Card` set (1122:20156): bg/popover (like Decision card), 1px border/default, radius-2xl (16),
  * no shadow, 405 wide by default. Three stacked sections with no gap between them:
  *
  * - header: title in Label/lg (14/14 medium), description in text/sm muted, 2px apart.
@@ -20,7 +20,7 @@ import { useSatinLabels } from './labels'
  * `onClose` adds a tertiary 28px icon button 7px from the top-right corner.
  */
 const cardVariants = cva(
-  'relative flex w-[405px] max-w-full flex-col overflow-clip rounded-2xl border border-border-default bg-bg-card',
+  'relative flex w-[405px] max-w-full flex-col overflow-clip rounded-2xl border border-border-default bg-bg-popover',
   {
     variants: {
       size: {

@@ -79,7 +79,7 @@ function Example({ v }: { v: Record<string, string> }) {
       onClose={v.close === 'on' ? () => setOpen(false) : undefined}
     >
       {/* The content is the reader's: a neutral block stands in for it. */}
-      <div aria-hidden className="h-24 rounded-lg bg-bg-muted" />
+      <div aria-hidden className="h-24 rounded-lg border border-dashed border-border-strong bg-bg-muted" />
     </Card>
   )
 }
