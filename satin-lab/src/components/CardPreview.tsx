@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { createPortal } from 'react-dom'
+import { Skeleton } from '@uisatin/ui/skeleton'
 import { ShowcasePreview } from './Showcase'
 
 type Demo = React.ComponentType<{ codeHtml: Record<string, string> }>
@@ -60,6 +61,14 @@ export function CardPreview({ id }: { id: string }) {
   const [view, setView] = React.useState({ scale: 0, x: 0, y: 0 })
   const current = React.useRef(view)
   current.current = view
+  // The skeleton shows until the demo is placed, then fades out and goes (its band would keep
+  // running under an invisible layer otherwise).
+  const [skeleton, setSkeleton] = React.useState(true)
+  React.useEffect(() => {
+    if (!view.scale) return
+    const t = window.setTimeout(() => setSkeleton(false), 400)
+    return () => window.clearTimeout(t)
+  }, [view.scale])
 
   React.useEffect(() => {
     let live = true
@@ -158,6 +167,23 @@ export function CardPreview({ id }: { id: string }) {
 
   return (
     <div ref={frame} inert aria-hidden className="absolute inset-0 [clip-path:inset(0)]">
+      {skeleton && (
+        // A loading card: Satin's Skeleton, animated, rendered on the server too, so it is there
+        // before the demo's code arrives.
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-10 transition-opacity duration-(--duration-base) ease-(--ease-out)"
+          style={{ opacity: view.scale ? 0 : 1 }}
+        >
+          <div className="flex w-full max-w-[220px] items-center gap-3">
+            <Skeleton shape="circle" animated />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton animated width="100%" />
+              <Skeleton animated width="60%" />
+            </div>
+          </div>
+          <Skeleton shape="rect" animated width="100%" height={56} className="max-w-[220px]" />
+        </div>
+      )}
       <div
         ref={layer}
         // Laid out like the holder (a 640px row, centred), so a copy keeps its menus over their triggers.
