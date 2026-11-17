@@ -274,7 +274,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
           <nav id="docs-nav" aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2">
             {q && shown.length === 0 && <p className="px-3 py-2 text-sm text-text-muted">No pages match “{query.trim()}”.</p>}
             <HoverGlider>
-            {/* All components sits above the groups, a page of its own with the count of them. */}
+            {/* All components sits above the groups, a page of its own with the count of them, 8px from the search above and the groups below. */}
             {!q && (
               <a
                 href={allComponents.href}
@@ -285,7 +285,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                   setDrawer(false)
                 }}
                 className={cn(
-                  'relative mb-1 flex h-8 items-center gap-2 rounded-pill px-3',
+                  'relative mb-2 flex h-8 items-center gap-2 rounded-pill px-3',
                   'transition-colors duration-(--duration-fast) ease-(--ease-out)',
                   'focus-visible:shadow-border-focus focus-visible:outline-none',
                   current === allComponents.id ? 'bg-bg-selected' : 'active:bg-bg-selected',
