@@ -13,7 +13,7 @@ import { useSatinLabels } from './labels'
  *
  * - size `sm`: a 28px chip — 16px file icon, medium 13 name (max 200, truncated), remove button.
  *   Radius-md, or full when `shape="rounded"`.
- * - size `lg`: a 32px icon tile (bg/muted) + name + 12px text/muted meta line. Radius-xl with 6px
+ * - size `lg`: a 32px icon tile (component/file-icon: bg/muted in Light, lighter in Dark) + name + 12px text/muted meta line. Radius-xl with 6px
  *   vertical padding (52 high), or full with 4px (48 high).
  * - States: default bg/popover, border/default, 0 1 1 shadow-xs. Hover border/strong (sm also
  *   turns bg/canvas). Pressed bg/muted, border/strong, and the lg tile turns bg/card. Focus keeps
@@ -96,7 +96,7 @@ export function Attachment({
           <>
             <span
               className={cn(
-                'flex size-8 shrink-0 items-center justify-center bg-bg-muted [&_svg]:size-icon-size',
+                'flex size-8 shrink-0 items-center justify-center bg-component-file-icon-bg [&_svg]:size-icon-size',
                 rounded ? 'rounded-xl' : 'rounded-md',
                 'group-active/attachment:bg-bg-card group-data-[force=pressed]/attachment:bg-bg-card',
               )}
@@ -177,7 +177,7 @@ export interface AttachmentPreviewProps extends Omit<React.ComponentProps<'div'>
 }
 
 /**
- * AttachmentPreview (3142:20419): 296 wide, bg/popover, border/default, radius-xl, shadcn md
+ * AttachmentPreview (3142:20419): 296 wide, bg/popover, border/subtle, radius-xl, shadcn md
  * shadow. A header with the file, a 176px scrolling viewport with a fade at the bottom, a
  * border/subtle divider and a footer that moves between pages or sheets and opens the file.
  */
@@ -196,7 +196,7 @@ export function AttachmentPreview({
     <div
       data-slot="attachment-preview"
       className={cn(
-        'flex w-[296px] flex-col overflow-clip rounded-xl border border-border-default bg-bg-popover',
+        'flex w-[296px] flex-col overflow-clip rounded-xl border border-border-subtle bg-bg-popover',
         '[box-shadow:0_4px_6px_-1px_var(--effect-shadow-sm),0_2px_4px_-2px_var(--effect-shadow-sm)]',
         className,
       )}

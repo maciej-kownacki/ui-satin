@@ -698,7 +698,7 @@
       "props": []
     },
     "AttachmentPreview": {
-      "description": "AttachmentPreview: 296 wide, bg/popover, border/default, radius-xl, shadcn md shadow. A header with the file, a 176px scrolling viewport with a fade at the bottom, a border/subtle divider and a footer that moves between pages or sheets and opens the file.",
+      "description": "AttachmentPreview: 296 wide, bg/popover, border/subtle, radius-xl, shadcn md shadow. A header with the file, a 176px scrolling viewport with a fade at the bottom, a border/subtle divider and a footer that moves between pages or sheets and opens the file.",
       "type": "AttachmentPreviewProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'children'>"
@@ -4589,6 +4589,12 @@
           "type": "HTMLElement | null",
           "required": false,
           "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "menuMaxHeight",
+          "type": "number",
+          "required": false,
+          "description": "Caps the menu's height in px; past it the list scrolls. Left out, the menu takes the room the window has."
         },
         {
           "name": "aria-label",

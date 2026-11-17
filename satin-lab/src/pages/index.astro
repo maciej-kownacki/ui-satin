@@ -10,9 +10,9 @@ const h2 = 'text-lg font-medium text-text-default'
 const prose = 'text-base leading-6 text-text-muted'
 const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
 const layers = [
-  { title: 'Tokens', text: 'Colour, type, radius, spacing and motion as variables, in Light and Dark. Primitives hold the raw values, semantic tokens give them a job, and nothing else reads a raw value.', href: '/theming' },
-  { title: 'Components', text: 'Buttons, fields, menus, dialogs, tables and charts, built on Radix and shadcn/ui and painted only with semantic tokens, so a theme reaches all of them.', href: '/components/button' },
-  { title: 'Patterns', text: 'What AI products keep needing: a prompt bar, agent picker, loading and thinking, messages and decisions, composed from the same components.', href: '/ai-patterns/prompt-bar' },
+  { title: 'Tokens', text: 'Colour, type, radius, spacing and motion as variables, in Light and Dark. Components read semantic tokens, never raw values.', href: '/theming' },
+  { title: 'Components', text: 'Buttons, fields, menus, dialogs, tables and charts on Radix and shadcn/ui. A theme reaches all of them.', href: '/components/button' },
+  { title: 'Patterns', text: 'Prompt bar, agent picker, thinking, messages and decisions, made from the same components.', href: '/ai-patterns/prompt-bar' },
 ]
 ---
 
@@ -22,14 +22,10 @@ const layers = [
   <section aria-labelledby="what-title" class="flex flex-col gap-3 pt-4">
     <h2 id="what-title" class={h2}>What is Satin?</h2>
     <div class="flex flex-col gap-3 text-base leading-6 text-text-muted">
-      <p>Satin is a Figma library and React components that match it one to one: same names, same variants, same tokens.</p>
-      <Alert
-        intent="info"
-        title="The Figma library isn't shared yet"
-        description="For now Satin is public as React components only. The Figma library will follow later."
-      />
+      <p>Satin is a Figma library and React components that match it one to one: same names, variants and tokens.</p>
+      <Alert intent="info" title="The Figma library isn't public yet" description="For now only the React components are." />
       <p>
-        The components are built on <a class="text-text-default underline underline-offset-2" href="https://ui.shadcn.com">shadcn/ui</a> and Radix, so roles, keyboard behaviour and focus management come from proven primitives. Satin owns how they look, and with it the visual side of accessibility: a focus ring and text that hold their contrast, target sizes, motion. What it supports and what it doesn't yet is on the <a class="text-text-default underline underline-offset-2" href="/accessibility">Accessibility</a> page.
+        The components are built on <a class={link} href="https://ui.shadcn.com">shadcn/ui</a> and Radix, which handle roles, keyboard and focus. Satin handles the look, contrast, focus rings, target sizes and motion included. See <a class={link} href="/accessibility">Accessibility</a> for what's covered.
       </p>
     </div>
   </section>
@@ -37,15 +33,15 @@ const layers = [
   <section aria-labelledby="who-title" class="flex flex-col gap-3 pt-8">
     <h2 id="who-title" class={h2}>Who is Satin for?</h2>
     <ul class="flex flex-col gap-2 text-base leading-6 text-text-muted">
-      <li><span class="font-medium text-text-default">Designers</span> who want to see how a component looks and behaves, in Light and Dark, before they design with it.</li>
-      <li><span class="font-medium text-text-default">Engineers</span> who need production code that matches the design without re-creating it by hand.</li>
-      <li><span class="font-medium text-text-default">Teams building AI products</span> who need ready answers for prompts, agent progress and decisions.</li>
+      <li><span class="font-medium text-text-default">Designers</span> who want to see a component in Light and Dark before designing with it.</li>
+      <li><span class="font-medium text-text-default">Engineers</span> who want production code that matches the design.</li>
+      <li><span class="font-medium text-text-default">Teams building AI products</span> who need prompts, agent progress and decisions ready to use.</li>
     </ul>
   </section>
 
   <section aria-labelledby="built-title" class="flex flex-col gap-3 pt-8">
     <h2 id="built-title" class={h2}>How Satin is built</h2>
-    <p class={prose}>Three layers, each built only from the one under it.</p>
+    <p class={prose}>Three layers, each built from the one below.</p>
     <ol class="grid gap-3 sm:grid-cols-3">
       {
         layers.map((l, i) => (
@@ -67,16 +63,15 @@ const layers = [
   <section aria-labelledby="how-title" class="flex flex-col gap-3 pt-8">
     <h2 id="how-title" class={h2}>How can I use Satin?</h2>
     <p class={prose}>
-      Two ways, and neither needs Tailwind: Satin ships its tokens and every class the components use as one precompiled stylesheet. Copy the components you need into your app with the shadcn CLI and own the code, or install the package and import them. Light and dark mode come from the <Chip>dark</Chip> class on any parent element.
+      Copy components into your app with the shadcn CLI, or install the package. Neither needs Tailwind: the styles ship precompiled. For dark mode, add the <Chip>dark</Chip> class to any parent.
     </p>
   </section>
 
   <section aria-labelledby="agent-title" class="flex flex-col gap-3 pt-8">
     <h2 id="agent-title" class={h2}>Install it with your agent</h2>
     <p class={prose}>
-      Satin's components are a shadcn registry, so a coding agent can set it up for you. The{' '}
-      <a class={link} href="/installation">Installation</a> page has a prompt to paste into Claude Code, Cursor or any agent
-      in your repository, and the same steps by hand.
+      Satin is a shadcn registry, so a coding agent can set it up. <a class={link} href="/installation">Installation</a> has a
+      prompt for Claude Code, Cursor or any other agent, and the manual steps.
     </p>
   </section>
 

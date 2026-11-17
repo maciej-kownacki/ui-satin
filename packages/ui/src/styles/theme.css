@@ -284,6 +284,8 @@
   --component-decision-chip-selected-bg: var(--status-brand-bg);
   --component-decision-chip-selected-border: var(--status-brand-fg);
   --component-decision-chip-selected-fg: var(--status-brand-fg);
+  --component-file-icon-bg: var(--bg-muted);
+  --component-input-otp-success-border: var(--status-green-fg);
   --control-height-xs: 24px;
   --control-height: 28px;
   --control-height-lg: 32px;
@@ -389,6 +391,8 @@
   --component-decision-chip-selected-bg: var(--color-blue-500-a20);
   --component-decision-chip-selected-border: var(--color-primary-focus-dark);
   --component-decision-chip-selected-fg: var(--text-default);
+  --component-file-icon-bg: var(--color-segmented-selected-dark);
+  --component-input-otp-success-border: var(--color-green-soft-600);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -487,6 +491,8 @@
     --component-decision-chip-selected-bg: var(--color-blue-500-a20);
     --component-decision-chip-selected-border: var(--color-primary-focus-dark);
     --component-decision-chip-selected-fg: var(--text-default);
+    --component-file-icon-bg: var(--color-segmented-selected-dark);
+    --component-input-otp-success-border: var(--color-green-soft-600);
   }
 }
 
@@ -675,6 +681,8 @@
   --color-component-decision-chip-selected-bg: var(--component-decision-chip-selected-bg);
   --color-component-decision-chip-selected-border: var(--component-decision-chip-selected-border);
   --color-component-decision-chip-selected-fg: var(--component-decision-chip-selected-fg);
+  --color-component-file-icon-bg: var(--component-file-icon-bg);
+  --color-component-input-otp-success-border: var(--component-input-otp-success-border);
   --color-tone-bg: var(--tone-bg);
   --color-tone-border: var(--tone-border);
   --color-tone-fg: var(--tone-fg);

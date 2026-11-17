@@ -150,9 +150,14 @@
     grid-template-rows var(--duration-slow) var(--ease-out),
     visibility 0s;
 }
+/* The clip that folds the content reaches 2px past it on every side, the width of the focus ring
+   (shadow/border-focus), so a focused row inside shows its whole ring; the negative margin takes
+   the room back, so nothing moves. */
 .satin-expand > * {
   min-height: 0;
   overflow: hidden;
+  padding: 2px;
+  margin: -2px;
   opacity: 0.92;
   transition: opacity var(--duration-base) var(--ease-out);
 }

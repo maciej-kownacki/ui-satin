@@ -126,6 +126,18 @@ export function Calendar({
   const [focus, setFocus] = React.useState<Date>(() => startOfDay(anchor ?? today))
   const [hover, setHover] = React.useState<Date | null>(null)
   const gridRef = React.useRef<HTMLDivElement>(null)
+  // The year list ends where the date picker does (its panel, or the calendar on its own), not at
+  // the window's edge: measured from under the trigger as it opens.
+  const [yearMenuHeight, setYearMenuHeight] = React.useState<number>()
+  const yearTrigger = React.useRef<HTMLButtonElement>(null)
+  const measureYearMenu = (open: boolean) => {
+    const t = yearTrigger.current
+    if (!open || !t) return
+    const surface = t.closest('[data-slot=date-picker-panel], [data-slot=date-range-picker-panel], [data-slot=date-picker]') ?? gridRef.current
+    if (!surface) return
+    // 4px: the menu's offset under the trigger. Never shorter than five years.
+    setYearMenuHeight(Math.max(180, Math.round(surface.getBoundingClientRect().bottom - t.getBoundingClientRect().bottom - 4)))
+  }
   // The app's ref and ours, on the root.
   const setRoot = React.useCallback(
     (node: HTMLDivElement | null) => {
@@ -205,8 +217,11 @@ export function Calendar({
             <span className="flex-1" />
             {/* The year: a plain Select, the shown year checked. */}
             <Select
+              ref={yearTrigger}
               size="sm"
               aria-label={labels.year}
+              onOpenChange={measureYearMenu}
+              menuMaxHeight={yearMenuHeight}
               value={String(m.getFullYear())}
               onValueChange={(y) => setMonth(new Date(Number(y), m.getMonth(), 1))}
               options={yearOptions(m.getFullYear(), today.getFullYear(), min, max)}
@@ -332,7 +347,7 @@ function yearOptions(shown: number, thisYear: number, min?: Date, max?: Date) {
 
 /** The panels' surface: Popover's bg, border, radius and lg shadow. */
 const surfaceClass = cn(
-  'rounded-xl border border-border-default bg-bg-popover',
+  'rounded-xl border border-border-subtle bg-bg-popover',
   '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
 )
 const popClass = cn(

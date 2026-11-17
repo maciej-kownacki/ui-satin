@@ -12,7 +12,7 @@ export { CloseIcon, StatusIcon }
 
 /**
  * Dialog, 1:1 with the uiKit `Dialog` set (465:66873): variant default or destructive.
- * A 425px popover surface (min 360, max 560, never wider or taller than the screen less 16px a side; the body scrolls), radius-2xl, border/default, the shadcn `lg`
+ * A 425px popover surface (min 360, max 560, never wider or taller than the screen less 16px a side; the body scrolls), radius-2xl, border/subtle (as on menus), the shadcn `lg`
  * shadow. Header 16 / 16 / 8 with a 14px medium title and a 13px muted description, a body
  * 16px in with a 12px gap (body text, any content, an optional `DialogAlert`), then a
  * right-aligned footer with 16px padding on both variants, on the same inset as the header and
@@ -172,7 +172,7 @@ export function DialogContent({ variant = 'default', closeButton = true, contain
           data-variant={variant}
           className={cn(
             'pointer-events-auto relative flex max-h-full w-[425px] max-w-[min(560px,100%)] min-w-[min(360px,100%)] flex-col overflow-clip',
-            'rounded-2xl border border-border-default bg-bg-popover',
+            'rounded-2xl border border-border-subtle bg-bg-popover',
             '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
             'focus-visible:outline-none',
             'data-[state=open]:animate-[satin-dialog-in_var(--duration-slower)_var(--ease-out)]',

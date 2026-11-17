@@ -308,7 +308,7 @@ export function FileUploadItem({
       data-status="uploading"
       className={cn('flex items-center gap-2 rounded-xl border border-border-default bg-bg-card p-2 text-sm', className)}
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-bg-muted [&_svg]:size-icon-size">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-component-file-icon-bg [&_svg]:size-icon-size">
         {file.icon ?? fileIconFor(file.name)}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">

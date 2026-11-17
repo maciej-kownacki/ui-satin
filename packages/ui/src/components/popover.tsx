@@ -7,7 +7,7 @@ import { useSatinLabels } from './labels'
 
 /**
  * Popover, 1:1 with the uiKit `Popover` component (613:18781): a 320px popover surface,
- * radius-xl, border/default, the shadcn `lg` shadow, 10px padding all round. A 13px medium
+ * radius-xl, border/subtle (as on menus), the shadcn `lg` shadow, 10px padding all round. A 13px medium
  * title (18px line) over a 13px muted description, 2px apart; a 16px close glyph in text/subtle
  * 10px from the top-right corner; an optional body slot 16px below the header. It opens 8px below its trigger, aligned to the trigger's start.
  *
@@ -46,7 +46,7 @@ export interface PopoverProps
 
 const panelClass = cn(
   'relative flex w-[320px] max-w-[calc(100vw-16px)] flex-col overflow-clip pb-2.5',
-  'rounded-xl border border-border-default bg-bg-popover',
+  'rounded-xl border border-border-subtle bg-bg-popover',
   '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
 )
 const closeClass = cn(

@@ -12,7 +12,8 @@ import { FieldChrome, useFieldChrome } from './select'
  * gets the focus border and ring and a blinking caret while the field has focus. A digit is
  * text/base medium. With an error every cell turns action/destructive and the message replaces the
  * hint under the cells; label, hint and error sit like Input's. With `success` (the code checked
- * out) every cell's border turns status/green/fg and the message, in the same colour, leads with a
+ * out) every cell's border turns component/input-otp/success-border (status/green/fg in Light, the
+ * Switch's mid green in Dark) and the message, in status/green/fg, leads with a
  * 16px check.
  *
  * The message never moves the cells: it is as wide as the cells (it wraps rather than widening
@@ -136,13 +137,13 @@ export function InputOTP({
                   'relative grid size-9 shrink-0 place-items-center rounded-lg border bg-bg-field text-base leading-[21px] font-medium text-text-default',
                   '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
                   'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
-                  chrome.invalid ? 'border-action-destructive-bg' : isSuccess ? 'border-status-green-fg' : 'border-border-default',
+                  chrome.invalid ? 'border-action-destructive-bg' : isSuccess ? 'border-component-input-otp-success-border' : 'border-border-default',
                   // The cell taking the next digit: its edge doubles to 2px, in the field's state colour.
                   isActive &&
                     (chrome.invalid
                       ? '[box-shadow:0_0_0_1px_var(--action-destructive-bg)]'
                       : isSuccess
-                        ? '[box-shadow:0_0_0_1px_var(--status-green-fg)]'
+                        ? '[box-shadow:0_0_0_1px_var(--component-input-otp-success-border)]'
                         : 'border-border-focus [box-shadow:0_0_0_1px_var(--border-focus)]'),
                 )}
               >

@@ -66,6 +66,8 @@ export interface SelectProps
   onOpenChange?: (open: boolean) => void
   /** Portal target. Defaults to `document.body`. */
   container?: HTMLElement | null
+  /** Caps the menu's height in px; past it the list scrolls. Left out, the menu takes the room the window has. */
+  menuMaxHeight?: number
   'aria-label'?: string
   /** Classes for the outer wrapper (label + field + hint). `className` styles the trigger. */
   wrapperClassName?: string
@@ -178,6 +180,7 @@ export function Select({
   defaultOpen,
   onOpenChange,
   container,
+  menuMaxHeight,
   wrapperClassName,
   className,
   'data-force': force,
@@ -251,6 +254,7 @@ export function Select({
               'origin-(--radix-select-content-transform-origin) outline-none',
               'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
             )}
+            style={menuMaxHeight ? { maxHeight: `min(var(--radix-select-content-available-height), ${menuMaxHeight}px)` } : undefined}
           >
             <SelectPrimitive.Viewport className="flex flex-col gap-1 p-1">
               {groups.map((g, gi) => {

@@ -269,7 +269,9 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
             />
           </div>
 
-          <nav id="docs-nav" aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2">
+          {/* 2px into the gaps above and below (-my-0.5 py-0.5), so the first and last rows' focus
+              rings fit inside the scroller while the rows stay where they were. */}
+          <nav id="docs-nav" aria-label="Documentation" className="-my-0.5 min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-0.5">
             {q && shown.length === 0 && <p className="px-3 py-2 text-sm text-text-muted">No pages match “{query.trim()}”.</p>}
             <ul>
               {/* All components: the first row of the same list as the groups, a page of its own with

@@ -8,7 +8,7 @@ import { useSatinLabels } from './labels'
 
 /**
  * Toast, 1:1 with the uiKit `Toast` set (3650:17696): intent neutral, info, success, warning or
- * error. A 397px popover surface, radius-xl, border/default, the shadcn `lg` shadow, padding
+ * error. A 397px popover surface, radius-xl, border/subtle (as on menus), the shadcn `lg` shadow, padding
  * 10 left / 8 right and 10 top and bottom (12 at the bottom on the four status intents, as in
  * Figma). A 36px radius-md icon tile in the intent's status bg, a 13px medium title (20px line)
  * over a 13px muted description (16px line), then an optional secondary action and a 24px close.
@@ -173,12 +173,12 @@ export interface ToastProps extends Omit<React.ComponentProps<typeof ToastPrimit
   icon?: boolean
 }
 
-/** The card surface: popover bg, border/default, radius-xl, the shadcn `lg` shadow. */
+/** The card surface: popover bg, border/subtle, radius-xl, the shadcn `lg` shadow. */
 const card = (intent: ToastIntent) =>
   cn(
     'relative flex w-full items-center gap-2.5 overflow-clip ps-2.5 pe-2',
     intent === 'neutral' ? 'py-2.5' : 'pt-2.5 pb-3',
-    'rounded-xl border border-border-default bg-bg-popover',
+    'rounded-xl border border-border-subtle bg-bg-popover',
     '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
   )
 
