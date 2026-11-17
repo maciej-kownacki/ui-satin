@@ -5,6 +5,10 @@ import { ContextMenu as ContextPrimitive } from 'radix-ui'
 import { NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { MenuItemContent, menuItemClass, menuSurfaceClass, type MenuItemContentProps } from './dropdown'
+import { trackPointerModality } from './pointer-modality'
+
+// Rings after a mouse press: see pointer-modality.tsx.
+trackPointerModality()
 
 /**
  * ContextMenu, 1:1 with the uiKit design (🆕 context menu & hover card): DropdownMenu's surface

@@ -678,7 +678,8 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/dropdown.json"
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/pointer-modality.json"
       ],
       "docs": "Context menu docs: https://uisatin.dev/components/context-menu",
       "meta": {
@@ -860,7 +861,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/kbd.json",
-        "https://uisatin.dev/r/labels.json"
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/pointer-modality.json"
       ],
       "docs": "Dropdown docs: https://uisatin.dev/components/dropdown",
       "meta": {
@@ -1379,6 +1381,27 @@
       "files": [
         {
           "path": "registry/satin/ui/password-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "pointer-modality",
+      "type": "registry:ui",
+      "title": "Pointer modality",
+      "description": "The Satin Pointer modality component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.6.0",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/pointer-modality.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1907,6 +1930,7 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/pointer-modality.json",
         "https://uisatin.dev/r/sliding-indicator.json"
       ],
       "docs": "Tabs docs: https://uisatin.dev/components/tabs",

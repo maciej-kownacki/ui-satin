@@ -14,8 +14,10 @@ import { nav, page } from '../nav'
 interface Props {
   /** The nav item this page shows. */
   current: string
+  /** A wider column, for pages that lay out a grid (All components). */
+  wide?: boolean
 }
-const { current } = Astro.props
+const { current, wide = false } = Astro.props
 const item = page(current)
 // The home title is also the caption X and Slack show under the share image.
 const title = current === 'introduction' ? 'Satin: the React design system for your agents' : `${item.title} · Satin`
@@ -45,7 +47,7 @@ const title = current === 'introduction' ? 'Satin: the React design system for y
     <Sidebar client:load nav={nav} current={current} transition:persist="sidebar" />
 
     <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none lg:overflow-y-auto lg:overscroll-contain">
-      <div class="flex w-full max-w-[720px] flex-col gap-4 pb-24">
+      <div class:list={['flex w-full flex-col gap-4 pb-24', wide ? 'max-w-[1120px]' : 'max-w-[720px]']}>
         <slot />
         <Feedback id={current} title={item.title} />
       </div>

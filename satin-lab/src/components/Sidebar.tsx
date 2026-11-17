@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { Button, SearchBar, cn } from '@uisatin/ui'
 import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
-import { pagesOf, type NavGroup, type NavItem } from '../nav'
+import { allComponents, componentPages, pagesOf, type NavGroup, type NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
-import { AiPatternsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, GuidesIcon, IntroIcon, RecipesIcon } from './icons'
+import { AiPatternsIcon, AllComponentsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, GuidesIcon, IntroIcon, RecipesIcon } from './icons'
 
 /**
  * navigationSidebar from the docs template (uiKit 3857:5977): group headers with an icon,
@@ -274,6 +274,32 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
           <nav id="docs-nav" aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2">
             {q && shown.length === 0 && <p className="px-3 py-2 text-sm text-text-muted">No pages match “{query.trim()}”.</p>}
             <HoverGlider>
+            {/* All components sits above the groups, a page of its own with the count of them. */}
+            {!q && (
+              <a
+                href={allComponents.href}
+                aria-current={current === allComponents.id ? 'page' : undefined}
+                onClick={(e) => {
+                  if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+                  setCurrent(allComponents.id)
+                  setDrawer(false)
+                }}
+                className={cn(
+                  'relative mb-1 flex h-8 items-center gap-2 rounded-pill px-3',
+                  'transition-colors duration-(--duration-fast) ease-(--ease-out)',
+                  'focus-visible:shadow-border-focus focus-visible:outline-none',
+                  current === allComponents.id ? 'bg-bg-selected' : 'active:bg-bg-selected',
+                )}
+              >
+                <AllComponentsIcon className="shrink-0 text-text-muted" />
+                <span className="min-w-0 flex-1 truncate text-[13px] leading-4 font-medium text-text-default">{allComponents.title}</span>
+                <span data-tone="neutral" className="rounded-sm px-1.5 py-0.5 text-sm leading-[19.5px] text-tone-fg">
+                  <span className="sr-only">, </span>
+                  {componentPages().length}
+                  <span className="sr-only"> pages</span>
+                </span>
+              </a>
+            )}
             <ul>
               {shown.map((group) => {
                 const isOpen = q ? true : open[group.id]

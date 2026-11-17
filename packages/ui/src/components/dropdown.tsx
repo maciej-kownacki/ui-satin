@@ -5,6 +5,10 @@ import { DropdownMenu as DropdownPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { KbdGroup } from './kbd'
 import { useSatinLabels } from './labels'
+import { trackPointerModality } from './pointer-modality'
+
+// Rings after a mouse press: see pointer-modality.tsx.
+trackPointerModality()
 
 /**
  * DropdownMenu, 1:1 with the uiKit `DropdownMenu` (654:19150) and `DropdownMenu/Item`

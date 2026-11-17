@@ -20,3 +20,14 @@
 @custom-variant satin-focus (&:focus-visible, &[data-force="focus"]);
 /* A trigger stays pressed while the menu or popover it opened is open. */
 @custom-variant satin-pressed (&:active, &[data-force="pressed"], &[aria-haspopup][aria-expanded="true"]);
+
+/* After a pointer press (data-satin-pointer, components/pointer-modality.tsx) the focus Radix moves
+   from script is not the keyboard's: no ring on a tab, a menu row or the trigger a menu hands
+   focus back to, until a key is pressed. Unlayered, so it wins over the ring utilities. */
+:root[data-satin-pointer] :is([data-slot='tabs'] [role='tab'], [role='menu'] [role^='menuitem']):focus-visible,
+:root[data-satin-pointer] [data-slot='tabs'] [role='tab']:focus-visible > span {
+  box-shadow: none;
+}
+:root[data-satin-pointer] [data-slot][aria-haspopup]:focus-visible {
+  outline-style: none;
+}

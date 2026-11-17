@@ -21,27 +21,31 @@ export const nav: NavGroup[] = [
       { id: 'installation', title: 'Installation', href: '/installation', description: 'Install Satin from npm in three lines, have your agent do it, or copy the source with the shadcn CLI.' },
       { id: 'theming', title: 'Theming', href: '/theming', description: 'One small config sets the brand and the corners for every component.' },
       { id: 'accessibility', title: 'Accessibility', href: '/accessibility', description: 'What Satin supports for WCAG 2.2 AA, what your app has to do, and what doesn’t work yet.' },
-    ],
-  },
-  {
-    id: 'guides',
-    title: 'Guides',
-    items: [
-      { id: 'nextjs', title: 'Next.js', href: '/guides/nextjs', description: 'Satin in the App Router: styles and theme in the root layout, dark mode set on the server.' },
-      { id: 'vite', title: 'Vite', href: '/guides/vite', description: 'Satin in a Vite React app, with dark mode applied before the first paint.' },
-      { id: 'react-router', title: 'React Router', href: '/guides/react-router', description: 'Satin in React Router framework mode: styles and theme in the root route, dark mode on the html element.' },
-      { id: 'astro', title: 'Astro', href: '/guides/astro', description: 'Satin components as React islands, with the styles and the theme in a layout.' },
-      { id: 'tanstack-start', title: 'TanStack Start', href: '/guides/tanstack-start', description: 'Satin in TanStack Start: the stylesheet linked from the root route, dark mode on the html element.' },
-      { id: 'dark-mode', title: 'Dark mode', href: '/guides/dark-mode', description: 'Dark with one attribute, a page that follows the system, and no flash on load.' },
-    ],
-  },
-  {
-    id: 'recipes',
-    title: 'Recipes',
-    items: [
-      { id: 'react-hook-form', title: 'Forms with React Hook Form', href: '/recipes/react-hook-form', description: "A sign-up form validated with Zod through React Hook Form, its errors shown by Satin's Form." },
-      { id: 'ai-sdk-chat', title: 'Chat with the AI SDK', href: '/recipes/ai-sdk-chat', description: 'A chat built from PromptBar, Message and StreamingText, driven by useChat from the AI SDK.' },
-      { id: 'rtl', title: 'Right-to-left', href: '/recipes/rtl', description: "Satin in Arabic, Hebrew or Persian: dir on the html element and Radix's DirectionProvider." },
+      {
+        id: 'guides',
+        title: 'Guides',
+        href: '/guides/nextjs',
+        description: 'Satin in your framework, and dark mode.',
+        children: [
+          { id: 'nextjs', title: 'Next.js', href: '/guides/nextjs', description: 'Satin in the App Router: styles and theme in the root layout, dark mode set on the server.' },
+          { id: 'vite', title: 'Vite', href: '/guides/vite', description: 'Satin in a Vite React app, with dark mode applied before the first paint.' },
+          { id: 'react-router', title: 'React Router', href: '/guides/react-router', description: 'Satin in React Router framework mode: styles and theme in the root route, dark mode on the html element.' },
+          { id: 'astro', title: 'Astro', href: '/guides/astro', description: 'Satin components as React islands, with the styles and the theme in a layout.' },
+          { id: 'tanstack-start', title: 'TanStack Start', href: '/guides/tanstack-start', description: 'Satin in TanStack Start: the stylesheet linked from the root route, dark mode on the html element.' },
+          { id: 'dark-mode', title: 'Dark mode', href: '/guides/dark-mode', description: 'Dark with one attribute, a page that follows the system, and no flash on load.' },
+        ],
+      },
+      {
+        id: 'recipes',
+        title: 'Recipes',
+        href: '/recipes/react-hook-form',
+        description: 'Satin with the libraries apps pair it with.',
+        children: [
+          { id: 'react-hook-form', title: 'Forms with React Hook Form', href: '/recipes/react-hook-form', description: "A sign-up form validated with Zod through React Hook Form, its errors shown by Satin's Form." },
+          { id: 'ai-sdk-chat', title: 'Chat with the AI SDK', href: '/recipes/ai-sdk-chat', description: 'A chat built from PromptBar, Message and StreamingText, driven by useChat from the AI SDK.' },
+          { id: 'rtl', title: 'Right-to-left', href: '/recipes/rtl', description: "Satin in Arabic, Hebrew or Persian: dir on the html element and Radix's DirectionProvider." },
+        ],
+      },
     ],
   },
   {
@@ -211,7 +215,19 @@ export const groupOf = (id: string) => nav.find((g) => pagesOf(g.items).some((i)
 /** The parent row a page sits under (Chart for Bar chart), if any. */
 export const parentOf = (id: string) => nav.flatMap((g) => g.items).find((i) => i.children?.some((c) => c.id === id))
 
+/** Every component and AI pattern page, the ones the All components page shows as cards. */
+export const componentPages = () => nav.filter((g) => g.id === 'ai-patterns' || g.id === 'components').flatMap((g) => pagesOf(g.items))
+
+/** The All components page: a row of its own at the top of the sidebar, outside the groups. */
+export const allComponents: NavItem = {
+  id: 'all-components',
+  title: 'All components',
+  href: '/components',
+  description: 'Every component and AI pattern in Satin, with a preview of each.',
+}
+
 export const page = (id: string) => {
+  if (id === allComponents.id) return allComponents
   const item = pagesOf(nav.flatMap((g) => g.items)).find((i) => i.id === id)
   if (!item) throw new Error(`No nav item "${id}"`)
   return item

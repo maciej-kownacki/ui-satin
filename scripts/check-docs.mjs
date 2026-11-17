@@ -24,6 +24,7 @@ const INTERNAL = {
   labels: 'SatinLabels, documented in the README and on Installation',
   'selectable-card': 'what Selectable radio and Selectable checkbox share',
   'sliding-indicator': 'the sliding pill of Tabs, Pagination and Segmented control',
+  'pointer-modality': 'how Tabs and the menus tell a mouse press from a key, for the focus ring',
 }
 // Pages whose component lives in another file (as in registry/build.mjs).
 const ALIASES = { 'area-chart': 'line-chart' }

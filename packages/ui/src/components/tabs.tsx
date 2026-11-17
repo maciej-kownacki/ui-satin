@@ -5,6 +5,10 @@ import { Tabs as TabsPrimitive } from 'radix-ui'
 import { cva } from 'class-variance-authority'
 import { cn } from '../lib/utils'
 import { useSlidingIndicator } from './sliding-indicator'
+import { trackPointerModality } from './pointer-modality'
+
+// Rings after a mouse press: see pointer-modality.tsx.
+trackPointerModality()
 
 /**
  * Tabs, 1:1 with the uiKit `Tabs` (3635:18677) and `tabs/item` (3635:18591) sets.

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "pointer-modality",
+  "type": "registry:ui",
+  "title": "Pointer modality",
+  "description": "The Satin Pointer modality component.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/pointer-modality.tsx",
+      "type": "registry:ui",
+      "content": "/**\n * Radix moves focus from script on a pointer press: Tabs focus the tab on mousedown, menus\n * focus the row under the pointer and give focus back to their trigger when they close. Chrome\n * shows focus set from script as :focus-visible, so those drew the keyboard ring after a mouse\n * click. This notes the last input on <html>: `data-satin-pointer` after a pointer press,\n * removed by the next key. satin.css draws no ring on those elements while it is set.\n * Installed once, by the components that need it; nothing on the server.\n */\nlet installed = false\n\nexport function trackPointerModality() {\n  if (installed || typeof document === 'undefined') return\n  installed = true\n  const root = document.documentElement\n  document.addEventListener('pointerdown', () => root.setAttribute('data-satin-pointer', ''), true)\n  document.addEventListener(\n    'keydown',\n    (e) => {\n      // A shortcut with a modifier isn't moving focus around; Tab, arrows and the rest are.\n      if (!e.metaKey && !e.ctrlKey && !e.altKey) root.removeAttribute('data-satin-pointer')\n    },\n    true,\n  )\n}\n"
+    }
+  ],
+  "meta": {
+    "version": "0.6.0",
+    "edition": "free"
+  }
+}

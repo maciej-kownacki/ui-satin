@@ -21,6 +21,13 @@ export const ComponentsIcon = ({ className }: IconProps) => (
   </svg>
 )
 
+/** All components: four rounded tiles in a grid, drawn to the same 14px, 1.09 stroke grid. */
+export const AllComponentsIcon = ({ className }: IconProps) => (
+  <svg {...icon14} className={className}>
+    <path {...stroke14} d="M2.5 1.75H5.25A.75.75 0 0 1 6 2.5V5.25A.75.75 0 0 1 5.25 6H2.5A.75.75 0 0 1 1.75 5.25V2.5A.75.75 0 0 1 2.5 1.75ZM8.75 1.75H11.5A.75.75 0 0 1 12.25 2.5V5.25A.75.75 0 0 1 11.5 6H8.75A.75.75 0 0 1 8 5.25V2.5A.75.75 0 0 1 8.75 1.75ZM2.5 8H5.25A.75.75 0 0 1 6 8.75V11.5A.75.75 0 0 1 5.25 12.25H2.5A.75.75 0 0 1 1.75 11.5V8.75A.75.75 0 0 1 2.5 8ZM8.75 8H11.5A.75.75 0 0 1 12.25 8.75V11.5A.75.75 0 0 1 11.5 12.25H8.75A.75.75 0 0 1 8 11.5V8.75A.75.75 0 0 1 8.75 8Z" />
+  </svg>
+)
+
 /** AI patterns: a chat bubble with two lines of reply, drawn to the same 14px, 1.09 stroke grid. */
 export const AiPatternsIcon = ({ className }: IconProps) => (
   <svg {...icon14} className={className}>
