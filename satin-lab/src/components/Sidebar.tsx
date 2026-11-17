@@ -171,11 +171,9 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
           className={cn(
             'flex h-8 items-center truncate rounded-pill pr-3 text-[13px] leading-[19.5px]',
             nested ? 'pl-[46px]' : 'pl-[34px]',
-            'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
+            rowHover,
             'focus-visible:shadow-border-focus focus-visible:outline-none',
-            // Positioned, so the row paints above the hover glider, which is its hover fill.
-            'relative',
-            isCurrent ? 'bg-bg-selected text-text-default' : 'text-text-muted hover:text-text-default active:bg-bg-selected',
+            isCurrent ? 'bg-bg-selected text-text-default' : 'text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
           )}
         >
           <Highlight text={item.title} query={q} />
@@ -273,7 +271,6 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
 
           <nav id="docs-nav" aria-label="Documentation" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2">
             {q && shown.length === 0 && <p className="px-3 py-2 text-sm text-text-muted">No pages match “{query.trim()}”.</p>}
-            <HoverGlider>
             <ul>
               {/* All components: the first row of the same list as the groups, a page of its own with
                   the count of them at the end of the row, where the groups have theirs. */}
@@ -288,10 +285,9 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                       setDrawer(false)
                     }}
                     className={cn(
-                      'relative flex h-8 items-center gap-2 rounded-pill px-3',
-                      'transition-colors duration-(--duration-fast) ease-(--ease-out)',
+                      'flex h-8 items-center gap-2 rounded-pill px-3',
                       'focus-visible:shadow-border-focus focus-visible:outline-none',
-                      current === allComponents.id ? 'bg-bg-selected' : 'active:bg-bg-selected',
+                      current === allComponents.id ? 'bg-bg-selected' : 'hover:bg-bg-hover active:bg-bg-selected',
                     )}
                   >
                     <AllComponentsIcon className="shrink-0 text-text-muted" />
@@ -320,9 +316,8 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                         setOpen((s) => ({ ...s, [group.id]: !s[group.id] }))
                       }}
                       className={cn(
-                        'group/row relative flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left select-none',
-                        'transition-colors duration-(--duration-fast) ease-(--ease-out)',
-                        'active:bg-bg-selected',
+                        'group/row flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left select-none',
+                        'hover:bg-bg-hover active:bg-bg-selected',
                         'focus-visible:shadow-border-focus focus-visible:outline-none',
                       )}
                     >
@@ -371,7 +366,6 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                 )
               })}
             </ul>
-            </HoverGlider>
           </nav>
 
           {/* The banner stays pinned under the list, which scrolls on its own. */}
@@ -415,9 +409,9 @@ function NavParent({
         aria-controls={listId}
         onClick={onToggle}
         className={cn(
-          'relative flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left text-[13px] leading-[19.5px] select-none',
-          'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
-          'hover:text-text-default active:bg-bg-selected',
+          'flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left text-[13px] leading-[19.5px] select-none',
+          rowHover,
+          'hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
           'focus-visible:shadow-border-focus focus-visible:outline-none',
           holdsCurrent ? 'text-text-default' : 'text-text-muted',
         )}
@@ -561,55 +555,12 @@ function HelpBanner() {
 }
 
 /**
- * One hover fill for the whole list that slides from row to row under the pointer. Each row
- * fading its own fill in and out left both half-lit mid-way, so sweeping down the list read
- * as a flicker; one pill that moves keeps the same strength all the way. It fades in where
- * the pointer enters, follows it on --ease-out and fades out when the pointer leaves the list.
- * Mouse only, so a tap doesn't leave it behind. The rows are positioned and paint above it.
+ * A row's hover: its own fill, on and off at once, as in most app sidebars. Only the text
+ * colour eases. A fill that faded per row left two rows half-lit mid-sweep, which read as a
+ * flicker. Tailwind's hover only applies where there is a pointer to hover with, so a tap
+ * leaves nothing behind.
  */
-function HoverGlider({ children }: { children: React.ReactNode }) {
-  const wrap = React.useRef<HTMLDivElement>(null)
-  const pill = React.useRef<HTMLSpanElement>(null)
-  const shown = React.useRef(false)
-  const move = (target: HTMLElement) => {
-    const el = pill.current
-    const box = wrap.current
-    if (!el || !box) return
-    const r = target.getBoundingClientRect()
-    const b = box.getBoundingClientRect()
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
-    // Entering the list it is put in place at once and only fades in; after that it slides.
-    el.style.transitionProperty = shown.current && !reduced ? 'transform, width, height, opacity' : 'opacity'
-    el.style.transform = `translate(${r.left - b.left}px, ${r.top - b.top}px)`
-    el.style.width = `${r.width}px`
-    el.style.height = `${r.height}px`
-    el.style.opacity = '1'
-    shown.current = true
-  }
-  const hide = () => {
-    if (pill.current) pill.current.style.opacity = '0'
-    shown.current = false
-  }
-  return (
-    <div
-      ref={wrap}
-      className="relative"
-      onPointerOver={(e) => {
-        if (e.pointerType !== 'mouse') return
-        const row = (e.target as Element).closest<HTMLElement>('a, button')
-        if (row && wrap.current?.contains(row)) move(row)
-      }}
-      onPointerLeave={hide}
-    >
-      <span
-        ref={pill}
-        aria-hidden
-        className="pointer-events-none absolute top-0 left-0 rounded-pill bg-bg-hover opacity-0 duration-(--duration-base) ease-(--ease-out)"
-      />
-      {children}
-    </div>
-  )
-}
+const rowHover = 'transition-[color] duration-(--duration-fast) ease-(--ease-out)'
 
 /** The count fades out and the chevron in while a group's row is hovered or has keyboard focus. */
 const swapOut =

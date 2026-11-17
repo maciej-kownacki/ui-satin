@@ -3,6 +3,7 @@
 import Docs from '../layouts/Docs.astro'
 import PageHeader from '../components/PageHeader.astro'
 import Chip from '../components/Chip.astro'
+import { Alert } from '@uisatin/ui/alert'
 import { page } from '../nav'
 
 const h2 = 'text-lg font-medium text-text-default'
@@ -21,7 +22,12 @@ const layers = [
   <section aria-labelledby="what-title" class="flex flex-col gap-3 pt-4">
     <h2 id="what-title" class={h2}>What is Satin?</h2>
     <div class="flex flex-col gap-3 text-base leading-6 text-text-muted">
-      <p>Satin ships as a Figma library and as React components that match it one to one: same names, same variants, same tokens.</p>
+      <p>Satin is a Figma library and React components that match it one to one: same names, same variants, same tokens.</p>
+      <Alert
+        intent="info"
+        title="The Figma library isn't shared yet"
+        description="For now Satin is public as React components only. The Figma library will follow later."
+      />
       <p>
         The components are built on <a class="text-text-default underline underline-offset-2" href="https://ui.shadcn.com">shadcn/ui</a> and Radix, so roles, keyboard behaviour and focus management come from proven primitives. Satin owns how they look, and with it the visual side of accessibility: a focus ring and text that hold their contrast, target sizes, motion. What it supports and what it doesn't yet is on the <a class="text-text-default underline underline-offset-2" href="/accessibility">Accessibility</a> page.
       </p>
@@ -31,7 +37,7 @@ const layers = [
   <section aria-labelledby="who-title" class="flex flex-col gap-3 pt-8">
     <h2 id="who-title" class={h2}>Who is Satin for?</h2>
     <ul class="flex flex-col gap-2 text-base leading-6 text-text-muted">
-      <li><span class="font-medium text-text-default">Designers</span> who work in the Satin Figma library and want to see how a component behaves before they use it.</li>
+      <li><span class="font-medium text-text-default">Designers</span> who want to see how a component looks and behaves, in Light and Dark, before they design with it.</li>
       <li><span class="font-medium text-text-default">Engineers</span> who need production code that matches the design without re-creating it by hand.</li>
       <li><span class="font-medium text-text-default">Teams building AI products</span> who need ready answers for prompts, agent progress and decisions.</li>
     </ul>
