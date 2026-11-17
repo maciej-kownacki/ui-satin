@@ -149,7 +149,7 @@ export function Notification({
               </p>
               {badge != null &&
                 (typeof badge === 'string' ? (
-                  <Badge size="sm" shape="rounded" className="shrink-0">
+                  <Badge size="sm" shape="rounded" className="shrink-0 bg-component-notification-badge-bg">
                     {badge}
                   </Badge>
                 ) : (

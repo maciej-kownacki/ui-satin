@@ -280,6 +280,7 @@
   --component-switch-on: var(--color-green-soft-700);
   --component-switch-on-hover: var(--color-green-soft-600);
   --component-kbd-bg: var(--bg-card);
+  --component-notification-badge-bg: var(--status-neutral-bg);
   --control-height-xs: 24px;
   --control-height: 28px;
   --control-height-lg: 32px;
@@ -381,6 +382,7 @@
   --component-switch-on: var(--color-green-soft-600);
   --component-switch-on-hover: var(--color-green-soft-500);
   --component-kbd-bg: var(--bg-muted);
+  --component-notification-badge-bg: var(--color-secondary-pressed-dark);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -475,6 +477,7 @@
     --component-switch-on: var(--color-green-soft-600);
     --component-switch-on-hover: var(--color-green-soft-500);
     --component-kbd-bg: var(--bg-muted);
+    --component-notification-badge-bg: var(--color-secondary-pressed-dark);
   }
 }
 
@@ -659,6 +662,7 @@
   --color-component-switch-on: var(--component-switch-on);
   --color-component-switch-on-hover: var(--component-switch-on-hover);
   --color-component-kbd-bg: var(--component-kbd-bg);
+  --color-component-notification-badge-bg: var(--component-notification-badge-bg);
   --color-tone-bg: var(--tone-bg);
   --color-tone-border: var(--tone-border);
   --color-tone-fg: var(--tone-fg);
