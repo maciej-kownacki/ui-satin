@@ -18,7 +18,8 @@ import { useSatinLabels } from './labels'
  * footer is a tertiary Skip in text/muted and a primary Continue, 16px above and 12px below.
  *
  * - `radio` / `checkbox`: rows of 20px with 4px padding, hover bg action/secondary, 2px apart.
- * - `chips`: wrapping 28px pills 6px apart; selected ones turn status/brand (fill, border, text).
+ * - `chips`: wrapping 28px pills 6px apart; selected ones take component/decision-chip: status/brand
+ *   in Light, a brand edge and tint with a text/default label in Dark.
  * - `ranking`: 10px-radius rows with a grip, a rank dot (primary for #1) and the label. Drag to
  *   reorder, or Alt + Arrow keys; the dragged row lifts with border/strong and the md shadow.
  * - `draft`: the agent's text in a bubble (radius-2xl, 4px top-left); Rewrite makes it editable.
@@ -477,7 +478,9 @@ function DecisionChip({
         'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
         'disabled:pointer-events-none disabled:opacity-50',
         selected
-          ? 'border-status-brand-fg bg-status-brand-bg text-status-brand-fg'
+          ? // component/decision-chip: status/brand in Light; in Dark a brand edge and tint with a
+            // text/default label, since status/brand fg is a pale tint there.
+            'border-component-decision-chip-selected-border bg-component-decision-chip-selected-bg text-component-decision-chip-selected-fg'
           : 'border-border-default bg-bg-popover text-text-default hover:border-border-strong [&_svg]:text-text-muted',
       )}
     >

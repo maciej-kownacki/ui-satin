@@ -281,6 +281,9 @@
   --component-switch-on-hover: var(--color-green-soft-600);
   --component-kbd-bg: var(--bg-card);
   --component-notification-badge-bg: var(--status-neutral-bg);
+  --component-decision-chip-selected-bg: var(--status-brand-bg);
+  --component-decision-chip-selected-border: var(--status-brand-fg);
+  --component-decision-chip-selected-fg: var(--status-brand-fg);
   --control-height-xs: 24px;
   --control-height: 28px;
   --control-height-lg: 32px;
@@ -383,6 +386,9 @@
   --component-switch-on-hover: var(--color-green-soft-500);
   --component-kbd-bg: var(--bg-muted);
   --component-notification-badge-bg: var(--color-secondary-pressed-dark);
+  --component-decision-chip-selected-bg: var(--color-blue-500-a20);
+  --component-decision-chip-selected-border: var(--color-primary-focus-dark);
+  --component-decision-chip-selected-fg: var(--text-default);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -478,6 +484,9 @@
     --component-switch-on-hover: var(--color-green-soft-500);
     --component-kbd-bg: var(--bg-muted);
     --component-notification-badge-bg: var(--color-secondary-pressed-dark);
+    --component-decision-chip-selected-bg: var(--color-blue-500-a20);
+    --component-decision-chip-selected-border: var(--color-primary-focus-dark);
+    --component-decision-chip-selected-fg: var(--text-default);
   }
 }
 
@@ -663,6 +672,9 @@
   --color-component-switch-on-hover: var(--component-switch-on-hover);
   --color-component-kbd-bg: var(--component-kbd-bg);
   --color-component-notification-badge-bg: var(--component-notification-badge-bg);
+  --color-component-decision-chip-selected-bg: var(--component-decision-chip-selected-bg);
+  --color-component-decision-chip-selected-border: var(--component-decision-chip-selected-border);
+  --color-component-decision-chip-selected-fg: var(--component-decision-chip-selected-fg);
   --color-tone-bg: var(--tone-bg);
   --color-tone-border: var(--tone-border);
   --color-tone-fg: var(--tone-fg);
