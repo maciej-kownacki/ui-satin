@@ -504,7 +504,7 @@ function HelpBanner() {
         <p className="leading-[19.5px] text-text-muted">Get expert product design for your business.</p>
       </div>
       <Button asChild variant="secondary" shape="rounded" className={cn('relative w-full', fade)}>
-        <a href="https://cal.com/maciej-kownacki-22br6h/15min" target="_blank" rel="noreferrer">
+        <a href="https://cal.com/maciej-kownacki-22br6h/15min" target="_blank" rel="noreferrer" data-track="book_call">
           Book a call
         </a>
       </Button>

@@ -236,7 +236,7 @@ export function Customizer() {
 
   const trigger = (props: React.ComponentProps<typeof Button>) => (
     // The same height as Waitlist; a palette alone on phones, where the bar is tight.
-    <Button variant="secondary" size="lg" shape="rounded" aria-label="Customize" {...props}>
+    <Button variant="secondary" size="lg" shape="rounded" aria-label="Customize" data-track="customize" {...props}>
       <Palette />
       <span className="hidden sm:inline">Customize</span>
     </Button>

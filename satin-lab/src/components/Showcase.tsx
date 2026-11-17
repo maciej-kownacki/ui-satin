@@ -301,7 +301,7 @@ export function Showcase({ name, options, codeHtml, controls, render, align = 'c
               <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-subtle pr-2 pl-4">
                 <span className="text-sm text-text-muted">{current.label}</span>
                 <div className="flex items-center gap-1">
-                  <Button variant="tertiary" shape="rounded" onClick={copy} className="text-text-muted hover:text-text-default">
+                  <Button variant="tertiary" shape="rounded" onClick={copy} data-track="copy" data-track-what="Example code" className="text-text-muted hover:text-text-default">
                     {copied ? <Check /> : <Copy />}
                     <span aria-live="polite">{copied ? 'Copied' : 'Copy code'}</span>
                   </Button>

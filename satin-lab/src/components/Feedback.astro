@@ -1,0 +1,29 @@
+---
+/**
+ * The last thing on every docs page: two ways to tell us about it, each opening a GitHub issue
+ * form (.github/ISSUE_TEMPLATE) with the page already filled in, so a report needs no account
+ * set-up beyond GitHub and lands where the work happens.
+ */
+import { GITHUB } from '../lib/site'
+
+interface Props {
+  /** The nav id of the page, written into the form's "Component or page" field. */
+  id: string
+  title: string
+}
+const { id, title } = Astro.props
+// The title starts with the page's name, the reporter writes the rest.
+const issue = (template: string) => `${GITHUB}/issues/new?${new URLSearchParams({ template, title: `${title}: `, page: id })}`
+const link =
+  'rounded-sm font-medium text-text-default underline decoration-border-strong underline-offset-4 transition-colors duration-(--duration-fast) ease-(--ease-out) hover:decoration-text-default focus-visible:shadow-border-focus focus-visible:outline-none'
+---
+
+<aside aria-label="Feedback" class="mt-12 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border-subtle pt-6 text-sm leading-5 text-text-muted">
+  <p class="mr-auto">Something wrong or missing on this page?</p>
+  <a href={issue('bug.yml')} target="_blank" rel="noreferrer" class={link} data-track="feedback" data-track-kind="problem">
+    Report a problem
+  </a>
+  <a href={issue('idea.yml')} target="_blank" rel="noreferrer" class={link} data-track="feedback" data-track-kind="idea">
+    Suggest an improvement
+  </a>
+</aside>

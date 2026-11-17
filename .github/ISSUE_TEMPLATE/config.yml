@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Docs
+    url: https://uisatin.dev
+    about: Every component with its API, accessibility notes and examples.

@@ -1,0 +1,22 @@
+name: Suggest an improvement
+description: A component, a variant or a change to the docs you'd like to see.
+labels: [idea]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Component or page
+      description: Filled in when you come from a page on uisatin.dev. Leave empty for a new component.
+      placeholder: notification
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+      description: What you're building and what's missing for it.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Examples
+      description: Links or screenshots of how other apps or systems do it.

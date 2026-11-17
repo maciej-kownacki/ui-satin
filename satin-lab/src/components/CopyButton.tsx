@@ -15,7 +15,7 @@ export default function CopyButton({ text, label = 'Copy code' }: { text: string
     }
   }
   return (
-    <Button variant="tertiary" shape="rounded" onClick={copy} className="text-text-muted hover:text-text-default">
+    <Button variant="tertiary" shape="rounded" onClick={copy} data-track="copy" data-track-what={label} className="text-text-muted hover:text-text-default">
       {copied ? <Check /> : <Copy />}
       <span aria-live="polite">{copied ? 'Copied' : label}</span>
     </Button>

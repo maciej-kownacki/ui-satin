@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions'
+import Analytics from '@vercel/analytics/astro'
 import '../styles/lab.css'
 
 interface Props {
@@ -72,5 +73,22 @@ const canonical = new URL(Astro.url.pathname.replace(/(.)\/$/, "$1"), Astro.site
       Skip to content
     </a>
     <slot />
+    <!-- Vercel Web Analytics: no cookies, so no consent banner. Page views on every page change;
+         not on the pages kept out of search, which are filmed and compared with Figma. -->
+    {!hidden && <Analytics />}
+    <script>
+      import { track } from '@vercel/analytics'
+      // Clicks on anything marked data-track="name" become a custom event, with the page and the
+      // element's other data-track-* attributes (data-track-kind="idea" → kind: 'idea').
+      document.addEventListener('click', (e) => {
+        const el = (e.target as Element | null)?.closest<HTMLElement>('[data-track]')
+        if (!el?.dataset.track) return
+        const props: Record<string, string> = { page: location.pathname }
+        for (const [key, value] of Object.entries(el.dataset)) {
+          if (key.startsWith('track') && key !== 'track' && value) props[key.slice(5).toLowerCase()] = value
+        }
+        track(el.dataset.track, props)
+      })
+    </script>
   </body>
 </html>

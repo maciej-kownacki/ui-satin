@@ -7,6 +7,8 @@
 import Layout from './Layout.astro'
 import { Sidebar } from '../components/Sidebar'
 import { Customizer } from '../components/Customizer'
+import { GithubLink } from '../components/GithubLink'
+import Feedback from '../components/Feedback.astro'
 import { nav, page } from '../nav'
 
 interface Props {
@@ -31,6 +33,7 @@ const title = current === 'introduction' ? 'Satin: the React design system for y
       </a>
     </div>
     <div class="flex items-center gap-2">
+      <GithubLink />
       <Customizer client:load transition:persist="customizer" />
     </div>
   </header>
@@ -44,6 +47,7 @@ const title = current === 'introduction' ? 'Satin: the React design system for y
     <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none lg:overflow-y-auto lg:overscroll-contain">
       <div class="flex w-full max-w-[720px] flex-col gap-4 pb-24">
         <slot />
+        <Feedback id={current} title={item.title} />
       </div>
     </main>
   </div>
