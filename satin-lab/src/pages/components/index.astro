@@ -37,7 +37,8 @@ const card =
       cards.map((c) => (
         <li data-card data-group={c.group} data-title={c.title.toLowerCase()}>
           <article class={card}>
-            <div class="relative aspect-[16/10] rounded-t-[15px] border-b border-border-subtle bg-bg-field [clip-path:inset(0_round_15px_15px_0_0)]">
+            {/* The card's corner less its 1px edge, from the token, so it stays concentric when Customize scales the corners. */}
+            <div class="relative aspect-[16/10] rounded-t-(--inner) border-b border-border-subtle bg-bg-field [--inner:max(0px,calc(var(--radius-2xl)-1px))] [clip-path:inset(0_round_var(--inner)_var(--inner)_0_0)]">
               <CardPreview client:visible={{ rootMargin: '300px' }} id={c.id} />
             </div>
             <div class="flex items-center justify-between gap-3 px-4 py-3">

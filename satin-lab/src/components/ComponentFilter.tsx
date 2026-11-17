@@ -5,7 +5,8 @@ import { SegmentedControl } from '@uisatin/ui/segmented-control'
 /**
  * The search and the group filter over the All components grid. The cards are static HTML
  * (pages/components/index.astro); this only hides the ones that don't match, by their
- * data-title and data-group, and says how many are left.
+ * data-title and data-group. How many are left is said to screen readers only; on screen the
+ * grid itself shows it.
  */
 export function ComponentFilter({ groups }: { groups: { value: string; label: string }[] }) {
   const [query, setQuery] = React.useState('')
@@ -30,12 +31,10 @@ export function ComponentFilter({ groups }: { groups: { value: string; label: st
       <div className="w-full sm:w-[280px]">
         <SearchBar aria-label="Search components" placeholder="Search components…" value={query} onChange={(e) => setQuery(e.target.value)} hotkey={false} shortcut={false} />
       </div>
-      <div className="flex items-center gap-3">
-        <SegmentedControl aria-label="Group" items={[{ value: 'all', label: 'All' }, ...groups]} value={group} onValueChange={setGroup} />
-        <span aria-live="polite" className="min-w-[72px] text-right text-sm text-text-muted">
-          {shown == null ? '' : `${shown} ${shown === 1 ? 'page' : 'pages'}`}
-        </span>
-      </div>
+      <SegmentedControl aria-label="Group" items={[{ value: 'all', label: 'All' }, ...groups]} value={group} onValueChange={setGroup} />
+      <span aria-live="polite" className="sr-only">
+        {shown == null ? '' : `${shown} ${shown === 1 ? 'page' : 'pages'}`}
+      </span>
     </div>
   )
 }
