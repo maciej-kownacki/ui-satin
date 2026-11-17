@@ -59,7 +59,30 @@ export interface ShowcaseProps {
 
 type Tab = 'preview' | 'code'
 
-export function Showcase({ name, options, codeHtml, controls, render, align = 'center' }: ShowcaseProps) {
+/**
+ * Set by the All components page: a Showcase inside it renders only what its stage would show
+ * first (the first option, every prop at its default), with no frame, tabs or controls, so the
+ * page's cards show the real component.
+ */
+export const ShowcasePreview = React.createContext(false)
+
+export function Showcase(props: ShowcaseProps) {
+  return React.useContext(ShowcasePreview) ? <ShowcaseStage {...props} /> : <ShowcaseFull {...props} />
+}
+
+/** The stage's content alone, for ShowcasePreview. The preview can still move its own props. */
+function ShowcaseStage({ options, controls, render }: ShowcaseProps) {
+  // An overlay whose demo starts closed (an `open` switch) shows open, so the card has something to show.
+  const [values, setValues] = React.useState(() =>
+    Object.fromEntries((controls ?? []).map((c) => [c.id, c.id === 'open' && c.type === 'switch' ? 'on' : initialValue(c)])),
+  )
+  const setValue = React.useCallback((id: string, value: string) => setValues((s) => ({ ...s, [id]: value })), [])
+  const option = controls ? comboId(controls, values) : options[0].id
+  const current = options.find((o) => o.id === option) ?? options[0]
+  return <>{render(current.id, values, setValue)}</>
+}
+
+function ShowcaseFull({ name, options, codeHtml, controls, render, align = 'center' }: ShowcaseProps) {
   const [values, setValues] = React.useState(() =>
     Object.fromEntries((controls ?? []).map((c) => [c.id, initialValue(c)])),
   )
