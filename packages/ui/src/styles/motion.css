@@ -9,6 +9,8 @@
   --duration-fast: 150ms;
   --duration-base: 200ms;
   --duration-slow: 250ms;
+  /* The dialog arriving: the one thing that takes the whole screen gets a beat longer. */
+  --duration-slower: 300ms;
 }
 
 /* Reduced motion stops Satin's own elements and what's inside them, nothing else: the rest of
@@ -48,6 +50,19 @@
   background-clip: text;
   color: transparent;
   animation: satin-shimmer 1.6s linear infinite;
+}
+
+/* Dialog (components/dialog.tsx): the panel rises 12px and settles from 0.98 as it fades in,
+   over a scrim that fades with it; it leaves the same way, shorter and smaller. */
+@keyframes satin-dialog-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+}
+@keyframes satin-dialog-out {
+  to { opacity: 0; transform: translateY(6px) scale(0.98); }
+}
+/* Changes nothing; it only keeps an element mounted for as long as it runs (see dialog.tsx). */
+@keyframes satin-hold {
+  to { opacity: 1; }
 }
 
 /* Overlays and sheets (components/sheet.tsx): the scrim fades, the sheet slides from its edge. */

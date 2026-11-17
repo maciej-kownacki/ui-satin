@@ -146,8 +146,25 @@ export function DialogContent({ variant = 'default', closeButton = true, contain
   return (
     <DialogPrimitive.Portal container={container}>
       {/* No overlay in Figma; black-a40 is the kit's scrim colour. Only drawn when modal. */}
-      <DialogPrimitive.Overlay data-slot="dialog-overlay" className={cn(position, 'inset-0 z-50 bg-black-a40')} />
-      <div className={cn(position, 'pointer-events-none inset-0 z-50 grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)] place-items-center p-4')}>
+      <DialogPrimitive.Overlay
+        data-slot="dialog-overlay"
+        className={cn(
+          position,
+          'inset-0 z-50 bg-black-a40',
+          'data-[state=open]:animate-[satin-fade-in_var(--duration-slower)_var(--ease-out)]',
+          'data-[state=closed]:animate-[satin-fade-out_var(--duration-base)_var(--ease-out)_forwards]',
+        )}
+      />
+      {/* Radix keeps a portal's child mounted only while that child animates, so while the panel
+          plays its exit this wrapper plays an empty animation as long; otherwise it unmounts at
+          once and takes the panel with it. */}
+      <div
+        className={cn(
+          position,
+          'pointer-events-none inset-0 z-50 grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)] place-items-center p-4',
+          'has-[>[data-state=closed]]:animate-[satin-hold_var(--duration-base)]',
+        )}
+      >
         <DialogPrimitive.Content
           {...props}
           role={variant === 'destructive' ? 'alertdialog' : 'dialog'}
@@ -158,7 +175,8 @@ export function DialogContent({ variant = 'default', closeButton = true, contain
             'rounded-2xl border border-border-default bg-bg-popover',
             '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
             'focus-visible:outline-none',
-            'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
+            'data-[state=open]:animate-[satin-dialog-in_var(--duration-slower)_var(--ease-out)]',
+            'data-[state=closed]:animate-[satin-dialog-out_var(--duration-base)_var(--ease-out)_forwards]',
             className,
           )}
         >

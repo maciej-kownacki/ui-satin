@@ -10,7 +10,8 @@ The tokens live in `src/styles/motion.css`.
 | `--ease-in-out` | `cubic-bezier(0.77, 0, 0.175, 1)` | Something already on screen moving to a new place |
 | `--duration-fast` | 150 ms | Hover, press, colour changes |
 | `--duration-base` | 200 ms | Toggles, the segmented pill, a section opening |
-| `--duration-slow` | 250 ms | The upper limit for anything in the UI |
+| `--duration-slow` | 250 ms | Sheets, popovers; the upper limit for anything else |
+| `--duration-slower` | 300 ms | The dialog arriving, the one thing that takes the whole screen |
 
 ## The rules
 
@@ -19,7 +20,8 @@ The tokens live in `src/styles/motion.css`.
    along with `transform` so its corners don't stretch.
 2. **Ease-out for anything the user starts.** It moves fast at first, so the interface answers the click at once.
    Never use ease-in for UI: it starts slowly and feels late.
-3. **Stay under 250 ms.** Most transitions are 150–200 ms. Anything longer starts to feel like waiting.
+3. **Stay under 250 ms.** Most transitions are 150–200 ms. Anything longer starts to feel like waiting. The dialog is
+   the one exception: it rises over 300 ms with its scrim, so a whole-screen change doesn't read as a cut.
 4. **Pressing gives feedback.** Buttons scale to 0.97 while held (`active:scale-[0.97]`).
 5. **Nothing grows from zero.** Elements that appear start from opacity 0 and a few pixels of offset (or scale 0.95),
    never from `scale(0)`. Collapsible content fades and settles in; its height is not animated.
