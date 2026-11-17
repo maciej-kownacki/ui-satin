@@ -276,7 +276,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
             <HoverGlider>
             <ul>
               {/* All components: the first row of the same list as the groups, a page of its own with
-                  the count of them. A hidden chevron keeps its count in line with the groups' counts. */}
+                  the count of them at the end of the row, where the groups have theirs. */}
               {!q && (
                 <li>
                   <a
@@ -301,7 +301,6 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                       {componentPages().length}
                       <span className="sr-only"> pages</span>
                     </Count>
-                    <ChevronRight className="invisible shrink-0" />
                   </a>
                 </li>
               )}
@@ -321,7 +320,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                         setOpen((s) => ({ ...s, [group.id]: !s[group.id] }))
                       }}
                       className={cn(
-                        'relative flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left select-none',
+                        'group/row relative flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left select-none',
                         'transition-colors duration-(--duration-fast) ease-(--ease-out)',
                         'active:bg-bg-selected',
                         'focus-visible:shadow-border-focus focus-visible:outline-none',
@@ -331,18 +330,22 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                       <span className="min-w-0 flex-1 truncate text-[13px] leading-4 font-medium text-text-default">
                         {group.title}
                       </span>
-                      {group.id !== 'docs' && (
-                        <Count>
-                          <span className="sr-only">, </span>
-                          {pagesOf(group.items).length}
-                          <span className="sr-only"> pages</span>
-                        </Count>
-                      )}
-                      {isOpen ? (
-                        <ChevronDown className="shrink-0 text-text-muted" />
-                      ) : (
-                        <ChevronRight className="shrink-0 text-text-muted" />
-                      )}
+                      {/* One slot at the end: the count at rest; the chevron takes its place while the
+                          row is hovered or has keyboard focus, saying it folds. */}
+                      <span className="grid shrink-0 items-center justify-items-end [&>*]:[grid-area:1/1]">
+                        {group.id !== 'docs' && (
+                          <span className={swapOut}>
+                            <Count>
+                              <span className="sr-only">, </span>
+                              {pagesOf(group.items).length}
+                              <span className="sr-only"> pages</span>
+                            </Count>
+                          </span>
+                        )}
+                        <span className={swapIn}>
+                          {isOpen ? <ChevronDown className="text-text-muted" /> : <ChevronRight className="text-text-muted" />}
+                        </span>
+                      </span>
                     </button>
                     {/* The group grows downwards from under its header, which stays put (satin-expand). */}
                     <div id={listId} data-state={isOpen ? 'open' : 'closed'} className="satin-expand">
@@ -412,23 +415,24 @@ function NavParent({
         aria-controls={listId}
         onClick={onToggle}
         className={cn(
-          'relative flex h-8 w-full items-center gap-2 rounded-pill pr-3 pl-[34px] text-left text-[13px] leading-[19.5px] select-none',
+          'relative flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left text-[13px] leading-[19.5px] select-none',
           'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
           'hover:text-text-default active:bg-bg-selected',
           'focus-visible:shadow-border-focus focus-visible:outline-none',
           holdsCurrent ? 'text-text-default' : 'text-text-muted',
         )}
       >
+        {/* The chevron sits left of the title, in the group icons' column, so the title still
+            lines up with the pages around it; the count ends the row like the groups'. */}
+        {open ? <ChevronDown className="shrink-0 text-text-muted" /> : <ChevronRight className="shrink-0 text-text-muted" />}
         <span className="min-w-0 flex-1 truncate">
           <Highlight text={item.title} query={query} />
         </span>
-        {/* How many pages fold under it, in the group header's counter. */}
         <Count>
           <span className="sr-only">, </span>
           {item.children!.length}
           <span className="sr-only"> pages</span>
         </Count>
-        {open ? <ChevronDown className="shrink-0 text-text-muted" /> : <ChevronRight className="shrink-0 text-text-muted" />}
       </button>
       <div id={listId} data-state={open ? 'open' : 'closed'} className="satin-expand">
         <ul>{item.children!.map(renderLink)}</ul>
@@ -606,6 +610,12 @@ function HoverGlider({ children }: { children: React.ReactNode }) {
     </div>
   )
 }
+
+/** The count fades out and the chevron in while a group's row is hovered or has keyboard focus. */
+const swapOut =
+  'transition-opacity duration-(--duration-fast) ease-(--ease-out) group-hover/row:opacity-0 group-focus-visible/row:opacity-0'
+const swapIn =
+  'flex opacity-0 transition-opacity duration-(--duration-fast) ease-(--ease-out) group-hover/row:opacity-100 group-focus-visible/row:opacity-100'
 
 /**
  * A row's count of pages: Satin's Badge, small. Outline, not soft: the neutral soft fill is the
