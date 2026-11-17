@@ -18,6 +18,16 @@ import { Avatar } from '@uisatin/ui/avatar'
       </div>
     </div>
     <p className="text-body">Runs the autumn menu and approves supplier orders over €500.</p>
+    <div className="grid grid-cols-2 gap-6 border-t border-border-subtle pt-3">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-xs text-text-muted">Orders approved</span>
+        <span className="text-sm font-medium">1,240</span>
+      </div>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-xs text-text-muted">Joined</span>
+        <span className="text-sm font-medium">Mar 2024</span>
+      </div>
+    </div>
   </HoverCard>
 </p>`
 
@@ -49,7 +59,8 @@ export default function HoverCardDemo({ codeHtml }: { codeHtml: Record<string, s
               </div>
             </div>
             <p className="text-body text-text-default">Runs the autumn menu and approves supplier orders over €500.</p>
-            <div className="flex gap-6 border-t border-border-subtle pt-3">
+            {/* Two columns of equal width: each figure takes half the card. */}
+            <div className="grid grid-cols-2 gap-6 border-t border-border-subtle pt-3">
               {[['Orders approved', '1,240'], ['Joined', 'Mar 2024']].map(([k, val]) => (
                 <div key={k} className="flex flex-col gap-0.5">
                   <span className="text-xs text-text-muted">{k}</span>
