@@ -12,7 +12,8 @@ import { useSatinLabels } from './labels'
  * something the agent has prepared and the user only approves — an email, a reply, a meeting,
  * tasks, an insight, an edit or a CRM update.
  *
- * A bg/card card, border/subtle, radius-xl, shadow-sm, 12px in and 12px between its parts:
+ * A bg/popover card (lighter than the page in Dark, like DecisionCard and Message), border/default,
+ * radius-xl, shadow-sm, 12px in and 12px between its parts:
  *
  * - the kind row: what it is, as a neutral Large Outline Badge (white, border/default) with a 14px icon
  *   or app logo (`kind`, `icon`), and on the right who or what it concerns (`meta`: avatars, a
@@ -56,7 +57,7 @@ export function AgentSuggestion({
       data-slot="agent-suggestion"
       aria-labelledby={title ? titleId : undefined}
       className={cn(
-        'flex w-full max-w-[400px] flex-col gap-3 rounded-xl border border-border-subtle bg-bg-card p-3 text-text-default [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+        'flex w-full max-w-[400px] flex-col gap-3 rounded-xl border border-border-default bg-bg-popover p-3 text-text-default [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
         className,
       )}
       {...props}
@@ -67,7 +68,8 @@ export function AgentSuggestion({
             size="lg"
             tone="neutral"
             variant="outline"
-            className="max-w-full [&_img]:size-3.5 [&_img]:shrink-0"
+            // The card's own fill behind the edge: outline's bg/card would sit darker than the card in Dark.
+            className="max-w-full bg-transparent [&_img]:size-3.5 [&_img]:shrink-0"
           >
             {icon}
             <span className="truncate">{kind}</span>
