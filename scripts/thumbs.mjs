@@ -6,10 +6,12 @@
  *   BASE=http://localhost:4341 node scripts/thumbs.mjs [id …]                       # all when none
  *
  * Uses the Chrome installed on the machine (playwright-core, channel chrome). Writes
- * satin-lab/public/thumbs/<id>-light.webp and -dark.webp, 720px wide: the stage at 1×, which is
- * twice the card's width. Run it again when a component's demo changes.
+ * satin-lab/public/thumbs/<id>-light.webp and -dark.webp: the crop at 2× (at least 720px wide, twice
+ * the card on a Retina screen), as lossless WebP, since lossy blurs small UI text. Run it again
+ * when a component's demo changes.
  */
 import { chromium } from 'playwright-core'
+import sharp from 'sharp'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
@@ -29,7 +31,7 @@ const todo = only.length ? pages.filter((p) => only.includes(p.id)) : pages
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true })
 for (const theme of ['light', 'dark']) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, colorScheme: theme, reducedMotion: 'reduce' })
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 2, colorScheme: theme, reducedMotion: 'reduce' })
   await context.addInitScript((t) => localStorage.setItem('satin-theme', t), theme)
   const page = await context.newPage()
   for (const p of todo) {
@@ -76,9 +78,9 @@ for (const theme of ['light', 'dark']) {
       continue
     }
     const cdp = await context.newCDPSession(page)
-    const { data } = await cdp.send('Page.captureScreenshot', { format: 'webp', quality: 82, clip: { ...box, scale: 1 } })
+    const { data } = await cdp.send('Page.captureScreenshot', { format: 'png', clip: { ...box, scale: 2 } })
     await cdp.detach()
-    writeFileSync(`${OUT}${p.id}-${theme}.webp`, Buffer.from(data, 'base64'))
+    writeFileSync(`${OUT}${p.id}-${theme}.webp`, await sharp(Buffer.from(data, 'base64')).webp({ lossless: true, effort: 6 }).toBuffer())
     process.stdout.write(`\r${theme} ${p.id.padEnd(24)}`)
   }
   await context.close()
