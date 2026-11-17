@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, SearchBar, cn } from '@uisatin/ui'
+import { Badge, Button, SearchBar, cn } from '@uisatin/ui'
 import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
 import { allComponents, componentPages, pagesOf, type NavGroup, type NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
@@ -296,11 +296,11 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                   >
                     <AllComponentsIcon className="shrink-0 text-text-muted" />
                     <span className="min-w-0 flex-1 truncate text-[13px] leading-4 font-medium text-text-default">{allComponents.title}</span>
-                    <span data-tone="neutral" className="rounded-sm px-1.5 py-0.5 text-sm leading-[19.5px] text-tone-fg">
+                    <Count>
                       <span className="sr-only">, </span>
                       {componentPages().length}
                       <span className="sr-only"> pages</span>
-                    </span>
+                    </Count>
                     <ChevronRight className="invisible shrink-0" />
                   </a>
                 </li>
@@ -332,11 +332,11 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                         {group.title}
                       </span>
                       {group.id !== 'docs' && (
-                        <span data-tone="neutral" className="rounded-sm px-1.5 py-0.5 text-sm leading-[19.5px] text-tone-fg">
+                        <Count>
                           <span className="sr-only">, </span>
                           {pagesOf(group.items).length}
                           <span className="sr-only"> pages</span>
-                        </span>
+                        </Count>
                       )}
                       {isOpen ? (
                         <ChevronDown className="shrink-0 text-text-muted" />
@@ -423,11 +423,11 @@ function NavParent({
           <Highlight text={item.title} query={query} />
         </span>
         {/* How many pages fold under it, in the group header's counter. */}
-        <span data-tone="neutral" className="shrink-0 rounded-sm px-1.5 py-0.5 text-sm leading-[19.5px] text-tone-fg">
+        <Count>
           <span className="sr-only">, </span>
           {item.children!.length}
           <span className="sr-only"> pages</span>
-        </span>
+        </Count>
         {open ? <ChevronDown className="shrink-0 text-text-muted" /> : <ChevronRight className="shrink-0 text-text-muted" />}
       </button>
       <div id={listId} data-state={open ? 'open' : 'closed'} className="satin-expand">
@@ -604,6 +604,18 @@ function HoverGlider({ children }: { children: React.ReactNode }) {
       />
       {children}
     </div>
+  )
+}
+
+/**
+ * A row's count of pages: Satin's Badge, small. Outline, not soft: the neutral soft fill is the
+ * hover fill's colour, so on a hovered row it vanished and the count read as a bare number.
+ */
+function Count({ children }: { children: React.ReactNode }) {
+  return (
+    <Badge size="sm" variant="outline" className="tabular-nums">
+      {children}
+    </Badge>
   )
 }
 
