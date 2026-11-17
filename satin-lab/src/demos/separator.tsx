@@ -67,12 +67,12 @@ export default function SeparatorDemo({ codeHtml }: { codeHtml: Record<string, s
           </nav>
         ) : (
           <div className="grid w-80 gap-4 text-sm">
-            <div>
+            <div className="flex flex-col gap-0.5">
               <p className="font-medium text-text-default">Workspace</p>
               <p className="text-text-muted">Name, logo and the URL people sign in at.</p>
             </div>
             <Separator />
-            <div>
+            <div className="flex flex-col gap-0.5">
               <p className="font-medium text-text-default">Members</p>
               <p className="text-text-muted">Who can see and edit this workspace.</p>
             </div>

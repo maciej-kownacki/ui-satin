@@ -87,7 +87,7 @@ export function Alert({
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         {title && <p className="text-base leading-5 font-medium text-text-default">{title}</p>}
-        {body && <div className="text-body text-text-muted">{body}</div>}
+        {body && <div className={cn('text-body text-text-muted', title && 'mt-0.5')}>{body}</div>}
         {actionBelow && <div className="mt-2.5 flex flex-wrap items-center gap-2">{action}</div>}
       </div>
       {action && !actionBelow && <div className="-my-1 flex shrink-0 items-center gap-2">{action}</div>}

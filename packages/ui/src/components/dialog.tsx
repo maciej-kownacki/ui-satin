@@ -196,7 +196,7 @@ export function DialogContent({ variant = 'default', closeButton = true, contain
 
 /** The title and description, 16 / 16 / 8 in, clear of the close button. */
 export function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="dialog-header" className={cn('flex shrink-0 flex-col gap-0.5 px-4 pt-4 pb-2', className)} {...props} />
+  return <div data-slot="dialog-header" className={cn('flex shrink-0 flex-col gap-1 px-4 pt-4 pb-2', className)} {...props} />
 }
 
 /** The dialog's accessible name: 14px medium. */

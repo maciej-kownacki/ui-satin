@@ -286,6 +286,7 @@
   --component-decision-chip-selected-fg: var(--status-brand-fg);
   --component-file-icon-bg: var(--bg-muted);
   --component-input-otp-success-border: var(--status-green-fg);
+  --component-message-bubble-bg: var(--action-inverse-bg);
   --control-height-xs: 24px;
   --control-height: 28px;
   --control-height-lg: 32px;
@@ -393,6 +394,7 @@
   --component-decision-chip-selected-fg: var(--text-default);
   --component-file-icon-bg: var(--color-segmented-selected-dark);
   --component-input-otp-success-border: var(--color-green-soft-600);
+  --component-message-bubble-bg: var(--color-zinc-300);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -493,6 +495,7 @@
     --component-decision-chip-selected-fg: var(--text-default);
     --component-file-icon-bg: var(--color-segmented-selected-dark);
     --component-input-otp-success-border: var(--color-green-soft-600);
+    --component-message-bubble-bg: var(--color-zinc-300);
   }
 }
 
@@ -683,6 +686,7 @@
   --color-component-decision-chip-selected-fg: var(--component-decision-chip-selected-fg);
   --color-component-file-icon-bg: var(--component-file-icon-bg);
   --color-component-input-otp-success-border: var(--component-input-otp-success-border);
+  --color-component-message-bubble-bg: var(--component-message-bubble-bg);
   --color-tone-bg: var(--tone-bg);
   --color-tone-border: var(--tone-border);
   --color-tone-fg: var(--tone-fg);

@@ -11,7 +11,7 @@ import { useSatinLabels } from './labels'
  * error. A 397px popover surface, radius-xl, border/subtle (as on menus), the shadcn `lg` shadow, padding
  * 10 left / 8 right and 10 top and bottom (12 at the bottom on the four status intents, as in
  * Figma). A 36px radius-md icon tile in the intent's status bg, a 13px medium title (20px line)
- * over a 13px muted description (16px line), then an optional secondary action and a 24px close.
+ * over a 13px muted description (18px line, 2px under the title), then an optional secondary action and a 24px close.
  *
  * Built on the Radix Toast. Render one `<Toaster />` near the root and call `toast()` anywhere:
  *   toast.success('Booking confirmed', { description: 'Table for 4…', action: { label: 'Undo' } })
@@ -206,7 +206,7 @@ function ToastContent({
       <div className="flex min-w-0 flex-1 flex-col text-sm">
         <ToastPrimitive.Title className="leading-5 font-medium text-text-default">{title}</ToastPrimitive.Title>
         {description ? (
-          <ToastPrimitive.Description className="leading-4 text-text-muted">{description}</ToastPrimitive.Description>
+          <ToastPrimitive.Description className="mt-0.5 leading-[18px] text-text-muted">{description}</ToastPrimitive.Description>
         ) : null}
       </div>
       {(action || closeButton) && (

@@ -157,7 +157,7 @@ export function Notification({
                 ))}
             </div>
             {description ? (
-              <p id={descriptionId} className="truncate text-sm leading-[18px] text-text-muted">
+              <p id={descriptionId} className="mt-0.5 truncate text-sm leading-[18px] text-text-muted">
                 {description}
               </p>
             ) : null}

@@ -11,7 +11,7 @@ import { useSatinLabels } from './labels'
  * Card, 1:1 with the uiKit `Card` set (1122:20156): bg/popover (like Decision card), 1px border/default, radius-2xl (16),
  * no shadow, 405 wide by default. Three stacked sections with no gap between them:
  *
- * - header: title in Label/lg (14/14 medium), description in text/sm muted, 2px apart.
+ * - header: title in Label/lg (14/14 medium), description in text/sm muted, 4px apart.
  *   Padding 16 / 16 / 0 on md, 12 / 12 / 0 on sm (no bottom padding: the body's top padding
  *   is the space under it).
  * - body (children): 16 padding on md, 12 on sm, children 8 apart.
@@ -65,7 +65,7 @@ export function Card({
       {...props}
     >
       {hasHeader && (
-        <div data-slot="card-header" className={cn('flex flex-col gap-0.5 px-(--card-pad) pt-(--card-pad)', onClose && 'pe-10')}>
+        <div data-slot="card-header" className={cn('flex flex-col gap-1 px-(--card-pad) pt-(--card-pad)', onClose && 'pe-10')}>
           {title != null && (
             <div id={titleId} className="text-base leading-[14px] font-medium tracking-normal text-text-default">
               {title}
