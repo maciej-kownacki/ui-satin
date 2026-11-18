@@ -10,9 +10,9 @@ import { Thinking, type ThinkingStep } from './thinking'
  * Message, 1:1 with the uiKit Message docs view (3890:70165), composed from `_chat/userMessage`
  * (901:20155), `_chat/source` and `_chat/answerActions` (901:20164, see MessageActions).
  *
- * user: a right-aligned bubble (component/message/bubble-bg: action/inverse in Light, a light grey in
- * Dark; 12px corners, 4px bottom-right), 12 × 8
- * padding, text/on-inverse 13/19.5, wrapping at 256px of text. A source card sits 8px above
+ * user: a right-aligned bubble (component/message/bubble-bg and -fg: action/inverse with
+ * text/on-inverse in Light, bg/muted with text/default in Dark; 12px corners, 4px bottom-right),
+ * 12 × 8 padding, 13/19.5 text, wrapping at 256px of text. A source card sits 8px above
  * it: bg/canvas, border/subtle, radius 10, 16px logo, title medium 13/18, url 12/12 muted.
  *
  * assistant: no bubble, so long answers read like a document — text/default 13/19.5, with
@@ -65,7 +65,7 @@ export function Message({
       <div data-slot="message" data-role="user" className={cn('flex flex-col items-end gap-2', className)} {...props}>
         {source && <SourceCard source={source} />}
         <div className="max-w-full rounded-xl rounded-ee-xs bg-component-message-bubble-bg px-3 py-2">
-          <div className="max-w-64 text-body break-words text-text-on-inverse">{children}</div>
+          <div className="max-w-64 text-body break-words text-component-message-bubble-fg">{children}</div>
         </div>
       </div>
     )
