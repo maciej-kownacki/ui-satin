@@ -49,6 +49,20 @@ function days(start: Date, count: number, seed: number) {
   })
 }
 
+/** A point per day, labelled "Oct 5", for the line and area charts, whose tooltip follows the cursor day by day. */
+function daily(start: Date, count: number, seed: number) {
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(start)
+    d.setDate(d.getDate() + i)
+    const weekend = d.getDay() === 0 || d.getDay() >= 5
+    return {
+      label: `${MONTHS[d.getMonth()]} ${d.getDate()}`,
+      value: Math.round((weekend ? 440 : 230) * (0.8 + 0.4 * noise(seed + i))),
+      tooltipLabel: `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`,
+    }
+  })
+}
+
 export const DATA: Record<string, Dataset> = {
   '7 days': {
     range: 'Oct 26 – Nov 1, 2026',
@@ -71,6 +85,22 @@ export const DATA: Record<string, Dataset> = {
   '2025': { range: 'Jan – Dec 2025', data: months(2025, 0, 12, 2025) },
   '2026': { range: 'Jan – Nov 2026', data: months(2026, 0, 11, 2026) },
 }
+
+/** The line and area charts' data: a point per day up to a month or a quarter, a month a point for a year, months named in three letters. */
+const threeLetters = (set: Dataset): Dataset => ({ ...set, data: set.data.map((d) => ({ ...d, label: (d.tooltipLabel ?? d.label).slice(0, 3) })) })
+export const LINE_DATA: Record<string, Dataset> = {
+  ...DATA,
+  '30 days': { range: DATA['30 days'].range, data: daily(new Date(2026, 9, 5), 35, 30) },
+  '90 days': { range: DATA['90 days'].range, data: daily(new Date(2026, 7, 1), 92, 90) },
+  '365 days': threeLetters(DATA['365 days']),
+  Sep: { range: DATA.Sep.range, data: daily(new Date(2026, 8, 1), 30, 9) },
+  Oct: { range: DATA.Oct.range, data: daily(new Date(2026, 9, 1), 31, 10) },
+  '2025': threeLetters(DATA['2025']),
+  '2026': threeLetters(DATA['2026']),
+}
+
+/** Every third month on a year's axis; about seven labels otherwise. */
+export const lineLabelEvery = (period: string) => (LINE_DATA[period].data.length >= 11 && LINE_DATA[period].data.length <= 12 ? 3 : undefined)
 
 export const PERIODS = [
   ['7 days', '30 days', '90 days', '365 days'],

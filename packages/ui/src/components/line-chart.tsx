@@ -12,13 +12,15 @@ import { useSatinLabels } from './labels'
  *
  * One metric over the period: a smooth 2px line in chart/3 (monotone, so it never overshoots a
  * point) over a 180px plot with a 32px axis gutter and 4 dashed border-subtle gridlines at nice
- * ticks, the x labels 6px under it (at most about seven, evenly picked). `AreaCard` fills under
+ * ticks, the x labels 6px under it (about seven, five when they are dates, evenly picked, or
+ * every `labelEvery`th counted back from the last point; the last one ends at the plot's edge). `AreaCard` fills under
  * the line with chart/3 fading from 28% to nothing at the baseline. No legend: the title says
  * what is plotted and the KPI above gives its total.
  *
- * Hover (or `highlight`) picks the nearest point: a dashed border-strong drop line from it to the
- * baseline, an 8px dot ringed in chart/3 on bg/card, the tooltip above it (date and value) and
- * its x label in text/default. Every point is also reachable with the keyboard (arrow keys on the
+ * Hover (or `highlight`) picks the point nearest the cursor, so with a point per day the tooltip
+ * follows the cursor along the line, its date and value changing as it goes: a dashed
+ * border-strong drop line from the point to the baseline, an 8px dot ringed in chart/3 on bg/card,
+ * the tooltip above it and its x label in text/default when that label is shown. Every point is also reachable with the keyboard (arrow keys on the
  * focused plot). When the data changes the plot fades in on its new scale, unless motion is
  * reduced.
  */
@@ -27,6 +29,9 @@ export interface LineCardProps extends ChartCardBaseProps {
   unit?: string
   /** Fill under the line. `AreaCard` sets it. */
   area?: boolean
+  /** Show every nth x label, counted back from the last point (3 for every third month of a year).
+   *  Left out, about seven labels spread across the plot (five when they are dates). */
+  labelEvery?: number
   /** Swap the plot without the fade when the data changes, as under prefers-reduced-motion. */
   reducedMotion?: boolean
 }
@@ -73,6 +78,7 @@ export function LineCard({
   highlight,
   unit,
   area = false,
+  labelEvery,
   reducedMotion,
   total,
   ...props
@@ -97,7 +103,10 @@ export function LineCard({
   const y = (v: number) => TRACK - (v / max) * TRACK
   const pts = data.map((d, i) => [x(i), y(d.value)] as [number, number])
   const line = smoothPath(pts)
-  const step = Math.max(1, Math.ceil(n / 7))
+  // About seven short labels ("Mon", "Jan"), five when they are dates ("Oct 31"), so they keep
+  // apart in a compact card too.
+  const longest = Math.max(0, ...data.map((d) => String(d.label).length))
+  const step = labelEvery && labelEvery > 0 ? Math.round(labelEvery) : Math.max(1, Math.ceil(n / (longest > 4 ? 5 : 7)))
   const showLabel = (i: number) => (n - 1 - i) % step === 0
 
   const pick = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -205,7 +214,10 @@ export function LineCard({
               <span
                 key={`${redraw.n}-${d.label}-${i}`}
                 className={cn(
-                  'absolute -translate-x-1/2 text-sm leading-(--text-sm--line-height) whitespace-nowrap',
+                  // Centred on its point; the last one ends at the plot's edge instead, so a date
+                  // ("Oct 31") isn't cut by the card. The first has the axis gutter to spill into.
+                  'absolute text-sm leading-(--text-sm--line-height) whitespace-nowrap',
+                  i === n - 1 && n > 1 ? '-translate-x-full' : '-translate-x-1/2',
                   i === active ? 'font-medium text-text-default' : 'text-text-muted',
                   fade && 'satin-bar-fade',
                 )}

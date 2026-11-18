@@ -3443,6 +3443,12 @@
           "description": "Fill under the line. `AreaCard` sets it."
         },
         {
+          "name": "labelEvery",
+          "type": "number",
+          "required": false,
+          "description": "Show every nth x label, counted back from the last point (3 for every third month of a year). Left out, about seven labels spread across the plot (five when they are dates)."
+        },
+        {
           "name": "reducedMotion",
           "type": "boolean",
           "required": false,

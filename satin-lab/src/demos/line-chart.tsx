@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { LineCard, AreaCard } from '@uisatin/ui/line-chart'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
-import { DATA, PERIODS, format } from './covers-data'
+import { LINE_DATA as DATA, PERIODS, format, lineLabelEvery } from './covers-data'
 
 // The point shown as hovered with Highlight: the busiest one in the period.
 const busiest = (period: string) => {
@@ -34,6 +34,7 @@ export function makeDemo(kind: 'line' | 'area') {
       `unit="${title.toLowerCase()}"`,
       'formatValue={compact}',
       ...(withPeriods ? ["periods={[['7 days', '30 days', '90 days', '365 days'], ['Sep', 'Oct', 'Nov'], ['2025', '2026']]}", 'value={period}', 'onPeriodChange={setPeriod}'] : []),
+      ...(lineLabelEvery(v.period) ? [`labelEvery={${lineLabelEvery(v.period)}}`] : []),
       ...(v.highlight === 'on' ? [`highlight={${busiest(v.period)}}`] : []),
     ]
     return `${withPeriods ? "import * as React from 'react'\n" : ''}import { ${name} } from '@uisatin/ui/line-chart'
@@ -83,6 +84,7 @@ ${attrs.map((a) => `      ${a}`).join('\n')}
               unit={title.toLowerCase()}
               formatValue={format}
               {...(v.periods === 'on' && { periods: PERIODS, value: v.period, onPeriodChange: (p: string) => set('period', p) })}
+              labelEvery={lineLabelEvery(v.period)}
               highlight={v.highlight === 'on' ? busiest(v.period) : undefined}
             />
           </div>
