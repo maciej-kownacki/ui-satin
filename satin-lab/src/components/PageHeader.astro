@@ -1,9 +1,11 @@
 ---
 /**
  * Name and description at the top of a page (uiKit 3857:6010), under breadcrumbs:
- * Group / Page, split by slashes. Pages deeper than the sidebar pass their own trail.
+ * Group / Page, split by slashes. Every crumb but the last links up: a component or AI pattern
+ * group opens All components filtered to it, Docs opens Introduction, a parent (Button, Guides)
+ * opens its page. Pages deeper than the sidebar pass their own trail.
  */
-import { groupOf, parentOf } from '../nav'
+import { groupOf, page, parentOf } from '../nav'
 
 type Crumb = { label: string; href?: string }
 interface Props {
@@ -16,7 +18,17 @@ interface Props {
 }
 const { id, title, description } = Astro.props
 const parent = parentOf(id)
-const crumbs: Crumb[] = Astro.props.crumbs ?? [{ label: groupOf(id).title }, ...(parent ? [{ label: parent.title }] : []), { label: title }]
+const group = groupOf(id)
+/** Where a group's crumb leads: All components filtered to it, or Introduction for Docs. */
+const groupHref = (groupId: string) => (groupId === 'docs' ? '/introduction' : `/?group=${groupId}`)
+const here = page(id).href
+// A crumb that would lead to this very page (Docs on Introduction, Button under Button) is just a label.
+const up = (href: string) => (href === here ? undefined : href)
+const crumbs: Crumb[] = Astro.props.crumbs ?? [
+  { label: group.title, href: up(groupHref(group.id)) },
+  ...(parent ? [{ label: parent.title, href: up(parent.href) }] : []),
+  { label: title },
+]
 ---
 
 <header class="flex flex-col gap-10">

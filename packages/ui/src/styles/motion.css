@@ -152,14 +152,20 @@
 }
 /* The clip that folds the content reaches 2px past it on every side, the width of the focus ring
    (shadow/border-focus), so a focused row inside shows its whole ring; the negative margin takes
-   the room back, so nothing moves. */
+   the room back, so nothing moves. That 2px overlaps the header above and the row below, so the
+   wrapper lets the pointer through and only what it holds takes it: otherwise the header's
+   bottom edge stops answering hover and clicks. */
 .satin-expand > * {
   min-height: 0;
   overflow: hidden;
   padding: 2px;
   margin: -2px;
+  pointer-events: none;
   opacity: 0.92;
   transition: opacity var(--duration-base) var(--ease-out);
+}
+.satin-expand > * > * {
+  pointer-events: auto;
 }
 .satin-expand[data-state='open'] > * {
   opacity: 1;
