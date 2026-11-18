@@ -14,6 +14,7 @@ npm run size           # size budgets (.size-limit.json)
 npm run check:types    # the packed types under node16, nodenext and bundler
 npm run check:docs     # props.json is fresh; nav, registry and package exports agree
 npm run check:contrast # text 4.5:1, focus and error edges 3:1, Light and Dark, themeCss brands
+node scripts/check-theme.mjs # the built themeVars()/themeCss(): no broken value for any brand or corner scale
 node scripts/check-css.mjs && node scripts/check-cn.mjs
 ```
 

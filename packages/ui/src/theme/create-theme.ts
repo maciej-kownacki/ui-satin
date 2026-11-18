@@ -115,6 +115,8 @@ const RAMP: Record<string, string> = {
 }
 // The steps a button is painted with: they move with the brand's lightness.
 const SOLID = new Set(['blue-500', 'blue-600', 'blue-700', 'primary-dark', 'primary-hover-dark', 'primary-pressed-dark'])
+// The steps that also have a 20% tint (`--color-blue-500-a20`, `--color-blue-600-a20`).
+const A20_STEPS = new Set(['blue-500', 'blue-600'])
 
 // Darkest the solid fill may need to go: white on it, and on its hover, reads at 4.5:1
 // (aimed at 4.7, since fitting each step into sRGB trims its chroma a little).
@@ -146,11 +148,13 @@ function brandVars(brand: string): Vars {
     const [l, c, h] = rgbToOklch(hexToRgb(hex))
     const isDark = step.endsWith('-dark') && step !== 'primary-border-dark'
     const L = SOLID.has(step) ? (isDark ? dark + (l - darkRest) : light + (l - rl)) : l
-    root[`--color-${step}`] =
-      step === 'blue-600' && light === bl ? brand.toUpperCase() : oklchToHex([Math.min(0.97, Math.max(0.15, L)), c * chroma, bh + (h - rh)])
+    const out = step === 'blue-600' && light === bl ? brand.toUpperCase() : oklchToHex([Math.min(0.97, Math.max(0.15, L)), c * chroma, bh + (h - rh)])
+    root[`--color-${step}`] = out
+    // The 20% tint from the value in hand. Never read a key back by its literal name here: the npm
+    // build prefixes literal '--color-…' strings but not these template keys, so such a read misses
+    // in the package (it shipped as 'undefined33' in 0.7.0).
+    if (A20_STEPS.has(step)) root[`--color-${step}-a20`] = `${out}33`
   }
-  root['--color-blue-600-a20'] = `${root['--color-blue-600']}33`
-  root['--color-blue-500-a20'] = `${root['--color-blue-500']}33`
   root['--color-primary-focus-dark'] = focusDark(bc, bh)
   return root
 }
