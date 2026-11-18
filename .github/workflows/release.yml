@@ -1,8 +1,16 @@
-# Release: on every push to main, Changesets either opens (or updates) a "Version packages" pull
-# request with the pending changesets, or, once that PR is merged, publishes @uisatin/ui to npm.
+# Release: on every push to main, the full CI runs first (ci.yml); only if it passes do Changesets
+# either open (or update) a "Version packages" pull request with the pending changesets or, once that
+# PR is merged, publish @uisatin/ui to npm. So every push to main is checked, and nothing is
+# published without the checks.
 # Publishing uses npm Trusted Publishing (OIDC): npm trusts this workflow file in this repository,
 # so no npm token is stored anywhere. Set up once with:
 #   npx npm@latest trust github @uisatin/ui --file release.yml --repo maciej-kownacki/ui-satin
+#
+# The "Version packages" PR is opened by Changesets. With the default GITHUB_TOKEN it comes from
+# github-actions[bot], and GitHub holds CI runs on it for approval. Add a RELEASE_TOKEN secret (a
+# fine-grained PAT or a GitHub App token with contents and pull-requests write on this repository)
+# and the PR is opened with it instead, so CI runs on the PR by itself. Without it, the gate is
+# still the CI run on the merge to main, before publishing.
 name: Release
 
 on:
@@ -11,16 +19,23 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
-permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
-
 jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   release:
+    needs: checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -29,7 +44,6 @@ jobs:
       # Trusted Publishing needs npm 11.5 or newer.
       - run: npm install -g npm@latest
       - run: npm ci
-      - run: npm run typecheck
       - uses: changesets/action@v1
         with:
           version: npm run version
@@ -37,4 +51,4 @@ jobs:
           commit: 'Version packages'
           title: 'Version packages'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}

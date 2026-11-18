@@ -1,9 +1,11 @@
-# CI on pull requests: types, the npm build, a dry-run pack of what would be published, and the
-# published types checked the way apps resolve them.
+# CI: types, the npm build, a dry-run pack of what would be published, and the published types
+# checked the way apps resolve them. It runs on pull requests, and Release calls it on every push to
+# main before Changesets may publish (workflow_call), so nothing reaches npm without these checks.
 name: CI
 
 on:
   pull_request:
+  workflow_call:
 
 jobs:
   check:
