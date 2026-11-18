@@ -24,7 +24,7 @@
   ],
   "docs": "Agent picker docs: https://uisatin.dev/ai-patterns/agent-picker",
   "meta": {
-    "version": "0.6.0",
+    "version": "0.7.0",
     "edition": "free",
     "props": {
       "AgentPicker": {
