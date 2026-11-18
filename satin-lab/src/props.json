@@ -409,7 +409,7 @@
       ]
     },
     "AgentSuggestionQuote": {
-      "description": "The message the suggestion answers: who sent it and what they wrote, on bg/muted.",
+      "description": "The message the suggestion answers: who sent it and what they wrote, on component/agent-suggestion/quote-bg (bg/canvas in Light, bg/muted in Dark).",
       "extends": [],
       "props": [
         {

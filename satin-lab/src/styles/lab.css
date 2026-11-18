@@ -108,6 +108,15 @@ html[data-theme-sweep]::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
+
+/* Page changes swap at once. The router's default crossfades the whole page, so for a moment
+   two pages show through each other (both titles, both demos), which reads as a flicker; the
+   sidebar and the top bar stay put anyway. Only page changes: the theme sweep above keeps its
+   own animation. !important because the router injects its fade with its own selectors. */
+html:not([data-theme-sweep])::view-transition-old(root),
+html:not([data-theme-sweep])::view-transition-new(root) {
+  animation: none !important;
+}
 html[data-theme-sweep]::view-transition-new(root) {
   -webkit-mask: linear-gradient(135deg, #000 45%, transparent 49%) 100% 100% / 300% 300% no-repeat;
   mask: linear-gradient(135deg, #000 45%, transparent 49%) 100% 100% / 300% 300% no-repeat;

@@ -96,7 +96,7 @@ export function AgentSuggestion({
   )
 }
 
-/** The message the suggestion answers: who sent it and what they wrote, on bg/muted. */
+/** The message the suggestion answers: who sent it and what they wrote, on component/agent-suggestion/quote-bg (bg/canvas in Light, bg/muted in Dark). */
 export function AgentSuggestionQuote({
   from,
   avatar,
@@ -111,7 +111,7 @@ export function AgentSuggestionQuote({
   className?: string
 }) {
   return (
-    <blockquote data-slot="agent-suggestion-quote" className={cn('m-0 flex flex-col gap-1 rounded-lg bg-bg-muted px-3 py-2', className)}>
+    <blockquote data-slot="agent-suggestion-quote" className={cn('m-0 flex flex-col gap-1 rounded-lg bg-component-agent-suggestion-quote-bg px-3 py-2', className)}>
       <div className="flex items-center gap-1.5">
         {avatar}
         <span className="text-xs leading-3 font-medium tracking-normal text-text-default">{from}</span>
