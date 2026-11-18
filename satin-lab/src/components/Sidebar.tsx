@@ -572,11 +572,13 @@ const swapIn =
 
 /**
  * A row's count of pages: Satin's Badge, small. Outline, not soft: the neutral soft fill is the
- * hover fill's colour, so on a hovered row it vanished and the count read as a bare number.
+ * hover fill's colour, so on a hovered row it vanished and the count read as a bare number. Its
+ * type is lighter than the row's title, 12px regular in text/muted, so it reads as a number
+ * beside the title rather than a second label.
  */
 function Count({ children }: { children: React.ReactNode }) {
   return (
-    <Badge size="sm" variant="outline" className="tabular-nums">
+    <Badge size="sm" variant="outline" className="text-xs leading-4 font-normal text-text-muted tabular-nums">
       {children}
     </Badge>
   )
