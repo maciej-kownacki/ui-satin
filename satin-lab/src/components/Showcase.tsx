@@ -210,7 +210,6 @@ function ShowcaseFull({ name, options, codeHtml, controls, render, align = 'cent
               <SegmentedControl
                 aria-label={c.label}
                 size="xs"
-                shape="rounded"
                 items={c.items}
                 value={values[c.id]}
                 onValueChange={(v) => setValues((s) => ({ ...s, [c.id]: v }))}
@@ -310,7 +309,6 @@ function ShowcaseFull({ name, options, codeHtml, controls, render, align = 'cent
                 <SegmentedControl
                   aria-label={`${name} options`}
                   size="xs"
-                  shape="rounded"
                   items={options.map((o) => ({ value: o.id, label: o.label }))}
                   value={option}
                   onValueChange={setOption}
@@ -339,7 +337,6 @@ function ShowcaseFull({ name, options, codeHtml, controls, render, align = 'cent
                 <SegmentedControl
                   aria-label={`${name} options`}
                   size="xs"
-                  shape="rounded"
                   items={options.map((o) => ({ value: o.id, label: o.label }))}
                   value={option}
                   onValueChange={setOption}
@@ -369,7 +366,7 @@ function MenuControl({
       modal={false}
       align="start"
       trigger={
-        <Button variant="secondary" size="lg" shape="rounded" aria-label={`${control.label}: ${current.label}`}>
+        <Button variant="secondary" size="lg" aria-label={`${control.label}: ${current.label}`}>
           {current.icon}
           {current.label}
           <NavArrowDown data-chevron />
