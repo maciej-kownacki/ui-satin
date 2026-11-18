@@ -19,7 +19,7 @@
   ],
   "docs": "Form docs: https://uisatin.dev/components/form",
   "meta": {
-    "version": "0.7.0",
+    "version": "0.7.1",
     "edition": "free",
     "props": {
       "Form": {

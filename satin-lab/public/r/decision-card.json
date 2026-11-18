@@ -25,7 +25,7 @@
   ],
   "docs": "Decision card docs: https://uisatin.dev/ai-patterns/decision-card",
   "meta": {
-    "version": "0.7.0",
+    "version": "0.7.1",
     "edition": "free",
     "props": {
       "DecisionCard": {

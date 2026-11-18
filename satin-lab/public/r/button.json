@@ -22,7 +22,7 @@
   ],
   "docs": "Button docs: https://uisatin.dev/components/button",
   "meta": {
-    "version": "0.7.0",
+    "version": "0.7.1",
     "edition": "free",
     "props": {
       "Button": {
