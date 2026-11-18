@@ -32,7 +32,7 @@ Satin is a React design system: components on Radix, one precompiled stylesheet,
 - Brand colour and corners: `themeCss({ brand: '#E5533D', radius: 1 })` from `@uisatin/ui/theme`, injected in a `<style>` after the stylesheet.
 - One token: set `--sa-<token>` after `styles.css`, in `:root` and in `.dark, [data-theme='dark']`.
 - Dark mode: `class="dark"` or `data-theme="dark"` on `<html>` or any parent; `data-theme="system"` follows the OS with no script.
-- Variables were unprefixed before 0.6 (`--bg-card`). Old CSS keeps working with `@uisatin/ui/compat.css` until 0.7; write new code with `--sa-*`.
+- Variables were unprefixed before 0.6 (`--bg-card`). `@uisatin/ui/compat.css` aliased them in 0.6 and is removed in 0.7; write `--sa-*`.
 
 ## Don't
 

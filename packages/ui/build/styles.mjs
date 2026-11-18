@@ -8,8 +8,7 @@
  *    Satin's base rules to Satin's elements;
  * 4. vars: `--x` → `--sa-x` in the CSS and the JS for every variable Satin declares or reads
  *    (Tailwind's theme, the semantic tokens, component variables), so Satin's own CSS,
- *    arbitrary values, inline styles and themeCss() all point at them; dist/compat.css aliases
- *    the old token names for one minor version;
+ *    arbitrary values, inline styles and themeCss() all point at them;
  * 5. check: no class and no variable left unprefixed in the built JS.
  *
  *   node build/styles.mjs classes | css
@@ -40,39 +39,6 @@ if (step === 'classes') {
   console.log(`${classes.length} classes to prefix`)
 }
 
-/**
- * dist/compat.css: the token names from before 0.6, when the semantic tokens (--bg-card,
- * --text-muted, --action-primary-bg…) weren't prefixed. Each is an alias of its --sa-* name, on
- * the same selectors as Satin's token blocks (:root, dark mode, data-tone), so an app's CSS that
- * reads var(--bg-card) keeps working for one more minor version. It doesn't carry overrides the
- * other way: an app that sets --bg-card to theme Satin renames it to --sa-bg-card.
- */
-function compatSheet(css, renamed) {
-  const TOKEN_BLOCK = /^(:root|\.dark|\[data-(theme|tone)=["']?[\w-]+["']?\])$/
-  const out = postcss.root()
-  postcss.parse(css).walkRules((rule) => {
-    if (!rule.selectors.every((s) => TOKEN_BLOCK.test(s.trim()))) return
-    if (rule.parent?.type === 'atrule' && rule.parent.name === 'layer') return
-    const aliases = []
-    rule.walkDecls(new RegExp(`^--${PREFIX}-`), (d) => {
-      const name = d.prop.slice(PREFIX.length + 3)
-      if (renamed.has(name)) aliases.push(postcss.decl({ prop: `--${name}`, value: `var(${d.prop})` }))
-    })
-    if (!aliases.length) return
-    let node = postcss.rule({ selector: rule.selector, nodes: aliases })
-    for (let p = rule.parent; p && p.type === 'atrule'; p = p.parent) node = postcss.atRule({ name: p.name, params: p.params, nodes: [node] })
-    out.append(node)
-  })
-  return `/*
- * @uisatin/ui/compat.css: Satin's token names from before 0.6, as aliases of the --sa-* ones.
- * Load it after styles.css if your CSS reads var(--bg-card), var(--text-muted)… and rename them
- * to --sa-* when you can: this file goes away in 0.7. Overrides go the other way: set
- * --sa-bg-card, not --bg-card, to change Satin.
- */
-${out.toString()}
-`
-}
-
 if (step === 'css') {
   // Preflight and base rules, scoped, without their own @layer (styles.css puts them in base).
   const preflight = readFileSync(require.resolve('tailwindcss/preflight.css'), 'utf8')
@@ -91,7 +57,6 @@ if (step === 'css') {
   const tailwindTheme = new Set(declared)
   // Not Tailwind theme variables, but shadcn/ui apps define them too: Satin's become --sa-* as well.
   for (const name of ['radius', 'chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5']) declared.add(name)
-  const before = new Set(declared)
   // Every other variable Satin declares or reads: the semantic tokens (--bg-card…), the component
   // and motion ones, and those the components set inline (--r, --code-plain…). Only Radix's
   // (--radix-*) and Tailwind's internals (--tw-*) keep their names.
@@ -99,7 +64,6 @@ if (step === 'css') {
   for (const m of css.matchAll(/var\(\s*--([A-Za-z][\w-]*)/g)) if (!/^(sa|tw|radix)-/.test(m[1])) declared.add(m[1])
   const prefixedCss = prefixThemeVars(css, declared)
   writeFileSync('dist/styles.css', prefixedCss)
-  writeFileSync('dist/compat.css', compatSheet(prefixedCss, new Set([...declared].filter((n) => !before.has(n)))))
   let touched = 0
   for (const f of files('dist', '.js')) {
     const js = readFileSync(f, 'utf8')

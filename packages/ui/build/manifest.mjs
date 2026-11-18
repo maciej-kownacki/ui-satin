@@ -28,8 +28,6 @@ const manifest = {
   exports: {
     '.': { types: './index.d.ts', import: './index.js', default: './index.js' },
     './styles.css': './styles.css',
-    // The token names from before 0.6 as aliases of the --sa-* ones; goes away in 0.7.
-    './compat.css': './compat.css',
     // The design tokens (W3C format, Light and Dark), the source theme.css is generated from.
     './tokens.json': './tokens.json',
     './package.json': './package.json',

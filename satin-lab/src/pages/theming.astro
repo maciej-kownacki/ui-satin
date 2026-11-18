@@ -200,8 +200,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <p class={prose}>
       To change one token rather than the brand, set its variable after Satin's styles. In the package and the registry every
       variable is prefixed, <Chip>--sa-bg-card</Chip>, <Chip>--sa-text-muted</Chip>, so it never meets your own; the token
-      pages below list them. Code that read the unprefixed names before 0.6 keeps working for one minor version with{' '}
-      <Chip>@uisatin/ui/compat.css</Chip>.
+      pages below list them. Code that read the unprefixed names from before 0.6 renames them to <Chip>--sa-*</Chip>;{' '}
+      <Chip>@uisatin/ui/compat.css</Chip>, which aliased them in 0.6, is removed in 0.7.
     </p>
     {
       ['override'].map((id) => (
