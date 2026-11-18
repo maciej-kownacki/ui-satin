@@ -22,7 +22,7 @@
   ],
   "docs": "Code block docs: https://uisatin.dev/components/code-block",
   "meta": {
-    "version": "0.6.0",
+    "version": "0.7.0",
     "edition": "free",
     "props": {
       "CodeBlock": {

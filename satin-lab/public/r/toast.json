@@ -22,7 +22,7 @@
   ],
   "docs": "Toast docs: https://uisatin.dev/components/toast",
   "meta": {
-    "version": "0.6.0",
+    "version": "0.7.0",
     "edition": "free",
     "props": {
       "Toast": {

@@ -1,5 +1,44 @@
 # @uisatin/ui
 
+## 0.7.0
+
+### Minor Changes
+
+- dd589ce: Text that fell below WCAG's 4.5:1 now passes, and a check in CI holds it there:
+
+  - Error text (FormField, Input, Textarea, Select, InputOTP, error toasts) uses a new `--sa-text-destructive` token, red-700 in Light and red-400 in Dark; the destructive fill it used before read 3.3:1 as text in Dark.
+  - The destructive button gets darker on hover (red-700) and pressed (red-900), so its white label stays above 4.5:1; it used to get lighter and drop to 2.8:1 in Dark.
+  - DatePicker's placeholder, the group names in Dropdown and Select, the old value in AgentSuggestion and Popover's close icon use `--sa-text-muted` instead of the fainter tokens.
+  - A toast action takes `altText`, what Radix reads in place of the button: how to do the same without the toast ("Undo with Ctrl+Z"). It still defaults to the label.
+
+- dd589ce: Keyboard focus is now a solid ring that reads at 3:1 or more on every surface, in Light and Dark (WCAG 1.4.11); it used to be the brand colour at 20%, about 1.1–1.4:1. `--sa-action-focus-ring` is solid (blue-600 in Light, #7075FE in Dark, the same as `--sa-border-focus`, which is lighter in Dark), and `themeCss()` works out a Dark focus colour for any brand that holds the same minimum.
+
+  - Buttons, checkboxes, radios and switches draw the ring as an outline 2px off the control, so it reads against the page whatever the fill (on a primary button the old ring showed 1px, next to a fill of the same colour).
+  - Fields (Input, Textarea, Select, Combobox, DatePicker, InputOTP, PromptBar, SearchBar) turn their edge into a 2px line in the focus colour, and in the destructive colour when invalid, where the invalid ring used to be white at 24%.
+  - A menu row reached with the arrow keys takes the ring inside its edge, in Dropdown, Context menu, Select, Combobox, Command menu, AgentPicker and the PromptBar menus; with the pointer it keeps the plain highlight.
+  - In forced-colors mode (Windows High Contrast), which drops these rings, whatever has keyboard focus gets an outline in the system highlight colour.
+
+- befd6fc: Notification: a card for something the app did or heard about, with media on the left, a title and description, a badge, and a round dismiss button centred on its top-right corner. NotificationStack folds several into a pile, the first in front and two peeking below, and unfolds them one under another on hover, focus or a tap, the way Toast's stack does; a dismissed card fades out while the rest move up.
+- ccdd602: `@uisatin/ui/compat.css` is gone, as 0.6 announced. It aliased the token names from before 0.6 (`--bg-card`, `--text-muted`…) to their `--sa-*` ones. Breaking for CSS that still reads the old names: rename them to `--sa-*` (`var(--bg-card)` → `var(--sa-bg-card)`), and drop the `compat.css` import.
+- 673c2ba: SearchBar has a `panel` variant: search with its results in place, for a settings page or anything that searches its own items. A 56px search row over the results on a sheet of their own and a footer of key hints, with `meta` on the right ("59 settings indexed"). Give it `groups` (the same shape as CommandMenu's); before anything is typed it shows `idleText`, then the matches, which the arrows move through and Enter opens, with focus staying in the field. CommandMenu and the panel share one search and list underneath.
+- 5a1059e: Select takes `menuMaxHeight`, a cap in px on its menu's height (it scrolls past it). The date picker's year list uses it to end where the date picker does, instead of running down to the window's edge.
+
+### Patch Changes
+
+- 5c659dc: AgentSuggestion sits on the popover fill with a border/default edge, like DecisionCard and Message; on bg/card it came out darker than the page around it in Dark. Its kind badge shows the card's fill behind its edge.
+- 08ca17f: Card takes bg/popover, like Decision card: in Dark it sits a step above the page instead of below it (#222225 where it was #121215). Light stays white.
+- 85a31c0: Decision card: a selected chip in Dark has a full brand edge, a brand-tinted fill and a text/default label instead of the pale brand tint. Light is unchanged. New tokens: `--sa-component-decision-chip-selected-bg`, `-border` and `-fg`.
+- 3ca319e: Dialog opens with more motion: the panel rises 12px and settles from 0.98 as it fades in over 300 ms (new `--sa-duration-slower` token), and the scrim fades in with it instead of appearing at once. Closing plays the same way in 200 ms instead of cutting.
+- 5a1059e: Expanding groups (`satin-expand`: Sidebar groups, Citations, Thinking) no longer cut the focus ring of what they hold: the clip reaches 2px past the content, and nothing moves.
+- 5a1059e: The tile behind a file's type icon (Attachment `lg`, File upload items) is lighter in Dark, from a new component/file-icon/bg token; Light keeps bg/muted.
+- b113d81: The user's Message bubble is a light grey in Dark (zinc-300) instead of near-white, from a new component/message/bubble-bg token; Light keeps action/inverse.
+- 86bd44d: Notification: the neutral badge is one step lighter in Dark, so it stands off the popover fill. New token `--sa-component-notification-badge-bg`.
+- 5a1059e: Input OTP's verified cells are edged in a calmer green in Dark, the Switch's mid green, from a new component/input-otp/success-border token; status/green/fg is a pale tint meant for text and read loud as a 2px edge. Light is unchanged.
+- 5a1059e: Every surface shown over the interface now has the menus' edge, 1px border/subtle: Popover, Hover card, Date picker panels, Dialog, Toast, Notification (with its close button) and Attachment preview had border/default.
+- 3537144: No keyboard focus ring after a mouse click on a tab, a menu row or a menu's trigger. Radix focuses these from script on a pointer press (Tabs on mousedown, menus on hover and when they close), which Chrome shows as `:focus-visible`. Satin now notes a pointer press on `<html>` (`data-satin-pointer`, cleared by the next key) and draws no ring on them until a key is pressed; Tab and the arrow keys show it as before.
+- ba64316: SelectableRadio and SelectableCheckbox (`md`) set their text like Radio and Checkbox: a 14/20 medium title over a 14/20 muted description, where the title used to sit on an 18px line and the description took the theme's body size. The two lines sit flush, so the text stays 40px next to the 40px icon tile, and the checkbox sits on the middle of the 20px title line. `sm` keeps its compact 13/18.
+- b113d81: A title and its description sit about 8px apart, like Checkbox and Radio fields: Toast (description on an 18px line, 2px under the title), Notification and Alert (2px), Card and Dialog headers (4px, were 2px). They used to sit 5–6.5px apart and read cramped.
+
 ## 0.6.0
 
 ### Minor Changes
