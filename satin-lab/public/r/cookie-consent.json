@@ -20,7 +20,7 @@
   ],
   "docs": "Cookie consent docs: https://uisatin.dev/components/cookie-consent",
   "meta": {
-    "version": "0.7.0",
+    "version": "0.7.1",
     "edition": "free",
     "props": {
       "CookieConsent": {

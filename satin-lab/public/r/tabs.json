@@ -23,7 +23,7 @@
   ],
   "docs": "Tabs docs: https://uisatin.dev/components/tabs",
   "meta": {
-    "version": "0.7.0",
+    "version": "0.7.1",
     "edition": "free",
     "props": {
       "Tabs": {

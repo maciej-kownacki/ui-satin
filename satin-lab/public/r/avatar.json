@@ -21,7 +21,7 @@
   ],
   "docs": "Avatar docs: https://uisatin.dev/components/avatar",
   "meta": {
-    "version": "0.7.0",
+    "version": "0.7.1",
     "edition": "free",
     "props": {
       "Avatar": {
