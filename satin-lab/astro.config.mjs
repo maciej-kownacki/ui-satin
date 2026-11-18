@@ -8,8 +8,10 @@ export default defineConfig({
   integrations: [react()],
   // Old addresses from before the Intro and Foundations groups became Docs.
   redirects: {
-    '/intro/who-is-satin-for': '/',
-    '/intro/how-to-use-satin': '/',
+    '/intro/who-is-satin-for': '/introduction',
+    '/intro/how-to-use-satin': '/introduction',
+    // All components became the home page; Introduction moved to /introduction.
+    '/components': '/',
     '/foundations/tokens': '/theming',
     '/tokens': '/theming',
     '/tokens/[role]': '/theming/[role]',

@@ -19,11 +19,14 @@ interface Props {
 }
 const { current, wide = false } = Astro.props
 const item = page(current)
-// The home title is also the caption X and Slack show under the share image.
-const title = current === 'introduction' ? 'Satin: the React design system for your agents' : `${item.title} · Satin`
+// The home page (All components) carries the site's title and pitch, also the caption X and Slack
+// show under the share image.
+const home = current === 'all-components'
+const title = home ? 'Satin: the React design system for your agents' : `${item.title} · Satin`
+const description = home ? page('introduction').description : item.description
 ---
 
-<Layout title={title} description={item.description}>
+<Layout title={title} description={description}>
   <!-- The top bar is fixed and never moves; the sidebar and the column each scroll on their own. -->
   <header class="fixed inset-x-0 top-0 z-20 flex h-14 w-full items-center justify-between bg-bg-canvas px-4 lg:px-9">
     <div class="flex items-center gap-2 pl-10 lg:pl-0">

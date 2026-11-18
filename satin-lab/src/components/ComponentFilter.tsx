@@ -4,7 +4,7 @@ import { SegmentedControl } from '@uisatin/ui/segmented-control'
 
 /**
  * The search and the group filter over the All components grid. The cards are static HTML
- * (pages/components/index.astro); this only hides the ones that don't match, by their
+ * (pages/index.astro, the home page); this only hides the ones that don't match, by their
  * data-title and data-group. How many are left is said to screen readers only; on screen the
  * grid itself shows it.
  */

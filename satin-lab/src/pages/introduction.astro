@@ -1,0 +1,78 @@
+---
+/** Introduction: what Satin is, who it is for, how it is built and how to use it. */
+import Docs from '../layouts/Docs.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Chip from '../components/Chip.astro'
+import { Alert } from '@uisatin/ui/alert'
+import { page } from '../nav'
+
+const h2 = 'text-lg font-medium text-text-default'
+const prose = 'text-base leading-6 text-text-muted'
+const link = 'rounded-sm text-text-default underline underline-offset-2 focus-visible:shadow-border-focus focus-visible:outline-none'
+const layers = [
+  { title: 'Tokens', text: 'Colour, type, radius, spacing and motion as variables, in Light and Dark. Components read semantic tokens, never raw values.', href: '/theming' },
+  { title: 'Components', text: 'Buttons, fields, menus, dialogs, tables and charts on Radix and shadcn/ui. A theme reaches all of them.', href: '/components/button' },
+  { title: 'Patterns', text: 'Prompt bar, agent picker, thinking, messages and decisions, made from the same components.', href: '/ai-patterns/prompt-bar' },
+]
+---
+
+<Docs current="introduction">
+  <PageHeader id="introduction" title={page('introduction').title} description={page('introduction').description} />
+
+  <section aria-labelledby="what-title" class="flex flex-col gap-3 pt-4">
+    <h2 id="what-title" class={h2}>What is Satin?</h2>
+    <div class="flex flex-col gap-3 text-base leading-6 text-text-muted">
+      <p>Satin is a Figma library and React components that match it one to one: same names, variants and tokens.</p>
+      <Alert intent="info" title="The Figma library isn't public yet" description="For now only the React components are." />
+      <p>
+        The components are built on <a class={link} href="https://ui.shadcn.com">shadcn/ui</a> and Radix, which handle roles, keyboard and focus. Satin handles the look, contrast, focus rings, target sizes and motion included. See <a class={link} href="/accessibility">Accessibility</a> for what's covered.
+      </p>
+    </div>
+  </section>
+
+  <section aria-labelledby="who-title" class="flex flex-col gap-3 pt-8">
+    <h2 id="who-title" class={h2}>Who is Satin for?</h2>
+    <ul class="flex flex-col gap-2 text-base leading-6 text-text-muted">
+      <li><span class="font-medium text-text-default">Designers</span> who want to see a component in Light and Dark before designing with it.</li>
+      <li><span class="font-medium text-text-default">Engineers</span> who want production code that matches the design.</li>
+      <li><span class="font-medium text-text-default">Teams building AI products</span> who need prompts, agent progress and decisions ready to use.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="built-title" class="flex flex-col gap-3 pt-8">
+    <h2 id="built-title" class={h2}>How Satin is built</h2>
+    <p class={prose}>Three layers, each built from the one below.</p>
+    <ol class="grid gap-3 sm:grid-cols-3">
+      {
+        layers.map((l, i) => (
+          <li>
+            <a
+              href={l.href}
+              class="flex h-full flex-col gap-2 rounded-xl border border-border-subtle p-4 transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-hover focus-visible:shadow-border-focus focus-visible:outline-none"
+            >
+              <span class="text-xs text-text-subtle tabular-nums">0{i + 1}</span>
+              <span class="text-base font-medium text-text-default">{l.title}</span>
+              <span class="text-base leading-6 text-text-muted">{l.text}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section aria-labelledby="how-title" class="flex flex-col gap-3 pt-8">
+    <h2 id="how-title" class={h2}>How can I use Satin?</h2>
+    <p class={prose}>
+      Copy components into your app with the shadcn CLI, or install the package. Neither needs Tailwind: the styles ship precompiled. For dark mode, add the <Chip>dark</Chip> class to any parent.
+    </p>
+  </section>
+
+  <section aria-labelledby="agent-title" class="flex flex-col gap-3 pt-8">
+    <h2 id="agent-title" class={h2}>Install it with your agent</h2>
+    <p class={prose}>
+      Satin is a shadcn registry, so a coding agent can set it up. <a class={link} href="/installation">Installation</a> has a
+      prompt for Claude Code, Cursor or any other agent, and the manual steps.
+    </p>
+  </section>
+
+</Docs>
