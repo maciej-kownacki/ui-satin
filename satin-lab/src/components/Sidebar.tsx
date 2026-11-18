@@ -173,7 +173,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
             nested ? 'pl-[46px]' : 'pl-[34px]',
             rowHover,
             'focus-visible:shadow-border-focus focus-visible:outline-none',
-            isCurrent ? 'bg-bg-selected text-text-default' : 'text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
+            isCurrent ? cn('bg-bg-selected text-text-default', currentEase) : cn('text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected', pressEase),
           )}
         >
           <Highlight text={item.title} query={q} />
@@ -289,7 +289,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                     className={cn(
                       'flex h-8 items-center gap-2 rounded-pill px-3',
                       'focus-visible:shadow-border-focus focus-visible:outline-none',
-                      current === allComponents.id ? 'bg-bg-selected' : 'hover:bg-bg-hover active:bg-bg-selected',
+                      current === allComponents.id ? cn('bg-bg-selected', currentEase) : cn('hover:bg-bg-hover active:bg-bg-selected', pressEase),
                     )}
                   >
                     <AllComponentsIcon className="shrink-0 text-text-muted" />
@@ -319,7 +319,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                       }}
                       className={cn(
                         'group/row flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left select-none',
-                        'hover:bg-bg-hover active:bg-bg-selected',
+                        'hover:bg-bg-hover',
                         'focus-visible:shadow-border-focus focus-visible:outline-none',
                       )}
                     >
@@ -413,7 +413,7 @@ function NavParent({
         className={cn(
           'flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left text-[13px] leading-[19.5px] select-none',
           rowHover,
-          'hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
+          'hover:bg-bg-hover hover:text-text-default',
           'focus-visible:shadow-border-focus focus-visible:outline-none',
           holdsCurrent ? 'text-text-default' : 'text-text-muted',
         )}
@@ -563,6 +563,16 @@ function HelpBanner() {
  * leaves nothing behind.
  */
 const rowHover = 'transition-[color] duration-(--duration-fast) ease-(--ease-out)'
+
+/**
+ * A page row being pressed eases from the hover fill into the selected one (it stays selected:
+ * the page it opens becomes current), so the click doesn't snap. Only the press eases: the
+ * transition is set in the active state alone, so hover still comes and goes at once. Group and
+ * parent rows only fold, so they have no pressed fill at all.
+ */
+const pressEase = 'active:transition-[background-color,color] active:duration-(--duration-fast) active:ease-(--ease-out)'
+/** A click shorter than the ease ends mid-way; the row, now current, finishes it rather than snapping. */
+const currentEase = 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)'
 
 /** The count fades out and the chevron in while a group's row is hovered or has keyboard focus. */
 const swapOut =
