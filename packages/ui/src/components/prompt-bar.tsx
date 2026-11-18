@@ -229,7 +229,7 @@ export function PromptBar({
                 iconOnly
                 disabled={disabled}
                 aria-label={labels.addToConversation}
-                className="data-[state=open]:bg-border-input"
+                className="data-[state=open]:bg-bg-pressed"
               >
                 <Plus />
               </Button>
@@ -427,7 +427,7 @@ function ModelSelect({
       size="md"
       shape={shape}
       disabled={disabled}
-      className="data-[state=open]:bg-border-input"
+      className="data-[state=open]:bg-bg-pressed"
     >
       {icon && <span className="flex size-4 shrink-0 items-center justify-center [&>*]:size-4">{icon}</span>}
       <span className="sr-only">{labels.model}: </span>

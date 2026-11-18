@@ -26,7 +26,7 @@ const summary = [
   { label: 'Tone text on its tone (Badge, Chip, Alert, Toast)', need: '4.5:1', test: (r) => r.kind === 'text' && r.bg.startsWith('status-') },
   { label: 'Focus ring and focused field edge on every surface', need: '3:1', test: (r) => r.kind === 'focus' },
   { label: 'Error edge of a field', need: '3:1', test: (r) => r.kind === 'edge' && r.ok !== null },
-  { label: 'Control borders (a known issue, below)', need: '3:1', test: (r) => r.ok === null },
+  { label: 'Edge of Checkbox, Radio and an off Switch on every surface', need: '3:1', test: (r) => r.kind === 'control' },
 ] satisfies { label: string; need: string; test: (r: (typeof rows)[number]) => boolean }[]
 const checked = rows.filter((r) => r.ok !== null).length
 

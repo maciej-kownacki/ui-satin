@@ -77,7 +77,7 @@ const buttonVariants = cva(
           'bg-transparent text-text-default [&_svg]:text-text-muted',
           'satin-hover:bg-bg-hover',
           'satin-focus:bg-bg-hover satin-focus:[box-shadow:none]',
-          'satin-pressed:bg-border-input',
+          'satin-pressed:bg-bg-pressed',
         ],
       },
       size: {

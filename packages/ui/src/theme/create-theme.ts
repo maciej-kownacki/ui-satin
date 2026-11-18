@@ -104,6 +104,7 @@ const RAMP: Record<string, string> = {
   'blue-soft-50': '#F3F5FF',
   'blue-soft-200': '#D9DEFB',
   'blue-soft-300': '#BEC7FC',
+  'blue-soft-400': '#8F99DC',
   'blue-soft-700': '#5158A0',
   'blue-soft-900': '#30344F',
   'blue-soft-950': '#1F2132',
@@ -237,7 +238,7 @@ const SCOPED_DARK: Vars = {
   '--action-focus-ring': 'var(--color-primary-focus-dark)',
   '--status-brand-bg': 'var(--color-blue-soft-950)',
   '--status-brand-border': 'var(--color-blue-soft-900)',
-  '--status-brand-fg': 'var(--color-blue-soft-300)',
+  '--status-brand-fg': 'var(--color-blue-soft-400)',
 }
 
 /**

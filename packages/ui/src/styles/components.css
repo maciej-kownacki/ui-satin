@@ -13,7 +13,7 @@
   width: 16px;
   height: 16px;
   padding: 0;
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border-input);
   border-radius: var(--radius-sm);
   background: var(--bg-field);
   color: var(--action-primary-fg);
@@ -25,7 +25,7 @@
 }
 /* Hover on the whole field (the box sits in its <label>) hovers the box. */
 .satin-checkbox:is(:hover, [data-force="hover"], :where(label:hover) > *) {
-  border-color: var(--border-strong);
+  border-color: var(--border-input);
   box-shadow: 0 1px 3px 0 var(--effect-shadow-sm), 0 1px 2px -1px var(--effect-shadow-sm);
 }
 .satin-checkbox:focus-visible,
@@ -38,7 +38,7 @@
 }
 .satin-checkbox:active,
 .satin-checkbox[data-force="pressed"] {
-  border-color: var(--border-strong);
+  border-color: var(--border-input);
   background: var(--bg-muted);
   box-shadow: none;
 }
@@ -74,7 +74,7 @@
 }
 .satin-checkbox:is([data-state="checked"], [data-state="indeterminate"]):disabled {
   border-color: transparent;
-  background: var(--border-input);
+  background: var(--bg-pressed);
   box-shadow: none;
 }
 
@@ -88,7 +88,9 @@
   padding: 0;
   border: 0;
   border-radius: 9999px;
-  background: var(--border-input);
+  /* Off: a light track found by its 1px edge, border/input, at 3:1 or more on any surface. */
+  background: var(--bg-pressed);
+  box-shadow: inset 0 0 0 1px var(--border-input);
   outline: none;
   transition-property: background-color, box-shadow;
   transition-duration: var(--duration-base);
@@ -100,12 +102,12 @@
 }
 .satin-switch[data-state="checked"] {
   background: var(--component-switch-on);
+  box-shadow: none;
 }
 .satin-switch[data-state="checked"]:is(:hover, [data-force="hover"]) {
   background: var(--component-switch-on-hover);
 }
 .satin-switch:is(:focus-visible, [data-force="focus"]) {
-  box-shadow: none;
   outline: 2px solid var(--action-focus-ring);
   outline-offset: 2px;
 }
@@ -114,7 +116,7 @@
   opacity: 0.5;
 }
 .satin-switch:disabled:hover {
-  background: var(--border-input);
+  background: var(--bg-pressed);
 }
 .satin-switch[data-state="checked"]:disabled:hover {
   background: var(--component-switch-on);

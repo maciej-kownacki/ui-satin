@@ -6,7 +6,7 @@ import { cn } from '../lib/utils'
 
 /**
  * Switch, 1:1 with the uiKit `_switchBase` (3647:17617) and `Switch` (3647:17714) sets: a
- * 32 × 18 track (border/input off, calm green on, each with its hover), a 14px white thumb,
+ * 32 × 18 track (off: bg/pressed inside a 1px border/input edge; on: calm green; each with its hover), a 14px white thumb,
  * a 2px focus ring, 50% when disabled. Label medium 13/19.5, description muted, 10px from
  * the track. Use it for settings that apply at once; use a checkbox inside a form.
  * The look of every state lives in styles/components.css.

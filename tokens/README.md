@@ -77,8 +77,9 @@ the destructive fill, which reads only 3.3:1 as text in Dark. In code: `text-tex
 Focus: `border/focus` and `action/focus-ring` are the same solid colour (blue-600 / a lighter
 primary in Dark), at least 3:1 on every surface; `npm run check:contrast` holds every pair.
 Tones (badge, avatar, chip, toast): theme `status/{neutral,brand,sky,green,amber,red,fuchsia,plum}/{bg,border,fg}`
-(calm `soft-*` steps per hue: same hue as the ramp, lower OKLCH chroma — Light soft-50 / soft-200 / soft-700, Dark soft-950 / soft-900 / soft-300;
-text on its tone 5.5–6:1 Light, ~9.5:1 Dark; neutral stays zinc; brand = blue, like primary; plum = pink), and a `tone` collection with one mode per tone
+(calm `soft-*` steps per hue: same hue as the ramp, lower OKLCH chroma — Light soft-50 / soft-200 / soft-700, Dark soft-950 / soft-900 / soft-400;
+soft-400 is OKLCH L 0.70, C 0.10, so text, icons and dots in Dark read as colour rather than pale pastel; text on its tone 5.5–6:1 Light,
+≥5.7:1 Dark; neutral stays zinc, zinc-400 in Dark; brand = blue, like primary; plum = pink), and a `tone` collection with one mode per tone
 aliasing them as `tone/bg`, `tone/border`, `tone/fg`. Components set the tone mode per Color variant;
 in CSS the same works through `data-tone="sky"` on any element.
 Radius: `radius-xs` 4 for 16px avatars; `radius-3xl` 20 for rounded trays once their content wraps onto a second line (attachmentGroup).

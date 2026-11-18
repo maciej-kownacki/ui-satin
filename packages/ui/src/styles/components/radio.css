@@ -1,8 +1,8 @@
 /*
- * Radio, uiKit _radioBase (852:22410): a 16px circle. Off: bg/field, border/strong, shadow xs;
+ * Radio, uiKit _radioBase (852:22410): a 16px circle. Off: bg/field, border/input (3:1+), shadow xs;
  * hover adds shadow sm; pressed is bg/muted with no shadow; focus is border/focus with the 2px
  * focus ring; disabled is bg/muted with border/default. On: a solid action/primary fill (hover
- * and pressed take their own fill) with a 6px white dot; disabled-on is border/input with a
+ * and pressed take their own fill) with a 6px white dot; disabled-on is bg/pressed with a
  * bg/canvas dot. Every state also answers to data-force="hover" | "focus" | "pressed".
  */
 .satin-radio {
@@ -12,7 +12,7 @@
   width: 16px;
   height: 16px;
   padding: 0;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-input);
   border-radius: 9999px;
   background: var(--bg-field);
   color: var(--action-primary-fg);
@@ -68,8 +68,8 @@
   box-shadow: none;
 }
 .satin-radio[data-state="checked"]:disabled {
-  border-color: var(--border-input);
-  background: var(--border-input);
+  border-color: var(--bg-pressed);
+  background: var(--bg-pressed);
   /* Figma's dot here is #FAFAFA, which is bg/canvas in Light. */
   color: var(--bg-canvas);
   box-shadow: none;

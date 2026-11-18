@@ -4,9 +4,11 @@ import * as React from 'react'
 
 /**
  * The background (or underline) that slides under the selected item of Tabs, Segmented control
- * and Pagination, all on one motion: 300 ms on the kit's ease-out, the leading edge (the one
- * on the side it is heading to) moving straight away and the trailing edge 30 ms behind, so it
- * stretches a little towards the new item and settles there. A change mid-move carries on from
+ * and Pagination, all on one motion: 300 ms on a gentle ease-out, the leading edge (the one on
+ * the side it is heading to) moving straight away and the trailing edge 30 ms behind, so it
+ * stretches a little towards the new item and settles there. The curve starts softer than the
+ * kit's --ease-out (slope about 2.3 rather than 4.3): on that one the pill covered half the way
+ * in two frames and then crept, which read as a snap. A change mid-move carries on from
  * wherever it is. Only a change of selection animates; a resize just puts it in place. With
  * reduced motion it moves at once.
  *
@@ -19,9 +21,9 @@ export const SLIDE_MS = 300
 const TRAIL_MS = 30
 const STEPS = 24
 
-/** cubic-bezier(0.23, 1, 0.32, 1), the kit's --ease-out, as a function of time 0..1. */
+/** cubic-bezier(0.32, 0.72, 0, 1), as a function of time 0..1. */
 function easeOut(t: number) {
-  const [x1, y1, x2, y2] = [0.23, 1, 0.32, 1]
+  const [x1, y1, x2, y2] = [0.32, 0.72, 0, 1]
   const bez = (a: number, b: number, s: number) => 3 * a * s * (1 - s) ** 2 + 3 * b * s ** 2 * (1 - s) + s ** 3
   let lo = 0
   let hi = 1

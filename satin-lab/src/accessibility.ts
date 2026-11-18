@@ -22,12 +22,12 @@ export type KnownIssue = {
 export const knownIssues: KnownIssue[] = [
   {
     id: 'control-borders',
-    components: ['checkbox', 'radio', 'switch', 'selectable-radio', 'slider'],
-    title: 'Control edges below 3:1',
+    components: ['selectable-radio', 'slider'],
+    title: 'Slider track and selected SelectableRadio below 3:1',
     problem:
-      'The border tokens read 1.3–1.8:1 against the surface. For a field that is one cue among several (the label, the fill), but an unchecked checkbox, an off radio or switch and a slider track have no other edge, and a selected SelectableRadio in Dark is marked by a border at 2.6:1.',
+      'Checkbox, Radio and an off Switch now draw their edge with border/input, at 3:1 or more on every surface in both themes. Two are left: a slider track reads about 1.3:1 against the surface and has no other edge, and a selected SelectableRadio in Dark is marked by a border at 2.6:1.',
     affects: 'People with low vision, and anyone on a bright screen.',
-    workaround: 'Keep a visible label next to every control. To raise the edge now, set --sa-border-input to a darker grey (#86868E in Light reads 3:1 on white).',
+    workaround: 'Keep a visible label next to every control, and show a slider’s value as text.',
     wcag: ['1.4.11'],
   },
   {

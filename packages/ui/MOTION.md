@@ -9,15 +9,17 @@ The tokens live in `src/styles/motion.css`.
 | `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Everything the user triggers: press, open, select, enter |
 | `--ease-in-out` | `cubic-bezier(0.77, 0, 0.175, 1)` | Something already on screen moving to a new place |
 | `--duration-fast` | 150 ms | Hover, press, colour changes |
-| `--duration-base` | 200 ms | Toggles, the segmented pill, a section opening |
+| `--duration-base` | 200 ms | Toggles, a section opening, a code block swapping its content |
 | `--duration-slow` | 250 ms | Sheets, popovers; the upper limit for anything else |
 | `--duration-slower` | 300 ms | The dialog arriving, the one thing that takes the whole screen |
 
 ## The rules
 
 1. **Animate transform and opacity.** They don't trigger layout, so they stay smooth. Colour and shadow transitions
-   are fine for state changes. The one deliberate exception is the segmented control's pill, which transitions `width`
-   along with `transform` so its corners don't stretch.
+   are fine for state changes. The one deliberate exception is the sliding pill (Segmented control, Tabs,
+   Pagination), which animates `width` along with `transform` so its corners don't stretch. It runs 300 ms on its own
+   gentler curve, `cubic-bezier(0.32, 0.72, 0, 1)`: on `--ease-out` it covered half the way in two frames and then
+   crept, which read as a snap.
 2. **Ease-out for anything the user starts.** It moves fast at first, so the interface answers the click at once.
    Never use ease-in for UI: it starts slowly and feels late.
 3. **Stay under 250 ms.** Most transitions are 150–200 ms. Anything longer starts to feel like waiting. The dialog is

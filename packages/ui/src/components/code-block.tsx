@@ -181,6 +181,11 @@ export function CodeBlock({
   }
 
   const diff = view === 'diff'
+  // A change of view or code after the first render dissolves the new lines in rather than
+  // cutting to them, so a switch reads as one motion with whatever control made it.
+  const content = `${view}\n${code}`
+  const firstContent = React.useRef(content)
+  const fade = firstContent.current !== content
 
   return (
     <div
@@ -225,7 +230,7 @@ export function CodeBlock({
           tokenClass.plain,
         )}
       >
-        <code className="block w-max min-w-full">
+        <code key={content} className={cn('block w-max min-w-full', fade && 'animate-[satin-fade-in_var(--duration-base)_var(--ease-out)]')}>
           {lines.map((line, i) => (
             <span
               key={i}

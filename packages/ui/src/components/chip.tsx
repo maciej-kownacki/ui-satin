@@ -18,8 +18,8 @@ import { useSatinLabels } from './labels'
  * pressed fill with tone-border.
  *
  * States (satin-hover / satin-focus / satin-pressed, or `data-force`):
- * - hover: neutral outline bg-hover + border-strong; neutral subtle border-input fill.
- * - pressed: neutral border-input fill with a border-strong edge, no drop shadow.
+ * - hover: neutral outline bg-hover + border-strong; neutral subtle bg/pressed fill.
+ * - pressed: neutral bg/pressed fill with a border-strong edge, no drop shadow.
  * - focus: the 2px action/focus-ring spread, border-strong edge, no drop shadow.
  * - disabled: 50% opacity, no drop shadow.
  * Subtle pressed's 1px edge is an inset shadow so the chip doesn't grow by 2px.
@@ -56,7 +56,7 @@ const chipVariants = cva(
           'satin-hover:border-border-strong satin-hover:bg-bg-hover',
           'satin-focus:border-border-strong satin-focus:bg-bg-popover satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
           'has-[button:focus-visible]:border-border-strong has-[button:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
-          'satin-pressed:border-border-strong satin-pressed:bg-border-input satin-pressed:[box-shadow:none]',
+          'satin-pressed:border-border-strong satin-pressed:bg-bg-pressed satin-pressed:[box-shadow:none]',
           'data-[disabled]:border-border-strong',
         ],
       },
@@ -76,10 +76,10 @@ const chipVariants = cva(
         neutral: true,
         className: [
           'bg-action-secondary-bg',
-          'satin-hover:bg-border-input',
+          'satin-hover:bg-bg-pressed',
           'satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
           'has-[button:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
-          'satin-pressed:bg-border-input satin-pressed:[box-shadow:inset_0_0_0_1px_var(--border-strong)]',
+          'satin-pressed:bg-bg-pressed satin-pressed:[box-shadow:inset_0_0_0_1px_var(--border-strong)]',
         ],
       },
       {

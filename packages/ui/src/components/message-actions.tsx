@@ -53,7 +53,7 @@ export function MessageActions({
     onFeedback?.(next)
   }
 
-  const thumb = 'aria-pressed:bg-border-input aria-pressed:[&_svg]:text-text-subtle'
+  const thumb = 'aria-pressed:bg-bg-pressed aria-pressed:[&_svg]:text-text-subtle'
 
   return (
     <div data-slot="message-actions" className={cn('flex items-center gap-2', className)} {...props}>

@@ -8,6 +8,7 @@
  *   its tone, error text;
  * - focus (1.4.11, 3:1): action/focus-ring and border/focus against every surface;
  * - error edge (1.4.11, 3:1): the destructive border on the surfaces fields sit on;
+ * - control edge (1.4.11, 3:1): border/input, the edge of Checkbox, Radio and an off Switch, on every surface;
  * - themes: themeCss() for a spread of brands keeps the button label at 4.5:1 and the focus
  *   colour at 3:1 (needs the package build, packages/ui/dist).
  *
@@ -78,15 +79,13 @@ const pairs = [
   ['text', 'text-destructive', 'status-red-bg'],
   ...['action-focus-ring', 'border-focus'].flatMap((fg) => SURFACES.map((bg) => ['focus', fg, bg])),
   ...FIELD_SURFACES.map((bg) => ['edge', 'action-destructive-bg', bg]),
+  // The edge of Checkbox, Radio and an off Switch, which have no other edge, on every surface.
+  ...SURFACES.map((bg) => ['control', 'border-input', bg]),
 ]
-const MIN = { text: 4.5, focus: 3, edge: 3 }
+const MIN = { text: 4.5, focus: 3, edge: 3, control: 3 }
 
 // Short of the minimum today, listed as known issues on the Accessibility page.
-const KNOWN = [
-  ['edge', 'border-default', 'bg-field', 'Control borders: 1.3:1; a checkbox, radio or switch has no other edge'],
-  ['edge', 'border-input', 'bg-field', 'Control borders: 1.5:1'],
-  ['edge', 'border-strong', 'bg-card', 'Control borders: 1.5:1'],
-]
+const KNOWN = []
 
 /** Every checked pair: { theme, kind, fg, bg, r (ratio), ok (true, false, or null for a known issue) }. */
 export async function contrastRows({ root = ROOT, brands = true } = {}) {

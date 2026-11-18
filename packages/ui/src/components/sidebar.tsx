@@ -85,7 +85,7 @@ export function SidebarItem({
         '[&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
         'not-data-active:satin-hover:bg-bg-muted',
         rowFocus,
-        'data-active:bg-border-input data-active:text-text-default',
+        'data-active:bg-bg-pressed data-active:text-text-default',
         'aria-disabled:pointer-events-none aria-disabled:opacity-50',
         iconOnly && 'relative size-8 justify-center px-0',
         className,
