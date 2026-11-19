@@ -32,15 +32,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['End'], action: 'Moves focus to the last header.' },
     ],
   },
-  'activity-timeline': {
-    summary:
-      'Each day is an ordered list named after its rule ("Today"); without days the list is named "Activity" (`activity` in SatinLabels). Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
-      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
-      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
-    ],
-  },
   alert: {
     summary:
       'Errors and warnings are `role="alert"`, so screen readers read them out when they appear; the other intents are `role="status"`, read politely. The status icon is hidden, so say the severity in the title when it matters. The close button is named "Dismiss" (`dismiss` in SatinLabels).',
@@ -173,18 +164,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'Picks the highlighted option; a single pick closes the list. On the Create row, makes the option and picks it (again after a failure).' },
       { keys: ['Tab'], action: 'With `footer`, moves to Cancel and Apply.' },
       { keys: ['Esc'], action: 'Closes the list, drops picks waiting for Apply and returns focus to the field.' },
-    ],
-  },
-  'people-picker': {
-    summary:
-      'Combobox\'s roles, with people in them: each option is named by the person and their role, "Marta Nowak, Hiring manager" (a hidden comma joins them; the avatar is hidden). Recent and every titled group are `group`s named by their headers. While a search runs the list is `aria-busy`, and "Searching…", "No one matches" or a failed search are read out from a `status` region. A disabled person is `aria-disabled`. Each chip has a "Remove <name>" button; after a removal focus moves to the chip that takes its place, or to the field. The "+N" chip is a button named "Show N more"; it shows the rest and moves focus to the first of them.',
-    keyboard: [
-      { keys: ['Enter', 'Space'], action: 'On the field: opens the list and focuses the search.' },
-      { keys: ['A–Z'], action: 'In the search: filters by name, role and email, ignoring accents, or runs `search` after a pause.' },
-      { keys: ['↑', '↓'], action: 'Moves the highlight across the groups, wrapping at the ends.' },
-      { keys: ['Enter'], action: 'Picks the highlighted person and, with `multiple`, drops one already picked; a single pick closes the list.' },
-      { keys: ['Esc'], action: 'Closes the list and returns focus to the field.' },
-      { keys: ['Tab'], action: 'Out of the field, through the chips\' remove buttons and the "+N" chip.' },
     ],
   },
   'command-menu': {
@@ -368,19 +347,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['↑', '↓'], action: 'Panel: moves the highlight through the results, wrapping at the ends.' },
       { keys: ['Enter'], action: 'Panel: opens the highlighted result (its `onSelect`).' },
       { keys: ['Esc'], action: 'Clears the field when it has text.' },
-    ],
-  },
-  'search-scoped': {
-    summary:
-      'The input is a `combobox` (named "Search" through `searchField`, or your `aria-label`) that controls a `listbox` named "Search results"; the highlighted row is its `aria-activedescendant`, so focus stays in the query. Rows sit in a `group` per section, named by its heading with the count read as words ("Candidates, 6 results"). The chips are described to the input (`aria-describedby`), so the filters are heard without leaving the query; each chip has a remove button ("Remove Stage: Interview"). A polite `status` says "Filter added: …" or "Filter removed: …", and the result count once typing settles. The footer of key hints is hidden from screen readers. Every word is in SatinLabels (`scopedSearch*`).',
-    keyboard: [
-      { keys: ['⌘K', 'Ctrl+K'], action: 'Focuses the query and opens the list, from anywhere on the page, unless `hotkey` is off.' },
-      { keys: ['↑', '↓'], action: 'Moves the highlight through the list, wrapping at the ends; ↓ opens a closed list. No motion.' },
-      { keys: ['Enter'], action: 'Runs the highlighted row: a recent search fills the query, a scope types `key:`, a value makes its chip, a result calls `onSelect` and closes the list.' },
-      { keys: ['Space'], action: 'After a `key:value`, turns it into a chip.' },
-      { keys: ['Backspace'], action: 'At the start of the query, removes the last chip.' },
-      { keys: ['Esc'], action: 'Closes the list and keeps the query; with the list closed, clears the words.' },
-      { keys: ['Shift+Tab'], action: 'From the query, to the chips’ remove buttons.' },
     ],
   },
   'segmented-control': {
@@ -590,6 +556,15 @@ export const a11y: Record<string, A11y> = {
       'The header is a `button` with `aria-expanded` and `aria-controls`, named by the summary ("Thought for 2m 45s"). The steps are an ordered list; folded, they stay mounted but leave the tab order and screen readers. The mark, chevron and rail are hidden, and so is a task’s check.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Opens or folds the steps.' }],
   },
+  'activity-timeline': {
+    summary:
+      'Each day is an ordered list named after its rule ("Today"); without days the list is named "Activity" (`activity` in SatinLabels). Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
+      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
+      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
+    ],
+  },
   'data-grid': {
     summary:
       'A `grid` (APG Grid pattern) named by `label`, with `aria-rowcount` and `aria-colcount` and each row and cell numbered, so the count stays right while only the rows on screen exist. One cell at a time is in the tab order; a sortable header holds a `button` and sets `aria-sort`. With `selectable` the grid is `aria-multiselectable` and rows set `aria-selected`; the checkboxes are named "Select <name>" after the first column or `rowLabel`. Each resize handle is a focusable `separator` named "Resize <column>" with its width as `aria-valuenow`. An editor is named after its column. A saving cell is `aria-busy`; a failed one is `aria-invalid` and described by its error. Sorting, saves and views are read out from a polite `status` region. The Columns menu is a menu of `menuitemcheckbox` rows; the view menu says "View: <name>, unsaved changes" when the grid has moved from the view.',
@@ -657,6 +632,19 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Alt+Shift+↑', 'Alt+Shift+↓'], action: 'Event: ends it a slot earlier or later, never shorter than one slot.' },
       { keys: ['↑', '↓'], action: 'Event: the previous or next event that day (Month: and "3 more").' },
       { keys: ['Esc'], action: 'Event: back to its slot in the grid. Grid: clears the pick. While dragging: puts the event back.' },
+    ],
+  },
+  'search-scoped': {
+    summary:
+      'The input is a `combobox` (named "Search" through `searchField`, or your `aria-label`) that controls a `listbox` named "Search results"; the highlighted row is its `aria-activedescendant`, so focus stays in the query. Rows sit in a `group` per section, named by its heading with the count read as words ("Candidates, 6 results"). The chips are described to the input (`aria-describedby`), so the filters are heard without leaving the query; each chip has a remove button ("Remove Stage: Interview"). A polite `status` says "Filter added: …" or "Filter removed: …", and the result count once typing settles. The footer of key hints is hidden from screen readers. Every word is in SatinLabels (`scopedSearch*`).',
+    keyboard: [
+      { keys: ['⌘K', 'Ctrl+K'], action: 'Focuses the query and opens the list, from anywhere on the page, unless `hotkey` is off.' },
+      { keys: ['↑', '↓'], action: 'Moves the highlight through the list, wrapping at the ends; ↓ opens a closed list. No motion.' },
+      { keys: ['Enter'], action: 'Runs the highlighted row: a recent search fills the query, a scope types `key:`, a value makes its chip, a result calls `onSelect` and closes the list.' },
+      { keys: ['Space'], action: 'After a `key:value`, turns it into a chip.' },
+      { keys: ['Backspace'], action: 'At the start of the query, removes the last chip.' },
+      { keys: ['Esc'], action: 'Closes the list and keeps the query; with the list closed, clears the words.' },
+      { keys: ['Shift+Tab'], action: 'From the query, to the chips’ remove buttons.' },
     ],
   },
   stepper: {
@@ -766,6 +754,18 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'In an editor\'s text or number field: keeps the value and closes the editor. A pick from a single-choice list or a calendar closes it too.' },
       { keys: ['Esc'], action: 'Closes the editor as it is, focus back on its chip. A new chip still without a value goes, focus back on `+ Filter`.' },
       { keys: ['F'], action: 'Opens `+ Filter` while focus is in the bar or the list it filters (not while typing). Set with `shortcut`, or `false` for none.' },
+    ],
+  },
+  'people-picker': {
+    summary:
+      'Combobox\'s roles, with people in them: each option is named by the person and their role, "Marta Nowak, Hiring manager" (a hidden comma joins them; the avatar is hidden). Recent and every titled group are `group`s named by their headers. While a search runs the list is `aria-busy`, and "Searching…", "No one matches" or a failed search are read out from a `status` region. A disabled person is `aria-disabled`. Each chip has a "Remove <name>" button; after a removal focus moves to the chip that takes its place, or to the field. The "+N" chip is a button named "Show N more"; it shows the rest and moves focus to the first of them.',
+    keyboard: [
+      { keys: ['Enter', 'Space'], action: 'On the field: opens the list and focuses the search.' },
+      { keys: ['A–Z'], action: 'In the search: filters by name, role and email, ignoring accents, or runs `search` after a pause.' },
+      { keys: ['↑', '↓'], action: 'Moves the highlight across the groups, wrapping at the ends.' },
+      { keys: ['Enter'], action: 'Picks the highlighted person and, with `multiple`, drops one already picked; a single pick closes the list.' },
+      { keys: ['Esc'], action: 'Closes the list and returns focus to the field.' },
+      { keys: ['Tab'], action: 'Out of the field, through the chips\' remove buttons and the "+N" chip.' },
     ],
   },
   'date-availability': {

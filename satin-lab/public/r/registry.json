@@ -2207,6 +2207,37 @@
       ]
     },
     {
+      "name": "activity-timeline",
+      "type": "registry:ui",
+      "title": "Activity timeline",
+      "description": "A record’s history: who changed what and when, agent changes with Revert, runs folded into one row.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/agent-suggestion.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/separator.json",
+        "https://uisatin.dev/r/skeleton.json",
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "docs": "Activity timeline docs: https://uisatin.dev/components/activity-timeline",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/activity-timeline.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "agent-changes-review",
       "type": "registry:ui",
       "title": "Reviewable changes",
@@ -2520,6 +2551,35 @@
       ]
     },
     {
+      "name": "people-picker",
+      "type": "registry:ui",
+      "title": "People picker",
+      "description": "Picks people by name, with their faces and roles, the ones picked lately first, and search as you type.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/chip.json",
+        "https://uisatin.dev/r/combobox.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "People picker docs: https://uisatin.dev/components/people-picker",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/people-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "review-queue",
       "type": "registry:ui",
       "title": "Review queue",
@@ -2603,6 +2663,38 @@
       "files": [
         {
           "path": "registry/satin/ui/scheduler.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "search-scoped",
+      "type": "registry:ui",
+      "title": "Scoped search",
+      "description": "Search across candidates, jobs and notes with stage: and owner: chips typed into the query, recent searches and results grouped with counts.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/chip.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/search-bar.json",
+        "https://uisatin.dev/r/spinner.json"
+      ],
+      "docs": "Scoped search docs: https://uisatin.dev/components/search-scoped",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/search-scoped.tsx",
           "type": "registry:ui"
         }
       ]
@@ -3834,6 +3926,21 @@
       ]
     },
     {
+      "name": "activity-timeline-demo",
+      "type": "registry:example",
+      "title": "Activity timeline example",
+      "description": "The shortest use of Activity timeline, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/activity-timeline.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/activity-timeline-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "agent-changes-review-demo",
       "type": "registry:example",
       "title": "Reviewable changes example",
@@ -3984,6 +4091,21 @@
       ]
     },
     {
+      "name": "people-picker-demo",
+      "type": "registry:example",
+      "title": "People picker example",
+      "description": "The shortest use of People picker, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/people-picker.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/people-picker-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "review-queue-demo",
       "type": "registry:example",
       "title": "Review queue example",
@@ -4009,6 +4131,21 @@
       "files": [
         {
           "path": "registry/satin/examples/scheduler-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "search-scoped-demo",
+      "type": "registry:example",
+      "title": "Scoped search example",
+      "description": "The shortest use of Scoped search, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/search-scoped.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/search-scoped-demo.tsx",
           "type": "registry:example"
         }
       ]
