@@ -37,18 +37,17 @@ import { Toaster } from '@uisatin/ui/toast'
 `
 
 function code(v: Record<string, string>) {
-  const media = v.media === 'on' ? `\n    media: <Avatar initials={c.initials} tone={c.tone} size={24} aria-hidden />,` : ''
   const imports = `${v.media === 'on' ? "import { Avatar } from '@uisatin/ui/avatar'\n" : ''}import { toastBatch } from '@uisatin/pro/toast-batch'`
   const title = "title: (count) => `${count} ${count === 1 ? 'candidate' : 'candidates'} moved`,"
-  const item = (indent: string) =>
-    `{
-    id: c.id,
-    label: c.name,
-    description: \`From \${c.stage}\`,${media}
-    undo: () => moveCandidate(c.id, c.stage),
-  }`
-      .split('\n')
-      .join(`\n${indent}`)
+  // One candidate's item, its fields two spaces in from `base`.
+  const fields = [
+    'id: c.id,',
+    'label: c.name,',
+    'description: `From ${c.stage}`,',
+    ...(v.media === 'on' ? ['media: <Avatar initials={c.initials} tone={c.tone} size={24} aria-hidden />,'] : []),
+    'undo: () => moveCandidate(c.id, c.stage),',
+  ]
+  const item = (base: string) => `{\n${fields.map((f) => `${base}  ${f}`).join('\n')}\n${base}}`
   if (v.arrival === 'stream')
     return `${setup}
 ${imports}
@@ -163,7 +162,7 @@ function Preview({ v }: { v: Record<string, string> }) {
         ) : (
           <Button variant="secondary" onClick={() => void start()}>
             <Sparks aria-hidden />
-            Run the agent again
+            Run again
           </Button>
         )}
       </div>
