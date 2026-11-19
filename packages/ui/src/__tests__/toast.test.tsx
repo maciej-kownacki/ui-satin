@@ -22,6 +22,14 @@ describe('Toast', () => {
     expect(onUndo).toHaveBeenCalledOnce()
   })
 
+  it('takes the action word from the labels when given a function', async () => {
+    renderWithSatin(<Toaster />, { labels: { cancel: 'Anuluj' } })
+    act(() => {
+      toast('Upload started', { action: { label: (labels) => labels.cancel } })
+    })
+    expect(screen.getByRole('button', { name: 'Anuluj' })).toBeTruthy()
+  })
+
   it('takes F8 to the toasts, and Enter on Close closes it', async () => {
     const { user } = renderWithSatin(<Toaster />, { labels: { close: 'Zamknij', notifications: 'Powiadomienia' } })
     act(() => {

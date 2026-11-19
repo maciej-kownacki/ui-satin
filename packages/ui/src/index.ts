@@ -76,7 +76,7 @@ export { Switch, type SwitchProps } from './components/switch'
 export { Table, type TableProps, type Column, type Row, type Sort } from './components/table'
 export { Tabs, TabsContent, type TabsProps, type TabItem } from './components/tabs'
 export { Textarea, type TextareaProps } from './components/textarea'
-export { Toast, Toaster, toast, type ToastProps, type ToasterProps, type ToastOptions, type ToastIntent, type ToastAction } from './components/toast'
+export { Toast, Toaster, toast, type ToastProps, type ToasterProps, type ToastOptions, type ToastIntent, type ToastAction, type ToastText } from './components/toast'
 export { Toggle, toggleVariants, type ToggleProps } from './components/toggle'
 export { Tooltip, TooltipBubble, type TooltipProps } from './components/tooltip'
 

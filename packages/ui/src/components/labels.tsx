@@ -20,6 +20,10 @@ import * as React from 'react'
  * `pageOf` gets the page as a node, because Pagination animates the number; write it with JSX
  * (`(page, count) => <>Strona {page} z {count}</>`), not a template string. `dateLocale` is a
  * locale, not a word: Calendar and the date pickers name months and days and write dates in it.
+ *
+ * Satin Pro's components say words of their own; they join this set (`SatinLabelSet` is an
+ * interface, so a package adds keys to it with declaration merging), and the same `SatinLabels`
+ * translates them.
  */
 export const defaultLabels = {
   close: 'Close',
@@ -172,9 +176,20 @@ export const defaultLabels = {
   ),
 }
 
-export type SatinLabelSet = typeof defaultLabels
+type DefaultLabelSet = typeof defaultLabels
 
-const LabelsContext = React.createContext<SatinLabelSet>(defaultLabels)
+/**
+ * Every word SatinLabels takes. An interface, so a package built on Satin adds its own words:
+ *
+ *   declare module '@uisatin/ui/labels' { interface SatinLabelSet { undo: string } }
+ *
+ * Such a package merges its defaults in where it reads them (`{ ...ownDefaults, ...useSatinLabels() }`):
+ * the context only holds Satin Free's defaults and what the app passes.
+ */
+export interface SatinLabelSet extends DefaultLabelSet {}
+
+// Satin Free's own words; words other packages add come from those packages' defaults.
+const LabelsContext = React.createContext<SatinLabelSet>(defaultLabels as SatinLabelSet)
 
 export interface SatinLabelsProps {
   /** The words to change; the rest stay as they are (from a parent SatinLabels, or English). */

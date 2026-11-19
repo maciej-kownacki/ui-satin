@@ -852,12 +852,12 @@ export const api: Record<string, Api> = {
     ],
   },
   toast: {
-    description: 'The `Toast` component wraps the Radix toast in an `li` element rendered by the `toast()` function. Mount `Toaster` once; then call `toast()`, `toast.info()`, `toast.success()`, `toast.warning()` or `toast.error()` with a title and these options.',
+    description: 'The `Toast` component wraps the Radix toast in an `li` element rendered by the `toast()` function. Mount `Toaster` once; then call `toast()`, `toast.info()`, `toast.success()`, `toast.warning()` or `toast.error()` with a title and these options. An action\'s `label` and `altText` can be functions of the labels, `(labels) => labels.undo`, so code outside React still uses the words SatinLabels sets.',
     props: [
       { name: 'intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"neutral"' },
       { name: 'icon', type: ['boolean'], default: 'true' },
       { name: 'description', type: ['string'] },
-      { name: 'action', type: ['{ label, onClick, altText }'] },
+      { name: 'action', type: ['{ label, onClick, altText }', 'label: string | (labels) => string'] },
       { name: 'closeButton', type: ['boolean'], default: 'true' },
       { name: 'duration', type: ['number'], default: '5000' },
       { name: 'title', type: ['string'] },

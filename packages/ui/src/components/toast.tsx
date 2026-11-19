@@ -4,7 +4,7 @@ import * as React from 'react'
 import { Toast as ToastPrimitive } from 'radix-ui'
 import { cn } from '../lib/utils'
 import { Button } from './button'
-import { useSatinLabels } from './labels'
+import { useSatinLabels, type SatinLabelSet } from './labels'
 
 /**
  * Toast, 1:1 with the uiKit `Toast` set (3650:17696): intent neutral, info, success, warning or
@@ -30,15 +30,22 @@ import { useSatinLabels } from './labels'
  */
 export type ToastIntent = 'neutral' | 'info' | 'success' | 'warning' | 'error'
 
+/** A word for a toast, or a function that picks it from the labels in effect where the toast shows. */
+export type ToastText = string | ((labels: SatinLabelSet) => string)
+
 export interface ToastAction {
-  label: string
+  /**
+   * The button's word. A function gets the SatinLabels in effect under the Toaster, so code that
+   * calls toast() outside React can still use the app's words: `(labels) => labels.undo`.
+   */
+  label: ToastText
   onClick?: () => void
   /**
    * How to do the same without the toast, read to screen readers in place of the button, which
    * they may never reach before it's gone: "Undo with Ctrl+Z", "Restore it from Trash".
-   * Defaults to the label.
+   * Defaults to the label. Takes a function of the labels too.
    */
-  altText?: string
+  altText?: ToastText
 }
 
 export interface ToastOptions {
@@ -196,6 +203,7 @@ function ToastContent({
   onAction?: () => void
 }) {
   const labels = useSatinLabels()
+  const text = (t: ToastText) => (typeof t === 'function' ? t(labels) : t)
   return (
     <>
       {icon && (
@@ -212,7 +220,7 @@ function ToastContent({
       {(action || closeButton) && (
         <div className="flex shrink-0 items-center gap-1">
           {action && (
-            <ToastPrimitive.Action asChild altText={action.altText ?? action.label}>
+            <ToastPrimitive.Action asChild altText={text(action.altText ?? action.label)}>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -220,7 +228,7 @@ function ToastContent({
                   action.onClick?.()
                 }}
               >
-                {action.label}
+                {text(action.label)}
               </Button>
             </ToastPrimitive.Action>
           )}
