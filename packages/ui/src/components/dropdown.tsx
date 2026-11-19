@@ -336,16 +336,8 @@ export interface DropdownMenuSubProps {
 }
 
 /**
- * A submenu: holds the row that opens it and its panel. Renders no element of its own.
- *
- * ```tsx
- * <DropdownMenuSub>
- *   <DropdownMenuSubTrigger label="Move to" icon={<Folder />} />
- *   <DropdownMenuSubContent>
- *     <DropdownMenuItem label="Screening" />
- *   </DropdownMenuSubContent>
- * </DropdownMenuSub>
- * ```
+ * A submenu: holds the row that opens it, a `DropdownMenuSubTrigger`, and its panel, a
+ * `DropdownMenuSubContent` with the submenu's rows. Renders no element of its own.
  */
 export function DropdownMenuSub({ children, open, defaultOpen, onOpenChange }: DropdownMenuSubProps) {
   return (

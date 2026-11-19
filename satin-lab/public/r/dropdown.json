@@ -5,6 +5,7 @@
   "title": "Dropdown",
   "description": "Opens a short list of actions or values from a button.",
   "dependencies": [
+    "iconoir-react@^7.12.2",
     "radix-ui@^1.8.1"
   ],
   "registryDependencies": [
@@ -18,7 +19,7 @@
     {
       "path": "registry/satin/ui/dropdown.tsx",
       "type": "registry:ui",
-      "content": "'use client'\n\nimport * as React from 'react'\nimport { DropdownMenu as DropdownPrimitive } from 'radix-ui'\nimport { cn } from '@/lib/utils'\nimport { KbdGroup } from '@/registry/satin/ui/kbd'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\nimport { trackPointerModality } from '@/registry/satin/ui/pointer-modality'\n\n// Rings after a mouse press: see pointer-modality.tsx.\ntrackPointerModality()\n\n/**\n * DropdownMenu, 1:1 with the uiKit `DropdownMenu` (654:19150) and `DropdownMenu/Item`\n * (653:19165) sets. A 255px popover surface (max 520), 4px padding, radius-xl,\n * border/subtle, the shadcn `sm` shadow. Items are at least 32px high, 12px in, 6px top and\n * bottom, radius-lg, with an 8px gap between a 16px leading icon (text/muted), the content and\n * a trailing check (status green) when selected. An optional `shortcut` shows its keys (Kbd sm)\n * before the check. Hover, keyboard highlight and selected fill\n * bg/selected.\n *\n * Groups: `DropdownMenuGroup`. Content: a 14px medium label (20px line). `stacked` puts the\n * description under it, 2px apart, at 13px / 18px in text/muted; `inline` puts it on the same\n * baseline 12px after the label, at 13px, truncated. Groups have a 24px header in 12px\n * text/subtle and are 4px apart with a 1px bg/muted rule between them. Items are 4px apart.\n *\n * Built on the Radix DropdownMenu: arrow keys, typeahead, Escape, focus return.\n *\n * Other props on DropdownMenu, `ref` included, go to the menu's panel (the Radix Content).\n */\n/** The popover surface menus share: radius-xl, border/subtle, bg/popover, the shadcn `sm` shadow. */\n/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */\nexport const menuSurfaceClass = cn(\n  'sa:rounded-xl sa:border sa:border-border-subtle sa:bg-bg-popover',\n  'sa:[box-shadow:0_1px_3px_0_var(--sa-effect-shadow-sm),0_1px_2px_-1px_var(--sa-effect-shadow-sm)]',\n)\n/** A group of rows, with a 1px bg/muted rule under every group but the last. */\n/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */\nexport const menuGroupClass = 'sa:flex sa:flex-col sa:gap-1 sa:not-last:after:block sa:not-last:after:h-px sa:not-last:after:bg-bg-muted'\n/** The 24px group header in 12px text/subtle. */\n// text/muted: a group's name is read to find a row, so it needs 4.5:1 (subtle is 2.6:1).\nexport const menuGroupLabelClass = 'sa:flex sa:h-6 sa:items-center sa:px-3 sa:text-xs sa:leading-3 sa:tracking-normal sa:text-text-muted'\n\nexport interface DropdownMenuProps\n  extends Omit<\n    React.ComponentProps<typeof DropdownPrimitive.Content>,\n    'children' | 'asChild' | 'side' | 'align' | 'sideOffset' | 'onFocusOutside'\n  > {\n  /** The element that opens the menu. Rendered with `asChild`, so pass a Button. */\n  trigger: React.ReactNode\n  /** `DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s. */\n  children: React.ReactNode\n  open?: boolean\n  defaultOpen?: boolean\n  onOpenChange?: (open: boolean) => void\n  /** Modal menus block the rest of the page while open. */\n  modal?: boolean\n  side?: 'top' | 'right' | 'bottom' | 'left'\n  align?: 'start' | 'center' | 'end'\n  sideOffset?: number\n  /** Portal target. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  /** Accessible name for the menu, when the trigger's text doesn't say enough. */\n  'aria-label'?: string\n  /** Focus moved outside a non-modal menu; call `preventDefault()` to keep it open. */\n  onFocusOutside?: (event: Event) => void\n  className?: string\n}\n\nexport function DropdownMenu({\n  trigger,\n  children,\n  open,\n  defaultOpen,\n  onOpenChange,\n  modal = true,\n  side = 'bottom',\n  align = 'start',\n  sideOffset = 8,\n  container,\n  onFocusOutside,\n  className,\n  ...props\n}: DropdownMenuProps) {\n  return (\n    <DropdownPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} modal={modal}>\n      <DropdownPrimitive.Trigger asChild>{trigger}</DropdownPrimitive.Trigger>\n      <DropdownPrimitive.Portal container={container}>\n        <DropdownPrimitive.Content\n          collisionPadding={8}\n          {...props}\n          data-slot=\"dropdown-menu\"\n          side={side}\n          align={align}\n          sideOffset={sideOffset}\n          onFocusOutside={onFocusOutside}\n          className={cn(\n            'sa:pointer-events-auto sa:z-50 sa:flex sa:w-[255px] sa:max-w-[520px] sa:flex-col sa:gap-1 sa:overflow-x-clip sa:overflow-y-auto sa:p-1',\n            'sa:max-h-(--radix-dropdown-menu-content-available-height)',\n            menuSurfaceClass,\n            'sa:origin-(--radix-dropdown-menu-content-transform-origin) sa:outline-none',\n            'sa:data-[state=open]:animate-[satin-enter_var(--sa-duration-base)_var(--sa-ease-out)]',\n            className,\n          )}\n        >\n          {children}\n        </DropdownPrimitive.Content>\n      </DropdownPrimitive.Portal>\n    </DropdownPrimitive.Root>\n  )\n}\n\n/* ------------------------------------------------------------------------------------------ */\n\nexport interface DropdownMenuGroupProps extends React.ComponentProps<typeof DropdownPrimitive.Group> {\n  /** The 24px group header. */\n  label?: React.ReactNode\n}\n\n/** A titled group of items (Figma `_dropdown/group`). Groups get a rule between them. */\nexport function DropdownMenuGroup({ label, children, className, ...props }: DropdownMenuGroupProps) {\n  return (\n    <DropdownPrimitive.Group\n      data-slot=\"dropdown-group\"\n      // Figma's divider lives inside the group, 8px under the last item; the last group has none.\n      className={cn(menuGroupClass, className)}\n      {...props}\n    >\n      {label ? (\n        <DropdownPrimitive.Label className={menuGroupLabelClass}>\n          {label}\n        </DropdownPrimitive.Label>\n      ) : null}\n      {children}\n    </DropdownPrimitive.Group>\n  )\n}\n\n/* ------------------------------------------------------------------------------------------ */\n\n/**\n * The row skin every menu shares: Dropdown, Select, Combobox and the Command menu. The highlight\n * is bg/selected; a row reached with the keyboard also gets the focus ring inside its edge, since\n * the fill alone is too faint to find (1.2:1). Real focus (Radix menus) shows it through\n * :focus-visible; lists that keep focus in a field (Combobox, Command menu) set data-keyboard.\n */\n/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */\nexport const menuItemClass = cn(\n  'sa:flex sa:min-h-menu-row sa:w-full sa:cursor-pointer sa:items-center sa:gap-2 sa:rounded-lg sa:px-3 sa:py-1.5 sa:text-start sa:outline-none sa:select-none',\n  'sa:focus-visible:[box-shadow:inset_0_0_0_2px_var(--sa-action-focus-ring)] sa:data-[keyboard]:[box-shadow:inset_0_0_0_2px_var(--sa-action-focus-ring)]',\n  'sa:transition-colors sa:duration-(--sa-duration-fast) sa:ease-(--sa-ease-out)',\n  'sa:data-[highlighted]:bg-bg-selected sa:data-[force=hover]:bg-bg-selected sa:data-[selected]:bg-bg-selected',\n  'sa:data-[disabled]:pointer-events-none sa:data-[disabled]:opacity-50',\n  'sa:[&_svg]:pointer-events-none sa:[&_svg]:shrink-0',\n)\n\nexport interface MenuItemContentProps {\n  label: React.ReactNode\n  description?: React.ReactNode\n  /** Leading icon. 16px by default; stacked two-line items may use 20px (`iconSize={20}`). */\n  icon?: React.ReactNode\n  iconSize?: 16 | 20\n  /** Marks the current value: a trailing check. */\n  selected?: boolean\n  layout?: 'stacked' | 'inline'\n  /** Keys that run the item, e.g. \"⌘N\", shown on the right (Figma's `showShortcut`). */\n  shortcut?: string\n  /** Wraps the label, e.g. in Radix Select's `ItemText`. */\n  renderLabel?: (label: React.ReactNode) => React.ReactNode\n}\n\n/** What sits inside a menu row: icon, label and description, then shortcut and check. */\nexport function MenuItemContent({\n  label,\n  description,\n  icon,\n  iconSize = 16,\n  selected = false,\n  layout = 'stacked',\n  shortcut,\n  renderLabel = (l) => l,\n}: MenuItemContentProps) {\n  const labels = useSatinLabels()\n  return (\n    <>\n      {icon ? (\n        <span\n          className={cn(\n            'sa:grid sa:shrink-0 sa:place-items-center sa:text-text-muted',\n            iconSize === 20 ? 'sa:size-5 sa:[&_svg]:size-5 sa:[&_svg]:[stroke-width:1.5]' : 'sa:size-4 sa:[&_svg]:size-4 sa:[&_svg]:[stroke-width:1.875]',\n          )}\n        >\n          {icon}\n        </span>\n      ) : null}\n\n      {layout === 'stacked' ? (\n        <span className=\"sa:flex sa:min-w-0 sa:flex-1 sa:flex-col sa:justify-center sa:gap-0.5\">\n          <span className=\"sa:text-base sa:leading-5 sa:font-medium sa:text-text-default\">{renderLabel(label)}</span>\n          {description ? <span className=\"sa:text-sm sa:leading-[18px] sa:text-text-muted\">{description}</span> : null}\n        </span>\n      ) : (\n        <span className=\"sa:flex sa:min-w-0 sa:flex-1 sa:items-baseline sa:gap-3\">\n          <span className=\"sa:shrink-0 sa:text-base sa:leading-5 sa:font-medium sa:whitespace-nowrap sa:text-text-default\">{renderLabel(label)}</span>\n          {description ? (\n            <span className=\"sa:min-w-0 sa:flex-1 sa:truncate sa:text-sm sa:text-text-muted\">{description}</span>\n          ) : null}\n        </span>\n      )}\n\n      {shortcut && <KbdGroup keys={shortcut} aria-hidden />}\n      {selected && <span className=\"sa:sr-only\">({labels.selected})</span>}\n      {selected && (\n        <svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" aria-hidden className=\"sa:text-status-green-fg\">\n          <path\n            d=\"M3.33333 8.66667L6 11.3333L12.6667 4.66667\"\n            stroke=\"currentColor\"\n            strokeWidth=\"1.25\"\n            strokeLinecap=\"round\"\n            strokeLinejoin=\"round\"\n          />\n        </svg>\n      )}\n    </>\n  )\n}\n\nexport interface DropdownMenuItemProps\n  extends Omit<React.ComponentProps<typeof DropdownPrimitive.Item>, 'children'>,\n    Omit<MenuItemContentProps, 'label' | 'renderLabel'> {\n  label: string\n}\n\nexport function DropdownMenuItem({\n  label,\n  description,\n  icon,\n  iconSize = 16,\n  selected = false,\n  layout = 'stacked',\n  shortcut,\n  className,\n  ...props\n}: DropdownMenuItemProps) {\n  return (\n    <DropdownPrimitive.Item\n      data-slot=\"dropdown-item\"\n      data-selected={selected || undefined}\n      textValue={label}\n      className={cn(menuItemClass, className)}\n      {...props}\n    >\n      <MenuItemContent\n        label={label}\n        description={description}\n        icon={icon}\n        iconSize={iconSize}\n        selected={selected}\n        layout={layout}\n        shortcut={shortcut}\n      />\n    </DropdownPrimitive.Item>\n  )\n}\n"
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { DropdownMenu as DropdownPrimitive } from 'radix-ui'\nimport { NavArrowRight } from 'iconoir-react'\nimport { cn } from '@/lib/utils'\nimport { KbdGroup } from '@/registry/satin/ui/kbd'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\nimport { trackPointerModality } from '@/registry/satin/ui/pointer-modality'\n\n// Rings after a mouse press: see pointer-modality.tsx.\ntrackPointerModality()\n\n/**\n * DropdownMenu, 1:1 with the uiKit `DropdownMenu` (654:19150) and `DropdownMenu/Item`\n * (653:19165) sets. A 255px popover surface (max 520), 4px padding, radius-xl,\n * border/subtle, the shadcn `sm` shadow. Items are at least 32px high, 12px in, 6px top and\n * bottom, radius-lg, with an 8px gap between a 16px leading icon (text/muted), the content and\n * a trailing check (status green) when selected. An optional `shortcut` shows its keys (Kbd sm)\n * before the check. Hover, keyboard highlight and selected fill\n * bg/selected.\n *\n * Groups: `DropdownMenuGroup`. Content: a 14px medium label (20px line). `stacked` puts the\n * description under it, 2px apart, at 13px / 18px in text/muted; `inline` puts it on the same\n * baseline 12px after the label, at 13px, truncated. Groups have a 24px header in 12px\n * text/subtle and are 4px apart with a 1px bg/muted rule between them. Items are 4px apart.\n *\n * Submenus: `DropdownMenuSub` holds a `DropdownMenuSubTrigger` row (ending in a chevron) and a\n * `DropdownMenuSubContent` panel, which opens beside the row on hover, → or Enter and fades in\n * from 4px on the side it opens. Checkable rows: `DropdownMenuCheckboxItem` (a leading checkbox,\n * the menu stays open) and `DropdownMenuRadioItem`s in a `DropdownMenuRadioGroup` (the selected\n * check on the right, like `selected`).\n *\n * Built on the Radix DropdownMenu: arrow keys, typeahead, Escape, focus return, and the pointer's\n * safe triangle on the way from a submenu row to its panel. Right to left (read from the\n * trigger, or `dir`), ← opens a submenu and → closes it, and submenus open on the left.\n *\n * Other props on DropdownMenu, `ref` included, go to the menu's panel (the Radix Content).\n */\n/** The popover surface menus share: radius-xl, border/subtle, bg/popover, the shadcn `sm` shadow. */\n/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */\nexport const menuSurfaceClass = cn(\n  'sa:rounded-xl sa:border sa:border-border-subtle sa:bg-bg-popover',\n  'sa:[box-shadow:0_1px_3px_0_var(--sa-effect-shadow-sm),0_1px_2px_-1px_var(--sa-effect-shadow-sm)]',\n)\n/** A group of rows, with a 1px bg/muted rule under every group but the last. */\n/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */\nexport const menuGroupClass = 'sa:flex sa:flex-col sa:gap-1 sa:not-last:after:block sa:not-last:after:h-px sa:not-last:after:bg-bg-muted'\n/** The 24px group header in 12px text/subtle. */\n// text/muted: a group's name is read to find a row, so it needs 4.5:1 (subtle is 2.6:1).\nexport const menuGroupLabelClass = 'sa:flex sa:h-6 sa:items-center sa:px-3 sa:text-xs sa:leading-3 sa:tracking-normal sa:text-text-muted'\n\nexport interface DropdownMenuProps\n  extends Omit<\n    React.ComponentProps<typeof DropdownPrimitive.Content>,\n    'children' | 'asChild' | 'side' | 'align' | 'sideOffset' | 'onFocusOutside'\n  > {\n  /** The element that opens the menu. Rendered with `asChild`, so pass a Button. */\n  trigger: React.ReactNode\n  /**\n   * `DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s; also `DropdownMenuSub`s,\n   * `DropdownMenuCheckboxItem`s and `DropdownMenuRadioGroup`s.\n   */\n  children: React.ReactNode\n  open?: boolean\n  defaultOpen?: boolean\n  onOpenChange?: (open: boolean) => void\n  /** Modal menus block the rest of the page while open. */\n  modal?: boolean\n  side?: 'top' | 'right' | 'bottom' | 'left'\n  align?: 'start' | 'center' | 'end'\n  sideOffset?: number\n  /** Portal target, for the menu and its submenus. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  /** Accessible name for the menu, when the trigger's text doesn't say enough. */\n  'aria-label'?: string\n  /** Focus moved outside a non-modal menu; call `preventDefault()` to keep it open. */\n  onFocusOutside?: (event: Event) => void\n  /**\n   * Reading direction: which arrow opens a submenu and the side it opens on. Read from the\n   * trigger when left out.\n   */\n  dir?: 'ltr' | 'rtl'\n  className?: string\n}\n\ntype Dir = 'ltr' | 'rtl'\n\n/** The direction an element is laid out in: its `dir`, inherited, else the CSS `direction`. */\nfunction directionOf(el: Element): Dir {\n  try {\n    return el.matches(':dir(rtl)') ? 'rtl' : 'ltr'\n  } catch {\n    return getComputedStyle(el).direction === 'rtl' ? 'rtl' : 'ltr'\n  }\n}\n\n/** Where the menu portals, so its submenus open in the same place. */\nconst MenuContainer = React.createContext<HTMLElement | null | undefined>(undefined)\n\nexport function DropdownMenu({\n  trigger,\n  children,\n  open,\n  defaultOpen,\n  onOpenChange,\n  modal = true,\n  side = 'bottom',\n  align = 'start',\n  sideOffset = 8,\n  container,\n  onFocusOutside,\n  dir: dirProp,\n  className,\n  ...props\n}: DropdownMenuProps) {\n  // Radix reads the direction from a DirectionProvider only and falls back to left to right, so\n  // in a right-to-left page it set dir=\"ltr\" on the panel and kept → for opening submenus. Read it\n  // from the trigger instead, again on every open; a `dir` on the menu wins.\n  const triggerRef = React.useRef<HTMLButtonElement>(null)\n  const [pageDir, setPageDir] = React.useState<Dir>('ltr')\n  const readDir = React.useCallback(() => {\n    if (triggerRef.current) setPageDir(directionOf(triggerRef.current))\n  }, [])\n  React.useEffect(readDir, [readDir, open])\n  const dir = dirProp ?? pageDir\n\n  return (\n    <DropdownPrimitive.Root\n      open={open}\n      defaultOpen={defaultOpen}\n      onOpenChange={(next) => {\n        if (next) readDir()\n        onOpenChange?.(next)\n      }}\n      modal={modal}\n      dir={dir}\n    >\n      <DropdownPrimitive.Trigger asChild ref={triggerRef}>\n        {trigger}\n      </DropdownPrimitive.Trigger>\n      <DropdownPrimitive.Portal container={container}>\n        <DropdownPrimitive.Content\n          collisionPadding={8}\n          {...props}\n          data-slot=\"dropdown-menu\"\n          side={side}\n          align={align}\n          sideOffset={sideOffset}\n          onFocusOutside={onFocusOutside}\n          className={cn(\n            'sa:pointer-events-auto sa:z-50 sa:flex sa:w-[255px] sa:max-w-[520px] sa:flex-col sa:gap-1 sa:overflow-x-clip sa:overflow-y-auto sa:p-1',\n            'sa:max-h-(--radix-dropdown-menu-content-available-height)',\n            menuSurfaceClass,\n            'sa:origin-(--radix-dropdown-menu-content-transform-origin) sa:outline-none',\n            'sa:data-[state=open]:animate-[satin-enter_var(--sa-duration-base)_var(--sa-ease-out)]',\n            className,\n          )}\n        >\n          <MenuContainer.Provider value={container}>{children}</MenuContainer.Provider>\n        </DropdownPrimitive.Content>\n      </DropdownPrimitive.Portal>\n    </DropdownPrimitive.Root>\n  )\n}\n\n/* ------------------------------------------------------------------------------------------ */\n\nexport interface DropdownMenuGroupProps extends React.ComponentProps<typeof DropdownPrimitive.Group> {\n  /** The 24px group header. */\n  label?: React.ReactNode\n}\n\n/** A titled group of items (Figma `_dropdown/group`). Groups get a rule between them. */\nexport function DropdownMenuGroup({ label, children, className, ...props }: DropdownMenuGroupProps) {\n  const labelId = React.useId()\n  return (\n    <DropdownPrimitive.Group\n      data-slot=\"dropdown-group\"\n      // The header names the group, so a screen reader says \"Show columns, group\" on the way in.\n      aria-labelledby={label ? labelId : undefined}\n      // Figma's divider lives inside the group, 8px under the last item; the last group has none.\n      className={cn(menuGroupClass, className)}\n      {...props}\n    >\n      {label ? (\n        <DropdownPrimitive.Label id={labelId} className={menuGroupLabelClass}>\n          {label}\n        </DropdownPrimitive.Label>\n      ) : null}\n      {children}\n    </DropdownPrimitive.Group>\n  )\n}\n\n/* ------------------------------------------------------------------------------------------ */\n\n/**\n * The row skin every menu shares: Dropdown, Select, Combobox and the Command menu. The highlight\n * is bg/selected; a row reached with the keyboard also gets the focus ring inside its edge, since\n * the fill alone is too faint to find (1.2:1). Real focus (Radix menus) shows it through\n * :focus-visible; lists that keep focus in a field (Combobox, Command menu) set data-keyboard.\n */\n/** @internal Shared by Satin's own components; not part of the public API and may change in any release. */\nexport const menuItemClass = cn(\n  'sa:flex sa:min-h-menu-row sa:w-full sa:cursor-pointer sa:items-center sa:gap-2 sa:rounded-lg sa:px-3 sa:py-1.5 sa:text-start sa:outline-none sa:select-none',\n  'sa:focus-visible:[box-shadow:inset_0_0_0_2px_var(--sa-action-focus-ring)] sa:data-[keyboard]:[box-shadow:inset_0_0_0_2px_var(--sa-action-focus-ring)]',\n  'sa:transition-colors sa:duration-(--sa-duration-fast) sa:ease-(--sa-ease-out)',\n  'sa:data-[highlighted]:bg-bg-selected sa:data-[force=hover]:bg-bg-selected sa:data-[selected]:bg-bg-selected',\n  'sa:data-[disabled]:pointer-events-none sa:data-[disabled]:opacity-50',\n  'sa:[&_svg]:pointer-events-none sa:[&_svg]:shrink-0',\n)\n\nexport interface MenuItemContentProps {\n  label: React.ReactNode\n  description?: React.ReactNode\n  /** Leading icon. 16px by default; stacked two-line items may use 20px (`iconSize={20}`). */\n  icon?: React.ReactNode\n  iconSize?: 16 | 20\n  /** Marks the current value: a trailing check. */\n  selected?: boolean\n  layout?: 'stacked' | 'inline'\n  /** Keys that run the item, e.g. \"⌘N\", shown on the right (Figma's `showShortcut`). */\n  shortcut?: string\n  /** Wraps the label, e.g. in Radix Select's `ItemText`. */\n  renderLabel?: (label: React.ReactNode) => React.ReactNode\n}\n\n/** What sits inside a menu row: icon, label and description, then shortcut and check. */\nexport function MenuItemContent({\n  label,\n  description,\n  icon,\n  iconSize = 16,\n  selected = false,\n  layout = 'stacked',\n  shortcut,\n  renderLabel = (l) => l,\n}: MenuItemContentProps) {\n  const labels = useSatinLabels()\n  return (\n    <>\n      {icon ? (\n        <span\n          className={cn(\n            'sa:grid sa:shrink-0 sa:place-items-center sa:text-text-muted',\n            iconSize === 20 ? 'sa:size-5 sa:[&_svg]:size-5 sa:[&_svg]:[stroke-width:1.5]' : 'sa:size-4 sa:[&_svg]:size-4 sa:[&_svg]:[stroke-width:1.875]',\n          )}\n        >\n          {icon}\n        </span>\n      ) : null}\n\n      {layout === 'stacked' ? (\n        <span className=\"sa:flex sa:min-w-0 sa:flex-1 sa:flex-col sa:justify-center sa:gap-0.5\">\n          <span className=\"sa:text-base sa:leading-5 sa:font-medium sa:text-text-default\">{renderLabel(label)}</span>\n          {description ? <span className=\"sa:text-sm sa:leading-[18px] sa:text-text-muted\">{description}</span> : null}\n        </span>\n      ) : (\n        <span className=\"sa:flex sa:min-w-0 sa:flex-1 sa:items-baseline sa:gap-3\">\n          <span className=\"sa:shrink-0 sa:text-base sa:leading-5 sa:font-medium sa:whitespace-nowrap sa:text-text-default\">{renderLabel(label)}</span>\n          {description ? (\n            <span className=\"sa:min-w-0 sa:flex-1 sa:truncate sa:text-sm sa:text-text-muted\">{description}</span>\n          ) : null}\n        </span>\n      )}\n\n      {shortcut && <KbdGroup keys={shortcut} aria-hidden />}\n      {selected && <span className=\"sa:sr-only\">({labels.selected})</span>}\n      {selected && <SelectedCheck />}\n    </>\n  )\n}\n\n/** The trailing check of the current value, in status green. */\nfunction SelectedCheck() {\n  return (\n    <svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" aria-hidden className=\"sa:text-status-green-fg\">\n      <path\n        d=\"M3.33333 8.66667L6 11.3333L12.6667 4.66667\"\n        stroke=\"currentColor\"\n        strokeWidth=\"1.25\"\n        strokeLinecap=\"round\"\n        strokeLinejoin=\"round\"\n      />\n    </svg>\n  )\n}\n\nexport interface DropdownMenuItemProps\n  extends Omit<React.ComponentProps<typeof DropdownPrimitive.Item>, 'children'>,\n    Omit<MenuItemContentProps, 'label' | 'renderLabel'> {\n  label: string\n}\n\nexport function DropdownMenuItem({\n  label,\n  description,\n  icon,\n  iconSize = 16,\n  selected = false,\n  layout = 'stacked',\n  shortcut,\n  className,\n  ...props\n}: DropdownMenuItemProps) {\n  return (\n    <DropdownPrimitive.Item\n      data-slot=\"dropdown-item\"\n      data-selected={selected || undefined}\n      textValue={label}\n      className={cn(menuItemClass, className)}\n      {...props}\n    >\n      <MenuItemContent\n        label={label}\n        description={description}\n        icon={icon}\n        iconSize={iconSize}\n        selected={selected}\n        layout={layout}\n        shortcut={shortcut}\n      />\n    </DropdownPrimitive.Item>\n  )\n}\n\n/* ------------------------------------------------------------------------------------------ */\n\nexport interface DropdownMenuSubProps {\n  /** A `DropdownMenuSubTrigger` and its `DropdownMenuSubContent`. */\n  children: React.ReactNode\n  open?: boolean\n  defaultOpen?: boolean\n  onOpenChange?: (open: boolean) => void\n}\n\n/**\n * A submenu: holds the row that opens it, a `DropdownMenuSubTrigger`, and its panel, a\n * `DropdownMenuSubContent` with the submenu's rows. Renders no element of its own.\n */\nexport function DropdownMenuSub({ children, open, defaultOpen, onOpenChange }: DropdownMenuSubProps) {\n  return (\n    <DropdownPrimitive.Sub open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>\n      {children}\n    </DropdownPrimitive.Sub>\n  )\n}\n\nexport interface DropdownMenuSubTriggerProps\n  extends Omit<React.ComponentProps<typeof DropdownPrimitive.SubTrigger>, 'children' | 'asChild'>,\n    Pick<MenuItemContentProps, 'description' | 'icon' | 'iconSize' | 'layout'> {\n  label: string\n}\n\n/**\n * The row that opens a submenu: an item's look, ending in a text/muted chevron (mirrored right to\n * left). It stays filled bg/selected while its submenu is open. Hover, →, Enter or Space opens it.\n *\n * Other props, `ref` included, go to the row (the Radix SubTrigger).\n */\nexport function DropdownMenuSubTrigger({\n  label,\n  description,\n  icon,\n  iconSize = 16,\n  layout = 'stacked',\n  className,\n  ...props\n}: DropdownMenuSubTriggerProps) {\n  return (\n    <DropdownPrimitive.SubTrigger\n      data-slot=\"dropdown-sub-trigger\"\n      textValue={label}\n      className={cn(menuItemClass, 'sa:data-[state=open]:bg-bg-selected', className)}\n      {...props}\n    >\n      <MenuItemContent label={label} description={description} icon={icon} iconSize={iconSize} layout={layout} />\n      <NavArrowRight aria-hidden className=\"sa:size-4 sa:text-text-muted sa:[stroke-width:1.875] sa:rtl:-scale-x-100\" />\n    </DropdownPrimitive.SubTrigger>\n  )\n}\n\nexport interface DropdownMenuSubContentProps\n  extends Omit<React.ComponentProps<typeof DropdownPrimitive.SubContent>, 'asChild'> {\n  /** The submenu's rows: `DropdownMenuItem`s, groups, checkable rows, or another `DropdownMenuSub`. */\n  children: React.ReactNode\n  /** Portal target. Defaults to the menu's own `container`. */\n  container?: HTMLElement | null\n}\n\n/**\n * A submenu's panel: the menu's surface, 220px wide, beside its row with the first rows level\n * (4px off). It fades in from 4px on the side it opens, so it seems to come out of the row; right\n * to left, or with no room on the right, that is the left.\n *\n * Other props, `ref` included, go to the panel (the Radix SubContent).\n */\nexport function DropdownMenuSubContent({ container, className, children, ...props }: DropdownMenuSubContentProps) {\n  const menuContainer = React.useContext(MenuContainer)\n  return (\n    <DropdownPrimitive.Portal container={container === undefined ? menuContainer : container}>\n      <DropdownPrimitive.SubContent\n        // 4px off the row; -5 (the panel's 4px padding and 1px border) puts its first row level with it.\n        sideOffset={4}\n        alignOffset={-5}\n        collisionPadding={8}\n        {...props}\n        data-slot=\"dropdown-sub-content\"\n        className={cn(\n          'sa:pointer-events-auto sa:z-50 sa:flex sa:w-[220px] sa:max-w-[calc(100vw-16px)] sa:flex-col sa:gap-1 sa:overflow-x-clip sa:overflow-y-auto sa:p-1',\n          'sa:max-h-(--radix-dropdown-menu-content-available-height)',\n          menuSurfaceClass,\n          'sa:origin-(--radix-dropdown-menu-content-transform-origin) sa:outline-none',\n          className,\n        )}\n      >\n        {children}\n      </DropdownPrimitive.SubContent>\n    </DropdownPrimitive.Portal>\n  )\n}\n\n/* ------------------------------------------------------------------------------------------ */\n\nexport interface DropdownMenuCheckboxItemProps\n  extends Omit<\n      React.ComponentProps<typeof DropdownPrimitive.CheckboxItem>,\n      'children' | 'checked' | 'defaultChecked' | 'onCheckedChange'\n    >,\n    Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'> {\n  label: string\n  /** Controlled state. `'indeterminate'` for a row that stands for a set only partly on. */\n  checked?: boolean | 'indeterminate'\n  /** The state it starts in, when uncontrolled. */\n  defaultChecked?: boolean | 'indeterminate'\n  /** The row was toggled; an indeterminate row turns on. */\n  onCheckedChange?: (checked: boolean) => void\n  /** Closes the menu once toggled. Off, so several rows can be set in one go. */\n  closeOnSelect?: boolean\n}\n\n/**\n * A row that turns something on or off, like a column of a view: a leading 16px checkbox (the\n * Checkbox's look) before the item's content. Its role is `menuitemcheckbox`, with `aria-checked`.\n * Enter or Space toggles it; the menu stays open unless `closeOnSelect`.\n *\n * Other props, `ref` included, go to the row (the Radix CheckboxItem).\n */\nexport function DropdownMenuCheckboxItem({\n  label,\n  description,\n  icon,\n  iconSize = 16,\n  layout = 'stacked',\n  shortcut,\n  checked,\n  defaultChecked = false,\n  onCheckedChange,\n  closeOnSelect = false,\n  onSelect,\n  className,\n  ...props\n}: DropdownMenuCheckboxItemProps) {\n  const [own, setOwn] = React.useState(defaultChecked)\n  const state = checked ?? own\n  return (\n    <DropdownPrimitive.CheckboxItem\n      data-slot=\"dropdown-checkbox-item\"\n      textValue={label}\n      className={cn(menuItemClass, className)}\n      {...props}\n      checked={state}\n      onCheckedChange={(next) => {\n        if (checked === undefined) setOwn(next)\n        onCheckedChange?.(next)\n      }}\n      onSelect={(event) => {\n        onSelect?.(event)\n        if (!closeOnSelect) event.preventDefault()\n      }}\n    >\n      {/* Always there, so the label never moves; its data-state draws checked and indeterminate. */}\n      <DropdownPrimitive.ItemIndicator forceMount aria-hidden className=\"satin-checkbox\">\n        {/* -1px so the 16px glyph sits on the box, not inside its 1px border (as in Checkbox). */}\n        <span className=\"sa:-m-px sa:grid sa:size-4 sa:place-items-center\">\n          {state === true || state === 'indeterminate' ? (\n            <svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\">\n              {state === 'indeterminate' ? (\n                <path d=\"M3.6 8H12.4\" stroke=\"currentColor\" strokeWidth=\"1.25\" strokeLinecap=\"round\" />\n              ) : (\n                <path\n                  d=\"M3.33333 8.66667L6 11.3333L12.6667 4.66667\"\n                  stroke=\"currentColor\"\n                  strokeWidth=\"1.25\"\n                  strokeLinecap=\"round\"\n                  strokeLinejoin=\"round\"\n                />\n              )}\n            </svg>\n          ) : null}\n        </span>\n      </DropdownPrimitive.ItemIndicator>\n      <MenuItemContent\n        label={label}\n        description={description}\n        icon={icon}\n        iconSize={iconSize}\n        layout={layout}\n        shortcut={shortcut}\n      />\n    </DropdownPrimitive.CheckboxItem>\n  )\n}\n\n/* ------------------------------------------------------------------------------------------ */\n\nexport interface DropdownMenuRadioGroupProps\n  extends Omit<React.ComponentProps<typeof DropdownPrimitive.RadioGroup>, 'value' | 'defaultValue' | 'onValueChange'> {\n  /** The 24px group header; it also names the group for screen readers. */\n  label?: React.ReactNode\n  /** Controlled: the selected row's `value`. */\n  value?: string\n  /** The row selected at first, when uncontrolled. */\n  defaultValue?: string\n  onValueChange?: (value: string) => void\n}\n\n/**\n * One choice among `DropdownMenuRadioItem`s, like a sort order or a stage: a group with the\n * `DropdownMenuGroup` look (header, rule under it).\n *\n * Other props, `ref` included, go to the group (the Radix RadioGroup).\n */\nexport function DropdownMenuRadioGroup({\n  label,\n  value,\n  defaultValue,\n  onValueChange,\n  children,\n  className,\n  ...props\n}: DropdownMenuRadioGroupProps) {\n  const labelId = React.useId()\n  const [own, setOwn] = React.useState(defaultValue)\n  return (\n    <DropdownPrimitive.RadioGroup\n      data-slot=\"dropdown-radio-group\"\n      aria-labelledby={label ? labelId : undefined}\n      className={cn(menuGroupClass, className)}\n      {...props}\n      value={value ?? own}\n      onValueChange={(next) => {\n        if (value === undefined) setOwn(next)\n        onValueChange?.(next)\n      }}\n    >\n      {label ? (\n        <DropdownPrimitive.Label id={labelId} className={menuGroupLabelClass}>\n          {label}\n        </DropdownPrimitive.Label>\n      ) : null}\n      {children}\n    </DropdownPrimitive.RadioGroup>\n  )\n}\n\nexport interface DropdownMenuRadioItemProps\n  extends Omit<React.ComponentProps<typeof DropdownPrimitive.RadioItem>, 'children'>,\n    Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'> {\n  label: string\n  /** What `onValueChange` reports when this row is chosen. */\n  value: string\n  /** Closes the menu once chosen. On, since one choice ends the question. */\n  closeOnSelect?: boolean\n}\n\n/**\n * One option in a `DropdownMenuRadioGroup`. The selected row is filled bg/selected and ends in\n * the same status-green check as a `selected` item. Its role is `menuitemradio`, with\n * `aria-checked`.\n *\n * Other props, `ref` included, go to the row (the Radix RadioItem).\n */\nexport function DropdownMenuRadioItem({\n  label,\n  description,\n  icon,\n  iconSize = 16,\n  layout = 'stacked',\n  shortcut,\n  closeOnSelect = true,\n  onSelect,\n  className,\n  ...props\n}: DropdownMenuRadioItemProps) {\n  return (\n    <DropdownPrimitive.RadioItem\n      data-slot=\"dropdown-radio-item\"\n      textValue={label}\n      className={cn(menuItemClass, 'sa:data-[state=checked]:bg-bg-selected', className)}\n      {...props}\n      onSelect={(event) => {\n        onSelect?.(event)\n        if (!closeOnSelect) event.preventDefault()\n      }}\n    >\n      <MenuItemContent\n        label={label}\n        description={description}\n        icon={icon}\n        iconSize={iconSize}\n        layout={layout}\n        shortcut={shortcut}\n      />\n      <DropdownPrimitive.ItemIndicator className=\"sa:flex sa:shrink-0\">\n        <SelectedCheck />\n      </DropdownPrimitive.ItemIndicator>\n    </DropdownPrimitive.RadioItem>\n  )\n}\n"
     }
   ],
   "docs": "Dropdown docs: https://uisatin.dev/components/dropdown",
@@ -42,7 +43,7 @@
             "name": "children",
             "type": "React.ReactNode",
             "required": true,
-            "description": "`DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s."
+            "description": "`DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s; also `DropdownMenuSub`s, `DropdownMenuCheckboxItem`s and `DropdownMenuRadioGroup`s."
           },
           {
             "name": "open",
@@ -88,7 +89,7 @@
             "name": "container",
             "type": "HTMLElement | null",
             "required": false,
-            "description": "Portal target. Defaults to `document.body`."
+            "description": "Portal target, for the menu and its submenus. Defaults to `document.body`."
           },
           {
             "name": "aria-label",
@@ -101,6 +102,12 @@
             "type": "(event: Event) => void",
             "required": false,
             "description": "Focus moved outside a non-modal menu; call `preventDefault()` to keep it open."
+          },
+          {
+            "name": "dir",
+            "type": "'ltr' | 'rtl'",
+            "required": false,
+            "description": "Reading direction: which arrow opens a submenu and the side it opens on. Read from the trigger when left out."
           },
           {
             "name": "className",
@@ -190,6 +197,171 @@
             "name": "label",
             "type": "string",
             "required": true
+          }
+        ]
+      },
+      "DropdownMenuSub": {
+        "description": "A submenu: holds the row that opens it, a `DropdownMenuSubTrigger`, and its panel, a `DropdownMenuSubContent` with the submenu's rows. Renders no element of its own.",
+        "type": "DropdownMenuSubProps",
+        "extends": [],
+        "props": [
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true,
+            "description": "A `DropdownMenuSubTrigger` and its `DropdownMenuSubContent`."
+          },
+          {
+            "name": "open",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "defaultOpen",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onOpenChange",
+            "type": "(open: boolean) => void",
+            "required": false
+          }
+        ]
+      },
+      "DropdownMenuSubTrigger": {
+        "description": "The row that opens a submenu: an item's look, ending in a text/muted chevron (mirrored right to left). It stays filled bg/selected while its submenu is open. Hover, →, Enter or Space opens it. Other props, `ref` included, go to the row (the Radix SubTrigger).",
+        "type": "DropdownMenuSubTriggerProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof DropdownPrimitive.SubTrigger>, 'children' | 'asChild'>",
+          "Pick<MenuItemContentProps, 'description' | 'icon' | 'iconSize' | 'layout'>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      "DropdownMenuSubContent": {
+        "description": "A submenu's panel: the menu's surface, 220px wide, beside its row with the first rows level (4px off). It fades in from 4px on the side it opens, so it seems to come out of the row; right to left, or with no room on the right, that is the left. Other props, `ref` included, go to the panel (the Radix SubContent).",
+        "type": "DropdownMenuSubContentProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof DropdownPrimitive.SubContent>, 'asChild'>"
+        ],
+        "props": [
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": true,
+            "description": "The submenu's rows: `DropdownMenuItem`s, groups, checkable rows, or another `DropdownMenuSub`."
+          },
+          {
+            "name": "container",
+            "type": "HTMLElement | null",
+            "required": false,
+            "description": "Portal target. Defaults to the menu's own `container`."
+          }
+        ]
+      },
+      "DropdownMenuCheckboxItem": {
+        "description": "A row that turns something on or off, like a column of a view: a leading 16px checkbox (the Checkbox's look) before the item's content. Its role is `menuitemcheckbox`, with `aria-checked`. Enter or Space toggles it; the menu stays open unless `closeOnSelect`. Other props, `ref` included, go to the row (the Radix CheckboxItem).",
+        "type": "DropdownMenuCheckboxItemProps",
+        "extends": [
+          "Omit< React.ComponentProps<typeof DropdownPrimitive.CheckboxItem>, 'children' | 'checked' | 'defaultChecked' | 'onCheckedChange' >",
+          "Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "checked",
+            "type": "boolean | 'indeterminate'",
+            "required": false,
+            "description": "Controlled state. `'indeterminate'` for a row that stands for a set only partly on."
+          },
+          {
+            "name": "defaultChecked",
+            "type": "boolean | 'indeterminate'",
+            "required": false,
+            "default": "false",
+            "description": "The state it starts in, when uncontrolled."
+          },
+          {
+            "name": "onCheckedChange",
+            "type": "(checked: boolean) => void",
+            "required": false,
+            "description": "The row was toggled; an indeterminate row turns on."
+          },
+          {
+            "name": "closeOnSelect",
+            "type": "boolean",
+            "required": false,
+            "default": "false",
+            "description": "Closes the menu once toggled. Off, so several rows can be set in one go."
+          }
+        ]
+      },
+      "DropdownMenuRadioGroup": {
+        "description": "One choice among `DropdownMenuRadioItem`s, like a sort order or a stage: a group with the `DropdownMenuGroup` look (header, rule under it). Other props, `ref` included, go to the group (the Radix RadioGroup).",
+        "type": "DropdownMenuRadioGroupProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof DropdownPrimitive.RadioGroup>, 'value' | 'defaultValue' | 'onValueChange'>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "The 24px group header; it also names the group for screen readers."
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "required": false,
+            "description": "Controlled: the selected row's `value`."
+          },
+          {
+            "name": "defaultValue",
+            "type": "string",
+            "required": false,
+            "description": "The row selected at first, when uncontrolled."
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: string) => void",
+            "required": false
+          }
+        ]
+      },
+      "DropdownMenuRadioItem": {
+        "description": "One option in a `DropdownMenuRadioGroup`. The selected row is filled bg/selected and ends in the same status-green check as a `selected` item. Its role is `menuitemradio`, with `aria-checked`. Other props, `ref` included, go to the row (the Radix RadioItem).",
+        "type": "DropdownMenuRadioItemProps",
+        "extends": [
+          "Omit<React.ComponentProps<typeof DropdownPrimitive.RadioItem>, 'children'>",
+          "Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "required": true,
+            "description": "What `onValueChange` reports when this row is chosen."
+          },
+          {
+            "name": "closeOnSelect",
+            "type": "boolean",
+            "required": false,
+            "default": "true",
+            "description": "Closes the menu once chosen. On, since one choice ends the question."
           }
         ]
       }

@@ -12,7 +12,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from '@uisatin/ui/dropdown'
-import { ArrowRight, Eye, MoreHoriz, NavArrowDown, Send } from 'iconoir-react'
+import { Eye, MoreHoriz, NavArrowDown, Send, ViewColumns3 } from 'iconoir-react'
 import { Showcase, type ShowcaseOption } from '../components/Showcase'
 
 /**
@@ -39,7 +39,7 @@ import {
   DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent,
   DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem,
 } from '@uisatin/ui/dropdown'
-import { ArrowRight, Eye, MoreHoriz, NavArrowDown, Send } from 'iconoir-react'
+import { Eye, MoreHoriz, NavArrowDown, Send, ViewColumns3 } from 'iconoir-react'
 
 const stages = ['Screening', 'Interview', 'Offer']
 
@@ -53,7 +53,7 @@ const stages = ['Screening', 'Interview', 'Offer']
 >
   <DropdownMenuItem label="Open profile" icon={<Eye />} />
   <DropdownMenuSub>
-    <DropdownMenuSubTrigger label="Move to" icon={<ArrowRight />} />
+    <DropdownMenuSubTrigger label="Move to" icon={<ViewColumns3 />} />
     <DropdownMenuSubContent>
       <DropdownMenuRadioGroup value={candidate.stage} onValueChange={(stage) => move(candidate, stage)}>
         {stages.map((stage) => (
@@ -105,14 +105,21 @@ function CandidateCard({ candidate, onMove }: { candidate: Candidate; onMove: (s
       </span>
       <DropdownMenu
         trigger={
-          <Button variant="tertiary" size="xs" iconOnly aria-label={`More options for ${candidate.name}`} className="text-text-muted">
+          <Button
+            variant="tertiary"
+            size="xs"
+            iconOnly
+            aria-label={`More options for ${candidate.name}`}
+            data-candidate={candidate.id}
+            className="text-text-muted"
+          >
             <MoreHoriz />
           </Button>
         }
       >
         <DropdownMenuItem label="Open profile" icon={<Eye />} />
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger label="Move to" icon={<ArrowRight />} />
+          <DropdownMenuSubTrigger label="Move to" icon={<ViewColumns3 />} />
           <DropdownMenuSubContent>
             <DropdownMenuRadioGroup value={candidate.stage} onValueChange={(stage) => onMove(stage as Stage)}>
               {stages.map((stage) => (
@@ -131,12 +138,27 @@ function Pipeline() {
   const [candidates, setCandidates] = React.useState(people)
   const [columns, setColumns] = React.useState<Stage[]>([...stages])
   const [sort, setSort] = React.useState('newest')
-  const move = (id: string, stage: Stage) => setCandidates((all) => all.map((c) => (c.id === id ? { ...c, stage } : c)))
+  const board = React.useRef<HTMLDivElement>(null)
+  const moved = React.useRef<string | null>(null)
+  const move = (id: string, stage: Stage) => {
+    moved.current = id
+    setCandidates((all) => all.map((c) => (c.id === id ? { ...c, stage } : c)))
+    // Moved into a hidden column, the card brings its column back rather than vanish.
+    setColumns((all) => (all.includes(stage) ? all : [...all, stage]))
+  }
+  // The card's ⋯ button mounts anew in its new column, so the menu can't hand focus back to it
+  // (it would land on the page): hand it over here, once the card is there.
+  React.useEffect(() => {
+    if (!moved.current) return
+    const id = moved.current
+    moved.current = null
+    requestAnimationFrame(() => board.current?.querySelector<HTMLElement>(`[data-candidate="${id}"]`)?.focus())
+  }, [candidates])
   const sorted = [...candidates].sort((a, b) => (sort === 'name' ? a.name.localeCompare(b.name) : a.days - b.days))
   const shown = stages.filter((s) => columns.includes(s))
 
   return (
-    <div className="flex w-[640px] max-w-full flex-col gap-3">
+    <div ref={board} className="flex w-[640px] max-w-full flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col">
           <span className="text-base leading-6 font-medium text-text-default">Product designer</span>
