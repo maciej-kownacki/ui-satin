@@ -807,7 +807,7 @@ export const api: Record<string, Api> = {
     ],
   },
   table: {
-    description: 'The `Table` component is a wrapper around the `table` element with sortable headers, selection and horizontal scroll.',
+    description: 'The `Table` component is a wrapper around the `table` element with sortable headers, selection and horizontal scroll. `footer` takes rows for a `tfoot` (a totals row); `tableProps` reaches the `table` element itself, for a `role` or `aria-*`.',
     props: [
       { name: 'columns', type: ['Column[]'] },
       { name: 'rows', type: ['Row[]'] },
@@ -823,6 +823,8 @@ export const api: Record<string, Api> = {
       { name: 'rowLabel', type: ['(row: Row, index: number) => string'] },
       { name: 'renderCell', type: ['({ row, column, index, content }) => ReactNode'] },
       { name: 'renderRow', type: ['({ row, index, selected, rowProps, children }) => ReactNode'] },
+      { name: 'footer', type: ['ReactNode'] },
+      { name: 'tableProps', type: ['ComponentProps<"table">'] },
     ],
   },
   tabs: {
