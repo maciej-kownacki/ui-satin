@@ -4426,6 +4426,12 @@
           "description": "A stable key per item, for `decisions`. Defaults to the item's `id`, else its index."
         },
         {
+          "name": "itemMedia",
+          "type": "(item: T) => React.ReactNode",
+          "required": false,
+          "description": "Beside the item's name in the summary: an Avatar, an icon. Hidden from screen readers, which read the name."
+        },
+        {
           "name": "title",
           "type": "string",
           "required": false,
@@ -4561,7 +4567,7 @@
       "props": []
     },
     "ReviewQueueSummary": {
-      "description": "Once every item is decided: the tally, the approved and the skipped listed by name, and Review skipped. Hidden until then. Other props, `ref` included, go to its `section`.",
+      "description": "Once every item is decided: the tally, then the items one under another (`itemMedia` beside each name), Approved or Skipped as the SegmentedControl above them picks, and Review skipped. Hidden until then. Other props, `ref` included, go to its `section`.",
       "type": "ReviewQueueSummaryProps",
       "extends": [
         "React.ComponentProps<'section'>"

@@ -145,6 +145,8 @@ ${state === 'editing' ? '  const [editing, setEditing] = React.useState(true)\n'
       title="Packaging Expo North: follow-ups"
       items={emails}
       itemLabel={(email) => email.name}
+      // Beside each name in the summary at the end.
+      itemMedia={(email) => <Avatar initials={email.initials} tone={email.tone} size={24} />}
       renderItem={(email) => (
         <AgentSuggestion
           className="max-w-none"
@@ -225,6 +227,7 @@ function Preview({ state }: { state: string }) {
         title="Packaging Expo North: follow-ups"
         items={emails}
         itemLabel={(email) => email.name}
+        itemMedia={(email) => <Avatar initials={email.initials} tone={email.tone} size={24} />}
         defaultIndex={start.index}
         defaultDecisions={start.decisions}
         renderItem={(email) => (

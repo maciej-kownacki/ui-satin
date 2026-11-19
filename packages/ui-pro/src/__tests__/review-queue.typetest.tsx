@@ -25,6 +25,7 @@ export const uncontrolled = (
     title="Trade fair follow-ups"
     items={emails}
     itemLabel={(e) => e.to}
+    itemMedia={(e) => <span>{e.to[0]}</span>}
     renderItem={(e, { position, count, decision }) => (
       <p>
         {e.subject} {position}/{count} {decision}
@@ -87,6 +88,9 @@ export const missing = <ReviewQueue items={emails} renderItem={(e) => e.to} />
 
 // @ts-expect-error: renderItem gets an Email, which has no `name`
 export const wrongItem = <ReviewQueue items={emails} itemLabel={(e) => e.to} renderItem={(e) => e.name} />
+
+// @ts-expect-error: itemMedia gets an Email, which has no `initials`
+export const wrongMedia = <ReviewQueue items={emails} itemLabel={(e) => e.to} itemMedia={(e) => e.initials} renderItem={(e) => e.to} />
 
 // @ts-expect-error: no such decision
 export const wrongDecision: ReviewQueueDecisions = { anna: 'rejected' }

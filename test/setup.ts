@@ -27,6 +27,10 @@ Element.prototype.hasPointerCapture ??= () => false
 Element.prototype.setPointerCapture ??= () => {}
 Element.prototype.releasePointerCapture ??= () => {}
 
+// The sliding pill (Tabs, SegmentedControl) cancels its running animations before it moves.
+// jsdom has no layout, so every place is 0 and it never starts one.
+Element.prototype.getAnimations ??= () => []
+
 afterEach(() => {
   cleanup()
   resetMedia()

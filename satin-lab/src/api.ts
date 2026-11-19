@@ -997,12 +997,13 @@ export const api: Record<string, Api> = {
   },
   'review-queue': {
     description:
-      'The `ReviewQueue` component (Satin Pro, `@uisatin/pro/review-queue`) is a `section` that shows one of `items` at a time through `renderItem` (usually an AgentSuggestion), its place ("4 of 12") over a Progress bar of how many are decided, and Skip, Edit and Approve under it. `onApprove` and `onSkip` get the item, and the queue moves on to the next undecided one; an `onApprove` that returns a promise shows a Spinner until it settles. `renderEditor` returns the fields, each with a `name`, for a Sheet that Edit opens; Save calls `onEdit(item, values)` and brings you back to the same item. Without `renderEditor`, Edit calls `onEdit(item)`. When every item is decided, a summary lists the approved and the skipped by `itemLabel`. `index`, `decisions` and `editing` can each be controlled. Parts: `ReviewQueueRoot`, `ReviewQueueHeader`, `ReviewQueueItem`, `ReviewQueueActions`, `ReviewQueueSummary`, and `useReviewQueue()` for parts of your own.',
+      'The `ReviewQueue` component (Satin Pro, `@uisatin/pro/review-queue`) is a `section` that shows one of `items` at a time through `renderItem` (usually an AgentSuggestion), its place ("4 of 12") over a Progress bar of how many are decided, and Skip, Edit and Approve under it. `onApprove` and `onSkip` get the item, and the queue moves on to the next undecided one; an `onApprove` that returns a promise shows a Spinner until it settles. `renderEditor` returns the fields, each with a `name`, for a Sheet that Edit opens; Save calls `onEdit(item, values)` and brings you back to the same item. Without `renderEditor`, Edit calls `onEdit(item)`. When every item is decided, a summary lists them one under another by `itemLabel`, with `itemMedia` (an Avatar) beside each, and a SegmentedControl over the list switches it between Approved and Skipped, each with its count. `index`, `decisions` and `editing` can each be controlled. Parts: `ReviewQueueRoot`, `ReviewQueueHeader`, `ReviewQueueItem`, `ReviewQueueActions`, `ReviewQueueSummary`, and `useReviewQueue()` for parts of your own.',
     props: [
       { name: 'items', type: ['T[]'] },
       { name: 'itemLabel', type: ['(item) => string'] },
       { name: 'renderItem', type: ['(item, state) => ReactNode'] },
       { name: 'itemKey', type: ['(item, index) => string'], default: 'item.id' },
+      { name: 'itemMedia', type: ['(item) => ReactNode'] },
       { name: 'title', type: ['string'] },
       { name: 'onApprove', type: ['(item) => unknown'] },
       { name: 'onSkip', type: ['(item) => void'] },

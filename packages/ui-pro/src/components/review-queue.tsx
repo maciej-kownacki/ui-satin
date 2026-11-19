@@ -7,15 +7,18 @@ import { Form, type FormValues } from '@uisatin/ui/form'
 import { Kbd, KbdHint } from '@uisatin/ui/kbd'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
+import { Item, List } from '@uisatin/ui/list'
 import { Progress } from '@uisatin/ui/progress'
+import { SegmentedControl, SegmentedControlSegment } from '@uisatin/ui/segmented-control'
 import { Sheet, SheetClose, type SheetProps } from '@uisatin/ui/sheet'
 import { Tooltip } from '@uisatin/ui/tooltip'
 
 /**
  * ReviewQueue: a stack of agent drafts gone through one at a time, Approve, Edit or Skip, with
  * the keyboard. Above the item, its place ("4 of 12" between ‹ and ›) over a Progress bar of how
- * many are decided; under it, the actions. When every item has a decision, a summary lists what
- * was approved and what was skipped, with Review skipped to take the skipped ones round again.
+ * many are decided; under it, the actions. When every item has a decision, a summary lists them
+ * one under another, filtered by a SegmentedControl between Approved and Skipped (each with its
+ * count), with Review skipped to take the skipped ones round again.
  *
  * - `renderItem` draws the item, usually an AgentSuggestion. The next item slides 8px in from the
  *   side it comes from and fades in (--duration-base, ease-out); the bar fills as items are decided.
@@ -33,7 +36,8 @@ import { Tooltip } from '@uisatin/ui/tooltip'
  * - The item is a group named after it and its place ("Anna Kowalska, 4 of 12"), read out from a
  *   polite live region as it changes, with the decision before it ("Approved. Jonas Weber, 5 of 12").
  *
- * Keep decided items in `items`: the summary lists them. The place (`index`), the decisions and
+ * Keep decided items in `items`: the summary lists them, by `itemLabel`, with `itemMedia` (an
+ * Avatar) beside each. The place (`index`), the decisions and
  * the editor (`editing`) can each be controlled.
  *
  * Parts, for a queue laid out your own way: `ReviewQueueRoot` › `ReviewQueueHeader`,
@@ -58,15 +62,15 @@ export const reviewQueueLabels = {
   reviewApprove: 'Approve',
   reviewEdit: 'Edit',
   reviewSave: 'Save',
-  /** On an approved item's Badge, over the summary's list, and read out after Approve. */
+  /** On an approved item's Badge, on the summary's filter and its list, and read out after Approve. */
   reviewApproved: 'Approved',
-  /** On a skipped item's Badge, over the summary's list, and read out after Skip. */
+  /** On a skipped item's Badge, on the summary's filter and its list, and read out after Skip. */
   reviewSkipped: 'Skipped',
   /** The summary's heading. */
   reviewAllDone: 'All reviewed',
   /** Under the heading, and read out with it: "9 approved, 3 skipped". */
   reviewTally: (approved: number, skipped: number) => `${approved} approved, ${skipped} skipped`,
-  /** A summary list with nothing in it. */
+  /** The summary's list when the filter has nothing in it. */
   reviewNone: 'None',
   /** The summary's button that takes the skipped items round again. */
   reviewSkippedAgain: 'Review skipped',
@@ -150,6 +154,7 @@ interface QueueContextValue {
   items: readonly unknown[]
   keyOf: (item: unknown, index: number) => string
   itemLabel: (item: unknown) => string
+  itemMedia?: (item: unknown) => React.ReactNode
   title?: string
   index: number
   count: number
@@ -214,6 +219,8 @@ export interface ReviewQueueRootProps<T> extends Omit<React.ComponentProps<'sect
   itemLabel: (item: T) => string
   /** A stable key per item, for `decisions`. Defaults to the item's `id`, else its index. */
   itemKey?: (item: T, index: number) => string
+  /** Beside the item's name in the summary: an Avatar, an icon. Hidden from screen readers, which read the name. */
+  itemMedia?: (item: T) => React.ReactNode
   /** Over the bar, and the queue's name ("Trade fair follow-ups"). Without it the queue is named "Review queue". */
   title?: string
   /** The item on show, from 0. */
@@ -253,6 +260,7 @@ export function ReviewQueueRoot<T>({
   items,
   itemLabel,
   itemKey,
+  itemMedia,
   title,
   index: indexProp,
   defaultIndex = 0,
@@ -459,6 +467,7 @@ export function ReviewQueueRoot<T>({
     items,
     keyOf,
     itemLabel: itemLabel as (item: unknown) => string,
+    itemMedia: itemMedia as ((item: unknown) => React.ReactNode) | undefined,
     title,
     index,
     count,
@@ -722,45 +731,64 @@ export interface ReviewQueueSummaryProps extends React.ComponentProps<'section'>
   actions?: React.ReactNode
 }
 
-function SummaryList({ label, names, none }: { label: string; names: string[]; none: string }) {
-  const id = React.useId()
+type SummaryEntry = { key: string; label: string; media: React.ReactNode }
+
+/**
+ * The decided items one under another, Approved or Skipped at a time. Mounted with the summary,
+ * so each round opens on Approved (on Skipped when nothing was approved).
+ */
+function SummaryList({ approved, skipped }: { approved: SummaryEntry[]; skipped: SummaryEntry[] }) {
+  const { labels, format } = useQueue('ReviewQueueSummary')
+  const [show, setShow] = React.useState<ReviewQueueDecision>(approved.length > 0 || skipped.length === 0 ? 'approved' : 'skipped')
+  const entries = show === 'approved' ? approved : skipped
+  const segment = (value: ReviewQueueDecision, label: string, n: number) => (
+    <SegmentedControlSegment value={value}>
+      {/* The space keeps the name "Approved 9", not "Approved9", for screen readers. */}
+      {label}{' '}
+      <span className="tabular-nums">{format(n)}</span>
+    </SegmentedControlSegment>
+  )
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <div id={id} className="flex items-center gap-1.5 text-xs leading-4 font-medium text-text-muted">
-        {/* The space keeps the list's name "Approved 9", not "Approved9", for screen readers. */}
-        {label}{' '}
-        <span className="tabular-nums">{names.length}</span>
-      </div>
-      {names.length > 0 ? (
-        <ul aria-labelledby={id} className="m-0 flex list-none flex-col gap-1 p-0">
-          {names.map((name, i) => (
-            <li key={i} className="truncate text-sm leading-5 text-text-default">
-              {name}
-            </li>
+    <div className="flex flex-col gap-2">
+      <SegmentedControl value={show} onValueChange={(v) => setShow(v as ReviewQueueDecision)} size="xs" className="self-start">
+        {segment('approved', labels.reviewApproved, approved.length)}
+        {segment('skipped', labels.reviewSkipped, skipped.length)}
+      </SegmentedControl>
+      {entries.length > 0 ? (
+        // The rows' own padding pulled back, so the avatars line up with the filter.
+        <List size="sm" aria-label={show === 'approved' ? labels.reviewApproved : labels.reviewSkipped} className="-mx-2 w-auto">
+          {entries.map((entry) => (
+            <Item
+              key={entry.key}
+              title={entry.label}
+              media={entry.media != null ? <span aria-hidden className="flex">{entry.media}</span> : undefined}
+            />
           ))}
-        </ul>
+        </List>
       ) : (
-        <p className="m-0 text-sm leading-5 text-text-muted">{none}</p>
+        <p className="m-0 py-1.5 text-sm leading-5 text-text-muted">{labels.reviewNone}</p>
       )}
     </div>
   )
 }
 
 /**
- * Once every item is decided: the tally, the approved and the skipped listed by name, and
- * Review skipped. Hidden until then. Other props, `ref` included, go to its `section`.
+ * Once every item is decided: the tally, then the items one under another (`itemMedia` beside
+ * each name), Approved or Skipped as the SegmentedControl above them picks, and Review skipped.
+ * Hidden until then. Other props, `ref` included, go to its `section`.
  */
 export function ReviewQueueSummary({ actions, className, ...props }: ReviewQueueSummaryProps) {
   const q = useQueue('ReviewQueueSummary')
   const headingId = React.useId()
   if (!q.done) return null
   const { labels } = q
-  const approved: string[] = []
-  const skipped: string[] = []
+  const approved: SummaryEntry[] = []
+  const skipped: SummaryEntry[] = []
   q.items.forEach((it, i) => {
-    const d = q.decisions[q.keyOf(it, i)]
-    if (d === 'approved') approved.push(q.itemLabel(it))
-    else if (d === 'skipped') skipped.push(q.itemLabel(it))
+    const key = q.keyOf(it, i)
+    const d = q.decisions[key]
+    if (!d) return
+    ;(d === 'approved' ? approved : skipped).push({ key, label: q.itemLabel(it), media: q.itemMedia?.(it) })
   })
   return (
     <section
@@ -792,10 +820,7 @@ export function ReviewQueueSummary({ actions, className, ...props }: ReviewQueue
           <div className="text-sm leading-5 text-text-muted">{labels.reviewTally(approved.length, skipped.length)}</div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <SummaryList label={labels.reviewApproved} names={approved} none={labels.reviewNone} />
-        <SummaryList label={labels.reviewSkipped} names={skipped} none={labels.reviewNone} />
-      </div>
+      <SummaryList approved={approved} skipped={skipped} />
       {(skipped.length > 0 || actions) && (
         <div className="flex flex-wrap items-center justify-end gap-2">
           {skipped.length > 0 && (

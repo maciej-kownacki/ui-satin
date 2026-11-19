@@ -2165,7 +2165,9 @@
         "https://uisatin.dev/r/form.json",
         "https://uisatin.dev/r/kbd.json",
         "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/list.json",
         "https://uisatin.dev/r/progress.json",
+        "https://uisatin.dev/r/segmented-control.json",
         "https://uisatin.dev/r/sheet.json",
         "https://uisatin.dev/r/tooltip.json"
       ],
