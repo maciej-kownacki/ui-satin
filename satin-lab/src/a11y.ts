@@ -288,6 +288,20 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Drops what was typed and puts the last value back.' },
     ],
   },
+  'kanban-board': {
+    summary:
+      'Each column\'s cards are a list named after the column and its count ("Interview, 6 of 8 cards"; past the limit, "7 cards, over the limit of 6"). Every card is a focusable list item named by `getItemLabel`, described as a "draggable card" with how to move it from the keyboard. Moves are read out from a polite `status` region: "Picked up Tara Mendes. Screening, position 1 of 12.", each step, then "Moved Tara Mendes to Interview, position 2 of 7" or "Move cancelled". Dragging has a single-pointer alternative (WCAG 2.5.7): a card\'s ⋯ menu moves it to another column, or up and down. The Undo toast is read out like any toast. Every word is in SatinLabels (`kanbanBoardLabels`). Give the board an `aria-label` to make it a named region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the cards and the buttons in them, column by column.' },
+      { keys: ['↑', '↓', '←', '→'], action: 'Moves focus to the card above or below, or to the nearest card in the next column; mirrored right to left.' },
+      { keys: ['Home', 'End'], action: 'Moves focus to the first or last card in the column.' },
+      { keys: ['Space'], action: 'Picks up the focused card, and drops it where it is.' },
+      { keys: ['↑', '↓'], action: 'With a card picked up: moves it one place up or down in its column.' },
+      { keys: ['←', '→'], action: 'With a card picked up: moves it to the previous or next column (collapsed ones are skipped); mirrored right to left.' },
+      { keys: ['Home', 'End'], action: 'With a card picked up: moves it to the top or bottom of its column.' },
+      { keys: ['Esc'], action: 'Puts a picked-up card back where it was, also during a pointer drag.' },
+    ],
+  },
   kbd: {
     summary:
       'A native `kbd` element, read as its text; screen readers may say symbols such as ⌘ in different ways. `KbdArrowUp`, `KbdArrowDown` and `KbdReturn` are hidden glyphs with no text, so add words for screen readers next to them, or hide the hint when the same help is spoken elsewhere.',

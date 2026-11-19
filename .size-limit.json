@@ -45,6 +45,18 @@
     "limit": "12 kB"
   },
   {
+    "name": "Kanban board (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/kanban-board.js",
+    "import": "{ KanbanBoard, KanbanCard }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "8 kB"
+  },
+  {
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,

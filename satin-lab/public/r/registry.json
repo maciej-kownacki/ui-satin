@@ -2151,6 +2151,38 @@
       ]
     },
     {
+      "name": "kanban-board",
+      "type": "registry:ui",
+      "title": "Kanban board",
+      "description": "Columns of cards moved between stages by drag, touch or keyboard, with counts, limits and Undo.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/card.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/skeleton.json",
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "docs": "Kanban board docs: https://uisatin.dev/components/kanban-board",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/kanban-board.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast-batch",
       "type": "registry:ui",
       "title": "Toast batch",
@@ -3311,6 +3343,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "kanban-board-demo",
+      "type": "registry:example",
+      "title": "Kanban board example",
+      "description": "The shortest use of Kanban board, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/kanban-board.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/kanban-board-demo.tsx",
           "type": "registry:example"
         }
       ]
