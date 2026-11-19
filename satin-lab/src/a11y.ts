@@ -556,23 +556,6 @@ export const a11y: Record<string, A11y> = {
       'The header is a `button` with `aria-expanded` and `aria-controls`, named by the summary ("Thought for 2m 45s"). The steps are an ordered list; folded, they stay mounted but leave the tab order and screen readers. The mark, chevron and rail are hidden, and so is a task’s check.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Opens or folds the steps.' }],
   },
-  'data-grid': {
-    summary:
-      'A `grid` (APG Grid pattern) named by `label`, with `aria-rowcount` and `aria-colcount` and each row and cell numbered, so the count stays right while only the rows on screen exist. One cell at a time is in the tab order; a sortable header holds a `button` and sets `aria-sort`. With `selectable` the grid is `aria-multiselectable` and rows set `aria-selected`; the checkboxes are named "Select <name>" after the first column or `rowLabel`. Each resize handle is a focusable `separator` named "Resize <column>" with its width as `aria-valuenow`. An editor is named after its column. A saving cell is `aria-busy`; a failed one is `aria-invalid` and described by its error. Sorting, saves and views are read out from a polite `status` region. The Columns menu is a menu of `menuitemcheckbox` rows; the view menu says "View: <name>, unsaved changes" when the grid has moved from the view.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves into the grid, onto the cell last focused. From a header, moves on to its resize handle; Tab again leaves the grid.' },
-      { keys: ['←', '→', '↑', '↓'], action: 'Moves one cell; ← and → are mirrored right to left. The header row is part of the grid.' },
-      { keys: ['Home', 'End'], action: 'Moves to the first or last cell of the row; with ⌃ or ⌘, of the grid.' },
-      { keys: ['Page Up', 'Page Down'], action: 'Moves up or down by a screen of rows.' },
-      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all. On a checkbox (Space): selects the row, or every row.' },
-      { keys: ['⇧ Space'], action: 'Selects or clears the focused cell’s row.' },
-      { keys: ['Enter', 'F2'], action: 'On an editable cell: opens its editor (double click does too). On a cell whose save failed: edits the value that failed.' },
-      { keys: ['Enter', 'Tab'], action: 'In an editor: saves. Tab then moves to the next cell, ⇧ Tab to the previous one.' },
-      { keys: ['Esc'], action: 'In an editor: cancels. On a cell whose save failed: drops the change.' },
-      { keys: ['←', '→'], action: 'On a resize handle: narrows or widens the column by 8px (40px with ⇧); Home and End go to its narrowest and widest. Enter or Esc goes back to the header.' },
-      { keys: ['⌥ ↑', '⌥ ↓'], action: 'In the Columns menu: moves the highlighted column up or down.' },
-    ],
-  },
   'kanban-board': {
     summary:
       'Each column\'s cards are a list named after the column and its count ("Interview, 6 of 8 cards"; past the limit, "7 cards, over the limit of 6"). Every card is a focusable list item named by `getItemLabel`, described as a "draggable card" with how to move it from the keyboard. Moves are read out from a polite `status` region: "Picked up Tara Mendes. Screening, position 1 of 12.", each step, then "Moved Tara Mendes to Interview, position 2 of 7" or "Move cancelled". Dragging has a single-pointer alternative (WCAG 2.5.7): a card\'s ⋯ menu moves it to another column, or up and down. The Undo toast is read out like any toast. Every word is in SatinLabels (`kanbanBoardLabels`). Give the board an `aria-label` to make it a named region.',
@@ -618,6 +601,23 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
       { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
       { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
+    ],
+  },
+  'data-grid': {
+    summary:
+      'A `grid` (APG Grid pattern) named by `label`, with `aria-rowcount` and `aria-colcount` and each row and cell numbered, so the count stays right while only the rows on screen exist. One cell at a time is in the tab order; a sortable header holds a `button` and sets `aria-sort`. With `selectable` the grid is `aria-multiselectable` and rows set `aria-selected`; the checkboxes are named "Select <name>" after the first column or `rowLabel`. Each resize handle is a focusable `separator` named "Resize <column>" with its width as `aria-valuenow`. An editor is named after its column. A saving cell is `aria-busy`; a failed one is `aria-invalid` and described by its error. Sorting, saves and views are read out from a polite `status` region. The Columns menu is a menu of `menuitemcheckbox` rows; the view menu says "View: <name>, unsaved changes" when the grid has moved from the view.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves into the grid, onto the cell last focused. From a header, moves on to its resize handle; Tab again leaves the grid.' },
+      { keys: ['←', '→', '↑', '↓'], action: 'Moves one cell; ← and → are mirrored right to left. The header row is part of the grid.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or last cell of the row; with ⌃ or ⌘, of the grid.' },
+      { keys: ['Page Up', 'Page Down'], action: 'Moves up or down by a screen of rows.' },
+      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all. On a checkbox (Space): selects the row, or every row.' },
+      { keys: ['⇧ Space'], action: 'Selects or clears the focused cell’s row.' },
+      { keys: ['Enter', 'F2'], action: 'On an editable cell: opens its editor (double click does too). On a cell whose save failed: edits the value that failed.' },
+      { keys: ['Enter', 'Tab'], action: 'In an editor: saves. Tab then moves to the next cell, ⇧ Tab to the previous one.' },
+      { keys: ['Esc'], action: 'In an editor: cancels. On a cell whose save failed: drops the change.' },
+      { keys: ['←', '→'], action: 'On a resize handle: narrows or widens the column by 8px (40px with ⇧); Home and End go to its narrowest and widest. Enter or Esc goes back to the header.' },
+      { keys: ['⌥ ↑', '⌥ ↓'], action: 'In the Columns menu: moves the highlighted column up or down.' },
     ],
   },
   'search-scoped': {
