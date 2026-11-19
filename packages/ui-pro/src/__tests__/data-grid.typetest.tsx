@@ -122,6 +122,7 @@ export function Controlled() {
       filtered
       onClearFilters={() => {}}
       empty={<p>No candidates yet</p>}
+      noResults={<p>No candidates match</p>}
     />
   )
 }

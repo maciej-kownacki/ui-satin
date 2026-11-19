@@ -830,6 +830,7 @@ export const api: Record<string, Api> = {
       { name: 'filtered', type: ['boolean'], default: 'false' },
       { name: 'onClearFilters', type: ['() => void'] },
       { name: 'empty', type: ['ReactNode'] },
+      { name: 'noResults', type: ['ReactNode'] },
       { name: 'virtualize', type: ['boolean'], default: 'above 200 rows' },
       { name: 'pageSize', type: ['number'] },
       { name: 'page / defaultPage', type: ['number'], default: '1' },

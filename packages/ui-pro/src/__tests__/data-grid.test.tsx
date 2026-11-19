@@ -329,12 +329,17 @@ describe('DataGrid', () => {
     expect(grid().getAttribute('aria-busy')).toBe('true')
     expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0)
 
+    // Each state is an EmptyState with its icon, in one row whose cell spans the grid.
+    const state = () => document.querySelector('[data-slot="empty-state"]')!
     rerender(<Grid rows={[]} />)
     expect(screen.getByText('Nothing here yet')).toBeTruthy()
+    expect(state().querySelector('svg')).toBeTruthy()
+    expect(screen.getByRole('gridcell').getAttribute('aria-colspan')).toBe('3')
 
     const onClearFilters = vi.fn()
     rerender(<Grid rows={[]} filtered onClearFilters={onClearFilters} />)
     expect(screen.getByText('No results')).toBeTruthy()
+    expect(state().querySelector('svg')).toBeTruthy()
     await user.click(screen.getByRole('button', { name: 'Clear filters' }))
     expect(onClearFilters).toHaveBeenCalled()
 
@@ -344,6 +349,12 @@ describe('DataGrid', () => {
     expect(screen.getByText('The ATS is down.')).toBeTruthy()
     await user.click(screen.getByRole('button', { name: 'Try again' }))
     expect(onRetry).toHaveBeenCalled()
+    expect(state().querySelector('svg')).toBeTruthy()
+
+    // The app names its own search in place of the default No results.
+    rerender(<Grid rows={[]} filtered noResults={<p>No candidates match “zz”</p>} />)
+    expect(screen.getByText('No candidates match “zz”')).toBeTruthy()
+    expect(screen.queryByText('No results')).toBeNull()
   })
 
   it('pages the rows with pageSize', async () => {
