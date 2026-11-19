@@ -445,8 +445,9 @@ export function TableGrouped<R extends Row = Row>({
     const { group } = item
     const all = groupPicked(group)
     const some = !all && group.rows.some((r) => picked.has(r.id))
-    // A line between groups; the first sits right under the header's own.
-    const edge = item.pos > 1 && 'border-t border-border-subtle'
+    // A line between groups (the first sits right under the header's own), drawn inside the
+    // cells so a group row is as high as any other.
+    const edge = item.pos > 1 && '[box-shadow:inset_0_1px_0_var(--border-subtle)]'
     return (
       <tr
         data-group=""
