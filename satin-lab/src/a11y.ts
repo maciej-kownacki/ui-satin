@@ -195,14 +195,16 @@ export const a11y: Record<string, A11y> = {
   },
   dropdown: {
     summary:
-      'A Radix dropdown menu. The trigger gets `aria-haspopup="menu"` and `aria-expanded`; the panel is a `menu` (named by `aria-label` when the trigger text isn’t enough) and each row a `menuitem`. A `selected` row adds "(selected)" for screen readers. A `shortcut` is only shown and hidden from screen readers; binding the keys is up to the app. While open and modal (the default), the rest of the page can’t be reached.',
+      'A Radix dropdown menu. The trigger gets `aria-haspopup="menu"` and `aria-expanded`; the panel is a `menu` (named by `aria-label` when the trigger text isn’t enough) and each row a `menuitem`. A `selected` row adds "(selected)" for screen readers. A `shortcut` is only shown and hidden from screen readers; binding the keys is up to the app. While open and modal (the default), the rest of the page can’t be reached. A submenu row is a `menuitem` with `aria-haspopup="menu"` and `aria-expanded`, and its panel another `menu`; on the way to it the pointer has a safe triangle, so cutting across other rows doesn’t close it. Checkbox rows are `menuitemcheckbox` and radio rows `menuitemradio`, each with `aria-checked` (`mixed` when indeterminate); their checkbox and check are hidden. A group with a header is a `group` named by it ("Show columns"). Right to left, read from the trigger or `dir`, the arrows that open and close submenus swap and submenus open on the left.',
     keyboard: [
       { keys: ['Enter', 'Space', '↓'], action: 'On the trigger: opens the menu and focuses the first item.' },
-      { keys: ['↑', '↓'], action: 'Moves between items.' },
+      { keys: ['↑', '↓'], action: 'Moves between items, skipping disabled ones.' },
       { keys: ['Home', 'End'], action: 'Moves to the first or last item.' },
       { keys: ['A–Z'], action: 'Moves to the next item whose label starts with the typed letters.' },
-      { keys: ['Enter', 'Space'], action: 'Runs the focused item and closes the menu.' },
-      { keys: ['Esc'], action: 'Closes the menu and returns focus to the trigger.' },
+      { keys: ['Enter', 'Space'], action: 'Runs the focused item and closes the menu. On a checkbox row: toggles it and keeps the menu open. On a radio row: selects it and closes the menu.' },
+      { keys: ['→', 'Enter', 'Space'], action: 'On a submenu row: opens the submenu and focuses its first item (← right to left).' },
+      { keys: ['←'], action: 'In a submenu: closes it and returns focus to its row (→ right to left).' },
+      { keys: ['Esc'], action: 'Closes the menu, submenus included, and returns focus to the trigger.' },
     ],
   },
   'context-menu': {

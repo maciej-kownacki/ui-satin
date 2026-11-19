@@ -46,7 +46,7 @@ export {
 } from './components/dialog'
 export * from './components/dot'
 export { Floating, type FloatingProps, type FloatingSide } from './components/floating'
-export { DropdownMenu, DropdownMenuGroup, DropdownMenuItem, MenuItemContent, menuItemClass, menuSurfaceClass, menuGroupClass, menuGroupLabelClass, type DropdownMenuProps, type DropdownMenuGroupProps, type DropdownMenuItemProps, type MenuItemContentProps } from './components/dropdown'
+export { DropdownMenu, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, MenuItemContent, menuItemClass, menuSurfaceClass, menuGroupClass, menuGroupLabelClass, type DropdownMenuProps, type DropdownMenuGroupProps, type DropdownMenuItemProps, type DropdownMenuSubProps, type DropdownMenuSubTriggerProps, type DropdownMenuSubContentProps, type DropdownMenuCheckboxItemProps, type DropdownMenuRadioGroupProps, type DropdownMenuRadioItemProps, type MenuItemContentProps } from './components/dropdown'
 export { FormField, useFormField, useFormContext, FormContext, FieldSizeContext, FieldError, FieldDescription, RequiredMark, type FormFieldProps, type FormFieldContextValue, type FormContextValue } from './components/form-field'
 export { Form, FormSection, FormActions, formValues, type FormProps, type FormSectionProps, type FormActionsProps, type FormValues } from './components/form'
 export { FieldGroup, type FieldGroupProps } from './components/field-group'
