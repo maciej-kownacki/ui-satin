@@ -181,10 +181,9 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
               <span className="min-w-0 flex-1 truncate">
                 <Highlight text={item.title} query={q} />
               </span>
-              <span className="ms-2 flex shrink-0 gap-1">
-                {item.edition === 'pro' && <ProMark />}
-                {newPages.has(item.id) && <NewMark />}
-              </span>
+              {/* While a page is marked New for review, New takes the Pro badge's place: both don't
+                  fit beside the longer titles in the 246 sidebar. The page header still says Pro. */}
+              <span className={cn('flex shrink-0', newPages.has(item.id) ? 'ms-0.5' : 'ms-2')}>{newPages.has(item.id) ? <NewMark /> : <ProMark />}</span>
             </>
           ) : (
             <Highlight text={item.title} query={q} />
@@ -602,10 +601,11 @@ function ProMark() {
   )
 }
 
-/** Marks a page built or changed in the P1 batch (`newPages`), after the Pro badge. */
+/** Marks a page built or changed in the P1 batch (`newPages`), in place of the Pro badge. */
 function NewMark() {
   return (
-    <Badge size="sm" tone="green" className="text-xs leading-4">
+    // 4px sides, not the Small badge's 6: "Mentions and commands" with New fits the 246 sidebar.
+    <Badge size="sm" tone="green" className="px-1 text-xs leading-4">
       New
     </Badge>
   )
