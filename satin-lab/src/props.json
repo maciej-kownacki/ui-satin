@@ -2071,6 +2071,12 @@
           "description": "Draws each day, for a mark, a name or a tooltip of your own. Return a `CalendarDay`, the default day button, so picking and the arrow keys keep working."
         },
         {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's (Sunday in en-US, Monday in pl-PL)."
+        },
+        {
           "name": "className",
           "type": "string",
           "required": false
@@ -2078,7 +2084,7 @@
       ]
     },
     "DatePickerPanel": {
-      "description": "The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick. Other props, `ref` included, go to the surface.",
+      "description": "The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick, and the presets. Other props, `ref` included, go to the surface.",
       "type": "DatePickerPanelProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'>"
@@ -2092,7 +2098,8 @@
         {
           "name": "onValueChange",
           "type": "(value: Date) => void",
-          "required": false
+          "required": false,
+          "description": "A day picked in the calendar or from the presets."
         },
         {
           "name": "min",
@@ -2120,6 +2127,18 @@
           "type": "CalendarProps['renderDay']",
           "required": false,
           "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one moves the calendar to its month."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
         },
         {
           "name": "className",
@@ -2178,6 +2197,18 @@
           "type": "CalendarProps['renderDay']",
           "required": false,
           "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one picks its day and closes."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
         },
         {
           "name": "container",
@@ -2240,6 +2271,18 @@
           "description": "As on Calendar: draws each day; return a `CalendarDay`."
         },
         {
+          "name": "presets",
+          "type": "DatePreset<DateRange | Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar: `[datePresets.last7Days, datePresets.last30Days]`. Picking one shows its range, which waits for Apply like any other."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
+        },
+        {
           "name": "applyLabel",
           "type": "string",
           "required": false,
@@ -2259,7 +2302,7 @@
       ]
     },
     "DateRangePickerPanel": {
-      "description": "The range picker's panel on its own, in place: two months, Cancel and Apply. Other props, `ref` included, go to the surface.",
+      "description": "The range picker's panel on its own, in place: the presets, two months, Cancel and Apply. Other props, `ref` included, go to the surface.",
       "type": "DateRangePickerPanelProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'>"
@@ -2309,6 +2352,18 @@
           "type": "CalendarProps['renderDay']",
           "required": false,
           "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<DateRange | Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar. Picking one shows its range; a range picked by hand leaves none selected."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
         },
         {
           "name": "applyLabel",

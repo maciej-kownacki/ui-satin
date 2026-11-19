@@ -2,7 +2,7 @@ import * as React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { act, screen } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
-import { Calendar, CalendarDay, DatePicker, DateRangePicker } from '../components/date-picker'
+import { Calendar, CalendarDay, DatePicker, DatePickerPanel, DateRangePicker, datePresets } from '../components/date-picker'
 
 // Thursday 19 November 2026; Saturday the 21st and Sunday the 22nd are the weekend.
 const TODAY = new Date(2026, 10, 19)
@@ -105,5 +105,12 @@ describe('Date pickers', () => {
     await user.click(screen.getByRole('button', { name: 'Period' }))
     expect(screen.getByRole('dialog', { name: 'Period' })).toBeTruthy()
     await expectNoAxeViolations()
+  })
+
+  it('turn off a day preset whose day isDisabled rules out', () => {
+    // Friday 20 November: tomorrow is a Saturday.
+    renderWithSatin(<DatePickerPanel today={new Date(2026, 10, 20)} isDisabled={weekend} presets={[datePresets.today, datePresets.tomorrow]} />)
+    expect(screen.getByRole('option', { name: 'Today' }).hasAttribute('aria-disabled')).toBe(false)
+    expect(screen.getByRole('option', { name: 'Tomorrow' }).getAttribute('aria-disabled')).toBe('true')
   })
 })
