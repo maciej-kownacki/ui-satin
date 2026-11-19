@@ -106,7 +106,7 @@ export default function AgentPermissionsDemo({ codeHtml }: { codeHtml: Record<st
       render={(_, v, set) => (
         // The request hangs from the top of the stage, so folding to its summary never moves its top edge.
         // Below md the rows wrap, so the request runs taller.
-        <div className="h-[440px] w-[405px] max-w-full self-start md:h-[372px]">
+        <div className="h-[432px] w-[405px] max-w-full self-start md:h-[348px]">
           <Demo v={v} set={set} />
         </div>
       )}

@@ -30,6 +30,9 @@ describe('AgentPermissionRequest', () => {
     const send = box('Send emails, Sends as you')
     expect(send.getAttribute('aria-checked')).toBe('true')
     expect(send.closest('[data-slot="agent-permissions-scope"]')?.getAttribute('data-action')).toBe('send')
+    // "Sends as you" is muted words on the title's line, not a Badge, and no rule runs between rows.
+    expect(screen.getByText('Sends as you').closest('[data-slot="badge"]')).toBeNull()
+    expect(list.getAttribute('data-variant')).toBe('plain')
     expect(box('Read candidates').closest('[data-slot="agent-permissions-scope"]')?.getAttribute('data-action')).toBe('read')
     // The detail describes the checkbox.
     const detail = document.getElementById(send.getAttribute('aria-describedby') ?? '')

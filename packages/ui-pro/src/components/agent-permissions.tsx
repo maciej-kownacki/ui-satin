@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import { AgentAvatar, type Agent } from '@uisatin/ui/agent-picker'
-import { Badge } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
 import { cardVariants } from '@uisatin/ui/card'
 import { Checkbox } from '@uisatin/ui/checkbox'
@@ -22,7 +21,7 @@ import { SplitButton } from '@uisatin/ui/split-button'
  *   radius-2xl, 405 wide) with Agent suggestion's small shadow, a Dialog's header, body and
  *   footer, and Dialog's entrance (rise and fade), quicker: --duration-slow. Nothing pulses.
  * - Scopes that `send` reach other people as you, so they stand apart: the icon tile turns amber
- *   and a "Sends as you" Badge follows the title. Reads and writes stay neutral.
+ *   and the title goes on in muted text, "Send emails · Sends as you". Reads and writes stay neutral.
  * - Every scope starts ticked. Unticking one makes the request partial: its title turns muted
  *   and the footer counts what is left ("2 of 3 selected"). With nothing ticked, Allow is off.
  * - Answered, the card folds to one summary row like Decision card's: who, the answer ("Always
@@ -83,7 +82,7 @@ export const agentPermissionsLabels = {
     const said = verbs.length > 1 ? `${verbs.slice(0, -1).join(', ')} and ${verbs[verbs.length - 1]}` : (verbs[0] ?? '')
     return `${said.charAt(0).toUpperCase()}${said.slice(1)} ${resource}`
   },
-  /** The Badge on a scope that sends: it goes out under the person's name. */
+  /** After the title of a scope that sends, in muted text: it goes out under the person's name. */
   agentPermissionsSendsAsYou: 'Sends as you',
   agentPermissionsDeny: 'Don’t allow',
   agentPermissionsAllowOnce: 'Allow once',
@@ -429,18 +428,15 @@ export function AgentPermissionHeader({ description, className, ...props }: Agen
 export interface AgentPermissionScopeListProps extends React.ComponentProps<'ul'> {}
 
 /**
- * The scopes as a list, one row each, between rules. Without children it lists `scopes`.
- * Other props, `ref` included, go to the `ul`.
+ * The scopes as a list, one row each, kept apart by space rather than rules. Without children
+ * it lists `scopes`. Other props, `ref` included, go to the `ul`.
  */
 export function AgentPermissionScopeList({ className, children, ...props }: AgentPermissionScopeListProps) {
   const { scopes } = usePermission('AgentPermissionScopeList')
   return (
-    <List
-      variant="divided"
-      data-slot="agent-permissions-scopes"
-      className={cn('mx-4 mt-2 w-auto border-y border-border-default', className)}
-      {...props}
-    >
+    // 8px above and below each row: 16 between rows, 24 from the reason and from the buttons, so
+    // the card reads as intro, list, answers without rules cutting it up.
+    <List data-slot="agent-permissions-scopes" className={cn('mx-4 mt-3 w-auto gap-0', className)} {...props}>
       {children ?? scopes.map((scope) => <AgentPermissionScope key={agentPermissionScopeId(scope)} scope={scope} />)}
     </List>
   )
@@ -471,7 +467,7 @@ export function AgentPermissionScope({ scope, className, ...props }: AgentPermis
       className={cn('group/scope', className)}
       {...props}
     >
-      <label htmlFor={`${base}-box`} className="flex cursor-pointer items-center gap-3 py-3 has-disabled:cursor-default">
+      <label htmlFor={`${base}-box`} className="flex cursor-pointer items-center gap-3 py-2 has-disabled:cursor-default">
         <span
           aria-hidden
           data-tone={sends ? 'amber' : undefined}
@@ -483,19 +479,24 @@ export function AgentPermissionScope({ scope, className, ...props }: AgentPermis
           <ActionIcon action={action} />
         </span>
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          <span className="text-sm leading-5">
             <span
               id={`${base}-title`}
-              className="text-sm leading-5 font-medium text-text-default transition-colors duration-(--duration-fast) ease-(--ease-out) group-data-[state=unchecked]/scope:text-text-muted"
+              className="font-medium text-text-default transition-colors duration-(--duration-fast) ease-(--ease-out) group-data-[state=unchecked]/scope:text-text-muted"
             >
               {title}
-              {/* The Badge is read after the title as a clause of its own: "Send emails, Sends as you". */}
+              {/* Read as a clause of its own after the title: "Send emails, Sends as you". */}
               {sends && <span className="sr-only">,</span>}
             </span>
             {sends && (
-              <Badge id={`${base}-badge`} size="sm" tone="amber">
-                {labels.agentPermissionsSendsAsYou}
-              </Badge>
+              <span className="text-text-muted">
+                {/* In a narrow card "· Sends as you" moves down whole, so its dot still ties it to the title,
+                    not the detail. The dot is for the eye only. */}{' '}
+                <span className="whitespace-nowrap">
+                  <span aria-hidden>{'·\u00a0'}</span>
+                  <span id={`${base}-sends`}>{labels.agentPermissionsSendsAsYou}</span>
+                </span>
+              </span>
             )}
           </span>
           {scope.detail != null && (
@@ -509,7 +510,7 @@ export function AgentPermissionScope({ scope, className, ...props }: AgentPermis
           checked={checked}
           disabled={busy !== null}
           onCheckedChange={(on) => toggle(id, on === true)}
-          aria-labelledby={sends ? `${base}-title ${base}-badge` : `${base}-title`}
+          aria-labelledby={sends ? `${base}-title ${base}-sends` : `${base}-title`}
           aria-describedby={scope.detail != null ? `${base}-detail` : undefined}
         />
       </label>
