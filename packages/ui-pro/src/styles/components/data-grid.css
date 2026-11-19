@@ -49,7 +49,8 @@
 .satin-data-grid-body > .satin-data-grid-row:last-child {
   border-bottom-color: transparent;
 }
-.satin-data-grid-body > .satin-data-grid-row:is(:hover, [data-force='hover']) {
+/* Rows of records only: a state or a Skeleton row (data-kind) doesn't answer the pointer. */
+.satin-data-grid-body > .satin-data-grid-row:not([data-kind]):is(:hover, [data-force='hover']) {
   background-color: var(--bg-hover);
 }
 .satin-data-grid-body > .satin-data-grid-row[aria-selected='true'] {
@@ -165,8 +166,9 @@
   }
 }
 
-/* The row that holds the empty, no-results and error states: as tall as its content. */
+/* The row that holds the empty, no-results and error states. */
 .satin-data-grid-row[data-kind='message'] {
   height: auto;
-  border-bottom-color: transparent;
+  /* No rule: the state fills the body to the pixel (the component sizes it from the viewport). */
+  border-bottom: 0;
 }

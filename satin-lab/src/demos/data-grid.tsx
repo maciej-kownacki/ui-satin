@@ -2,6 +2,8 @@ import * as React from 'react'
 import { Search } from 'iconoir-react'
 import { Avatar, type AvatarTone } from '@uisatin/ui/avatar'
 import { Badge, type BadgeTone } from '@uisatin/ui/badge'
+import { Button } from '@uisatin/ui/button'
+import { EmptyState } from '@uisatin/ui/empty-state'
 import { Input } from '@uisatin/ui/input'
 import { Select } from '@uisatin/ui/select'
 import {
@@ -147,7 +149,10 @@ function code(v: Record<string, string>) {
   ]
     .filter(Boolean)
     .join('\n')
-  return `import { Badge } from '@uisatin/ui/badge'
+  return `import { Search } from 'iconoir-react'
+import { Badge } from '@uisatin/ui/badge'
+import { Button } from '@uisatin/ui/button'
+import { EmptyState } from '@uisatin/ui/empty-state'
 import { Select } from '@uisatin/ui/select'
 import {
   DataGrid, DataGridToolbar, DataGridColumnsMenu, DataGridViewMenu, type DataGridColumn,
@@ -184,7 +189,14 @@ export function Candidates({ candidates }: { candidates: Candidate[] }) {
       selectable
       defaultSort={{ key: 'applied', direction: 'desc' }}
       filtered={query !== ''}
-      onClearFilters={() => setQuery('')}
+      noResults={
+        <EmptyState
+          icon={<Search />}
+          title={\`No candidates match “\${query}”\`}
+          description="Check the spelling, or search by another name."
+          actions={<Button variant="secondary" onClick={() => setQuery('')}>Clear search</Button>}
+        />
+      }
       onCellEdit={(id, key, value) => saveCandidate(id, { [key]: value })}${props ? `\n${props}` : ''}
       toolbar={
         <DataGridToolbar>
@@ -239,7 +251,18 @@ function Preview({ v }: { v: Record<string, string> }) {
         error={v.state === 'error' ? "The ATS didn't answer. Check the connection and try again." : undefined}
         onRetry={() => {}}
         filtered={q !== ''}
-        onClearFilters={() => setQuery('')}
+        noResults={
+          <EmptyState
+            icon={<Search />}
+            title={`No candidates match “${query.trim()}”`}
+            description="Check the spelling, or search by another name."
+            actions={
+              <Button variant="secondary" onClick={() => setQuery('')}>
+                Clear search
+              </Button>
+            }
+          />
+        }
         onCellEdit={async (id, key, value) => {
           await wait(700)
           if (fail.current) throw new Error("The ATS didn't take the change.")

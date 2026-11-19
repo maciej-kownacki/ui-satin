@@ -2476,6 +2476,7 @@
       "title": "Data grid",
       "description": "The table people work in: sort, resize, pin and hide columns, edit cells in place, and save views.",
       "dependencies": [
+        "iconoir-react@^7.12.2",
         "radix-ui@^1.8.1"
       ],
       "registryDependencies": [

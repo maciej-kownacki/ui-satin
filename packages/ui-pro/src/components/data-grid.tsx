@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { Search, TableRows } from 'iconoir-react'
 import { DropdownMenu as DropdownPrimitive } from 'radix-ui'
 import { StatusIcon } from '@uisatin/ui/alert'
 import { Button, type ButtonProps } from '@uisatin/ui/button'
@@ -32,7 +33,9 @@ import { Tooltip } from '@uisatin/ui/tooltip'
  * - Editing: Enter, F2 or a double click opens the cell's editor (`renderEditor`, or an Input);
  *   Enter or Tab saves, Escape cancels. `onCellEdit` may return a promise: the cell shows a
  *   Spinner while it runs and an error edge if it rejects (Enter tries again, Escape undoes).
- * - States: `loading` (Skeleton rows), empty, `filtered` with no rows (No results), `error`.
+ * - States: `loading` (Skeleton rows), empty, `filtered` with no rows (No results), `error`. The
+ *   last three are an EmptyState with its icon, centred in the visible body however far the
+ *   columns scroll.
  * - Resize: drag a header's end edge (it follows the pointer, no transition), or Tab from the
  *   header to its handle and use the arrow keys.
  * - Parts for the toolbar: `DataGridToolbar`, `DataGridColumnsMenu` (show, hide and reorder
@@ -385,8 +388,13 @@ export interface DataGridProps<R> extends Omit<React.ComponentProps<'div'>, 'chi
   filtered?: boolean
   /** Shows Clear filters on the No results state. */
   onClearFilters?: () => void
-  /** What shows when there are no rows (not filtered). Defaults to an EmptyState. */
+  /** What shows when there are no rows (not filtered). Defaults to an EmptyState with a table icon. */
   empty?: React.ReactNode
+  /**
+   * What shows when `filtered` leaves no rows. Defaults to an EmptyState with a search icon, "No
+   * results" and, with `onClearFilters`, Clear filters. Pass your own to name the search.
+   */
+  noResults?: React.ReactNode
   /** Draw only the rows on screen. Defaults to on above 200 rows. */
   virtualize?: boolean
   /** Rows per page, with a Pagination under the grid. Left out, every row is in one scrolling body. */
@@ -430,6 +438,7 @@ export function DataGrid<R>({
   filtered = false,
   onClearFilters,
   empty,
+  noResults,
   virtualize,
   pageSize,
   page: pageProp,
@@ -535,7 +544,7 @@ export function DataGrid<R>({
   const viewportRef = React.useRef<HTMLDivElement>(null)
   const rootRef = React.useRef<HTMLDivElement>(null)
   const gridRef = React.useRef<HTMLDivElement>(null)
-  const [viewportWidth, setViewportWidth] = React.useState(0)
+  const [viewport, setViewport] = React.useState({ width: 0, height: 0 })
   const rangeOf = React.useCallback(
     (top: number, height: number): [number, number] => {
       // Before the viewport is measured (or in a test, with no layout), assume 480px.
@@ -575,7 +584,8 @@ export function DataGrid<R>({
     const el = viewportRef.current
     if (!el) return
     const ro = new ResizeObserver(() => {
-      setViewportWidth(el.clientWidth)
+      const next = { width: el.clientWidth, height: el.clientHeight }
+      setViewport((v) => (v.width === next.width && v.height === next.height ? v : next))
       onScroll()
     })
     ro.observe(el)
@@ -999,8 +1009,12 @@ export function DataGrid<R>({
   const messageRow = (node: React.ReactNode) => (
     <div role="row" aria-rowindex={2} data-kind="message" className="satin-data-grid-row">
       <div role="gridcell" aria-colindex={1} aria-colspan={colCount} className="satin-data-grid-cell col-span-full">
-        {/* Stays in view, centred, however far the columns scroll. */}
-        <div className="sticky start-0 flex justify-center px-4 py-8" style={{ width: viewportWidth || '100%' }}>
+        {/* Centred in the visible body: as wide as the viewport and as tall as what is left under
+            the header, and it stays put however far the columns scroll. */}
+        <div
+          className="sticky start-0 flex items-center justify-center px-4 py-8"
+          style={{ width: viewport.width || '100%', minHeight: Math.max(0, viewport.height - headH) }}
+        >
           {node}
         </div>
       </div>
@@ -1011,7 +1025,7 @@ export function DataGrid<R>({
   if (body === 'rows') bodyRows = indices.map((i) => renderRow(shownRows[i], i))
   else if (body === 'loading')
     bodyRows = Array.from({ length: pageSize ? Math.min(pageSize, SKELETON_ROWS) : SKELETON_ROWS }, (_, i) => (
-      <div key={i} role="row" aria-rowindex={i + 2} className="satin-data-grid-row">
+      <div key={i} role="row" aria-rowindex={i + 2} data-kind="loading" className="satin-data-grid-row">
         {selectable && <div role="gridcell" className="satin-data-grid-cell" data-pinned="start" style={selectPlace.style} />}
         {layout.map((c, j) => (
           <div key={c.key} role="gridcell" className="satin-data-grid-cell ps-3 pe-2.5" data-pinned={place(j).pinned} style={place(j).style}>
@@ -1037,19 +1051,22 @@ export function DataGrid<R>({
     )
   else if (body === 'filtered')
     bodyRows = messageRow(
-      <EmptyState
-        title={labels.noResults}
-        description={labels.dataGridNoResultsDescription}
-        actions={
-          onClearFilters && (
-            <Button variant="secondary" onClick={onClearFilters}>
-              {labels.dataGridClearFilters}
-            </Button>
-          )
-        }
-      />,
+      noResults ?? (
+        <EmptyState
+          icon={<Search />}
+          title={labels.noResults}
+          description={labels.dataGridNoResultsDescription}
+          actions={
+            onClearFilters && (
+              <Button variant="secondary" onClick={onClearFilters}>
+                {labels.dataGridClearFilters}
+              </Button>
+            )
+          }
+        />
+      ),
     )
-  else bodyRows = messageRow(empty ?? <EmptyState title={labels.dataGridEmpty} description={labels.dataGridEmptyDescription} />)
+  else bodyRows = messageRow(empty ?? <EmptyState icon={<TableRows />} title={labels.dataGridEmpty} description={labels.dataGridEmptyDescription} />)
 
   return (
     <GridContext.Provider value={context}>

@@ -3062,7 +3062,13 @@
           "name": "empty",
           "type": "React.ReactNode",
           "required": false,
-          "description": "What shows when there are no rows (not filtered). Defaults to an EmptyState."
+          "description": "What shows when there are no rows (not filtered). Defaults to an EmptyState with a table icon."
+        },
+        {
+          "name": "noResults",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What shows when `filtered` leaves no rows. Defaults to an EmptyState with a search icon, \"No results\" and, with `onClearFilters`, Clear filters. Pass your own to name the search."
         },
         {
           "name": "virtualize",
