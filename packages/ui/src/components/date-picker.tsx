@@ -184,7 +184,10 @@ export function CalendarDay({ children, className, onClick, onFocus, 'aria-label
         // While the end is being picked the band and the end circle move together,
         // so neither fades: a fade here would trail the pointer.
         !picking && 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
-        'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)] aria-disabled:opacity-40',
+        'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+        // A day that can't be picked fades, but not while it has the focus: the fade would take
+        // the ring below 3:1. Focused, its number is muted instead.
+        'aria-disabled:not-focus-visible:opacity-40 aria-disabled:focus-visible:text-text-muted',
         end ? 'rounded-md' : 'rounded-full',
         state.selected
           ? 'bg-action-primary-bg text-text-on-solid'
