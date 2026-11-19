@@ -7,13 +7,12 @@ import { Avatar } from '@uisatin/ui/avatar'
 import { Button } from '@uisatin/ui/button'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
-import { Separator } from '@uisatin/ui/separator'
 import { Skeleton } from '@uisatin/ui/skeleton'
 import { toast } from '@uisatin/ui/toast'
 
 /**
  * ActivityTimeline: a record's history, newest first. Who did what and when, people and agents
- * alike, under a rule for each day ("Today", "Yesterday", "Monday, November 16").
+ * alike, under the name of each day ("Today", "Yesterday", "Monday, November 16").
  *
  * - Each entry is the actor's avatar on a rail (an agent's is the tetris mark at rest), the
  *   sentence (**actor** verb **target**) and its time. Today's times are relative ("5 min. ago")
@@ -41,7 +40,7 @@ import { toast } from '@uisatin/ui/toast'
 
 /** The words the Activity timeline says on its own. They join SatinLabels, so the app translates them there. */
 export const activityTimelineLabels = {
-  /** The list's name when it isn't grouped by day. */
+  /** The timeline's name for screen readers: it has no visible heading of its own. */
   activity: 'Activity',
   /** When there are no entries yet. */
   noActivity: 'No activity yet',
@@ -219,7 +218,7 @@ function dayName(day: Date, now: number, locale: string) {
 
 export interface ActivityTimelineTimeProps extends Omit<React.ComponentProps<'time'>, 'children' | 'dateTime'> {
   at: ActivityItem['at']
-  /** Past today, show the date before the clock time (for a timeline without day rules). */
+  /** Past today, show the date before the clock time (for a timeline not grouped by day). */
   withDate?: boolean
 }
 
@@ -366,12 +365,14 @@ export interface ActivityTimelineDayProps extends Omit<React.ComponentProps<'ol'
   day: Date | React.ReactNode
 }
 
-/** A day: its name on a rule, then its entries in a list named after it. Other props, `ref` included, go to the `ol`. */
+/** A day: its name, then its entries in a list named after it. Other props, `ref` included, go to the `ol`. */
 export function ActivityTimelineDay({ day, className, ...props }: ActivityTimelineDayProps) {
   const id = React.useId()
   return (
-    <div data-slot="activity-timeline-day" className="flex flex-col gap-3">
-      <Separator label={<span id={id}>{day instanceof Date ? <DayName day={day} /> : day}</span>} />
+    <div data-slot="activity-timeline-day" className="flex flex-col gap-2">
+      <div id={id} data-slot="activity-timeline-day-name" className="text-xs leading-4 font-medium text-text-muted">
+        {day instanceof Date ? <DayName day={day} /> : day}
+      </div>
       <ActivityTimelineList aria-labelledby={id} className={className} {...props} />
     </div>
   )
@@ -428,7 +429,7 @@ const rowClass = 'relative flex gap-3 pb-5 last:pb-0'
 
 export interface ActivityTimelineEntryProps extends Omit<React.ComponentProps<'li'>, 'children'> {
   item: ActivityItem
-  /** Past today, write the date before the time (for a timeline without day rules). */
+  /** Past today, write the date before the time (for a timeline not grouped by day). */
   withDate?: boolean
 }
 
@@ -688,7 +689,7 @@ function arrange(items: ActivityItem[], groupBy: ActivityGroupBy, min: number | 
 export interface ActivityTimelineProps extends Omit<ActivityTimelineRootProps, 'children'> {
   /** The entries, in any order: the timeline shows the newest first. */
   items: ActivityItem[]
-  /** A rule and a list for each day, or one list. */
+  /** A list under its name for each day, or one list. */
   groupBy?: ActivityGroupBy
   /** Runs of this many entries or more by one actor fold into one row; `false` never folds. */
   collapseRuns?: number | false
@@ -701,8 +702,10 @@ export interface ActivityTimelineProps extends Omit<ActivityTimelineRootProps, '
 }
 
 /**
- * A record's history from `items`, newest first: a rule and a list for each day, runs of one actor
- * folded, Revert with a toast and Undo. Other props, `ref` included, go to the root `div`.
+ * A record's history from `items`, newest first: a list under its name for each day, runs of one actor
+ * folded, Revert with a toast and Undo. The root is a group named "Activity" (`activity` in
+ * SatinLabels); pass `aria-labelledby` when a heading of yours names it. Other props, `ref`
+ * included, go to the root `div`.
  */
 export function ActivityTimeline({
   items,
@@ -750,7 +753,8 @@ export function ActivityTimeline({
     })
 
   return (
-    <ActivityTimelineRoot loading={loading} {...props}>
+    // No visible heading of its own: a group named "Activity", which `aria-label` or `aria-labelledby` (your heading) can rename.
+    <ActivityTimelineRoot role="group" aria-label={labels.activity} loading={loading} {...props}>
       {loading ? (
         <>
           <span role="status" className="sr-only">
@@ -777,7 +781,7 @@ export function ActivityTimeline({
           </ActivityTimelineDay>
         ))
       ) : (
-        <ActivityTimelineList aria-label={labels.activity}>{blocks(days[0])}</ActivityTimelineList>
+        <ActivityTimelineList>{blocks(days[0])}</ActivityTimelineList>
       )}
     </ActivityTimelineRoot>
   )
