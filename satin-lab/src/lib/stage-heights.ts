@@ -38,6 +38,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Command menu': [468, 468],
   'Agent suggestion': [340, 340],
   'Decision card': [368, 392],
+  'Permission request': [420, 488],
   'Dialog': [352, 352],
   'Dot': [280, 280],
   'Dropdown': [440, 440],
