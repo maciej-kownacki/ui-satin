@@ -517,7 +517,7 @@ export const a11y: Record<string, A11y> = {
   },
   'message-actions': {
     summary:
-      'A row of buttons with no role of its own. Like and dislike are icon buttons named "Good response" and "Bad response" with `aria-pressed`; copy is named "Copy"; Share has a visible label. The delivery icon is hidden and replaced by "Sending" or "Delivered" for screen readers. Copying gives no spoken feedback, so confirm it yourself (a toast).',
+      'A row of buttons with no role of its own. Like and dislike are icon buttons named "Good response" and "Bad response" with `aria-pressed`; copy is named "Copy"; Share has a visible label. Each icon button has a tooltip with its name, shown on hover and on keyboard focus. The delivery icon is hidden and replaced by "Sending" or "Delivered" for screen readers. After a copy a polite live region says "Copied", and the Copy tooltip says it too for 1.5 s.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Presses the focused button; a pressed thumb is released by pressing it again.' }],
   },
   'prompt-bar': {
