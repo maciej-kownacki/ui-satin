@@ -183,6 +183,14 @@
   to { transform: translateX(-300%); }
 }
 
+/* Toast countdown (components/toast.tsx, `countdown`): the bar along the card's bottom drains to
+   nothing, linear, over the toast's duration (set inline); the toast stops it in place with
+   animation-play-state. It's hidden under reduced motion, so the reset's near-zero duration never shows. */
+@keyframes satin-toast-countdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
 /* Pagination (components/pagination.tsx): a page number changing in place.
    `scroll`: the old and the new number move together, side by side, a full number's width,
    inside a box clipped to the number, like a counter rolling sideways: one leaves as the other

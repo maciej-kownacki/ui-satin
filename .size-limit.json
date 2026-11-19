@@ -33,6 +33,17 @@
     "limit": "30 kB"
   },
   {
+    "name": "Toast (Toaster and toast(), with Radix Toast)",
+    "path": "packages/ui/dist/components/toast.js",
+    "import": "{ Toaster, toast }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "30 kB"
+  },
+  {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/bulk-action-bar.js",
     "import": "{ BulkActionBar }",
