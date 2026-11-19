@@ -428,7 +428,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'command-menu': {
-    description: 'The `CommandMenu` component wraps the Radix dialog in a `div` with a search `input` (`role="combobox"`) and a `listbox` of grouped commands. ⌘K or Ctrl+K toggles it unless `hotkey` is off.',
+    description: 'The `CommandMenu` component wraps the Radix dialog in a `div` with a search `input` (`role="combobox"`) and a `listbox` of grouped commands. ⌘K or Ctrl+K toggles it unless `hotkey` is off. For a menu that changes what it shows: `query` / `onQueryChange` control the search (emptied as the menu closes), an item with `keepOpen` runs without closing it, `header` goes above the search row, `children` take the list\'s place and `footer` replaces the key hints (compose it from `KbdHint`).',
     props: [
       { name: 'groups', type: ['CommandGroup[]'] },
       { name: 'item.label', type: ['string'] },
@@ -444,6 +444,31 @@ export const api: Record<string, Api> = {
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
       { name: 'emptyText', type: ['(query: string) => ReactNode'] },
       { name: 'modal', type: ['boolean'], default: 'true' },
+      { name: 'item.keepOpen', type: ['boolean'], default: 'false' },
+      { name: 'query', type: ['string'] },
+      { name: 'onQueryChange', type: ['(query: string) => void'] },
+      { name: 'header', type: ['ReactNode'] },
+      { name: 'footer', type: ['ReactNode'] },
+      { name: 'children', type: ['ReactNode'] },
+    ],
+  },
+  'command-pages': {
+    description:
+      'The `CommandPages` component (Satin Pro, `@uisatin/pro/command-pages`) is a `CommandMenu` with sub-pages. An item with `page: { groups, title, placeholder }` opens it in place of the list; an item\'s `onSelect(menu)` can `menu.push(page)` instead, and the menu closes after any other item. A `Breadcrumb` above the search leads back; Backspace in the empty search goes back one page. With `onAsk`, every query adds \'Ask the agent about "…"\' as the last row; it calls `onAsk(query)` and shows the question over `answer` (StreamingText) and `answering` (AgentLoading until the first words). Without `answer` and `answering` the menu closes after `onAsk`. `controlRef` gets `{ push, back, ask, search, close }`. Part: `CommandPagesAnswer`. Every `CommandMenu` prop works as there.',
+    props: [
+      { name: 'groups', type: ['CommandPageGroup[]'] },
+      { name: 'item.page', type: ['CommandPage'] },
+      { name: 'item.onSelect', type: ['(menu: CommandPagesControl) => void'] },
+      { name: 'rootTitle', type: ['string'], default: '"Commands"' },
+      { name: 'onAsk', type: ['(query: string) => void'] },
+      { name: 'answer', type: ['string'] },
+      { name: 'answering', type: ['boolean'] },
+      { name: 'controlRef', type: ['Ref<CommandPagesControl>'] },
+      { name: 'open', type: ['boolean'] },
+      { name: 'defaultOpen', type: ['boolean'], default: 'false' },
+      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+      { name: 'hotkey', type: ['boolean'], default: 'true' },
+      { name: 'hints', type: ['boolean'], default: 'true' },
     ],
   },
   'context-menu': {

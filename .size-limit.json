@@ -54,6 +54,9 @@
     "name": "Filter bar (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/filter-bar.js",
     "import": "{ FilterBar }",
+    "name": "Command pages (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/command-pages.js",
+    "import": "{ CommandPages }",
     "ignore": [
       "react",
       "react-dom",
@@ -62,6 +65,7 @@
     "gzip": true,
     "limit": "4 kB"
     "limit": "9 kB"
+    "limit": "3 kB"
   },
   {
     "name": "styles.css",

@@ -1813,6 +1813,109 @@
           "name": "className",
           "type": "string",
           "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "required": false,
+          "description": "The search text. Pass it with onQueryChange to control it; it is emptied each time the menu closes."
+        },
+        {
+          "name": "onQueryChange",
+          "type": "(query: string) => void",
+          "required": false
+        },
+        {
+          "name": "header",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Above the search row, such as a Breadcrumb of the pages opened so far."
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Key hints in place of Navigate, Open and Close; compose them from KbdHint. Shown when `hints` is on."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown in place of the list, such as an answer to the query; the search row and the footer stay."
+        }
+      ]
+    }
+  },
+  "command-pages": {
+    "CommandPagesAnswer": {
+      "description": "The question, then AgentLoading while the answer is on its way and StreamingText once it comes. It scrolls when long, and takes focus (Tab) so the keyboard can scroll it. Other props, `ref` included, go to its scroll box.",
+      "type": "CommandPagesAnswerProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "question",
+          "type": "string",
+          "required": true,
+          "description": "What was asked, over the answer."
+        },
+        {
+          "name": "answer",
+          "type": "string",
+          "required": false,
+          "description": "The answer so far."
+        },
+        {
+          "name": "answering",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "More is coming."
+        }
+      ]
+    },
+    "CommandPages": {
+      "type": "CommandPagesProps",
+      "extends": [
+        "Omit<CommandMenuProps, 'groups' | 'header' | 'footer' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "groups",
+          "type": "CommandPageGroup[]",
+          "required": true,
+          "description": "The first page."
+        },
+        {
+          "name": "rootTitle",
+          "type": "string",
+          "required": false,
+          "description": "The first page's name: the breadcrumb's first item. Defaults to the `commands` label."
+        },
+        {
+          "name": "onAsk",
+          "type": "(query: string) => void",
+          "required": false,
+          "description": "Adds 'Ask the agent about \"…\"' as the last row whenever there is a query. Running it (Enter when nothing else matches) calls this with the query and opens the agent's page; each follow-up asked there calls it again."
+        },
+        {
+          "name": "answer",
+          "type": "string",
+          "required": false,
+          "description": "The agent's answer so far. Grow it as it streams; empty it when onAsk is called."
+        },
+        {
+          "name": "answering",
+          "type": "boolean",
+          "required": false,
+          "description": "More of the answer is coming: AgentLoading until the first words, then the caret."
+        },
+        {
+          "name": "controlRef",
+          "type": "React.Ref<CommandPagesControl>",
+          "required": false,
+          "description": "Gets the menu's moves, for opening it on a page or an answer from outside."
         }
       ]
     }

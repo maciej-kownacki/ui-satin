@@ -1,0 +1,5 @@
+---
+'@uisatin/pro': minor
+---
+
+Command pages (`@uisatin/pro/command-pages`): the ⌘K Command menu with sub-pages and an agent for what no command matches. An item's `page` (or `onSelect(menu)` → `menu.push(page)`) opens a page in place of the list, with a Breadcrumb above the search; Backspace in the empty search goes back one page and puts back the search you had there (a held key goes back only once), and the footer says so ("⌫ Back"). With `onAsk`, every query adds 'Ask the agent about "…"' as the last row; it opens the agent's page, where the question sits over `answer` (StreamingText) and `answering` (AgentLoading until the first words), and the search asks follow-ups. A new page slides 8px and fades in over --duration-base, except under reduced motion. `controlRef` opens it on a page, a search or an answer from outside. Part: `CommandPagesAnswer`. Its words (`commandAskAbout`, `commandAskAgent`, `commandAskFollowUp`, `commandBack`, `commandPageOpened`) are translated with SatinLabels.
