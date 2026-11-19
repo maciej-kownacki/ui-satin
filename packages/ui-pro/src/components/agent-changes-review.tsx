@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { flushSync } from 'react-dom'
 import { AgentSuggestionChangeValue, type AgentSuggestionChange } from '@uisatin/ui/agent-suggestion'
 import { Button, type ButtonProps } from '@uisatin/ui/button'
 import { Checkbox } from '@uisatin/ui/checkbox'
@@ -15,10 +16,16 @@ import { cn } from '@uisatin/ui/lib/utils'
  * Under the rows: Accept all, and Apply, which counts what it will apply ("Apply 2 changes").
  * Put it in an AgentSuggestion as its body, without the card's own `actions`.
  *
- * - A row is pending until it's decided. Accept and Reject are toggle buttons (`aria-pressed`):
- *   pressing the pressed one makes the row pending again. A checkbox accepts when checked and
- *   rejects when cleared.
- * - A rejected row's new value fades to text/muted (a Badge loses its colour); nothing else moves.
+ * - A row is pending until it's decided. Accept is a toggle button (`aria-pressed`): pressing it
+ *   again makes the row pending. Reject (X) takes the row out of the list: it slides 32px to the
+ *   start and fades over --duration-slow, then the rows under it move up into its place with a
+ *   transform over --duration-base (the card's edge follows at the end; no height animates).
+ *   Under reduced motion the row simply goes. Focus moves to the next row's Accept, or to the
+ *   footer when no row is left below. The UI has no way back for a rejected row; the app can
+ *   bring it back by setting its decision to `pending` in a controlled `value`.
+ * - With `control="checkbox"`, a checked box accepts and a cleared one rejects; the row stays,
+ *   its new value fades to text/muted (a Badge loses its colour), and checking it again takes it
+ *   back.
  * - Apply calls `onApply` with the accepted changes only, in order. Return a promise and the
  *   rows lock and Apply shows a Spinner until it settles (`applying`); then it says Applied, each
  *   applied row gets a check and the rest fade (`applied`). If it rejects, the rows unlock for
@@ -27,7 +34,8 @@ import { cn } from '@uisatin/ui/lib/utils'
  *   place, "0", "1", … when it has none); controlled with `value` and `onValueChange`, or not,
  *   with `defaultValue`. For a new set of changes, give the component a new `key`.
  * - Each row is a `role="group"` named by its field; its buttons are named after it ("Accept
- *   Stage change"). Accept all, applying and applied are read out from a polite live region.
+ *   Stage change"). A rejected row, Accept all, applying and applied are read out from a polite
+ *   live region.
  *
  * Parts, to put Apply in the card's `actions` row or add buttons of your own:
  * `ReviewableChangesRoot` (around the whole AgentSuggestion) › `ReviewableChangesList`,
@@ -53,6 +61,8 @@ export const agentChangesReviewLabels = {
   fieldChangeNotApplied: 'Not applied',
   /** Read out after Accept all. */
   allFieldChangesAccepted: 'All changes accepted',
+  /** Read out when Reject takes a row out of the list: "Value change rejected". */
+  fieldChangeRejected: (field: string) => `${field} change rejected`,
 }
 
 type AgentChangesReviewLabels = typeof agentChangesReviewLabels
@@ -98,6 +108,30 @@ const XGlyph = () => (
   </svg>
 )
 
+/* ---------- reduced motion ---------- */
+
+const REDUCED = '(prefers-reduced-motion: reduce)'
+const subscribeMotion = (onChange: () => void) => {
+  if (typeof window === 'undefined' || !window.matchMedia) return () => {}
+  const list = window.matchMedia(REDUCED)
+  list.addEventListener('change', onChange)
+  return () => list.removeEventListener('change', onChange)
+}
+const useReducedMotion = () =>
+  React.useSyncExternalStore(
+    subscribeMotion,
+    () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia(REDUCED).matches,
+    () => false,
+  )
+
+// The swipe is --duration-slow and the gap closes in --duration-base; these only stop a wait
+// whose transitionend never comes (a hidden tab, a transition the app turned off).
+const SWIPE_MS = 400
+const CLOSE_MS = 350
+
+const ROW = '[data-slot="reviewable-change"]'
+const FOOTER = '[data-slot="reviewable-changes-accept-all"]:not(:disabled), [data-slot="reviewable-changes-apply"]:not(:disabled)'
+
 /* ---------- the root ---------- */
 
 interface ReviewContextValue {
@@ -105,6 +139,12 @@ interface ReviewContextValue {
   keys: string[]
   value: ReviewableChangesValue
   decide: (key: string, decision: ReviewDecision) => void
+  /** Rejects a row from its X: focus moves on, the row swipes out, the rest close the gap. */
+  reject: (key: string, name: string, row: HTMLElement | null) => void
+  /** Rows swiping out: still drawn, already rejected. */
+  leaving: ReadonlySet<string>
+  /** After a row's swipe: moves the rows under it up, then lets it go. */
+  closeGap: (key: string, row: HTMLElement | null) => void
   acceptAll: () => void
   apply: () => Promise<void>
   status: ReviewableChangesStatus
@@ -152,9 +192,14 @@ export function ReviewableChangesRoot({
   control = 'buttons',
   className,
   children,
+  ref,
   ...props
 }: ReviewableChangesRootProps) {
   const labels = useLabels()
+  const alive = React.useRef(true)
+  const rootRef = React.useRef<HTMLDivElement>(null)
+  const reduced = useReducedMotion()
+  const [leaving, setLeaving] = React.useState<ReadonlySet<string>>(() => new Set())
   const [inner, setInner] = React.useState<ReviewableChangesValue>(() => defaultValue ?? {})
   const value = valueProp ?? inner
   const [phase, setPhase] = React.useState<ReviewableChangesStatus>('review')
@@ -165,8 +210,8 @@ export function ReviewableChangesRoot({
   const accepted = changes.filter((_, i) => value[keys[i]] === 'accepted')
 
   // The latest of everything, for callbacks that outlive a render.
-  const latest = React.useRef({ value, keys, accepted, status, controlled: valueProp !== undefined, onValueChange, onApply })
-  latest.current = { value, keys, accepted, status, controlled: valueProp !== undefined, onValueChange, onApply }
+  const latest = React.useRef({ value, keys, accepted, status, reduced, control, controlled: valueProp !== undefined, onValueChange, onApply })
+  latest.current = { value, keys, accepted, status, reduced, control, controlled: valueProp !== undefined, onValueChange, onApply }
 
   const setValue = React.useCallback((next: ReviewableChangesValue) => {
     if (!latest.current.controlled) setInner(next)
@@ -182,12 +227,82 @@ export function ReviewableChangesRoot({
   )
 
   const acceptAll = React.useCallback(() => {
-    if (latest.current.status !== 'review') return
-    setValue({ ...latest.current.value, ...Object.fromEntries(latest.current.keys.map((k) => [k, 'accepted' as const])) })
+    const { status: now, value: decisions, keys: all, control: kind } = latest.current
+    if (now !== 'review') return
+    // With buttons a rejected row has left the list, so Accept all leaves it out.
+    const open = kind === 'buttons' ? all.filter((k) => decisions[k] !== 'rejected') : all
+    setValue({ ...decisions, ...Object.fromEntries(open.map((k) => [k, 'accepted' as const])) })
     setMessage(labels.allFieldChangesAccepted)
   }, [setValue, labels])
 
-  const alive = React.useRef(true)
+  const reject = React.useCallback(
+    (key: string, name: string, row: HTMLElement | null) => {
+      if (latest.current.status !== 'review') return
+      // Focus first, while the X still has it: the next row's Accept, else the footer, else the row above.
+      const rows = [...(rootRef.current?.querySelectorAll<HTMLElement>(`${ROW}:not([data-leaving])`) ?? [])]
+      const at = row ? rows.indexOf(row) : -1
+      const control = (r?: HTMLElement) => r?.querySelector<HTMLElement>('button:not(:disabled)')
+      const next = control(rows.slice(at + 1).find((r) => control(r))) ?? rootRef.current?.querySelector<HTMLElement>(FOOTER) ?? control(rows.slice(0, Math.max(at, 0)).reverse().find((r) => control(r)))
+      next?.focus()
+      setValue({ ...latest.current.value, [key]: 'rejected' })
+      setMessage(labels.fieldChangeRejected(name))
+      if (!latest.current.reduced) setLeaving((s) => new Set(s).add(key))
+    },
+    [setValue, labels],
+  )
+
+  // One gap closes at a time, so two quick rejects never pull the same rows two ways.
+  const gaps = React.useRef<Promise<void>>(Promise.resolve())
+  const closeGap = React.useCallback((key: string, row: HTMLElement | null) => {
+    const release = () => setLeaving((s) => {
+      const next = new Set(s)
+      next.delete(key)
+      return next
+    })
+    gaps.current = gaps.current.then(
+      () =>
+        new Promise<void>((resolve) => {
+          const root = rootRef.current
+          const list = row?.parentElement
+          if (!alive.current || !root || !row || !list) {
+            if (alive.current) release()
+            return resolve()
+          }
+          // Everything after the row, up to the root: the rows under it and the footer.
+          const followers: HTMLElement[] = []
+          for (let node: Element | null = row; node && node !== root; node = node.parentElement) {
+            for (let sib = node.nextElementSibling; sib; sib = sib.nextElementSibling) {
+              if (sib instanceof HTMLElement && !sib.hasAttribute('data-leaving')) followers.push(sib)
+            }
+          }
+          const shift = row.offsetHeight + (parseFloat(getComputedStyle(list).rowGap) || 0)
+          let done = false
+          const finish = () => {
+            if (done) return
+            done = true
+            clearTimeout(timer)
+            followers[0]?.removeEventListener('transitionend', onEnd)
+            // The row goes and the transforms go in the same frame, so nothing jumps but the card's edge.
+            if (alive.current) flushSync(release)
+            for (const f of followers) {
+              f.classList.remove('satin-changes-review-shift')
+              f.style.transform = ''
+            }
+            resolve()
+          }
+          const onEnd = (e: TransitionEvent) => {
+            if (e.target === followers[0] && e.propertyName === 'transform') finish()
+          }
+          const timer = setTimeout(finish, followers.length ? CLOSE_MS : 0)
+          if (!followers.length) return
+          followers[0].addEventListener('transitionend', onEnd)
+          for (const f of followers) f.classList.add('satin-changes-review-shift')
+          void root.offsetHeight
+          for (const f of followers) f.style.transform = `translateY(${-shift}px)`
+        }),
+    )
+  }, [])
+
   React.useEffect(() => {
     alive.current = true
     return () => {
@@ -231,13 +346,20 @@ export function ReviewableChangesRoot({
   }, [status, acceptedCount, labels])
 
   const context = React.useMemo(
-    () => ({ changes, keys, value, decide, acceptAll, apply, status, acceptedCount, control, labels }),
-    [changes, keys, value, decide, acceptAll, apply, status, acceptedCount, control, labels],
+    () => ({ changes, keys, value, decide, reject, leaving, closeGap, acceptAll, apply, status, acceptedCount, control, labels }),
+    [changes, keys, value, decide, reject, leaving, closeGap, acceptAll, apply, status, acceptedCount, control, labels],
   )
 
   return (
     <ReviewContext.Provider value={context}>
-      <div data-slot="reviewable-changes" data-status={status} data-control={control} className={cn('flex flex-col gap-3', className)} {...props}>
+      <div
+        ref={(node: HTMLDivElement | null) => {
+          rootRef.current = node
+          if (typeof ref === 'function') ref(node)
+          else if (ref) ref.current = node
+        }}
+        data-slot="reviewable-changes"
+        data-status={status} data-control={control} className={cn('flex flex-col gap-3', className)} {...props}>
         {children}
         <span role="status" className="sr-only">
           {message}
@@ -250,20 +372,51 @@ export function ReviewableChangesRoot({
 /* ---------- the rows ---------- */
 
 function ReviewableChangeRow({ change, id, index }: { change: ReviewableChange; id: string; index: number }) {
-  const { value, decide, status, control, labels } = useReview('ReviewableChangesList')
+  const { value, decide, reject, leaving, closeGap, status, control, labels } = useReview('ReviewableChangesList')
   const fieldId = React.useId()
+  const rowRef = React.useRef<HTMLDivElement>(null)
   const decision = value[id] ?? 'pending'
+  const isLeaving = control === 'buttons' && leaving.has(id)
+
+  // Hand the row to closeGap once its swipe is over: on transitionend, or after SWIPE_MS at most.
+  const handed = React.useRef(false)
+  const handOff = () => {
+    if (handed.current) return
+    handed.current = true
+    closeGap(id, rowRef.current)
+  }
+  React.useEffect(() => {
+    if (!isLeaving) {
+      handed.current = false
+      return
+    }
+    const timer = setTimeout(() => {
+      if (handed.current) return
+      handed.current = true
+      closeGap(id, rowRef.current)
+    }, SWIPE_MS)
+    return () => clearTimeout(timer)
+  }, [isLeaving, id, closeGap])
   const name = change.label ?? (typeof change.field === 'string' ? change.field : String(index + 1))
   const locked = status !== 'review'
   const applied = status === 'applied'
 
+  // With buttons, a rejected row has left the list.
+  if (control === 'buttons' && decision === 'rejected' && !isLeaving) return null
+
   return (
     <div
+      ref={rowRef}
       role="group"
       aria-labelledby={fieldId}
       data-slot="reviewable-change"
       data-state={decision}
+      data-leaving={isLeaving ? '' : undefined}
+      inert={isLeaving || undefined}
       className="satin-changes-review-row flex min-h-6 items-center gap-2"
+      onTransitionEnd={(e) => {
+        if (isLeaving && e.target === e.currentTarget && e.propertyName === 'opacity') handOff()
+      }}
     >
       {control === 'checkbox' && (
         <Checkbox
@@ -306,11 +459,10 @@ function ReviewableChangeRow({ change, id, index }: { change: ReviewableChange; 
                 size="xs"
                 iconOnly
                 data-decision="reject"
-                aria-pressed={decision === 'rejected'}
                 aria-label={labels.rejectFieldChange(name)}
                 disabled={locked}
                 className="satin-changes-review-toggle"
-                onClick={() => decide(id, decision === 'rejected' ? 'pending' : 'rejected')}
+                onClick={() => reject(id, name, rowRef.current)}
               >
                 <XGlyph />
               </Button>

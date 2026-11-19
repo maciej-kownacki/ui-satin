@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, screen, within } from '@testing-library/react'
-import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
+import { expectNoAxeViolations, renderWithSatin, setReducedMotion } from 'satin-test'
 import { AgentSuggestion, AgentSuggestionChanges, type AgentSuggestionChange } from '@uisatin/ui/agent-suggestion'
 import {
   ReviewableChanges,
@@ -34,6 +34,10 @@ function deferred() {
 }
 
 describe('ReviewableChanges', () => {
+  // Rows rejected with X go at once under reduced motion; the swipe has its own tests below.
+  beforeEach(() => setReducedMotion(true))
+  afterEach(() => setReducedMotion(false))
+
   it('renders AgentSuggestionChange[] as AgentSuggestionChanges does', () => {
     const plain: AgentSuggestionChange[] = [
       { field: 'Stage', from: 'Proposal', to: 'Negotiation' },
@@ -58,44 +62,73 @@ describe('ReviewableChanges', () => {
     renderWithSatin(<ReviewableChanges changes={changes} />)
     const stage = within(row('Stage'))
     expect(stage.getByRole('button', { name: 'Accept Stage change' }).getAttribute('aria-pressed')).toBe('false')
-    expect(stage.getByRole('button', { name: 'Reject Stage change' }).getAttribute('aria-pressed')).toBe('false')
+    // Reject isn't a toggle: it takes the row out.
+    expect(stage.getByRole('button', { name: 'Reject Stage change' }).hasAttribute('aria-pressed')).toBe(false)
     expect(row('Stage').getAttribute('data-state')).toBe('pending')
     // Nothing accepted yet: Apply can't run.
     expect((button('Apply changes') as HTMLButtonElement).disabled).toBe(true)
   })
 
-  it('accepts and rejects field by field, with the keyboard, and toggles back to pending', async () => {
+  it('accepts field by field with the keyboard, and toggles Accept back to pending', async () => {
     const { user } = renderWithSatin(<ReviewableChanges changes={changes} />)
     await user.tab()
     expect(document.activeElement).toBe(button('Accept Stage change'))
     await user.keyboard('{Enter}')
     expect(row('Stage').getAttribute('data-state')).toBe('accepted')
     expect(button('Accept Stage change').getAttribute('aria-pressed')).toBe('true')
-
-    await user.tab()
-    await user.tab()
-    expect(document.activeElement).toBe(button('Accept Value change'))
-    await user.tab()
-    expect(document.activeElement).toBe(button('Reject Value change'))
     await user.keyboard(' ')
-    expect(row('Value').getAttribute('data-state')).toBe('rejected')
-
-    // Pressing the pressed one again: pending.
-    await user.keyboard(' ')
-    expect(row('Value').getAttribute('data-state')).toBe('pending')
-    // Accept after Reject swaps the decision.
+    expect(row('Stage').getAttribute('data-state')).toBe('pending')
     await user.keyboard(' ')
     await user.click(button('Accept Value change'))
-    expect(row('Value').getAttribute('data-state')).toBe('accepted')
-    expect(button('Reject Value change').getAttribute('aria-pressed')).toBe('false')
     expect(button('Apply 2 changes')).toBeTruthy()
+  })
+
+  it('X takes the row out, says so, keeps the counts, and moves focus to the next row', async () => {
+    const onValueChange = vi.fn()
+    const { user } = renderWithSatin(
+      <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted', value: 'accepted' }} onValueChange={onValueChange} />,
+    )
+    expect(button('Apply 2 changes')).toBeTruthy()
+    button('Reject Value change').focus()
+    await user.keyboard('{Enter}')
+    expect(screen.queryByRole('group', { name: 'Value' })).toBeNull()
+    expect(onValueChange).toHaveBeenLastCalledWith({ stage: 'accepted', value: 'rejected' })
+    expect(status().textContent).toBe('Value change rejected')
+    expect(button('Apply 1 change')).toBeTruthy()
+    expect(document.activeElement).toBe(button('Accept Close date change'))
+    // The last row: focus goes to the footer.
+    await user.click(button('Reject Close date change'))
+    expect(document.activeElement).toBe(button('Accept all'))
+    // Accept all leaves the rejected rows out.
+    await user.click(button('Accept all'))
+    expect(screen.getAllByRole('group').map((g) => g.getAttribute('aria-labelledby') && g.textContent?.slice(0, 5))).toHaveLength(1)
+    expect(button('Apply 1 change')).toBeTruthy()
+  })
+
+  it('leaves out rows that start rejected, and brings one back when the app sets it pending', async () => {
+    function Controlled() {
+      const [value, setValue] = React.useState<ReviewableChangesValue>({ value: 'rejected' })
+      return (
+        <>
+          <ReviewableChanges changes={changes} value={value} onValueChange={setValue} />
+          <button type="button" onClick={() => setValue((v) => ({ ...v, value: 'pending' }))}>
+            Bring back
+          </button>
+        </>
+      )
+    }
+    const { user } = renderWithSatin(<Controlled />)
+    expect(screen.queryByRole('group', { name: 'Value' })).toBeNull()
+    await user.click(button('Bring back'))
+    expect(row('Value').getAttribute('data-state')).toBe('pending')
   })
 
   it('Apply sends only the accepted fields, then says Applied and marks each row', async () => {
     const onApply = vi.fn()
     const { user } = renderWithSatin(
-      <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted', value: 'rejected', close: 'accepted' }} onApply={onApply} />,
+      <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted', close: 'accepted' }} onApply={onApply} />,
     )
+    await user.click(button('Reject Value change'))
     await user.click(button('Apply 2 changes'))
     expect(onApply).toHaveBeenCalledTimes(1)
     expect(onApply.mock.calls[0][0]).toEqual([changes[0], changes[2]])
@@ -109,19 +142,25 @@ describe('ReviewableChanges', () => {
     expect(onApply).toHaveBeenCalledTimes(1)
     expect(status().textContent).toBe('2 changes applied')
     expect(within(row('Stage')).getByText('Applied')).toBeTruthy()
-    expect(within(row('Value')).getByText('Not applied')).toBeTruthy()
+    expect(screen.queryByRole('group', { name: 'Value' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Accept Stage change' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Accept all' })).toBeNull()
   })
 
   it('Accept all accepts every field and says so', async () => {
     const onApply = vi.fn()
-    const { user } = renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ value: 'rejected' }} onApply={onApply} />)
+    const { user } = renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ value: 'accepted' }} onApply={onApply} />)
     await user.click(button('Accept all'))
     expect(screen.getAllByRole('group').map((g) => g.getAttribute('data-state'))).toEqual(['accepted', 'accepted', 'accepted'])
     expect(status().textContent).toBe('All changes accepted')
     await user.click(button('Apply 3 changes'))
     expect(onApply.mock.calls[0][0]).toEqual(changes)
+  })
+
+  it('says Not applied after a row left pending at Apply', async () => {
+    const { user } = renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} onApply={() => {}} />)
+    await user.click(button('Apply 1 change'))
+    expect(within(row('Value')).getByText('Not applied')).toBeTruthy()
   })
 
   it('locks the rows while a promise from onApply runs, and unlocks them if it fails', async () => {
@@ -165,11 +204,12 @@ describe('ReviewableChanges', () => {
     expect(row('Close date').getAttribute('data-state')).toBe('accepted')
     await user.click(button('Reject Stage change'))
     expect(seen.at(-1)).toEqual({ close: 'accepted', stage: 'rejected' })
-    expect(row('Stage').getAttribute('data-state')).toBe('rejected')
+    expect(screen.queryByRole('group', { name: 'Stage' })).toBeNull()
 
     // A value the app holds fixed doesn't move.
     const { user: user2 } = renderWithSatin(<ReviewableChanges changes={[changes[0]]} value={{}} />)
-    const second = screen.getAllByRole('group', { name: 'Stage' })[1]
+    // The first one's Stage row has left, so this is the second one's.
+    const second = screen.getByRole('group', { name: 'Stage' })
     await user2.click(within(second).getByRole('button', { name: 'Accept Stage change' }))
     expect(second.getAttribute('data-state')).toBe('pending')
   })
@@ -231,14 +271,16 @@ describe('ReviewableChanges', () => {
         fieldChangeApplied: 'Zastosowano',
         fieldChangeNotApplied: 'Pominięto',
         allFieldChangesAccepted: 'Zaakceptowano wszystko',
+        fieldChangeRejected: (field) => `Odrzucono: ${field}`,
         dateLocale: 'pl-PL',
       },
     })
-    expect(button('Odrzuć: Value')).toBeTruthy()
+    await user.click(button('Odrzuć: Value'))
+    expect(status().textContent).toBe('Odrzucono: Value')
     await user.click(button('Zaakceptuj wszystko'))
     expect(status().textContent).toBe('Zaakceptowano wszystko')
-    await user.click(button('Zastosuj zmiany (3)'))
-    expect(status().textContent).toBe('Zastosowano zmiany: 3')
+    await user.click(button('Zastosuj zmiany (2)'))
+    expect(status().textContent).toBe('Zastosowano zmiany: 2')
     expect(button('Zastosowano')).toBeTruthy()
   })
 
@@ -252,5 +294,24 @@ describe('ReviewableChanges', () => {
       { theme },
     )
     await expectNoAxeViolations()
+  })
+})
+
+describe('ReviewableChanges, rejecting with motion', () => {
+  it('swipes the row out, keeps it inert until the gap closes, then lets it go', async () => {
+    const { user } = renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} />)
+    await user.click(button('Reject Stage change'))
+    const leaving = screen.getAllByRole('group', { hidden: true })[0]
+    expect(leaving.hasAttribute('data-leaving')).toBe(true)
+    expect(leaving.hasAttribute('inert')).toBe(true)
+    // Focus left the X before the row went inert.
+    expect(document.activeElement).toBe(button('Accept Value change'))
+    expect(button('Apply changes')).toBeTruthy()
+    // jsdom fires no transitionend: the fallbacks let the row go.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 900)))
+    expect(screen.queryByRole('group', { name: 'Stage', hidden: true })).toBeNull()
+    // The rows under it are back in place.
+    expect(row('Value').style.transform).toBe('')
+    expect(row('Value').classList.contains('satin-changes-review-shift')).toBe(false)
   })
 })

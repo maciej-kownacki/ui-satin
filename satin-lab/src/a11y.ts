@@ -502,10 +502,10 @@ export const a11y: Record<string, A11y> = {
   },
   'agent-changes-review': {
     summary:
-      'Each row is a `role="group"` named by its field. Accept and Reject are toggle buttons with `aria-pressed`, named after the change ("Accept Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the row\'s Checkbox carries the Accept name. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are read out from a polite `status` region. While applying, Apply is `aria-busy` and the rows are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each row says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
+      'Each row is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` and Reject a plain button, both named after the change ("Accept Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the row\'s Checkbox carries the Accept name. Reject takes the row out: focus moves first to the next row\'s Accept, or to Accept all or Apply when no row is left below, the leaving row is `inert`, and "Value change rejected" (`fieldChangeRejected`) is read out. Under reduced motion the row goes without the slide. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are also read out from a polite `status` region. While applying, Apply is `aria-busy` and the rows are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each row says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
     keyboard: [
       { keys: ['Tab'], action: 'Moves through each row\'s Accept and Reject (or its Checkbox), then Accept all and Apply.' },
-      { keys: ['Enter', 'Space'], action: 'Presses Accept or Reject; pressing the pressed one makes the row pending again. On a Checkbox, Space accepts or rejects.' },
+      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the row pending again when pressed. On Reject: takes the row out and moves focus on. On a Checkbox, Space accepts or rejects.' },
     ],
   },
   'decision-card': {

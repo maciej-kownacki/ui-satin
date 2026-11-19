@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Flash } from 'iconoir-react'
 import { AgentSuggestion } from '@uisatin/ui/agent-suggestion'
 import { Badge } from '@uisatin/ui/badge'
-import { Button } from '@uisatin/ui/button'
 import { ReviewableChanges, type ReviewableChange } from '@uisatin/pro/agent-changes-review'
 import { Showcase, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -71,73 +70,30 @@ const changes: ReviewableChange[] = [
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-/** The deal as the CRM holds it: only what was accepted changes on Apply. */
-function DealRecord({ deal, updated, onReset }: { deal: Deal; updated: boolean; onReset: () => void }) {
-  const rows: [string, React.ReactNode][] = [
-    ['Stage', deal.stage === DEAL.stage ? deal.stage : <Badge size="sm" tone="brand">{deal.stage}</Badge>],
-    ['Value', deal.value],
-    ['Close date', deal.closeDate],
-  ]
+/**
+ * The Sales scenario: the agent updates a deal. Stage and Close date start accepted; reject Value
+ * with its X and it slides out of the list, then Apply sends Stage and Close date.
+ */
+function Preview({ control }: { control: 'buttons' | 'checkbox' }) {
   return (
-    <div className="flex w-full max-w-[400px] flex-col gap-3 rounded-xl border border-border-subtle bg-bg-card p-3 md:w-[200px]">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-base font-medium text-text-default">Quanta</span>
-        <span className="text-sm text-text-muted">Deal</span>
-      </div>
-      <dl className="m-0 flex flex-col gap-2 text-base">
-        {rows.map(([field, value]) => (
-          <div key={field} className="flex min-h-[21px] items-center justify-between gap-2">
-            <dt className="text-text-muted">{field}</dt>
-            <dd className="m-0 text-text-default">{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <div className="flex min-h-6 items-center justify-between gap-2 text-sm text-text-muted">
-        {updated ? (
-          <>
-            <span>Updated now</span>
-            <Button variant="tertiary" size="xs" onClick={onReset}>
-              Start over
-            </Button>
-          </>
-        ) : (
-          <span>Updated 3 days ago</span>
-        )}
-      </div>
-    </div>
-  )
-}
-
-/** The Sales scenario: the agent updates a deal; Stage and Close date are accepted, Value is rejected. */
-function Preview({ control, onReset }: { control: 'buttons' | 'checkbox'; onReset: () => void }) {
-  const [deal, setDeal] = React.useState(DEAL)
-  return (
-    <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row md:items-start">
-      <AgentSuggestion kind="CRM update" icon={<Flash />} meta={<Badge size="sm">HubSpot</Badge>} title="Update the Quanta deal" description="Based on today's call:">
-        <ReviewableChanges
-          control={control}
-          changes={changes}
-          defaultValue={{ stage: 'accepted', value: 'rejected', closeDate: 'accepted' }}
-          onApply={async (accepted) => {
-            await wait(900)
-            setDeal((d) => ({ ...d, ...Object.fromEntries(accepted.map((c) => [c.id, PROPOSAL[c.id as keyof Deal]])) }))
-          }}
-        />
-      </AgentSuggestion>
-      <DealRecord deal={deal} updated={deal !== DEAL} onReset={onReset} />
-    </div>
+    <AgentSuggestion kind="CRM update" icon={<Flash />} meta={<Badge size="sm">HubSpot</Badge>} title="Update the Quanta deal" description="Based on today's call:">
+      <ReviewableChanges control={control} changes={changes} defaultValue={{ stage: 'accepted', closeDate: 'accepted' }} onApply={() => wait(900)} />
+    </AgentSuggestion>
   )
 }
 
 export default function AgentChangesReviewDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
-  const [round, setRound] = React.useState(0)
   return (
     <Showcase
       name="Reviewable changes"
       options={options}
       codeHtml={codeHtml}
       controls={controls}
-      render={(id) => <Preview key={`${id}-${round}`} control={id as 'buttons' | 'checkbox'} onReset={() => setRound((r) => r + 1)} />}
+      render={(id) => (
+        <div className="flex w-full justify-center">
+          <Preview key={id} control={id as 'buttons' | 'checkbox'} />
+        </div>
+      )}
     />
   )
 }

@@ -1,8 +1,8 @@
 /*
  * Field-level review of agent changes (components/agent-changes-review.tsx).
  *
- * A rejected row's new value fades to text/muted over --duration-base, and a rich value (a
- * Badge) loses its colour, which keeps its text's contrast; nothing moves. Once the set is
+ * With checkboxes, a rejected row's new value fades to text/muted over --duration-base, and a
+ * rich value (a Badge) loses its colour, which keeps its text's contrast; nothing moves. Once the set is
  * applied, every row that wasn't applied looks the same. Satin's reduced-motion rule
  * (motion.css) cuts the fade.
  */
@@ -17,21 +17,41 @@
   filter: grayscale(1);
 }
 
-/* A pressed Accept is green, a pressed Reject neutral; hovering keeps the pressed fill. */
+/* A pressed Accept is green; hovering keeps the pressed fill. */
 .satin-changes-review-toggle[aria-pressed='true'][data-decision='accept'] {
   background-color: var(--status-green-bg);
 }
 .satin-changes-review-toggle[aria-pressed='true'][data-decision='accept'] svg {
   color: var(--status-green-fg);
 }
-.satin-changes-review-toggle[aria-pressed='true'][data-decision='reject'] {
-  background-color: var(--bg-pressed);
-}
-.satin-changes-review-toggle[aria-pressed='true'][data-decision='reject'] svg {
-  color: var(--text-default);
-}
 
 /* Applied: Apply's check is green, like each applied row's. */
 [data-slot='reviewable-changes-apply'][data-status='applied'] svg {
   color: var(--status-green-fg);
+}
+
+/*
+ * Reject (X) with buttons: the row slides 32px to the start and fades over --duration-slow,
+ * clipped at the list's edge so it slips out rather than over the card's border; then the rows
+ * under it (and the footer) move up into its place over --duration-base. The component adds
+ * .satin-changes-review-shift and the transform, and drops both as the row leaves the layout.
+ * Under reduced motion the component skips both and the row simply goes.
+ */
+.satin-changes-review-row[data-leaving] {
+  opacity: 0;
+  transform: translateX(-32px);
+  pointer-events: none;
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+.satin-changes-review-row[data-leaving]:dir(rtl) {
+  transform: translateX(32px);
+}
+[data-slot='reviewable-changes-list']:has(> [data-leaving]) {
+  overflow-x: clip;
+  overflow-clip-margin: 4px;
+}
+.satin-changes-review-shift {
+  transition: transform var(--duration-base) var(--ease-in-out);
 }
