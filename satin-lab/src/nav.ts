@@ -104,6 +104,7 @@ export const nav: NavGroup[] = [
       },
       { id: 'streaming-text', title: 'Streaming text', href: '/ai-patterns/streaming-text', description: 'An answer writing itself out as it arrives, at an even pace with a caret.' },
       { id: 'thinking', title: 'Thinking', href: '/ai-patterns/thinking', description: 'What an agent did, folded into a summary that opens onto its steps.' },
+      { id: 'tool-call', title: 'Tool call', href: '/ai-patterns/tool-call', description: 'One call an agent made to a tool: what it sent, what came back, how it went, and Retry when it failed.' },
     ],
   },
   {

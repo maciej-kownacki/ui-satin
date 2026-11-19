@@ -106,6 +106,19 @@ export const defaultLabels = {
   thinking: 'Thinking…',
   thought: 'Thought',
   thoughtForAMoment: 'Thought for a moment',
+  /** ToolCall's statuses, in its header and its accessible name. */
+  toolCallPending: 'Pending',
+  toolCallRunning: 'Running',
+  toolCallDone: 'Done',
+  toolCallFailed: 'Failed',
+  toolCallCancelled: 'Cancelled',
+  /** ToolCall's sections. */
+  toolCallInput: 'Input',
+  toolCallOutput: 'Output',
+  toolCallRetry: 'Retry',
+  /** Under a ToolCall input or output cut short: "Show all 48 lines". */
+  toolCallShowAll: (count: number) => `Show all ${count} lines`,
+  toolCallShowLess: 'Show less',
   newAgent: 'New agent',
   chooseAgent: 'Choose an agent',
   writeMessage: 'Write a message',

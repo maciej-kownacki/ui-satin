@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ToolCallDemo, { options } from '../../demos/tool-call'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="tool-call">
+  <DocSection item={page('tool-call')} api={api['tool-call']}>
+    <ToolCallDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

@@ -663,4 +663,13 @@ export const a11y: Record<string, A11y> = {
       'The header is a `button` with `aria-expanded` and `aria-controls`, named by the summary ("Thought for 2m 45s"). The steps are an ordered list; folded, they stay mounted but leave the tab order and screen readers. The mark, chevron and rail are hidden, and so is a task’s check.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Opens or folds the steps.' }],
   },
+  'tool-call': {
+    summary:
+      'The header is a `button` with `aria-expanded` and `aria-controls`, named by the tool, its target and the status ("Find slots calendar.findSlots Running"); the clock that ticks while it runs is hidden. Folded, the body stays mounted but leaves the tab order and screen readers. Each section is named after the tool ("Find slots Input code"), so two cards’ code never shares a name. A call that ends while the card is on screen is read out politely ("Find slots Failed"); Retry hands focus back to the header, since it leaves with the error.',
+    keyboard: [
+      { keys: ['Enter', 'Space'], action: 'On the header: opens or folds the card.' },
+      { keys: ['Tab'], action: 'Open, moves through each section’s Copy and code, Show all, and Retry.' },
+      { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
+    ],
+  },
 }

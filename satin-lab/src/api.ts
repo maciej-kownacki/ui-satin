@@ -1284,6 +1284,26 @@ export const api: Record<string, Api> = {
       { name: 'step.type', type: ['"task"', '"text"', '"source"', '"tool"', '"more"'], default: '"task"' },
     ],
   },
+  'tool-call': {
+    description:
+      'The `ToolCall` component is a card whose header is a `button` (`aria-expanded`, `aria-controls`) with the tool, its target and the status; it opens onto the input and the output, as JSON in CodeBlocks or as nodes of your own, cut at `maxLines` with Show all. A failed call opens on its own, with the error and Retry. The parts it is made of, `ToolCallRoot`, `ToolCallHeader`, `ToolCallContent`, `ToolCallSection` and `ToolCallError`, build anything else.',
+    props: [
+      { name: 'name', type: ['ReactNode'] },
+      { name: 'status', type: ['"pending"', '"running"', '"success"', '"error"', '"cancelled"'] },
+      { name: 'icon', type: ['ReactNode'], default: '<Tools />' },
+      { name: 'target', type: ['ReactNode'] },
+      { name: 'input', type: ['ToolCallValue'] },
+      { name: 'output', type: ['ToolCallValue'] },
+      { name: 'error', type: ['ReactNode'] },
+      { name: 'onRetry', type: ['() => void'] },
+      { name: 'duration', type: ['number'] },
+      { name: 'startedAt', type: ['Date', 'number'] },
+      { name: 'maxLines', type: ['number'], default: '10' },
+      { name: 'open', type: ['boolean'] },
+      { name: 'defaultOpen', type: ['boolean'], default: 'status === "error"' },
+      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+    ],
+  },
   'search-bar': {
     description: 'The `SearchBar` component is a wrapper around the `input` element of type search, with a search icon and the ⌘K keys. ⌘K or Ctrl+K anywhere on the page focuses it and Escape clears it. `variant="panel"` shows the results in place: `groups` filtered as you type, the arrows to move, Enter to open, a footer of key hints and `meta`.',
     props: [

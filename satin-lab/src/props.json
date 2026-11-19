@@ -7198,6 +7198,190 @@
       ]
     }
   },
+  "tool-call": {
+    "ToolCallRoot": {
+      "description": "The card and its open state. Other props, `ref` included, go to the card's `<div>`.",
+      "type": "ToolCallRootProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "status",
+          "type": "ToolCallStatus",
+          "required": true
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "Open, controlled."
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "description": "Open at first, uncontrolled. Left out, it follows the status: open only on `error`."
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "startedAt",
+          "type": "Date | number",
+          "required": false,
+          "description": "When the call started, for the time shown while it runs. Defaults to when this card first saw it running."
+        }
+      ]
+    },
+    "ToolCallHeader": {
+      "description": "The button that opens and folds the card. Other props, `ref` included, go to the `<button>`.",
+      "type": "ToolCallHeaderProps",
+      "extends": [
+        "Omit<React.ComponentProps<'button'>, 'name' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "name",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The tool, e.g. \"Find slots\"."
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 16px icon before the name. Defaults to a hammer and wrench."
+        },
+        {
+          "name": "target",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What it ran on, in mono after the name: a function, a file, a URL. Truncates."
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "required": false,
+          "description": "How long the call took, in ms, shown once it ends. Defaults to the time this card measured."
+        }
+      ]
+    },
+    "ToolCallContent": {
+      "description": "The body under the header: its sections, a rule between each. Folded, it stays mounted but leaves tab order and screen readers. Other props, `ref` included, go to the `<div>` that holds the sections.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "ToolCallSection": {
+      "description": "One titled part of the body: JSON (or a string) in a CodeBlock with Copy, or the app's own node under the title. Other props, `ref` included, go to the section's `<div>`.",
+      "type": "ToolCallSectionProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "description": "What it holds, e.g. \"Input\". Names the CodeBlock (as its file name) or the group."
+        },
+        {
+          "name": "value",
+          "type": "ToolCallValue",
+          "required": true
+        },
+        {
+          "name": "maxLines",
+          "type": "number",
+          "required": false,
+          "default": "10",
+          "description": "JSON longer than this is cut at that line, with \"Show all N lines\" under it."
+        }
+      ]
+    },
+    "ToolCallError": {
+      "description": "What went wrong, in red, with Retry. Other props, `ref` included, go to its `<div>`.",
+      "type": "ToolCallErrorProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Retry. Focus goes back to the header, since Retry leaves with the error."
+        }
+      ]
+    },
+    "ToolCall": {
+      "description": "One tool call as a card. Other props, `ref` included, go to the card's `<div>`.",
+      "type": "ToolCallProps",
+      "extends": [
+        "Omit<ToolCallRootProps, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "name",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The tool, e.g. \"Find slots\"."
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 16px icon before the name. Defaults to a hammer and wrench."
+        },
+        {
+          "name": "target",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What it ran on, in mono after the name: a function, a file, a URL. Truncates."
+        },
+        {
+          "name": "input",
+          "type": "ToolCallValue",
+          "required": false,
+          "description": "The arguments: JSON in a CodeBlock, or a node of your own."
+        },
+        {
+          "name": "output",
+          "type": "ToolCallValue",
+          "required": false,
+          "description": "What came back: JSON in a CodeBlock, or a node of your own."
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What went wrong, shown on `error` above the output."
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "required": false,
+          "description": "How long the call took, in ms, shown once it ends. Defaults to the time this card measured."
+        },
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Retry on `error`."
+        },
+        {
+          "name": "maxLines",
+          "type": "number",
+          "required": false,
+          "description": "JSON longer than this is cut at that line, with \"Show all N lines\" under it."
+        }
+      ]
+    }
+  },
   "tooltip": {
     "TooltipBubble": {
       "extends": [

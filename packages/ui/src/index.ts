@@ -91,6 +91,21 @@ export { MessageActions, type MessageActionsProps, type MessageFeedback } from '
 export { PromptBar, defaultActions as promptBarDefaultActions, type PromptBarProps, type PromptBarModel, type PromptBarAction } from './components/prompt-bar'
 export { StreamingText, type StreamingTextProps } from './components/streaming-text'
 export { Thinking, type ThinkingProps, type ThinkingStep, type ThinkingState, type ThinkingIndicator } from './components/thinking'
+export {
+  ToolCall,
+  ToolCallRoot,
+  ToolCallHeader,
+  ToolCallContent,
+  ToolCallSection,
+  ToolCallError,
+  type ToolCallProps,
+  type ToolCallRootProps,
+  type ToolCallHeaderProps,
+  type ToolCallSectionProps,
+  type ToolCallErrorProps,
+  type ToolCallStatus,
+  type ToolCallValue,
+} from './components/tool-call'
 export { AgentLoading, type AgentLoadingProps, type AgentLoadingIndicator, TetrisMark, TetrisLabel, TetrisStill, FlappySprite, ShimmerLabel, type Glimmer } from './components/agent-loading'
 export { FileUpload, FileUploadItem, fileIconFor, formatBytes, type FileUploadProps, type FileUploadFile, type FileUploadRejection, type FileUploadStatus } from './components/file-upload'
 export { InputOTP, type InputOTPProps } from './components/input-otp'
