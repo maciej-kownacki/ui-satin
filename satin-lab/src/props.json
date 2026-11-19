@@ -1650,6 +1650,18 @@
           "description": "Defaults to the `clear` label."
         },
         {
+          "name": "creatable",
+          "type": "boolean | { label?: (query: string) => React.ReactNode }",
+          "required": false,
+          "description": "Offer a `Create \"…\"` row at the end of the list while the query matches no option exactly. `label` words the row (default: the `createOption` label, which also names it for screen readers)."
+        },
+        {
+          "name": "onCreate",
+          "type": "(query: string) => SelectOption | Promise<SelectOption>",
+          "required": false,
+          "description": "Makes the option for a query from the create row (trimmed). Return it, or a promise of it: the row shows a Spinner until it settles, and a rejection (or a throw) shows the `createFailed` label under the row. The option is added to the list and picked; it stays while the Combobox is mounted, so add it to `options` to keep it. Left out, the option is `{ value: query, label: query }`."
+        },
+        {
           "name": "label",
           "type": "React.ReactNode",
           "required": false

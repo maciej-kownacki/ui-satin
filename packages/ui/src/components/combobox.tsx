@@ -2,13 +2,14 @@
 
 import * as React from 'react'
 import { Popover as PopoverPrimitive } from 'radix-ui'
-import { Search } from 'iconoir-react'
+import { Plus, Search, WarningCircle } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { Chip } from './chip'
 import { MenuItemContent, menuItemClass, menuSurfaceClass } from './dropdown'
 import { useSatinLabels } from './labels'
 import { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from './select'
+import { Spinner } from './spinner'
 
 /**
  * Combobox, 1:1 with the uiKit `Combobox` set (4023:3549): Select's field, opening a searchable
@@ -28,6 +29,13 @@ import { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from '.
  *
  * Typing filters by label and description. Arrow keys move the highlight, Enter picks it, the
  * pointer highlights what it is over. The query field is a `combobox` that owns the `listbox`.
+ *
+ * `creatable` lets people add a value the list doesn't have: while the query matches no option's
+ * label exactly (case aside), the list ends with a `Create "…"` row under a bg/muted rule (the
+ * rule only when options show above it). Picking it calls `onCreate`; its option joins the list
+ * and is picked the way any pick is: at once, or waiting for Apply with `footer`. A promise shows
+ * a Spinner on the row until it settles; a rejection says so under the row, and the row stays to
+ * try again.
  *
  * Other props, `ref` included, go to the trigger button that covers the field (the element its
  * label points at); `className` styles the field around it.
@@ -54,6 +62,20 @@ export interface ComboboxProps
   cancelLabel?: string
   /** Defaults to the `clear` label. */
   clearLabel?: string
+  /**
+   * Offer a `Create "…"` row at the end of the list while the query matches no option exactly.
+   * `label` words the row (default: the `createOption` label, which also names it for screen
+   * readers).
+   */
+  creatable?: boolean | { label?: (query: string) => React.ReactNode }
+  /**
+   * Makes the option for a query from the create row (trimmed). Return it, or a promise of it:
+   * the row shows a Spinner until it settles, and a rejection (or a throw) shows the
+   * `createFailed` label under the row. The option is added to the list and picked; it stays
+   * while the Combobox is mounted, so add it to `options` to keep it. Left out, the option is
+   * `{ value: query, label: query }`.
+   */
+  onCreate?: (query: string) => SelectOption | Promise<SelectOption>
   label?: React.ReactNode
   hint?: React.ReactNode
   error?: React.ReactNode | boolean
@@ -81,6 +103,8 @@ const matches = (o: SelectOption, q: string) => {
   return o.label.toLowerCase().includes(t) || (typeof o.description === 'string' && o.description.toLowerCase().includes(t))
 }
 
+const isPromise = <T,>(x: T | Promise<T>): x is Promise<T> => typeof (x as Promise<T> | null)?.then === 'function'
+
 export function Combobox({
   options,
   value,
@@ -94,6 +118,8 @@ export function Combobox({
   applyLabel: applyLabelProp,
   cancelLabel: cancelLabelProp,
   clearLabel: clearLabelProp,
+  creatable,
+  onCreate,
   label,
   hint,
   error,
@@ -140,17 +166,26 @@ export function Combobox({
   // The highlight shows the focus ring only when the arrows put it there (see menuItemClass).
   const [viaKeys, setViaKeys] = React.useState(false)
 
+  // Options made with the create row: listed (after `options`) until the app adds them itself.
+  const [created, setCreated] = React.useState<SelectOption[]>([])
+  const all = created.length ? [...options, ...created.filter((c) => !options.some((o) => o.value === c.value))] : options
+  // The query whose option is on its way (a pending promise), and the one whose create failed.
+  const [creating, setCreating] = React.useState<string | null>(null)
+  const [failed, setFailed] = React.useState<string | null>(null)
+  const [highlight, setHighlight] = React.useState<string | null>(null)
+
   const setOpen = (next: boolean) => {
     if (next) {
       setPending(applied)
       setQuery('')
       setActive(0)
+      setFailed(null)
     }
     if (openProp == null) setUncontrolledOpen(next)
     onOpenChange?.(next)
   }
 
-  const shown = options.filter((o) => matches(o, query))
+  const shown = all.filter((o) => matches(o, query))
   const pick = (v: string) => {
     const next = multiple ? (picks.includes(v) ? picks.filter((x) => x !== v) : [...picks, v]) : picks[0] === v && footer ? [] : [v]
     if (footer) return setPending(next)
@@ -162,7 +197,77 @@ export function Combobox({
     setOpen(false)
   }
 
-  const chosen = applied.map((v) => options.find((o) => o.value === v)).filter(Boolean) as SelectOption[]
+  // The create row: the query on its way, else the typed one while no label is exactly it.
+  const typed = query.trim()
+  const exact = all.some((o) => o.label.trim().toLowerCase() === typed.toLowerCase())
+  const toCreate = creatable ? (creating ?? (typed && !exact ? typed : null)) : null
+  const rows = shown.length + (toCreate == null ? 0 : 1)
+  const createId = `${chrome.controlId}-create`
+  const onCreateRow = toCreate != null && active === shown.length
+  const busy = creating != null
+  const failedNow = !busy && failed != null && failed === toCreate
+  const createLabel = typeof creatable === 'object' ? creatable.label : undefined
+
+  // A promise settles renders later: read the picks and callbacks of the latest render then.
+  const latest = React.useRef({ applied, commit, setOpen, open })
+  React.useLayoutEffect(() => {
+    latest.current = { applied, commit, setOpen, open }
+  })
+  // The new option takes the highlight once it is in the list, and comes into view.
+  React.useLayoutEffect(() => {
+    if (highlight == null) return
+    const i = shown.findIndex((o) => o.value === highlight)
+    if (i >= 0) {
+      setActive(i)
+      document.getElementById(`${listId}-${highlight}`)?.scrollIntoView?.({ block: 'nearest' })
+    }
+    setHighlight(null)
+  }, [highlight])
+  // Focus stays in the query field, so nothing scrolls the list for the arrows: keep the
+  // highlighted row in view. Only for keys; a row under the pointer is in view already.
+  React.useEffect(() => {
+    if (!viaKeys) return
+    const id = shown[active] ? `${listId}-${shown[active].value}` : onCreateRow ? createId : undefined
+    if (id) document.getElementById(id)?.scrollIntoView?.({ block: 'nearest' })
+  }, [active, viaKeys])
+
+  const added = (q: string, o: SelectOption | undefined) => {
+    if (!o) return setFailed(q)
+    setCreated((c) => (c.some((x) => x.value === o.value) ? c : [...c, o]))
+    // The query did its job: the whole list comes back with the new option picked and highlighted
+    // (unless something else was typed meanwhile).
+    setQuery((now) => (now.trim() === q ? '' : now))
+    setHighlight(o.value)
+    const now = latest.current
+    if (footer) return setPending((p) => (!multiple ? [o.value] : p.includes(o.value) ? p : [...p, o.value]))
+    if (multiple) return now.commit(now.applied.includes(o.value) ? now.applied : [...now.applied, o.value])
+    now.commit([o.value])
+    if (now.open) now.setOpen(false)
+  }
+  const create = (q: string) => {
+    if (busy) return
+    setFailed(null)
+    let result: SelectOption | Promise<SelectOption>
+    try {
+      result = onCreate ? onCreate(q) : { value: q, label: q }
+    } catch {
+      return setFailed(q)
+    }
+    if (!isPromise(result)) return added(q, result)
+    setCreating(q)
+    result.then(
+      (o) => {
+        setCreating(null)
+        added(q, o)
+      },
+      () => {
+        setCreating(null)
+        setFailed(q)
+      },
+    )
+  }
+
+  const chosen = applied.map((v) => all.find((o) => o.value === v)).filter(Boolean) as SelectOption[]
   const chips = multiple && chosen.length > 0
   const triggerText = !multiple && chosen[0] ? chosen[0].label : chips ? null : placeholder
   // As in Select: left out, a single pick's own icon leads the field.
@@ -276,7 +381,7 @@ export function Combobox({
                 aria-expanded
                 aria-controls={listId}
                 aria-autocomplete="list"
-                aria-activedescendant={shown[active] ? `${listId}-${shown[active].value}` : undefined}
+                aria-activedescendant={shown[active] ? `${listId}-${shown[active].value}` : onCreateRow ? createId : undefined}
                 aria-label={searchPlaceholder}
                 value={query}
                 placeholder={searchPlaceholder}
@@ -289,10 +394,13 @@ export function Combobox({
                     setViaKeys(true)
                     e.preventDefault()
                     const step = e.key === 'ArrowDown' ? 1 : -1
-                    setActive((a) => (shown.length ? (a + step + shown.length) % shown.length : 0))
+                    setActive((a) => (rows ? (a + step + rows) % rows : 0))
                   } else if (e.key === 'Enter' && shown[active]) {
                     e.preventDefault()
                     if (!shown[active].disabled) pick(shown[active].value)
+                  } else if (e.key === 'Enter' && toCreate != null && active === shown.length) {
+                    e.preventDefault()
+                    create(toCreate)
                   }
                 }}
                 className="min-w-0 flex-1 bg-transparent text-base leading-[21px] text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0"
@@ -305,7 +413,7 @@ export function Combobox({
               aria-multiselectable={multiple || undefined}
               className="flex max-h-60 flex-col gap-0.5 overflow-y-auto p-1"
             >
-              {shown.length === 0 ? (
+              {rows === 0 ? (
                 <p className="px-3 py-6 text-center text-sm text-text-muted">{emptyText}</p>
               ) : (
                 shown.map((o, i) => {
@@ -341,7 +449,40 @@ export function Combobox({
                   )
                 })
               )}
+              {toCreate != null && shown.length > 0 && <div aria-hidden className="-mx-1 my-0.5 h-px shrink-0 bg-bg-muted" />}
+              {toCreate != null && (
+                <div
+                  id={createId}
+                  role="option"
+                  aria-selected={false}
+                  aria-disabled={busy || undefined}
+                  aria-busy={busy || undefined}
+                  data-slot="combobox-create"
+                  data-state={busy ? 'creating' : failedNow ? 'failed' : 'idle'}
+                  data-highlighted={onCreateRow ? '' : undefined}
+                  data-keyboard={onCreateRow && viaKeys ? '' : undefined}
+                  onPointerMove={() => {
+                    setViaKeys(false)
+                    setActive(shown.length)
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => create(toCreate)}
+                  className={menuItemClass}
+                >
+                  <MenuItemContent
+                    icon={busy ? <Spinner label={null} /> : failedNow ? <WarningCircle className="text-text-destructive" /> : <Plus />}
+                    label={<span className="[overflow-wrap:anywhere]">{createLabel ? createLabel(toCreate) : labels.createOption(toCreate)}</span>}
+                    description={failedNow ? <span className="text-text-destructive">{labels.createFailed}</span> : undefined}
+                  />
+                </div>
+              )}
             </div>
+            {/* The row says it failed; this says it once, without moving focus. */}
+            {creatable && (
+              <span role="status" className="sr-only">
+                {failedNow ? labels.createFailed : ''}
+              </span>
+            )}
 
             {footer && (
               <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border-subtle p-2">

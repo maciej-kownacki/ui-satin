@@ -132,6 +132,8 @@ export const defaultLabels = {
   browseFiles: 'Browse files',
   typeNotSupported: 'Type not supported',
   uploadFailed: 'Upload failed',
+  /** Under Combobox's create row when `onCreate` fails; picking the row again retries. */
+  createFailed: 'Couldn’t create it. Try again.',
   waiting: 'Waiting…',
   cookieConsent: 'Cookie consent',
   cookieNotice: "We use essential cookies to run this site. With your OK, we'd also use optional ones to remember settings and learn what helps.",
@@ -158,6 +160,8 @@ export const defaultLabels = {
   /** Read out when InputOTP's suggestion appears. */
   codeReceived: (code: string) => `Code ${code} received`,
   noResultsFor: (query: string) => `No results for “${query}”`,
+  /** Combobox's create row (`creatable`), which it also names: "Create “Figma”". */
+  createOption: (query: string) => `Create “${query}”`,
   selectRow: (row: number) => `Select row ${row}`,
   selectNamedRow: (name: string) => `Select ${name}`,
   /** The scroll region around a sideways-scrolling Table, named after the table when it has a label. */

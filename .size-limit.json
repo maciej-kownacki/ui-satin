@@ -36,12 +36,16 @@
     "name": "Stepper (with Progress, cn and the check icon)",
     "path": "packages/ui/dist/components/stepper.js",
     "import": "{ Stepper, StepperItem }",
+    "name": "Combobox (with Radix Popover, Chip, Spinner and the menu row)",
+    "path": "packages/ui/dist/components/combobox.js",
+    "import": "{ Combobox }",
     "ignore": [
       "react",
       "react-dom"
     ],
     "gzip": true,
     "limit": "14 kB"
+    "limit": "44 kB"
   },
   {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
