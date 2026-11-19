@@ -2234,6 +2234,38 @@
       ]
     },
     {
+      "name": "agent-permissions",
+      "type": "registry:ui",
+      "title": "Permission request",
+      "description": "What an agent will touch before it first runs: each resource and action in plain verbs, once or always.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-picker.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/card.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/list.json",
+        "https://uisatin.dev/r/split-button.json"
+      ],
+      "docs": "Permission request docs: https://uisatin.dev/ai-patterns/agent-permissions",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-permissions.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "agent-plan",
       "type": "registry:ui",
       "title": "Agent plan",
@@ -2349,6 +2381,33 @@
       "files": [
         {
           "path": "registry/satin/ui/command-pages.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "date-availability",
+      "type": "registry:ui",
+      "title": "Availability calendar",
+      "description": "A calendar for booking: which days have free slots and how many, full days off with the reason.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Availability calendar docs: https://uisatin.dev/components/date-availability",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/date-availability.tsx",
           "type": "registry:ui"
         }
       ]
@@ -3683,6 +3742,21 @@
       ]
     },
     {
+      "name": "agent-permissions-demo",
+      "type": "registry:example",
+      "title": "Permission request example",
+      "description": "The shortest use of Permission request, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-permissions.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-permissions-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "agent-plan-demo",
       "type": "registry:example",
       "title": "Agent plan example",
@@ -3738,6 +3812,21 @@
       "files": [
         {
           "path": "registry/satin/examples/command-pages-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "date-availability-demo",
+      "type": "registry:example",
+      "title": "Availability calendar example",
+      "description": "The shortest use of Availability calendar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/date-availability.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/date-availability-demo.tsx",
           "type": "registry:example"
         }
       ]

@@ -272,18 +272,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the calendar and returns focus to the field; a range not yet applied is dropped.' },
     ],
   },
-  'date-availability': {
-    summary:
-      'Calendar\'s grid, one tab stop, with each day a `button` named by its full date and what it offers: "Thursday, November 26, 2026, 3 free slots", or why it can\'t be picked ("…, Fully booked", or the app\'s `reason`). A full day has `aria-disabled` instead of `disabled`, so the arrow keys reach it and its tooltip opens there; Enter and clicks do nothing. The dots are hidden from screen readers, and the tooltip isn\'t added as a description, since the name already says it. Few slots read as a ring, not only a colour. Translate the words with `availabilitySlots`, `availabilityFreeSlots`, `availabilityFull` and `availabilityDay` in SatinLabels.',
-    keyboard: [
-      { keys: ['←', '→'], action: 'Moves a day back or forward, onto full days too, turning the month when needed; mirrored right to left.' },
-      { keys: ['↑', '↓'], action: 'Moves a week back or forward.' },
-      { keys: ['Page Up', 'Page Down'], action: 'Moves a month back or forward.' },
-      { keys: ['Home', 'End'], action: 'Moves to the first or the last day of the week (from the locale, or `weekStartsOn`).' },
-      { keys: ['Enter', 'Space'], action: 'Picks the focused day if it has free slots.' },
-      { keys: ['Esc'], action: 'Closes the open tooltip; in AvailabilityDatePicker, a second Esc closes the calendar and returns focus to the field.' },
-    ],
-  },
   'input-otp': {
     summary:
       'One real `input` over the cells, with `autocomplete="one-time-code"` and a numeric keyboard for digits, so screen readers hear one text box and paste and SMS autofill work. Name it with `label` or `aria-label`. The cells, dashes and caret are hidden. The cell taking the next character shows the focus; a full field shows it on its last cell only when the keyboard tabs into it, so filling in the code doesn’t leave a ring behind. The message under the cells is a polite live region, so a hint changing to "Checking…", success or an error is read out; an error also sets `aria-invalid`. The resend countdown is plain text, so it isn’t read out every second; when it ends it becomes a "Resend code" button. A suggested code is announced once ("Code 428 193 received") and is a button right after the field, named "Use code 428 193 From Messages"; choosing it fills the field and leaves the focus there.',
@@ -526,17 +514,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Alt+↑', 'Alt+↓'], action: '`ranking`: moves the focused row up or down and reads its new place.' },
     ],
   },
-  'agent-permissions': {
-    summary:
-      'A `role="group"` named by its title ("Recruiting agent wants to:") and described by `description`. The scopes are a list; each row is the label of its Checkbox, named by a plain verb and the resource ("Read candidates") and described by its detail, and a scope that sends adds ", Sends as you" to its name. Focus starts on Don’t allow, the safest answer, inside a Dialog (`autoFocus` elsewhere; it never takes focus from someone typing in a chat). After an answer, focus moves to the summary’s button (or the summary) and a polite `status` region reads the answer ("Always allowed: Read candidates, Write notes"); Change brings focus back to Don’t allow. While `onAllow`, `onDeny` or `onRevoke` runs, its button is `aria-busy` and the rest are disabled. The summary is a group named "Recruiting agent · Always allowed".',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the scopes’ checkboxes, then Don’t allow, Allow once and its arrow.' },
-      { keys: ['Space'], action: 'On a scope: ticks or unticks it.' },
-      { keys: ['Enter', 'Space'], action: 'On a button: answers, removes access, or brings the request back (Change).' },
-      { keys: ['Enter', 'Space', '↓'], action: 'On the arrow: opens the menu with Always allow.' },
-      { keys: ['↑', '↓'], action: 'Moves in the menu; Enter picks, Esc closes it and returns to the arrow.' },
-    ],
-  },
   'agent-loading': {
     summary:
       'A `role="status"` region with `aria-live="polite"`: screen readers read the label ("Thinking…") and read it again when it changes. `time` is hidden from screen readers, so a clock that ticks every second stays quiet. Mount the component before the work starts, or it may not be announced: a live region filled at the moment it appears is the one screen readers miss most. The tetris mark and the bird are hidden, and under reduced motion they stop moving.',
@@ -599,25 +576,32 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
     ],
   },
-  'agent-changes-review': {
+  stepper: {
     summary:
-      'Each row is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` and Reject a plain button, both named after the change ("Accept Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the row\'s Checkbox carries the Accept name. Reject takes the row out: focus moves first to the next row\'s Accept, or to Accept all or Apply when no row is left below, the leaving row is `inert`, and "Value change rejected" (`fieldChangeRejected`) is read out. Under reduced motion the row goes without the slide. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are also read out from a polite `status` region. While applying, Apply is `aria-busy` and the rows are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each row says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
+      'An ordered list (`role="list"`, so it stays a list without bullets) named by `aria-label`. The current step has `aria-current="step"`. A complete or failed step says so after its label, "Details, Completed" or "CV, Error" (`stepCompleted` and `stepError` in SatinLabels); the circles and their numbers are hidden, since the list gives each step its place. Linear, the steps are plain text; with `linear={false}` each is a `button` named by its label and described by its description, and a disabled step is a disabled button. Narrow, the list gives way to a `progressbar` named by the current step and read as "Step 3 of 4" (`stepOf`).',
     keyboard: [
-      { keys: ['Tab'], action: 'Moves through each row\'s Accept and Reject (or its Checkbox), then Accept all and Apply.' },
-      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the row pending again when pressed. On Reject: takes the row out and moves focus on. On a Checkbox, Space accepts or rejects.' },
+      { keys: ['Tab'], action: 'With `linear={false}`: moves through the steps that aren’t disabled. Linear steps take no focus.' },
+      { keys: ['Enter', 'Space'], action: 'With `linear={false}`: makes the focused step current.' },
     ],
   },
-  'filter-bar': {
+  'tool-call': {
     summary:
-      'A `group` named "Filters" (`filterBar` in SatinLabels). Each chip is a button named in words, "Value greater than €20,000" (`filterOperatorName` reads symbols out), that opens its editor: a Popover dialog named after the field, whose operator control is named after the field ("Stage") and value control after both ("Stage is"). A chip that can\'t apply is described by why ("Check the range"). Its remove button is named "Remove Stage is Interview". A polite `status` region reads the result count once it settles and which chip was removed; the rolling digits are hidden from screen readers.',
+      'The header is a `button` with `aria-expanded` and `aria-controls`, named by the tool, its target and the status ("Find slots calendar.findSlots Running"); the clock that ticks while it runs is hidden. Folded, the body stays mounted but leaves the tab order and screen readers. Each section is named after the tool ("Find slots Input code"), so two cards’ code never shares a name. A call that ends while the card is on screen is read out politely ("Find slots Failed"); Retry hands focus back to the header, since it leaves with the error.',
     keyboard: [
-      { keys: ['Tab'], action: 'Moves through the search, each chip and its remove button, `+ Filter`, the views menu and Save view.' },
-      { keys: ['Enter', 'Space'], action: 'On a chip: opens its editor, focus on the value. On `+ Filter`: opens the fields.' },
-      { keys: ['Backspace', 'Delete'], action: 'On a chip: removes it; focus moves to the chip that takes its place, or to `+ Filter`.' },
-      { keys: ['Backspace'], action: 'In the empty search: removes the last chip; focus stays in the search.' },
-      { keys: ['Enter'], action: 'In an editor\'s text or number field: keeps the value and closes the editor. A pick from a single-choice list or a calendar closes it too.' },
-      { keys: ['Esc'], action: 'Closes the editor as it is, focus back on its chip. A new chip still without a value goes, focus back on `+ Filter`.' },
-      { keys: ['F'], action: 'Opens `+ Filter` while focus is in the bar or the list it filters (not while typing). Set with `shortcut`, or `false` for none.' },
+      { keys: ['Enter', 'Space'], action: 'On the header: opens or folds the card.' },
+      { keys: ['Tab'], action: 'Open, moves through each section’s Copy and code, Show all, and Retry.' },
+      { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
+    ],
+  },
+  'agent-permissions': {
+    summary:
+      'A `role="group"` named by its title ("Recruiting agent wants to:") and described by `description`. The scopes are a list; each row is the label of its Checkbox, named by a plain verb and the resource ("Read candidates") and described by its detail, and a scope that sends adds ", Sends as you" to its name. Focus starts on Don’t allow, the safest answer, inside a Dialog (`autoFocus` elsewhere; it never takes focus from someone typing in a chat). After an answer, focus moves to the summary’s button (or the summary) and a polite `status` region reads the answer ("Always allowed: Read candidates, Write notes"); Change brings focus back to Don’t allow. While `onAllow`, `onDeny` or `onRevoke` runs, its button is `aria-busy` and the rest are disabled. The summary is a group named "Recruiting agent · Always allowed".',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the scopes’ checkboxes, then Don’t allow, Allow once and its arrow.' },
+      { keys: ['Space'], action: 'On a scope: ticks or unticks it.' },
+      { keys: ['Enter', 'Space'], action: 'On a button: answers, removes access, or brings the request back (Change).' },
+      { keys: ['Enter', 'Space', '↓'], action: 'On the arrow: opens the menu with Always allow.' },
+      { keys: ['↑', '↓'], action: 'Moves in the menu; Enter picks, Esc closes it and returns to the arrow.' },
     ],
   },
   'agent-plan': {
@@ -643,12 +627,18 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Tab'], action: 'Moves through ‹ ›, the item\'s own controls, then Skip, Edit and Approve.' },
     ],
   },
-  stepper: {
+  'time-picker': {
     summary:
-      'An ordered list (`role="list"`, so it stays a list without bullets) named by `aria-label`. The current step has `aria-current="step"`. A complete or failed step says so after its label, "Details, Completed" or "CV, Error" (`stepCompleted` and `stepError` in SatinLabels); the circles and their numbers are hidden, since the list gives each step its place. Linear, the steps are plain text; with `linear={false}` each is a `button` named by its label and described by its description, and a disabled step is a disabled button. Narrow, the list gives way to a `progressbar` named by the current step and read as "Step 3 of 4" (`stepOf`).',
+      'TimePicker\'s field is a `combobox` named by its label and described by a format hint ("Type a time like 2:30 PM", `timeHint` in SatinLabels) and by the hint or error. Focus stays in it while the `listbox` of times is open; `aria-activedescendant` follows the highlighted time. Each time is an `option`: the picked one `aria-selected`, unavailable ones `aria-disabled`. Typed text that isn\'t an available time sets `aria-invalid` and says why under the field (`timeInvalid`, `timeUnavailable`). The chevron, "Show times", is out of the tab order. DateTimePicker\'s field is a `button` that opens the Calendar (as on Date picker) with the times as a `listbox` named "Time"; picking a day with no time yet moves focus to the times.',
     keyboard: [
-      { keys: ['Tab'], action: 'With `linear={false}`: moves through the steps that aren’t disabled. Linear steps take no focus.' },
-      { keys: ['Enter', 'Space'], action: 'With `linear={false}`: makes the focused step current.' },
+      { keys: ['↓', '↑'], action: 'On the field: opens the list on the picked time, then moves to the next or previous available time.' },
+      { keys: ['Alt+↓', 'Alt+↑'], action: 'Opens or closes the list without moving the highlight.' },
+      { keys: ['Page Down', 'Page Up'], action: 'Moves an hour on or back.' },
+      { keys: ['Home', 'End'], action: 'In TimeList and the date-and-time panel: the first or last available time. In the field they move the caret.' },
+      { keys: ['0–9', 'A', 'P'], action: 'Type-ahead: the list jumps to the time typed so far ("14", "2p"). In a TimeList a second\'s pause starts over.' },
+      { keys: ['Enter'], action: 'Picks the highlighted time once the arrows or the pointer moved there; otherwise reads what was typed ("930", "9:30pm"). In a TimeList, Space picks too.' },
+      { keys: ['Esc'], action: 'Closes the list and leaves focus in the field. With the list closed, puts back the time the field showed.' },
+      { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
     ],
   },
   'table-pro': {
@@ -664,20 +654,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all, inside each group.' },
     ],
   },
-  'time-picker': {
-    summary:
-      'TimePicker\'s field is a `combobox` named by its label and described by a format hint ("Type a time like 2:30 PM", `timeHint` in SatinLabels) and by the hint or error. Focus stays in it while the `listbox` of times is open; `aria-activedescendant` follows the highlighted time. Each time is an `option`: the picked one `aria-selected`, unavailable ones `aria-disabled`. Typed text that isn\'t an available time sets `aria-invalid` and says why under the field (`timeInvalid`, `timeUnavailable`). The chevron, "Show times", is out of the tab order. DateTimePicker\'s field is a `button` that opens the Calendar (as on Date picker) with the times as a `listbox` named "Time"; picking a day with no time yet moves focus to the times.',
-    keyboard: [
-      { keys: ['↓', '↑'], action: 'On the field: opens the list on the picked time, then moves to the next or previous available time.' },
-      { keys: ['Alt+↓', 'Alt+↑'], action: 'Opens or closes the list without moving the highlight.' },
-      { keys: ['Page Down', 'Page Up'], action: 'Moves an hour on or back.' },
-      { keys: ['Home', 'End'], action: 'In TimeList and the date-and-time panel: the first or last available time. In the field they move the caret.' },
-      { keys: ['0–9', 'A', 'P'], action: 'Type-ahead: the list jumps to the time typed so far ("14", "2p"). In a TimeList a second\'s pause starts over.' },
-      { keys: ['Enter'], action: 'Picks the highlighted time once the arrows or the pointer moved there; otherwise reads what was typed ("930", "9:30pm"). In a TimeList, Space picks too.' },
-      { keys: ['Esc'], action: 'Closes the list and leaves focus in the field. With the list closed, puts back the time the field showed.' },
-      { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
-    ],
-  },
   'toast-batch': {
     summary:
       'A toast like any other, read out as it arrives with its Undo replaced by "Undo with ⌘Z" (`undoWithShortcut`), since a screen reader user may not reach the button in time. When items join or are undone, the new title is read once at the end of the burst ("6 candidates moved"), from a polite `status` region; the rolling digits are hidden and the number is there as text. Show is a disclosure button (`aria-expanded`, `aria-controls`) for a list named by the title. Each item\'s Undo is named after the change and the item ("Undo move of Tara Mendes"); once undone it says "Tara Mendes, Undone", keeps the focus and is `aria-disabled`. When ⌘Z empties the batch with focus on its Undo, focus moves to Show.',
@@ -688,13 +664,37 @@ export const a11y: Record<string, A11y> = {
       { keys: ['F8'], action: 'Moves focus to the toasts.' },
     ],
   },
-  'tool-call': {
+  'agent-changes-review': {
     summary:
-      'The header is a `button` with `aria-expanded` and `aria-controls`, named by the tool, its target and the status ("Find slots calendar.findSlots Running"); the clock that ticks while it runs is hidden. Folded, the body stays mounted but leaves the tab order and screen readers. Each section is named after the tool ("Find slots Input code"), so two cards’ code never shares a name. A call that ends while the card is on screen is read out politely ("Find slots Failed"); Retry hands focus back to the header, since it leaves with the error.',
+      'Each row is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` and Reject a plain button, both named after the change ("Accept Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the row\'s Checkbox carries the Accept name. Reject takes the row out: focus moves first to the next row\'s Accept, or to Accept all or Apply when no row is left below, the leaving row is `inert`, and "Value change rejected" (`fieldChangeRejected`) is read out. Under reduced motion the row goes without the slide. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are also read out from a polite `status` region. While applying, Apply is `aria-busy` and the rows are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each row says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
     keyboard: [
-      { keys: ['Enter', 'Space'], action: 'On the header: opens or folds the card.' },
-      { keys: ['Tab'], action: 'Open, moves through each section’s Copy and code, Show all, and Retry.' },
-      { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
+      { keys: ['Tab'], action: 'Moves through each row\'s Accept and Reject (or its Checkbox), then Accept all and Apply.' },
+      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the row pending again when pressed. On Reject: takes the row out and moves focus on. On a Checkbox, Space accepts or rejects.' },
+    ],
+  },
+  'filter-bar': {
+    summary:
+      'A `group` named "Filters" (`filterBar` in SatinLabels). Each chip is a button named in words, "Value greater than €20,000" (`filterOperatorName` reads symbols out), that opens its editor: a Popover dialog named after the field, whose operator control is named after the field ("Stage") and value control after both ("Stage is"). A chip that can\'t apply is described by why ("Check the range"). Its remove button is named "Remove Stage is Interview". A polite `status` region reads the result count once it settles and which chip was removed; the rolling digits are hidden from screen readers.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the search, each chip and its remove button, `+ Filter`, the views menu and Save view.' },
+      { keys: ['Enter', 'Space'], action: 'On a chip: opens its editor, focus on the value. On `+ Filter`: opens the fields.' },
+      { keys: ['Backspace', 'Delete'], action: 'On a chip: removes it; focus moves to the chip that takes its place, or to `+ Filter`.' },
+      { keys: ['Backspace'], action: 'In the empty search: removes the last chip; focus stays in the search.' },
+      { keys: ['Enter'], action: 'In an editor\'s text or number field: keeps the value and closes the editor. A pick from a single-choice list or a calendar closes it too.' },
+      { keys: ['Esc'], action: 'Closes the editor as it is, focus back on its chip. A new chip still without a value goes, focus back on `+ Filter`.' },
+      { keys: ['F'], action: 'Opens `+ Filter` while focus is in the bar or the list it filters (not while typing). Set with `shortcut`, or `false` for none.' },
+    ],
+  },
+  'date-availability': {
+    summary:
+      'Calendar\'s grid, one tab stop, with each day a `button` named by its full date and what it offers: "Thursday, November 26, 2026, 3 free slots", or why it can\'t be picked ("…, Fully booked", or the app\'s `reason`). A full day has `aria-disabled` instead of `disabled`, so the arrow keys reach it and its tooltip opens there; Enter and clicks do nothing. The dots are hidden from screen readers, and the tooltip isn\'t added as a description, since the name already says it. Few slots read as a ring, not only a colour. Translate the words with `availabilitySlots`, `availabilityFreeSlots`, `availabilityFull` and `availabilityDay` in SatinLabels.',
+    keyboard: [
+      { keys: ['←', '→'], action: 'Moves a day back or forward, onto full days too, turning the month when needed; mirrored right to left.' },
+      { keys: ['↑', '↓'], action: 'Moves a week back or forward.' },
+      { keys: ['Page Up', 'Page Down'], action: 'Moves a month back or forward.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or the last day of the week (from the locale, or `weekStartsOn`).' },
+      { keys: ['Enter', 'Space'], action: 'Picks the focused day if it has free slots.' },
+      { keys: ['Esc'], action: 'Closes the open tooltip; in AvailabilityDatePicker, a second Esc closes the calendar and returns focus to the field.' },
     ],
   },
 }
