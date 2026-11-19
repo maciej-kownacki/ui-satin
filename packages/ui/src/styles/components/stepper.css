@@ -1,0 +1,189 @@
+/*
+ * Stepper (components/stepper.tsx). The circle, the label and the description each carry the
+ * step's data-state (upcoming, complete, error, disabled) and data-current.
+ *
+ * Circle, 24px: upcoming is an outline with the number in text/muted; current is the solid
+ * action/primary fill; complete is the brand tone with a check; error the red tone with an
+ * exclamation mark (solid destructive when it is also current); disabled is bg/muted.
+ * The connector is a 2px border/default track that fills with action/primary from the start
+ * side once the flow is past the step. Only colour, opacity and transform move.
+ */
+[data-slot='stepper-indicator'] {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition-property: background-color, box-shadow, color;
+  transition-duration: var(--duration-base);
+  transition-timing-function: var(--ease-out);
+}
+/* The number, the check and the mark share the circle; the step's state shows one. */
+[data-slot='stepper-indicator'] > * {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+[data-slot='stepper-indicator'] > svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2;
+  opacity: 0;
+  transform: scale(0.9);
+}
+/* The mark is two short strokes; a little heavier, it weighs as much as the check. */
+[data-slot='stepper-indicator'] > [data-slot='stepper-error-mark'] {
+  stroke-width: 2.5;
+}
+[data-slot='stepper-indicator'][data-state='complete'] > [data-slot='stepper-check'],
+[data-slot='stepper-indicator'][data-state='error'] > [data-slot='stepper-error-mark'] {
+  opacity: 1;
+  transform: none;
+}
+[data-slot='stepper-indicator']:is([data-state='complete'], [data-state='error']) > [data-slot='stepper-number'] {
+  opacity: 0;
+}
+
+[data-slot='stepper-indicator'][data-current] {
+  background: var(--action-primary-bg);
+  box-shadow: none;
+  color: var(--action-primary-fg);
+}
+[data-slot='stepper-indicator'][data-state='complete']:not([data-current]) {
+  background: var(--status-brand-bg);
+  box-shadow: inset 0 0 0 1px var(--status-brand-border);
+  color: var(--status-brand-fg);
+}
+[data-slot='stepper-indicator'][data-state='error'] {
+  background: var(--status-red-bg);
+  box-shadow: inset 0 0 0 1px var(--status-red-border);
+  color: var(--status-red-fg);
+}
+[data-slot='stepper-indicator'][data-state='error'][data-current] {
+  background: var(--action-destructive-bg);
+  box-shadow: none;
+  color: var(--text-on-solid);
+}
+[data-slot='stepper-indicator'][data-state='disabled'] {
+  background: var(--bg-muted);
+  box-shadow: none;
+  color: var(--text-subtle);
+}
+
+/* Labels: the steps done and the current one in text/default, the ones ahead muted. */
+[data-slot='stepper-label'] {
+  color: var(--text-muted);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+[data-slot='stepper-label']:is([data-current], [data-state='complete']) {
+  color: var(--text-default);
+}
+[data-slot='stepper-label'][data-state='error'] {
+  color: var(--text-destructive);
+}
+[data-slot='stepper-description'] {
+  color: var(--text-muted);
+}
+/* Disabled text is exempt from the 4.5:1 minimum (WCAG 1.4.3, inactive components). */
+:is([data-slot='stepper-label'], [data-slot='stepper-description'])[data-state='disabled'] {
+  color: var(--text-subtle);
+}
+
+/* A clickable step (linear={false}): hover lifts the label and the circle ahead; keyboard focus
+   draws the ring 2px off the step, over the connector. */
+[data-slot='stepper-step'] {
+  border-radius: var(--radius-md);
+  outline: none;
+}
+button[data-slot='stepper-step']:focus-visible {
+  outline: 2px solid var(--action-focus-ring);
+  outline-offset: 2px;
+}
+button[data-slot='stepper-step']:enabled:hover [data-slot='stepper-label'][data-state='upcoming'] {
+  color: var(--text-default);
+}
+button[data-slot='stepper-step']:enabled:hover [data-slot='stepper-indicator'][data-state='upcoming']:not([data-current]) {
+  background: var(--bg-hover);
+  color: var(--text-default);
+}
+
+[data-slot='stepper-connector'] {
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--border-default);
+}
+[data-slot='stepper-connector']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--action-primary-bg);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+/* Right to left the fill runs from the right, the reading side. */
+[data-slot='stepper-connector']:dir(rtl)::after {
+  transform-origin: right;
+}
+[data-slot='stepper-connector'][data-orientation='vertical']::after {
+  transform: scaleY(0);
+  transform-origin: top;
+}
+[data-slot='stepper-connector'][data-state='complete']::after {
+  transform: none;
+}
+
+/* A vertical step's content, when its step becomes current (not on load). */
+[data-slot='stepper-content'][data-enter] {
+  animation: satin-enter var(--duration-base) var(--ease-out);
+}
+
+/*
+ * layout="auto": a horizontal stepper narrower than 120px a step shows its compact form, "Step 3
+ * of 4" over a Progress bar. A container query (one per step count, since a query can't read a
+ * variable), so the right form is there from the first paint.
+ */
+[data-slot='stepper'][data-layout='auto'] {
+  container: satin-stepper / inline-size;
+}
+[data-slot='stepper'][data-layout='auto'] > [data-slot='stepper-compact'] {
+  display: none;
+}
+@container satin-stepper (max-width: 239.98px) {
+  [data-slot='stepper'][data-layout='auto'][data-count='2'] > [data-slot='stepper-list'] { display: none; }
+  [data-slot='stepper'][data-layout='auto'][data-count='2'] > [data-slot='stepper-compact'] { display: block; }
+}
+@container satin-stepper (max-width: 359.98px) {
+  [data-slot='stepper'][data-layout='auto'][data-count='3'] > [data-slot='stepper-list'] { display: none; }
+  [data-slot='stepper'][data-layout='auto'][data-count='3'] > [data-slot='stepper-compact'] { display: block; }
+}
+@container satin-stepper (max-width: 479.98px) {
+  [data-slot='stepper'][data-layout='auto'][data-count='4'] > [data-slot='stepper-list'] { display: none; }
+  [data-slot='stepper'][data-layout='auto'][data-count='4'] > [data-slot='stepper-compact'] { display: block; }
+}
+@container satin-stepper (max-width: 599.98px) {
+  [data-slot='stepper'][data-layout='auto'][data-count='5'] > [data-slot='stepper-list'] { display: none; }
+  [data-slot='stepper'][data-layout='auto'][data-count='5'] > [data-slot='stepper-compact'] { display: block; }
+}
+@container satin-stepper (max-width: 719.98px) {
+  [data-slot='stepper'][data-layout='auto'][data-count='6'] > [data-slot='stepper-list'] { display: none; }
+  [data-slot='stepper'][data-layout='auto'][data-count='6'] > [data-slot='stepper-compact'] { display: block; }
+}
+@container satin-stepper (max-width: 839.98px) {
+  [data-slot='stepper'][data-layout='auto'][data-count='7'] > [data-slot='stepper-list'] { display: none; }
+  [data-slot='stepper'][data-layout='auto'][data-count='7'] > [data-slot='stepper-compact'] { display: block; }
+}
+/* Eight steps and more: below 960px. */
+@container satin-stepper (max-width: 959.98px) {
+  [data-slot='stepper'][data-layout='auto']:not([data-count='1'], [data-count='2'], [data-count='3'], [data-count='4'], [data-count='5'], [data-count='6'], [data-count='7']) > [data-slot='stepper-list'] { display: none; }
+  [data-slot='stepper'][data-layout='auto']:not([data-count='1'], [data-count='2'], [data-count='3'], [data-count='4'], [data-count='5'], [data-count='6'], [data-count='7']) > [data-slot='stepper-compact'] { display: block; }
+}

@@ -10,6 +10,7 @@
 @import "./components/textarea.css";
 @import "./components/radio.css";
 @import "./components/agent-loading.css";
+@import "./components/stepper.css";
 
 /*
  * Interaction states that can also be forced with data-force, so a state sheet can show

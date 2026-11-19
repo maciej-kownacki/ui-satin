@@ -169,6 +169,20 @@ export const api: Record<string, Api> = {
       { name: 'label', type: ['string', 'null'], default: '"Loading"' },
     ],
   },
+  stepper: {
+    description:
+      'The `Stepper` component is a `div` around an ordered list of steps; `aria-label` names the list. Each entry of `steps` is `{ value, label, description, state }`, with `state` one of `"complete"`, `"error"` or `"disabled"`; or write the steps as `StepperItem` children, whose own children show under a vertical step while it is current. Linear, the steps before the current one are complete and none is clickable; with `linear={false}` each step is a button that calls `onValueChange`. With `layout="auto"` a horizontal stepper narrower than 120px a step shows "Step 3 of 4" over a Progress bar.',
+    props: [
+      { name: 'steps', type: ['StepperStep[]'] },
+      { name: 'value', type: ['string'] },
+      { name: 'defaultValue', type: ['string'] },
+      { name: 'onValueChange', type: ['(value: string) => void'] },
+      { name: 'orientation', type: ['"horizontal"', '"vertical"'], default: '"horizontal"' },
+      { name: 'linear', type: ['boolean'], default: 'true' },
+      { name: 'layout', type: ['"auto"', '"full"', '"compact"'], default: '"auto"' },
+      { name: 'aria-label', type: ['string'] },
+    ],
+  },
   separator: {
     description: 'The `Separator` component is a 1px rule. It is decorative unless `decorative={false}`, which makes it a `role="separator"`.',
     props: [

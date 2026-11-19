@@ -229,6 +229,7 @@ export const nav: NavGroup[] = [
       { id: 'skeleton', title: 'Skeleton', href: '/components/skeleton', description: 'Holds the place of content that is still loading.' },
       { id: 'slider', title: 'Slider', href: '/components/slider', description: 'Picks a number or a range by dragging, with the value to read or type.' },
       { id: 'spinner', title: 'Spinner', href: '/components/spinner', description: 'Says something is loading when there is no telling how long it takes.' },
+      { id: 'stepper', title: 'Stepper', href: '/components/stepper', description: 'Shows where a multi-step flow is: the steps done, the current one and the ones ahead.' },
       { id: 'switch', title: 'Switch', href: '/components/switch', description: 'Turns a setting on or off, with immediate effect.' },
       { id: 'table', title: 'Table', href: '/components/table', description: 'Rows of records with sortable columns, selection and sideways scroll.' },
       {

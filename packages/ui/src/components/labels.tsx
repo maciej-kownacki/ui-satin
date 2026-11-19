@@ -167,6 +167,11 @@ export const defaultLabels = {
   chartPoints: (title: string, count: number) => `${title}, ${count} ${count === 1 ? 'point' : 'points'}`,
   /** Read out after a ranking row moves. */
   positionOf: (item: string, position: number, count: number) => `${item}, position ${position} of ${count}`,
+  /** A narrow Stepper's count, shown and read out: "Step 3 of 4". */
+  stepOf: (step: number, count: number) => `Step ${step} of ${count}`,
+  /** After a Stepper step's label, for screen readers: "Details, Completed". */
+  stepCompleted: 'Completed',
+  stepError: 'Error',
   page: (page: number) => `Page ${page}`,
   /** "Page 5 of 12". `page` can be an element (Pagination's animated number). */
   pageOf: (page: React.ReactNode, count: number): React.ReactNode => (

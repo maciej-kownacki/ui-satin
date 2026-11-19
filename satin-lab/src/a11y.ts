@@ -444,6 +444,14 @@ export const a11y: Record<string, A11y> = {
     summary:
       'On its own it is `role="status"` named "Loading" (or `label`). With `label={null}` it is hidden from screen readers, for a spinner inside something that already says it is busy, such as a loading Button.',
   },
+  stepper: {
+    summary:
+      'An ordered list (`role="list"`, so it stays a list without bullets) named by `aria-label`. The current step has `aria-current="step"`. A complete or failed step says so after its label, "Details, Completed" or "CV, Error" (`stepCompleted` and `stepError` in SatinLabels); the circles and their numbers are hidden, since the list gives each step its place. Linear, the steps are plain text; with `linear={false}` each is a `button` named by its label and described by its description, and a disabled step is a disabled button. Narrow, the list gives way to a `progressbar` named by the current step and read as "Step 3 of 4" (`stepOf`).',
+    keyboard: [
+      { keys: ['Tab'], action: 'With `linear={false}`: moves through the steps that aren’t disabled. Linear steps take no focus.' },
+      { keys: ['Enter', 'Space'], action: 'With `linear={false}`: makes the focused step current.' },
+    ],
+  },
   switch: {
     summary:
       'A Radix switch: a `button` with `role="switch"` and `aria-checked`. `label` names it with `aria-labelledby` and `description` adds `aria-describedby`; without a label, pass `aria-label`. Inside a `form` it also renders a hidden input, so the value submits.',
