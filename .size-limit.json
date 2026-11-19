@@ -33,6 +33,17 @@
     "limit": "30 kB"
   },
   {
+    "name": "Tool call (with CodeBlock, Button, Spinner)",
+    "path": "packages/ui/dist/components/tool-call.js",
+    "import": "{ ToolCall }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "21 kB"
+  },
+  {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/bulk-action-bar.js",
     "import": "{ BulkActionBar }",

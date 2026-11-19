@@ -2050,6 +2050,34 @@
       ]
     },
     {
+      "name": "tool-call",
+      "type": "registry:ui",
+      "title": "Tool call",
+      "description": "One call an agent made to a tool: what it sent, what came back, how it went, and Retry when it failed.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/code-block.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/spinner.json"
+      ],
+      "docs": "Tool call docs: https://uisatin.dev/ai-patterns/tool-call",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/tool-call.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "tooltip",
       "type": "registry:ui",
       "title": "Tooltip",
@@ -3281,6 +3309,21 @@
       "files": [
         {
           "path": "registry/satin/examples/toggle-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "tool-call-demo",
+      "type": "registry:example",
+      "title": "Tool call example",
+      "description": "The shortest use of Tool call, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/tool-call.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/tool-call-demo.tsx",
           "type": "registry:example"
         }
       ]
