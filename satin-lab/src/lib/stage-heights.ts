@@ -42,7 +42,6 @@ export const stageHeights: Record<string, [number, number]> = {
   'Command menu': [468, 468],
   'Command pages': [508, 508],
   'Agent suggestion': [340, 340],
-  'Reviewable changes': [300, 362],
   'Agent action log': [472, 504],
   'Agent plan': [336, 504],
   'Reviewable changes': [462, 483],
