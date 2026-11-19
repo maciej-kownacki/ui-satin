@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen } from '@testing-library/react'
-import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
+import { expectNoAxeViolations, renderWithSatin, setReducedMotion } from 'satin-test'
 import { PromptBar } from '../components/prompt-bar'
 import { promptValue, type PromptCommand, type PromptMention, type PromptValue } from '../components/prompt-mentions'
 
@@ -225,6 +225,102 @@ describe('PromptBar mentions and commands', () => {
     expect(container.querySelector('[data-slot="prompt-tokens"]')).toBeNull()
     expect(field().hasAttribute('aria-autocomplete')).toBe(false)
     expect(onSubmit).toHaveBeenCalledWith('@hi /x', [], { text: '@hi /x', mentions: [] })
+  })
+
+  describe('with the rest of the bar', () => {
+    const pdf = new File([''], 'Deal_Acme.pdf')
+    const models = [
+      { value: 'opus', label: 'Opus 5.5' },
+      { value: 'sonnet', label: 'Sonnet 5.5' },
+    ]
+
+    it('closes the mentions when the + panel opens; the panel keeps @, / and Escape to itself', async () => {
+      const onSubmit = vi.fn()
+      const { user } = renderWithSatin(<PromptBar mentions={mentions} commands={[schedule]} onSubmit={onSubmit} />)
+      await user.click(field())
+      await user.keyboard('@t')
+      expect(screen.getByRole('listbox', { name: 'Mentions' })).toBeTruthy()
+      await user.click(screen.getByRole('button', { name: 'Add to conversation' }))
+      expect(screen.queryByRole('listbox', { name: 'Mentions' })).toBeNull()
+      expect(document.activeElement).toBe(screen.getByRole('combobox', { name: 'Search agents and tools' }))
+      await user.keyboard('@/')
+      expect(screen.queryByRole('listbox', { name: 'Mentions' })).toBeNull()
+      expect(screen.queryByRole('listbox', { name: 'Commands' })).toBeNull()
+      await user.keyboard('{Escape}')
+      expect(screen.queryByRole('dialog', { name: 'Add to conversation' })).toBeNull()
+      expect(field().value).toBe('@t')
+      expect(onSubmit).not.toHaveBeenCalled()
+      // Back in the field, at the query, the menu comes back.
+      await user.click(field())
+      field().setSelectionRange(2, 2)
+      fireEvent.select(field())
+      expect(screen.getByRole('listbox', { name: 'Mentions' })).toBeTruthy()
+    })
+
+    it('sends the files with the mentions, and hands them to a command’s run', async () => {
+      const onSubmit = vi.fn()
+      const first = renderWithSatin(<PromptBar mentions={mentions} attachments={[pdf]} onSubmit={onSubmit} />)
+      await first.user.click(field())
+      await first.user.keyboard('@pri{Enter}see this{Enter}')
+      expect(onSubmit).toHaveBeenCalledWith('@Priya Nair see this', [pdf], {
+        text: '@Priya Nair see this',
+        mentions: [expect.objectContaining({ id: 'priya', start: 0, end: 11 })],
+      })
+      expect(screen.queryByRole('list', { name: 'Attachments' })).toBeNull()
+      first.unmount()
+
+      const run = vi.fn()
+      const { user } = renderWithSatin(<PromptBar mentions={mentions} commands={[{ ...schedule, run }]} attachments={[pdf]} onSubmit={onSubmit} />)
+      await user.click(field())
+      await user.keyboard('/sch{Enter}call @to{Enter}{Enter}')
+      expect(onSubmit).toHaveBeenCalledTimes(1)
+      expect(run).toHaveBeenCalledWith({
+        args: 'call @Tom Okafor',
+        attachments: [pdf],
+        value: expect.objectContaining({ mentions: [expect.objectContaining({ id: 'tom' })] }),
+      })
+    })
+
+    it('leaves dictation and the models menu working; Enter picks while the menu is open and sends once it is shut', async () => {
+      const onSubmit = vi.fn()
+      const onModelChange = vi.fn()
+      const onDictationChange = vi.fn()
+      // jsdom can't run the recording wave's animation; reduced motion leaves it still.
+      setReducedMotion(true)
+      const { user } = renderWithSatin(
+        <PromptBar mentions={mentions} models={models} onModelChange={onModelChange} onDictationChange={onDictationChange} onSubmit={onSubmit} />,
+      )
+      await user.click(field())
+      await user.keyboard('@tar')
+      await user.click(screen.getByRole('button', { name: 'Dictate' }))
+      expect(onDictationChange).toHaveBeenLastCalledWith(true)
+      expect(screen.queryByRole('listbox', { name: 'Mentions' })).toBeNull()
+      await user.click(screen.getByRole('button', { name: /Model/ }))
+      await user.click(screen.getByRole('menuitemradio', { name: 'Sonnet 5.5' }))
+      expect(onModelChange).toHaveBeenCalledWith('sonnet')
+      await user.click(field())
+      field().setSelectionRange(4, 4)
+      fireEvent.select(field())
+      await user.keyboard('{Enter}')
+      expect(onSubmit).not.toHaveBeenCalled()
+      expect(field().value).toBe('@Tara Mendes ')
+      await user.keyboard('{Enter}')
+      expect(onSubmit).toHaveBeenCalledWith('@Tara Mendes', [], expect.objectContaining({ mentions: [expect.objectContaining({ id: 'tara' })] }))
+    })
+
+    it('draws the tokens in a disabled bar, and closes the menu when the bar turns disabled', async () => {
+      const seeded = promptValue([people[0]!, ' ', schedule, ' x'])
+      const { user, container, rerender } = renderWithSatin(<PromptBar mentions={mentions} commands={[schedule]} defaultValue={seeded} />)
+      await user.click(field())
+      field().setSelectionRange(field().value.length, field().value.length)
+      await user.keyboard(' @')
+      expect(screen.getByRole('listbox', { name: 'Mentions' })).toBeTruthy()
+      rerender(<PromptBar mentions={mentions} commands={[schedule]} defaultValue={seeded} disabled />)
+      expect(screen.queryByRole('listbox')).toBeNull()
+      expect(field().disabled).toBe(true)
+      expect([...container.querySelectorAll('[data-token]')].map((t) => t.textContent)).toEqual(['@Tara Mendes', '/schedule'])
+      expect((screen.getByRole('button', { name: 'Send' }) as HTMLButtonElement).disabled).toBe(true)
+    })
   })
 
   it.each(['light', 'dark'] as const)('has no axe violations in %s, with the menu open', async (theme) => {

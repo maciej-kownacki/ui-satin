@@ -1023,7 +1023,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'prompt-bar': {
-    description: 'The `PromptBar` component is a wrapper around the `form` element with a text input, attachments, a model picker and a send button.',
+    description: 'The `PromptBar` component is a wrapper around the `form` element with a text input, attachments, a model picker and a send button. `mentions` and `commands` add @mentions and /commands to it, in either shape and next to everything else (see Mentions and commands).',
     props: [
       { name: 'shape', type: ['"pill"', '"default"'], default: '"pill"' },
       { name: 'model', type: ['string'] },
@@ -1047,7 +1047,7 @@ export const api: Record<string, Api> = {
   },
   'prompt-mentions': {
     description:
-      'Mentions and commands are props on `PromptBar`. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`.',
+      'Mentions and commands are props on `PromptBar`, so any bar has them, in either shape, with its attachments, models, + menu and dictation. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`.',
     props: [
       { name: 'mentions', type: ['PromptMentions'] },
       { name: 'mentions.trigger', type: ['string'], default: '"@"' },
