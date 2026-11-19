@@ -76,6 +76,9 @@ const pairs = [
   ...['action-inverse-bg', 'action-inverse-bg-hover', 'action-inverse-bg-pressed'].map((bg) => ['text', 'text-on-inverse', bg]),
   ...TONES.map((tone) => ['text', `status-${tone}-fg`, `status-${tone}-bg`]),
   ['text', 'text-destructive', 'status-red-bg'],
+  // Counts in a neutral Badge on a popover: the Notification badge and the Bulk action bar's count (Satin Pro).
+  ['text', 'status-neutral-fg', 'component-notification-badge-bg'],
+  ['text', 'status-neutral-fg', 'component-bulk-action-bar-count-bg'],
   ...['action-focus-ring', 'border-focus'].flatMap((fg) => SURFACES.map((bg) => ['focus', fg, bg])),
   ...FIELD_SURFACES.map((bg) => ['edge', 'action-destructive-bg', bg]),
 ]
