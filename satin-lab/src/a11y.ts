@@ -156,7 +156,7 @@ export const a11y: Record<string, A11y> = {
   },
   combobox: {
     summary:
-      'The field is a `button` with `aria-haspopup="listbox"` and `aria-expanded`, named by `label` and described by the hint or error (`aria-describedby`, `aria-invalid`); it reads out the picks or the placeholder. Opening it moves focus to the search input, a `combobox` that points at the highlighted option with `aria-activedescendant`. The list is a `listbox` (`aria-multiselectable` with `multiple`) of options with `aria-selected`. Each chip has a "Remove <label>" button.',
+      'The field is a `button` with `aria-haspopup="listbox"` and `aria-expanded`, named by `label` and described by the hint or error (`aria-describedby`, `aria-invalid`); it reads out the picks or the placeholder. Opening it moves focus to the search input, a `combobox` that points at the highlighted option with `aria-activedescendant`. The list is a `listbox` (`aria-multiselectable` with `multiple`) of options with `aria-selected`; titled groups are `group`s named by their headers, and the list is `aria-busy` while `loading`. Each chip has a "Remove <label>" button; Clear gives focus back to the field.',
     keyboard: [
       { keys: ['Enter', 'Space'], action: 'On the field: opens the list and focuses the search.' },
       { keys: ['A–Z'], action: 'In the search: filters the options by label and description.' },

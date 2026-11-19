@@ -6,9 +6,10 @@ import { Search } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { Chip } from './chip'
-import { MenuItemContent, menuItemClass, menuSurfaceClass } from './dropdown'
+import { MenuItemContent, menuGroupClass, menuGroupLabelClass, menuItemClass, menuSurfaceClass } from './dropdown'
 import { useSatinLabels } from './labels'
-import { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from './select'
+import { FieldChrome, SelectChevron, isOptionGroups, useFieldChrome, type SelectGroup, type SelectOption } from './select'
+import { Spinner } from './spinner'
 
 /**
  * Combobox, 1:1 with the uiKit `Combobox` set (4023:3549): Select's field, opening a searchable
@@ -29,12 +30,23 @@ import { FieldChrome, SelectChevron, useFieldChrome, type SelectOption } from '.
  * Typing filters by label and description. Arrow keys move the highlight, Enter picks it, the
  * pointer highlights what it is over. The query field is a `combobox` that owns the `listbox`.
  *
+ * Options can come in titled groups (`SelectGroup[]`, as in Select): each is a `group` named by
+ * its 24px header, with a rule under it; a group left empty by the query is left out. Values are
+ * unique across groups.
+ *
+ * When the app searches itself: `filter={false}` lists `options` as they are, `onQueryChange`
+ * gets the query as it's typed (and '' when the list opens again), `loading` swaps the search
+ * icon for a Spinner and marks the list busy, and `selectedOptions` holds the picks the current
+ * results may not include, so their chips stay. `renderOption` draws a row's content and
+ * `renderValue` the picks in the field, for options that need more than a label and an icon.
+ *
  * Other props, `ref` included, go to the trigger button that covers the field (the element its
  * label points at); `className` styles the field around it.
  */
 export interface ComboboxProps
   extends Omit<React.ComponentProps<typeof PopoverPrimitive.Trigger>, 'value' | 'defaultValue' | 'disabled' | 'children' | 'asChild'> {
-  options: SelectOption[]
+  /** Options, or titled groups of options. */
+  options: SelectOption[] | SelectGroup[]
   /** The applied picks. */
   value?: string[]
   defaultValue?: string[]
@@ -48,6 +60,29 @@ export interface ComboboxProps
   searchPlaceholder?: string
   /** Shown when nothing matches the query. Defaults to the `noResults` label. */
   emptyText?: React.ReactNode
+  /**
+   * How typing narrows the list: by label and description (`true`), by your own test, or not at
+   * all (`false`), when the app searches and passes the results as `options`.
+   */
+  filter?: boolean | ((option: SelectOption, query: string) => boolean)
+  /** The query as it's typed, and '' when the list opens again: for searching on the app's side. */
+  onQueryChange?: (query: string) => void
+  /** The app is searching: a Spinner in place of the search icon, `aria-busy` on the list. */
+  loading?: boolean
+  /** Shown in place of `emptyText` while `loading` and nothing is listed. Defaults to the `loading` label. */
+  loadingText?: React.ReactNode
+  /**
+   * The picks as options, for picks `options` doesn't hold right now (search results change with
+   * the query). The field takes a pick's label and icon from here first.
+   */
+  selectedOptions?: SelectOption[]
+  /** Draws a row's content in place of the default label, description, icon and check. */
+  renderOption?: (option: SelectOption, state: { selected: boolean }) => React.ReactNode
+  /**
+   * Draws the picks in the field in place of the chips (`multiple`) or the picked label. `remove`
+   * drops one pick.
+   */
+  renderValue?: (picked: SelectOption[], api: { remove: (value: string) => void; disabled: boolean }) => React.ReactNode
   /** Defaults to the `apply` label. */
   applyLabel?: string
   /** Defaults to the `cancel` label. */
@@ -91,6 +126,13 @@ export function Combobox({
   placeholder: placeholderProp,
   searchPlaceholder: searchPlaceholderProp,
   emptyText: emptyTextProp,
+  filter = true,
+  onQueryChange,
+  loading = false,
+  loadingText: loadingTextProp,
+  selectedOptions,
+  renderOption,
+  renderValue,
   applyLabel: applyLabelProp,
   cancelLabel: cancelLabelProp,
   clearLabel: clearLabelProp,
@@ -117,6 +159,7 @@ export function Combobox({
   const placeholder = placeholderProp ?? labels.select
   const searchPlaceholder = searchPlaceholderProp ?? labels.search
   const emptyText = emptyTextProp ?? labels.noResults
+  const loadingText = loadingTextProp ?? labels.loading
   const applyLabel = applyLabelProp ?? labels.apply
   const cancelLabel = cancelLabelProp ?? labels.cancel
   const clearLabel = clearLabelProp ?? labels.clear
@@ -140,17 +183,28 @@ export function Combobox({
   // The highlight shows the focus ring only when the arrows put it there (see menuItemClass).
   const [viaKeys, setViaKeys] = React.useState(false)
 
+  const changeQuery = (next: string) => {
+    setQuery(next)
+    setActive(0)
+    onQueryChange?.(next)
+  }
+
   const setOpen = (next: boolean) => {
     if (next) {
       setPending(applied)
-      setQuery('')
-      setActive(0)
+      if (query) changeQuery('')
+      else setActive(0)
     }
     if (openProp == null) setUncontrolledOpen(next)
     onOpenChange?.(next)
   }
 
-  const shown = options.filter((o) => matches(o, query))
+  const groups: SelectGroup[] = isOptionGroups(options) ? options : [{ options }]
+  const test = typeof filter === 'function' ? filter : filter ? matches : () => true
+  const shownGroups = groups.map((g) => ({ ...g, options: g.options.filter((o) => test(o, query)) })).filter((g) => g.options.length > 0)
+  const shown = shownGroups.flatMap((g) => g.options)
+  // Results the app swaps in can be fewer than the highlight's place.
+  const current = Math.max(0, Math.min(active, shown.length - 1))
   const pick = (v: string) => {
     const next = multiple ? (picks.includes(v) ? picks.filter((x) => x !== v) : [...picks, v]) : picks[0] === v && footer ? [] : [v]
     if (footer) return setPending(next)
@@ -162,7 +216,14 @@ export function Combobox({
     setOpen(false)
   }
 
-  const chosen = applied.map((v) => options.find((o) => o.value === v)).filter(Boolean) as SelectOption[]
+  const find = (v: string) => selectedOptions?.find((o) => o.value === v) ?? groups.flatMap((g) => g.options).find((o) => o.value === v)
+  const chosen = applied.map(find).filter(Boolean) as SelectOption[]
+  const remove = (v: string) => commit(applied.filter((x) => x !== v))
+  // Clear leaves with the picks: focus goes back to the field instead of the page.
+  const clear = () => {
+    commit([])
+    document.getElementById(chrome.controlId)?.focus()
+  }
   const chips = multiple && chosen.length > 0
   const triggerText = !multiple && chosen[0] ? chosen[0].label : chips ? null : placeholder
   // As in Select: left out, a single pick's own icon leads the field.
@@ -175,7 +236,7 @@ export function Combobox({
       className={wrapperClassName}
       action={
         label && multiple && chosen.length > 1 ? (
-          <Button variant="tertiary" size="xs" disabled={chrome.disabled} onClick={() => commit([])}>
+          <Button variant="tertiary" size="xs" disabled={chrome.disabled} onClick={clear}>
             {clearLabel}
           </Button>
         ) : undefined
@@ -215,22 +276,24 @@ export function Combobox({
             )}
             <div className="pointer-events-none flex min-w-0 flex-1 flex-wrap items-center gap-1 *:pointer-events-auto">
               {chips &&
-                chosen.map((o) => (
-                  <Chip
-                    key={o.value}
-                    size="sm"
-                    variant="outline"
-                    disabled={chrome.disabled}
-                    removeLabel={labels.removeItem(o.label)}
-                    onRemove={() => commit(applied.filter((v) => v !== o.value))}
-                    className="relative"
-                  >
-                    {o.label}
-                  </Chip>
-                ))}
+                (renderValue
+                  ? renderValue(chosen, { remove, disabled: chrome.disabled })
+                  : chosen.map((o) => (
+                      <Chip
+                        key={o.value}
+                        size="sm"
+                        variant="outline"
+                        disabled={chrome.disabled}
+                        removeLabel={labels.removeItem(o.label)}
+                        onRemove={() => remove(o.value)}
+                        className="relative"
+                      >
+                        {o.label}
+                      </Chip>
+                    )))}
               {triggerText && (
                 <span aria-hidden className={cn('pointer-events-none! min-w-0 flex-1 truncate', chosen.length ? 'text-text-default' : 'text-text-muted')}>
-                  {triggerText}
+                  {renderValue && chosen.length ? renderValue(chosen, { remove, disabled: chrome.disabled }) : triggerText}
                 </span>
               )}
               {/* Without a label there is no line above the field for Clear: it follows the chips. */}
@@ -240,7 +303,7 @@ export function Combobox({
                   size="xs"
                   disabled={chrome.disabled}
                   className="relative ms-auto"
-                  onClick={() => commit([])}
+                  onClick={clear}
                 >
                   {clearLabel}
                 </Button>
@@ -270,29 +333,30 @@ export function Combobox({
             )}
           >
             <label className="flex h-9 shrink-0 items-center gap-2 border-b border-border-subtle px-3 text-text-muted">
-              <Search aria-hidden className="size-4 shrink-0 [stroke-width:1.875]" />
+              {loading ? (
+                <Spinner size="md" label={null} />
+              ) : (
+                <Search aria-hidden className="size-4 shrink-0 [stroke-width:1.875]" />
+              )}
               <input
                 role="combobox"
                 aria-expanded
                 aria-controls={listId}
                 aria-autocomplete="list"
-                aria-activedescendant={shown[active] ? `${listId}-${shown[active].value}` : undefined}
+                aria-activedescendant={shown[current] ? `${listId}-${shown[current].value}` : undefined}
                 aria-label={searchPlaceholder}
                 value={query}
                 placeholder={searchPlaceholder}
-                onChange={(e) => {
-                  setQuery(e.target.value)
-                  setActive(0)
-                }}
+                onChange={(e) => changeQuery(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                     setViaKeys(true)
                     e.preventDefault()
                     const step = e.key === 'ArrowDown' ? 1 : -1
-                    setActive((a) => (shown.length ? (a + step + shown.length) % shown.length : 0))
-                  } else if (e.key === 'Enter' && shown[active]) {
+                    setActive(shown.length ? (current + step + shown.length) % shown.length : 0)
+                  } else if (e.key === 'Enter' && shown[current]) {
                     e.preventDefault()
-                    if (!shown[active].disabled) pick(shown[active].value)
+                    if (!shown[current].disabled) pick(shown[current].value)
                   }
                 }}
                 className="min-w-0 flex-1 bg-transparent text-base leading-[21px] text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0"
@@ -303,12 +367,12 @@ export function Combobox({
               id={listId}
               role="listbox"
               aria-multiselectable={multiple || undefined}
-              className="flex max-h-60 flex-col gap-0.5 overflow-y-auto p-1"
+              aria-busy={loading || undefined}
+              className={cn('flex max-h-60 flex-col gap-0.5 overflow-y-auto p-1', shown.length === 0 && 'hidden')}
             >
-              {shown.length === 0 ? (
-                <p className="px-3 py-6 text-center text-sm text-text-muted">{emptyText}</p>
-              ) : (
-                shown.map((o, i) => {
+              {shownGroups.map((g, gi) => {
+                const rows = g.options.map((o) => {
+                  const i = shown.indexOf(o)
                   const picked = picks.includes(o.value)
                   return (
                     <div
@@ -317,8 +381,8 @@ export function Combobox({
                       role="option"
                       aria-selected={picked}
                       aria-disabled={o.disabled || undefined}
-                      data-highlighted={i === active ? '' : undefined}
-                      data-keyboard={i === active && viaKeys ? '' : undefined}
+                      data-highlighted={i === current ? '' : undefined}
+                      data-keyboard={i === current && viaKeys ? '' : undefined}
                       data-disabled={o.disabled ? '' : undefined}
                       onPointerMove={() => {
                         setViaKeys(false)
@@ -329,19 +393,40 @@ export function Combobox({
                       onClick={() => !o.disabled && pick(o.value)}
                       className={cn(menuItemClass, picked && 'bg-bg-selected')}
                     >
-                      <MenuItemContent
-                        label={o.label}
-                        description={o.description}
-                        icon={o.icon}
-                        layout="inline"
-                        shortcut={o.shortcut}
-                        selected={picked}
-                      />
+                      {renderOption ? (
+                        renderOption(o, { selected: picked })
+                      ) : (
+                        <MenuItemContent
+                          label={o.label}
+                          description={o.description}
+                          icon={o.icon}
+                          layout="inline"
+                          shortcut={o.shortcut}
+                          selected={picked}
+                        />
+                      )}
                     </div>
                   )
                 })
-              )}
+                if (!g.label) return <React.Fragment key={gi}>{rows}</React.Fragment>
+                // The header names the group; it's hidden itself so it isn't read as a row.
+                const headerId = `${listId}-group-${gi}`
+                return (
+                  <div key={gi} role="group" aria-labelledby={headerId} className={cn(menuGroupClass, 'gap-0.5')}>
+                    <div id={headerId} aria-hidden className={menuGroupLabelClass}>
+                      {g.label}
+                    </div>
+                    {rows}
+                  </div>
+                )
+              })}
             </div>
+            {/* Outside the listbox, which may hold only options: read out as it changes. */}
+            {shown.length === 0 && (
+              <p role="status" className="px-3 py-6 text-center text-sm text-text-muted">
+                {loading ? loadingText : emptyText}
+              </p>
+            )}
 
             {footer && (
               <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border-subtle p-2">
