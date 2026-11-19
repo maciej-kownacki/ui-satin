@@ -130,6 +130,13 @@ export const defaultLabels = {
   selectItem: 'Select',
   dictate: 'Dictate',
   stopDictation: 'Stop dictation',
+  /** PromptBar's @ menu: its name, and the header over its rows. */
+  mentions: 'Mentions',
+  /** Read out while PromptBar's @ or / menu is open: "3 suggestions". */
+  suggestionsCount: (count: number) => (count === 1 ? '1 suggestion' : `${count} suggestions`),
+  /** Read out when a token goes into or out of the prompt: "@Tara Mendes added". */
+  tokenAdded: (token: string) => `${token} added`,
+  tokenRemoved: (token: string) => `${token} removed`,
   sending: 'Sending',
   delivered: 'Delivered',
   share: 'Share',

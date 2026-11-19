@@ -551,6 +551,19 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the open panel or menu.' },
     ],
   },
+  'prompt-mentions': {
+    summary:
+      'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list.',
+    keyboard: [
+      { keys: ['@', '/'], action: 'At the start or after a space: opens the mentions or the commands. The text typed after it filters them.' },
+      { keys: ['↑', '↓'], action: 'In the open menu: moves the highlight, wrapping at the ends.' },
+      { keys: ['Enter', 'Tab'], action: 'In the open menu: inserts the highlighted row as a token, followed by a space.' },
+      { keys: ['Esc'], action: 'Closes the menu until the next @ or /.' },
+      { keys: ['Backspace'], action: 'Right after a token: removes the whole token. Delete does the same just before one.' },
+      { keys: ['←', '→'], action: 'Steps over a token in one move.' },
+      { keys: ['Enter'], action: 'With the menu shut or empty: sends; a message with a command runs it.' },
+    ],
+  },
   'streaming-text': {
     summary:
       'The whole text received is in the DOM from the start (letters not yet written are only transparent), so screen readers get it at once, and the box is `aria-busy` while it streams. It is not a live region, so arriving text isn’t read out on its own. The caret is hidden. Under reduced motion it shows everything received straight away.',

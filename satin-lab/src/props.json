@@ -6204,7 +6204,7 @@
     "PromptBar": {
       "type": "PromptBarProps",
       "extends": [
-        "Omit<React.ComponentProps<'form'>, 'onSubmit'>"
+        "Omit<React.ComponentProps<'form'>, 'onSubmit' | 'defaultValue'>"
       ],
       "props": [
         {
@@ -6215,20 +6215,21 @@
         },
         {
           "name": "value",
-          "type": "string",
+          "type": "string | PromptValue",
           "required": false,
-          "description": "The text. Pass it with onValueChange to control it."
+          "description": "The text. Pass it with onValueChange to control it. With `mentions` or `commands`, pass the `PromptValue` that onValueChange reports to keep its tokens (a string keeps them too, while it matches)."
         },
         {
           "name": "defaultValue",
-          "type": "string",
+          "type": "string | PromptValue",
           "required": false,
           "default": "''"
         },
         {
           "name": "onValueChange",
-          "type": "(value: string) => void",
-          "required": false
+          "type": "(value: string, detail: PromptValue) => void",
+          "required": false,
+          "description": "The text, and the same as a `PromptValue` with its mentions and command."
         },
         {
           "name": "placeholder",
@@ -6295,8 +6296,21 @@
         },
         {
           "name": "onSubmit",
-          "type": "(value: string, attachments: File[]) => void",
-          "required": false
+          "type": "(value: string, attachments: File[], detail: PromptValue) => void",
+          "required": false,
+          "description": "The trimmed text, the files, and the message as a `PromptValue`. A message whose command has `run` goes to `run` instead."
+        },
+        {
+          "name": "mentions",
+          "type": "PromptMentions",
+          "required": false,
+          "description": "`@` (or `trigger`) opens a menu of what `search` returns; a pick goes into the text as a token."
+        },
+        {
+          "name": "commands",
+          "type": "PromptCommand[]",
+          "required": false,
+          "description": "`/` opens a menu of these; a pick goes into the text as a token, and Send runs it."
         }
       ]
     }

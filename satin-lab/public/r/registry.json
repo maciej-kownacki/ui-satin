@@ -1473,7 +1473,8 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/kbd.json",
-        "https://uisatin.dev/r/labels.json"
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/prompt-mentions.json"
       ],
       "docs": "Prompt bar docs: https://uisatin.dev/ai-patterns/prompt-bar",
       "meta": {
@@ -1483,6 +1484,34 @@
       "files": [
         {
           "path": "registry/satin/ui/prompt-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "prompt-mentions",
+      "type": "registry:ui",
+      "title": "Mentions and commands",
+      "description": "Reference people and records with @ and run actions with / from the prompt bar.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Mentions and commands docs: https://uisatin.dev/ai-patterns/prompt-mentions",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/prompt-mentions.tsx",
           "type": "registry:ui"
         }
       ]
@@ -3546,6 +3575,21 @@
       "files": [
         {
           "path": "registry/satin/examples/prompt-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "prompt-mentions-demo",
+      "type": "registry:example",
+      "title": "Mentions and commands example",
+      "description": "The shortest use of Mentions and commands, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/prompt-mentions.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/prompt-mentions-demo.tsx",
           "type": "registry:example"
         }
       ]

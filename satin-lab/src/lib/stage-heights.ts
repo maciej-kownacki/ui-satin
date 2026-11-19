@@ -72,6 +72,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Message': [280, 296],
   'Popover': [280, 280],
   'Prompt bar': [280, 280],
+  'Mentions and commands': [380, 380],
   'Radio': [280, 280],
   'Segmented control': [280, 280],
   'Select': [448, 448],

@@ -76,6 +76,9 @@ const pairs = [
   ...['action-inverse-bg', 'action-inverse-bg-hover', 'action-inverse-bg-pressed'].map((bg) => ['text', 'text-on-inverse', bg]),
   ...TONES.map((tone) => ['text', `status-${tone}-fg`, `status-${tone}-bg`]),
   ['text', 'text-destructive', 'status-red-bg'],
+  // PromptBar's tokens: the field's text over a mention's and a command's fill.
+  ['text', 'text-default', 'status-brand-bg'],
+  ['text', 'text-default', 'action-secondary-bg'],
   ...['action-focus-ring', 'border-focus'].flatMap((fg) => SURFACES.map((bg) => ['focus', fg, bg])),
   ...FIELD_SURFACES.map((bg) => ['edge', 'action-destructive-bg', bg]),
   // Agent presence's edge (Satin Pro) in each tone, over the rows and cards it outlines.
