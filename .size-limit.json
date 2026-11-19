@@ -51,6 +51,9 @@
     "name": "Permission request (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/agent-permissions.js",
     "import": "{ AgentPermissionRequest }",
+    "name": "Kanban board (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/kanban-board.js",
+    "import": "{ KanbanBoard, KanbanCard }",
     "ignore": [
       "react",
       "react-dom",
@@ -59,6 +62,7 @@
     "gzip": true,
     "limit": "2 kB"
     "limit": "5 kB"
+    "limit": "8 kB"
   },
   {
     "name": "styles.css",

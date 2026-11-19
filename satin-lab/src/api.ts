@@ -639,6 +639,27 @@ export const api: Record<string, Api> = {
       { name: 'autoFocus', type: ['boolean'] },
     ],
   },
+  'kanban-board': {
+    description:
+      'The `KanbanBoard` component (Satin Pro, `@uisatin/pro/kanban-board`) is controlled: `items` holds each column\'s cards in order, by column id, and a drop only calls `onMove(itemId, toColumn, index)`, where `index` is the card\'s place in `toColumn` once it\'s there. `moveKanbanItem(items, getItemId, itemId, toColumn, index)` returns `items` with the card moved. A column is `{ id, title, tone, limit }`; past its `limit` the count turns amber. A move to another column shows a "Moved to Interview" toast whose Undo calls `onMove` with the old place (it needs a `<Toaster />`). `KanbanCard` is the card part: `title`, `meta`, `badges`, `avatar`, children, and a ⋯ menu that moves the card without dragging, with your own `actions` after the moves.',
+    props: [
+      { name: 'columns', type: ['KanbanColumn[]'] },
+      { name: 'items', type: ['Record<string, T[]>'] },
+      { name: 'getItemId', type: ['(item: T) => string'] },
+      { name: 'getItemLabel', type: ['(item: T) => string'] },
+      { name: 'renderCard', type: ['(item: T, state: KanbanCardState) => ReactNode'] },
+      { name: 'onMove', type: ['(itemId: string, toColumn: string, index: number) => void'] },
+      { name: 'collapsedColumns', type: ['string[]'] },
+      { name: 'defaultCollapsedColumns', type: ['string[]'] },
+      { name: 'onCollapsedColumnsChange', type: ['(collapsedColumns: string[]) => void'] },
+      { name: 'collapsible', type: ['boolean'], default: 'false' },
+      { name: 'onAddItem', type: ['(columnId: string) => void'] },
+      { name: 'loading', type: ['boolean'], default: 'false' },
+      { name: 'renderEmpty', type: ['(column: KanbanColumn) => ReactNode'] },
+      { name: 'undoToast', type: ['boolean'], default: 'true' },
+      { name: 'columnWidth', type: ['number'], default: '272' },
+    ],
+  },
   input: {
     description: 'The `Input` component is a wrapper around the `input` element that adds a label, a hint, icons and three sizes.',
     props: [

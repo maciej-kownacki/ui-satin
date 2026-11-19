@@ -4642,6 +4642,155 @@
       ]
     }
   },
+  "kanban-board": {
+    "KanbanBoard": {
+      "type": "KanbanBoardProps",
+      "extends": [
+        "Omit<React.ComponentProps<'section'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "columns",
+          "type": "KanbanColumn[]",
+          "required": true,
+          "description": "The columns, in order."
+        },
+        {
+          "name": "items",
+          "type": "Record<string, T[]>",
+          "required": true,
+          "description": "Each column's cards, in order, by column id."
+        },
+        {
+          "name": "getItemId",
+          "type": "(item: T) => string",
+          "required": true,
+          "description": "A card's id: unique on the board, stable across moves."
+        },
+        {
+          "name": "getItemLabel",
+          "type": "(item: T) => string",
+          "required": true,
+          "description": "A card's name for screen readers, announcements and the toast: \"Tara Mendes\"."
+        },
+        {
+          "name": "renderCard",
+          "type": "(item: T, state: KanbanCardState) => React.ReactNode",
+          "required": true,
+          "description": "The card itself, usually a `KanbanCard`."
+        },
+        {
+          "name": "onMove",
+          "type": "(itemId: string, toColumn: string, index: number) => void",
+          "required": true,
+          "description": "A card was dropped. `index` is its place in `toColumn` once it's there, from 0. Move it in `items` (`moveKanbanItem()` does it); until you do, the board shows it where it was."
+        },
+        {
+          "name": "collapsedColumns",
+          "type": "string[]",
+          "required": false,
+          "description": "Collapsed columns, by id: a narrow strip with the title and count. Controlled."
+        },
+        {
+          "name": "defaultCollapsedColumns",
+          "type": "string[]",
+          "required": false,
+          "description": "Collapsed columns at first, when `collapsedColumns` isn't set."
+        },
+        {
+          "name": "onCollapsedColumnsChange",
+          "type": "(collapsedColumns: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "collapsible",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "A collapse button in every column header, and an expand button on collapsed ones."
+        },
+        {
+          "name": "onAddItem",
+          "type": "(columnId: string) => void",
+          "required": false,
+          "description": "A + button in every column header, which calls this with the column's id."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Skeleton cards in every column, and `aria-busy` on the board."
+        },
+        {
+          "name": "renderEmpty",
+          "type": "(column: KanbanColumn) => React.ReactNode",
+          "required": false,
+          "description": "What an empty column shows. Defaults to an EmptyState saying \"No cards\"."
+        },
+        {
+          "name": "undoToast",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "The \"Moved to Interview\" toast with Undo after a move to another column. Needs a `<Toaster />`."
+        },
+        {
+          "name": "columnWidth",
+          "type": "number",
+          "required": false,
+          "default": "272",
+          "description": "A column's width in px."
+        }
+      ]
+    },
+    "KanbanCard": {
+      "description": "A card for `renderCard`: Satin's Card (small) with the title, a line of meta, badges and an avatar, and a ⋯ menu that moves it without dragging. The menu button shows on hover and focus (always on touch screens). Children go between the title and the bottom row. Other props, `ref` included, go to the Card.",
+      "type": "KanbanCardProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof Card>, 'title' | 'size' | 'onClose' | 'closeLabel' | 'description' | 'footer'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "What the card is: a person, a deal, an order."
+        },
+        {
+          "name": "meta",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "One line under the title, in text/muted: a role, an amount, a date."
+        },
+        {
+          "name": "badges",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Badges, in a row at the bottom."
+        },
+        {
+          "name": "avatar",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "An Avatar or AvatarGroup at the end of the bottom row: who owns it."
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "More DropdownMenuItems for the ⋯ menu, after the moves."
+        },
+        {
+          "name": "moveActions",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "\"Move to\" each other column, and up and down, in the ⋯ menu."
+        }
+      ]
+    }
+  },
   "kbd": {
     "Kbd": {
       "type": "KbdProps",
