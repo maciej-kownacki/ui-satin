@@ -72,7 +72,7 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
  * The Sales scenario: the agent updates a deal. Stage and Close date start accepted; reject Value
- * with its X and it slides out of the list, then Apply sends Stage and Close date.
+ * with its X and its card slides out of the list, then Apply sends Stage and Close date.
  */
 function Preview({ control }: { control: 'buttons' | 'checkbox' }) {
   return (
@@ -89,7 +89,7 @@ export default function AgentChangesReviewDemo({ codeHtml }: { codeHtml: Record<
       options={options}
       codeHtml={codeHtml}
       controls={controls}
-      // Pinned to the top: when a rejected row leaves, the card shortens from its bottom and nothing above moves.
+      // Pinned to the top: when a dismissed card leaves, the panel shortens from its bottom and nothing above moves.
       align="top"
       render={(id) => (
         <div className="flex w-full justify-center">

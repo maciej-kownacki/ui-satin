@@ -10,32 +10,34 @@ import { cn } from '@uisatin/ui/lib/utils'
 
 /**
  * ReviewableChanges: the fields an agent wants to change, each accepted or rejected on its own
- * before any of them is applied. It takes the same `changes` as AgentSuggestionChanges and draws
- * each row the same way (the field, the old value struck through, an arrow, the new one), with
- * Accept and Reject at the end of the row, or a Checkbox at its start (`control="checkbox"`).
- * Under the rows: Accept all, and Apply, which counts what it will apply ("Apply 2 changes").
+ * before any of them is applied. It takes the same `changes` as AgentSuggestionChanges. Each
+ * change is a bordered card: the field's name on top in medium weight, then the old value struck
+ * through, an arrow and the new one, with Accept (a green check) and Dismiss (X) as bordered
+ * icon buttons at the end of that row, or a Checkbox before the name (`control="checkbox"`).
+ * Under the cards: Accept all, and Apply, which counts what it will apply ("Apply 2 changes").
  * Put it in an AgentSuggestion as its body, without the card's own `actions`.
  *
- * - A row is pending until it's decided. Accept is a toggle button (`aria-pressed`): pressing it
- *   again makes the row pending. Reject (X) takes the row out of the list: it slides 32px to the
- *   start and fades over --duration-slow, then the rows under it move up into its place with a
- *   transform over --duration-base (the card's edge follows at the end; no height animates).
- *   Under reduced motion the row simply goes. Focus moves to the next row's Accept, or to the
- *   footer when no row is left below. The UI has no way back for a rejected row; the app can
+ * - A card is pending until it's decided. Accept is a toggle button (`aria-pressed`): pressed, it
+ *   takes its pressed fill and the card's border turns green; pressing it again makes the card
+ *   pending. Dismiss (X) rejects the change and takes the card out: it slides 32px to the start
+ *   and fades over --duration-slow, then the cards under it move up into its place with a
+ *   transform over --duration-base (the panel's edge follows at the end; no height animates).
+ *   Under reduced motion the card simply goes. Focus moves to the next card's Accept, or to the
+ *   footer when no card is left below. The UI has no way back for a dismissed card; the app can
  *   bring it back by setting its decision to `pending` in a controlled `value`.
- * - With `control="checkbox"`, a checked box accepts and a cleared one rejects; the row stays,
+ * - With `control="checkbox"`, a checked box accepts and a cleared one rejects; the card stays,
  *   its new value fades to text/muted (a Badge loses its colour), and checking it again takes it
  *   back.
  * - Apply calls `onApply` with the accepted changes only, in order. Return a promise and the
- *   rows lock and Apply shows a Spinner until it settles (`applying`); then it says Applied, each
- *   applied row gets a check and the rest fade (`applied`). If it rejects, the rows unlock for
+ *   cards lock and Apply shows a Spinner until it settles (`applying`); then it says Applied, each
+ *   applied card gets a check and the rest fade (`applied`). If it rejects, the cards unlock for
  *   another try; the error is yours to show. `status` sets the stage yourself.
  * - The value is `{ [id]: 'pending' | 'accepted' | 'rejected' }`, by each change's `id` (or its
  *   place, "0", "1", … when it has none); controlled with `value` and `onValueChange`, or not,
  *   with `defaultValue`. For a new set of changes, give the component a new `key`.
- * - Each row is a `role="group"` named by its field; its buttons are named after it ("Accept
- *   Stage change"). A rejected row, Accept all, applying and applied are read out from a polite
- *   live region.
+ * - Each card is a `role="group"` named by its field; its buttons are named after it ("Accept
+ *   Stage change", "Dismiss Stage change"). A dismissed card, Accept all, applying and applied
+ *   are read out from a polite live region.
  *
  * Parts, to put Apply in the card's `actions` row or add buttons of your own:
  * `ReviewableChangesRoot` (around the whole AgentSuggestion) › `ReviewableChangesList`,
@@ -45,10 +47,10 @@ import { cn } from '@uisatin/ui/lib/utils'
 
 /** The words field-level review says on its own. They join SatinLabels, so the app translates them there. */
 export const agentChangesReviewLabels = {
-  /** A row's Accept button, or its checkbox: "Accept Stage change". `field` is the change's `label`, or its `field` when that's a string. */
+  /** A card's Accept button, or its checkbox: "Accept Stage change". `field` is the change's `label`, or its `field` when that's a string. */
   acceptFieldChange: (field: string) => `Accept ${field} change`,
-  /** A row's Reject button: "Reject Stage change". */
-  rejectFieldChange: (field: string) => `Reject ${field} change`,
+  /** A card's Dismiss (X) button: "Dismiss Stage change". */
+  rejectFieldChange: (field: string) => `Dismiss ${field} change`,
   /** The Apply button: "Apply 2 changes". `count` picks the plural; `number` is it, formatted. */
   applyFieldChanges: (count: number, number: string) => (count === 0 ? 'Apply changes' : count === 1 ? 'Apply 1 change' : `Apply ${number} changes`),
   /** Read out while Apply runs. */
@@ -61,8 +63,8 @@ export const agentChangesReviewLabels = {
   fieldChangeNotApplied: 'Not applied',
   /** Read out after Accept all. */
   allFieldChangesAccepted: 'All changes accepted',
-  /** Read out when Reject takes a row out of the list: "Value change rejected". */
-  fieldChangeRejected: (field: string) => `${field} change rejected`,
+  /** Read out when Dismiss takes a card out of the list: "Value change dismissed". */
+  fieldChangeRejected: (field: string) => `${field} change dismissed`,
 }
 
 type AgentChangesReviewLabels = typeof agentChangesReviewLabels
@@ -177,7 +179,7 @@ export interface ReviewableChangesRootProps extends Omit<React.ComponentProps<'d
   onApply?: (accepted: ReviewableChange[], value: ReviewableChangesValue) => unknown
   /** Sets the stage yourself; without it, it follows `onApply`. */
   status?: ReviewableChangesStatus
-  /** `buttons`: Accept and Reject at the end of each row. `checkbox`: a Checkbox at its start, checked to accept. */
+  /** `buttons`: Accept and Dismiss on each card. `checkbox`: a Checkbox before each card's name, checked to accept. */
   control?: 'buttons' | 'checkbox'
 }
 
@@ -413,70 +415,74 @@ function ReviewableChangeRow({ change, id, index }: { change: ReviewableChange; 
       data-state={decision}
       data-leaving={isLeaving ? '' : undefined}
       inert={isLeaving || undefined}
-      className="satin-changes-review-row flex min-h-6 items-center gap-2"
+      className="satin-changes-review-row flex flex-col gap-2 rounded-lg border border-border-default bg-bg-popover p-3"
       onTransitionEnd={(e) => {
         if (isLeaving && e.target === e.currentTarget && e.propertyName === 'opacity') handOff()
       }}
     >
-      {control === 'checkbox' && (
-        <Checkbox
-          checked={decision === 'accepted'}
-          disabled={locked}
-          aria-label={labels.acceptFieldChange(name)}
-          onCheckedChange={(on) => decide(id, on === true ? 'accepted' : 'rejected')}
-        />
-      )}
-      <span id={fieldId} className="w-[88px] shrink-0 text-text-muted">
-        {change.field}
-      </span>
-      <AgentSuggestionChangeValue from={change.from} to={change.to} className="min-w-0 flex-1 flex-wrap gap-y-1" />
-      {applied && <span className="sr-only">{decision === 'accepted' ? labels.fieldChangeApplied : labels.fieldChangeNotApplied}</span>}
-      {control === 'buttons' && (
-        <div className="ms-auto flex h-6 shrink-0 items-center gap-1">
-          {applied ? (
-            decision === 'accepted' && (
-              <span className="grid size-6 place-items-center text-status-green-fg">
-                <CheckGlyph className="size-icon-size-sm" />
-              </span>
-            )
-          ) : (
-            <>
-              <Button
-                variant="tertiary"
-                size="xs"
-                iconOnly
-                data-decision="accept"
-                aria-pressed={decision === 'accepted'}
-                aria-label={labels.acceptFieldChange(name)}
-                disabled={locked}
-                className="satin-changes-review-toggle"
-                onClick={() => decide(id, decision === 'accepted' ? 'pending' : 'accepted')}
-              >
-                <CheckGlyph />
-              </Button>
-              <Button
-                variant="tertiary"
-                size="xs"
-                iconOnly
-                data-decision="reject"
-                aria-label={labels.rejectFieldChange(name)}
-                disabled={locked}
-                className="satin-changes-review-toggle"
-                onClick={() => reject(id, name, rowRef.current)}
-              >
-                <XGlyph />
-              </Button>
-            </>
-          )}
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        {control === 'checkbox' && (
+          <Checkbox
+            checked={decision === 'accepted'}
+            disabled={locked}
+            aria-label={labels.acceptFieldChange(name)}
+            onCheckedChange={(on) => decide(id, on === true ? 'accepted' : 'rejected')}
+          />
+        )}
+        <span id={fieldId} className="min-w-0 text-base font-medium text-text-default">
+          {change.field}
+        </span>
+      </div>
+      <div className="flex min-h-6 items-center gap-2">
+        <AgentSuggestionChangeValue from={change.from} to={change.to} className="min-w-0 flex-1 flex-wrap gap-y-1" />
+        {applied && <span className="sr-only">{decision === 'accepted' ? labels.fieldChangeApplied : labels.fieldChangeNotApplied}</span>}
+        {control === 'buttons' && (
+          <div className="ms-auto flex h-6 shrink-0 items-center gap-2">
+            {applied ? (
+              decision === 'accepted' && (
+                <span className="grid size-6 place-items-center text-status-green-fg">
+                  <CheckGlyph className="size-icon-size-sm" />
+                </span>
+              )
+            ) : (
+              <>
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  iconOnly
+                  data-decision="accept"
+                  aria-pressed={decision === 'accepted'}
+                  aria-label={labels.acceptFieldChange(name)}
+                  disabled={locked}
+                  className="satin-changes-review-toggle"
+                  onClick={() => decide(id, decision === 'accepted' ? 'pending' : 'accepted')}
+                >
+                  <CheckGlyph />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  iconOnly
+                  data-decision="reject"
+                  aria-label={labels.rejectFieldChange(name)}
+                  disabled={locked}
+                  className="satin-changes-review-toggle"
+                  onClick={() => reject(id, name, rowRef.current)}
+                >
+                  <XGlyph />
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
 export interface ReviewableChangesListProps extends React.ComponentProps<'div'> {}
 
-/** The rows, one `role="group"` per change. Other props, `ref` included, go to its `div`. */
+/** The cards, one `role="group"` per change. Other props, `ref` included, go to its `div`. */
 export function ReviewableChangesList({ className, ...props }: ReviewableChangesListProps) {
   const { changes, keys } = useReview('ReviewableChangesList')
   return (
@@ -558,7 +564,7 @@ export function ReviewableChangesApply({ variant = 'primary', children, classNam
 export interface ReviewableChangesProps extends Omit<ReviewableChangesRootProps, 'children'> {}
 
 /**
- * The rows, then Accept all and Apply on the right, 4px further down as in AgentSuggestion's
+ * The cards, then Accept all and Apply on the right, 4px further down as in AgentSuggestion's
  * actions row. Other props, `ref` included, go to the root `div`.
  */
 export function ReviewableChanges(props: ReviewableChangesProps) {
