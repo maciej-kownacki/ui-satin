@@ -84,10 +84,10 @@ const useLabels = () => {
 
 /* ---------- types ---------- */
 
-export type ReviewDecision = 'approved' | 'skipped'
+export type ReviewQueueDecision = 'approved' | 'skipped'
 
 /** Each decided item's decision, by its key. */
-export type ReviewDecisions = Record<string, ReviewDecision>
+export type ReviewQueueDecisions = Record<string, ReviewQueueDecision>
 
 /** One key each; an empty string turns that one off. */
 export interface ReviewQueueShortcuts {
@@ -111,7 +111,7 @@ export interface ReviewQueueItemState {
   position: number
   count: number
   /** Its decision so far, after going back to it. */
-  decision?: ReviewDecision
+  decision?: ReviewQueueDecision
   /** Its editor is open. */
   editing: boolean
 }
@@ -155,8 +155,8 @@ interface QueueContextValue {
   count: number
   item: unknown
   itemKey: string | undefined
-  decision?: ReviewDecision
-  decisions: ReviewDecisions
+  decision?: ReviewQueueDecision
+  decisions: ReviewQueueDecisions
   decided: number
   done: boolean
   busy: boolean
@@ -221,9 +221,9 @@ export interface ReviewQueueRootProps<T> extends Omit<React.ComponentProps<'sect
   defaultIndex?: number
   onIndexChange?: (index: number) => void
   /** What was decided, by key. */
-  decisions?: ReviewDecisions
-  defaultDecisions?: ReviewDecisions
-  onDecisionsChange?: (decisions: ReviewDecisions) => void
+  decisions?: ReviewQueueDecisions
+  defaultDecisions?: ReviewQueueDecisions
+  onDecisionsChange?: (decisions: ReviewQueueDecisions) => void
   /** The editor Sheet is open. */
   editing?: boolean
   onEditingChange?: (editing: boolean) => void
@@ -287,7 +287,7 @@ export function ReviewQueueRoot<T>({
 
   const [indexState, setIndexState] = React.useState(defaultIndex)
   const index = Math.min(Math.max(indexProp ?? indexState, 0), Math.max(count - 1, 0))
-  const [decisionsState, setDecisionsState] = React.useState<ReviewDecisions>(defaultDecisions ?? {})
+  const [decisionsState, setDecisionsState] = React.useState<ReviewQueueDecisions>(defaultDecisions ?? {})
   const decisions = decisionsProp ?? decisionsState
   const [editingState, setEditingState] = React.useState(false)
   const editing = editingProp ?? editingState
@@ -318,7 +318,7 @@ export function ReviewQueueRoot<T>({
     if (indexProp === undefined) setIndexState(i)
     onIndexChange?.(i)
   }
-  const setDecisions = (next: ReviewDecisions) => {
+  const setDecisions = (next: ReviewQueueDecisions) => {
     if (decisionsProp === undefined) setDecisionsState(next)
     onDecisionsChange?.(next)
   }
@@ -348,7 +348,7 @@ export function ReviewQueueRoot<T>({
   }
 
   /** Records the decision and moves on to the next undecided item, or to the summary. */
-  const decide = (at: number, atKey: string, verdict: ReviewDecision) => {
+  const decide = (at: number, atKey: string, verdict: ReviewQueueDecision) => {
     const { items: list, keyOf: keyFor } = latest.current
     const next = { ...latest.current.decisions, [atKey]: verdict }
     setDecisions(next)

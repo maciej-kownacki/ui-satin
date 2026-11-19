@@ -33,21 +33,6 @@
     "limit": "30 kB"
   },
   {
-    "name": "Tool call (with CodeBlock, Button, Spinner)",
-    "path": "packages/ui/dist/components/tool-call.js",
-    "import": "{ ToolCall }",
-    "name": "Toast (Toaster and toast(), with Radix Toast)",
-    "path": "packages/ui/dist/components/toast.js",
-    "import": "{ Toaster, toast }",
-    "ignore": [
-      "react",
-      "react-dom"
-    ],
-    "gzip": true,
-    "limit": "21 kB"
-    "limit": "30 kB"
-  },
-  {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/bulk-action-bar.js",
     "import": "{ BulkActionBar }",
@@ -58,18 +43,6 @@
     ],
     "gzip": true,
     "limit": "12 kB"
-  },
-  {
-    "name": "Review queue (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/review-queue.js",
-    "import": "{ ReviewQueue }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "6 kB"
   },
   {
     "name": "styles.css",
@@ -179,6 +152,18 @@
     "limit": "6 kB"
   },
   {
+    "name": "Review queue (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/review-queue.js",
+    "import": "{ ReviewQueue }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
     "name": "Stepper (with Progress, cn and the check icon)",
     "path": "packages/ui/dist/components/stepper.js",
     "import": "{ Stepper, StepperItem }",
@@ -223,5 +208,27 @@
     ],
     "gzip": true,
     "limit": "4 kB"
+  },
+  {
+    "name": "Toast (Toaster and toast(), with Radix Toast)",
+    "path": "packages/ui/dist/components/toast.js",
+    "import": "{ Toaster, toast }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "30 kB"
+  },
+  {
+    "name": "Tool call (with CodeBlock, Button, Spinner)",
+    "path": "packages/ui/dist/components/tool-call.js",
+    "import": "{ ToolCall }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "21 kB"
   }
 ]

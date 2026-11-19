@@ -82,19 +82,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['An action\'s shortcut'], action: 'Runs that action while focus is in the table or the bar. A shortcut without ⌘ or ⌃ is left alone while typing in a field.' },
     ],
   },
-  'filter-bar': {
-    summary:
-      'A `group` named "Filters" (`filterBar` in SatinLabels). Each chip is a button named in words, "Value greater than €20,000" (`filterOperatorName` reads symbols out), that opens its editor: a Popover dialog named after the field, whose operator control is named after the field ("Stage") and value control after both ("Stage is"). A chip that can\'t apply is described by why ("Check the range"). Its remove button is named "Remove Stage is Interview". A polite `status` region reads the result count once it settles and which chip was removed; the rolling digits are hidden from screen readers.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the search, each chip and its remove button, `+ Filter`, the views menu and Save view.' },
-      { keys: ['Enter', 'Space'], action: 'On a chip: opens its editor, focus on the value. On `+ Filter`: opens the fields.' },
-      { keys: ['Backspace', 'Delete'], action: 'On a chip: removes it; focus moves to the chip that takes its place, or to `+ Filter`.' },
-      { keys: ['Backspace'], action: 'In the empty search: removes the last chip; focus stays in the search.' },
-      { keys: ['Enter'], action: 'In an editor\'s text or number field: keeps the value and closes the editor. A pick from a single-choice list or a calendar closes it too.' },
-      { keys: ['Esc'], action: 'Closes the editor as it is, focus back on its chip. A new chip still without a value goes, focus back on `+ Filter`.' },
-      { keys: ['F'], action: 'Opens `+ Filter` while focus is in the bar or the list it filters (not while typing). Set with `shortcut`, or `false` for none.' },
-    ],
-  },
   'button-group': {
     summary:
       'A `div` with `role="group"`; give it an `aria-label` that says what the buttons are for ("Text alignment"). Each button stays its own tab stop. `ButtonGroupSeparator` is a vertical `separator`.',
@@ -188,17 +175,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'Runs the highlighted command and closes the menu.' },
       { keys: ['Tab', 'Shift+Tab'], action: 'Keep focus inside the menu while it is modal (the default).' },
       { keys: ['Esc'], action: 'Closes the menu and returns focus to where it was.' },
-    ],
-  },
-  'command-pages': {
-    summary:
-      'Everything CommandMenu has (a Radix dialog, the search as a `combobox` pointing at the highlighted `option`), plus: on a sub-page a `Breadcrumb` (a `nav` named "Breadcrumb", the current page `aria-current="page"`, earlier pages as buttons) sits above the search, and a polite `status` region reads out each page\'s name with "Backspace goes back" (`commandPageOpened` in SatinLabels) as it opens, and the page\'s name on the way back. The ask row is an option named \'Ask the agent about "…"\' (`commandAskAbout`) under an "Agent" heading. On the agent\'s page the search stops pointing at a list (`aria-expanded="false"`); the answer is a focusable `region` named after the question, AgentLoading says "Thinking…", and the same status region reads the whole answer once it is complete. The key hints, ⌫ Back included, are hidden from screen readers, which hear the hint with each page instead.',
-    keyboard: [
-      { keys: ['↑', '↓'], action: 'Moves the highlight, wrapping at the ends.' },
-      { keys: ['Enter'], action: 'Runs the highlighted row: opens its page, runs it and closes the menu, or asks the agent. On the agent\'s page, asks the follow-up in the search.' },
-      { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
-      { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
-      { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
     ],
   },
   'cookie-consent': {
@@ -448,14 +424,6 @@ export const a11y: Record<string, A11y> = {
     summary:
       'On its own it is `role="status"` named "Loading" (or `label`). With `label={null}` it is hidden from screen readers, for a spinner inside something that already says it is busy, such as a loading Button.',
   },
-  stepper: {
-    summary:
-      'An ordered list (`role="list"`, so it stays a list without bullets) named by `aria-label`. The current step has `aria-current="step"`. A complete or failed step says so after its label, "Details, Completed" or "CV, Error" (`stepCompleted` and `stepError` in SatinLabels); the circles and their numbers are hidden, since the list gives each step its place. Linear, the steps are plain text; with `linear={false}` each is a `button` named by its label and described by its description, and a disabled step is a disabled button. Narrow, the list gives way to a `progressbar` named by the current step and read as "Step 3 of 4" (`stepOf`).',
-    keyboard: [
-      { keys: ['Tab'], action: 'With `linear={false}`: moves through the steps that aren’t disabled. Linear steps take no focus.' },
-      { keys: ['Enter', 'Space'], action: 'With `linear={false}`: makes the focused step current.' },
-    ],
-  },
   switch: {
     summary:
       'A Radix switch: a `button` with `role="switch"` and `aria-checked`. `label` names it with `aria-labelledby` and `description` adds `aria-describedby`; without a label, pass `aria-label`. Inside a `form` it also renders a hidden input, so the value submits.',
@@ -470,19 +438,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['←', '→'], action: 'Scrolls a scrolling table sideways while its region has focus.' },
     ],
   },
-  'table-pro': {
-    summary:
-      'Table as it is (named by `label`, `aria-sort` on sortable headers, named checkboxes), plus: with sub-rows or groups the `table` takes `role="treegrid"`, and its body rows carry `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` when they open and `aria-selected` when `selectable`. One row is in the Tab order at a time; the row checkboxes stay in it too, as in Table. Each chevron is a button named "Rows under <name>" with `aria-expanded`, left out of the Tab order because the row\'s keys do the same. A group header\'s name is its row header and its count reads "3 rows"; the totals row sits in a `tfoot` with a "Total" row header. The pinned column\'s shadow is decoration.',
-    keyboard: [
-      { keys: ['↓', '↑'], action: 'Moves to the next or previous row, group headers included.' },
-      { keys: ['Home', 'End'], action: 'Moves to the first or last row.' },
-      { keys: ['→'], action: 'Opens a closed row or group; on an open one, moves to its first row. Mirrored right to left.' },
-      { keys: ['←'], action: 'Closes an open row or group; otherwise moves to the row or group it sits under. Mirrored right to left.' },
-      { keys: ['Enter'], action: 'Opens or closes the row or group.' },
-      { keys: ['Space'], action: 'With `selectable`, picks or drops the row, or every row of a group.' },
-      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all, inside each group.' },
-    ],
-  },
   tabs: {
     summary:
       'Built on Radix Tabs: a `tablist` (named by `aria-label`) of `tab` buttons with `aria-selected`; each `TabsContent` is a `tabpanel` labelled by its tab and focusable. Without panels the tabs drop `aria-controls`. Moving onto a tab selects it. The sliding indicator is hidden.',
@@ -495,20 +450,6 @@ export const a11y: Record<string, A11y> = {
   textarea: {
     summary:
       'A native `textarea`. `label` points at it; the hint, or the error in its place, and the counter are linked with `aria-describedby`, and an error sets `aria-invalid`. The counter reads as "Characters used: 34/120". `maxLength` is not set on the element, so typing past it is allowed and only the counter says so; the grip is hidden.',
-  },
-  'time-picker': {
-    summary:
-      'TimePicker\'s field is a `combobox` named by its label and described by a format hint ("Type a time like 2:30 PM", `timeHint` in SatinLabels) and by the hint or error. Focus stays in it while the `listbox` of times is open; `aria-activedescendant` follows the highlighted time. Each time is an `option`: the picked one `aria-selected`, unavailable ones `aria-disabled`. Typed text that isn\'t an available time sets `aria-invalid` and says why under the field (`timeInvalid`, `timeUnavailable`). The chevron, "Show times", is out of the tab order. DateTimePicker\'s field is a `button` that opens the Calendar (as on Date picker) with the times as a `listbox` named "Time"; picking a day with no time yet moves focus to the times.',
-    keyboard: [
-      { keys: ['↓', '↑'], action: 'On the field: opens the list on the picked time, then moves to the next or previous available time.' },
-      { keys: ['Alt+↓', 'Alt+↑'], action: 'Opens or closes the list without moving the highlight.' },
-      { keys: ['Page Down', 'Page Up'], action: 'Moves an hour on or back.' },
-      { keys: ['Home', 'End'], action: 'In TimeList and the date-and-time panel: the first or last available time. In the field they move the caret.' },
-      { keys: ['0–9', 'A', 'P'], action: 'Type-ahead: the list jumps to the time typed so far ("14", "2p"). In a TimeList a second\'s pause starts over.' },
-      { keys: ['Enter'], action: 'Picks the highlighted time once the arrows or the pointer moved there; otherwise reads what was typed ("930", "9:30pm"). In a TimeList, Space picks too.' },
-      { keys: ['Esc'], action: 'Closes the list and leaves focus in the field. With the list closed, puts back the time the field showed.' },
-      { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
-    ],
   },
   notification: {
     summary:
@@ -525,16 +466,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['F8'], action: 'Moves focus to the toasts.' },
       { keys: ['Tab', 'Shift+Tab'], action: 'Moves through the toasts and their buttons.' },
       { keys: ['Esc'], action: 'Closes the focused toast.' },
-    ],
-  },
-  'toast-batch': {
-    summary:
-      'A toast like any other, read out as it arrives with its Undo replaced by "Undo with ⌘Z" (`undoWithShortcut`), since a screen reader user may not reach the button in time. When items join or are undone, the new title is read once at the end of the burst ("6 candidates moved"), from a polite `status` region; the rolling digits are hidden and the number is there as text. Show is a disclosure button (`aria-expanded`, `aria-controls`) for a list named by the title. Each item\'s Undo is named after the change and the item ("Undo move of Tara Mendes"); once undone it says "Tara Mendes, Undone", keeps the focus and is `aria-disabled`. When ⌘Z empties the batch with focus on its Undo, focus moves to Show.',
-    keyboard: [
-      { keys: ['⌘Z', 'Ctrl+Z'], action: 'Undoes the newest batch on screen, unless focus is in a text field.' },
-      { keys: ['Enter', 'Space'], action: 'On Show, opens or folds the list; on an Undo, undoes the batch or that item.' },
-      { keys: ['Tab', 'Shift+Tab'], action: 'Moves through Show, Undo, Close, then the items\' Undo buttons.' },
-      { keys: ['F8'], action: 'Moves focus to the toasts.' },
     ],
   },
   toggle: {
@@ -573,23 +504,6 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A `section`, labelled by `title` when there is one, so it is a region landmark. In `AgentSuggestionDiff` the old text is a `del` and the new an `ins`, read as "Remove:" and "Add:". `AgentSuggestionChanges` is a description list with the arrows hidden, and `AgentSuggestionMetric`’s bar is a Progress named by `unit`. The actions are your own buttons; name them by what they do ("Send email").',
   },
-  'agent-changes-review': {
-    summary:
-      'Each row is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` and Reject a plain button, both named after the change ("Accept Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the row\'s Checkbox carries the Accept name. Reject takes the row out: focus moves first to the next row\'s Accept, or to Accept all or Apply when no row is left below, the leaving row is `inert`, and "Value change rejected" (`fieldChangeRejected`) is read out. Under reduced motion the row goes without the slide. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are also read out from a polite `status` region. While applying, Apply is `aria-busy` and the rows are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each row says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through each row\'s Accept and Reject (or its Checkbox), then Accept all and Apply.' },
-      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the row pending again when pressed. On Reject: takes the row out and moves focus on. On a Checkbox, Space accepts or rejects.' },
-    ],
-  },
-  'agent-undo-log': {
-    summary:
-      'A `section` named "Agent actions" (`actionLog` in SatinLabels, or your `aria-label`), so it is a region landmark, around a list of runs. Each run\'s header is a `button` with `aria-expanded` and `aria-controls`, read as its name, how many actions and when; a closed run\'s actions leave the accessibility tree. Every Revert is an icon button named after its action and target ("Revert Edited src/routes/auth.ts"), with a tooltip, and stays the one focused button through the revert: busy (`aria-busy`) while it runs, then Restore, or Reverted with `aria-disabled`, or Try again after a failure, whose reason is shown as text. An action that can\'t be reverted has no button (its lock is hidden); its reason is read with "Can\'t be reverted:" before it. The glyphs and the rail are hidden. Failures and restores are read from a polite `status` region; a revert is read out by its toast, whose Undo screen readers hear as "Restore it from the action log", since the row\'s Restore does the same. The button of the run ⌘Z would revert carries `aria-keyshortcuts` and shows the keys as Kbd. Reverted rows are struck through and muted, and say so in their button.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the run headers, the Revert run buttons and the open runs\' Revert buttons.' },
-      { keys: ['Enter', 'Space'], action: 'On a run header: opens or closes its actions. On a button: reverts, restores or tries again.' },
-      { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
-    ],
-  },
   'decision-card': {
     summary:
       'A `role="group"` labelled by the title. The answers follow `type`: `radio` is a Radix radio group, `checkbox` a list of Checkboxes, `chips` buttons with `aria-pressed`, `ranking` an ordered list of focusable rows announced as "sortable item" with the hint "Alt and arrow keys to move", and `draft` the text that Rewrite (`aria-pressed`) turns into a textarea named "Draft". After a move, a polite live region reads the row’s new place ("Budget, position 2 of 4"). The step buttons are named "Previous question" and "Next question" and the step count is a polite live region. In `summary`, Change is named "Change <title>".',
@@ -598,27 +512,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Space'], action: '`checkbox`: checks or unchecks the answer. `chips`: picks or drops the chip (Enter works too).' },
       { keys: ['↑', '↓'], action: '`ranking`: moves focus to the row above or below.' },
       { keys: ['Alt+↑', 'Alt+↓'], action: '`ranking`: moves the focused row up or down and reads its new place.' },
-    ],
-  },
-  'agent-plan': {
-    summary:
-      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step has a Checkbox named by its label (unchecked leaves it out), described as "Alt and arrow keys to move", and a ⋯ button named "Options for <step>" whose menu has Edit, Move up and Move down, so a pointer that can’t drag can still reorder. Edit turns the label into a field named "Step 2"; the grip is for the pointer only and hidden. Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through each step’s checkbox and ⋯ button, then Run plan.' },
-      { keys: ['Space'], action: 'On a checkbox: leaves the step out of the run, or puts it back.' },
-      { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
-      { keys: ['Enter', 'Space', '↓'], action: 'On ⋯: opens the step’s menu (Edit, Move up, Move down).' },
-      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to ⋯ (an empty name keeps the old one).' },
-      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to ⋯. In the menu: closes it.' },
-  'review-queue': {
-    summary:
-      'A `section` named after its `title` ("Review queue" without one). The item on show is a `group` named after it and its place ("Anna Kowalska, 4 of 12"); when it changes, a polite `status` region reads the new name and place, with the decision before it ("Approved. Jonas Weber, 5 of 12"). If focus was on the item, it moves to the new one, which reads itself instead. The bar is a `progressbar` named "Reviewed" with the value "3 of 12 reviewed". Skip, Edit and Approve name their keys with `aria-keyshortcuts`; the Kbd on them is hidden. On an approved item, or while Approve runs, the actions are `aria-disabled` and keep focus. Edit opens a Sheet (a dialog named "Edit", or `editTitle`, with the item as its description); closing it puts focus back where it was. When all are decided, focus that was in the queue moves to the summary\'s heading, and the summary is a region named "All reviewed" with the approved and the skipped as two named lists ("Approved 9").',
-    keyboard: [
-      { keys: ['J', 'K'], action: 'Next or previous item, while focus is in the queue and not in a field.' },
-      { keys: ['A'], action: 'Approves the item and moves on to the next undecided one.' },
-      { keys: ['S'], action: 'Skips the item and moves on.' },
-      { keys: ['E'], action: 'Opens the editor Sheet; Esc or Cancel closes it on the same item.' },
-      { keys: ['Tab'], action: 'Moves through ‹ ›, the item\'s own controls, then Skip, Edit and Approve.' },
     ],
   },
   'agent-loading': {
@@ -662,6 +555,115 @@ export const a11y: Record<string, A11y> = {
     summary:
       'The header is a `button` with `aria-expanded` and `aria-controls`, named by the summary ("Thought for 2m 45s"). The steps are an ordered list; folded, they stay mounted but leave the tab order and screen readers. The mark, chevron and rail are hidden, and so is a task’s check.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Opens or folds the steps.' }],
+  },
+  'agent-undo-log': {
+    summary:
+      'A `section` named "Agent actions" (`actionLog` in SatinLabels, or your `aria-label`), so it is a region landmark, around a list of runs. Each run\'s header is a `button` with `aria-expanded` and `aria-controls`, read as its name, how many actions and when; a closed run\'s actions leave the accessibility tree. Every Revert is an icon button named after its action and target ("Revert Edited src/routes/auth.ts"), with a tooltip, and stays the one focused button through the revert: busy (`aria-busy`) while it runs, then Restore, or Reverted with `aria-disabled`, or Try again after a failure, whose reason is shown as text. An action that can\'t be reverted has no button (its lock is hidden); its reason is read with "Can\'t be reverted:" before it. The glyphs and the rail are hidden. Failures and restores are read from a polite `status` region; a revert is read out by its toast, whose Undo screen readers hear as "Restore it from the action log", since the row\'s Restore does the same. The button of the run ⌘Z would revert carries `aria-keyshortcuts` and shows the keys as Kbd. Reverted rows are struck through and muted, and say so in their button.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the run headers, the Revert run buttons and the open runs\' Revert buttons.' },
+      { keys: ['Enter', 'Space'], action: 'On a run header: opens or closes its actions. On a button: reverts, restores or tries again.' },
+      { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
+    ],
+  },
+  'command-pages': {
+    summary:
+      'Everything CommandMenu has (a Radix dialog, the search as a `combobox` pointing at the highlighted `option`), plus: on a sub-page a `Breadcrumb` (a `nav` named "Breadcrumb", the current page `aria-current="page"`, earlier pages as buttons) sits above the search, and a polite `status` region reads out each page\'s name with "Backspace goes back" (`commandPageOpened` in SatinLabels) as it opens, and the page\'s name on the way back. The ask row is an option named \'Ask the agent about "…"\' (`commandAskAbout`) under an "Agent" heading. On the agent\'s page the search stops pointing at a list (`aria-expanded="false"`); the answer is a focusable `region` named after the question, AgentLoading says "Thinking…", and the same status region reads the whole answer once it is complete. The key hints, ⌫ Back included, are hidden from screen readers, which hear the hint with each page instead.',
+    keyboard: [
+      { keys: ['↑', '↓'], action: 'Moves the highlight, wrapping at the ends.' },
+      { keys: ['Enter'], action: 'Runs the highlighted row: opens its page, runs it and closes the menu, or asks the agent. On the agent\'s page, asks the follow-up in the search.' },
+      { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
+      { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
+      { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
+    ],
+  },
+  'agent-changes-review': {
+    summary:
+      'Each row is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` and Reject a plain button, both named after the change ("Accept Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the row\'s Checkbox carries the Accept name. Reject takes the row out: focus moves first to the next row\'s Accept, or to Accept all or Apply when no row is left below, the leaving row is `inert`, and "Value change rejected" (`fieldChangeRejected`) is read out. Under reduced motion the row goes without the slide. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are also read out from a polite `status` region. While applying, Apply is `aria-busy` and the rows are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each row says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through each row\'s Accept and Reject (or its Checkbox), then Accept all and Apply.' },
+      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the row pending again when pressed. On Reject: takes the row out and moves focus on. On a Checkbox, Space accepts or rejects.' },
+    ],
+  },
+  'filter-bar': {
+    summary:
+      'A `group` named "Filters" (`filterBar` in SatinLabels). Each chip is a button named in words, "Value greater than €20,000" (`filterOperatorName` reads symbols out), that opens its editor: a Popover dialog named after the field, whose operator control is named after the field ("Stage") and value control after both ("Stage is"). A chip that can\'t apply is described by why ("Check the range"). Its remove button is named "Remove Stage is Interview". A polite `status` region reads the result count once it settles and which chip was removed; the rolling digits are hidden from screen readers.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the search, each chip and its remove button, `+ Filter`, the views menu and Save view.' },
+      { keys: ['Enter', 'Space'], action: 'On a chip: opens its editor, focus on the value. On `+ Filter`: opens the fields.' },
+      { keys: ['Backspace', 'Delete'], action: 'On a chip: removes it; focus moves to the chip that takes its place, or to `+ Filter`.' },
+      { keys: ['Backspace'], action: 'In the empty search: removes the last chip; focus stays in the search.' },
+      { keys: ['Enter'], action: 'In an editor\'s text or number field: keeps the value and closes the editor. A pick from a single-choice list or a calendar closes it too.' },
+      { keys: ['Esc'], action: 'Closes the editor as it is, focus back on its chip. A new chip still without a value goes, focus back on `+ Filter`.' },
+      { keys: ['F'], action: 'Opens `+ Filter` while focus is in the bar or the list it filters (not while typing). Set with `shortcut`, or `false` for none.' },
+    ],
+  },
+  'agent-plan': {
+    summary:
+      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step has a Checkbox named by its label (unchecked leaves it out), described as "Alt and arrow keys to move", and a ⋯ button named "Options for <step>" whose menu has Edit, Move up and Move down, so a pointer that can’t drag can still reorder. Edit turns the label into a field named "Step 2"; the grip is for the pointer only and hidden. Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through each step’s checkbox and ⋯ button, then Run plan.' },
+      { keys: ['Space'], action: 'On a checkbox: leaves the step out of the run, or puts it back.' },
+      { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
+      { keys: ['Enter', 'Space', '↓'], action: 'On ⋯: opens the step’s menu (Edit, Move up, Move down).' },
+      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to ⋯ (an empty name keeps the old one).' },
+      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to ⋯. In the menu: closes it.' },
+    ],
+  },
+  'review-queue': {
+    summary:
+      'A `section` named after its `title` ("Review queue" without one). The item on show is a `group` named after it and its place ("Anna Kowalska, 4 of 12"); when it changes, a polite `status` region reads the new name and place, with the decision before it ("Approved. Jonas Weber, 5 of 12"). If focus was on the item, it moves to the new one, which reads itself instead. The bar is a `progressbar` named "Reviewed" with the value "3 of 12 reviewed". Skip, Edit and Approve name their keys with `aria-keyshortcuts`; the Kbd on them is hidden. On an approved item, or while Approve runs, the actions are `aria-disabled` and keep focus. Edit opens a Sheet (a dialog named "Edit", or `editTitle`, with the item as its description); closing it puts focus back where it was. When all are decided, focus that was in the queue moves to the summary\'s heading, and the summary is a region named "All reviewed" with the approved and the skipped as two named lists ("Approved 9").',
+    keyboard: [
+      { keys: ['J', 'K'], action: 'Next or previous item, while focus is in the queue and not in a field.' },
+      { keys: ['A'], action: 'Approves the item and moves on to the next undecided one.' },
+      { keys: ['S'], action: 'Skips the item and moves on.' },
+      { keys: ['E'], action: 'Opens the editor Sheet; Esc or Cancel closes it on the same item.' },
+      { keys: ['Tab'], action: 'Moves through ‹ ›, the item\'s own controls, then Skip, Edit and Approve.' },
+    ],
+  },
+  stepper: {
+    summary:
+      'An ordered list (`role="list"`, so it stays a list without bullets) named by `aria-label`. The current step has `aria-current="step"`. A complete or failed step says so after its label, "Details, Completed" or "CV, Error" (`stepCompleted` and `stepError` in SatinLabels); the circles and their numbers are hidden, since the list gives each step its place. Linear, the steps are plain text; with `linear={false}` each is a `button` named by its label and described by its description, and a disabled step is a disabled button. Narrow, the list gives way to a `progressbar` named by the current step and read as "Step 3 of 4" (`stepOf`).',
+    keyboard: [
+      { keys: ['Tab'], action: 'With `linear={false}`: moves through the steps that aren’t disabled. Linear steps take no focus.' },
+      { keys: ['Enter', 'Space'], action: 'With `linear={false}`: makes the focused step current.' },
+    ],
+  },
+  'table-pro': {
+    summary:
+      'Table as it is (named by `label`, `aria-sort` on sortable headers, named checkboxes), plus: with sub-rows or groups the `table` takes `role="treegrid"`, and its body rows carry `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` when they open and `aria-selected` when `selectable`. One row is in the Tab order at a time; the row checkboxes stay in it too, as in Table. Each chevron is a button named "Rows under <name>" with `aria-expanded`, left out of the Tab order because the row\'s keys do the same. A group header\'s name is its row header and its count reads "3 rows"; the totals row sits in a `tfoot` with a "Total" row header. The pinned column\'s shadow is decoration.',
+    keyboard: [
+      { keys: ['↓', '↑'], action: 'Moves to the next or previous row, group headers included.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or last row.' },
+      { keys: ['→'], action: 'Opens a closed row or group; on an open one, moves to its first row. Mirrored right to left.' },
+      { keys: ['←'], action: 'Closes an open row or group; otherwise moves to the row or group it sits under. Mirrored right to left.' },
+      { keys: ['Enter'], action: 'Opens or closes the row or group.' },
+      { keys: ['Space'], action: 'With `selectable`, picks or drops the row, or every row of a group.' },
+      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all, inside each group.' },
+    ],
+  },
+  'time-picker': {
+    summary:
+      'TimePicker\'s field is a `combobox` named by its label and described by a format hint ("Type a time like 2:30 PM", `timeHint` in SatinLabels) and by the hint or error. Focus stays in it while the `listbox` of times is open; `aria-activedescendant` follows the highlighted time. Each time is an `option`: the picked one `aria-selected`, unavailable ones `aria-disabled`. Typed text that isn\'t an available time sets `aria-invalid` and says why under the field (`timeInvalid`, `timeUnavailable`). The chevron, "Show times", is out of the tab order. DateTimePicker\'s field is a `button` that opens the Calendar (as on Date picker) with the times as a `listbox` named "Time"; picking a day with no time yet moves focus to the times.',
+    keyboard: [
+      { keys: ['↓', '↑'], action: 'On the field: opens the list on the picked time, then moves to the next or previous available time.' },
+      { keys: ['Alt+↓', 'Alt+↑'], action: 'Opens or closes the list without moving the highlight.' },
+      { keys: ['Page Down', 'Page Up'], action: 'Moves an hour on or back.' },
+      { keys: ['Home', 'End'], action: 'In TimeList and the date-and-time panel: the first or last available time. In the field they move the caret.' },
+      { keys: ['0–9', 'A', 'P'], action: 'Type-ahead: the list jumps to the time typed so far ("14", "2p"). In a TimeList a second\'s pause starts over.' },
+      { keys: ['Enter'], action: 'Picks the highlighted time once the arrows or the pointer moved there; otherwise reads what was typed ("930", "9:30pm"). In a TimeList, Space picks too.' },
+      { keys: ['Esc'], action: 'Closes the list and leaves focus in the field. With the list closed, puts back the time the field showed.' },
+      { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
+    ],
+  },
+  'toast-batch': {
+    summary:
+      'A toast like any other, read out as it arrives with its Undo replaced by "Undo with ⌘Z" (`undoWithShortcut`), since a screen reader user may not reach the button in time. When items join or are undone, the new title is read once at the end of the burst ("6 candidates moved"), from a polite `status` region; the rolling digits are hidden and the number is there as text. Show is a disclosure button (`aria-expanded`, `aria-controls`) for a list named by the title. Each item\'s Undo is named after the change and the item ("Undo move of Tara Mendes"); once undone it says "Tara Mendes, Undone", keeps the focus and is `aria-disabled`. When ⌘Z empties the batch with focus on its Undo, focus moves to Show.',
+    keyboard: [
+      { keys: ['⌘Z', 'Ctrl+Z'], action: 'Undoes the newest batch on screen, unless focus is in a text field.' },
+      { keys: ['Enter', 'Space'], action: 'On Show, opens or folds the list; on an Undo, undoes the batch or that item.' },
+      { keys: ['Tab', 'Shift+Tab'], action: 'Moves through Show, Undo, Close, then the items\' Undo buttons.' },
+      { keys: ['F8'], action: 'Moves focus to the toasts.' },
+    ],
   },
   'tool-call': {
     summary:

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { act, screen, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import { Input } from '@uisatin/ui/input'
-import { ReviewQueue, type ReviewDecisions, type ReviewQueueProps } from '../components/review-queue'
+import { ReviewQueue, type ReviewQueueDecisions, type ReviewQueueProps } from '../components/review-queue'
 
 type Email = { id: string; to: string; subject: string }
 const emails: Email[] = [
@@ -188,7 +188,7 @@ describe('ReviewQueue', () => {
   it('takes its place and decisions from the app when controlled', async () => {
     function Controlled() {
       const [index, setIndex] = React.useState(2)
-      const [decisions, setDecisions] = React.useState<ReviewDecisions>({})
+      const [decisions, setDecisions] = React.useState<ReviewQueueDecisions>({})
       return (
         <>
           <Queue index={index} onIndexChange={setIndex} decisions={decisions} onDecisionsChange={setDecisions} />

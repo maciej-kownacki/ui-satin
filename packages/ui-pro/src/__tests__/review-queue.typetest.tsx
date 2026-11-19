@@ -9,7 +9,7 @@ import {
   ReviewQueueRoot,
   ReviewQueueSummary,
   useReviewQueue,
-  type ReviewDecisions,
+  type ReviewQueueDecisions,
 } from '../components/review-queue'
 
 type Email = { id: string; to: string; subject: string }
@@ -46,7 +46,7 @@ export const uncontrolled = (
 // Controlled: the app holds all three.
 function Controlled() {
   const [index, setIndex] = React.useState(0)
-  const [decisions, setDecisions] = React.useState<ReviewDecisions>({})
+  const [decisions, setDecisions] = React.useState<ReviewQueueDecisions>({})
   const [editing, setEditing] = React.useState(false)
   return (
     <ReviewQueue
@@ -89,7 +89,7 @@ export const missing = <ReviewQueue items={emails} renderItem={(e) => e.to} />
 export const wrongItem = <ReviewQueue items={emails} itemLabel={(e) => e.to} renderItem={(e) => e.name} />
 
 // @ts-expect-error: no such decision
-export const wrongDecision: ReviewDecisions = { anna: 'rejected' }
+export const wrongDecision: ReviewQueueDecisions = { anna: 'rejected' }
 
 // Pro's words join SatinLabels: one provider for both packages, typed.
 export const translated = (

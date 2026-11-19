@@ -5268,6 +5268,204 @@
       ]
     }
   },
+  "review-queue": {
+    "ReviewQueueRoot": {
+      "description": "The queue's state, keys and editor; the parts go inside.",
+      "type": "ReviewQueueRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'section'>, 'title' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "items",
+          "type": "readonly T[]",
+          "required": true,
+          "description": "Everything to review, decided or not, in order."
+        },
+        {
+          "name": "itemLabel",
+          "type": "(item: T) => string",
+          "required": true,
+          "description": "The item in a few words (\"Anna Kowalska\"): names it to screen readers and in the summary."
+        },
+        {
+          "name": "itemKey",
+          "type": "(item: T, index: number) => string",
+          "required": false,
+          "description": "A stable key per item, for `decisions`. Defaults to the item's `id`, else its index."
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "Over the bar, and the queue's name (\"Trade fair follow-ups\"). Without it the queue is named \"Review queue\"."
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "required": false,
+          "description": "The item on show, from 0."
+        },
+        {
+          "name": "defaultIndex",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "onIndexChange",
+          "type": "(index: number) => void",
+          "required": false
+        },
+        {
+          "name": "decisions",
+          "type": "ReviewQueueDecisions",
+          "required": false,
+          "description": "What was decided, by key."
+        },
+        {
+          "name": "defaultDecisions",
+          "type": "ReviewQueueDecisions",
+          "required": false
+        },
+        {
+          "name": "onDecisionsChange",
+          "type": "(decisions: ReviewQueueDecisions) => void",
+          "required": false
+        },
+        {
+          "name": "editing",
+          "type": "boolean",
+          "required": false,
+          "description": "The editor Sheet is open."
+        },
+        {
+          "name": "onEditingChange",
+          "type": "(editing: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "onApprove",
+          "type": "(item: T) => unknown",
+          "required": false,
+          "description": "Carries the item out (sends the email). Return a promise and Approve shows a Spinner until it settles."
+        },
+        {
+          "name": "onSkip",
+          "type": "(item: T) => void",
+          "required": false
+        },
+        {
+          "name": "onEdit",
+          "type": "(item: T, values?: FormValues) => unknown",
+          "required": false,
+          "description": "With `renderEditor`, Save calls it with the form's values, then the Sheet closes (after the promise, if it returns one). Without, Edit calls it with the item alone."
+        },
+        {
+          "name": "renderEditor",
+          "type": "(item: T) => React.ReactNode",
+          "required": false,
+          "description": "The editor's fields for one item, in a Sheet that Edit opens. Give each field a `name`."
+        },
+        {
+          "name": "editTitle",
+          "type": "(item: T) => React.ReactNode",
+          "required": false,
+          "description": "The editor Sheet's title. Defaults to \"Edit\", with the item's label under it."
+        },
+        {
+          "name": "sheetProps",
+          "type": "Omit<SheetProps, 'open' | 'defaultOpen' | 'onOpenChange' | 'title' | 'description' | 'footer' | 'children' | 'trigger'>",
+          "required": false,
+          "description": "More for the editor Sheet: `side`, `container`, `className`."
+        },
+        {
+          "name": "shortcuts",
+          "type": "ReviewQueueShortcuts | false",
+          "required": false,
+          "description": "Rename the keys, or `false` for none."
+        },
+        {
+          "name": "approveLabel",
+          "type": "string",
+          "required": false,
+          "description": "Approve's word, when the action is better named (\"Send\"). Defaults to `reviewApprove`."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false
+        }
+      ]
+    },
+    "ReviewQueueHeader": {
+      "description": "The title, the decision of an item gone back to, ‹ \"4 of 12\" › and the bar of how many are decided. Other props, `ref` included, go to its `div`.",
+      "type": "ReviewQueueHeaderProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "ReviewQueueItem": {
+      "description": "The item on show, as a group named after it and its place. Hidden once all are decided. Other props, `ref` included, go to its `div`.",
+      "type": "ReviewQueueItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "(item: T, state: ReviewQueueItemState) => React.ReactNode",
+          "required": true,
+          "description": "Draws the item on show."
+        }
+      ]
+    },
+    "ReviewQueueActions": {
+      "description": "The J K hint, then Skip, Edit and Approve with their keys. Hidden once all are decided. Other props, `ref` included, go to its `div`.",
+      "type": "ReviewQueueActionsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "ReviewQueueSummary": {
+      "description": "Once every item is decided: the tally, the approved and the skipped listed by name, and Review skipped. Hidden until then. Other props, `ref` included, go to its `section`.",
+      "type": "ReviewQueueSummaryProps",
+      "extends": [
+        "React.ComponentProps<'section'>"
+      ],
+      "props": [
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Buttons after Review skipped: what to do with the approved ones (\"Back to inbox\")."
+        }
+      ]
+    },
+    "ReviewQueue": {
+      "description": "The queue from props: the header with the bar, the item, the actions, and the summary at the end. Other props, `ref` included, go to the `section`.",
+      "type": "ReviewQueueProps",
+      "extends": [
+        "Omit<ReviewQueueRootProps<T>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "renderItem",
+          "type": "(item: T, state: ReviewQueueItemState) => React.ReactNode",
+          "required": true,
+          "description": "Draws one item, usually an AgentSuggestion (give it `className=\"max-w-none\"` to take the queue's width)."
+        },
+        {
+          "name": "summaryActions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Buttons for the summary, after Review skipped."
+        }
+      ]
+    }
+  },
   "rolling-number": {
     "RollingNumber": {
       "type": "RollingNumberProps",
