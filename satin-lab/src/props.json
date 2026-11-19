@@ -91,6 +91,92 @@
       ]
     }
   },
+  "agent-changes-review": {
+    "ReviewableChangesRoot": {
+      "description": "The state and the words for the parts inside; renders a `div`. Other props, `ref` included, go to it.",
+      "type": "ReviewableChangesRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "changes",
+          "type": "ReviewableChange[]",
+          "required": true,
+          "description": "The fields the agent wants to change, as AgentSuggestionChanges takes them; add an `id` to each to key `value` by it."
+        },
+        {
+          "name": "value",
+          "type": "ReviewableChangesValue",
+          "required": false,
+          "description": "Each change's decision, by id (controlled). A change left out is pending."
+        },
+        {
+          "name": "defaultValue",
+          "type": "ReviewableChangesValue",
+          "required": false,
+          "description": "The decisions to start from (uncontrolled). Everything is pending without it."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: ReviewableChangesValue) => void",
+          "required": false,
+          "description": "Called with every decision whenever one changes."
+        },
+        {
+          "name": "onApply",
+          "type": "(accepted: ReviewableChange[], value: ReviewableChangesValue) => unknown",
+          "required": false,
+          "description": "Apply: gets the accepted changes only, in their order, and every decision. Return a promise to hold the `applying` stage until it settles; if it rejects, review starts again."
+        },
+        {
+          "name": "status",
+          "type": "ReviewableChangesStatus",
+          "required": false,
+          "description": "Sets the stage yourself; without it, it follows `onApply`."
+        },
+        {
+          "name": "control",
+          "type": "'buttons' | 'checkbox'",
+          "required": false,
+          "default": "'buttons'",
+          "description": "`buttons`: Accept and Reject at the end of each row. `checkbox`: a Checkbox at its start, checked to accept."
+        }
+      ]
+    },
+    "ReviewableChangesList": {
+      "description": "The rows, one `role=\"group\"` per change. Other props, `ref` included, go to its `div`.",
+      "type": "ReviewableChangesListProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "ReviewableChangesAcceptAll": {
+      "description": "Accepts every change. Gone once they're applied. Its text is `acceptAll` from SatinLabels unless you pass children. Other props, `ref` included, go to the Button.",
+      "type": "ReviewableChangesAcceptAllProps",
+      "extends": [
+        "Omit<ButtonProps, 'asChild' | 'loading'>"
+      ],
+      "props": []
+    },
+    "ReviewableChangesApply": {
+      "description": "Applies the accepted changes: \"Apply 2 changes\", or your children. Disabled while none is accepted, busy while `applying`; once `applied` it stays in place, says Applied and does nothing, so focus isn't lost. Other props, `ref` included, go to the Button.",
+      "type": "ReviewableChangesApplyProps",
+      "extends": [
+        "Omit<ButtonProps, 'asChild' | 'loading'>"
+      ],
+      "props": []
+    },
+    "ReviewableChanges": {
+      "description": "The rows, then Accept all and Apply on the right, 4px further down as in AgentSuggestion's actions row. Other props, `ref` included, go to the root `div`.",
+      "type": "ReviewableChangesProps",
+      "extends": [
+        "Omit<ReviewableChangesRootProps, 'children'>"
+      ],
+      "props": []
+    }
+  },
   "agent-loading": {
     "TetrisStill": {
       "description": "The tetris mark at rest, every dot filled: the finished header's mark.",
@@ -505,6 +591,15 @@
           "required": false
         }
       ]
+    },
+    "AgentSuggestionChangeValue": {
+      "description": "One change's value as AgentSuggestionChanges draws it: the old value struck through, an arrow and the new one. For a row of your own (one with its own controls). Other props, `ref` included, go to its `span`.",
+      "type": "AgentSuggestionChangeValueProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>",
+        "Pick<AgentSuggestionChange, 'from' | 'to'>"
+      ],
+      "props": []
     }
   },
   "alert": {

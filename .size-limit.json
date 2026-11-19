@@ -48,6 +48,9 @@
     "name": "Toast batch (Satin Pro, with the rolling number; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/toast-batch.js",
     "import": "{ toastBatch }",
+    "name": "Reviewable changes (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-changes-review.js",
+    "import": "{ ReviewableChanges }",
     "ignore": [
       "react",
       "react-dom",
