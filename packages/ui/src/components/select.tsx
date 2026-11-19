@@ -133,7 +133,7 @@ export function FieldChrome({
       {label && (
         // The row keeps the label's 18px whatever the action, so the field never moves.
         <div className="flex h-[18px] items-center justify-between gap-2">
-          <label htmlFor={chrome.controlId} className="text-sm leading-[18px] font-medium text-text-default">
+          <label id={`${chrome.controlId}-label`} htmlFor={chrome.controlId} className="text-sm leading-[18px] font-medium text-text-default">
             {label}
           </label>
           {action && <div className="-my-[3px] flex shrink-0 items-center">{action}</div>}

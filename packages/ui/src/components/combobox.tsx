@@ -259,6 +259,9 @@ export function Combobox({
             collisionPadding={8}
             onOpenAutoFocus={onOpenAutoFocus}
             onInteractOutside={onInteractOutside}
+            // The panel is a dialog: it takes the field's name (its label, or its aria-label).
+            aria-labelledby={label ? `${chrome.controlId}-label` : undefined}
+            aria-label={label ? undefined : (props['aria-label'] ?? searchPlaceholder)}
             className={cn(
               'pointer-events-auto z-50 flex w-(--radix-popover-trigger-width) min-w-60 max-w-[520px] flex-col overflow-hidden',
               menuSurfaceClass,

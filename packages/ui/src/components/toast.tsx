@@ -517,6 +517,8 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
       })}
       <ToastPrimitive.Viewport
         ref={viewportRef}
+        // The region screen readers land on with F8, in the app's words; Radix puts the key in {hotkey}.
+        label={`${labels.notifications} ({hotkey})`}
         style={{ height, transition: `height ${MOTION_MS}ms var(--ease-out)` }}
         className={cn(
           'fixed end-4 bottom-4 z-[100] m-0 w-[397px] max-w-[calc(100%-32px)] list-none p-0 outline-none',
