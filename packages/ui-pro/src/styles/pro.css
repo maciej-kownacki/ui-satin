@@ -5,4 +5,5 @@
  * come from @uisatin/ui/styles.css, which loads first.
  */
 @import "./components/bulk-action-bar.css";
+@import "./components/date-availability.css";
 @import "./components/scheduler.css";

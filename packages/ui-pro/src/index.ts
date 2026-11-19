@@ -2,3 +2,4 @@
 export * from './components/bulk-action-bar'
 export * from './components/scheduler'
 export * from './components/toast-batch'
+export * from './components/date-availability'

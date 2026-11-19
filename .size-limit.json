@@ -33,6 +33,17 @@
     "limit": "30 kB"
   },
   {
+    "name": "Date picker (DatePicker, DateRangePicker and datePresets, with Radix Popover and Select)",
+    "path": "packages/ui/dist/components/date-picker.js",
+    "import": "{ DatePicker, DateRangePicker, datePresets }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "54 kB"
+  },
+  {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/bulk-action-bar.js",
     "import": "{ BulkActionBar }",
@@ -55,6 +66,18 @@
     ],
     "gzip": true,
     "limit": "36 kB"
+  },
+  {
+    "name": "Availability calendar (Satin Pro; Calendar, Dot and Tooltip come from @uisatin/ui, the peer, left out)",
+    "path": "packages/ui-pro/dist/components/date-availability.js",
+    "import": "{ AvailabilityCalendar, AvailabilityDatePicker }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "2 kB"
   },
   {
     "name": "styles.css",

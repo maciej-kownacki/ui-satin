@@ -730,6 +730,7 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/select.json"
       ],
@@ -2151,6 +2152,33 @@
       ]
     },
     {
+      "name": "date-availability",
+      "type": "registry:ui",
+      "title": "Availability calendar",
+      "description": "A calendar for booking: which days have free slots and how many, full days off with the reason.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Availability calendar docs: https://uisatin.dev/components/date-availability",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/date-availability.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "scheduler",
       "type": "registry:ui",
       "title": "Scheduler",
@@ -3346,6 +3374,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "date-availability-demo",
+      "type": "registry:example",
+      "title": "Availability calendar example",
+      "description": "The shortest use of Availability calendar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/date-availability.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/date-availability-demo.tsx",
           "type": "registry:example"
         }
       ]

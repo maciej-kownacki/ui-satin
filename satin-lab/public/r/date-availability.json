@@ -1,0 +1,117 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "date-availability",
+  "type": "registry:ui",
+  "title": "Availability calendar",
+  "description": "A calendar for booking: which days have free slots and how many, full days off with the reason.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/satin-pro-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/date-picker.json",
+    "https://uisatin.dev/r/dot.json",
+    "https://uisatin.dev/r/labels.json",
+    "https://uisatin.dev/r/tooltip.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/date-availability.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { Calendar, CalendarDay, DatePicker, type CalendarDayProps, type CalendarDayState, type CalendarProps, type DatePickerProps } from '@/registry/satin/ui/date-picker'\nimport { Dot } from '@/registry/satin/ui/dot'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\nimport { Tooltip } from '@/registry/satin/ui/tooltip'\n\n/**\n * AvailabilityCalendar: the Calendar for booking, showing which days have free slots and how\n * many. `availability` maps days (ISO dates, `2026-11-26`) to their free slots:\n *\n * - free: a green dot under the number, \"3 slots\" in its tooltip;\n * - few (`fewSlots` or fewer, 2 by default): the dot is a ring, so it reads without colour;\n * - full (0): faded and not pickable, \"Fully booked\" in its tooltip (or the app's `reason`);\n * - a day left out has no slots: faded, not pickable, and silent unless `reason` names why.\n *\n * Each day says the same in its name (\"Thursday, November 26, 2026, 3 free slots\"). A full day\n * keeps its focus (`aria-disabled`, from Calendar), so the arrow keys reach it, its tooltip opens\n * there and screen readers hear why it's off. Every number sits 3px higher than in Calendar, so a\n * row keeps one line with or without dots; today's dash stays under the dot, and the picked day\n * keeps its fill with the dot in white. No motion beyond Calendar's and Tooltip's.\n *\n * `AvailabilityDatePicker` is the same in a DatePicker field. `useAvailability()` returns the\n * `isDisabled` and `renderDay` to give any Satin Calendar or picker yourself.\n *\n * Other props, `ref` included, go to AvailabilityCalendar's root (Calendar's) and\n * AvailabilityDatePicker's trigger button.\n */\n\n/** The words the availability calendar says on its own. They join SatinLabels, so the app translates them there. */\nexport const dateAvailabilityLabels = {\n  /** A day's tooltip: \"3 slots\". */\n  availabilitySlots: (count: number) => (count === 1 ? '1 slot' : `${count} slots`),\n  /** A day's free slots, read after its date: \"3 free slots\". */\n  availabilityFreeSlots: (count: number) => (count === 1 ? '1 free slot' : `${count} free slots`),\n  /** Why a day with 0 free slots can't be picked: its tooltip, and read after its date. */\n  availabilityFull: 'Fully booked',\n  /** A day's name: its full date, then its slots or why it's off (\"Thursday, November 26, 2026, 3 free slots\"). */\n  availabilityDay: (date: string, status: string) => `${date}, ${status}`,\n}\n\ntype DateAvailabilityLabels = typeof dateAvailabilityLabels\ndeclare module '@/components/ui/labels' {\n  interface SatinLabelSet extends DateAvailabilityLabels {}\n}\n\nconst useLabels = () => {\n  const labels = useSatinLabels()\n  return React.useMemo(() => ({ ...dateAvailabilityLabels, ...labels }), [labels])\n}\n\n/** Free slots per day, keyed by the day's ISO date (`isoDate(date)`, \"2026-11-26\"). */\nexport type Availability = Record<string, number>\n\n/** How a day reads: `none` is a day left out of `availability`, or ruled out by `isDisabled`, `min` or `max`. */\nexport type AvailabilityStatus = 'free' | 'few' | 'full' | 'none'\n\n/** A day's key in `availability`: its local date as `YYYY-MM-DD`. */\nexport const isoDate = (date: Date) =>\n  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`\n\nexport interface AvailabilityOptions {\n  /** Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked. */\n  availability: Availability\n  /** At or below this many free slots a day reads as nearly full: its dot becomes a ring. */\n  fewSlots?: number\n  /**\n   * Why a day without free slots can't be picked (a holiday, a training day): its tooltip, read\n   * after its date. Return nothing for the default, \"Fully booked\" for a day listed with 0 and\n   * silence for a day left out.\n   */\n  reason?: (date: Date) => string | undefined\n  /** More days that can't be picked, whatever their slots. */\n  isDisabled?: (date: Date) => boolean\n}\n\n/** How a day reads in `availability`, before Calendar's own `min` and `max`. */\nfunction statusOf(date: Date, { availability, fewSlots = 2, isDisabled }: AvailabilityOptions): { status: AvailabilityStatus; slots: number } {\n  const slots = availability[isoDate(date)]\n  if (isDisabled?.(date) || slots === undefined) return { status: 'none', slots: 0 }\n  if (slots <= 0) return { status: 'full', slots: 0 }\n  return { status: slots <= fewSlots ? 'few' : 'free', slots }\n}\n\n/**\n * Calendar's `isDisabled` and `renderDay` for an availability map, to give any Satin Calendar,\n * DatePicker or panel: `<Calendar {...useAvailability({ availability })} />`.\n */\nexport function useAvailability(options: AvailabilityOptions): Required<Pick<CalendarProps, 'isDisabled' | 'renderDay'>> {\n  const { availability, fewSlots, reason, isDisabled } = options\n  return React.useMemo(() => {\n    const opts = { availability, fewSlots, isDisabled }\n    return {\n      isDisabled: (date: Date) => {\n        const { status } = statusOf(date, opts)\n        return status === 'full' || status === 'none'\n      },\n      renderDay: (date: Date, state: CalendarDayState) => <AvailabilityDay date={date} state={state} {...statusOf(date, opts)} reason={reason} />,\n    }\n  }, [availability, fewSlots, reason, isDisabled])\n}\n\n/**\n * The day's button under its Tooltip. The name already carries what the tooltip says, so the\n * description Radix adds to the trigger (`aria-describedby`) would read it twice: it's dropped.\n */\nfunction DayButton({ 'aria-describedby': _described, ...props }: CalendarDayProps) {\n  return <CalendarDay {...props} />\n}\n\nfunction AvailabilityDay({ date, state, status: listed, slots, reason }: { date: Date; state: CalendarDayState; status: AvailabilityStatus; slots: number; reason?: (date: Date) => string | undefined }) {\n  const labels = useLabels()\n  // Calendar's own min and max can rule out a day with slots: then it has nothing to offer.\n  const status = state.disabled && (listed === 'free' || listed === 'few') ? 'none' : listed\n  const open = status === 'free' || status === 'few'\n  const why = open ? undefined : (reason?.(date) ?? (status === 'full' ? labels.availabilityFull : undefined))\n  const tip = open ? labels.availabilitySlots(slots) : why\n  const day = (\n    <DayButton\n      data-availability={status}\n      aria-label={open ? labels.availabilityDay(state.label, labels.availabilityFreeSlots(slots)) : why ? labels.availabilityDay(state.label, why) : undefined}\n    >\n      <span className=\"satin-date-availability-number\">{date.getDate()}</span>\n      {open && <Dot tone=\"green\" variant={status === 'few' ? 'outline' : 'solid'} className=\"satin-date-availability-dot\" />}\n    </DayButton>\n  )\n  return tip ? <Tooltip label={tip}>{day}</Tooltip> : day\n}\n\nexport interface AvailabilityCalendarProps extends Omit<CalendarProps, 'mode' | 'range' | 'onRangeChange' | 'value' | 'onValueChange' | 'isDisabled' | 'renderDay'> {\n  /** Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked. */\n  availability: Availability\n  /** At or below this many free slots a day reads as nearly full: its dot becomes a ring. */\n  fewSlots?: number\n  /** Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0. */\n  reason?: (date: Date) => string | undefined\n  /** More days that can't be picked, whatever their slots. */\n  isDisabled?: (date: Date) => boolean\n  /** The picked day (controlled). */\n  value?: Date | null\n  /** The day picked at first (uncontrolled). */\n  defaultValue?: Date | null\n  onValueChange?: (value: Date) => void\n}\n\n/** The Calendar with each day's free slots: a dot, a tooltip and its name. Other props, `ref` included, go to Calendar's root. */\nexport function AvailabilityCalendar({\n  availability,\n  fewSlots = 2,\n  reason,\n  isDisabled,\n  value: valueProp,\n  defaultValue = null,\n  onValueChange,\n  ...props\n}: AvailabilityCalendarProps) {\n  const [inner, setInner] = React.useState<Date | null>(defaultValue)\n  const value = valueProp !== undefined ? valueProp : inner\n  const hooks = useAvailability({ availability, fewSlots, reason, isDisabled })\n  return (\n    <Calendar\n      {...props}\n      {...hooks}\n      value={value}\n      onValueChange={(d) => {\n        if (valueProp === undefined) setInner(d)\n        onValueChange?.(d)\n      }}\n    />\n  )\n}\n\nexport interface AvailabilityDatePickerProps extends Omit<DatePickerProps, 'isDisabled' | 'renderDay'> {\n  /** Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked. */\n  availability: Availability\n  /** At or below this many free slots a day reads as nearly full: its dot becomes a ring. */\n  fewSlots?: number\n  /** Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0. */\n  reason?: (date: Date) => string | undefined\n  /** More days that can't be picked, whatever their slots. */\n  isDisabled?: (date: Date) => boolean\n}\n\n/** A DatePicker field whose calendar shows each day's free slots. Other props, `ref` included, go to the trigger button. */\nexport function AvailabilityDatePicker({ availability, fewSlots = 2, reason, isDisabled, ...props }: AvailabilityDatePickerProps) {\n  const hooks = useAvailability({ availability, fewSlots, reason, isDisabled })\n  return <DatePicker {...props} {...hooks} />\n}\n"
+    }
+  ],
+  "docs": "Availability calendar docs: https://uisatin.dev/components/date-availability",
+  "meta": {
+    "version": "0.7.1",
+    "edition": "pro",
+    "props": {
+      "AvailabilityCalendar": {
+        "description": "The Calendar with each day's free slots: a dot, a tooltip and its name. Other props, `ref` included, go to Calendar's root.",
+        "type": "AvailabilityCalendarProps",
+        "extends": [
+          "Omit<CalendarProps, 'mode' | 'range' | 'onRangeChange' | 'value' | 'onValueChange' | 'isDisabled' | 'renderDay'>"
+        ],
+        "props": [
+          {
+            "name": "availability",
+            "type": "Availability",
+            "required": true,
+            "description": "Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked."
+          },
+          {
+            "name": "fewSlots",
+            "type": "number",
+            "required": false,
+            "default": "2",
+            "description": "At or below this many free slots a day reads as nearly full: its dot becomes a ring."
+          },
+          {
+            "name": "reason",
+            "type": "(date: Date) => string | undefined",
+            "required": false,
+            "description": "Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0."
+          },
+          {
+            "name": "isDisabled",
+            "type": "(date: Date) => boolean",
+            "required": false,
+            "description": "More days that can't be picked, whatever their slots."
+          },
+          {
+            "name": "value",
+            "type": "Date | null",
+            "required": false,
+            "description": "The picked day (controlled)."
+          },
+          {
+            "name": "defaultValue",
+            "type": "Date | null",
+            "required": false,
+            "default": "null",
+            "description": "The day picked at first (uncontrolled)."
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: Date) => void",
+            "required": false
+          }
+        ]
+      },
+      "AvailabilityDatePicker": {
+        "description": "A DatePicker field whose calendar shows each day's free slots. Other props, `ref` included, go to the trigger button.",
+        "type": "AvailabilityDatePickerProps",
+        "extends": [
+          "Omit<DatePickerProps, 'isDisabled' | 'renderDay'>"
+        ],
+        "props": [
+          {
+            "name": "availability",
+            "type": "Availability",
+            "required": true,
+            "description": "Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked."
+          },
+          {
+            "name": "fewSlots",
+            "type": "number",
+            "required": false,
+            "default": "2",
+            "description": "At or below this many free slots a day reads as nearly full: its dot becomes a ring."
+          },
+          {
+            "name": "reason",
+            "type": "(date: Date) => string | undefined",
+            "required": false,
+            "description": "Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0."
+          },
+          {
+            "name": "isDisabled",
+            "type": "(date: Date) => boolean",
+            "required": false,
+            "description": "More days that can't be picked, whatever their slots."
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1887,7 +1887,103 @@
       ]
     }
   },
+  "date-availability": {
+    "AvailabilityCalendar": {
+      "description": "The Calendar with each day's free slots: a dot, a tooltip and its name. Other props, `ref` included, go to Calendar's root.",
+      "type": "AvailabilityCalendarProps",
+      "extends": [
+        "Omit<CalendarProps, 'mode' | 'range' | 'onRangeChange' | 'value' | 'onValueChange' | 'isDisabled' | 'renderDay'>"
+      ],
+      "props": [
+        {
+          "name": "availability",
+          "type": "Availability",
+          "required": true,
+          "description": "Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked."
+        },
+        {
+          "name": "fewSlots",
+          "type": "number",
+          "required": false,
+          "default": "2",
+          "description": "At or below this many free slots a day reads as nearly full: its dot becomes a ring."
+        },
+        {
+          "name": "reason",
+          "type": "(date: Date) => string | undefined",
+          "required": false,
+          "description": "Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0."
+        },
+        {
+          "name": "isDisabled",
+          "type": "(date: Date) => boolean",
+          "required": false,
+          "description": "More days that can't be picked, whatever their slots."
+        },
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false,
+          "description": "The picked day (controlled)."
+        },
+        {
+          "name": "defaultValue",
+          "type": "Date | null",
+          "required": false,
+          "default": "null",
+          "description": "The day picked at first (uncontrolled)."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false
+        }
+      ]
+    },
+    "AvailabilityDatePicker": {
+      "description": "A DatePicker field whose calendar shows each day's free slots. Other props, `ref` included, go to the trigger button.",
+      "type": "AvailabilityDatePickerProps",
+      "extends": [
+        "Omit<DatePickerProps, 'isDisabled' | 'renderDay'>"
+      ],
+      "props": [
+        {
+          "name": "availability",
+          "type": "Availability",
+          "required": true,
+          "description": "Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked."
+        },
+        {
+          "name": "fewSlots",
+          "type": "number",
+          "required": false,
+          "default": "2",
+          "description": "At or below this many free slots a day reads as nearly full: its dot becomes a ring."
+        },
+        {
+          "name": "reason",
+          "type": "(date: Date) => string | undefined",
+          "required": false,
+          "description": "Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0."
+        },
+        {
+          "name": "isDisabled",
+          "type": "(date: Date) => boolean",
+          "required": false,
+          "description": "More days that can't be picked, whatever their slots."
+        }
+      ]
+    }
+  },
   "date-picker": {
+    "CalendarDay": {
+      "description": "One day of the Calendar, to return from `renderDay`: the default day button, which picks, holds the arrow keys' focus and draws today, the pick and the range. Children replace the number, `aria-label` the full date as its name. Other props, `ref` included, go to the button, so a Tooltip can wrap it.",
+      "type": "CalendarDayProps",
+      "extends": [
+        "Omit<React.ComponentProps<'button'>, 'type'>"
+      ],
+      "props": []
+    },
     "Calendar": {
       "type": "CalendarProps",
       "extends": [
@@ -1963,11 +2059,22 @@
           "description": "Today, for the dash. Defaults to now."
         },
         {
-          "name": "weekStartsOn",
-          "type": "number",
+          "name": "isDisabled",
+          "type": "(date: Date) => boolean",
           "required": false,
-          "default": "1",
-          "description": "The first day of the week: 0 is Sunday, 1 Monday (the default)."
+          "description": "Days that can't be picked, on top of those outside `min`/`max` (weekends, booked days). Like those, they stay reachable with the arrow keys and are read as unavailable."
+        },
+        {
+          "name": "renderDay",
+          "type": "(date: Date, state: CalendarDayState) => React.ReactNode",
+          "required": false,
+          "description": "Draws each day, for a mark, a name or a tooltip of your own. Return a `CalendarDay`, the default day button, so picking and the arrow keys keep working."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's (Sunday in en-US, Monday in pl-PL)."
         },
         {
           "name": "className",
@@ -1977,7 +2084,7 @@
       ]
     },
     "DatePickerPanel": {
-      "description": "The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick. Other props, `ref` included, go to the surface.",
+      "description": "The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick, and the presets. Other props, `ref` included, go to the surface.",
       "type": "DatePickerPanelProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'>"
@@ -1991,7 +2098,8 @@
         {
           "name": "onValueChange",
           "type": "(value: Date) => void",
-          "required": false
+          "required": false,
+          "description": "A day picked in the calendar or from the presets."
         },
         {
           "name": "min",
@@ -2009,10 +2117,28 @@
           "required": false
         },
         {
-          "name": "weekStartsOn",
-          "type": "number",
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
           "required": false,
-          "description": "The first day of the week: 0 is Sunday, 1 Monday (the default)."
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one moves the calendar to its month."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
         },
         {
           "name": "className",
@@ -2059,6 +2185,30 @@
           "name": "today",
           "type": "Date",
           "required": false
+        },
+        {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one picks its day and closes."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
         },
         {
           "name": "container",
@@ -2109,6 +2259,30 @@
           "required": false
         },
         {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<DateRange | Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar: `[datePresets.last7Days, datePresets.last30Days]`. Picking one shows its range, which waits for Apply like any other."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
+        },
+        {
           "name": "applyLabel",
           "type": "string",
           "required": false,
@@ -2128,7 +2302,7 @@
       ]
     },
     "DateRangePickerPanel": {
-      "description": "The range picker's panel on its own, in place: two months, Cancel and Apply. Other props, `ref` included, go to the surface.",
+      "description": "The range picker's panel on its own, in place: the presets, two months, Cancel and Apply. Other props, `ref` included, go to the surface.",
       "type": "DateRangePickerPanelProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'>"
@@ -2166,6 +2340,30 @@
           "name": "today",
           "type": "Date",
           "required": false
+        },
+        {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<DateRange | Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar. Picking one shows its range; a range picked by hand leaves none selected."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
         },
         {
           "name": "applyLabel",
@@ -4520,7 +4718,7 @@
         },
         {
           "name": "weekStartsOn",
-          "type": "number",
+          "type": "WeekDay",
           "required": false,
           "description": "The week's first day, 0 (Sunday) to 6. Defaults to `dateLocale`'s."
         },
