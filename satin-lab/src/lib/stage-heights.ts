@@ -36,6 +36,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Code block': [464, 464],
   'Combobox': [448, 448],
   'People picker': [512, 512],
+  'Creatable combobox': [448, 448],
   'Command menu': [468, 468],
   'Agent suggestion': [340, 340],
   'Decision card': [368, 392],

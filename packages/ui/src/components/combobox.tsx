@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Popover as PopoverPrimitive } from 'radix-ui'
-import { Search } from 'iconoir-react'
+import { Plus, Search, WarningCircle } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { Chip } from './chip'
@@ -39,6 +39,14 @@ import { Spinner } from './spinner'
  * icon for a Spinner and marks the list busy, and `selectedOptions` holds the picks the current
  * results may not include, so their chips stay. `renderOption` draws a row's content and
  * `renderValue` the picks in the field, for options that need more than a label and an icon.
+ *
+ * `creatable` lets people add a value the list doesn't have: while the query matches no option's
+ * label exactly (case aside), the list ends with a `Create "…"` row under a bg/muted rule (the
+ * rule only when options show above it; after a titled group, the group's own rule). Picking it
+ * calls `onCreate`; its option joins the list and is picked the way any pick is: at once, or
+ * waiting for Apply with `footer`. A promise shows a Spinner on the row until it settles; a
+ * rejection says so under the row, and the row stays to try again. The row works with groups,
+ * `filter={false}` and while `loading`.
  *
  * Other props, `ref` included, go to the trigger button that covers the field (the element its
  * label points at); `className` styles the field around it.
@@ -89,6 +97,20 @@ export interface ComboboxProps
   cancelLabel?: string
   /** Defaults to the `clear` label. */
   clearLabel?: string
+  /**
+   * Offer a `Create "…"` row at the end of the list while the query matches no option exactly.
+   * `label` words the row (default: the `createOption` label, which also names it for screen
+   * readers).
+   */
+  creatable?: boolean | { label?: (query: string) => React.ReactNode }
+  /**
+   * Makes the option for a query from the create row (trimmed). Return it, or a promise of it:
+   * the row shows a Spinner until it settles, and a rejection (or a throw) shows the
+   * `createFailed` label under the row. The option is added to the list and picked; it stays
+   * while the Combobox is mounted, so add it to `options` to keep it. Left out, the option is
+   * `{ value: query, label: query }`.
+   */
+  onCreate?: (query: string) => SelectOption | Promise<SelectOption>
   label?: React.ReactNode
   hint?: React.ReactNode
   error?: React.ReactNode | boolean
@@ -116,6 +138,8 @@ const matches = (o: SelectOption, q: string) => {
   return o.label.toLowerCase().includes(t) || (typeof o.description === 'string' && o.description.toLowerCase().includes(t))
 }
 
+const isPromise = <T,>(x: T | Promise<T>): x is Promise<T> => typeof (x as Promise<T> | null)?.then === 'function'
+
 export function Combobox({
   options,
   value,
@@ -136,6 +160,8 @@ export function Combobox({
   applyLabel: applyLabelProp,
   cancelLabel: cancelLabelProp,
   clearLabel: clearLabelProp,
+  creatable,
+  onCreate,
   label,
   hint,
   error,
@@ -183,6 +209,13 @@ export function Combobox({
   // The highlight shows the focus ring only when the arrows put it there (see menuItemClass).
   const [viaKeys, setViaKeys] = React.useState(false)
 
+  // Options made with the create row: listed (after `options`) until the app adds them itself.
+  const [created, setCreated] = React.useState<SelectOption[]>([])
+  // The query whose option is on its way (a pending promise), and the one whose create failed.
+  const [creating, setCreating] = React.useState<string | null>(null)
+  const [failed, setFailed] = React.useState<string | null>(null)
+  const [highlight, setHighlight] = React.useState<string | null>(null)
+
   const changeQuery = (next: string) => {
     setQuery(next)
     setActive(0)
@@ -194,17 +227,33 @@ export function Combobox({
       setPending(applied)
       if (query) changeQuery('')
       else setActive(0)
+      setFailed(null)
     }
     if (openProp == null) setUncontrolledOpen(next)
     onOpenChange?.(next)
   }
 
-  const groups: SelectGroup[] = isOptionGroups(options) ? options : [{ options }]
+  const given: SelectGroup[] = isOptionGroups(options) ? options : [{ options }]
+  // Created options the app hasn't added yet follow the given ones, untitled.
+  const extra = created.filter((c) => !given.some((g) => g.options.some((o) => o.value === c.value)))
+  const groups = extra.length ? [...given, { options: extra }] : given
+  const all = groups.flatMap((g) => g.options)
   const test = typeof filter === 'function' ? filter : filter ? matches : () => true
   const shownGroups = groups.map((g) => ({ ...g, options: g.options.filter((o) => test(o, query)) })).filter((g) => g.options.length > 0)
   const shown = shownGroups.flatMap((g) => g.options)
+
+  // The create row: the query on its way, else the typed one while no label is exactly it.
+  const typed = query.trim()
+  const exact = all.some((o) => o.label.trim().toLowerCase() === typed.toLowerCase())
+  const toCreate = creatable ? (creating ?? (typed && !exact ? typed : null)) : null
+  const rows = shown.length + (toCreate == null ? 0 : 1)
+  const createId = `${chrome.controlId}-create`
   // Results the app swaps in can be fewer than the highlight's place.
-  const current = Math.max(0, Math.min(active, shown.length - 1))
+  const current = Math.max(0, Math.min(active, rows - 1))
+  const onCreateRow = toCreate != null && current === shown.length
+  const busy = creating != null
+  const failedNow = !busy && failed != null && failed === toCreate
+  const createLabel = typeof creatable === 'object' ? creatable.label : undefined
   const pick = (v: string) => {
     const next = multiple ? (picks.includes(v) ? picks.filter((x) => x !== v) : [...picks, v]) : picks[0] === v && footer ? [] : [v]
     if (footer) return setPending(next)
@@ -216,7 +265,66 @@ export function Combobox({
     setOpen(false)
   }
 
-  const find = (v: string) => selectedOptions?.find((o) => o.value === v) ?? groups.flatMap((g) => g.options).find((o) => o.value === v)
+  // A promise settles renders later: read the picks, the query and the callbacks of the latest render then.
+  const latest = React.useRef({ applied, commit, setOpen, open, query, changeQuery })
+  React.useLayoutEffect(() => {
+    latest.current = { applied, commit, setOpen, open, query, changeQuery }
+  })
+  // The new option takes the highlight once it is in the list, and comes into view.
+  React.useLayoutEffect(() => {
+    if (highlight == null) return
+    const i = shown.findIndex((o) => o.value === highlight)
+    if (i >= 0) {
+      setActive(i)
+      document.getElementById(`${listId}-${highlight}`)?.scrollIntoView?.({ block: 'nearest' })
+    }
+    setHighlight(null)
+  }, [highlight])
+  // Focus stays in the query field, so nothing scrolls the list for the arrows: keep the
+  // highlighted row in view. Only for keys; a row under the pointer is in view already.
+  React.useEffect(() => {
+    if (!viaKeys) return
+    const id = shown[current] ? `${listId}-${shown[current].value}` : onCreateRow ? createId : undefined
+    if (id) document.getElementById(id)?.scrollIntoView?.({ block: 'nearest' })
+  }, [current, viaKeys])
+
+  const added = (q: string, o: SelectOption | undefined) => {
+    if (!o) return setFailed(q)
+    setCreated((c) => (c.some((x) => x.value === o.value) ? c : [...c, o]))
+    const now = latest.current
+    // The query did its job: the whole list comes back with the new option picked and highlighted
+    // (unless something else was typed meanwhile). The app hears the query go, as with typing.
+    if (now.query.trim() === q) now.changeQuery('')
+    setHighlight(o.value)
+    if (footer) return setPending((p) => (!multiple ? [o.value] : p.includes(o.value) ? p : [...p, o.value]))
+    if (multiple) return now.commit(now.applied.includes(o.value) ? now.applied : [...now.applied, o.value])
+    now.commit([o.value])
+    if (now.open) now.setOpen(false)
+  }
+  const create = (q: string) => {
+    if (busy) return
+    setFailed(null)
+    let result: SelectOption | Promise<SelectOption>
+    try {
+      result = onCreate ? onCreate(q) : { value: q, label: q }
+    } catch {
+      return setFailed(q)
+    }
+    if (!isPromise(result)) return added(q, result)
+    setCreating(q)
+    result.then(
+      (o) => {
+        setCreating(null)
+        added(q, o)
+      },
+      () => {
+        setCreating(null)
+        setFailed(q)
+      },
+    )
+  }
+
+  const find = (v: string) => selectedOptions?.find((o) => o.value === v) ?? all.find((o) => o.value === v)
   const chosen = applied.map(find).filter(Boolean) as SelectOption[]
   const remove = (v: string) => commit(applied.filter((x) => x !== v))
   // Clear leaves with the picks: focus goes back to the field instead of the page.
@@ -343,7 +451,7 @@ export function Combobox({
                 aria-expanded
                 aria-controls={listId}
                 aria-autocomplete="list"
-                aria-activedescendant={shown[current] ? `${listId}-${shown[current].value}` : undefined}
+                aria-activedescendant={shown[current] ? `${listId}-${shown[current].value}` : onCreateRow ? createId : undefined}
                 aria-label={searchPlaceholder}
                 value={query}
                 placeholder={searchPlaceholder}
@@ -353,10 +461,13 @@ export function Combobox({
                     setViaKeys(true)
                     e.preventDefault()
                     const step = e.key === 'ArrowDown' ? 1 : -1
-                    setActive(shown.length ? (current + step + shown.length) % shown.length : 0)
+                    setActive(rows ? (current + step + rows) % rows : 0)
                   } else if (e.key === 'Enter' && shown[current]) {
                     e.preventDefault()
                     if (!shown[current].disabled) pick(shown[current].value)
+                  } else if (e.key === 'Enter' && onCreateRow && toCreate != null) {
+                    e.preventDefault()
+                    create(toCreate)
                   }
                 }}
                 className="min-w-0 flex-1 bg-transparent text-base leading-[21px] text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0"
@@ -368,7 +479,7 @@ export function Combobox({
               role="listbox"
               aria-multiselectable={multiple || undefined}
               aria-busy={loading || undefined}
-              className={cn('flex max-h-60 flex-col gap-0.5 overflow-y-auto p-1', shown.length === 0 && 'hidden')}
+              className={cn('flex max-h-60 flex-col gap-0.5 overflow-y-auto p-1', rows === 0 && 'hidden')}
             >
               {shownGroups.map((g, gi) => {
                 const rows = g.options.map((o) => {
@@ -420,12 +531,48 @@ export function Combobox({
                   </div>
                 )
               })}
+              {/* A titled group draws its own rule under it; other rows get this one. */}
+              {toCreate != null && shown.length > 0 && !shownGroups[shownGroups.length - 1].label && (
+                <div aria-hidden className="-mx-1 my-0.5 h-px shrink-0 bg-bg-muted" />
+              )}
+              {toCreate != null && (
+                <div
+                  id={createId}
+                  role="option"
+                  aria-selected={false}
+                  aria-disabled={busy || undefined}
+                  aria-busy={busy || undefined}
+                  data-slot="combobox-create"
+                  data-state={busy ? 'creating' : failedNow ? 'failed' : 'idle'}
+                  data-highlighted={onCreateRow ? '' : undefined}
+                  data-keyboard={onCreateRow && viaKeys ? '' : undefined}
+                  onPointerMove={() => {
+                    setViaKeys(false)
+                    setActive(shown.length)
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => create(toCreate)}
+                  className={menuItemClass}
+                >
+                  <MenuItemContent
+                    icon={busy ? <Spinner label={null} /> : failedNow ? <WarningCircle className="text-text-destructive" /> : <Plus />}
+                    label={<span className="[overflow-wrap:anywhere]">{createLabel ? createLabel(toCreate) : labels.createOption(toCreate)}</span>}
+                    description={failedNow ? <span className="text-text-destructive">{labels.createFailed}</span> : undefined}
+                  />
+                </div>
+              )}
             </div>
             {/* Outside the listbox, which may hold only options: read out as it changes. */}
-            {shown.length === 0 && (
+            {rows === 0 && (
               <p role="status" className="px-3 py-6 text-center text-sm text-text-muted">
                 {loading ? loadingText : emptyText}
               </p>
+            )}
+            {/* The create row says it failed; this says it once, without moving focus. */}
+            {creatable && (
+              <span role="status" className="sr-only">
+                {failedNow ? labels.createFailed : ''}
+              </span>
             )}
 
             {footer && (

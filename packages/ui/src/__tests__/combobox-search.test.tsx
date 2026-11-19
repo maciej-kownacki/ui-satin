@@ -104,6 +104,37 @@ describe('Combobox: groups and app-side search', () => {
     expect(document.activeElement).toBe(screen.getByRole('button', { name: /City/ }))
   })
 
+  it('puts the create row after a titled group, in the arrow-key cycle', async () => {
+    const { user } = renderWithSatin(<Combobox label="City" options={groups} creatable />)
+    await user.click(screen.getByRole('button', { name: /City/ }))
+    await user.keyboard('ber')
+    const search = screen.getByRole('combobox')
+    expect(within(screen.getByRole('group', { name: 'Europe' })).getAllByRole('option').map((o) => o.textContent)).toEqual(['Berlin'])
+    const create = screen.getByRole('option', { name: 'Create “ber”' })
+    // The group's own rule separates it; no second one.
+    expect(create.previousElementSibling?.getAttribute('role')).toBe('group')
+    await user.keyboard('{ArrowDown}')
+    expect(search.getAttribute('aria-activedescendant')).toBe(create.id)
+    await user.keyboard('{ArrowDown}')
+    expect(search.getAttribute('aria-activedescendant')).toBe(screen.getByRole('option', { name: 'Berlin' }).id)
+  })
+
+  it('offers the create row with filter off, while loading, and tells the app the query went', async () => {
+    const onQuery = vi.fn()
+    const onValueChange = vi.fn()
+    const { user } = renderWithSatin(
+      <Combobox label="City" multiple options={[]} filter={false} loading creatable onQueryChange={onQuery} onValueChange={onValueChange} />,
+    )
+    await user.click(screen.getByRole('button', { name: /City/ }))
+    await user.keyboard('Oslo')
+    expect(screen.getByRole('listbox').getAttribute('aria-busy')).toBe('true')
+    expect(screen.getByRole('combobox').getAttribute('aria-activedescendant')).toBe(screen.getByRole('option', { name: 'Create “Oslo”' }).id)
+    await user.keyboard('{Enter}')
+    expect(onValueChange).toHaveBeenLastCalledWith(['Oslo'])
+    expect(onQuery).toHaveBeenLastCalledWith('')
+    expect(screen.getByRole('option', { name: /Oslo/ }).getAttribute('aria-selected')).toBe('true')
+  })
+
   it('says "no results" from a status region outside the listbox', async () => {
     const { user } = renderWithSatin(<Combobox label="City" options={groups} />)
     await user.click(screen.getByRole('button', { name: /City/ }))

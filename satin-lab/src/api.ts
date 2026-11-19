@@ -381,7 +381,7 @@ export const api: Record<string, Api> = {
     ],
   },
   combobox: {
-    description: 'The `Combobox` component renders a trigger `button` that opens a panel with a search `input` (`role="combobox"`), a `listbox` of options. Single picks fill the field and close it; multiple picks show as removable chips with Clear. With `footer`, picks wait for Apply, which stays disabled until something is picked. `options` can be titled groups (`SelectGroup[]`). When the app searches: `filter={false}`, `onQueryChange`, `loading` and `selectedOptions` (picks the results may not hold); `renderOption` and `renderValue` draw rows and picks.',
+    description: 'The `Combobox` component renders a trigger `button` that opens a panel with a search `input` (`role="combobox"`), a `listbox` of options. Single picks fill the field and close it; multiple picks show as removable chips with Clear. With `footer`, picks wait for Apply, which stays disabled until something is picked. `options` can be titled groups (`SelectGroup[]`). When the app searches: `filter={false}`, `onQueryChange`, `loading` and `selectedOptions` (picks the results may not hold); `renderOption` and `renderValue` draw rows and picks. With `creatable`, a query no option is exactly ends the list with a Create row; `onCreate` makes the option (or a promise of it), which is then picked.',
     props: [
       { name: 'options', type: ['SelectOption[]', 'SelectGroup[]'] },
       { name: 'value', type: ['string[]'] },
@@ -400,6 +400,8 @@ export const api: Record<string, Api> = {
       { name: 'applyLabel', type: ['string'], default: '"Apply"' },
       { name: 'cancelLabel', type: ['string'], default: '"Cancel"' },
       { name: 'clearLabel', type: ['string'], default: '"Clear"' },
+      { name: 'creatable', type: ['boolean', '{ label?: (query: string) => ReactNode }'], default: 'false' },
+      { name: 'onCreate', type: ['(query: string) => SelectOption | Promise<SelectOption>'] },
       { name: 'disabled', type: ['boolean'], default: 'false' },
       { name: 'open', type: ['boolean'] },
       { name: 'defaultOpen', type: ['boolean'], default: 'false' },
