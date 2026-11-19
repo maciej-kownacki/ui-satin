@@ -1,0 +1,32 @@
+/*
+ * Field-level review of agent changes (components/agent-changes-review.tsx).
+ *
+ * A rejected row's new value fades to text/muted over --duration-base, and a rich value (a
+ * Badge) loses its colour, which keeps its text's contrast; nothing moves. Once the set is
+ * applied, every row that wasn't applied looks the same. Satin's reduced-motion rule
+ * (motion.css) cuts the fade.
+ */
+.satin-changes-review-row [data-slot='agent-suggestion-change-value'] > :last-child {
+  transition:
+    color var(--duration-base) var(--ease-out),
+    filter var(--duration-base) var(--ease-out);
+}
+.satin-changes-review-row[data-state='rejected'] [data-slot='agent-suggestion-change-value'] > :last-child,
+[data-slot='reviewable-changes'][data-status='applied'] .satin-changes-review-row:not([data-state='accepted']) [data-slot='agent-suggestion-change-value'] > :last-child {
+  color: var(--text-muted);
+  filter: grayscale(1);
+}
+
+/* A pressed Accept is green, a pressed Reject neutral; hovering keeps the pressed fill. */
+.satin-changes-review-toggle[aria-pressed='true'][data-decision='accept'] {
+  background-color: var(--status-green-bg);
+}
+.satin-changes-review-toggle[aria-pressed='true'][data-decision='accept'] svg {
+  color: var(--status-green-fg);
+}
+.satin-changes-review-toggle[aria-pressed='true'][data-decision='reject'] {
+  background-color: var(--bg-pressed);
+}
+.satin-changes-review-toggle[aria-pressed='true'][data-decision='reject'] svg {
+  color: var(--text-default);
+}

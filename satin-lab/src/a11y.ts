@@ -500,6 +500,14 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A `section`, labelled by `title` when there is one, so it is a region landmark. In `AgentSuggestionDiff` the old text is a `del` and the new an `ins`, read as "Remove:" and "Add:". `AgentSuggestionChanges` is a description list with the arrows hidden, and `AgentSuggestionMetric`’s bar is a Progress named by `unit`. The actions are your own buttons; name them by what they do ("Send email").',
   },
+  'agent-changes-review': {
+    summary:
+      'Each row is a `role="group"` named by its field. Accept and Reject are toggle buttons with `aria-pressed`, named after the change ("Accept Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the row\'s Checkbox carries the Accept name. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are read out from a polite `status` region. While applying, Apply is `aria-busy` and the rows are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each row says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through each row\'s Accept and Reject (or its Checkbox), then Accept all and Apply.' },
+      { keys: ['Enter', 'Space'], action: 'Presses Accept or Reject; pressing the pressed one makes the row pending again. On a Checkbox, Space accepts or rejects.' },
+    ],
+  },
   'decision-card': {
     summary:
       'A `role="group"` labelled by the title. The answers follow `type`: `radio` is a Radix radio group, `checkbox` a list of Checkboxes, `chips` buttons with `aria-pressed`, `ranking` an ordered list of focusable rows announced as "sortable item" with the hint "Alt and arrow keys to move", and `draft` the text that Rewrite (`aria-pressed`) turns into a textarea named "Draft". After a move, a polite live region reads the row’s new place ("Budget, position 2 of 4"). The step buttons are named "Previous question" and "Next question" and the step count is a polite live region. In `summary`, Change is named "Change <title>".',

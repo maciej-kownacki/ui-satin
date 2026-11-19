@@ -2120,6 +2120,33 @@
       ]
     },
     {
+      "name": "agent-changes-review",
+      "type": "registry:ui",
+      "title": "Reviewable changes",
+      "description": "The fields an agent wants to change, each accepted or rejected before any is applied.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-suggestion.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Reviewable changes docs: https://uisatin.dev/ai-patterns/agent-changes-review",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-changes-review.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "bulk-action-bar",
       "type": "registry:ui",
       "title": "Bulk action bar",
@@ -3296,6 +3323,21 @@
       "files": [
         {
           "path": "registry/satin/examples/tooltip-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-changes-review-demo",
+      "type": "registry:example",
+      "title": "Reviewable changes example",
+      "description": "The shortest use of Reviewable changes, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-changes-review.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-changes-review-demo.tsx",
           "type": "registry:example"
         }
       ]
