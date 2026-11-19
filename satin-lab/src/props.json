@@ -4145,6 +4145,69 @@
       ]
     }
   },
+  "people-picker": {
+    "PeoplePicker": {
+      "type": "PeoplePickerProps",
+      "extends": [
+        "Omit< ComboboxProps, | 'options' | 'value' | 'defaultValue' | 'onValueChange' | 'filter' | 'onQueryChange' | 'loading' | 'loadingText' | 'selectedOptions' | 'renderOption' | 'renderValue' >"
+      ],
+      "props": [
+        {
+          "name": "people",
+          "type": "Person[]",
+          "required": false,
+          "description": "Everyone who can be picked, in one list."
+        },
+        {
+          "name": "groups",
+          "type": "PeopleGroup[]",
+          "required": false,
+          "description": "Everyone who can be picked, in titled groups (teams, offices) instead of one list."
+        },
+        {
+          "name": "search",
+          "type": "(query: string, options: PeopleSearchOptions) => Promise<Person[] | PeopleGroup[]>",
+          "required": false,
+          "description": "Searches on the app's side, in place of `people` and `groups`. Resolve to people, or to titled groups of them."
+        },
+        {
+          "name": "searchDelay",
+          "type": "number",
+          "required": false,
+          "default": "250",
+          "description": "Milliseconds without typing before `search` runs."
+        },
+        {
+          "name": "recent",
+          "type": "Person[]",
+          "required": false,
+          "description": "People picked lately: listed first, under \"Recent\", while the query is empty."
+        },
+        {
+          "name": "value",
+          "type": "Person[]",
+          "required": false,
+          "description": "The picked people."
+        },
+        {
+          "name": "defaultValue",
+          "type": "Person[]",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(people: Person[]) => void",
+          "required": false
+        },
+        {
+          "name": "maxChips",
+          "type": "number",
+          "required": false,
+          "description": "With `multiple`: chips shown before the rest fold into a \"+N\" chip. All of them by default."
+        }
+      ]
+    }
+  },
   "popover": {
     "Popover": {
       "type": "PopoverProps",

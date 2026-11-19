@@ -2152,6 +2152,35 @@
       ]
     },
     {
+      "name": "people-picker",
+      "type": "registry:ui",
+      "title": "People picker",
+      "description": "Picks people by name, with their faces and roles, the ones picked lately first, and search as you type.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/chip.json",
+        "https://uisatin.dev/r/combobox.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "People picker docs: https://uisatin.dev/components/people-picker",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/people-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast-batch",
       "type": "registry:ui",
       "title": "Toast batch",
@@ -3312,6 +3341,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "people-picker-demo",
+      "type": "registry:example",
+      "title": "People picker example",
+      "description": "The shortest use of People picker, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/people-picker.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/people-picker-demo.tsx",
           "type": "registry:example"
         }
       ]
