@@ -26,7 +26,8 @@ import { FieldChrome, Select, useFieldChrome } from './select'
  * End the week, Enter or Space picks.
  *
  * Month and weekday names and the dates on the triggers are written in the `dateLocale` label
- * (en-US by default). The week still starts on Monday.
+ * (en-US by default). The week starts on Monday unless `weekStartsOn` says otherwise (0 is
+ * Sunday), e.g. to match a scheduler that follows the locale.
  *
  * Other props, `ref` included, go to: Calendar's root, DatePicker's and DateRangePicker's trigger
  * button (`className` styles it too), and the panels' surface.
@@ -48,14 +49,14 @@ export const formatRange = ({ from, to }: DateRange, locale = 'en-US') => {
   return `${f} – ${formatDate(to, locale)}`
 }
 
-/** The calendar's words in `locale`: month titles, weekday letters (Monday first) and each day's full date. */
-function calendarWords(locale: string) {
+/** The calendar's words in `locale`: month titles, weekday letters (from `weekStart`) and each day's full date. */
+function calendarWords(locale: string, weekStart = 1) {
   const month = new Intl.DateTimeFormat(locale, { month: 'long' })
   const monthYear = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' })
   const narrow = new Intl.DateTimeFormat(locale, { weekday: 'narrow' })
   const long = new Intl.DateTimeFormat(locale, { weekday: 'long' })
-  // 1 January 2024 was a Monday.
-  const week = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + i))
+  // 1 January 2024 was a Monday; 7 January a Sunday.
+  const week = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + ((weekStart + 6) % 7) + i))
   return {
     month: (d: Date) => month.format(d),
     monthYear: (d: Date) => monthYear.format(d),
@@ -65,12 +66,12 @@ function calendarWords(locale: string) {
 }
 
 /**
- * Always six weeks, Monday first, filled with the end of the month before and the start of the
- * one after, so the calendar keeps its height from month to month.
+ * Always six weeks, from `weekStart` (Monday by default), filled with the end of the month before
+ * and the start of the one after, so the calendar keeps its height from month to month.
  */
-function weeksOf(month: Date) {
+function weeksOf(month: Date, weekStart = 1) {
   const first = new Date(month.getFullYear(), month.getMonth(), 1)
-  const start = addDays(first, -((first.getDay() + 6) % 7))
+  const start = addDays(first, -((first.getDay() - weekStart + 7) % 7))
   return Array.from({ length: 6 }, (_, w) => Array.from({ length: 7 }, (_, i) => addDays(start, w * 7 + i)))
 }
 
@@ -92,6 +93,8 @@ export interface CalendarProps extends Omit<React.ComponentProps<'div'>, 'defaul
   max?: Date
   /** Today, for the dash. Defaults to now. */
   today?: Date
+  /** The first day of the week: 0 is Sunday, 1 Monday (the default). */
+  weekStartsOn?: number
   className?: string
 }
 
@@ -108,13 +111,15 @@ export function Calendar({
   min,
   max,
   today: todayProp,
+  weekStartsOn = 1,
   className,
   ref,
   onPointerLeave,
   ...props
 }: CalendarProps) {
   const labels = useSatinLabels()
-  const words = React.useMemo(() => calendarWords(labels.dateLocale), [labels.dateLocale])
+  const weekStart = ((Math.trunc(weekStartsOn) % 7) + 7) % 7
+  const words = React.useMemo(() => calendarWords(labels.dateLocale, weekStart), [labels.dateLocale, weekStart])
   const today = startOfDay(todayProp ?? new Date())
   const anchor = mode === 'range' ? range?.from : value
   const [innerMonth, setInnerMonth] = React.useState(() => addMonths(anchor ?? today, 0))
@@ -176,8 +181,8 @@ export function Calendar({
       ArrowDown: () => addDays(focus, 7),
       PageUp: () => new Date(focus.getFullYear(), focus.getMonth() - 1, focus.getDate()),
       PageDown: () => new Date(focus.getFullYear(), focus.getMonth() + 1, focus.getDate()),
-      Home: () => addDays(focus, -((focus.getDay() + 6) % 7)),
-      End: () => addDays(focus, 6 - ((focus.getDay() + 6) % 7)),
+      Home: () => addDays(focus, -((focus.getDay() - weekStart + 7) % 7)),
+      End: () => addDays(focus, 6 - ((focus.getDay() - weekStart + 7) % 7)),
     }
     if (map[e.key]) {
       e.preventDefault()
@@ -252,7 +257,7 @@ export function Calendar({
                 </span>
               ))}
             </div>
-            {weeksOf(m).map((week, w) => (
+            {weeksOf(m, weekStart).map((week, w) => (
               <div key={w} role="row" className="flex">
                 {week.map((d) => {
                   const out = d.getMonth() !== m.getMonth()
@@ -403,14 +408,16 @@ export interface DatePickerPanelProps extends Omit<React.ComponentProps<'div'>, 
   min?: Date
   max?: Date
   today?: Date
+  /** The first day of the week: 0 is Sunday, 1 Monday (the default). */
+  weekStartsOn?: number
   className?: string
 }
 
 /** The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick. Other props, `ref` included, go to the surface. */
-export function DatePickerPanel({ value, onValueChange, min, max, today, className, ...props }: DatePickerPanelProps) {
+export function DatePickerPanel({ value, onValueChange, min, max, today, weekStartsOn, className, ...props }: DatePickerPanelProps) {
   return (
     <div {...props} data-slot="date-picker-panel" className={cn(surfaceClass, 'w-fit p-3', className)}>
-      <Calendar header="picker" value={value} onValueChange={onValueChange} min={min} max={max} today={today} />
+      <Calendar header="picker" value={value} onValueChange={onValueChange} min={min} max={max} today={today} weekStartsOn={weekStartsOn} />
     </div>
   )
 }

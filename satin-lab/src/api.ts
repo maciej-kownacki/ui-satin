@@ -464,6 +464,7 @@ export const api: Record<string, Api> = {
       { name: 'Calendar.mode', type: ['"single"', '"range"'], default: '"single"' },
       { name: 'Calendar.header', type: ['"title"', '"picker"'], default: '"title"' },
       { name: 'Calendar.months', type: ['1', '2'], default: '1' },
+      { name: 'Calendar.weekStartsOn', type: ['number'], default: '1' },
       { name: 'min / max', type: ['Date'] },
       { name: 'today', type: ['Date'] },
       { name: 'label / hint / error', type: ['ReactNode'] },
