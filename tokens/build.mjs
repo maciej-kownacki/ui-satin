@@ -128,11 +128,13 @@ function css() {
     L.push('}', '');
   };
   block(':root', (t) => t.$value);
-  block(DARK.join(', '), (t) => t.ext.modes.Dark);
+  // A theme token without a Dark mode (a colour both themes share) keeps its one value.
+  const dark = (t) => t.ext.modes?.Dark ?? t.$value;
+  block(DARK.join(', '), dark);
   // The same values when data-theme="system" and the OS is dark.
   {
     const start = L.length;
-    block(SYSTEM, (t) => t.ext.modes.Dark);
+    block(SYSTEM, dark);
     const lines = L.splice(start);
     while (lines.at(-1) === '') lines.pop();
     L.push('@media (prefers-color-scheme: dark) {', ...lines.map((l) => (l ? `  ${l}` : l)), '}', '');

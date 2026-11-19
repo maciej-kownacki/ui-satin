@@ -79,6 +79,9 @@ const pairs = [
   // PromptBar's tokens: the field's text over a mention's and a command's fill.
   ['text', 'text-default', 'status-brand-bg'],
   ['text', 'text-default', 'action-secondary-bg'],
+  // Counts in a neutral Badge on a popover: the Notification badge and the Bulk action bar's count (Satin Pro).
+  ['text', 'status-neutral-fg', 'component-notification-badge-bg'],
+  ['text', 'status-neutral-fg', 'component-bulk-action-bar-count-bg'],
   ...['action-focus-ring', 'border-focus'].flatMap((fg) => SURFACES.map((bg) => ['focus', fg, bg])),
   ...FIELD_SURFACES.map((bg) => ['edge', 'action-destructive-bg', bg]),
   // Agent presence's edge (Satin Pro) in each tone, over the rows and cards it outlines.

@@ -2,9 +2,10 @@
 
 import * as React from 'react'
 import { Toolbar as ToolbarPrimitive } from 'radix-ui'
+import { Badge } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
+import { Checkbox } from '@uisatin/ui/checkbox'
 import { DropdownMenu, DropdownMenuItem } from '@uisatin/ui/dropdown'
-import { KbdGroup, keysOf } from '@uisatin/ui/kbd'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
 import { Separator } from '@uisatin/ui/separator'
@@ -12,10 +13,17 @@ import { Tooltip } from '@uisatin/ui/tooltip'
 import { RollingNumber } from './rolling-number'
 
 /**
- * BulkActionBar: what appears when rows are selected. The count ("3 selected") with a clear
- * button, then the actions as buttons, then the rest in a ⋯ menu. A `role="toolbar"` on the
- * popover surface (bg/popover, border/subtle, radius-xl, the toast's shadow), floating at the
- * bottom of its container.
+ * BulkActionBar: what appears when rows are selected. A select-all checkbox and the count in a
+ * grey Badge ("[3] selected"), then the actions as buttons, then the rest in a ⋯ menu, and the
+ * clear button (×) at the end, after a rule. A `role="toolbar"` on the popover surface
+ * (bg/popover, border/subtle, radius-xl, the toast's shadow), floating at the bottom of its
+ * container.
+ *
+ * - With `total` and `onSelectAll`, the bar starts with a Checkbox: indeterminate while some
+ *   are selected, checked when all are. One click selects all (`onSelectAll`); a click when all
+ *   are selected clears them.
+ * - The count's Badge fill is component/bulk-action-bar/count-bg: status/neutral in Light, a step
+ *   lighter than the bar in Dark, where status/neutral would all but vanish on bg/popover.
  *
  * - Hidden at `count` 0. It rises 8px and fades in over --duration-slow; it leaves the same way,
  *   still showing the last count. The count's digits roll when it changes (150 ms), except under
@@ -27,17 +35,18 @@ import { RollingNumber } from './rolling-number'
  *   and 64px of bottom padding (`pb-16`) to keep its last row clear.
  * - An action whose `onSelect` returns a promise shows a Spinner until it settles, then a
  *   checkmark in place of its icon for a moment; screen readers hear "Done".
- * - Keys, while focus is anywhere in the bar's parent (the table and the bar): Escape clears
- *   the selection, and each action's `shortcut` runs it (a plain key is ignored while typing in
- *   a field). Arrow keys, Home and End move along the toolbar. Shortcuts show as Kbd.
+ * - Keys: Escape clears the selection while focus is anywhere in the bar's parent (the table and
+ *   the bar), but not while typing in a field. Arrow keys, Home and End move along the toolbar.
+ *   Actions have no shortcuts of their own: single keys in a list are easy to hit by accident and
+ *   hard to discover.
  * - The count is read out from a polite live region as it changes.
  *
- * Works with Table's selection as it is: `count={selected.length}` and
- * `onClear={() => setSelected([])}`.
+ * Works with Table's selection as it is: `count={selected.length}`, `total={rows.length}`,
+ * `onSelectAll={() => setSelected(rows.map((r) => r.id))}` and `onClear={() => setSelected([])}`.
  *
  * Parts, for a bar of your own: `BulkActionBarRoot` › `BulkActionBarCount`,
- * `BulkActionBarSeparator`, `BulkActionBarAction`, `BulkActionBarOverflow`. Other props on
- * BulkActionBar and BulkActionBarRoot, `ref` included, go to the toolbar element.
+ * `BulkActionBarSeparator`, `BulkActionBarAction`, `BulkActionBarOverflow`, `BulkActionBarClear`.
+ * Other props on BulkActionBar and BulkActionBarRoot, `ref` included, go to the toolbar element.
  */
 
 /** The words the Bulk action bar says on its own. They join SatinLabels, so the app translates them there. */
@@ -49,6 +58,8 @@ export const bulkActionBarLabels = {
    * with JSX: `(count, number) => <>Zaznaczono: {number}</>`.
    */
   bulkSelected: (count: number, number: React.ReactNode): React.ReactNode => <>{number} selected</>,
+  /** The checkbox before the count. */
+  selectAll: 'Select all',
   clearSelection: 'Clear selection',
   /** Read out after Escape or the clear button empties the selection. */
   selectionCleared: 'Selection cleared',
@@ -65,63 +76,21 @@ const useLabels = () => {
   return React.useMemo(() => ({ ...bulkActionBarLabels, ...labels }), [labels])
 }
 
-/* ---------- shortcuts ---------- */
-
-type Shortcut = { meta: boolean; ctrl: boolean; shift: boolean; alt: boolean; key: string }
-
-const MODIFIERS: Record<string, keyof Omit<Shortcut, 'key'>> = {
-  '⌘': 'meta', cmd: 'meta', command: 'meta', meta: 'meta',
-  '⌃': 'ctrl', ctrl: 'ctrl', control: 'ctrl',
-  '⇧': 'shift', shift: 'shift',
-  '⌥': 'alt', alt: 'alt', option: 'alt', opt: 'alt',
-}
-const NAMED: Record<string, string> = {
-  '⌫': 'Backspace', backspace: 'Backspace', '⌦': 'Delete', del: 'Delete', delete: 'Delete',
-  '↵': 'Enter', '⏎': 'Enter', enter: 'Enter', return: 'Enter', space: ' ',
-  '←': 'ArrowLeft', '→': 'ArrowRight', '↑': 'ArrowUp', '↓': 'ArrowDown',
-}
-
-/** "⌘⇧M", "⌫" or "Ctrl + Shift + M" as the keys a keydown must carry. */
-export function parseShortcut(shortcut: string): Shortcut {
-  const parsed: Shortcut = { meta: false, ctrl: false, shift: false, alt: false, key: '' }
-  for (const k of keysOf(shortcut)) {
-    const modifier = MODIFIERS[k] ?? MODIFIERS[k.toLowerCase()]
-    if (modifier) parsed[modifier] = true
-    else parsed.key = NAMED[k] ?? NAMED[k.toLowerCase()] ?? k
-  }
-  return parsed
-}
-
-const matches = (e: KeyboardEvent, s: Shortcut) => {
-  if (e.metaKey !== s.meta || e.ctrlKey !== s.ctrl || e.altKey !== s.alt || e.shiftKey !== s.shift) return false
-  if (s.key.length === 1) {
-    // By character, or by the key's place when ⌥ turns the character into another (⌥M → µ).
-    const k = s.key.toLowerCase()
-    return e.key.toLowerCase() === k || e.code === `Key${k.toUpperCase()}` || e.code === `Digit${k}`
-  }
-  return e.key.toLowerCase() === s.key.toLowerCase()
-}
-
-/** The shortcut for `aria-keyshortcuts`: "Meta+Shift+M". */
-const ariaShortcut = (s: Shortcut) =>
-  [s.ctrl && 'Control', s.alt && 'Alt', s.shift && 'Shift', s.meta && 'Meta', s.key === ' ' ? 'Space' : s.key.length === 1 ? s.key.toUpperCase() : s.key]
-    .filter(Boolean)
-    .join('+')
+/* ---------- keys ---------- */
 
 const isEditable = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
 
 /* ---------- the bar ---------- */
 
-type Registered = { shortcut: Shortcut; run: () => void; enabled: () => boolean }
-
 interface BarContextValue {
   /** The count on show: the last one above 0, so the bar leaves as it was. */
   count: number
+  total?: number
   open: boolean
   clear: () => void
+  selectAll?: () => void
   announce: (text: React.ReactNode) => void
-  register: (entry: Registered) => () => void
   labels: ReturnType<typeof useLabels>
 }
 
@@ -136,8 +105,12 @@ function useBar(part: string) {
 export interface BulkActionBarRootProps extends React.ComponentProps<typeof ToolbarPrimitive.Root> {
   /** How many items are selected. The bar shows from 1 and hides at 0. */
   count: number
-  /** Empties the selection: the clear button and Escape call it. */
+  /** Empties the selection: the clear button, Escape and the checkbox (when all are selected) call it. */
   onClear: () => void
+  /** How many items there are in all, so the checkbox knows when all of them are selected. */
+  total?: number
+  /** Selects every item. With it, the bar starts with a select-all Checkbox. */
+  onSelectAll?: () => void
   /**
    * `sticky` sits after the content and sticks to the bottom of the screen while its container
    * scrolls past; `absolute` lays it over the container's bottom edge (give the container
@@ -152,6 +125,8 @@ export interface BulkActionBarRootProps extends React.ComponentProps<typeof Tool
 export function BulkActionBarRoot({
   count,
   onClear,
+  total,
+  onSelectAll,
   position = 'sticky',
   wrapperClassName,
   className,
@@ -170,13 +145,6 @@ export function BulkActionBarRoot({
 
   const regionRef = React.useRef<HTMLDivElement>(null)
   const barRef = React.useRef<HTMLDivElement>(null)
-  const entries = React.useRef(new Set<Registered>())
-  const register = React.useCallback((entry: Registered) => {
-    entries.current.add(entry)
-    return () => {
-      entries.current.delete(entry)
-    }
-  }, [])
 
   // One polite region for what the bar says: the count, "Done", "Selection cleared".
   const [message, setMessage] = React.useState<React.ReactNode>(null)
@@ -192,27 +160,19 @@ export function BulkActionBarRoot({
     setMessage(labels.selectionCleared)
   }, [labels])
 
-  // Escape and the shortcuts, anywhere in the parent: the table and the bar.
+  const onSelectAllRef = React.useRef(onSelectAll)
+  onSelectAllRef.current = onSelectAll
+  const selectAll = React.useCallback(() => onSelectAllRef.current?.(), [])
+
+  // Escape, anywhere in the parent: the table and the bar.
   React.useEffect(() => {
     const container = regionRef.current?.parentElement
     if (!container || !open) return
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.isComposing) return
-      const typing = isEditable(e.target)
-      if (e.key === 'Escape' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+      if (e.key === 'Escape' && !isEditable(e.target) && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
         e.preventDefault()
         clear()
-        return
-      }
-      if (e.repeat) return
-      for (const entry of entries.current) {
-        if (!entry.enabled() || !entry.shortcut.key) continue
-        if (typing && !entry.shortcut.meta && !entry.shortcut.ctrl) continue
-        if (matches(e, entry.shortcut)) {
-          e.preventDefault()
-          entry.run()
-          return
-        }
       }
     }
     container.addEventListener('keydown', onKeyDown)
@@ -230,9 +190,10 @@ export function BulkActionBarRoot({
     else if (barRef.current?.contains(document.activeElement)) (document.activeElement as HTMLElement).blur()
   }, [open])
 
+  const canSelectAll = onSelectAll !== undefined
   const value = React.useMemo(
-    () => ({ count: shownCount, open, clear, announce: setMessage, register, labels }),
-    [shownCount, open, clear, register, labels],
+    () => ({ count: shownCount, total, open, clear, selectAll: canSelectAll ? selectAll : undefined, announce: setMessage, labels }),
+    [shownCount, total, open, clear, canSelectAll, selectAll, labels],
   )
 
   return (
@@ -291,42 +252,75 @@ export function BulkActionBarRoot({
 
 export interface BulkActionBarCountProps extends React.ComponentProps<'div'> {}
 
-/** "3 selected" with the clear button. Other props, `ref` included, go to its `div`. */
+/**
+ * The select-all Checkbox (when the root has `onSelectAll`) and "[3] selected", the number in a
+ * grey Badge. Other props, `ref` included, go to its `div`.
+ */
 export function BulkActionBarCount({ className, ...props }: BulkActionBarCountProps) {
-  const { count, clear, labels } = useBar('BulkActionBarCount')
+  const { count, total, clear, selectAll, labels } = useBar('BulkActionBarCount')
   const formatted = new Intl.NumberFormat(labels.dateLocale).format(count)
+  const all = total !== undefined && count >= total
   return (
-    <div data-slot="bulk-action-bar-count" className={cn('flex shrink-0 items-center gap-1 ps-2', className)} {...props}>
-      <span className="text-sm leading-5 font-medium whitespace-nowrap text-text-default">
+    <div data-slot="bulk-action-bar-count" className={cn('flex shrink-0 items-center gap-2 ps-2 pe-1', className)} {...props}>
+      {selectAll && (
+        <ToolbarPrimitive.Button asChild>
+          <Checkbox
+            data-slot="bulk-action-bar-select-all"
+            aria-label={labels.selectAll}
+            checked={all ? true : 'indeterminate'}
+            // One click selects all; when all are selected, it clears them.
+            onCheckedChange={() => (all ? clear() : selectAll())}
+            className="me-0.5"
+          />
+        </ToolbarPrimitive.Button>
+      )}
+      <span className="flex items-center gap-1.5 text-sm leading-5 font-medium whitespace-nowrap text-text-default">
         {labels.bulkSelected(
           count,
-          <>
+          <Badge size="sm" shape="rounded" className="min-w-5 justify-center bg-component-bulk-action-bar-count-bg">
             <RollingNumber text={formatted} value={count} data-slot="bulk-action-bar-number" />
             <span className="sr-only">{formatted}</span>
-          </>,
+          </Badge>,
         )}
       </span>
-      <Tooltip label={labels.clearSelection} shortcut="Esc">
-        <ToolbarPrimitive.Button asChild>
-          <Button variant="tertiary" size="xs" iconOnly aria-label={labels.clearSelection} aria-keyshortcuts="Escape" onClick={clear} className="text-text-muted">
-            {/* 14px X at 1.09, as on Toast. */}
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-              <path
-                d="M3.94232 10.0582L7.00053 7M7.00053 7L10.0587 3.94179M7.00053 7L3.94232 3.94179M7.00053 7L10.0587 10.0582"
-                stroke="currentColor"
-                strokeWidth="1.09375"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Button>
-        </ToolbarPrimitive.Button>
-      </Tooltip>
     </div>
   )
 }
 
-/** A thin rule between the count and the actions. Other props, `ref` included, go to its `div`. */
+/** The clear button (×), at the end of the bar. Other props, `ref` included, go to the Button. */
+export function BulkActionBarClear({ className, ...props }: Omit<React.ComponentProps<typeof Button>, 'children' | 'iconOnly' | 'asChild'>) {
+  const { clear, labels } = useBar('BulkActionBarClear')
+  return (
+    <Tooltip label={labels.clearSelection}>
+      <ToolbarPrimitive.Button asChild>
+        <Button
+          variant="tertiary"
+          iconOnly
+          aria-label={labels.clearSelection}
+          // Escape does the same while focus is in the table or the bar; no hint on screen.
+          aria-keyshortcuts="Escape"
+          data-slot="bulk-action-bar-clear"
+          onClick={clear}
+          className={cn('shrink-0', className)}
+          {...props}
+        >
+          {/* 14px X at 1.09, as on Toast. */}
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+            <path
+              d="M3.94232 10.0582L7.00053 7M7.00053 7L10.0587 3.94179M7.00053 7L3.94232 3.94179M7.00053 7L10.0587 10.0582"
+              stroke="currentColor"
+              strokeWidth="1.09375"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </Button>
+      </ToolbarPrimitive.Button>
+    </Tooltip>
+  )
+}
+
+/** A thin rule between the count and the actions, and before the clear button. Other props, `ref` included, go to its `div`. */
 export function BulkActionBarSeparator({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <ToolbarPrimitive.Separator asChild>
@@ -344,8 +338,6 @@ export interface BulkAction {
   icon?: React.ReactNode
   /** Runs it. Return a promise and its button shows a Spinner until it settles. Errors are yours to show. */
   onSelect: () => unknown
-  /** Keys that run it while focus is in the bar's parent, e.g. "⌘⇧M", "E" or "⌫". Shown as Kbd. */
-  shortcut?: string
   /** `destructive` colours a button's label and icon (text/destructive). */
   tone?: 'default' | 'destructive'
   disabled?: boolean
@@ -360,8 +352,8 @@ export interface BulkActionBarActionProps
 const DONE_MS = 1200
 
 /** One action as a button in the bar. Other props, `ref` included, go to the Button. */
-export function BulkActionBarAction({ label, icon, onSelect, shortcut, tone = 'default', disabled = false, running, className, ...props }: BulkActionBarActionProps) {
-  const { register, announce, labels, open } = useBar('BulkActionBarAction')
+export function BulkActionBarAction({ label, icon, onSelect, tone = 'default', disabled = false, running, className, ...props }: BulkActionBarActionProps) {
+  const { announce, labels } = useBar('BulkActionBarAction')
   const [pending, setPending] = React.useState(false)
   const [done, setDone] = React.useState(false)
   const busy = React.useRef(false)
@@ -394,16 +386,6 @@ export function BulkActionBarAction({ label, icon, onSelect, shortcut, tone = 'd
       if (alive.current) setPending(false)
     }
   }
-  const runRef = React.useRef(run)
-  runRef.current = run
-
-  const parsed = React.useMemo(() => (shortcut ? parseShortcut(shortcut) : undefined), [shortcut])
-  const state = React.useRef({ disabled, loading, open })
-  state.current = { disabled, loading, open }
-  React.useEffect(() => {
-    if (!parsed) return
-    return register({ shortcut: parsed, run: () => void runRef.current(), enabled: () => state.current.open && !state.current.disabled && !state.current.loading })
-  }, [parsed, register])
 
   return (
     <ToolbarPrimitive.Button asChild disabled={disabled}>
@@ -414,7 +396,6 @@ export function BulkActionBarAction({ label, icon, onSelect, shortcut, tone = 'd
         data-state={loading ? 'running' : done ? 'done' : 'idle'}
         loading={loading}
         disabled={disabled}
-        aria-keyshortcuts={parsed ? ariaShortcut(parsed) : undefined}
         onClick={() => void run()}
         className={cn('shrink-0', tone === 'destructive' && 'text-text-destructive [&_svg]:text-text-destructive', className)}
         {...props}
@@ -436,7 +417,6 @@ export function BulkActionBarAction({ label, icon, onSelect, shortcut, tone = 'd
           </span>
         )}
         {label}
-        {shortcut && <KbdGroup keys={shortcut} aria-hidden className="ms-0.5" />}
       </Button>
     </ToolbarPrimitive.Button>
   )
@@ -449,26 +429,7 @@ export interface BulkActionBarOverflowProps extends Omit<React.ComponentProps<ty
 
 /** The ⋯ button and its menu, for the actions that don't get a button. Other props, `ref` included, go to the ⋯ Button. */
 export function BulkActionBarOverflow({ actions, className, ...props }: BulkActionBarOverflowProps) {
-  const { register, labels, open } = useBar('BulkActionBarOverflow')
-  const latest = React.useRef(actions)
-  latest.current = actions
-  const openRef = React.useRef(open)
-  openRef.current = open
-  const shortcuts = actions.map((a) => a.shortcut ?? '').join('\n')
-  React.useEffect(() => {
-    const offs = latest.current.flatMap((action, i) =>
-      action.shortcut
-        ? [
-            register({
-              shortcut: parseShortcut(action.shortcut),
-              run: () => void latest.current[i]?.onSelect(),
-              enabled: () => openRef.current && !latest.current[i]?.disabled && !latest.current[i]?.running,
-            }),
-          ]
-        : [],
-    )
-    return () => offs.forEach((off) => off())
-  }, [shortcuts, register])
+  const { labels } = useBar('BulkActionBarOverflow')
 
   return (
     <DropdownMenu
@@ -491,7 +452,6 @@ export function BulkActionBarOverflow({ actions, className, ...props }: BulkActi
           key={action.label}
           label={action.label}
           icon={action.icon}
-          shortcut={action.shortcut}
           disabled={action.disabled || action.running}
           layout="inline"
           onSelect={() => void action.onSelect()}
@@ -511,18 +471,21 @@ export interface BulkActionBarProps extends Omit<BulkActionBarRootProps, 'childr
 }
 
 /**
- * The bar from props: the count and clear, a rule, a button per action, then the ⋯ menu.
- * Other props, `ref` included, go to the toolbar element.
+ * The bar from props: the checkbox and the count, a rule, a button per action, the ⋯ menu,
+ * then a rule and the clear button. Other props, `ref` included, go to the toolbar element.
  */
 export function BulkActionBar({ actions = [], overflow = [], ...props }: BulkActionBarProps) {
+  const hasActions = actions.length > 0 || overflow.length > 0
   return (
     <BulkActionBarRoot {...props}>
       <BulkActionBarCount />
-      {(actions.length > 0 || overflow.length > 0) && <BulkActionBarSeparator />}
+      {hasActions && <BulkActionBarSeparator />}
       {actions.map((action) => (
         <BulkActionBarAction key={action.label} {...action} />
       ))}
       {overflow.length > 0 && <BulkActionBarOverflow actions={overflow} />}
+      {hasActions && <BulkActionBarSeparator />}
+      <BulkActionBarClear />
     </BulkActionBarRoot>
   )
 }

@@ -30,6 +30,7 @@ const INTERNAL = {
   'rolling-number': 'the rolling count of Bulk action bar and Toast batch (Satin Pro)',
   'toast-batch': 'toastBatch (Satin Pro), documented on the Bulk action bar page',
   'rolling-number': 'the rolling digits of the Satin Pro counts (Bulk action bar, Filter bar)',
+  'rolling-number': 'the rolling count of Bulk action bar and Toast batch (Satin Pro)',
 }
 // Pages whose component lives in another file (as in registry/build.mjs).
 const ALIASES = { 'area-chart': 'line-chart' }
