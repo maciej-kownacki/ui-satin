@@ -268,6 +268,18 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the calendar and returns focus to the field; a range not yet applied is dropped.' },
     ],
   },
+  'date-availability': {
+    summary:
+      'Calendar\'s grid, one tab stop, with each day a `button` named by its full date and what it offers: "Thursday, November 26, 2026, 3 free slots", or why it can\'t be picked ("…, Fully booked", or the app\'s `reason`). A full day has `aria-disabled` instead of `disabled`, so the arrow keys reach it and its tooltip opens there; Enter and clicks do nothing. The dots are hidden from screen readers, and the tooltip isn\'t added as a description, since the name already says it. Few slots read as a ring, not only a colour. Translate the words with `availabilitySlots`, `availabilityFreeSlots`, `availabilityFull` and `availabilityDay` in SatinLabels.',
+    keyboard: [
+      { keys: ['←', '→'], action: 'Moves a day back or forward, onto full days too, turning the month when needed; mirrored right to left.' },
+      { keys: ['↑', '↓'], action: 'Moves a week back or forward.' },
+      { keys: ['Page Up', 'Page Down'], action: 'Moves a month back or forward.' },
+      { keys: ['Home', 'End'], action: 'Moves to the Monday or the Sunday of the week.' },
+      { keys: ['Enter', 'Space'], action: 'Picks the focused day if it has free slots.' },
+      { keys: ['Esc'], action: 'Closes the open tooltip; in AvailabilityDatePicker, a second Esc closes the calendar and returns focus to the field.' },
+    ],
+  },
   'input-otp': {
     summary:
       'One real `input` over the cells, with `autocomplete="one-time-code"` and a numeric keyboard for digits, so screen readers hear one text box and paste and SMS autofill work. Name it with `label` or `aria-label`. The cells, dashes and caret are hidden. The cell taking the next character shows the focus; a full field shows it on its last cell only when the keyboard tabs into it, so filling in the code doesn’t leave a ring behind. The message under the cells is a polite live region, so a hint changing to "Checking…", success or an error is read out; an error also sets `aria-invalid`. The resend countdown is plain text, so it isn’t read out every second; when it ends it becomes a "Resend code" button. A suggested code is announced once ("Code 428 193 received") and is a button right after the field, named "Use code 428 193 From Messages"; choosing it fills the field and leaves the focus there.',

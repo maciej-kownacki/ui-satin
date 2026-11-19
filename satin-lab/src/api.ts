@@ -471,6 +471,20 @@ export const api: Record<string, Api> = {
       { name: 'label / hint / error', type: ['ReactNode'] },
     ],
   },
+  'date-availability': {
+    description:
+      'The `AvailabilityCalendar` component (Satin Pro, `@uisatin/pro/date-availability`) is a `Calendar` whose days show their free slots: a green dot (a ring at `fewSlots` or fewer) and a Tooltip ("3 slots"), said in the day\'s name too. A day listed with 0 is fully booked: faded, not pickable, still reachable with the arrow keys, its reason in the tooltip and the name. A day left out has no slots. `availability` is keyed by ISO date; `isoDate(date)` makes the key. `AvailabilityDatePicker` is the same in a DatePicker field, and `useAvailability({ availability })` returns the `isDisabled` and `renderDay` to give any Calendar or picker. Every other Calendar prop (`month`, `min`, `max`, `today`, `header`) passes through.',
+    props: [
+      { name: 'availability', type: ['Record<string, number>'] },
+      { name: 'fewSlots', type: ['number'], default: '2' },
+      { name: 'reason', type: ['(date: Date) => string | undefined'] },
+      { name: 'isDisabled', type: ['(date: Date) => boolean'] },
+      { name: 'value', type: ['Date', 'null'] },
+      { name: 'defaultValue', type: ['Date', 'null'], default: 'null' },
+      { name: 'onValueChange', type: ['(value: Date) => void'] },
+      { name: 'today', type: ['Date'] },
+    ],
+  },
   dialog: {
     description: 'The `Dialog` component wraps the Radix dialog in a `div` with `role="dialog"` (`alertdialog` when destructive) that adds a title, body and actions. Put `DialogAlert` in `alert` for a side effect, and wrap footer buttons in `DialogClose` to close it.',
     props: [
