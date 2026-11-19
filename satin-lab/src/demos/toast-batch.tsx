@@ -93,10 +93,17 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
  */
 function Preview({ v }: { v: Record<string, string> }) {
   const [stages, setStages] = React.useState<Record<string, Stage>>(() => Object.fromEntries(CANDIDATES.map((c) => [c.id, c.stage])))
-  const [running, setRunning] = React.useState(false)
+  // The agent starts on mount, so the first render already says it's working.
+  const [running, setRunning] = React.useState(true)
   const run = React.useRef(0)
+  // When each card arrived in a column it wasn't in: newcomers go to the end, a card put back takes its old place.
+  const arrived = React.useRef(new Map<string, number>())
+  const tick = React.useRef(0)
 
-  const moveTo = (ids: string[], stage: Stage) => setStages((all) => ({ ...all, ...Object.fromEntries(ids.map((id) => [id, stage])) }))
+  const moveTo = (ids: string[], stage: Stage) => {
+    for (const id of ids) arrived.current.set(id, ++tick.current)
+    setStages((all) => ({ ...all, ...Object.fromEntries(ids.map((id) => [id, stage])) }))
+  }
 
   const start = React.useCallback(async () => {
     const round = ++run.current
@@ -162,7 +169,8 @@ function Preview({ v }: { v: Record<string, string> }) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         {STAGES.map((stage) => {
-          const here = CANDIDATES.filter((c) => stages[c.id] === stage)
+          const rank = (c: Candidate) => (c.stage === stage ? CANDIDATES.indexOf(c) : CANDIDATES.length + (arrived.current.get(c.id) ?? 0))
+          const here = CANDIDATES.filter((c) => stages[c.id] === stage).sort((a, b) => rank(a) - rank(b))
           return (
             <section key={stage} aria-label={stage} className="flex flex-col gap-1.5 rounded-xl bg-bg-muted p-2">
               <h3 className="flex items-center justify-between px-1 pb-0.5 text-sm leading-5 font-medium text-text-muted">
