@@ -621,15 +621,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'With `linear={false}`: makes the focused step current.' },
     ],
   },
-  'tool-call': {
-    summary:
-      'The header is a `button` with `aria-expanded` and `aria-controls`, named by the tool, its target and the status ("Find slots calendar.findSlots Running"); the clock that ticks while it runs is hidden. Folded, the body stays mounted but leaves the tab order and screen readers. Each section is named after the tool ("Find slots Input code"), so two cards’ code never shares a name. A call that ends while the card is on screen is read out politely ("Find slots Failed"); Retry hands focus back to the header, since it leaves with the error.',
-    keyboard: [
-      { keys: ['Enter', 'Space'], action: 'On the header: opens or folds the card.' },
-      { keys: ['Tab'], action: 'Open, moves through each section’s Copy and code, Show all, and Retry.' },
-      { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
-    ],
-  },
   'activity-timeline': {
     summary:
       'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
@@ -662,6 +653,15 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'Picks the highlighted time once the arrows or the pointer moved there; otherwise reads what was typed ("930", "9:30pm"). In a TimeList, Space picks too.' },
       { keys: ['Esc'], action: 'Closes the list and leaves focus in the field. With the list closed, puts back the time the field showed.' },
       { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
+    ],
+  },
+  'tool-call': {
+    summary:
+      'The header is a `button` with `aria-expanded` and `aria-controls`, named by the tool, its target and the status ("Find slots calendar.findSlots Running"); the clock that ticks while it runs is hidden. Folded, the body stays mounted but leaves the tab order and screen readers. Each section is named after the tool ("Find slots Input code"), so two cards’ code never shares a name. A call that ends while the card is on screen is read out politely ("Find slots Failed"); Retry hands focus back to the header, since it leaves with the error.',
+    keyboard: [
+      { keys: ['Enter', 'Space'], action: 'On the header: opens or folds the card.' },
+      { keys: ['Tab'], action: 'Open, moves through each section’s Copy and code, Show all, and Retry.' },
+      { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
     ],
   },
   'agent-permissions': {

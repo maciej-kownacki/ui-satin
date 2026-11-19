@@ -1250,26 +1250,6 @@ export const api: Record<string, Api> = {
       { name: 'aria-label', type: ['string'] },
     ],
   },
-  'tool-call': {
-    description:
-      'The `ToolCall` component is a card whose header is a `button` (`aria-expanded`, `aria-controls`) with the tool, its target and the status; it opens onto the input and the output, as JSON in CodeBlocks or as nodes of your own, cut at `maxLines` with Show all. A failed call opens on its own, with the error and Retry. The parts it is made of, `ToolCallRoot`, `ToolCallHeader`, `ToolCallContent`, `ToolCallSection` and `ToolCallError`, build anything else.',
-    props: [
-      { name: 'name', type: ['ReactNode'] },
-      { name: 'status', type: ['"pending"', '"running"', '"success"', '"error"', '"cancelled"'] },
-      { name: 'icon', type: ['ReactNode'], default: '<Tools />' },
-      { name: 'target', type: ['ReactNode'] },
-      { name: 'input', type: ['ToolCallValue'] },
-      { name: 'output', type: ['ToolCallValue'] },
-      { name: 'error', type: ['ReactNode'] },
-      { name: 'onRetry', type: ['() => void'] },
-      { name: 'duration', type: ['number'] },
-      { name: 'startedAt', type: ['Date', 'number'] },
-      { name: 'maxLines', type: ['number'], default: '10' },
-      { name: 'open', type: ['boolean'] },
-      { name: 'defaultOpen', type: ['boolean'], default: 'status === "error"' },
-      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
-    ],
-  },
   'activity-timeline': {
     description:
       'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
@@ -1326,6 +1306,26 @@ export const api: Record<string, Api> = {
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
       { name: 'name', type: ['string'] },
       { name: 'label / hint / error', type: ['ReactNode'] },
+    ],
+  },
+  'tool-call': {
+    description:
+      'The `ToolCall` component is a card whose header is a `button` (`aria-expanded`, `aria-controls`) with the tool, its target and the status; it opens onto the input and the output, as JSON in CodeBlocks or as nodes of your own, cut at `maxLines` with Show all. A failed call opens on its own, with the error and Retry. The parts it is made of, `ToolCallRoot`, `ToolCallHeader`, `ToolCallContent`, `ToolCallSection` and `ToolCallError`, build anything else.',
+    props: [
+      { name: 'name', type: ['ReactNode'] },
+      { name: 'status', type: ['"pending"', '"running"', '"success"', '"error"', '"cancelled"'] },
+      { name: 'icon', type: ['ReactNode'], default: '<Tools />' },
+      { name: 'target', type: ['ReactNode'] },
+      { name: 'input', type: ['ToolCallValue'] },
+      { name: 'output', type: ['ToolCallValue'] },
+      { name: 'error', type: ['ReactNode'] },
+      { name: 'onRetry', type: ['() => void'] },
+      { name: 'duration', type: ['number'] },
+      { name: 'startedAt', type: ['Date', 'number'] },
+      { name: 'maxLines', type: ['number'], default: '10' },
+      { name: 'open', type: ['boolean'] },
+      { name: 'defaultOpen', type: ['boolean'], default: 'status === "error"' },
+      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
     ],
   },
   'agent-permissions': {
