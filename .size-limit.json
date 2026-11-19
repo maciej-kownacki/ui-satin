@@ -57,5 +57,17 @@
     "gzip": true,
     "limit": "3 kB",
     "rolldown": false
+  },
+  {
+    "name": "Grouped table (Pro)",
+    "path": "packages/ui-pro/dist/components/table-pro.js",
+    "import": "{ TableGrouped }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "6 kB"
   }
 ]

@@ -73,6 +73,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Streaming text': [320, 360],
   'Switch': [280, 280],
   'Table': [304, 304],
+  'Grouped table': [600, 600],
   'Tabs': [280, 280],
   'Textarea': [280, 280],
   'Thinking': [280, 280],

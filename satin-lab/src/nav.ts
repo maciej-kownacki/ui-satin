@@ -210,6 +210,13 @@ export const nav: NavGroup[] = [
       { id: 'spinner', title: 'Spinner', href: '/components/spinner', description: 'Says something is loading when there is no telling how long it takes.' },
       { id: 'switch', title: 'Switch', href: '/components/switch', description: 'Turns a setting on or off, with immediate effect.' },
       { id: 'table', title: 'Table', href: '/components/table', description: 'Rows of records with sortable columns, selection and sideways scroll.' },
+      {
+        id: 'table-pro',
+        title: 'Grouped table',
+        href: '/components/table-pro',
+        description: 'A Table whose rows open onto sub-rows and gather into groups with subtotals, with a pinned first column, a totals row and a compact density.',
+        edition: 'pro',
+      },
       { id: 'tabs', title: 'Tabs', href: '/components/tabs', description: 'Switches between two to six views of the same page or panel.' },
       { id: 'textarea', title: 'Textarea', href: '/components/textarea', description: 'Multi-line text input for notes, requests and longer answers.' },
       { id: 'toast', title: 'Toast', href: '/components/toast', description: 'A short, passing message about something that just happened.' },
