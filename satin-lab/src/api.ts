@@ -417,29 +417,6 @@ export const api: Record<string, Api> = {
       { name: 'renderValue', type: ['(picked, { remove, disabled }) => ReactNode'] },
     ],
   },
-  'people-picker': {
-    description:
-      'The `PeoplePicker` component (Satin Pro, `@uisatin/pro/people-picker`) is a Combobox for people: rows show an avatar, the name and the role (or email), picks show as chips with avatars. Each person is `{ id, name, role, email, avatar, tone, disabled }`; `avatar` is an image URL, and without one the initials show on the `tone`. People come from `people`, titled `groups` (`{ label, people }[]`), or `search(query, { signal })`, called `searchDelay` ms after the last keystroke and at once with \'\' on open; a newer query aborts the older one, and meanwhile the last results stay, narrowed by the query. `people` and `groups` filter as you type, with no delay. `recent` is listed first while the query is empty. `value` holds the people, not their ids. Every other Combobox prop (label, hint, error, footer, size, open state) works as there.',
-    props: [
-      { name: 'people', type: ['Person[]'] },
-      { name: 'groups', type: ['PeopleGroup[]'] },
-      { name: 'search', type: ['(query, { signal }) => Promise<Person[] | PeopleGroup[]>'] },
-      { name: 'searchDelay', type: ['number'], default: '150' },
-      { name: 'recent', type: ['Person[]'] },
-      { name: 'value', type: ['Person[]'] },
-      { name: 'defaultValue', type: ['Person[]'] },
-      { name: 'onValueChange', type: ['(people: Person[]) => void'] },
-      { name: 'multiple', type: ['boolean'], default: 'false' },
-      { name: 'maxChips', type: ['number'] },
-      { name: 'label', type: ['ReactNode'] },
-      { name: 'hint', type: ['ReactNode'] },
-      { name: 'placeholder', type: ['string'], default: '"Add people"' },
-      { name: 'searchPlaceholder', type: ['string'], default: '"Search people…"' },
-      { name: 'emptyText', type: ['ReactNode'] },
-      { name: 'disabled', type: ['boolean'], default: 'false' },
-      { name: 'wrapperClassName', type: ['string'] },
-    ],
-  },
   'command-menu': {
     description: 'The `CommandMenu` component wraps the Radix dialog in a `div` with a search `input` (`role="combobox"`) and a `listbox` of grouped commands. ⌘K or Ctrl+K toggles it unless `hotkey` is off. For a menu that changes what it shows: `query` / `onQueryChange` control the search (emptied as the menu closes), an item with `keepOpen` runs without closing it, `header` goes above the search row, `children` take the list\'s place and `footer` replaces the key hints (compose it from `KbdHint`).',
     props: [
@@ -463,27 +440,6 @@ export const api: Record<string, Api> = {
       { name: 'header', type: ['ReactNode'] },
       { name: 'footer', type: ['ReactNode'] },
       { name: 'children', type: ['ReactNode'] },
-    ],
-  },
-  'command-pages': {
-    description:
-      'The `CommandPages` component (Satin Pro, `@uisatin/pro/command-pages`) is a `CommandMenu` with sub-pages. An item with `page: { groups, title, placeholder }` opens it in place of the list; an item\'s `onSelect(menu)` can `menu.push(page)` instead, and the menu closes after any other item. A group\'s `icon` is the kind of record it lists (a person, a job, a company) and shows on every row without its own. An item\'s `success` shows as a success toast once it has run, after the promise `onSelect` returns, if any (the app needs a `Toaster`). The panel keeps the top edge it opened with, so pages of other lengths grow or shrink it downwards. A `Breadcrumb` above the search leads back; Backspace in the empty search goes back one page. With `onAsk`, every query adds \'Ask the agent about "…"\' as the last row; it calls `onAsk(query)` and shows the question over `answer` (StreamingText) and `answering` (AgentLoading until the first words). Without `answer` and `answering` the menu closes after `onAsk`. `controlRef` gets `{ push, back, ask, search, close }`. Part: `CommandPagesAnswer`. Every `CommandMenu` prop works as there.',
-    props: [
-      { name: 'groups', type: ['CommandPageGroup[]'] },
-      { name: 'item.page', type: ['CommandPage'] },
-      { name: 'item.onSelect', type: ['(menu: CommandPagesControl) => void | Promise<unknown>'] },
-      { name: 'item.success', type: ['ReactNode'] },
-      { name: 'group.icon', type: ['ReactNode'] },
-      { name: 'rootTitle', type: ['string'], default: '"Commands"' },
-      { name: 'onAsk', type: ['(query: string) => void'] },
-      { name: 'answer', type: ['string'] },
-      { name: 'answering', type: ['boolean'] },
-      { name: 'controlRef', type: ['Ref<CommandPagesControl>'] },
-      { name: 'open', type: ['boolean'] },
-      { name: 'defaultOpen', type: ['boolean'], default: 'false' },
-      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
-      { name: 'hotkey', type: ['boolean'], default: 'true' },
-      { name: 'hints', type: ['boolean'], default: 'true' },
     ],
   },
   'context-menu': {
@@ -1207,22 +1163,6 @@ export const api: Record<string, Api> = {
       { name: 'formatTime', type: ['(at: Date) => ReactNode'], default: 'time of day, date when not today' },
     ],
   },
-  'activity-timeline': {
-    description:
-      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
-    props: [
-      { name: 'items', type: ['ActivityItem[]'] },
-      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
-      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
-      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'expanded', type: ['string[]'] },
-      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
-      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
-      { name: 'loading', type: ['boolean'], default: 'false' },
-      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
-    ],
-  },
   'agent-presence': {
     description:
       'The `AgentPresence` component (Satin Pro, `@uisatin/pro/agent-presence`) lays an edge in the agent\'s tone and a small label over `target` (a ref, an element or a selector) without touching it; render it inside the same `position: relative` box as the targets. `label` names the target for screen readers ("Hiring assistant is updating Tara Mendes"). For a list, `useAgentPresence()` returns `item(id)` to spread on each row or card, `start(id, label)`, `done()`, `conflict(person)`, `clear()` and the `props` to spread on AgentPresence; it takes `value`, `defaultValue` and `onValueChange`. Parts: `AgentPresenceRoot`, `AgentPresenceOutline`, `AgentPresenceLabel`.',
@@ -1233,25 +1173,6 @@ export const api: Record<string, Api> = {
       { name: 'state', type: ['"working"', '"done"', '"conflict"'], default: '"working"' },
       { name: 'person', type: ['string', '{ name, initials?, tone? }'] },
       { name: 'doneDuration', type: ['number'], default: '1500' },
-    ],
-  },
-  'command-pages': {
-    description:
-      'The `CommandPages` component (Satin Pro, `@uisatin/pro/command-pages`) is a `CommandMenu` with sub-pages. An item with `page: { groups, title, placeholder }` opens it in place of the list; an item\'s `onSelect(menu)` can `menu.push(page)` instead, and the menu closes after any other item. A `Breadcrumb` above the search leads back; Backspace in the empty search goes back one page. With `onAsk`, every query adds \'Ask the agent about "…"\' as the last row; it calls `onAsk(query)` and shows the question over `answer` (StreamingText) and `answering` (AgentLoading until the first words). Without `answer` and `answering` the menu closes after `onAsk`. `controlRef` gets `{ push, back, ask, search, close }`. Part: `CommandPagesAnswer`. Every `CommandMenu` prop works as there.',
-    props: [
-      { name: 'groups', type: ['CommandPageGroup[]'] },
-      { name: 'item.page', type: ['CommandPage'] },
-      { name: 'item.onSelect', type: ['(menu: CommandPagesControl) => void'] },
-      { name: 'rootTitle', type: ['string'], default: '"Commands"' },
-      { name: 'onAsk', type: ['(query: string) => void'] },
-      { name: 'answer', type: ['string'] },
-      { name: 'answering', type: ['boolean'] },
-      { name: 'controlRef', type: ['Ref<CommandPagesControl>'] },
-      { name: 'open', type: ['boolean'] },
-      { name: 'defaultOpen', type: ['boolean'], default: 'false' },
-      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
-      { name: 'hotkey', type: ['boolean'], default: 'true' },
-      { name: 'hints', type: ['boolean'], default: 'true' },
     ],
   },
   'data-grid': {
@@ -1347,6 +1268,43 @@ export const api: Record<string, Api> = {
       { name: 'open', type: ['boolean'] },
       { name: 'defaultOpen', type: ['boolean'], default: 'status === "error"' },
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+    ],
+  },
+  'activity-timeline': {
+    description:
+      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
+    props: [
+      { name: 'items', type: ['ActivityItem[]'] },
+      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
+      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
+      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'expanded', type: ['string[]'] },
+      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
+      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
+      { name: 'loading', type: ['boolean'], default: 'false' },
+      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
+    ],
+  },
+  'command-pages': {
+    description:
+      'The `CommandPages` component (Satin Pro, `@uisatin/pro/command-pages`) is a `CommandMenu` with sub-pages. An item with `page: { groups, title, placeholder }` opens it in place of the list; an item\'s `onSelect(menu)` can `menu.push(page)` instead, and the menu closes after any other item. A group\'s `icon` is the kind of record it lists (a person, a job, a company) and shows on every row without its own. An item\'s `success` shows as a success toast once it has run, after the promise `onSelect` returns, if any (the app needs a `Toaster`). The panel keeps the top edge it opened with, so pages of other lengths grow or shrink it downwards. A `Breadcrumb` above the search leads back; Backspace in the empty search goes back one page. With `onAsk`, every query adds \'Ask the agent about "…"\' as the last row; it calls `onAsk(query)` and shows the question over `answer` (StreamingText) and `answering` (AgentLoading until the first words). Without `answer` and `answering` the menu closes after `onAsk`. `controlRef` gets `{ push, back, ask, search, close }`. Part: `CommandPagesAnswer`. Every `CommandMenu` prop works as there.',
+    props: [
+      { name: 'groups', type: ['CommandPageGroup[]'] },
+      { name: 'item.page', type: ['CommandPage'] },
+      { name: 'item.onSelect', type: ['(menu: CommandPagesControl) => void | Promise<unknown>'] },
+      { name: 'item.success', type: ['ReactNode'] },
+      { name: 'group.icon', type: ['ReactNode'] },
+      { name: 'rootTitle', type: ['string'], default: '"Commands"' },
+      { name: 'onAsk', type: ['(query: string) => void'] },
+      { name: 'answer', type: ['string'] },
+      { name: 'answering', type: ['boolean'] },
+      { name: 'controlRef', type: ['Ref<CommandPagesControl>'] },
+      { name: 'open', type: ['boolean'] },
+      { name: 'defaultOpen', type: ['boolean'], default: 'false' },
+      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+      { name: 'hotkey', type: ['boolean'], default: 'true' },
+      { name: 'hints', type: ['boolean'], default: 'true' },
     ],
   },
   'time-picker': {
@@ -1528,12 +1486,12 @@ export const api: Record<string, Api> = {
   },
   'people-picker': {
     description:
-      'The `PeoplePicker` component (Satin Pro, `@uisatin/pro/people-picker`) is a Combobox for people: rows show an avatar, the name and the role (or email), picks show as chips with avatars. Each person is `{ id, name, role, email, avatar, tone, disabled }`; `avatar` is an image URL, and without one the initials show on the `tone`. People come from `people`, titled `groups` (`{ label, people }[]`), or `search(query, { signal })`, called `searchDelay` ms after the last keystroke and at once with \'\' on open; a newer query aborts the older one. `recent` is listed first while the query is empty. `value` holds the people, not their ids. Every other Combobox prop (label, hint, error, footer, size, open state) works as there.',
+      'The `PeoplePicker` component (Satin Pro, `@uisatin/pro/people-picker`) is a Combobox for people: rows show an avatar, the name and the role (or email), picks show as chips with avatars. Each person is `{ id, name, role, email, avatar, tone, disabled }`; `avatar` is an image URL, and without one the initials show on the `tone`. People come from `people`, titled `groups` (`{ label, people }[]`), or `search(query, { signal })`, called `searchDelay` ms after the last keystroke and at once with \'\' on open; a newer query aborts the older one, and meanwhile the last results stay, narrowed by the query. `people` and `groups` filter as you type, with no delay. `recent` is listed first while the query is empty. `value` holds the people, not their ids. Every other Combobox prop (label, hint, error, footer, size, open state) works as there.',
     props: [
       { name: 'people', type: ['Person[]'] },
       { name: 'groups', type: ['PeopleGroup[]'] },
       { name: 'search', type: ['(query, { signal }) => Promise<Person[] | PeopleGroup[]>'] },
-      { name: 'searchDelay', type: ['number'], default: '250' },
+      { name: 'searchDelay', type: ['number'], default: '150' },
       { name: 'recent', type: ['Person[]'] },
       { name: 'value', type: ['Person[]'] },
       { name: 'defaultValue', type: ['Person[]'] },

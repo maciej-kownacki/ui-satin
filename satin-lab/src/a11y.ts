@@ -166,18 +166,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the list, drops picks waiting for Apply and returns focus to the field.' },
     ],
   },
-  'people-picker': {
-    summary:
-      'Combobox\'s roles, with people in them: each option is named by the person and their role, "Marta Nowak, Hiring manager" (a hidden comma joins them; the avatar is hidden). Recent and every titled group are `group`s named by their headers. While a search runs the last results stay, narrowed by the query; one that takes longer than 300 ms marks the list `aria-busy`. "Searching…", "No one matches" or a failed search are read out from a `status` region. A disabled person is `aria-disabled`. Each chip has a "Remove <name>" button; after a removal focus moves to the chip that takes its place, or to the field. The "+N" chip is a button named "Show N more"; it shows the rest and moves focus to the first of them.',
-    keyboard: [
-      { keys: ['Enter', 'Space'], action: 'On the field: opens the list and focuses the search.' },
-      { keys: ['A–Z'], action: 'In the search: filters by name, role and email, ignoring accents, or runs `search` after a pause.' },
-      { keys: ['↑', '↓'], action: 'Moves the highlight across the groups, wrapping at the ends.' },
-      { keys: ['Enter'], action: 'Picks the highlighted person and, with `multiple`, drops one already picked; a single pick closes the list.' },
-      { keys: ['Esc'], action: 'Closes the list and returns focus to the field.' },
-      { keys: ['Tab'], action: 'Out of the field, through the chips\' remove buttons and the "+N" chip.' },
-    ],
-  },
   'command-menu': {
     summary:
       'A Radix dialog titled "Command menu" for screen readers. The search input is a `combobox` named "Search commands" that points at the highlighted row with `aria-activedescendant`; the rows are options in a `listbox` named "Commands", grouped under their headings. The key hints in the footer are hidden.',
@@ -187,17 +175,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'Runs the highlighted command and closes the menu.' },
       { keys: ['Tab', 'Shift+Tab'], action: 'Keep focus inside the menu while it is modal (the default).' },
       { keys: ['Esc'], action: 'Closes the menu and returns focus to where it was.' },
-    ],
-  },
-  'command-pages': {
-    summary:
-      'Everything CommandMenu has (a Radix dialog, the search as a `combobox` pointing at the highlighted `option`), plus: on a sub-page a `Breadcrumb` (a `nav` named "Breadcrumb", the current page `aria-current="page"`, earlier pages as buttons) sits above the search, and a polite `status` region reads out each page\'s name with "Backspace goes back" (`commandPageOpened` in SatinLabels) as it opens, and the page\'s name on the way back. The ask row is an option named \'Ask the agent about "…"\' (`commandAskAbout`) under an "Agent" heading. On the agent\'s page the search stops pointing at a list (`aria-expanded="false"`); the answer is a focusable `region` named after the question, AgentLoading says "Thinking…", and the same status region reads the whole answer once it is complete. The key hints, ⌫ Back included, are hidden from screen readers, which hear the hint with each page instead. A row\'s kind icon (a person, a company) is decorative: its label and the group\'s heading say what it is. A completed command\'s `success` toast is read out by the Toaster\'s polite region after the menu closes and focus is back where it was.',
-    keyboard: [
-      { keys: ['↑', '↓'], action: 'Moves the highlight, wrapping at the ends.' },
-      { keys: ['Enter'], action: 'Runs the highlighted row: opens its page, runs it and closes the menu, or asks the agent. On the agent\'s page, asks the follow-up in the search.' },
-      { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
-      { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
-      { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
     ],
   },
   'cookie-consent': {
@@ -602,29 +579,9 @@ export const a11y: Record<string, A11y> = {
       { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
     ],
   },
-  'activity-timeline': {
-    summary:
-      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
-      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
-      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
-    ],
-  },
   'agent-presence': {
     summary:
       'The edge and the label are hidden from screen readers; what they show is read out from a polite `status` region instead: "Hiring assistant is updating Tara Mendes" as the agent starts on a target or moves to the next, "Hiring assistant updated Lena Fischer" when it\'s done, and "Jon Park is editing Omar Haddad; Hiring assistant is waiting" in a conflict (`agentPresenceWorking`, `agentPresenceDone`, `agentPresenceConflict` in SatinLabels). `label` names the target in those sentences, so give it the row\'s or card\'s name. Each state has its own words on the label, so colour is never the only cue, and a conflict\'s edge is dashed. It takes no focus and no pointer, and never changes the target, so nothing moves under it. Under reduced motion it neither fades nor glides and the mark stands still.',
-  },
-  'command-pages': {
-    summary:
-      'Everything CommandMenu has (a Radix dialog, the search as a `combobox` pointing at the highlighted `option`), plus: on a sub-page a `Breadcrumb` (a `nav` named "Breadcrumb", the current page `aria-current="page"`, earlier pages as buttons) sits above the search, and a polite `status` region reads out each page\'s name with "Backspace goes back" (`commandPageOpened` in SatinLabels) as it opens, and the page\'s name on the way back. The ask row is an option named \'Ask the agent about "…"\' (`commandAskAbout`) under an "Agent" heading. On the agent\'s page the search stops pointing at a list (`aria-expanded="false"`); the answer is a focusable `region` named after the question, AgentLoading says "Thinking…", and the same status region reads the whole answer once it is complete. The key hints, ⌫ Back included, are hidden from screen readers, which hear the hint with each page instead.',
-    keyboard: [
-      { keys: ['↑', '↓'], action: 'Moves the highlight, wrapping at the ends.' },
-      { keys: ['Enter'], action: 'Runs the highlighted row: opens its page, runs it and closes the menu, or asks the agent. On the agent\'s page, asks the follow-up in the search.' },
-      { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
-      { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
-      { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
-    ],
   },
   'data-grid': {
     summary:
@@ -671,6 +628,26 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'On the header: opens or folds the card.' },
       { keys: ['Tab'], action: 'Open, moves through each section’s Copy and code, Show all, and Retry.' },
       { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
+    ],
+  },
+  'activity-timeline': {
+    summary:
+      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
+      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
+      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
+    ],
+  },
+  'command-pages': {
+    summary:
+      'Everything CommandMenu has (a Radix dialog, the search as a `combobox` pointing at the highlighted `option`), plus: on a sub-page a `Breadcrumb` (a `nav` named "Breadcrumb", the current page `aria-current="page"`, earlier pages as buttons) sits above the search, and a polite `status` region reads out each page\'s name with "Backspace goes back" (`commandPageOpened` in SatinLabels) as it opens, and the page\'s name on the way back. The ask row is an option named \'Ask the agent about "…"\' (`commandAskAbout`) under an "Agent" heading. On the agent\'s page the search stops pointing at a list (`aria-expanded="false"`); the answer is a focusable `region` named after the question, AgentLoading says "Thinking…", and the same status region reads the whole answer once it is complete. The key hints, ⌫ Back included, are hidden from screen readers, which hear the hint with each page instead. A row\'s kind icon (a person, a company) is decorative: its label and the group\'s heading say what it is. A completed command\'s `success` toast is read out by the Toaster\'s polite region after the menu closes and focus is back where it was.',
+    keyboard: [
+      { keys: ['↑', '↓'], action: 'Moves the highlight, wrapping at the ends.' },
+      { keys: ['Enter'], action: 'Runs the highlighted row: opens its page, runs it and closes the menu, or asks the agent. On the agent\'s page, asks the follow-up in the search.' },
+      { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
+      { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
+      { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
     ],
   },
   'time-picker': {
@@ -779,7 +756,7 @@ export const a11y: Record<string, A11y> = {
   },
   'people-picker': {
     summary:
-      'Combobox\'s roles, with people in them: each option is named by the person and their role, "Marta Nowak, Hiring manager" (a hidden comma joins them; the avatar is hidden). Recent and every titled group are `group`s named by their headers. While a search runs the list is `aria-busy`, and "Searching…", "No one matches" or a failed search are read out from a `status` region. A disabled person is `aria-disabled`. Each chip has a "Remove <name>" button; after a removal focus moves to the chip that takes its place, or to the field. The "+N" chip is a button named "Show N more"; it shows the rest and moves focus to the first of them.',
+      'Combobox\'s roles, with people in them: each option is named by the person and their role, "Marta Nowak, Hiring manager" (a hidden comma joins them; the avatar is hidden). Recent and every titled group are `group`s named by their headers. While a search runs the last results stay, narrowed by the query; one that takes longer than 300 ms marks the list `aria-busy`. "Searching…", "No one matches" or a failed search are read out from a `status` region. A disabled person is `aria-disabled`. Each chip has a "Remove <name>" button; after a removal focus moves to the chip that takes its place, or to the field. The "+N" chip is a button named "Show N more"; it shows the rest and moves focus to the first of them.',
     keyboard: [
       { keys: ['Enter', 'Space'], action: 'On the field: opens the list and focuses the search.' },
       { keys: ['A–Z'], action: 'In the search: filters by name, role and email, ignoring accents, or runs `search` after a pause.' },
