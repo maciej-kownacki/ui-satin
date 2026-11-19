@@ -1887,7 +1887,103 @@
       ]
     }
   },
+  "date-availability": {
+    "AvailabilityCalendar": {
+      "description": "The Calendar with each day's free slots: a dot, a tooltip and its name. Other props, `ref` included, go to Calendar's root.",
+      "type": "AvailabilityCalendarProps",
+      "extends": [
+        "Omit<CalendarProps, 'mode' | 'range' | 'onRangeChange' | 'value' | 'onValueChange' | 'isDisabled' | 'renderDay'>"
+      ],
+      "props": [
+        {
+          "name": "availability",
+          "type": "Availability",
+          "required": true,
+          "description": "Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked."
+        },
+        {
+          "name": "fewSlots",
+          "type": "number",
+          "required": false,
+          "default": "2",
+          "description": "At or below this many free slots a day reads as nearly full: its dot becomes a ring."
+        },
+        {
+          "name": "reason",
+          "type": "(date: Date) => string | undefined",
+          "required": false,
+          "description": "Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0."
+        },
+        {
+          "name": "isDisabled",
+          "type": "(date: Date) => boolean",
+          "required": false,
+          "description": "More days that can't be picked, whatever their slots."
+        },
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false,
+          "description": "The picked day (controlled)."
+        },
+        {
+          "name": "defaultValue",
+          "type": "Date | null",
+          "required": false,
+          "default": "null",
+          "description": "The day picked at first (uncontrolled)."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false
+        }
+      ]
+    },
+    "AvailabilityDatePicker": {
+      "description": "A DatePicker field whose calendar shows each day's free slots. Other props, `ref` included, go to the trigger button.",
+      "type": "AvailabilityDatePickerProps",
+      "extends": [
+        "Omit<DatePickerProps, 'isDisabled' | 'renderDay'>"
+      ],
+      "props": [
+        {
+          "name": "availability",
+          "type": "Availability",
+          "required": true,
+          "description": "Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked."
+        },
+        {
+          "name": "fewSlots",
+          "type": "number",
+          "required": false,
+          "default": "2",
+          "description": "At or below this many free slots a day reads as nearly full: its dot becomes a ring."
+        },
+        {
+          "name": "reason",
+          "type": "(date: Date) => string | undefined",
+          "required": false,
+          "description": "Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0."
+        },
+        {
+          "name": "isDisabled",
+          "type": "(date: Date) => boolean",
+          "required": false,
+          "description": "More days that can't be picked, whatever their slots."
+        }
+      ]
+    }
+  },
   "date-picker": {
+    "CalendarDay": {
+      "description": "One day of the Calendar, to return from `renderDay`: the default day button, which picks, holds the arrow keys' focus and draws today, the pick and the range. Children replace the number, `aria-label` the full date as its name. Other props, `ref` included, go to the button, so a Tooltip can wrap it.",
+      "type": "CalendarDayProps",
+      "extends": [
+        "Omit<React.ComponentProps<'button'>, 'type'>"
+      ],
+      "props": []
+    },
     "Calendar": {
       "type": "CalendarProps",
       "extends": [
@@ -1963,6 +2059,18 @@
           "description": "Today, for the dash. Defaults to now."
         },
         {
+          "name": "isDisabled",
+          "type": "(date: Date) => boolean",
+          "required": false,
+          "description": "Days that can't be picked, on top of those outside `min`/`max` (weekends, booked days). Like those, they stay reachable with the arrow keys and are read as unavailable."
+        },
+        {
+          "name": "renderDay",
+          "type": "(date: Date, state: CalendarDayState) => React.ReactNode",
+          "required": false,
+          "description": "Draws each day, for a mark, a name or a tooltip of your own. Return a `CalendarDay`, the default day button, so picking and the arrow keys keep working."
+        },
+        {
           "name": "className",
           "type": "string",
           "required": false
@@ -2000,6 +2108,18 @@
           "name": "today",
           "type": "Date",
           "required": false
+        },
+        {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
         },
         {
           "name": "className",
@@ -2048,6 +2168,18 @@
           "required": false
         },
         {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
           "name": "container",
           "type": "HTMLElement | null",
           "required": false,
@@ -2094,6 +2226,18 @@
           "name": "today",
           "type": "Date",
           "required": false
+        },
+        {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
         },
         {
           "name": "applyLabel",
@@ -2153,6 +2297,18 @@
           "name": "today",
           "type": "Date",
           "required": false
+        },
+        {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
         },
         {
           "name": "applyLabel",
