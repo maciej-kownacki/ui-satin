@@ -1,0 +1,8 @@
+/*
+ * Satin Pro for an app that compiles Satin from source with its own Tailwind (the docs site):
+ * import it after @uisatin/ui/styles.css, which brings Tailwind, the tokens and the variants.
+ */
+@import "./pro.css";
+
+/* Let Tailwind see the classes used inside the Pro components. */
+@source "../components";

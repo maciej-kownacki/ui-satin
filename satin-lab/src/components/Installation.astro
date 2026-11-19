@@ -3,7 +3,8 @@
  * Installation, between the Showcase and the API Reference: what is particular to this
  * component, nothing more. An npm | shadcn CLI switch (InstallSwitch, remembered across pages):
  *
- * - npm: `npm i @uisatin/ui` and this component's import line.
+ * - npm: `npm i @uisatin/ui` and this component's import line. A Satin Pro page (`edition: 'pro'`)
+ *   installs `@uisatin/pro` too, imports from it and says Pro isn't on npm yet.
  * - shadcn CLI: the command for this component's registry item (public/r/<id>.json, built by
  *   `npm run registry`) plus any Satin components the example needs, and the files it adds.
  *
@@ -17,12 +18,15 @@ import CodeFrame from './CodeFrame.astro'
 import InstallSwitch from './InstallSwitch'
 import sizes from '../sizes.json'
 import { ALIASES } from '../lib/examples'
+import { packageOf, page } from '../nav'
 
 interface Props {
   id: string
   title: string
 }
 const { id, title } = Astro.props
+const pro = page(id).edition === 'pro'
+const pkg = packageOf(page(id))
 
 type RegistryItem = { name: string; dependencies?: string[]; registryDependencies?: string[] }
 const dir = [join(process.cwd(), 'public/r'), join(process.cwd(), 'satin-lab/public/r')].find((d) => existsSync(d))
@@ -39,7 +43,7 @@ const used = new Set<string>()
 const walk = (name: string) => {
   for (const dep of read(name)?.registryDependencies ?? []) {
     const n = nameOf(dep)
-    if (n === 'utils' || n === 'satin-styles' || used.has(n)) continue
+    if (n === 'utils' || n === 'satin-styles' || n === 'satin-pro-styles' || used.has(n)) continue
     used.add(n)
     walk(n)
   }
@@ -49,7 +53,10 @@ walk(id)
 const demos = import.meta.glob<{ options?: { code: string }[] }>('../demos/*.tsx')
 const demo = demos[`../demos/${id}.tsx`] ? await demos[`../demos/${id}.tsx`]() : undefined
 const shortest = [...(demo?.options ?? [])].sort((a, b) => a.code.length - b.code.length)[0]?.code
-const example = shortest?.replaceAll("'@uisatin/ui/", "'@/components/ui/").replaceAll("'@uisatin/ui'", `'@/components/ui/${id}'`)
+const example = shortest
+  ?.replaceAll("'@uisatin/ui/", "'@/components/ui/")
+  .replaceAll("'@uisatin/pro/", "'@/components/ui/")
+  .replaceAll("'@uisatin/ui'", `'@/components/ui/${id}'`)
 // Satin components the example imports beyond this one's own dependencies (Command menu's demo
 // opens from a SearchBar): install them in the same command, so the example compiles as shown.
 const extra = [...new Set([...(example ?? '').matchAll(/from '@\/components\/ui\/([\w-]+)'/g)].map((m) => m[1]))].filter(
@@ -64,7 +71,7 @@ const files = [id, ...[...used].sort()].map((n) => `${n}.tsx`)
 const componentName = title.replace(/\s+(\w)/g, (_, c) => c.toUpperCase())
 // The import line, from the shortest example when it names this component, else the title.
 const importLine =
-  shortest?.match(new RegExp(`^import .* from '@uisatin/ui/${id}'$`, 'm'))?.[0] ?? `import { ${componentName} } from '@uisatin/ui/${id}'`
+  shortest?.match(new RegExp(`^import .* from '${pkg}/${id}'$`, 'm'))?.[0] ?? `import { ${componentName} } from '${pkg}/${id}'`
 
 // What the component adds to the app's JavaScript (scripts/sizes.mjs): gzipped, React aside.
 const size = (sizes as Record<string, number>)[ALIASES[id] ?? id]
@@ -76,13 +83,29 @@ const list = (names: string[]) => names.map((n, i) => ({ n, sep: i === 0 ? '' : 
   <h2 id="install-title" class="text-lg font-medium text-text-default">Installation</h2>
   <InstallSwitch client:visible>
     <div slot="npm" class="flex flex-col gap-3">
-      <CodeFrame code="npm i @uisatin/ui" label="Terminal" lang="bash" copyLabel="Copy command" />
-      <CodeFrame code={importLine} label="Import" />
+      <CodeFrame code={pro ? 'npm i @uisatin/ui @uisatin/pro' : 'npm i @uisatin/ui'} label="Terminal" lang="bash" copyLabel="Copy command" />
+      <CodeFrame code={pro ? `import '@uisatin/ui/styles.css'\nimport '@uisatin/pro/styles.css'\n${importLine}` : importLine} label="Import" />
       {
-        size && (
+        pro && (
+          <p class="text-base leading-6 text-text-muted">
+            Part of Satin Pro, the licensed edition: <Chip>@uisatin/pro</Chip> on top of <Chip>@uisatin/ui</Chip> at the same version, its
+            stylesheet after Free's. Satin Pro isn't on npm yet.
+          </p>
+        )
+      }
+      {
+        size && !pro && (
           <p class="text-base leading-6 text-text-muted">
             About <Chip>{(size / 1000).toFixed(1)} kB</Chip> of JavaScript, minified and gzipped, with what it imports (React aside). The
             stylesheet is one file for every component.
+          </p>
+        )
+      }
+      {
+        size && pro && (
+          <p class="text-base leading-6 text-text-muted">
+            About <Chip>{(size / 1000).toFixed(1)} kB</Chip> of JavaScript, minified and gzipped, on top of the <Chip>@uisatin/ui</Chip>
+            components it uses (React aside).
           </p>
         )
       }

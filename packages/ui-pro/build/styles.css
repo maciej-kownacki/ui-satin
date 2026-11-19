@@ -1,0 +1,14 @@
+/*
+ * The precompiled stylesheet shipped as `@uisatin/pro/styles.css` (dist/styles.css), loaded after
+ * `@uisatin/ui/styles.css`. Built like Satin Free's (packages/ui/build/styles.css), with the same
+ * `sa` prefix and the same layers, so Pro's rules join Free's layers in the app. Satin Free's theme
+ * comes along here only so Pro's classes compile; build/styles.mjs then drops every rule and
+ * variable Free's stylesheet already has, so this sheet holds only what Pro adds. No preflight:
+ * Free's scoped base rules already reach every element with an `sa:` class.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme) prefix(sa);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "../../ui/src/styles/satin.css";
+@import "../src/styles/pro.css";
+@source "../dist";

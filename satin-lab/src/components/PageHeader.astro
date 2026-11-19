@@ -3,8 +3,10 @@
  * Name and description at the top of a page (uiKit 3857:6010), under breadcrumbs:
  * Group / Page, split by slashes. Every crumb but the last links up: a component or AI pattern
  * group opens All components filtered to it, Docs opens Introduction, a parent (Button, Guides)
- * opens its page. Pages deeper than the sidebar pass their own trail.
+ * opens its page. Pages deeper than the sidebar pass their own trail. A Satin Pro page
+ * (`edition: 'pro'` in nav.ts) has a Pro badge after its name.
  */
+import { Badge } from '@uisatin/ui/badge'
 import { groupOf, page, parentOf } from '../nav'
 
 type Crumb = { label: string; href?: string }
@@ -22,6 +24,7 @@ const group = groupOf(id)
 /** Where a group's crumb leads: All components filtered to it, or Introduction for Docs. */
 const groupHref = (groupId: string) => (groupId === 'docs' ? '/introduction' : `/?group=${groupId}`)
 const here = page(id).href
+const pro = page(id).edition === 'pro'
 // A crumb that would lead to this very page (Docs on Introduction, Button under Button) is just a label.
 const up = (href: string) => (href === here ? undefined : href)
 const crumbs: Crumb[] = Astro.props.crumbs ?? [
@@ -59,7 +62,10 @@ const crumbs: Crumb[] = Astro.props.crumbs ?? [
     </ol>
   </nav>
   <div class="flex flex-col gap-1">
-    <h1 class="text-[28px] leading-9 font-medium tracking-[-0.42px] text-text-default">{title}</h1>
+    <div class="flex items-center gap-2.5">
+      <h1 class="text-[28px] leading-9 font-medium tracking-[-0.42px] text-text-default">{title}</h1>
+      {pro && <Badge tone="brand" title="Part of Satin Pro">Pro</Badge>}
+    </div>
     <p class="text-base leading-6 text-text-muted">{description}</p>
   </div>
 </header>

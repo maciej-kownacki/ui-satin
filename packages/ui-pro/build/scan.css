@@ -1,0 +1,6 @@
+/* Satin Pro's classes as the source writes them, unprefixed: build/styles.mjs reads which exist.
+   Satin Free's theme and variants come along, so token classes (bg-bg-card) count as classes. */
+@import "tailwindcss" source(none);
+@import "../../ui/src/styles/satin.css";
+@import "../src/styles/pro.css";
+@source "../src";

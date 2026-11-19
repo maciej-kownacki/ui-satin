@@ -1,5 +1,6 @@
 /**
- * Every component's props, read from the TypeScript source, as data: satin-lab/src/props.json.
+ * Every component's props, Satin Free's and Satin Pro's, read from the TypeScript source, as data:
+ * satin-lab/src/props.json (keyed by file name; a Pro file never shares a name with a Free one).
  * The registry puts each file's entry in its items' `meta.props`, and the docs' markdown pages
  * (/components/<name>.md) and llms-full.txt print them, so an agent gets the real API, not a
  * hand-written copy of it.
@@ -18,7 +19,7 @@ import { fileURLToPath } from 'node:url'
 import { parse } from '@babel/parser'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const dir = join(root, 'packages/ui/src/components')
+const dirs = [join(root, 'packages/ui/src/components'), join(root, 'packages/ui-pro/src/components')].filter((d) => existsSync(d))
 const out = join(root, 'satin-lab/src/props.json')
 
 const squash = (s) => s.replace(/\s+/g, ' ').trim()
@@ -38,7 +39,7 @@ const jsdoc = (node) => {
   return text ? noFigma(squash(text)) : undefined
 }
 
-function read(file) {
+function read(dir, file) {
   const code = readFileSync(join(dir, file), 'utf8')
   const ast = parse(code, { sourceType: 'module', plugins: ['typescript', 'jsx'] })
   const src = (n) => (n ? squash(code.slice(n.start, n.end)) : undefined)
@@ -116,9 +117,12 @@ function read(file) {
 }
 
 const result = {}
-for (const file of readdirSync(dir).filter((f) => f.endsWith('.tsx')).sort()) {
-  const entry = read(file)
-  if (Object.keys(entry).length) result[file.replace(/\.tsx$/, '')] = entry
+const files = dirs.flatMap((dir) => readdirSync(dir).filter((f) => f.endsWith('.tsx')).map((file) => ({ dir, file })))
+for (const { dir, file } of files.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0))) {
+  const name = file.replace(/\.tsx$/, '')
+  if (files.filter((f) => f.file === file).length > 1) throw new Error(`${name}.tsx is in Satin Free and Satin Pro: give the Pro file another name`)
+  const entry = read(dir, file)
+  if (Object.keys(entry).length) result[name] = entry
 }
 const json = JSON.stringify(result, null, 2) + '\n'
 

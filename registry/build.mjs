@@ -8,7 +8,14 @@
  * `satin-styles` (the precompiled dist/styles.css, so installed components need no Tailwind).
  * Imports are rewritten to shadcn's conventions: `../lib/utils` → `@/lib/utils`,
  * `./badge` → `@/registry/satin/ui/badge`; the CLI then maps them onto the app's aliases.
- * Run `npm run build -w @uisatin/ui` first, the styles item reads dist/styles.css.
+ *
+ * Satin Pro (packages/ui-pro) adds one item per file in its src/components, marked with the
+ * edition its package.json names (`"satin": { "edition": "pro" }` → `meta.edition: "pro"`), and
+ * `satin-pro-styles`, its own precompiled CSS on top of Free's. A Pro file's imports of Satin Free
+ * (`@uisatin/ui/button`) become the same `@/registry/satin/ui/button` and a registry dependency.
+ *
+ * Run `npm run build -w @uisatin/ui` and `npm run build -w @uisatin/pro` first: the styles items
+ * read their dist/styles.css.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -18,12 +25,14 @@ import { declaredThemeVars, prefixSource, prefixThemeVars } from '../packages/ui
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const ui = join(root, 'packages/ui')
+const pro = join(root, 'packages/ui-pro')
 const base = (process.env.REGISTRY_URL ?? 'https://uisatin.dev/r').replace(/\/$/, '')
 const out = resolve(process.env.OUT ?? join(root, 'satin-lab/public/r'))
 const url = (name) => `${base}/${name}.json`
 
 const pkg = JSON.parse(readFileSync(join(ui, 'package.json'), 'utf8'))
-const versions = { ...pkg.dependencies }
+const proPkg = JSON.parse(readFileSync(join(pro, 'package.json'), 'utf8'))
+const versions = { ...pkg.dependencies, ...proPkg.dependencies }
 const pages = Object.fromEntries(nav.flatMap((g) => pagesOf(g.items).map((i) => [i.id, i])))
 
 const css = join(ui, 'dist/styles.css')
@@ -35,12 +44,26 @@ const classes = new Set(JSON.parse(readFileSync(join(ui, 'build/.classes.json'),
 const declared = declaredThemeVars(readFileSync(css, 'utf8'))
 const prefixed = (code, file) => prefixThemeVars(prefixSource(code, classes, file).code, declared)
 
+// Satin Pro's components, if it has any; their classes are listed by Pro's own build.
+const proComponents = existsSync(join(pro, 'src/components'))
+  ? readdirSync(join(pro, 'src/components'))
+      .filter((f) => f.endsWith('.tsx'))
+      .map((f) => f.replace(/\.tsx$/, ''))
+      .sort()
+  : []
+const proCss = join(pro, 'dist/styles.css')
+if (proComponents.length && !existsSync(proCss)) throw new Error('packages/ui-pro/dist/styles.css is missing: run `npm run build -w @uisatin/pro` first')
+const proClasses = proComponents.length ? new Set(JSON.parse(readFileSync(join(pro, 'build/.classes.json'), 'utf8'))) : new Set()
+const proDeclared = proComponents.length ? new Set([...declared, ...declaredThemeVars(readFileSync(proCss, 'utf8'))]) : declared
+const proPrefixed = (code, file) => prefixThemeVars(prefixSource(code, proClasses, file).code, proDeclared)
+
 /** npm packages a source imports (not react / react-dom, which every app has), with the range we build against. */
 function npmDeps(src) {
   const names = new Set()
   for (const [, spec] of src.matchAll(/from\s+'([^'.][^']*)'/g)) {
     const name = spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0]
-    if (name === 'react' || name === 'react-dom') continue
+    // Satin Free, under a Pro component, comes as registry items, not as the npm package.
+    if (name === 'react' || name === 'react-dom' || name === '@uisatin/ui') continue
     names.add(name)
   }
   return [...names].sort().map((n) => (versions[n] ? `${n}@${versions[n]}` : n))
@@ -127,11 +150,64 @@ for (const [alias, file] of Object.entries(ALIASES)) {
   items.push({ ...target, name: alias, title: page.title, description: page.description, docs: `${page.title} docs: https://uisatin.dev${page.href}` })
 }
 
+// Satin Pro: its stylesheet, then one item per component, built on Free's items.
+if (proComponents.length) {
+  items.push({
+    name: 'satin-pro-styles',
+    type: 'registry:item',
+    title: 'Satin Pro styles',
+    description:
+      "Satin Pro's own classes and component CSS, precompiled: only what Satin styles doesn't already have. Import it after satin.css.",
+    registryDependencies: [url('satin-styles')],
+    files: [
+      {
+        path: 'registry/satin/styles/satin-pro.css',
+        type: 'registry:file',
+        target: '~/src/styles/satin-pro.css',
+        content: readFileSync(proCss, 'utf8'),
+      },
+    ],
+    meta: { version: proPkg.version, edition: proPkg.satin?.edition ?? 'pro' },
+  })
+}
+for (const name of proComponents) {
+  if (components.includes(name)) throw new Error(`packages/ui-pro/src/components/${name}.tsx has the name of a Satin Free component`)
+  const raw = readFileSync(join(pro, 'src/components', `${name}.tsx`), 'utf8')
+  const code = importsOf(raw)
+  // Pro files import Satin Free by its package entries and other Pro files by ./name.
+  const free = [...code.matchAll(/from\s+'@uisatin\/ui\/([^']+)'/g)].map((m) => m[1]).filter((d) => d !== 'lib/utils')
+  for (const dep of free) if (!components.includes(dep)) throw new Error(`${name} imports @uisatin/ui/${dep}, which is not a Satin Free component`)
+  const local = [...code.matchAll(/from\s+'\.\/([^']+)'/g)].map((m) => m[1]).filter((d) => d !== name)
+  for (const dep of local) if (!proComponents.includes(dep)) throw new Error(`${name} imports ./${dep}, which is not a Pro component`)
+  const others = [...code.matchAll(/from\s+'(\.\.?\/[^']+)'/g)].map((m) => m[1]).filter((s) => !s.startsWith('./'))
+  if (others.length) throw new Error(`${name} imports ${others.join(', ')}; a Pro file imports @uisatin/ui/<name> and ./<pro component> only`)
+
+  const content = proPrefixed(raw, name)
+    .replace(/from\s+'@uisatin\/ui\/lib\/utils'/g, "from '@/lib/utils'")
+    .replace(/from\s+'@uisatin\/ui\/([^']+)'/g, "from '@/registry/satin/ui/$1'")
+    .replace(/from\s+'\.\/([^']+)'/g, "from '@/registry/satin/ui/$1'")
+    // Pro's words join Free's SatinLabels by declaration merging. The CLI rewrites imports, not
+    // this, so it names shadcn's default alias for components/ui.
+    .replace(/declare module\s+'@uisatin\/ui\/labels'/g, "declare module '@/components/ui/labels'")
+  const page = pages[name]
+  items.push({
+    name,
+    type: 'registry:ui',
+    title: page?.title ?? titleOf(name),
+    description: page?.description ?? `The Satin Pro ${titleOf(name)} component.`,
+    dependencies: npmDeps(raw),
+    registryDependencies: [url('satin-styles'), url('satin-pro-styles'), url('utils'), ...[...new Set([...free, ...local])].sort().map(url)],
+    files: [{ path: `registry/satin/ui/${name}.tsx`, type: 'registry:ui', content }],
+    ...(page ? { docs: `${page.title} docs: https://uisatin.dev${page.href}` } : {}),
+    meta: { version: proPkg.version, edition: proPkg.satin?.edition ?? 'pro', ...(props[name] ? { props: props[name] } : {}) },
+  })
+}
+
 // Examples: one registry:example per component with a docs demo, its shortest usage, served by
 // the docs site (satin-lab/src/pages/r/[name]-demo.json.ts reads the demo). Listed here so the
 // index has them.
 const examples = components
-  .concat(Object.keys(ALIASES))
+  .concat(proComponents, Object.keys(ALIASES))
   .filter((name) => existsSync(join(root, 'satin-lab/src/demos', `${name}.tsx`)) && pages[name])
   .map((name) => ({
     name: `${name}-demo`,

@@ -1,0 +1,6 @@
+/*
+ * Satin Pro without Tailwind itself: the hand-written CSS of the Pro components, one file per
+ * component in ./components (`.satin-<id>` classes reading Satin Free's plain semantic variables,
+ * like packages/ui/src/styles/components/radio.css). Satin Free's tokens, motion and variants
+ * come from @uisatin/ui/styles.css, which loads first.
+ */

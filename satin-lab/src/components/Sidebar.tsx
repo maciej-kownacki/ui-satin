@@ -176,7 +176,16 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
             isCurrent ? cn('bg-bg-selected text-text-default', currentEase) : cn('text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected', pressEase),
           )}
         >
-          <Highlight text={item.title} query={q} />
+          {item.edition === 'pro' ? (
+            <>
+              <span className="min-w-0 flex-1 truncate">
+                <Highlight text={item.title} query={q} />
+              </span>
+              <ProMark />
+            </>
+          ) : (
+            <Highlight text={item.title} query={q} />
+          )}
         </a>
       </li>
     )
@@ -579,6 +588,15 @@ const swapOut =
   'transition-opacity duration-(--duration-fast) ease-(--ease-out) group-hover/row:opacity-0 group-focus-visible/row:opacity-0'
 const swapIn =
   'flex opacity-0 transition-opacity duration-(--duration-fast) ease-(--ease-out) group-hover/row:opacity-100 group-focus-visible/row:opacity-100'
+
+/** Marks a Satin Pro page's row, in the place a parent row shows its count. */
+function ProMark() {
+  return (
+    <Badge size="sm" tone="brand" className="ms-2 text-xs leading-4">
+      Pro
+    </Badge>
+  )
+}
 
 /**
  * A row's count of pages: Satin's Badge, small. Outline, not soft: the neutral soft fill is the

@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    // The declarations read Satin Free's built types (run its build first), not its source:
+    // the source would join this program and land in dist. The imports stay '@uisatin/ui/<name>'.
+    "paths": {
+      "@uisatin/ui": ["../ui/dist/index.d.ts"],
+      "@uisatin/ui/lib/utils": ["../ui/dist/lib/utils.d.ts"],
+      "@uisatin/ui/theme": ["../ui/dist/theme/index.d.ts"],
+      "@uisatin/ui/*": ["../ui/dist/components/*.d.ts"]
+    }
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "src/__tests__"
+  ]
+}

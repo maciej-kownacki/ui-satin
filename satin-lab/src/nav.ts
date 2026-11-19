@@ -9,6 +9,12 @@ export type NavItem = {
   description: string
   /** A parent row in the sidebar (Chart) that folds open onto these pages; it has no page itself. */
   children?: NavItem[]
+  /**
+   * `'pro'` for a page whose component is in Satin Pro (packages/ui-pro): the page, the sidebar row,
+   * its card, llms.txt and its markdown twin say so. Free pages leave it out. check-docs keeps it
+   * in step with where the file lives.
+   */
+  edition?: 'pro'
 }
 export type NavGroup = { id: string; title: string; items: NavItem[] }
 
@@ -205,6 +211,9 @@ export const nav: NavGroup[] = [
     ],
   },
 ]
+
+/** The package a page's component comes from. */
+export const packageOf = (item: Pick<NavItem, 'edition'>) => (item.edition === 'pro' ? '@uisatin/pro' : '@uisatin/ui')
 
 /** Every page in a list of items: parents give their children instead of themselves. */
 export const pagesOf = (items: NavItem[]): NavItem[] => items.flatMap((i) => (i.children ? pagesOf(i.children) : [i]))

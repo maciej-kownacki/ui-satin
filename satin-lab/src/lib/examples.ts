@@ -35,7 +35,10 @@ const pascal = (id: string) => id.replace(/(^|-)(\w)/g, (_, __, c: string) => c.
 
 /** The example as a standalone file for an app with the registry's components in components/ui. */
 export function asAppFile(id: string, code: string) {
-  const local = code.replaceAll("'@uisatin/ui/", "'@/components/ui/").replaceAll("'@uisatin/ui'", `'@/components/ui/${id}'`)
+  const local = code
+    .replaceAll("'@uisatin/ui/", "'@/components/ui/")
+    .replaceAll("'@uisatin/pro/", "'@/components/ui/")
+    .replaceAll("'@uisatin/ui'", `'@/components/ui/${id}'`)
   if (/^export (default )?function/m.test(local)) return local
   const lines = local.split('\n')
   const imports = lines.filter((l) => /^import /.test(l))

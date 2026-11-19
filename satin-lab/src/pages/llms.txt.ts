@@ -1,13 +1,13 @@
 import type { APIRoute } from 'astro'
 import { existsSync } from 'node:fs'
-import { nav, pagesOf } from '../nav'
+import { nav, pagesOf, type NavItem } from '../nav'
 import pkg from '../../../packages/ui/package.json'
 
 /**
  * llms.txt (llmstxt.org): what Satin is, how to install it, the rules an agent should follow, and
  * every docs page with its one-line description. A component page links its markdown twin
  * (props, example, accessibility) and its registry JSON, which carries the full source.
- * llms-full.txt is this plus every component page in markdown.
+ * llms-full.txt is this plus every component page in markdown. Satin Pro pages are marked (Pro).
  */
 export const GET: APIRoute = ({ site }) =>
   new Response(llmsText(site), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
@@ -21,7 +21,8 @@ export function llmsText(site: URL | undefined) {
   }
   const groups = nav.map((g) => {
     const pages = [...new Map(pagesOf(g.items).map((p) => [p.href, p])).values()]
-    return `## ${g.title}\n\n${pages.map((p) => `- [${p.title}](${url(p.href)}): ${p.description}${markdown(p.href)}${registry(p.href)}`).join('\n')}`
+    const pro = (p: NavItem) => (p.edition === 'pro' ? ' (Pro)' : '')
+    return `## ${g.title}\n\n${pages.map((p) => `- [${p.title}](${url(p.href)})${pro(p)}: ${p.description}${markdown(p.href)}${registry(p.href)}`).join('\n')}`
   })
   const text = `# Satin
 
@@ -37,6 +38,8 @@ npm i ${pkg.name}
 import '${pkg.name}/styles.css' // once, at the root of the app
 import { Button } from '${pkg.name}/button'
 \`\`\`
+
+Entries marked (Pro) are Satin Pro, the licensed edition: the package \`@uisatin/pro\` on top of ${pkg.name} at the same version, its stylesheet \`@uisatin/pro/styles.css\` imported after ${pkg.name}'s, each component from \`@uisatin/pro/<name>\`. Satin Pro isn't on npm yet; its registry items carry \`meta.edition: "pro"\`.
 
 Or copy a component's source with the shadcn CLI: \`npx shadcn@latest add ${url('/r/button.json')}\`, or \`npx shadcn@latest add @satin/button\` with \`"registries": { "@satin": "https://uisatin.dev/r/{name}.json" }\` in components.json.
 

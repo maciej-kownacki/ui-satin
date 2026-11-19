@@ -9,6 +9,7 @@ import Docs from '../layouts/Docs.astro'
 import PageHeader from '../components/PageHeader.astro'
 import { ComponentFilter } from '../components/ComponentFilter'
 import { CardPreview } from '../components/CardPreview'
+import { Badge } from '@uisatin/ui/badge'
 import { allComponents, nav, pagesOf } from '../nav'
 
 const groups = nav.filter((g) => g.id === 'components' || g.id === 'ai-patterns')
@@ -45,7 +46,10 @@ const card =
               <a href={c.href} class="truncate text-base font-medium text-text-default outline-none after:absolute after:inset-0 after:content-['']">
                 {c.title}
               </a>
-              <span class="shrink-0 text-sm text-text-muted">{c.groupTitle}</span>
+              <span class="flex shrink-0 items-center gap-2 text-sm text-text-muted">
+                {c.edition === 'pro' && <Badge size="sm" tone="brand">Pro</Badge>}
+                {c.groupTitle}
+              </span>
             </div>
           </article>
         </li>

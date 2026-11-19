@@ -1,0 +1,63 @@
+{
+  "name": "@uisatin/pro",
+  "version": "0.7.1",
+  "private": true,
+  "description": "Satin Pro: the licensed components and AI patterns of the Satin design system, built on @uisatin/ui.",
+  "license": "UNLICENSED",
+  "author": "Maciej Kownacki",
+  "homepage": "https://uisatin.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maciej-kownacki/ui-satin.git",
+    "directory": "packages/ui-pro"
+  },
+  "bugs": {
+    "url": "https://github.com/maciej-kownacki/ui-satin/issues"
+  },
+  "keywords": [
+    "satin",
+    "design-system",
+    "react",
+    "components",
+    "radix",
+    "ui"
+  ],
+  "satin": {
+    "edition": "pro"
+  },
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles/index.css",
+    "./*": "./src/components/*.tsx"
+  },
+  "scripts": {
+    "build": "node build/styles.mjs classes && tsup && tsc -p tsconfig.build.json && node build/styles.mjs css && node build/manifest.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "node -e \"console.error('Satin Pro is not published yet: distribution and licensing are decided separately (see README).'); process.exit(1)\""
+  },
+  "peerDependencies": {
+    "@uisatin/ui": "0.7.1",
+    "react": ">=19",
+    "react-dom": ">=19"
+  },
+  "dependencies": {
+    "radix-ui": "^1.8.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@uisatin/ui": "0.7.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsup": "^9.0.0",
+    "typescript": "^7.0.2"
+  }
+}

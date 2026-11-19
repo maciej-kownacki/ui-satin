@@ -3,8 +3,8 @@
  * The workspace package.json keeps pointing at src so satin-lab builds from source with
  * its own Tailwind; this one points consumers at the compiled JS, types and styles.css.
  */
-import { copyFileSync, readFileSync, readdirSync, writeFileSync, existsSync, statSync } from 'node:fs'
-import { dirname, join, relative } from 'node:path'
+import { copyFileSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { addDeclarationExtensions, dropFigmaIds, markUseClient } from './dist.mjs'
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
 
@@ -52,52 +52,9 @@ copyFileSync('../../tokens/tokens.json', 'dist/tokens.json')
 if (existsSync('AGENTS.md')) copyFileSync('AGENTS.md', 'dist/AGENTS.md')
 console.log('dist/package.json written')
 
-// tsc writes relative imports in the .d.ts files as they are in the source ('./button'). Under
-// moduleResolution node16 / nodenext an ES module's imports need their extension, so point each
-// one at the file it means: './button' → './button.js', a folder like './theme' → './theme/index.js'.
-// Bundler resolution reads the same files and keeps working.
-const declarations = (dir) =>
-  readdirSync(dir).flatMap((f) => {
-    const path = join(dir, f)
-    return statSync(path).isDirectory() ? declarations(path) : f.endsWith('.d.ts') ? [path] : []
-  })
-let rewritten = 0
-for (const file of declarations('dist')) {
-  const src = readFileSync(file, 'utf8')
-  const out = src.replace(/((?:from|import)\s*\(?\s*)(['"])(\.{1,2}\/[^'"]+)\2/g, (match, lead, quote, spec) => {
-    if (/\.(js|mjs|cjs|json|css)$/.test(spec)) return match
-    const target = join(dirname(file), spec)
-    const resolved = existsSync(`${target}.d.ts`) ? `${spec}.js` : existsSync(join(target, 'index.d.ts')) ? `${spec}/index.js` : null
-    if (!resolved) throw new Error(`${relative('dist', file)}: can't resolve ${spec}`)
-    rewritten++
-    return `${lead}${quote}${resolved}${quote}`
-  })
-  if (out !== src) writeFileSync(file, out)
-}
-console.log(`.d.ts imports with extensions: ${rewritten}`)
-
-// The JSDoc in the source points at the Figma frames each part follows, by node id: '(3822:3475)',
-// 'Avatar 992:20199'. Useful in the repo, noise in an app's editor: the published types drop
-// them (a parenthesis that holds one goes whole), and the build fails if one is left.
-const FIGMA_ID = /\b\d{1,5}:\d{2,6}\b/
-let figmaRefs = 0
-for (const file of declarations('dist')) {
-  const src = readFileSync(file, 'utf8')
-  const out = src
-    .replace(/ ?\((?:[^()]|\([^()]*\))*?\b\d{1,5}:\d{2,6}\b(?:[^()]|\([^()]*\))*\)/g, () => (figmaRefs++, ''))
-    .replace(/,? ?\b\d{1,5}:\d{2,6}\b/g, () => (figmaRefs++, ''))
-  if (out !== src) writeFileSync(file, out)
-  const left = out.match(FIGMA_ID)
-  if (left) throw new Error(`${relative('dist', file)}: Figma node id left in the types: ${left[0]}`)
-}
-console.log(`Figma node ids dropped from the types: ${figmaRefs}`)
-
-// esbuild drops 'use client' when it bundles, so put it back on every entry a React Server
-// Components app can import: the barrel and each component. Not on theme/ (themeCss, themeVars)
-// or lib/utils (cn): plain functions a Server Component calls, e.g. themeCss() in a root layout.
-const entries = ['dist/index.js', ...readdirSync('dist/components').filter((f) => f.endsWith('.js')).map((f) => `dist/components/${f}`)]
-for (const f of entries) {
-  const js = readFileSync(f, 'utf8')
-  if (!js.startsWith("'use client'")) writeFileSync(f, `'use client';${js}`)
-}
-console.log(`'use client' on ${entries.length} entries`)
+// The .d.ts imports with their extensions, no Figma node ids in the types, 'use client' back on
+// every entry (build/dist.mjs, shared with Satin Pro). Not on theme/ (themeCss, themeVars) or
+// lib/utils (cn): plain functions a Server Component calls, e.g. themeCss() in a root layout.
+console.log(`.d.ts imports with extensions: ${addDeclarationExtensions('dist')}`)
+console.log(`Figma node ids dropped from the types: ${dropFigmaIds('dist')}`)
+console.log(`'use client' on ${markUseClient('dist')} entries`)

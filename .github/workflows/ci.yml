@@ -20,7 +20,9 @@ jobs:
       - run: npm run typecheck
       - run: npm run build:ui
       - run: npm pack ./packages/ui/dist --dry-run
-      # The stylesheet shares no name with an app's Tailwind or shadcn theme.
+      # Satin Pro builds on Free's dist; it's checked like Free but never published.
+      - run: npm run build:pro
+      # Neither stylesheet (Free's, Pro's) shares a name with an app's Tailwind or shadcn theme.
       - run: node scripts/check-css.mjs
       - run: node scripts/check-cn.mjs
       # Text 4.5:1, focus and error edges 3:1, in Light and Dark and for themeCss() brands.
@@ -35,6 +37,6 @@ jobs:
       # The shadcn registry says which npm release its source matches; it must be this one.
       - name: Registry version matches the package
         run: node -e "const v=require('./packages/ui/package.json').version, r=require('./satin-lab/public/r/button.json').meta.version; if (v!==r) { console.error('registry meta.version', r, '!= package', v, '- run npm run registry'); process.exit(1) }"
-      # The package's types under moduleResolution node16, nodenext and bundler, every entry point.
+      # Both packages' types under moduleResolution node16, nodenext and bundler, every entry point.
       - run: npm run check:types
       - run: npx -y @arethetypeswrong/cli --pack ./packages/ui/dist --exclude-entrypoints ./styles.css ./tokens.json --ignore-rules cjs-resolves-to-esm
