@@ -199,6 +199,163 @@
       ]
     }
   },
+  "agent-permissions": {
+    "AgentPermissionRoot": {
+      "description": "The card and its state; the parts go inside. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPermissionRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "agent",
+          "type": "AgentPermissionAgent",
+          "required": true,
+          "description": "Who asks: a name, or an Agent picker agent (`{ name, initials, tone, avatar }`)."
+        },
+        {
+          "name": "scopes",
+          "type": "AgentPermissionScope[]",
+          "required": true,
+          "description": "What it asks for, one row each: `{ resource, actions, detail }`."
+        },
+        {
+          "name": "status",
+          "type": "AgentPermissionStatus",
+          "required": false,
+          "description": "Where the request stands. Set it to control it; Allow, Don't allow, Remove access and Change move it."
+        },
+        {
+          "name": "defaultStatus",
+          "type": "AgentPermissionStatus",
+          "required": false,
+          "default": "'request'",
+          "description": "The status to start from when it isn't controlled."
+        },
+        {
+          "name": "onStatusChange",
+          "type": "(status: AgentPermissionStatus) => void",
+          "required": false
+        },
+        {
+          "name": "mode",
+          "type": "AgentPermissionMode",
+          "required": false,
+          "description": "How it was allowed, for the summary. Allow sets it on its own; pass it with a controlled `status` of `allowed` (a permission loaded from the server)."
+        },
+        {
+          "name": "value",
+          "type": "string[]",
+          "required": false,
+          "description": "The ticked scopes' ids (`id`, or `resource`)."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string[]",
+          "required": false,
+          "description": "The ticked scopes to start from. Defaults to every scope."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "onAllow",
+          "type": "(mode: AgentPermissionMode, scopes: AgentPermissionScope[]) => unknown",
+          "required": false,
+          "description": "Allow once (`once`) or Always allow (`always`), with the ticked scopes. Return a promise and the button shows a Spinner until it settles; if it rejects, the request stays."
+        },
+        {
+          "name": "onDeny",
+          "type": "() => unknown",
+          "required": false,
+          "description": "Don't allow. A promise works as for `onAllow`."
+        },
+        {
+          "name": "onRevoke",
+          "type": "() => unknown",
+          "required": false,
+          "description": "Shows Remove access on an allowed summary, which calls it. A promise works as for `onAllow`."
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "required": false,
+          "description": "Focus Don't allow, the safest answer, when the request appears. Defaults to true inside a Dialog and false elsewhere, so a request arriving in a chat never takes the keys from someone typing."
+        }
+      ]
+    },
+    "AgentPermissionHeader": {
+      "description": "The agent's avatar and \"<agent> wants to:\", with why it asks under them. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPermissionHeaderProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Why it asks, in a sentence: \"To screen this week's applicants for Product Designer.\""
+        }
+      ]
+    },
+    "AgentPermissionScopeList": {
+      "description": "The scopes as a list, one row each, between rules. Without children it lists `scopes`. Other props, `ref` included, go to the `ul`.",
+      "type": "AgentPermissionScopeListProps",
+      "extends": [
+        "React.ComponentProps<'ul'>"
+      ],
+      "props": []
+    },
+    "AgentPermissionScope": {
+      "description": "One scope: its verb as an icon, its title and detail, and a Checkbox. The whole row is the Checkbox's label. Other props, `ref` included, go to the `li`.",
+      "type": "AgentPermissionScopeProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "scope",
+          "type": "AgentPermissionScope",
+          "required": true,
+          "description": "The scope this row asks for. Its tick is the `value` entry under its id."
+        }
+      ]
+    },
+    "AgentPermissionFooter": {
+      "description": "The answers: Don't allow, then Allow once with Always allow in its menu. While some scopes are unticked, how many are left sits on the other side. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPermissionFooterProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "AgentPermissionSummary": {
+      "description": "The answered request on one row: who and the answer, what it covers, and Remove access or Change. The Root shows it in place of its children once the status isn't `request`. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPermissionSummaryProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "AgentPermissionRequest": {
+      "description": "The request from props: the header, the scopes and the answers, folding to its summary once answered. Other props, `ref` included, go to the card's `div`.",
+      "type": "AgentPermissionRequestProps",
+      "extends": [
+        "Omit<AgentPermissionRootProps, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Why it asks, in a sentence under the title."
+        }
+      ]
+    }
+  },
   "agent-picker": {
     "AgentPicker": {
       "type": "AgentPickerProps",
