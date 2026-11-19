@@ -1,11 +1,15 @@
 /*
- * Availability calendar (components/date-availability.tsx). A day's dot is 6px, centred under its
- * number, where Calendar draws today's dash; on today the dash goes under the dot.
+ * Availability calendar (components/date-availability.tsx). Each day's number rises 3px, every
+ * day alike so a row keeps one line, and the 6px dot sits under it: number and dot are centred
+ * together in the 36px day. Today's dash (Calendar's, 4px from the bottom) stays under the dot.
  */
+[data-slot='calendar-day'] .satin-date-availability-number {
+  translate: 0 -3px;
+}
 [data-slot='calendar-day'] .satin-date-availability-dot {
   position: absolute;
   inset-inline: 0;
-  bottom: 5px;
+  bottom: 8px;
   margin-inline: auto;
   width: 6px;
   height: 6px;

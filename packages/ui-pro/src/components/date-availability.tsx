@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Calendar, CalendarDay, DatePicker, type CalendarDayState, type CalendarProps, type DatePickerProps } from '@uisatin/ui/date-picker'
+import { Calendar, CalendarDay, DatePicker, type CalendarDayProps, type CalendarDayState, type CalendarProps, type DatePickerProps } from '@uisatin/ui/date-picker'
 import { Dot } from '@uisatin/ui/dot'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { Tooltip } from '@uisatin/ui/tooltip'
@@ -17,8 +17,9 @@ import { Tooltip } from '@uisatin/ui/tooltip'
  *
  * Each day says the same in its name ("Thursday, November 26, 2026, 3 free slots"). A full day
  * keeps its focus (`aria-disabled`, from Calendar), so the arrow keys reach it, its tooltip opens
- * there and screen readers hear why it's off. Today keeps its dash under the dot, the picked day
- * its fill with the dot in white. No motion beyond Calendar's and Tooltip's.
+ * there and screen readers hear why it's off. Every number sits 3px higher than in Calendar, so a
+ * row keeps one line with or without dots; today's dash stays under the dot, and the picked day
+ * keeps its fill with the dot in white. No motion beyond Calendar's and Tooltip's.
  *
  * `AvailabilityDatePicker` is the same in a DatePicker field. `useAvailability()` returns the
  * `isDisabled` and `renderDay` to give any Satin Calendar or picker yourself.
@@ -100,6 +101,14 @@ export function useAvailability(options: AvailabilityOptions): Required<Pick<Cal
   }, [availability, fewSlots, reason, isDisabled])
 }
 
+/**
+ * The day's button under its Tooltip. The name already carries what the tooltip says, so the
+ * description Radix adds to the trigger (`aria-describedby`) would read it twice: it's dropped.
+ */
+function DayButton({ 'aria-describedby': _described, ...props }: CalendarDayProps) {
+  return <CalendarDay {...props} />
+}
+
 function AvailabilityDay({ date, state, status: listed, slots, reason }: { date: Date; state: CalendarDayState; status: AvailabilityStatus; slots: number; reason?: (date: Date) => string | undefined }) {
   const labels = useLabels()
   // Calendar's own min and max can rule out a day with slots: then it has nothing to offer.
@@ -108,15 +117,13 @@ function AvailabilityDay({ date, state, status: listed, slots, reason }: { date:
   const why = open ? undefined : (reason?.(date) ?? (status === 'full' ? labels.availabilityFull : undefined))
   const tip = open ? labels.availabilitySlots(slots) : why
   const day = (
-    <CalendarDay
+    <DayButton
       data-availability={status}
       aria-label={open ? labels.availabilityDay(state.label, labels.availabilityFreeSlots(slots)) : why ? labels.availabilityDay(state.label, why) : undefined}
-      // The name already carries what the tooltip says; Radix would add it again as a description.
-      aria-describedby={undefined}
     >
-      {date.getDate()}
+      <span className="satin-date-availability-number">{date.getDate()}</span>
       {open && <Dot tone="green" variant={status === 'few' ? 'outline' : 'solid'} className="satin-date-availability-dot" />}
-    </CalendarDay>
+    </DayButton>
   )
   return tip ? <Tooltip label={tip}>{day}</Tooltip> : day
 }

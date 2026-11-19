@@ -92,17 +92,19 @@ const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long
 function Preview({ kind }: { kind: string }) {
   const [day, setDay] = React.useState<Date | null>(new Date(2026, 10, 26))
   if (kind === 'field') {
+    // Held at the top of a block the calendar's height, so the open calendar stays on the stage.
     return (
-      <AvailabilityDatePicker
-        label="Interview day"
-        hint="Mondays are fully booked."
-        availability={AVAILABILITY}
-        reason={closed}
-        today={TODAY}
-        value={day}
-        onValueChange={setDay}
-        wrapperClassName="w-[280px]"
-      />
+      <div className="h-[440px] w-[280px]">
+        <AvailabilityDatePicker
+          label="Interview day"
+          hint="Mondays are fully booked."
+          availability={AVAILABILITY}
+          reason={closed}
+          today={TODAY}
+          value={day}
+          onValueChange={setDay}
+        />
+      </div>
     )
   }
   const free = day ? AVAILABILITY[isoDate(day)] : 0
