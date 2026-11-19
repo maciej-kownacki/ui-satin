@@ -176,18 +176,6 @@
     "limit": "36 kB"
   },
   {
-    "name": "Availability calendar (Satin Pro; Calendar, Dot and Tooltip come from @uisatin/ui, the peer, left out)",
-    "path": "packages/ui-pro/dist/components/date-availability.js",
-    "import": "{ AvailabilityCalendar, AvailabilityDatePicker }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "2 kB"
-  },
-  {
     "name": "Reviewable changes (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/agent-changes-review.js",
     "import": "{ ReviewableChanges }",

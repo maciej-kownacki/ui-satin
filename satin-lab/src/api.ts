@@ -203,26 +203,6 @@ export const api: Record<string, Api> = {
       { name: 'disabled', type: ['boolean'], default: 'false' },
     ],
   },
-  scheduler: {
-    description:
-      'The `Scheduler` component (Satin Pro, `@uisatin/pro/scheduler`) shows `events` (`{ id, start, end, title, tone, attendees, readOnly, allDay }`) on a day or week of time slots, or a month of days. Dragging an event, its bottom edge or Alt and the arrow keys call `onEventChange(next, previous)`; picking slots calls `onSlotSelect({ start, end, allDay })`. `availability` marks slots `free` or `busy`. Everything is drawn in `timeZone`, and `zonedDate()` / `zonedParts()` convert wall-clock times in it. `eventPopover` and `slotPopover` fill a popover on an event or on picked slots. Parts: `SchedulerRoot`, `SchedulerToolbar`, `SchedulerGrid`.',
-    props: [
-      { name: 'view', type: ['"day"', '"week"', '"month"'], default: '"week"' },
-      { name: 'onViewChange', type: ['(view: SchedulerView) => void'] },
-      { name: 'date', type: ['Date'] },
-      { name: 'onDateChange', type: ['(date: Date) => void'] },
-      { name: 'events', type: ['SchedulerEvent[]'] },
-      { name: 'onEventChange', type: ['(event: SchedulerEvent, previous: SchedulerEvent) => void'] },
-      { name: 'onSlotSelect', type: ['(slot: SchedulerSlot) => void'] },
-      { name: 'onEventOpen', type: ['(event: SchedulerEvent) => void'] },
-      { name: 'availability', type: ['SchedulerAvailability[]'], default: '[]' },
-      { name: 'slotMinutes', type: ['number'], default: '30' },
-      { name: 'workingHours', type: ['[number, number]'], default: '[9, 18]' },
-      { name: 'timeZone', type: ['string'], default: 'the browser’s' },
-      { name: 'weekStartsOn', type: ['0', '1', '2', '3', '4', '5', '6'], default: 'locale' },
-      { name: 'eventPopover / slotPopover', type: ['(item, close) => ReactNode'] },
-    ],
-  },
   'segmented-control': {
     description: 'The `SegmentedControl` component is a Radix toggle group that always keeps one segment selected.',
     props: [
@@ -1261,26 +1241,6 @@ export const api: Record<string, Api> = {
       { name: 'hints', type: ['boolean'], default: 'true' },
     ],
   },
-  scheduler: {
-    description:
-      'The `Scheduler` component (Satin Pro, `@uisatin/pro/scheduler`) shows `events` (`{ id, start, end, title, tone, attendees, readOnly, allDay }`) on a day or week of time slots, or a month of days. Dragging an event, its bottom edge or Alt and the arrow keys call `onEventChange(next, previous)`; picking slots calls `onSlotSelect({ start, end, allDay })`. `availability` marks slots `free` or `busy`. Everything is drawn in `timeZone`, and `zonedDate()` / `zonedParts()` convert wall-clock times in it. `eventPopover` and `slotPopover` fill a popover on an event or on picked slots. Parts: `SchedulerRoot`, `SchedulerToolbar`, `SchedulerGrid`.',
-    props: [
-      { name: 'view', type: ['"day"', '"week"', '"month"'], default: '"week"' },
-      { name: 'onViewChange', type: ['(view: SchedulerView) => void'] },
-      { name: 'date', type: ['Date'] },
-      { name: 'onDateChange', type: ['(date: Date) => void'] },
-      { name: 'events', type: ['SchedulerEvent[]'] },
-      { name: 'onEventChange', type: ['(event: SchedulerEvent, previous: SchedulerEvent) => void'] },
-      { name: 'onSlotSelect', type: ['(slot: SchedulerSlot) => void'] },
-      { name: 'onEventOpen', type: ['(event: SchedulerEvent) => void'] },
-      { name: 'availability', type: ['SchedulerAvailability[]'], default: '[]' },
-      { name: 'slotMinutes', type: ['number'], default: '30' },
-      { name: 'workingHours', type: ['[number, number]'], default: '[9, 18]' },
-      { name: 'timeZone', type: ['string'], default: 'the browser’s' },
-      { name: 'weekStartsOn', type: ['number'], default: 'from dateLocale' },
-      { name: 'eventPopover / slotPopover', type: ['(item, close) => ReactNode'] },
-    ],
-  },
   'search-scoped': {
     description:
       'The `ScopedSearch` component (Satin Pro, `@uisatin/pro/search-scoped`) is a SearchBar whose input is a `combobox` over a grouped `listbox`. Typed `key:value` words of known `scopes` turn into chips in the field once a space follows them (or a value is picked); the list shows `recent` searches and the scopes before anything is typed, a scope\'s `values` after `key:`, then `groups` filtered by the chips (`fields`) and the words (label, description, `keywords`), each with its count. Chips of one scope match any of their values, chips of different scopes all of them. `filter={false}` shows `groups` as given, for a server search, with `count` for the total. Helpers: `parseScopedQuery(text, scopes, { partial })`, `formatScopedQuery(query)`, `filterScopedGroups(groups, query, scopes)`. The query is `{ tokens: [{ key, value }], text }`.',
@@ -1553,6 +1513,26 @@ export const api: Record<string, Api> = {
       { name: 'defaultValue', type: ['Date', 'null'], default: 'null' },
       { name: 'onValueChange', type: ['(value: Date) => void'] },
       { name: 'today', type: ['Date'] },
+    ],
+  },
+  scheduler: {
+    description:
+      'The `Scheduler` component (Satin Pro, `@uisatin/pro/scheduler`) shows `events` (`{ id, start, end, title, tone, attendees, readOnly, allDay }`) on a day or week of time slots, or a month of days. Dragging an event, its bottom edge or Alt and the arrow keys call `onEventChange(next, previous)`; picking slots calls `onSlotSelect({ start, end, allDay })`. `availability` marks slots `free` or `busy`. Everything is drawn in `timeZone`, and `zonedDate()` / `zonedParts()` convert wall-clock times in it. `eventPopover` and `slotPopover` fill a popover on an event or on picked slots. Parts: `SchedulerRoot`, `SchedulerToolbar`, `SchedulerGrid`.',
+    props: [
+      { name: 'view', type: ['"day"', '"week"', '"month"'], default: '"week"' },
+      { name: 'onViewChange', type: ['(view: SchedulerView) => void'] },
+      { name: 'date', type: ['Date'] },
+      { name: 'onDateChange', type: ['(date: Date) => void'] },
+      { name: 'events', type: ['SchedulerEvent[]'] },
+      { name: 'onEventChange', type: ['(event: SchedulerEvent, previous: SchedulerEvent) => void'] },
+      { name: 'onSlotSelect', type: ['(slot: SchedulerSlot) => void'] },
+      { name: 'onEventOpen', type: ['(event: SchedulerEvent) => void'] },
+      { name: 'availability', type: ['SchedulerAvailability[]'], default: '[]' },
+      { name: 'slotMinutes', type: ['number'], default: '30' },
+      { name: 'workingHours', type: ['[number, number]'], default: '[9, 18]' },
+      { name: 'timeZone', type: ['string'], default: 'the browser’s' },
+      { name: 'weekStartsOn', type: ['0', '1', '2', '3', '4', '5', '6'], default: 'locale' },
+      { name: 'eventPopover / slotPopover', type: ['(item, close) => ReactNode'] },
     ],
   },
 }

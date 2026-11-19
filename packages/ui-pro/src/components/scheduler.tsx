@@ -1175,7 +1175,7 @@ export function SchedulerToolbar({ className, children, ...props }: SchedulerToo
             <DatePickerPanel
               value={toLocal(s.anchor)}
               today={s.today !== null ? toLocal(s.today) : undefined}
-              weekStartsOn={s.weekStart as WeekDay}
+              weekStartsOn={s.weekStart}
               onValueChange={(d) => {
                 go(fromLocal(d))
                 setPickerOpen(false)
