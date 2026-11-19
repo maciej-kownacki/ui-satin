@@ -155,8 +155,10 @@ function Preview({ v }: { v: Record<string, string> }) {
 
   return (
     <div className="relative w-[480px] max-w-full pb-16">
-      <div className="flex flex-col gap-5 rounded-xl border border-border-default bg-bg-card p-5 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]">
-        <div className="flex items-center gap-3">
+      {/* The record on a muted card (grey in Light, lighter than the card in Dark), its history in a card inside it. */}
+      <div className="flex flex-col rounded-xl border border-border-default bg-bg-muted p-1">
+        {/* 21px: the inner card's 20px padding and 1px border, so the avatar and the badge line up with the timeline's avatars and times. */}
+        <div className="flex items-center gap-3 px-[21px] py-4">
           <Avatar initials="TM" tone="fuchsia" size={40} />
           <div className="min-w-0 flex-1">
             <div className="text-base leading-5 font-medium text-text-default">Tara Mendes</div>
@@ -166,21 +168,23 @@ function Preview({ v }: { v: Record<string, string> }) {
           </div>
           {stage('Interview', 'sky')}
         </div>
-        {/* Right under the record: the timeline names itself "Activity" for screen readers. */}
-        <ActivityTimeline
-          items={v.state === 'entries' ? (items ?? []) : []}
-          loading={v.state === 'loading' || (v.state === 'entries' && !items)}
-          empty="Nothing has happened to Tara Mendes yet."
-          groupBy={v.group === 'none' ? 'none' : 'day'}
-          collapseRuns={v.fold === 'on' ? 3 : false}
-          onRevert={async (item) => {
-            await wait(900)
-            if (item.id === 'salary') setSalary('€7–9k')
-          }}
-          onUndoRevert={(item) => {
-            if (item.id === 'salary') setSalary('€8–10k')
-          }}
-        />
+        <div className="rounded-md border border-border-default bg-bg-card p-5 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]">
+          {/* Right under the record: the timeline names itself "Activity" for screen readers. */}
+          <ActivityTimeline
+            items={v.state === 'entries' ? (items ?? []) : []}
+            loading={v.state === 'loading' || (v.state === 'entries' && !items)}
+            empty="Nothing has happened to Tara Mendes yet."
+            groupBy={v.group === 'none' ? 'none' : 'day'}
+            collapseRuns={v.fold === 'on' ? 3 : false}
+            onRevert={async (item) => {
+              await wait(900)
+              if (item.id === 'salary') setSalary('€7–9k')
+            }}
+            onUndoRevert={(item) => {
+              if (item.id === 'salary') setSalary('€8–10k')
+            }}
+          />
+        </div>
       </div>
       {/* The revert toast comes up inside the stage, under the record. */}
       <Toaster className="absolute inset-x-0 bottom-0 mx-auto w-[397px] max-w-full" />
