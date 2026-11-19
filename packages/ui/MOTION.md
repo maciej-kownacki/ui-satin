@@ -27,6 +27,9 @@ The tokens live in `src/styles/motion.css`.
 4. **Pressing gives feedback.** Buttons scale to 0.97 while held (`active:scale-[0.97]`).
 5. **Nothing grows from zero.** Elements that appear start from opacity 0 and a few pixels of offset (or scale 0.95),
    never from `scale(0)`. Collapsible content fades and settles in; its height is not animated.
+   A body that folds inside a bordered card (Tool call) grows its height on the sliding pill's
+   gentler curve, in Accordion's times: the card's edge moves with it, and on `--ease-out` it
+   dropped most of the way in two frames and then crept, which read as a cut.
 6. **Leave frequent, keyboard-driven actions alone.** Anything people do hundreds of times a day (typing, arrow keys,
    shortcuts) gets no motion.
 7. **Respect reduced motion.** `prefers-reduced-motion: reduce` turns transitions and animations off.

@@ -20,6 +20,8 @@ import { Spinner } from './spinner'
  *
  * The header is a button with `aria-expanded` (click, Enter, Space); its name is the tool, the
  * target and the status, so "Find slots calendar.findSlots Running" is what a screen reader hears.
+ * It has no corners of its own (the card clips it) and its focus ring goes round the whole card,
+ * so nothing on it changes shape while the body opens or folds.
  * The body opens with Thinking's motion (satin-expand): it grows down from under the header and,
  * folded, stays mounted but leaves tab order and screen readers. A call that ends while the card
  * is on screen is announced politely ("Find slots Failed").
@@ -155,7 +157,13 @@ export function ToolCallRoot({
         data-slot="tool-call"
         data-status={status}
         data-state={open ? 'open' : 'closed'}
-        className={cn('flex w-full min-w-0 flex-col overflow-clip rounded-2xl border border-border-default bg-bg-card', className)}
+        className={cn(
+          'flex w-full min-w-0 flex-col overflow-clip rounded-2xl border border-border-default bg-bg-card',
+          // The header has no corners of its own: the card clips it, so nothing on it changes
+          // shape as the body opens or folds. Its focus ring goes round the card instead.
+          'has-[[data-slot=tool-call-header]:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+          className,
+        )}
         {...props}
       >
         {children}
@@ -215,9 +223,9 @@ export function ToolCallHeader({ name, icon, target, duration, ref, onClick, cla
           if (!event.defaultPrevented) toggle()
         }}
         className={cn(
-          'flex min-h-9 w-full cursor-pointer items-center gap-2 rounded-t-[calc(var(--radius-2xl)-1px)] py-2 ps-4 pe-4 text-start text-sm outline-none select-none data-[state=closed]:rounded-b-[calc(var(--radius-2xl)-1px)]',
+          'flex min-h-9 w-full cursor-pointer items-center gap-2 py-2 ps-4 pe-4 text-start text-sm outline-none select-none',
           'transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-hover',
-          'focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
+          'focus-visible:bg-bg-hover',
           className,
         )}
         {...props}
@@ -327,7 +335,15 @@ function StatusIcon({ status }: { status: ToolCallStatus }) {
 export function ToolCallContent({ className, children, ...props }: React.ComponentProps<'div'>) {
   const { open, contentId } = useToolCall('ToolCallContent')
   return (
-    <div id={contentId} data-slot="tool-call-content" data-state={open ? 'open' : 'closed'} className="satin-expand">
+    <div
+      id={contentId}
+      data-slot="tool-call-content"
+      data-state={open ? 'open' : 'closed'}
+      className="satin-expand"
+      // Accordion's times (250 ms in, 200 out) on the sliding pill's gentler curve (MOTION.md): on
+      // --ease-out a tall body dropped most of its height in two frames, then crept the rest.
+      style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
+    >
       <div>
         <div className={cn('flex flex-col divide-y divide-border-subtle border-t border-border-subtle', className)} {...props}>
           {children}
@@ -384,12 +400,13 @@ export function ToolCallSection({ title, value, maxLines = 10, className, ...pro
         filename={title}
         code={code}
         highlight={typeof value !== 'string'}
-        className={cn('rounded-none border-0 bg-transparent', long && 'pb-1')}
+        className={cn('rounded-none border-0 bg-transparent', long && 'pb-0')}
         // The header (36px) and the code's top padding (4px), then 24px lines: cut after the last whole one.
         style={long && !all ? { maxHeight: 40 + maxLines * 24 } : undefined}
       />
       {long && (
-        <div className="px-2 pb-2">
+        // 8px from the last line of code, and 8px under it.
+        <div className="px-2 py-2">
           <Button variant="tertiary" size="xs" aria-expanded={all} aria-controls={`${id}-code`} onClick={() => setAll(!all)}>
             {all ? <NavArrowUp /> : <NavArrowDown />}
             {all ? labels.toolCallShowLess : labels.toolCallShowAll(count)}
