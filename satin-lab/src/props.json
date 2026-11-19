@@ -5403,6 +5403,145 @@
       ]
     }
   },
+  "table-pro": {
+    "TableRowToggle": {
+      "description": "The chevron that opens a row: a tertiary xs icon Button with `aria-expanded`, pointing to the row's end when closed and down when open. Other props, `ref` included, go to the button.",
+      "type": "TableRowToggleProps",
+      "extends": [
+        "Omit<ButtonProps, 'children' | 'onClick' | 'variant' | 'size' | 'iconOnly'>"
+      ],
+      "props": [
+        {
+          "name": "expanded",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(expanded: boolean) => void",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The row it opens, for its name: \"Rows under <name>\"."
+        }
+      ]
+    },
+    "TableGrouped": {
+      "type": "TableGroupedProps",
+      "extends": [
+        "Omit<TableProps<R>, 'columns' | 'footer' | 'tableProps' | 'renderCell' | 'renderRow'>"
+      ],
+      "props": [
+        {
+          "name": "columns",
+          "type": "TableGroupedColumn<R>[]",
+          "required": true
+        },
+        {
+          "name": "getSubRows",
+          "type": "(row: R) => R[] | undefined",
+          "required": false,
+          "description": "A row's own rows, shown under it when it's open. Rows without any get no chevron."
+        },
+        {
+          "name": "expanded",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the open rows (controlled)."
+        },
+        {
+          "name": "defaultExpanded",
+          "type": "string[]",
+          "required": false,
+          "default": "[]",
+          "description": "Ids of the rows open at first (uncontrolled)."
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(ids: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "groupBy",
+          "type": "keyof R & string",
+          "required": false,
+          "description": "Gathers the rows under a header row per value of this field."
+        },
+        {
+          "name": "groupOrder",
+          "type": "string[]",
+          "required": false,
+          "description": "Group values in the order to show them; groups left out follow, in the order of their first row."
+        },
+        {
+          "name": "renderGroup",
+          "type": "(group: TableGroup<R>) => React.ReactNode",
+          "required": false,
+          "description": "Draws a group's name in its header (a Badge, say); the value as text by default."
+        },
+        {
+          "name": "collapsedGroups",
+          "type": "string[]",
+          "required": false,
+          "description": "Values of the closed groups (controlled). Groups are open unless listed."
+        },
+        {
+          "name": "defaultCollapsedGroups",
+          "type": "string[]",
+          "required": false,
+          "default": "[]",
+          "description": "Values of the groups closed at first (uncontrolled)."
+        },
+        {
+          "name": "onCollapsedGroupsChange",
+          "type": "(values: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "pinned",
+          "type": "'start'",
+          "required": false,
+          "description": "Keeps the first column (and the checkbox column) in place while the rest scroll sideways, with a shadow over them."
+        },
+        {
+          "name": "footer",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Adds the totals row, in a `<tfoot>`: \"Total\", then each column's `aggregate` in its `format`."
+        },
+        {
+          "name": "density",
+          "type": "'default' | 'compact'",
+          "required": false,
+          "default": "'default'",
+          "description": "Row height: 40px, or 32px with `compact`."
+        },
+        {
+          "name": "defaultSelected",
+          "type": "string[]",
+          "required": false,
+          "default": "[]",
+          "description": "Ids of the rows picked at first (uncontrolled)."
+        },
+        {
+          "name": "renderCell",
+          "type": "(cell: { row: R; column: TableGroupedColumn<R>; depth: number; content: React.ReactNode }) => React.ReactNode",
+          "required": false,
+          "description": "Draws a body cell's content, after the column's own `cell`; the first column keeps the chevron and the indent in front of it. `depth` is 0 for a row you passed, 1 for its sub-rows."
+        },
+        {
+          "name": "renderRow",
+          "type": "(row: { row: R; depth: number; selected: boolean; rowProps: React.ComponentProps<'tr'>; children: React.ReactNode }) => React.ReactNode",
+          "required": false,
+          "description": "Draws each body row, as Table's `renderRow`: spread `rowProps` (focus, keys, ARIA and styles) on your `<tr>` and put `children` inside. Group header rows are drawn by the table."
+        }
+      ]
+    }
+  },
   "table": {
     "Table": {
       "type": "TableProps",
@@ -5490,6 +5629,18 @@
           "type": "(row: { row: R; index: number; selected: boolean; rowProps: React.ComponentProps<'tr'>; children: React.ReactNode }) => React.ReactNode",
           "required": false,
           "description": "Draws each body row. Spread `rowProps` (state and styles) on your `<tr>` and put `children` (the cells) inside, to add a handler, a data attribute or a context provider: `renderRow={({ row, rowProps, children }) => <tr {...rowProps} onClick={() => open(row)}>{children}</tr>}`."
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Rows for a `<tfoot>` under the body, such as a totals row: give `<tr>`s with one cell per column, plus one first for the checkbox column when `selectable`."
+        },
+        {
+          "name": "tableProps",
+          "type": "Omit<React.ComponentProps<'table'>, 'children'>",
+          "required": false,
+          "description": "Props for the `<table>` element itself (the rest go to the frame around it): a `role` such as `\"treegrid\"` when rows expand, `aria-*`, handlers. `className` and `style` add to the table's own."
         }
       ]
     }
