@@ -2412,7 +2412,7 @@
       "name": "bulk-action-bar",
       "type": "registry:ui",
       "title": "Bulk action bar",
-      "description": "Appears when rows are selected: the count, the actions with their shortcuts, and one toast to undo the batch.",
+      "description": "Appears when rows are selected: select all, the count and the actions, and one toast to undo the batch.",
       "dependencies": [
         "radix-ui@^1.8.1"
       ],
@@ -2420,9 +2420,10 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/satin-pro-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
         "https://uisatin.dev/r/dropdown.json",
-        "https://uisatin.dev/r/kbd.json",
         "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/rolling-number.json",
         "https://uisatin.dev/r/separator.json",

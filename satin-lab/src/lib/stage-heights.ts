@@ -84,7 +84,6 @@ export const stageHeights: Record<string, [number, number]> = {
   'Kanban board': [536, 536],
   'Data grid': [508, 508],
   'Scheduler': [648, 648],
-  'Activity timeline': [808, 808],
   'Scoped search': [548, 548],
   'Agent presence': [424, 424],
   'Activity timeline': [746, 746],

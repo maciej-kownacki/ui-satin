@@ -242,22 +242,6 @@ export const api: Record<string, Api> = {
       { name: 'item.children', type: ['ReactNode'] },
     ],
   },
-  'activity-timeline': {
-    description:
-      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
-    props: [
-      { name: 'items', type: ['ActivityItem[]'] },
-      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
-      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
-      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'expanded', type: ['string[]'] },
-      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
-      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
-      { name: 'loading', type: ['boolean'], default: 'false' },
-      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
-    ],
-  },
   'announcement-bar': {
     description: 'The `AnnouncementBar` component is a full-width bar for one line of news across the top or bottom of the page, with a link to read more and an optional close.',
     props: [
@@ -1102,21 +1086,6 @@ export const api: Record<string, Api> = {
       { name: 'commands', type: ['PromptCommand[]'] },
     ],
   },
-  'prompt-mentions': {
-    description:
-      'Mentions and commands are props on `PromptBar`, so any bar has them, in either shape, with its attachments, models, + menu and dictation. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`.',
-    props: [
-      { name: 'mentions', type: ['PromptMentions'] },
-      { name: 'mentions.trigger', type: ['string'], default: '"@"' },
-      { name: 'mentions.search', type: ['(query: string) => PromptMention[] | Promise<PromptMention[]>'] },
-      { name: 'commands', type: ['PromptCommand[]'] },
-      { name: 'command.run', type: ['(input: { args, value, attachments }) => void'] },
-      { name: 'value', type: ['string', 'PromptValue'] },
-      { name: 'defaultValue', type: ['string', 'PromptValue'], default: '""' },
-      { name: 'onValueChange', type: ['(value: string, detail: PromptValue) => void'] },
-      { name: 'onSubmit', type: ['(value: string, attachments: File[], detail: PromptValue) => void'] },
-    ],
-  },
   'streaming-text': {
     description: 'The `StreamingText` component renders the text received so far as a `div`, one `span` per letter (or word), and writes it out at an even pace. Letters not yet written are transparent but in the DOM, so screen readers get the whole text; the box is `aria-busy` while it streams.',
     props: [
@@ -1153,22 +1122,6 @@ export const api: Record<string, Api> = {
       { name: 'hints', type: ['boolean'], default: 'true' },
       { name: 'wrapperClassName', type: ['string'] },
       { name: 'leading', type: ['ReactNode'] },
-    ],
-  },
-  'activity-timeline': {
-    description:
-      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list per day, newest first. Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
-    props: [
-      { name: 'items', type: ['ActivityItem[]'] },
-      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
-      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
-      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'expanded', type: ['string[]'] },
-      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
-      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
-      { name: 'loading', type: ['boolean'], default: 'false' },
-      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
     ],
   },
   'data-grid': {
@@ -1241,6 +1194,22 @@ export const api: Record<string, Api> = {
       { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
       { name: 'shortcut', type: ['"document"', '"log"', '"off"'], default: '"document"' },
       { name: 'formatTime', type: ['(at: Date) => ReactNode'], default: 'time of day, date when not today' },
+    ],
+  },
+  'activity-timeline': {
+    description:
+      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
+    props: [
+      { name: 'items', type: ['ActivityItem[]'] },
+      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
+      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
+      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'expanded', type: ['string[]'] },
+      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
+      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
+      { name: 'loading', type: ['boolean'], default: 'false' },
+      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
     ],
   },
   'agent-presence': {
@@ -1335,21 +1304,6 @@ export const api: Record<string, Api> = {
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
     ],
   },
-  'prompt-mentions': {
-    description:
-      'Mentions and commands are props on `PromptBar`. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`.',
-    props: [
-      { name: 'mentions', type: ['PromptMentions'] },
-      { name: 'mentions.trigger', type: ['string'], default: '"@"' },
-      { name: 'mentions.search', type: ['(query: string) => PromptMention[] | Promise<PromptMention[]>'] },
-      { name: 'commands', type: ['PromptCommand[]'] },
-      { name: 'command.run', type: ['(input: { args, value, attachments }) => void'] },
-      { name: 'value', type: ['string', 'PromptValue'] },
-      { name: 'defaultValue', type: ['string', 'PromptValue'], default: '""' },
-      { name: 'onValueChange', type: ['(value: string, detail: PromptValue) => void'] },
-      { name: 'onSubmit', type: ['(value: string, attachments: File[], detail: PromptValue) => void'] },
-    ],
-  },
   'time-picker': {
     description: '`TimePicker` is a text field with the Input skin that reads a typed time ("930", "9:30pm", "1430") or opens a list of times under it; its value is `{ hours, minutes }`, `null` when cleared or typed wrong. `DateTimePicker` is the Date picker field opening the Calendar with a column of times beside it; its value is a `Date`. `TimeList` and `DateTimePickerPanel` are the list and the panel on their own. Times are written in the `dateLocale` label, 12- or 24-hour as that locale writes them; with `name`, a hidden input submits `HH:mm` or `YYYY-MM-DDTHH:mm`.',
     props: [
@@ -1408,6 +1362,21 @@ export const api: Record<string, Api> = {
       { name: 'title', type: ['ReactNode'], default: '"Plan"' },
       { name: 'indicator', type: ['"tetris"', '"flappy"'], default: '"tetris"' },
       { name: 'glimmer', type: ['"color"', '"neutral"'], default: '"color"' },
+    ],
+  },
+  'prompt-mentions': {
+    description:
+      'Mentions and commands are props on `PromptBar`, so any bar has them, in either shape, with its attachments, models, + menu and dictation. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`.',
+    props: [
+      { name: 'mentions', type: ['PromptMentions'] },
+      { name: 'mentions.trigger', type: ['string'], default: '"@"' },
+      { name: 'mentions.search', type: ['(query: string) => PromptMention[] | Promise<PromptMention[]>'] },
+      { name: 'commands', type: ['PromptCommand[]'] },
+      { name: 'command.run', type: ['(input: { args, value, attachments }) => void'] },
+      { name: 'value', type: ['string', 'PromptValue'] },
+      { name: 'defaultValue', type: ['string', 'PromptValue'], default: '""' },
+      { name: 'onValueChange', type: ['(value: string, detail: PromptValue) => void'] },
+      { name: 'onSubmit', type: ['(value: string, attachments: File[], detail: PromptValue) => void'] },
     ],
   },
   'table-pro': {

@@ -32,15 +32,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['End'], action: 'Moves focus to the last header.' },
     ],
   },
-  'activity-timeline': {
-    summary:
-      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
-      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
-      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
-    ],
-  },
   alert: {
     summary:
       'Errors and warnings are `role="alert"`, so screen readers read them out when they appear; the other intents are `role="status"`, read politely. The status icon is hidden, so say the severity in the title when it matters. The close button is named "Dismiss" (`dismiss` in SatinLabels).',
@@ -565,15 +556,6 @@ export const a11y: Record<string, A11y> = {
       'The header is a `button` with `aria-expanded` and `aria-controls`, named by the summary ("Thought for 2m 45s"). The steps are an ordered list; folded, they stay mounted but leave the tab order and screen readers. The mark, chevron and rail are hidden, and so is a task’s check.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Opens or folds the steps.' }],
   },
-  'activity-timeline': {
-    summary:
-      'Each day is an ordered list named after its rule ("Today"); without days the list is named "Activity" (`activity` in SatinLabels). Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
-      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
-      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
-    ],
-  },
   'data-grid': {
     summary:
       'A `grid` (APG Grid pattern) named by `label`, with `aria-rowcount` and `aria-colcount` and each row and cell numbered, so the count stays right while only the rows on screen exist. One cell at a time is in the tab order; a sortable header holds a `button` and sets `aria-sort`. With `selectable` the grid is `aria-multiselectable` and rows set `aria-selected`; the checkboxes are named "Select <name>" after the first column or `rowLabel`. Each resize handle is a focusable `separator` named "Resize <column>" with its width as `aria-valuenow`. An editor is named after its column. A saving cell is `aria-busy`; a failed one is `aria-invalid` and described by its error. Sorting, saves and views are read out from a polite `status` region. The Columns menu is a menu of `menuitemcheckbox` rows; the view menu says "View: <name>, unsaved changes" when the grid has moved from the view.',
@@ -612,6 +594,15 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Tab'], action: 'Moves through the run headers, the Revert run buttons and the open runs\' Revert buttons.' },
       { keys: ['Enter', 'Space'], action: 'On a run header: opens or closes its actions. On a button: reverts, restores or tries again.' },
       { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
+    ],
+  },
+  'activity-timeline': {
+    summary:
+      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
+      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
+      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
     ],
   },
   'agent-presence': {
@@ -659,19 +650,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
     ],
   },
-  'prompt-mentions': {
-    summary:
-      'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list. The menu lives only while focus is in the field: the + button, the model menu, dictation or Send take focus and close it, and @ or / typed in the + panel’s search is that search’s text. Escape closes the menu alone, not a dialog the bar sits in.',
-    keyboard: [
-      { keys: ['@', '/'], action: 'At the start or after a space: opens the mentions or the commands. The text typed after it filters them.' },
-      { keys: ['↑', '↓'], action: 'In the open menu: moves the highlight, wrapping at the ends.' },
-      { keys: ['Enter', 'Tab'], action: 'In the open menu: inserts the highlighted row as a token, followed by a space.' },
-      { keys: ['Esc'], action: 'Closes the menu until the next @ or /.' },
-      { keys: ['Backspace'], action: 'Right after a token: removes the whole token. Delete does the same just before one.' },
-      { keys: ['←', '→'], action: 'Steps over a token in one move.' },
-      { keys: ['Enter'], action: 'With the menu shut or empty: sends; a message with a command runs it.' },
-    ],
-  },
   'time-picker': {
     summary:
       'TimePicker\'s field is a `combobox` named by its label and described by a format hint ("Type a time like 2:30 PM", `timeHint` in SatinLabels) and by the hint or error. Focus stays in it while the `listbox` of times is open; `aria-activedescendant` follows the highlighted time. Each time is an `option`: the picked one `aria-selected`, unavailable ones `aria-disabled`. Typed text that isn\'t an available time sets `aria-invalid` and says why under the field (`timeInvalid`, `timeUnavailable`). The chevron, "Show times", is out of the tab order. DateTimePicker\'s field is a `button` that opens the Calendar (as on Date picker) with the times as a `listbox` named "Time"; picking a day with no time yet moves focus to the times.',
@@ -706,6 +684,19 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
       { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to the label (an empty name keeps the old one).' },
       { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to the label.' },
+    ],
+  },
+  'prompt-mentions': {
+    summary:
+      'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list. The menu lives only while focus is in the field: the + button, the model menu, dictation or Send take focus and close it, and @ or / typed in the + panel’s search is that search’s text. Escape closes the menu alone, not a dialog the bar sits in.',
+    keyboard: [
+      { keys: ['@', '/'], action: 'At the start or after a space: opens the mentions or the commands. The text typed after it filters them.' },
+      { keys: ['↑', '↓'], action: 'In the open menu: moves the highlight, wrapping at the ends.' },
+      { keys: ['Enter', 'Tab'], action: 'In the open menu: inserts the highlighted row as a token, followed by a space.' },
+      { keys: ['Esc'], action: 'Closes the menu until the next @ or /.' },
+      { keys: ['Backspace'], action: 'Right after a token: removes the whole token. Delete does the same just before one.' },
+      { keys: ['←', '→'], action: 'Steps over a token in one move.' },
+      { keys: ['Enter'], action: 'With the menu shut or empty: sends; a message with a command runs it.' },
     ],
   },
   'table-pro': {
