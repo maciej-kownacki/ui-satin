@@ -343,6 +343,19 @@ export const nav: NavGroup[] = [
   },
 ]
 
+/**
+ * Pages built or changed in the P1 batch, marked New in the sidebar so they are easy to find
+ * while they are reviewed (preview only). The last four existed before and gained a feature:
+ * Combobox (creatable), Dropdown (submenus), Date picker (presets), Toast (Undo countdown).
+ */
+export const newPages = new Set<string>([
+  'agent-presence', 'agent-changes-review', 'agent-plan', 'agent-undo-log', 'agent-permissions', 'review-queue',
+  'prompt-mentions', 'tool-call',
+  'activity-timeline', 'bulk-action-bar', 'people-picker', 'command-pages', 'data-grid', 'filter-bar',
+  'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'search-scoped', 'stepper', 'table-pro', 'toast-batch',
+  'combobox', 'dropdown', 'date-picker', 'toast',
+])
+
 /** The package a page's component comes from. */
 export const packageOf = (item: Pick<NavItem, 'edition'>) => (item.edition === 'pro' ? '@uisatin/pro' : '@uisatin/ui')
 

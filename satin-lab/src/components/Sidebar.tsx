@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Badge, Button, SearchBar, cn } from '@uisatin/ui'
 import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
-import { allComponents, componentPages, pagesOf, type NavGroup, type NavItem } from '../nav'
+import { allComponents, componentPages, newPages, pagesOf, type NavGroup, type NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
 import { AiPatternsIcon, AllComponentsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, GuidesIcon, IntroIcon, RecipesIcon } from './icons'
 
@@ -176,12 +176,15 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
             isCurrent ? cn('bg-bg-selected text-text-default', currentEase) : cn('text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected', pressEase),
           )}
         >
-          {item.edition === 'pro' ? (
+          {item.edition === 'pro' || newPages.has(item.id) ? (
             <>
               <span className="min-w-0 flex-1 truncate">
                 <Highlight text={item.title} query={q} />
               </span>
-              <ProMark />
+              <span className="ms-2 flex shrink-0 gap-1">
+                {item.edition === 'pro' && <ProMark />}
+                {newPages.has(item.id) && <NewMark />}
+              </span>
             </>
           ) : (
             <Highlight text={item.title} query={q} />
@@ -433,6 +436,7 @@ function NavParent({
         <span className="min-w-0 flex-1 truncate">
           <Highlight text={item.title} query={query} />
         </span>
+        {item.children!.some((c) => newPages.has(c.id)) && <NewMark />}
         <Count>
           <span className="sr-only">, </span>
           {item.children!.length}
@@ -592,8 +596,17 @@ const swapIn =
 /** Marks a Satin Pro page's row, in the place a parent row shows its count. */
 function ProMark() {
   return (
-    <Badge size="sm" tone="brand" className="ms-2 text-xs leading-4">
+    <Badge size="sm" tone="brand" className="text-xs leading-4">
       Pro
+    </Badge>
+  )
+}
+
+/** Marks a page built or changed in the P1 batch (`newPages`), after the Pro badge. */
+function NewMark() {
+  return (
+    <Badge size="sm" tone="green" className="text-xs leading-4">
+      New
     </Badge>
   )
 }
