@@ -30,9 +30,9 @@ import { FieldChrome, Select, useFieldChrome } from './select'
  * (en-US by default). The week starts on that locale's first day (Sunday in en-US, Monday in
  * pl-PL), or on `weekStartsOn`.
  *
- * Presets: `presets` puts a list of shortcuts ("Last 30 days") before the calendar, at its side,
- * or above it on narrow screens. Most people pick a preset rather than days. `datePresets` holds
- * the common ones, worded through SatinLabels.
+ * Presets: `presets` puts a list of shortcuts ("Last 30 days") before the calendar, at its side
+ * where both fit, above it where they don't (a phone, a narrow column). Most people pick a preset
+ * rather than days. `datePresets` holds the common ones, worded through SatinLabels.
  *
  * Other props, `ref` included, go to: Calendar's root, DatePicker's and DateRangePicker's trigger
  * button (`className` styles it too), and the panels' surface.
@@ -463,30 +463,25 @@ function usePresetItems(presets: DatePreset[] | undefined, today: Date | undefin
   })
 }
 
-// Beside the calendar from `sm` (one month) or `lg` (two), above it below that.
-const presetLayouts = {
-  sm: {
-    list: 'sm:min-w-36 sm:flex-col sm:flex-nowrap sm:gap-0.5 sm:border-e sm:border-b-0 sm:px-2 sm:py-3',
-    item: 'sm:w-full',
-  },
-  lg: {
-    list: 'lg:min-w-36 lg:flex-col lg:flex-nowrap lg:gap-0.5 lg:border-e lg:border-b-0 lg:px-2 lg:py-3',
-    item: 'lg:w-full',
-  },
-}
-
 /**
  * The preset list: a listbox before the calendar, one tab stop (the active preset, else the
  * first). Arrows and Home / End move, Enter or Space picks; the active one is aria-selected.
  * Picking doesn't follow the arrows, since a pick closes DatePicker's popover.
+ *
+ * The panel wraps instead of asking the viewport: the list is as wide as its widest preset and
+ * sits beside the calendar where both fit, so presets stack one per row. Where they don't (a
+ * phone, a narrow column), the calendar wraps under the list, which then runs the panel's
+ * width with the presets in a row. Its end and bottom edges both draw the divider; the one on
+ * the panel's edge is pushed 1px out and clipped. Presets grow, so the stacked ones share one
+ * width; a spacer after them takes a row's spare room, so in a row they keep their own width
+ * (beside the calendar it is too wide to share a line and drops below, out of sight).
  */
-function PresetList({ items, active, onPick, side }: { items: PresetItem[]; active: number; onPick: (item: PresetItem) => void; side: 'sm' | 'lg' }) {
+function PresetList({ items, active, onPick }: { items: PresetItem[]; active: number; onPick: (item: PresetItem) => void }) {
   const labels = useSatinLabels()
   const listRef = React.useRef<HTMLDivElement>(null)
   const [current, setCurrent] = React.useState<number | null>(null)
   const enabled = items.flatMap((p, i) => (p.disabled ? [] : [i]))
   const tabStop = current !== null && enabled.includes(current) ? current : enabled.includes(active) ? active : enabled[0]
-  const layout = presetLayouts[side]
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     // Right to left the stacked row runs leftwards, so Left is the next preset.
@@ -512,7 +507,7 @@ function PresetList({ items, active, onPick, side }: { items: PresetItem[]; acti
       aria-label={labels.presets}
       data-slot="date-picker-presets"
       onKeyDown={onKeyDown}
-      className={cn('flex shrink-0 flex-wrap gap-1 border-b border-border-subtle p-2', layout.list)}
+      className="-me-px -mb-px flex w-min grow flex-wrap content-start gap-0.5 border-e border-b border-border-subtle px-2 py-3 after:grow-[999] after:basis-32 after:content-['']"
     >
       {items.map((p, i) => {
         const selected = i === active
@@ -527,7 +522,7 @@ function PresetList({ items, active, onPick, side }: { items: PresetItem[]; acti
             tabIndex={i === tabStop ? 0 : -1}
             onFocus={() => setCurrent(i)}
             onClick={() => !p.disabled && onPick(p)}
-            className={cn(menuItemClass, 'w-auto', layout.item, !selected && 'hover:bg-bg-hover')}
+            className={cn(menuItemClass, 'w-auto grow', !selected && 'hover:bg-bg-hover')}
           >
             <MenuItemContent label={p.label} layout="inline" selected={selected} />
           </div>
@@ -544,6 +539,11 @@ const surfaceClass = cn(
   'rounded-xl border border-border-subtle bg-bg-popover',
   '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
 )
+/**
+ * A panel with presets wraps (see PresetList). In a popover it is held to the room Radix
+ * measures beside the trigger, so it wraps there too rather than running off a phone's screen.
+ */
+const presetPanelClass = 'flex w-fit max-w-(--radix-popover-content-available-width) flex-wrap overflow-hidden'
 const popClass = cn(
   'z-50 outline-none',
   'origin-(--radix-popover-content-transform-origin) data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
@@ -620,9 +620,8 @@ export function DatePickerPanel({ value, onValueChange, min, max, today, presets
       </div>
     )
   return (
-    <div {...props} data-slot="date-picker-panel" className={cn(surfaceClass, 'flex w-fit flex-col overflow-hidden sm:flex-row', className)}>
+    <div {...props} data-slot="date-picker-panel" className={cn(surfaceClass, presetPanelClass, className)}>
       <PresetList
-        side="sm"
         items={items}
         active={items.findIndex((p) => !p.disabled && sameDay(p.from, value))}
         onPick={(p) => {
@@ -630,7 +629,7 @@ export function DatePickerPanel({ value, onValueChange, min, max, today, presets
           onValueChange?.(p.from)
         }}
       />
-      <div className="p-3">{calendar}</div>
+      <div className="flex grow justify-center p-3">{calendar}</div>
     </div>
   )
 }
@@ -873,9 +872,8 @@ export function DateRangePickerPanel({
       </div>
     )
   return (
-    <div {...props} data-slot="date-range-picker-panel" className={cn(surfaceClass, 'flex w-fit shrink-0 flex-col overflow-hidden lg:flex-row', className)}>
+    <div {...props} data-slot="date-range-picker-panel" className={cn(surfaceClass, presetPanelClass, 'shrink-0', className)}>
       <PresetList
-        side="lg"
         items={items}
         active={items.findIndex((p) => !p.disabled && sameDay(p.from, draft.from) && sameDay(p.to, draft.to))}
         onPick={(p) => {
@@ -883,7 +881,7 @@ export function DateRangePickerPanel({
           setMonth(addMonths(p.from, 0))
         }}
       />
-      <div className="flex flex-col">{body}</div>
+      <div className="flex grow flex-col [&>:first-child]:self-center">{body}</div>
     </div>
   )
 }
