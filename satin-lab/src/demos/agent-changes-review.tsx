@@ -89,6 +89,8 @@ export default function AgentChangesReviewDemo({ codeHtml }: { codeHtml: Record<
       options={options}
       codeHtml={codeHtml}
       controls={controls}
+      // Pinned to the top: when a rejected row leaves, the card shortens from its bottom and nothing above moves.
+      align="top"
       render={(id) => (
         <div className="flex w-full justify-center">
           <Preview key={id} control={id as 'buttons' | 'checkbox'} />
