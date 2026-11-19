@@ -477,6 +477,16 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the focused toast.' },
     ],
   },
+  'toast-batch': {
+    summary:
+      'A toast like any other, read out as it arrives with its Undo replaced by "Undo with ⌘Z" (`undoWithShortcut`), since a screen reader user may not reach the button in time. When items join or are undone, the new title is read once at the end of the burst ("6 candidates moved"), from a polite `status` region; the rolling digits are hidden and the number is there as text. Show is a disclosure button (`aria-expanded`, `aria-controls`) for a list named by the title. Each item\'s Undo is named after the change and the item ("Undo move of Tara Mendes"); once undone it says "Tara Mendes, Undone", keeps the focus and is `aria-disabled`. When ⌘Z empties the batch with focus on its Undo, focus moves to Show.',
+    keyboard: [
+      { keys: ['⌘Z', 'Ctrl+Z'], action: 'Undoes the newest batch on screen, unless focus is in a text field.' },
+      { keys: ['Enter', 'Space'], action: 'On Show, opens or folds the list; on an Undo, undoes the batch or that item.' },
+      { keys: ['Tab', 'Shift+Tab'], action: 'Moves through Show, Undo, Close, then the items\' Undo buttons.' },
+      { keys: ['F8'], action: 'Moves focus to the toasts.' },
+    ],
+  },
   toggle: {
     summary:
       'A Radix toggle: a `button` with `aria-pressed`. An `iconOnly` toggle needs an `aria-label`; keep the label the same whether it is on or off, since `aria-pressed` carries the state.',

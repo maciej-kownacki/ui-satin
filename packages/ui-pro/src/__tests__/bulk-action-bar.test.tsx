@@ -5,7 +5,6 @@ import { expectNoAxeViolations, renderWithSatin, setReducedMotion } from 'satin-
 import { Table, type Column } from '@uisatin/ui/table'
 import { Toaster, toast } from '@uisatin/ui/toast'
 import { BulkActionBar, parseShortcut, type BulkAction } from '../components/bulk-action-bar'
-import { toastBatch } from '../components/toast-batch'
 
 type Deal = { id: string; company: string }
 const deals: Deal[] = [
@@ -124,15 +123,15 @@ describe('BulkActionBar', () => {
   it('rolls the count when it changes, but not under reduced motion', async () => {
     const { user } = renderWithSatin(<Deals initial={['acme']} actions={[{ label: 'Move', onSelect: () => {} }]} />)
     await user.click(screen.getByRole('checkbox', { name: 'Select Globex' }))
-    const roll = document.querySelector('.satin-bulk-roll')
+    const roll = document.querySelector('.satin-roll')
     expect(roll?.getAttribute('data-dir')).toBe('up')
     expect(roll?.querySelector('[data-roll="out"]')?.textContent).toBe('1')
     expect(roll?.querySelector('[data-roll="in"]')?.textContent).toBe('2')
 
     setReducedMotion(true)
     await user.click(screen.getByRole('checkbox', { name: 'Select Initech' }))
-    expect(document.querySelector('.satin-bulk-roll')).toBeNull()
-    expect(document.querySelector('[data-slot="bulk-action-bar-number"]')?.textContent).toBe('3')
+    expect(document.querySelector('.satin-roll')).toBeNull()
+    expect(document.querySelector('[data-slot="rolling-number"]')?.textContent).toBe('3')
   })
 
   it('speaks the words SatinLabels gives it', async () => {
@@ -169,71 +168,5 @@ describe('parseShortcut', () => {
     expect(parseShortcut('⌘⇧M')).toEqual({ meta: true, ctrl: false, shift: true, alt: false, key: 'M' })
     expect(parseShortcut('Ctrl + Shift + K')).toEqual({ meta: false, ctrl: true, shift: true, alt: false, key: 'K' })
     expect(parseShortcut('⌫').key).toBe('Backspace')
-  })
-})
-
-describe('toastBatch', () => {
-  const batch = () => {
-    const undo = { acme: vi.fn(), globex: vi.fn(), initech: vi.fn() }
-    const id = toastBatch({
-      title: (count) => `${count} deals moved`,
-      items: deals.map((d) => ({ id: d.id, label: d.company, undo: undo[d.id as keyof typeof undo] })),
-    })
-    return { undo, id }
-  }
-
-  it('undoes every item with the toast’s Undo', async () => {
-    const { user } = renderWithSatin(<Toaster />)
-    let undo!: ReturnType<typeof batch>['undo']
-    act(() => void (undo = batch().undo))
-    expect(screen.getByText('3 deals moved')).toBeTruthy()
-    await user.click(screen.getByRole('button', { name: 'Undo' }))
-    expect(undo.acme).toHaveBeenCalledOnce()
-    expect(undo.globex).toHaveBeenCalledOnce()
-    expect(undo.initech).toHaveBeenCalledOnce()
-  })
-
-  it('opens a list with an Undo per item; the title counts what is left', async () => {
-    const { user } = renderWithSatin(<Toaster />, { labels: { showItems: 'Pokaż', undoItem: (item) => `Cofnij ${item}`, undone: 'Cofnięto' } })
-    let undo!: ReturnType<typeof batch>['undo']
-    act(() => void (undo = batch().undo))
-    const show = screen.getByRole('button', { name: 'Pokaż' })
-    expect(show.getAttribute('aria-expanded')).toBe('false')
-    await user.click(show)
-    // The same button, still focused, now open.
-    expect(show.getAttribute('aria-expanded')).toBe('true')
-    expect(document.activeElement).toBe(show)
-    await user.click(screen.getByRole('button', { name: 'Cofnij Globex' }))
-    expect(undo.globex).toHaveBeenCalledOnce()
-    expect(undo.acme).not.toHaveBeenCalled()
-    expect(screen.getByText('2 deals moved')).toBeTruthy()
-    // The undone row keeps its button (and the focus), which now does nothing.
-    const done = screen.getByRole('button', { name: 'Globex, Cofnięto' })
-    expect(document.activeElement).toBe(done)
-    await user.click(done)
-    expect(undo.globex).toHaveBeenCalledOnce()
-  })
-
-  it('stays while its list is open, and closes after the last item is undone', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    try {
-      const { user } = renderWithSatin(<Toaster />)
-      act(() => void batch())
-      await user.click(screen.getByRole('button', { name: 'Show' }))
-      await act(async () => void vi.advanceTimersByTime(20_000))
-      expect(screen.getByText('3 deals moved')).toBeTruthy()
-      for (const name of ['Acme Corp', 'Globex', 'Initech']) await user.click(screen.getByRole('button', { name: `Undo ${name}` }))
-      await act(async () => void vi.advanceTimersByTime(600))
-      expect(screen.queryByText(/deals moved/)).toBeNull()
-    } finally {
-      vi.useRealTimers()
-    }
-  })
-
-  it.each(['light', 'dark'] as const)('has no axe violations open, in %s', async (theme) => {
-    const { user } = renderWithSatin(<Toaster />, { theme })
-    act(() => void batch())
-    await user.click(screen.getByRole('button', { name: 'Show' }))
-    await expectNoAxeViolations()
   })
 })

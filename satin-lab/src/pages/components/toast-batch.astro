@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ToastBatchDemo, { options } from '../../demos/toast-batch'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="toast-batch">
+  <DocSection item={page('toast-batch')} api={api['toast-batch']}>
+    <ToastBatchDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>
