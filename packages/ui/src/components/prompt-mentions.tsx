@@ -240,6 +240,9 @@ const MIRRORED = [
   'borderLeftWidth',
 ] as const
 
+/** How far the mirror reaches past the textarea's sides: room for a fill at the line's edge. */
+const BLEED = 4
+
 // The fills reach 3px past the text on each side (margin pulls the box out, padding puts the text
 // back), so the text sits exactly where the textarea draws it.
 const tokenClass = '-mx-[3px] rounded-sm px-[3px] py-px box-decoration-clone'
@@ -387,12 +390,14 @@ export function usePromptMentions({
     for (const prop of MIRRORED) mirror.style[prop] = style[prop]
     mirror.style.borderStyle = 'solid'
     mirror.style.borderColor = 'transparent'
-    // A scrollbar narrows the textarea's text; narrow the mirror's by as much.
-    const bar = el.offsetWidth - el.clientWidth - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth)
-    if (bar > 0) {
-      const side = style.direction === 'rtl' ? 'paddingLeft' : 'paddingRight'
-      mirror.style[side] = `${parseFloat(style[side]) + bar}px`
-    }
+    // The mirror reaches BLEED past the textarea on both sides, so a token's fill at the line's
+    // edge isn't clipped; its padding grows by as much, so the text stays put. A scrollbar
+    // narrows the textarea's text; narrow the mirror's by as much.
+    const bar = Math.max(0, el.offsetWidth - el.clientWidth - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth))
+    const end = style.direction === 'rtl' ? 'paddingLeft' : 'paddingRight'
+    mirror.style.left = mirror.style.right = `${-BLEED}px`
+    mirror.style.paddingLeft = `${parseFloat(style.paddingLeft) + BLEED + (end === 'paddingLeft' ? bar : 0)}px`
+    mirror.style.paddingRight = `${parseFloat(style.paddingRight) + BLEED + (end === 'paddingRight' ? bar : 0)}px`
     mirror.scrollTop = el.scrollTop
   })
 
