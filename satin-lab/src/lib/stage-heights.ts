@@ -47,7 +47,6 @@ export const stageHeights: Record<string, [number, number]> = {
   'Reviewable changes': [462, 483],
   'Decision card': [368, 392],
   'Review queue': [464, 464],
-  'Permission request': [420, 488],
   'Permission request': [396, 480],
   'Dialog': [352, 352],
   'Dot': [280, 280],
