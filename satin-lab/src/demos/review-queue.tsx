@@ -217,7 +217,8 @@ function Preview({ state }: { state: string }) {
   }, [])
 
   return (
-    <div ref={boxRef} className="relative -mx-10 -my-6 flex min-w-0 flex-1 justify-center self-stretch px-4 py-6 sm:px-10">
+    // The whole stage (its padding cancelled, its height taken), so the editor Sheet runs top to bottom in it.
+    <div ref={boxRef} className="relative -mx-10 -my-6 flex min-h-(--stage-h-m) min-w-0 flex-1 justify-center self-stretch px-4 py-6 sm:px-10 md:min-h-(--stage-h)">
       <div ref={setStage} className="pointer-events-none absolute inset-0 z-10 overflow-hidden *:pointer-events-auto" />
       <ReviewQueue
         key={round}

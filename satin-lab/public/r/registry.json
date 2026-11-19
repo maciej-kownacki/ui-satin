@@ -2151,6 +2151,37 @@
       ]
     },
     {
+      "name": "review-queue",
+      "type": "registry:ui",
+      "title": "Review queue",
+      "description": "Agent drafts gone through one at a time, Approve, Edit or Skip with the keyboard, and a summary at the end.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/form.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/progress.json",
+        "https://uisatin.dev/r/sheet.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Review queue docs: https://uisatin.dev/ai-patterns/review-queue",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/review-queue.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast-batch",
       "type": "registry:ui",
       "title": "Toast batch",
@@ -3311,6 +3342,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "review-queue-demo",
+      "type": "registry:example",
+      "title": "Review queue example",
+      "description": "The shortest use of Review queue, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/review-queue.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/review-queue-demo.tsx",
           "type": "registry:example"
         }
       ]
