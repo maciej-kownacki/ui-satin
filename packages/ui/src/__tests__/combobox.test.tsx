@@ -99,8 +99,8 @@ describe('Combobox creatable', () => {
     await user.click(screen.getByRole('button', { name: /Skills/ }))
     await user.keyboard('Framer Motion')
     expect(screen.queryByRole('option')).toBeNull()
-    expect(screen.getByText('No results')).toBeTruthy()
-    expect(screen.queryByRole('status')).toBeNull()
+    // "No results" is read out from its own status region; there is no second one for create failures.
+    expect(screen.getAllByRole('status').map((s) => s.textContent)).toEqual(['No results'])
   })
 
   it('ends the list with Create "…" while no label is exactly the query', async () => {

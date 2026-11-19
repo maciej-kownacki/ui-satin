@@ -2005,8 +2005,9 @@
       "props": [
         {
           "name": "options",
-          "type": "SelectOption[]",
-          "required": true
+          "type": "SelectOption[] | SelectGroup[]",
+          "required": true,
+          "description": "Options, or titled groups of options."
         },
         {
           "name": "value",
@@ -2055,6 +2056,50 @@
           "type": "React.ReactNode",
           "required": false,
           "description": "Shown when nothing matches the query. Defaults to the `noResults` label."
+        },
+        {
+          "name": "filter",
+          "type": "boolean | ((option: SelectOption, query: string) => boolean)",
+          "required": false,
+          "default": "true",
+          "description": "How typing narrows the list: by label and description (`true`), by your own test, or not at all (`false`), when the app searches and passes the results as `options`."
+        },
+        {
+          "name": "onQueryChange",
+          "type": "(query: string) => void",
+          "required": false,
+          "description": "The query as it's typed, and '' when the list opens again: for searching on the app's side."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The app is searching: a Spinner in place of the search icon, `aria-busy` on the list."
+        },
+        {
+          "name": "loadingText",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown in place of `emptyText` while `loading` and nothing is listed. Defaults to the `loading` label."
+        },
+        {
+          "name": "selectedOptions",
+          "type": "SelectOption[]",
+          "required": false,
+          "description": "The picks as options, for picks `options` doesn't hold right now (search results change with the query). The field takes a pick's label and icon from here first."
+        },
+        {
+          "name": "renderOption",
+          "type": "(option: SelectOption, state: { selected: boolean }) => React.ReactNode",
+          "required": false,
+          "description": "Draws a row's content in place of the default label, description, icon and check."
+        },
+        {
+          "name": "renderValue",
+          "type": "(picked: SelectOption[], api: { remove: (value: string) => void; disabled: boolean }) => React.ReactNode",
+          "required": false,
+          "description": "Draws the picks in the field in place of the chips (`multiple`) or the picked label. `remove` drops one pick."
         },
         {
           "name": "applyLabel",
@@ -5721,6 +5766,69 @@
           "name": "onVisibleChange",
           "type": "(visible: boolean) => void",
           "required": false
+        }
+      ]
+    }
+  },
+  "people-picker": {
+    "PeoplePicker": {
+      "type": "PeoplePickerProps",
+      "extends": [
+        "Omit< ComboboxProps, | 'options' | 'value' | 'defaultValue' | 'onValueChange' | 'filter' | 'onQueryChange' | 'loading' | 'loadingText' | 'selectedOptions' | 'renderOption' | 'renderValue' >"
+      ],
+      "props": [
+        {
+          "name": "people",
+          "type": "Person[]",
+          "required": false,
+          "description": "Everyone who can be picked, in one list."
+        },
+        {
+          "name": "groups",
+          "type": "PeopleGroup[]",
+          "required": false,
+          "description": "Everyone who can be picked, in titled groups (teams, offices) instead of one list."
+        },
+        {
+          "name": "search",
+          "type": "(query: string, options: PeopleSearchOptions) => Promise<Person[] | PeopleGroup[]>",
+          "required": false,
+          "description": "Searches on the app's side, in place of `people` and `groups`. Resolve to people, or to titled groups of them."
+        },
+        {
+          "name": "searchDelay",
+          "type": "number",
+          "required": false,
+          "default": "250",
+          "description": "Milliseconds without typing before `search` runs."
+        },
+        {
+          "name": "recent",
+          "type": "Person[]",
+          "required": false,
+          "description": "People picked lately: listed first, under \"Recent\", while the query is empty."
+        },
+        {
+          "name": "value",
+          "type": "Person[]",
+          "required": false,
+          "description": "The picked people."
+        },
+        {
+          "name": "defaultValue",
+          "type": "Person[]",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(people: Person[]) => void",
+          "required": false
+        },
+        {
+          "name": "maxChips",
+          "type": "number",
+          "required": false,
+          "description": "With `multiple`: chips shown before the rest fold into a \"+N\" chip. All of them by default."
         }
       ]
     }
