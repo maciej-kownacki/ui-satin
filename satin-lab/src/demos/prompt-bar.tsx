@@ -1,44 +1,20 @@
 import * as React from 'react'
-import { PromptBar, defaultActions, type PromptBarAction, type PromptBarModel } from '@uisatin/ui/prompt-bar'
+import { PromptBar, defaultActions } from '@uisatin/ui/prompt-bar'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
-import modelMark from './assets/model-mark.png'
-import gmail from './assets/app-gmail.png'
-import notion from './assets/app-notion.png'
-import clickup from './assets/app-clickup.png'
-import wintermute from './assets/app-wintermute.png'
-
-const Mark = () => <img src={modelMark.src} alt="" className="size-full object-cover" />
-
-const models: PromptBarModel[] = [
-  { value: 'opus-5.5', label: 'Opus 5.5', icon: <Mark /> },
-  { value: 'sonnet-5.5', label: 'Sonnet 5.5', icon: <Mark /> },
-  { value: 'haiku-4.5', label: 'Haiku 4.5', icon: <Mark /> },
-]
-
-const App = ({ src }: { src: string }) => <img src={src} alt="" className="size-4 shrink-0" />
-
-/** The + menu as in Figma: the two built-in rows, then apps the user can connect. */
-const apps: PromptBarAction[] = [
-  ...defaultActions,
-  { id: 'gmail', label: 'Gmail', description: 'Read and manage Gmail', icon: <App src={gmail.src} /> },
-  { id: 'notion', label: 'Notion', description: 'Create and manage content', icon: <App src={notion.src} /> },
-  { id: 'clickup', label: 'Clickup', description: 'Manage your work', icon: <App src={clickup.src} /> },
-  { id: 'wintermute', label: 'Wintermute', description: 'Orchestrate agents', icon: <App src={wintermute.src} /> },
-]
-
-/** Sample files, so the attachments switch shows the three chip types from Figma. */
-const sampleFiles = () =>
-  ['Deal_Acme.pdf', 'Contract_draft.docx', 'Q3_costs.xlsx'].map((name) => new File([''], name))
+import { actionsWith, apps, commandsWith, models, sampleFiles, search } from './prompt-bar-data'
 
 const draft = 'Summarize the Acme deal for Friday'
+const commands = commandsWith()
 
-// Shape sets the bar, the switches fill its menus and chips, and state comes last: inactive is
-// the empty bar, active has text to send (the border goes strong), disabled turns it all off.
+// Shape sets the bar, the switches fill its menus and chips and turn on @ and /, and state comes
+// last: inactive is the empty bar, active has text to send (the border goes strong), disabled
+// turns it all off.
 export const controls: ShowcaseControl[] = [
   { id: 'shape', label: 'Shape', items: [{ value: 'pill', label: 'Pill' }, { value: 'default', label: 'Default' }] },
   { id: 'models', label: 'Models', type: 'switch', default: 'on' },
   { id: 'apps', label: 'Apps', type: 'switch', default: 'on' },
   { id: 'attachments', label: 'Attachments', type: 'switch', default: 'off' },
+  { id: 'mentions', label: '@ and /', type: 'switch', default: 'on' },
   {
     id: 'state',
     label: 'State',
@@ -73,8 +49,17 @@ function code(v: Record<string, string>) {
   ]}`,
     v.attachments === 'on' && 'attachments={files}',
     v.attachments === 'on' && 'onAttachmentsChange={setFiles}',
+    // @ and /: see Mentions and commands.
+    v.mentions === 'on' && 'mentions={{ search: (query) => findPeople(query) }}',
+    v.mentions === 'on' &&
+      `commands={[
+    { name: 'schedule', description: 'Find a time and send an invite', icon: <Calendar /> },
+    { name: 'summarize', description: 'Sum up a thread or a record', icon: <Notes /> },
+  ]}`,
     v.state === 'disabled' && 'disabled',
-    'onSubmit={(message, files) => send(message, files)}',
+    v.mentions === 'on'
+      ? 'onSubmit={(message, files, { mentions, command }) => send(message, files, mentions, command)}'
+      : 'onSubmit={(message, files) => send(message, files)}',
   ].filter(Boolean)
   return `import { PromptBar${v.apps === 'on' ? ', defaultActions' : ''} } from '@uisatin/ui/prompt-bar'
 
@@ -90,6 +75,7 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
     v.models === 'on' ? 'Models' : 'No models',
     v.apps === 'on' ? 'Apps' : 'No apps',
     v.attachments === 'on' ? 'Attachments' : 'No attachments',
+    v.mentions === 'on' ? '@ and /' : 'No @ and /',
     labelOf('state', v.state),
   ].join(' · '),
   code: code(v),
@@ -97,22 +83,18 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
 
 function Demo({ v }: { v: Record<string, string> }) {
   const [files, setFiles] = React.useState<File[]>(() => (v.attachments === 'on' ? sampleFiles() : []))
-  // Upload a file adds the next sample file here instead of opening the system file picker.
-  const upload = () =>
-    setFiles((f) => {
-      const samples = sampleFiles()
-      return [...f, samples[f.length % samples.length]]
-    })
-  const actions = (v.apps === 'on' ? apps : defaultActions).map((a) => (a.id === 'upload' ? { ...a, onSelect: upload } : a))
+  const on = v.mentions === 'on'
   return (
     <div className="w-[min(600px,calc(100vw-80px))]">
       <PromptBar
         shape={v.shape as 'pill' | 'default'}
         defaultValue={v.state === 'active' ? draft : undefined}
         models={v.models === 'on' ? models : undefined}
-        actions={actions}
+        actions={actionsWith(v.apps === 'on' ? apps : defaultActions, setFiles)}
         attachments={files}
         onAttachmentsChange={setFiles}
+        mentions={on ? { search } : undefined}
+        commands={on ? commands : undefined}
         disabled={v.state === 'disabled'}
       />
     </div>

@@ -540,11 +540,11 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A `form`. The text field is a `textarea` named "Message". The + button is named "Add to conversation" and opens a panel with the same name: a search `combobox` named "Search agents and tools" over a `listbox` named "Agents and tools", and an "Add an agent" button. The model button reads "Model: <name>" and opens a menu of `menuitemradio` rows. Dictation is named "Dictate" or "Stop dictation" with `aria-pressed`; Send is named "Send" and stays disabled until there is text or a file. Attachments are a list named "Attachments", each with a "Remove <name>" button.',
     keyboard: [
-      { keys: ['Enter'], action: 'In the field: sends the message (not while an input method is composing).' },
+      { keys: ['Enter'], action: 'In the field: sends the message (not while an input method is composing, nor while the @ or / menu is open, where it picks the highlighted row).' },
       { keys: ['Shift+Enter'], action: 'In the field: adds a line.' },
       { keys: ['↑', '↓'], action: 'In the + panel’s search: moves the highlight, wrapping at the ends.' },
       { keys: ['Enter'], action: 'In the + panel’s search: runs the highlighted row.' },
-      { keys: ['Esc'], action: 'Closes the open panel or menu.' },
+      { keys: ['Esc'], action: 'Closes the open panel or menu, the @ or / menu first.' },
     ],
   },
   'streaming-text': {
@@ -652,7 +652,7 @@ export const a11y: Record<string, A11y> = {
   },
   'prompt-mentions': {
     summary:
-      'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list.',
+      'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list. The menu lives only while focus is in the field: the + button, the model menu, dictation or Send take focus and close it, and @ or / typed in the + panel’s search is that search’s text. Escape closes the menu alone, not a dialog the bar sits in.',
     keyboard: [
       { keys: ['@', '/'], action: 'At the start or after a space: opens the mentions or the commands. The text typed after it filters them.' },
       { keys: ['↑', '↓'], action: 'In the open menu: moves the highlight, wrapping at the ends.' },
