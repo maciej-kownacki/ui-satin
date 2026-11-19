@@ -2135,6 +2135,7 @@
         "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/kbd.json",
         "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/rolling-number.json",
         "https://uisatin.dev/r/separator.json",
         "https://uisatin.dev/r/tooltip.json"
       ],
@@ -2151,10 +2152,32 @@
       ]
     },
     {
+      "name": "rolling-number",
+      "type": "registry:ui",
+      "title": "Rolling number",
+      "description": "The Satin Pro Rolling number component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/rolling-number.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast-batch",
       "type": "registry:ui",
       "title": "Toast batch",
-      "description": "The Satin Pro Toast batch component.",
+      "description": "One toast for many changes: a rolling count, and the list to undo each item or all of them with ⌘Z.",
       "dependencies": [],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
@@ -2162,8 +2185,11 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/list.json",
+        "https://uisatin.dev/r/rolling-number.json",
         "https://uisatin.dev/r/toast.json"
       ],
+      "docs": "Toast batch docs: https://uisatin.dev/components/toast-batch",
       "meta": {
         "version": "0.7.1",
         "edition": "pro"
@@ -3311,6 +3337,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "toast-batch-demo",
+      "type": "registry:example",
+      "title": "Toast batch example",
+      "description": "The shortest use of Toast batch, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/toast-batch.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/toast-batch-demo.tsx",
           "type": "registry:example"
         }
       ]

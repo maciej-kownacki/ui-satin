@@ -213,6 +213,13 @@ export const nav: NavGroup[] = [
       { id: 'tabs', title: 'Tabs', href: '/components/tabs', description: 'Switches between two to six views of the same page or panel.' },
       { id: 'textarea', title: 'Textarea', href: '/components/textarea', description: 'Multi-line text input for notes, requests and longer answers.' },
       { id: 'toast', title: 'Toast', href: '/components/toast', description: 'A short, passing message about something that just happened.' },
+      {
+        id: 'toast-batch',
+        title: 'Toast batch',
+        href: '/components/toast-batch',
+        description: 'One toast for many changes: a rolling count, and the list to undo each item or all of them with ⌘Z.',
+        edition: 'pro',
+      },
       { id: 'toggle', title: 'Toggle', href: '/components/toggle', description: 'A button that stays pressed to switch an option on or off.' },
       { id: 'tooltip', title: 'Tooltip', href: '/components/tooltip', description: 'Names an icon-only control and shows the shortcut that runs it.' },
     ],

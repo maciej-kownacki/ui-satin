@@ -877,6 +877,20 @@ export const api: Record<string, Api> = {
       { name: 'id', type: ['string'] },
     ],
   },
+  'toast-batch': {
+    description:
+      '`toastBatch(options)` (Satin Pro, `@uisatin/pro/toast-batch`) is a function, not a component: it shows one `toast()` for many changes and returns its id, so it needs the app\'s `Toaster`. Each item is `{ id, label, description, media, undo }`; the list is a Satin `List` of `Item`s. Called again with the same `id` while the toast is open, the items join it and the count rolls; an item already there takes its place again. `toastBatch.undo(id?)` undoes a batch from code, as ⌘Z does. The words (`undo`, `undoItem`, `undone`, `allUndone`, `undoWithShortcut`, `showItems`, `hideItems`) are translated with SatinLabels.',
+    props: [
+      { name: 'title', type: ['ReactNode', '(count, number) => ReactNode'] },
+      { name: 'items', type: ['ToastBatchItem[]'] },
+      { name: 'change', type: ['string'] },
+      { name: 'undoAll', type: ['(items) => unknown'] },
+      { name: 'undoShortcut', type: ['boolean'], default: 'true' },
+      { name: 'intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"success"' },
+      { name: 'duration', type: ['number'], default: '8000' },
+      { name: 'id', type: ['string'] },
+    ],
+  },
   toggle: {
     description: 'The `Toggle` component is a wrapper around the `button` element with aria-pressed.',
     props: [

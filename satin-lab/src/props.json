@@ -4399,6 +4399,28 @@
       ]
     }
   },
+  "rolling-number": {
+    "RollingNumber": {
+      "type": "RollingNumberProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "The number as shown, already formatted: \"1,204\"."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": true,
+          "description": "The number itself, which picks the way the digits roll."
+        }
+      ]
+    }
+  },
   "search-bar": {
     "SearchBar": {
       "type": "SearchBarProps",
