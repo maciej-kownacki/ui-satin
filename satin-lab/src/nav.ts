@@ -170,6 +170,7 @@ export const nav: NavGroup[] = [
           { id: 'input-group', title: 'Input group', href: '/components/input-group', description: 'A field joined with an addon, a select or a button in one block.' },
           { id: 'password-input', title: 'Password input', href: '/components/password-input', description: 'A password field with a show and hide button.' },
           { id: 'date-picker', title: 'Date picker', href: '/components/date-picker', description: 'Picks a day or a range from a calendar, with a quick year.' },
+          { id: 'time-picker', title: 'Time picker', href: '/components/time-picker', description: 'Takes a typed time or one from a list, alone or with a day.' },
           { id: 'input-otp', title: 'Input OTP', href: '/components/input-otp', description: 'A one-time code in separate cells, with paste and SMS autofill.' },
           { id: 'number-input', title: 'Number input', href: '/components/number-input', description: 'A number with − and + and the arrow keys, kept between a min and a max.' },
         ],

@@ -138,6 +138,16 @@ export const defaultLabels = {
   acceptAll: 'Accept all',
   rejectAll: 'Reject all',
   customize: 'Customize',
+  /** TimePicker and DateTimePicker. Times are written in `dateLocale`, 12- or 24-hour as it writes them. */
+  time: 'Time',
+  showTimes: 'Show times',
+  pickDateTime: 'Pick a date and time',
+  /** The field's format hint, read out with it: the example is a time written in `dateLocale`. */
+  timeHint: (example: string) => `Type a time like ${example}`,
+  /** Shown when the typed text isn't a time. */
+  timeInvalid: (example: string) => `Enter a time like ${example}`,
+  /** Shown when the typed time is outside min and max, or disabled. */
+  timeUnavailable: (time: string) => `${time} isn’t available`,
   dateLocale: 'en-US',
   removeItem: (name: string) => `Remove ${name}`,
   cancelItem: (name: string) => `Cancel ${name}`,
