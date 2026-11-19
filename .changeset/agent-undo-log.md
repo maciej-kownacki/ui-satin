@@ -1,0 +1,5 @@
+---
+'@uisatin/pro': minor
+---
+
+Agent action log (`@uisatin/pro/agent-undo-log`), an AI pattern for undo over confirm: `<AgentActionLog runs onRevert onRevertRun onRestore />` lists what an agent did, run by run, with Revert on every action. A run is `{ id, label, at, actions }`; an action shows the fields it changed (AgentSuggestionChanges), and one that can't be reverted (`revertible: false`) says why (`reason`) in place of its button. While `onRevert`'s promise runs the button shows a Spinner; done, the row strikes through and fades to muted and a toast says so, with Undo that calls `onRestore` (the row offers Restore too). A rejected revert marks the row "Couldn't revert" with Try again. Revert run and ⌘Z (Ctrl+Z off Apple; `shortcut="document" | "log" | "off"`) revert what is left of the newest run, newest action first. `reverted` and `expanded` are controlled or not. Parts: `AgentActionLogRoot`, `AgentActionLogRun`, `AgentActionLogAction`. Its words (`actionLog…`, `undo`) are translated with SatinLabels.

@@ -949,6 +949,24 @@ export const api: Record<string, Api> = {
       { name: 'AgentSuggestionChanges', type: ['{ changes: { field, from?, to }[] }'] },
     ],
   },
+  'agent-undo-log': {
+    description:
+      'The `AgentActionLog` component (Satin Pro, `@uisatin/pro/agent-undo-log`) is a `section` that lists what an agent did, run by run, with Revert on every action it can undo. A run is `{ id, label, at, actions, icon? }`, its actions in the order they happened; an action is `{ id, label, icon?, description?, changes?, at?, revertible?, reason? }`, where `changes` are AgentSuggestionChanges rows and `revertible: false` with a `reason` says why in place of the button. `onRevert` may return a promise: the button shows a Spinner until it settles, and a rejection marks the row "Couldn\'t revert" with Try again. Each revert ends with a toast (it needs the app\'s `<Toaster />`) whose Undo calls `onRestore`. Revert run and ⌘Z (Ctrl+Z off Apple) revert what is left of the newest run, newest action first, through `onRevertRun` when given. Parts: `AgentActionLogRoot`, `AgentActionLogRun`, `AgentActionLogAction` (its `state` sets a row yourself).',
+    props: [
+      { name: 'runs', type: ['AgentRun[]'] },
+      { name: 'onRevert', type: ['(action, run) => unknown'] },
+      { name: 'onRevertRun', type: ['(run, actions) => unknown'] },
+      { name: 'onRestore', type: ['(actions, run) => unknown'] },
+      { name: 'reverted', type: ['string[]'] },
+      { name: 'defaultReverted', type: ['string[]'], default: '[]' },
+      { name: 'onRevertedChange', type: ['(reverted: string[]) => void'] },
+      { name: 'expanded', type: ['string[]'] },
+      { name: 'defaultExpanded', type: ['string[]'], default: 'the first run' },
+      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
+      { name: 'shortcut', type: ['"document"', '"log"', '"off"'], default: '"document"' },
+      { name: 'formatTime', type: ['(at: Date) => ReactNode'], default: 'time of day, date when not today' },
+    ],
+  },
   attachment: {
     description: 'The `Attachment` component is a wrapper around the `button` that shows a file name, type and size.',
     props: [

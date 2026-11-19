@@ -507,6 +507,142 @@
       ]
     }
   },
+  "agent-undo-log": {
+    "AgentActionLogRoot": {
+      "description": "The log on its own: the state, ⌘Z and the list. `AgentActionLogRun`s go inside.",
+      "type": "AgentActionLogRootProps",
+      "extends": [
+        "React.ComponentProps<'section'>"
+      ],
+      "props": [
+        {
+          "name": "runs",
+          "type": "AgentRun[]",
+          "required": true,
+          "description": "The runs, in the order shown: newest first, usually."
+        },
+        {
+          "name": "onRevert",
+          "type": "(action: AgentAction, run: AgentRun) => unknown",
+          "required": true,
+          "description": "Reverts one action. Return a promise: the button shows a Spinner until it settles, and a rejection marks the row as failed, with Try again."
+        },
+        {
+          "name": "onRevertRun",
+          "type": "(run: AgentRun, actions: AgentAction[]) => unknown",
+          "required": false,
+          "description": "Reverts what is left of a run in one go (one request), for Revert run and ⌘Z. Gets the actions still in effect, newest first. Without it, `onRevert` runs for each, newest first."
+        },
+        {
+          "name": "onRestore",
+          "type": "(actions: AgentAction[], run: AgentRun) => unknown",
+          "required": false,
+          "description": "Puts reverted actions back: the toast's Undo, and Restore on a reverted row or run. Without it the toast has no Undo and a reverted row just says Reverted."
+        },
+        {
+          "name": "reverted",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the reverted actions, controlled."
+        },
+        {
+          "name": "defaultReverted",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the actions already reverted when the log mounts."
+        },
+        {
+          "name": "onRevertedChange",
+          "type": "(reverted: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "expanded",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the open runs, controlled."
+        },
+        {
+          "name": "defaultExpanded",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the runs open when the log mounts. Default: the first run."
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(expanded: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "shortcut",
+          "type": "'document' | 'log' | 'off'",
+          "required": false,
+          "default": "'document'",
+          "description": "Where ⌘Z (Ctrl+Z off Apple) reverts the newest run: anywhere on the page (`document`, the default), only while focus is in the log (`log`), or nowhere (`off`)."
+        },
+        {
+          "name": "formatTime",
+          "type": "(at: Date) => React.ReactNode",
+          "required": false,
+          "description": "Writes a time. Default: the time of day, with the date when it isn't today, in `dateLocale`."
+        }
+      ]
+    },
+    "AgentActionLogRun": {
+      "description": "One run: a header that opens onto its actions, with Revert run (or Restore run once it's all reverted). Other props, `ref` included, go to its `li`.",
+      "type": "AgentActionLogRunProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "run",
+          "type": "AgentRun",
+          "required": true
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The rows. Default: an `AgentActionLogAction` for each of the run's actions."
+        }
+      ]
+    },
+    "AgentActionLogAction": {
+      "description": "One action, an Item: its icon, what it did, what it changed, the time and its button (Revert, then Restore or Reverted; Try again after a failure). One that can't be reverted says why in the button's place. Other props, `ref` included, go to its `li`.",
+      "type": "AgentActionLogActionProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title' | 'children' | 'onClick'>"
+      ],
+      "props": [
+        {
+          "name": "action",
+          "type": "AgentAction",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "AgentActionState",
+          "required": false,
+          "description": "Sets the row's state yourself, for a log you drive. Default: the log's."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "More under the action's fields: a link to the record, a note."
+        }
+      ]
+    },
+    "AgentActionLog": {
+      "description": "The log from `runs`: each run's header and its actions, Revert on each, Revert run and ⌘Z for the newest. Other props, `ref` included, go to the `section`.",
+      "type": "AgentActionLogProps",
+      "extends": [
+        "Omit<AgentActionLogRootProps, 'children'>"
+      ],
+      "props": []
+    }
+  },
   "alert": {
     "Alert": {
       "type": "AlertProps",

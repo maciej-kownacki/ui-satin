@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import Demo, { options } from '../../demos/agent-undo-log'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="agent-undo-log">
+  <DocSection item={page('agent-undo-log')} api={api['agent-undo-log']}>
+    <Demo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>
