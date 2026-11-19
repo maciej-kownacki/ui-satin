@@ -77,6 +77,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Textarea': [280, 280],
   'Thinking': [280, 280],
   'Toast': [312, 312],
+  'Undo countdown': [368, 368],
   'Toggle': [280, 280],
   'Tooltip': [280, 280],
 }
