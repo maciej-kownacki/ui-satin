@@ -48,6 +48,9 @@
     "name": "Activity timeline (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/activity-timeline.js",
     "import": "{ ActivityTimeline }",
+    "name": "Scoped search (Satin Pro, with Radix Popover and its floating-ui, shared with Free's Popover and Combobox; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/search-scoped.js",
+    "import": "{ ScopedSearch }",
     "ignore": [
       "react",
       "react-dom",
@@ -55,6 +58,7 @@
     ],
     "gzip": true,
     "limit": "6 kB"
+    "limit": "28 kB"
   },
   {
     "name": "styles.css",

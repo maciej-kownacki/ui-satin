@@ -277,6 +277,13 @@ export const nav: NavGroup[] = [
         edition: 'pro',
       },
       { id: 'search-bar', title: 'Search bar', href: '/components/search-bar', description: 'A search field for the sidebar or a toolbar, with ⌘K to focus it from anywhere.' },
+      {
+        id: 'search-scoped',
+        title: 'Scoped search',
+        href: '/components/search-scoped',
+        description: 'Search across candidates, jobs and notes with stage: and owner: chips typed into the query, recent searches and results grouped with counts.',
+        edition: 'pro',
+      },
       { id: 'segmented-control', title: 'Segmented control', href: '/components/segmented-control', description: 'Switches between two to five views or filters in place.' },
       { id: 'select', title: 'Select', href: '/components/select', description: 'Picks one value from a list, with a label, a hint and an error like any field.' },
       {

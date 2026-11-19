@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SearchScopedDemo, { options } from '../../demos/search-scoped'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="search-scoped">
+  <DocSection item={page('search-scoped')} api={api['search-scoped']}>
+    <SearchScopedDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

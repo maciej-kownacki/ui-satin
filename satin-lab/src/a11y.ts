@@ -358,6 +358,19 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Clears the field when it has text.' },
     ],
   },
+  'search-scoped': {
+    summary:
+      'The input is a `combobox` (named "Search" through `searchField`, or your `aria-label`) that controls a `listbox` named "Search results"; the highlighted row is its `aria-activedescendant`, so focus stays in the query. Rows sit in a `group` per section, named by its heading with the count read as words ("Candidates, 6 results"). The chips are described to the input (`aria-describedby`), so the filters are heard without leaving the query; each chip has a remove button ("Remove Stage: Interview"). A polite `status` says "Filter added: …" or "Filter removed: …", and the result count once typing settles. The footer of key hints is hidden from screen readers. Every word is in SatinLabels (`scopedSearch*`).',
+    keyboard: [
+      { keys: ['⌘K', 'Ctrl+K'], action: 'Focuses the query and opens the list, from anywhere on the page, unless `hotkey` is off.' },
+      { keys: ['↑', '↓'], action: 'Moves the highlight through the list, wrapping at the ends; ↓ opens a closed list. No motion.' },
+      { keys: ['Enter'], action: 'Runs the highlighted row: a recent search fills the query, a scope types `key:`, a value makes its chip, a result calls `onSelect` and closes the list.' },
+      { keys: ['Space'], action: 'After a `key:value`, turns it into a chip.' },
+      { keys: ['Backspace'], action: 'At the start of the query, removes the last chip.' },
+      { keys: ['Esc'], action: 'Closes the list and keeps the query; with the list closed, clears the words.' },
+      { keys: ['Shift+Tab'], action: 'From the query, to the chips’ remove buttons.' },
+    ],
+  },
   'segmented-control': {
     summary:
       'A single-select Radix toggle group: the track is a `group` (name it with `aria-label`, "View") and each segment a `button` with `role="radio"` and `aria-checked`. The group is one tab stop. Pressing the selected segment again keeps it selected. An icon-only segment needs an `aria-label`. The sliding pill is hidden.',
