@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { ChatBubbleEmptySolid, CheckCircle } from 'iconoir-react'
+import { CheckCircle } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { useSatinLabels } from './labels'
@@ -50,8 +50,9 @@ import { FieldChrome, useFieldChrome } from './select'
  * server, or in a prototype). It shows as a popover 16px under the cells, centred: a dark chip in
  * both themes (component/input-otp/suggestion-*: the inverse surface in Light, bg/popover with a
  * 1px border/default edge in Dark), radius-lg, shadow md and the top highlight, 32px tall, with a
- * 20px green badge with a chat bubble, the code in groups (medium) and where it came from ("From
- * Messages", at 64%). Choosing it fills the cells, as typing would, and fires
+ * 20px Messages mark drawn in small squares (two green message bubbles), the code in groups
+ * (medium) and where it came from ("From Messages", at 64%). Pressed, it goes a step darker and
+ * down to 97%, as a Button does. Choosing it fills the cells, as typing would, and fires
  * `onComplete`; the focus stays in the field and the popover fades out. It fades in from 4px above, shows only while the
  * field is being filled in (not once it holds that code, is complete, invalid or verified), hides
  * the hint it covers, and Esc puts it away until a different code arrives.
@@ -306,14 +307,15 @@ export function InputOTP({
               'absolute inset-x-0 top-full z-10 mx-auto mt-4 flex h-8 w-fit items-center gap-2 rounded-lg ps-1.5 pe-3 text-sm whitespace-nowrap select-none',
               'bg-component-input-otp-suggestion-bg text-component-input-otp-suggestion-fg',
               '[box-shadow:0_8px_12px_0_var(--effect-shadow-md),0_1px_1.5px_0_var(--effect-shadow-ambient),inset_0_1px_0_0_var(--effect-highlight-top),inset_0_0_0_1px_var(--component-input-otp-suggestion-border)]',
-              'transition-[background-color] duration-(--duration-fast) ease-(--ease-out)',
-              'satin-hover:bg-component-input-otp-suggestion-bg-hover satin-pressed:bg-component-input-otp-suggestion-bg-hover',
+              // Pressed like a Button: a step darker and down to 97%, and it stays down while it fades out.
+              'transition-[background-color,scale] duration-(--duration-fast) ease-(--ease-out)',
+              'satin-hover:bg-component-input-otp-suggestion-bg-hover',
+              'satin-pressed:scale-[0.97] satin-pressed:bg-component-input-otp-suggestion-bg-pressed',
+              isLeaving && 'scale-[0.97] bg-component-input-otp-suggestion-bg-pressed',
               'outline-none satin-focus:outline-2 satin-focus:outline-offset-2 satin-focus:outline-action-focus-ring satin-focus:outline-solid',
             )}
           >
-            <span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-md bg-component-input-otp-suggestion-badge text-text-on-solid">
-              <ChatBubbleEmptySolid className="size-3" />
-            </span>
+            <MessagesMark />
             <span className="sr-only">{labels.useCode} </span>
             <span className="font-medium tabular-nums">{spaced}</span>{' '}
             <span className="text-component-input-otp-suggestion-fg/64">{suggestionFrom ?? labels.fromMessages}</span>
@@ -340,6 +342,46 @@ export function InputOTP({
         {showSuggestion ? labels.codeReceived(spaced) : ''}
       </span>
     </FieldChrome>
+  )
+}
+
+/**
+ * The Messages mark in the code suggestion, 20px, drawn in small squares like the cells it fills:
+ * two message bubbles on a 10 × 10 grid (1.5px squares, 0.5px apart), the deep green one behind
+ * with its tail bottom-left and the light green one in front with its tail bottom-right, a row of
+ * squares left out between them.
+ */
+const MARK = [
+  '.bbbbb....',
+  'bbbbbbb...',
+  'bbbbbbb...',
+  'bbbbbbb...',
+  'bbbb......',
+  'bbb..ffff.',
+  'bb..ffffff',
+  'b...ffffff',
+  '.....fffff',
+  '........ff',
+]
+function MessagesMark() {
+  return (
+    <svg aria-hidden width="20" height="20" viewBox="0 0 20 20" className="shrink-0">
+      {MARK.flatMap((row, y) =>
+        [...row].map((c, x) =>
+          c === '.' ? null : (
+            <rect
+              key={`${x}-${y}`}
+              x={x * 2 + 0.25}
+              y={y * 2 + 0.25}
+              width="1.5"
+              height="1.5"
+              rx="0.25"
+              fill={c === 'f' ? 'var(--component-input-otp-suggestion-icon)' : 'var(--component-input-otp-suggestion-icon-back)'}
+            />
+          ),
+        ),
+      )}
+    </svg>
   )
 }
 
