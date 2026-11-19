@@ -49,7 +49,8 @@ if (existsSync('README.md')) copyFileSync('README.md', 'dist/README.md')
 if (existsSync('LICENSE')) copyFileSync('LICENSE', 'dist/LICENSE')
 if (existsSync('CHANGELOG.md')) copyFileSync('CHANGELOG.md', 'dist/CHANGELOG.md')
 copyFileSync('../../tokens/tokens.json', 'dist/tokens.json')
-if (existsSync('AGENTS.md')) copyFileSync('AGENTS.md', 'dist/AGENTS.md')
+// The agents' guide for apps, without its sections for work on the repo ("## Testing (repo only)").
+if (existsSync('AGENTS.md')) writeFileSync('dist/AGENTS.md', readFileSync('AGENTS.md', 'utf8').replace(/\n## [^\n]*\(repo only\)[\s\S]*?(?=\n## |$)/g, '').trimEnd() + '\n')
 console.log('dist/package.json written')
 
 // The .d.ts imports with their extensions, no Figma node ids in the types, 'use client' back on

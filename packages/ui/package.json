@@ -43,6 +43,7 @@
   "scripts": {
     "build": "node build/styles.mjs classes && tsup && tsc -p tsconfig.build.json && node build/styles.mjs css && node build/manifest.mjs",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "prepublishOnly": "node -e \"console.error('Publish the built package: npm run release (it publishes packages/ui/dist).'); process.exit(1)\""
   },
   "peerDependencies": {

@@ -9,7 +9,9 @@
     "noEmit": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    // The test helpers in test/satin.tsx (renderWithSatin, the axe check); Vitest resolves it the same way.
+    "paths": { "satin-test": ["../../test/satin.tsx"] }
   },
   "include": ["src"]
 }

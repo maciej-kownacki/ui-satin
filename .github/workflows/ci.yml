@@ -18,6 +18,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      # Runtime and accessibility tests (Vitest, jsdom, Testing Library, axe): packages/*/src/__tests__/*.test.tsx.
+      - run: npm test
       - run: npm run build:ui
       - run: npm pack ./packages/ui/dist --dry-run
       # Satin Pro builds on Free's dist; it's checked like Free but never published.

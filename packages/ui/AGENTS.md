@@ -39,3 +39,37 @@ Satin is a React design system: components on Radix, one precompiled stylesheet,
 - Don't copy Satin's class names (`sa:flex`) into app markup; they're the package's own build output.
 - Don't import from `@uisatin/ui/dist/...` or deep paths other than the documented entries.
 - Don't wrap Satin components in another `forwardRef`: pass `ref` straight through.
+
+## Testing (repo only)
+
+For work on the Satin repo; the npm copy of this file leaves this section out.
+
+- `npm test` runs every package's tests once (CI runs it next to typecheck on every PR). One package: `npm test -w @uisatin/ui`. One file, watching: `npx vitest --project ui dialog` (`--project pro` for Satin Pro).
+- A runtime test is `src/__tests__/<name>.test.tsx` in packages/ui or packages/ui-pro: Vitest in jsdom with Testing Library and user-event. Type tests stay `<name>.typetest.tsx`, checked by `npm run typecheck` and never run.
+- Import the helpers from `satin-test` (test/satin.tsx):
+  - `renderWithSatin(ui, { labels, theme, dir })` renders inside `SatinLabels`, sets `data-theme` and `dir` on `<html>`, and returns the queries plus `user` (user-event).
+  - `expectNoAxeViolations()` runs axe on the page, overlays included. Every test file calls it in light and dark.
+  - `setReducedMotion(true)` and `setColorScheme('dark')` drive the mocked `matchMedia`.
+- Cover: it renders; every key the component answers to (`user.tab()`, `user.keyboard('{Enter}')`, focus where it should be after); its words through `labels`; axe in light and dark. Find elements by role and name, the way a screen reader does.
+- jsdom has no layout or colours: sizes, positions and contrast aren't testable here (contrast is `npm run check:contrast`; look at the rest in the docs). Toasts and other timers: wrap in `act()` and wait the motion out.
+
+```tsx
+import { describe, expect, it } from 'vitest'
+import { screen } from '@testing-library/react'
+import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
+import { Dialog } from '../components/dialog'
+
+describe('Dialog', () => {
+  it('closes with Escape', async () => {
+    const { user } = renderWithSatin(<Dialog defaultOpen title="Rename" />, { labels: { close: 'Zamknij' } })
+    expect(screen.getByRole('button', { name: 'Zamknij' })).toBeTruthy()
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
+    renderWithSatin(<Dialog defaultOpen title="Rename" />, { theme })
+    await expectNoAxeViolations()
+  })
+})
+```

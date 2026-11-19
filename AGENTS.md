@@ -7,6 +7,7 @@ Monorepo: `packages/ui` is `@uisatin/ui` (Satin Free, React 19 components on Rad
 ```sh
 npm run dev            # docs site at http://localhost:4330
 npm run typecheck      # tsc on packages/ui and packages/ui-pro
+npm test               # Vitest + Testing Library + axe on both packages; how to add a test: packages/ui/AGENTS.md, Testing
 npm run build:ui       # packages/ui/dist: prefixed JS, types, styles.css, compat.css, tokens.json
 npm run build:pro      # packages/ui-pro/dist, after build:ui (Pro's types and CSS read Free's dist)
 npm run tokens         # tokens.json → packages/ui/src/styles/theme.css (never edit theme.css by hand)

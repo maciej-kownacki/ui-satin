@@ -11,6 +11,7 @@
     "build": "npm run build -w satin-lab",
     "tokens": "node tokens/build.mjs",
     "typecheck": "npm run typecheck -w @uisatin/ui && npm run typecheck -w @uisatin/pro",
+    "test": "vitest run",
     "build:ui": "npm run build -w @uisatin/ui",
     "registry": "npm run build -w @uisatin/ui && npm run build -w @uisatin/pro && node scripts/props.mjs && node scripts/sizes.mjs && node --no-warnings registry/build.mjs",
     "changeset": "changeset",
@@ -27,6 +28,13 @@
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
     "@size-limit/preset-small-lib": "^14.3.0",
-    "size-limit": "^14.3.0"
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.13",
+    "axe-core": "^4.14.1",
+    "jsdom": "^31.0.1",
+    "size-limit": "^14.3.0",
+    "vitest": "^5.1.1",
+    "vitest-axe": "^0.1.0"
   }
 }
