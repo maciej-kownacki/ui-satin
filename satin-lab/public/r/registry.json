@@ -2151,6 +2151,41 @@
       ]
     },
     {
+      "name": "scheduler",
+      "type": "registry:ui",
+      "title": "Scheduler",
+      "description": "A day, week or month of events over time slots: drag to move or resize, pick free slots to book.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/hover-card.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/popover.json",
+        "https://uisatin.dev/r/segmented-control.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Scheduler docs: https://uisatin.dev/components/scheduler",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/scheduler.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast-batch",
       "type": "registry:ui",
       "title": "Toast batch",
@@ -3311,6 +3346,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "scheduler-demo",
+      "type": "registry:example",
+      "title": "Scheduler example",
+      "description": "The shortest use of Scheduler, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/scheduler.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/scheduler-demo.tsx",
           "type": "registry:example"
         }
       ]

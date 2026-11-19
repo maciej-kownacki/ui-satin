@@ -1963,6 +1963,13 @@
           "description": "Today, for the dash. Defaults to now."
         },
         {
+          "name": "weekStartsOn",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "The first day of the week: 0 is Sunday, 1 Monday (the default)."
+        },
+        {
           "name": "className",
           "type": "string",
           "required": false
@@ -2000,6 +2007,12 @@
           "name": "today",
           "type": "Date",
           "required": false
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "number",
+          "required": false,
+          "description": "The first day of the week: 0 is Sunday, 1 Monday (the default)."
         },
         {
           "name": "className",
@@ -4397,6 +4410,169 @@
           "description": "Show a state without interacting, for state sheets."
         }
       ]
+    }
+  },
+  "scheduler": {
+    "SchedulerRoot": {
+      "description": "The card and its state: put `SchedulerToolbar` and `SchedulerGrid` inside. Other props, `ref` included, go to the card.",
+      "type": "SchedulerRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "view",
+          "type": "SchedulerView",
+          "required": false,
+          "description": "The view shown."
+        },
+        {
+          "name": "defaultView",
+          "type": "SchedulerView",
+          "required": false,
+          "default": "'week'"
+        },
+        {
+          "name": "onViewChange",
+          "type": "(view: SchedulerView) => void",
+          "required": false
+        },
+        {
+          "name": "views",
+          "type": "SchedulerView[]",
+          "required": false,
+          "default": "['day', 'week', 'month']",
+          "description": "The views the switch offers, in order."
+        },
+        {
+          "name": "date",
+          "type": "Date",
+          "required": false,
+          "description": "Any moment in the day, week or month shown. Defaults to today."
+        },
+        {
+          "name": "defaultDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "onDateChange",
+          "type": "(date: Date) => void",
+          "required": false,
+          "description": "Called with midnight (in `timeZone`) of the new day as the period changes."
+        },
+        {
+          "name": "events",
+          "type": "SchedulerEvent[]",
+          "required": false,
+          "description": "The events. Leave it out and pass `defaultEvents` to let the Scheduler keep them."
+        },
+        {
+          "name": "defaultEvents",
+          "type": "SchedulerEvent[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onEventChange",
+          "type": "(event: SchedulerEvent, previous: SchedulerEvent) => void",
+          "required": false,
+          "description": "After a drag, a resize or a keyboard move: the event with its new times, then as it was."
+        },
+        {
+          "name": "onEventOpen",
+          "type": "(event: SchedulerEvent) => void",
+          "required": false,
+          "description": "A click, Enter or Space on an event."
+        },
+        {
+          "name": "onSlotSelect",
+          "type": "(slot: SchedulerSlot) => void",
+          "required": false,
+          "description": "Slots picked with the pointer or Enter: their start and end, or a whole day."
+        },
+        {
+          "name": "availability",
+          "type": "SchedulerAvailability[]",
+          "required": false,
+          "default": "[]",
+          "description": "Free or busy times, drawn under the events."
+        },
+        {
+          "name": "slotMinutes",
+          "type": "number",
+          "required": false,
+          "default": "30",
+          "description": "Minutes per slot: the rows, the drag steps and the keyboard steps."
+        },
+        {
+          "name": "workingHours",
+          "type": "[number, number]",
+          "required": false,
+          "default": "[9, 18]",
+          "description": "From and to, in hours (`[9, 18]`); outside them the grid is bg/canvas."
+        },
+        {
+          "name": "timeZone",
+          "type": "string",
+          "required": false,
+          "description": "An IANA time zone (\"Europe/Warsaw\"). Defaults to the browser's."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "number",
+          "required": false,
+          "description": "The week's first day, 0 (Sunday) to 6. Defaults to `dateLocale`'s."
+        },
+        {
+          "name": "now",
+          "type": "Date",
+          "required": false,
+          "description": "Now, for the now line and today. Defaults to the clock, updated every minute."
+        },
+        {
+          "name": "eventPopover",
+          "type": "(event: SchedulerEvent, close: () => void) => React.ReactNode",
+          "required": false,
+          "description": "The body of a popover that opens on an event, under its title and time (and attendees)."
+        },
+        {
+          "name": "slotPopover",
+          "type": "(slot: SchedulerSlot, close: () => void) => React.ReactNode",
+          "required": false,
+          "description": "The body of a popover that opens on picked slots, under \"New event\" and the time."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target for the popovers and hover cards."
+        }
+      ]
+    },
+    "SchedulerToolbar": {
+      "description": "Today, ‹ ›, the period (a button that opens a DatePickerPanel) and the view switch. `children` go before the switch (a \"New event\" button, a filter). Other props, `ref` included, go to its `div`.",
+      "type": "SchedulerToolbarProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "SchedulerGrid": {
+      "description": "The current view: day and week as a time grid, month as day cells. A new view crossfades in. Other props, `ref` included, go to the `div` that holds it.",
+      "type": "SchedulerGridProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "Scheduler": {
+      "description": "The toolbar over the current view. Other props, `ref` included, go to the card's root `div`. <Scheduler events={events} onEventChange={(e) => save(e)} onSlotSelect={(slot) => create(slot)} timeZone=\"Europe/Warsaw\" />",
+      "type": "SchedulerProps",
+      "extends": [
+        "Omit<SchedulerRootProps, 'children'>"
+      ],
+      "props": []
     }
   },
   "search-bar": {

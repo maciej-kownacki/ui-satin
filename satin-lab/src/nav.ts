@@ -189,6 +189,13 @@ export const nav: NavGroup[] = [
         ],
       },      { id: 'progress', title: 'Progress', href: '/components/progress', description: 'Shows how far a task has got, or that it is still running.' },
       { id: 'radio', title: 'Radio', href: '/components/radio', description: 'Lets people pick exactly one option from a short list.' },
+      {
+        id: 'scheduler',
+        title: 'Scheduler',
+        href: '/components/scheduler',
+        description: 'A day, week or month of events over time slots: drag to move or resize, pick free slots to book.',
+        edition: 'pro',
+      },
       { id: 'search-bar', title: 'Search bar', href: '/components/search-bar', description: 'A search field for the sidebar or a toolbar, with ⌘K to focus it from anywhere.' },
       { id: 'segmented-control', title: 'Segmented control', href: '/components/segmented-control', description: 'Switches between two to five views or filters in place.' },
       { id: 'select', title: 'Select', href: '/components/select', description: 'Picks one value from a list, with a label, a hint and an error like any field.' },

@@ -335,6 +335,24 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Space'], action: 'Checks the focused radio. Enter does nothing, as WAI-ARIA asks.' },
     ],
   },
+  scheduler: {
+    summary:
+      'Day and Week are a `grid` named after the period and the time zone ("November 15 – 21, 2026, Central European Standard Time"): a column header per day (today with `aria-current="date"`), a row header per slot, and a `gridcell` per slot named with its day and time, "busy" or "free", and the events in it; picked slots are `aria-selected`. The time column\'s header gives the zone\'s long name. Month is a `grid` of day cells named with the date and how many events. Events are `button`s named with their title and full time, described by their attendees and how to move them; they sit in their slot, reached from the grid with Enter. Moves, resizes, picks and period changes are read out from a polite `status` region. Dragging works from the keyboard too (Alt and the arrows), so no move needs a pointer.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves into the grid, onto the last slot (or day) focused, and on out.' },
+      { keys: ['←', '→'], action: 'Grid: the slot on the previous or next day, paging past the period\'s ends; mirrored right to left.' },
+      { keys: ['↑', '↓'], action: 'Grid: the previous or next slot (the all-day row above the first); Month: the week before or after.' },
+      { keys: ['Home', 'End'], action: 'Grid: the first or last day shown (Ctrl: the all-day row, the last slot).' },
+      { keys: ['Page Up', 'Page Down'], action: 'Grid: the previous or next week, day or month.' },
+      { keys: ['Shift+↑', 'Shift+↓'], action: 'Grid: stretches a pick over more slots of the day; Enter picks them.' },
+      { keys: ['Enter', 'Space'], action: 'Grid: on an empty slot, picks it (`onSlotSelect`, and `slotPopover`); on an event\'s slot, moves to the event. Shift+Enter always picks. On an event: opens it (`onEventOpen`, and `eventPopover`).' },
+      { keys: ['Alt+←', 'Alt+→'], action: 'Event: moves it a day earlier or later, at the same time.' },
+      { keys: ['Alt+↑', 'Alt+↓'], action: 'Event: moves it a slot earlier or later (Month: a week).' },
+      { keys: ['Alt+Shift+↑', 'Alt+Shift+↓'], action: 'Event: ends it a slot earlier or later, never shorter than one slot.' },
+      { keys: ['↑', '↓'], action: 'Event: the previous or next event that day (Month: and "3 more").' },
+      { keys: ['Esc'], action: 'Event: back to its slot in the grid. Grid: clears the pick. While dragging: puts the event back.' },
+    ],
+  },
   'search-bar': {
     summary:
       'A native `input` of type search (`searchbox`) named "Search" (`searchField` in SatinLabels) unless you pass `aria-label` ("Search docs"); the icon and keycaps are hidden. In the panel the input is a `combobox` that controls the results `listbox`; the highlighted row is its `aria-activedescendant`, so focus stays in the field.',
