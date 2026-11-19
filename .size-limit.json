@@ -54,7 +54,7 @@
       "@uisatin/ui"
     ],
     "gzip": true,
-    "limit": "4 kB"
+    "limit": "3 kB"
   },
   {
     "name": "styles.css",
