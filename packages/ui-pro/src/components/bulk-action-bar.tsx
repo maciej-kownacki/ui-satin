@@ -9,6 +9,7 @@ import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
 import { Separator } from '@uisatin/ui/separator'
 import { Tooltip } from '@uisatin/ui/tooltip'
+import { RollingNumber } from './rolling-number'
 
 /**
  * BulkActionBar: what appears when rows are selected. The count ("3 selected") with a clear
@@ -109,22 +110,6 @@ const ariaShortcut = (s: Shortcut) =>
 
 const isEditable = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
-
-/* ---------- reduced motion ---------- */
-
-const REDUCED = '(prefers-reduced-motion: reduce)'
-const subscribeMotion = (onChange: () => void) => {
-  if (typeof window === 'undefined' || !window.matchMedia) return () => {}
-  const list = window.matchMedia(REDUCED)
-  list.addEventListener('change', onChange)
-  return () => list.removeEventListener('change', onChange)
-}
-const useReducedMotion = () =>
-  React.useSyncExternalStore(
-    subscribeMotion,
-    () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia(REDUCED).matches,
-    () => false,
-  )
 
 /* ---------- the bar ---------- */
 
@@ -304,40 +289,6 @@ export function BulkActionBarRoot({
 
 /* ---------- the count ---------- */
 
-/** One character of the count, rolling from the old to the new when they differ. */
-function RollingNumber({ text, value }: { text: string; value: number }) {
-  const reduced = useReducedMotion()
-  const last = React.useRef({ text, value })
-  const [roll, setRoll] = React.useState<{ from: string; dir: 'up' | 'down'; key: number } | null>(null)
-  const round = React.useRef(0)
-  React.useLayoutEffect(() => {
-    const prev = last.current
-    if (prev.text === text) return
-    last.current = { text, value }
-    setRoll(reduced ? null : { from: prev.text, dir: value > prev.value ? 'up' : 'down', key: ++round.current })
-  }, [text, value, reduced])
-
-  const width = Math.max(text.length, roll?.from.length ?? 0)
-  const to = text.padStart(width, ' ')
-  const from = (roll?.from ?? text).padStart(width, ' ')
-  return (
-    <span data-slot="bulk-action-bar-number" aria-hidden className="inline-flex tabular-nums">
-      {[...to].map((ch, i) =>
-        roll && from[i] !== ch ? (
-          <span key={`${roll.key}-${i}`} className="satin-bulk-roll" data-dir={roll.dir}>
-            <span data-roll="out">{from[i] === ' ' ? '' : from[i]}</span>
-            <span data-roll="in" onAnimationEnd={() => setRoll((r) => (r?.key === roll.key ? null : r))}>
-              {ch === ' ' ? '' : ch}
-            </span>
-          </span>
-        ) : ch === ' ' ? null : (
-          <span key={i}>{ch}</span>
-        ),
-      )}
-    </span>
-  )
-}
-
 export interface BulkActionBarCountProps extends React.ComponentProps<'div'> {}
 
 /** "3 selected" with the clear button. Other props, `ref` included, go to its `div`. */
@@ -350,7 +301,7 @@ export function BulkActionBarCount({ className, ...props }: BulkActionBarCountPr
         {labels.bulkSelected(
           count,
           <>
-            <RollingNumber text={formatted} value={count} />
+            <RollingNumber text={formatted} value={count} data-slot="bulk-action-bar-number" />
             <span className="sr-only">{formatted}</span>
           </>,
         )}

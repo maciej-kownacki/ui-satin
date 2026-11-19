@@ -124,14 +124,14 @@ describe('BulkActionBar', () => {
   it('rolls the count when it changes, but not under reduced motion', async () => {
     const { user } = renderWithSatin(<Deals initial={['acme']} actions={[{ label: 'Move', onSelect: () => {} }]} />)
     await user.click(screen.getByRole('checkbox', { name: 'Select Globex' }))
-    const roll = document.querySelector('.satin-bulk-roll')
+    const roll = document.querySelector('.satin-roll')
     expect(roll?.getAttribute('data-dir')).toBe('up')
     expect(roll?.querySelector('[data-roll="out"]')?.textContent).toBe('1')
     expect(roll?.querySelector('[data-roll="in"]')?.textContent).toBe('2')
 
     setReducedMotion(true)
     await user.click(screen.getByRole('checkbox', { name: 'Select Initech' }))
-    expect(document.querySelector('.satin-bulk-roll')).toBeNull()
+    expect(document.querySelector('.satin-roll')).toBeNull()
     expect(document.querySelector('[data-slot="bulk-action-bar-number"]')?.textContent).toBe('3')
   })
 

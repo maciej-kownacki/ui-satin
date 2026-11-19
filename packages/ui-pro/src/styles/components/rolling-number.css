@@ -1,0 +1,36 @@
+/*
+ * RollingNumber (components/rolling-number.tsx), the counts of the Bulk action bar and the Filter
+ * bar: each changed digit slides out as the new one slides in, 150 ms. Up when the count grows,
+ * down when it shrinks. The component skips it under reduced motion.
+ */
+.satin-roll {
+  display: inline-grid;
+  overflow: clip;
+}
+.satin-roll > * {
+  grid-area: 1 / 1;
+}
+.satin-roll[data-dir='up'] > [data-roll='out'] {
+  animation: satin-roll-out-up var(--duration-fast) var(--ease-out) forwards;
+}
+.satin-roll[data-dir='up'] > [data-roll='in'] {
+  animation: satin-roll-in-up var(--duration-fast) var(--ease-out);
+}
+.satin-roll[data-dir='down'] > [data-roll='out'] {
+  animation: satin-roll-out-down var(--duration-fast) var(--ease-out) forwards;
+}
+.satin-roll[data-dir='down'] > [data-roll='in'] {
+  animation: satin-roll-in-down var(--duration-fast) var(--ease-out);
+}
+@keyframes satin-roll-in-up {
+  from { transform: translateY(100%); }
+}
+@keyframes satin-roll-out-up {
+  to { transform: translateY(-100%); }
+}
+@keyframes satin-roll-in-down {
+  from { transform: translateY(-100%); }
+}
+@keyframes satin-roll-out-down {
+  to { transform: translateY(100%); }
+}
