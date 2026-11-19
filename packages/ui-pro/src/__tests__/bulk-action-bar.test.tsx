@@ -131,7 +131,7 @@ describe('BulkActionBar', () => {
     setReducedMotion(true)
     await user.click(screen.getByRole('checkbox', { name: 'Select Initech' }))
     expect(document.querySelector('.satin-roll')).toBeNull()
-    expect(document.querySelector('[data-slot="rolling-number"]')?.textContent).toBe('3')
+    expect(document.querySelector('[data-slot="bulk-action-bar-number"]')?.textContent).toBe('3')
   })
 
   it('speaks the words SatinLabels gives it', async () => {
