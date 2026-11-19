@@ -4,8 +4,6 @@ import * as React from 'react'
 import { AgentLoading, type AgentLoadingIndicator, type Glimmer } from '@uisatin/ui/agent-loading'
 import { Badge } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
-import { Checkbox } from '@uisatin/ui/checkbox'
-import { DropdownMenu, DropdownMenuItem } from '@uisatin/ui/dropdown'
 import { Input } from '@uisatin/ui/input'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
@@ -15,23 +13,24 @@ import { cn } from '@uisatin/ui/lib/utils'
  * the steps tick off as the agent works through them.
  *
  * A card on the DecisionCard's surface (bg/popover, border/default, radius-2xl, shadow-xs):
- * the title and a muted line under it ("3 steps", "Step 2 of 3"), the steps, then Run.
+ * the title, the steps, then Run.
  *
- * - `draft`: each step is a row with a grip, a Checkbox (unchecked leaves the step out of the
- *   run), its label and detail, the tool as a Badge, and a ⋯ menu: Edit renames it in place,
- *   Move up and Move down reorder it. Drag the grip, or press Alt+↑ / Alt+↓ anywhere in the
- *   row, to move it; its new place is read out. Run plan is disabled while no step is left in.
+ * - `draft`: each step is a row with its number in a Badge, its label and detail, the tool as a
+ *   plain Badge with its icon, and an × that removes it. Pressing the label renames the step in
+ *   place. Drag the number, or press Alt+↑ / Alt+↓ anywhere in the row, to move it; its new
+ *   place is read out. Run plan is disabled while the plan is empty.
  * - `running`, `failed`, `done`: read-only, drawn like Thinking's open steps: a rail, then each
  *   step 8px apart with a 14px icon, the label in text/default and the tool and detail muted.
  *   The current step is an AgentLoading: the mark playing and its label shimmering. A finished
  *   step's check fades in. A failed step shows `error` and Retry / Skip under it.
- * - Who runs the plan is the app: `onRun` gets the steps left in, and `status` and
+ * - Who runs the plan is the app: `onRun` gets the steps that aren't `skipped`, and `status` and
  *   `currentStep` (the running or failed step's id) say how far it got. Steps before
  *   `currentStep` are done, the ones after it wait. Skip marks the step `skipped` through
  *   `onStepsChange`, then calls `onSkip` so the app moves on.
  * - One polite live region reads out each step as it finishes ("Find open slots, done"), a
  *   failure, and the end ("3 steps done"). When a button that had focus goes away (Run, Retry,
- *   Skip, Stop), focus moves to the list instead of the page.
+ *   Skip, Stop, a removed step's ×), focus moves to the next step's × or the list instead of
+ *   the page.
  *
  * Steps are controlled (`steps` + `onStepsChange`) or not (`defaultSteps`).
  *
@@ -46,20 +45,13 @@ export const agentPlanLabels = {
   agentPlan: 'Plan',
   runPlan: 'Run plan',
   retryStep: 'Retry',
-  /** In a step's ⋯ menu. */
-  editStep: 'Edit',
-  moveStepUp: 'Move up',
-  moveStepDown: 'Move down',
-  /** A step's ⋯ button. */
-  stepOptions: (step: string) => `Options for ${step}`,
+  /** Describes a step's label in a draft, which is a button. */
+  stepHint: 'Press to rename. Alt and arrow keys to move',
   /** The field that renames a step: "Step 2". */
   stepName: (position: number) => `Step ${position}`,
-  /** Under the title of a draft: "3 steps", or "2 of 3 steps" when one is left out. */
-  planStepCount: (count: number, total: number) =>
-    count === total ? (total === 1 ? '1 step' : `${total} steps`) : `${count} of ${total} steps`,
-  /** Under the title while the plan runs: "Step 2 of 3". */
-  planProgress: (position: number, count: number) => `Step ${position} of ${count}`,
-  /** Under the title once every step has run, and read out then. */
+  /** Read out when a step is removed from a draft. Its × is named by `removeItem` ("Remove Draft invites"). */
+  stepRemoved: (step: string) => `${step} removed`,
+  /** Read out once every step has run. */
   planDone: (count: number) => (count === 1 ? '1 step done' : `${count} steps done`),
   /** Where a step is, for screen readers beside its hidden icon; `skipped` also shows beside it. */
   stepStatus: (status: 'pending' | 'running' | 'done' | 'failed' | 'skipped') =>
@@ -89,11 +81,13 @@ export interface AgentPlanStep {
   label: string
   /** More on the step: a line under the label in a draft, muted beside it once the plan runs (what the step found, say). */
   detail?: React.ReactNode
-  /** The tool or app the step uses: a Badge in a draft, muted before the detail once the plan runs. */
+  /** The tool or app the step uses: a plain Badge in a draft, muted before the detail once the plan runs. */
   tool?: string
-  /** `false` keeps the step as the agent wrote it: it can't be renamed, left out or moved (other steps still move past it). */
+  /** The tool's icon, before its name: an iconoir icon, drawn at 14px like a Badge's. */
+  toolIcon?: React.ReactNode
+  /** `false` keeps the step as the agent wrote it: it can't be renamed, removed or moved (other steps still move past it). */
   editable?: boolean
-  /** Left out of the run: unchecked in the draft, or skipped after it failed. */
+  /** Skipped after it failed: the run goes on without it, and Run plan leaves it out. */
   skipped?: boolean
 }
 
@@ -110,7 +104,7 @@ interface PlanContextValue {
   setSteps: (steps: AgentPlanStep[]) => void
   status: AgentPlanStatus
   currentStep?: string
-  /** The steps that run, in order. */
+  /** The steps that run, in order: all but the skipped ones. */
   included: AgentPlanStep[]
   stateOf: (index: number) => AgentPlanStepState
   run: () => void
@@ -147,13 +141,13 @@ export interface AgentPlanRootProps extends Omit<React.ComponentProps<'div'>, 't
   steps?: AgentPlanStep[]
   /** The steps to start from (uncontrolled). */
   defaultSteps?: AgentPlanStep[]
-  /** Called with every step after a rename, a move, a step left out or back in, or a skip. */
+  /** Called with every step after a rename, a move, a removal, or a skip. */
   onStepsChange?: (steps: AgentPlanStep[]) => void
   /** `draft` while the person edits the plan; `running`, `failed` and `done` show it read-only. */
   status?: AgentPlanStatus
   /** The id of the step running, or the one that failed. Steps before it are done. */
   currentStep?: string
-  /** Run plan was pressed: run these steps (the ones left in), in this order. */
+  /** Run plan was pressed: run these steps (all but the skipped ones), in this order. */
   onRun?: (steps: AgentPlanStep[]) => void
   /** Shows Stop while the plan runs or waits at a failed step. */
   onStop?: () => void
@@ -314,14 +308,12 @@ export function AgentPlanRoot({
           className,
         )}
         onFocusCapture={(e) => {
-          // A step's ⋯ menu is portaled: its items aren't in the card, and their focus doesn't count.
-          if (e.currentTarget.contains(e.target)) lastFocused.current = e.target as HTMLElement
+          lastFocused.current = e.target as HTMLElement
           onFocusCapture?.(e)
         }}
         onBlurCapture={(e) => {
           const to = e.relatedTarget as Node | null
-          // Focus going into a portaled menu (a step's ⋯ menu) still counts as in the plan.
-          if (to && !e.currentTarget.contains(to) && !(to instanceof Element && to.closest('[data-slot="dropdown-menu"]'))) lastFocused.current = null
+          if (to && !e.currentTarget.contains(to)) lastFocused.current = null
           onBlurCapture?.(e)
         }}
         {...props}
@@ -342,30 +334,19 @@ export interface AgentPlanHeaderProps extends Omit<React.ComponentProps<'div'>, 
   title?: React.ReactNode
 }
 
-/** The title, and under it how many steps there are or how far the run got. Other props, `ref` included, go to its `div`. */
+/** The title; it names the plan. Other props, `ref` included, go to its `div`. */
 export function AgentPlanHeader({ title, className, ...props }: AgentPlanHeaderProps) {
-  const { status, steps, included, currentStep, labels, titleId, setHasHeader } = usePlan('AgentPlanHeader')
+  const { labels, titleId, setHasHeader } = usePlan('AgentPlanHeader')
   React.useLayoutEffect(() => {
     setHasHeader(true)
     return () => setHasHeader(false)
   }, [setHasHeader])
 
-  const position = included.findIndex((s) => s.id === currentStep) + 1
-  const hint =
-    status === 'draft'
-      ? labels.planStepCount(included.length, steps.length)
-      : status === 'done'
-        ? labels.planDone(included.length)
-        : position > 0
-          ? labels.planProgress(position, included.length)
-          : labels.planStepCount(included.length, steps.length)
-
   return (
-    <div data-slot="agent-plan-header" className={cn('flex flex-col gap-0.5 px-3 pt-3 pb-2', className)} {...props}>
+    <div data-slot="agent-plan-header" className={cn('px-3 pt-3 pb-2', className)} {...props}>
       <p id={titleId} className="text-base leading-5 font-medium tracking-normal text-text-default">
         {title ?? labels.agentPlan}
       </p>
-      <p className="text-base text-text-muted tabular-nums">{hint}</p>
     </div>
   )
 }
@@ -422,11 +403,23 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
     if (part) refocus.current = { id, part }
     sayPosition(id)
   }
+  const remove = (id: string) => {
+    const list = order.current
+    const at = list.findIndex((s) => s.id === id)
+    if (at < 0) return
+    const next = list.filter((s) => s.id !== id)
+    order.current = next
+    setSteps(next)
+    announce(labels.stepRemoved(list[at].label))
+    // Focus goes to the × of the step that took its place, or of the one before. With none
+    // left, the button just goes away and the root moves focus to the list.
+    const to = [...next.slice(at), ...next.slice(0, at).reverse()].find((s) => s.editable !== false)
+    if (to) refocus.current = { id: to.id, part: 'remove' }
+  }
 
   const onRowKeyDown = (e: React.KeyboardEvent<HTMLLIElement>, step: AgentPlanStep) => {
     if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return
     if (e.target instanceof HTMLInputElement || step.editable === false) return
-    // Before Radix sees it: Alt+↓ on the ⋯ button would open its menu.
     e.preventDefault()
     const part = (e.target as HTMLElement).closest<HTMLElement>('[data-part]')?.dataset.part
     moveBy(step.id, e.key === 'ArrowUp' ? -1 : 1, part)
@@ -435,26 +428,40 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
   const onGripDown = (e: React.PointerEvent<HTMLElement>, id: string) => {
     if (e.button !== 0) return
     e.preventDefault()
-    e.currentTarget.setPointerCapture(e.pointerId)
     setDragging(id)
   }
-  const onGripMove = (e: React.PointerEvent<HTMLElement>) => {
-    if (!dragging || !listRef.current) return
-    const rows = Array.from(listRef.current.children) as HTMLElement[]
-    const from = order.current.findIndex((s) => s.id === dragging)
-    let to = from
-    rows.forEach((row, i) => {
-      const box = row.getBoundingClientRect()
-      const mid = box.top + box.height / 2
-      if (i < from && e.clientY < mid) to = Math.min(to, i)
-      if (i > from && e.clientY > mid) to = Math.max(to, i)
-    })
-    if (to !== from) move(from, to)
-  }
-  const onGripUp = () => {
-    if (dragging) sayPosition(dragging)
-    setDragging(null)
-  }
+  // The drag listens on the window, not through pointer capture: moving a step down moves its
+  // row in the DOM, and a moved element loses its capture, so the drag would never end.
+  const drag = React.useRef({ move, sayPosition })
+  drag.current = { move, sayPosition }
+  React.useEffect(() => {
+    if (!dragging) return
+    const onMove = (e: PointerEvent) => {
+      if (!listRef.current) return
+      const rows = Array.from(listRef.current.children) as HTMLElement[]
+      const from = order.current.findIndex((s) => s.id === dragging)
+      let to = from
+      rows.forEach((row, i) => {
+        const box = row.getBoundingClientRect()
+        const mid = box.top + box.height / 2
+        if (i < from && e.clientY < mid) to = Math.min(to, i)
+        if (i > from && e.clientY > mid) to = Math.max(to, i)
+      })
+      if (to !== from) drag.current.move(from, to)
+    }
+    const onUp = () => {
+      drag.current.sayPosition(dragging)
+      setDragging(null)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+    }
+  }, [dragging, listRef])
 
   return (
     <div data-slot="agent-plan-steps" data-mode={draft ? 'draft' : 'run'} className={cn(draft ? 'px-2' : 'flex gap-3 px-3 pt-1', className)} {...props}>
@@ -479,13 +486,12 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
               key={step.id}
               step={step}
               index={i}
-              count={steps.length}
               dragging={dragging === step.id}
               editing={editing === step.id}
               onEdit={(on) => setEditing(on ? step.id : null)}
-              onMove={(by) => moveBy(step.id, by)}
+              onRemove={() => remove(step.id)}
               onKeyDown={(e) => onRowKeyDown(e, step)}
-              grip={{ onPointerDown: (e) => onGripDown(e, step.id), onPointerMove: onGripMove, onPointerUp: onGripUp, onPointerCancel: onGripUp }}
+              grip={{ onPointerDown: (e) => onGripDown(e, step.id) }}
             />
           ) : (
             <RunStep key={step.id} step={step} state={stateOf(i)} />
@@ -501,49 +507,52 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
 function DraftStep({
   step,
   index,
-  count,
   dragging,
   editing,
   onEdit,
-  onMove,
+  onRemove,
   onKeyDown,
   grip,
 }: {
   step: AgentPlanStep
   index: number
-  count: number
   dragging: boolean
   editing: boolean
   onEdit: (on: boolean) => void
-  onMove: (by: -1 | 1) => void
+  onRemove: () => void
   onKeyDown: (e: React.KeyboardEvent<HTMLLIElement>) => void
-  grip: Pick<React.ComponentProps<'span'>, 'onPointerDown' | 'onPointerMove' | 'onPointerUp' | 'onPointerCancel'>
+  grip: Pick<React.ComponentProps<'span'>, 'onPointerDown'>
 }) {
   const { steps, setSteps, labels, forgetFocus } = usePlan('AgentPlanSteps')
-  const id = React.useId()
   const editable = step.editable !== false
   const rowRef = React.useRef<HTMLLIElement>(null)
   const inputRef = React.useRef<HTMLInputElement>(null)
-  const editRequested = React.useRef(false)
   const done = React.useRef(false)
+  // Enter or Escape in the field sends focus back to the label it stood in for.
+  const backToLabel = React.useRef(false)
 
   React.useLayoutEffect(() => {
-    if (!editing) return
-    done.current = false
-    inputRef.current?.focus()
-    inputRef.current?.select()
+    if (editing) {
+      done.current = false
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    } else if (backToLabel.current) {
+      backToLabel.current = false
+      rowRef.current?.querySelector<HTMLElement>('[data-part="label"]')?.focus()
+    }
   }, [editing])
 
-  const menuButton = () => rowRef.current?.querySelector<HTMLElement>('[data-part="menu"]')
   const finish = (save: boolean, refocus: boolean) => {
     if (done.current) return
     done.current = true
     const label = inputRef.current?.value.trim() ?? ''
     if (save && label && label !== step.label) setSteps(steps.map((s) => (s.id === step.id ? { ...s, label } : s)))
-    if (refocus) menuButton()?.focus()
+    if (refocus) backToLabel.current = true
     else forgetFocus()
     onEdit(false)
   }
+
+  const labelClass = cn('text-sm leading-5 break-words', step.skipped ? 'text-text-muted' : 'text-text-default')
 
   return (
     <li
@@ -562,44 +571,25 @@ function DraftStep({
         'data-dragging:[box-shadow:0_4px_6px_-1px_var(--effect-shadow-sm),0_2px_4px_-2px_var(--effect-shadow-sm)]',
       )}
     >
-      {/* The grip, for the pointer: the keyboard has Alt+↑/↓, and the ⋯ menu moves it with one tap. */}
-      <span
+      {/* The step's number, which the list already says to screen readers. The pointer drags it
+          to move the step; the keyboard has Alt+↑/↓. */}
+      <Badge
+        size="sm"
         aria-hidden
-        data-part="grip"
-        className={cn(
-          'flex h-5 w-3 shrink-0 items-center justify-center text-text-subtle',
-          editable ? 'cursor-grab touch-none hover:text-text-muted' : 'invisible',
-          dragging && 'cursor-grabbing text-text-muted',
-        )}
+        data-part="number"
+        className={cn('min-w-5 justify-center tabular-nums', editable && 'cursor-grab touch-none select-none', dragging && 'cursor-grabbing')}
         {...(editable ? grip : {})}
       >
-        <svg width="8" height="14" viewBox="0 0 8 14" className="fill-current">
-          {[1.25, 6.75, 12.25].map((cy) => (
-            <React.Fragment key={cy}>
-              <circle cx="1.25" cy={cy} r="1.25" />
-              <circle cx="6.25" cy={cy} r="1.25" />
-            </React.Fragment>
-          ))}
-        </svg>
-      </span>
-      <span className="flex h-5 shrink-0 items-center">
-        <Checkbox
-          id={id}
-          data-part="include"
-          checked={!step.skipped}
-          disabled={!editable}
-          aria-description={editable ? labels.sortableHint : undefined}
-          onCheckedChange={(on) => setSteps(steps.map((s) => (s.id === step.id ? { ...s, skipped: on !== true } : s)))}
-        />
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col">
+        {index + 1}
+      </Badge>
+      <div className="flex min-w-0 flex-1 flex-col items-start">
         {editing ? (
           <Input
             ref={inputRef}
             size="sm"
             aria-label={labels.stepName(index + 1)}
             defaultValue={step.label}
-            wrapperClassName="-my-1"
+            wrapperClassName="-my-1 self-stretch"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
                 e.preventDefault()
@@ -612,50 +602,41 @@ function DraftStep({
             }}
             onBlur={() => finish(true, false)}
           />
-        ) : (
-          <label htmlFor={id} className={cn('text-sm leading-5 break-words', step.skipped ? 'text-text-muted' : 'text-text-default', editable && 'cursor-pointer')}>
+        ) : editable ? (
+          // The label renames the step when pressed; its ring sits 4px out from the text.
+          <button
+            type="button"
+            data-part="label"
+            aria-description={labels.stepHint}
+            onClick={() => onEdit(true)}
+            className={cn(labelClass, '-mx-1 cursor-text rounded-xs px-1 text-start outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]')}
+          >
             {step.label}
-          </label>
+          </button>
+        ) : (
+          <span data-part="label" className={labelClass}>
+            {step.label}
+          </span>
         )}
         {step.detail != null && <span className={cn('text-sm text-text-muted', editing && 'mt-1')}>{step.detail}</span>}
       </div>
       {step.tool && (
-        <Badge size="sm" variant="outline" className="mt-px">
+        <Badge size="sm" variant="plain">
+          {step.toolIcon != null && (
+            <span aria-hidden className="inline-flex">
+              {step.toolIcon}
+            </span>
+          )}
           {step.tool}
         </Badge>
       )}
       {editable ? (
-        <DropdownMenu
-          align="end"
-          className="w-44"
-          onCloseAutoFocus={(e) => {
-            // Edit was chosen: focus goes to the field, not back to ⋯.
-            if (!editRequested.current) return
-            editRequested.current = false
-            e.preventDefault()
-            inputRef.current?.focus()
-          }}
-          trigger={
-            <Button variant="tertiary" size="xs" iconOnly data-part="menu" aria-label={labels.stepOptions(step.label)} className="-my-0.5 shrink-0 text-text-muted">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <circle cx="6" cy="12" r="1.5" />
-                <circle cx="12" cy="12" r="1.5" />
-                <circle cx="18" cy="12" r="1.5" />
-              </svg>
-            </Button>
-          }
-        >
-          <DropdownMenuItem
-            label={labels.editStep}
-            layout="inline"
-            onSelect={() => {
-              editRequested.current = true
-              onEdit(true)
-            }}
-          />
-          <DropdownMenuItem label={labels.moveStepUp} layout="inline" disabled={index === 0} onSelect={() => onMove(-1)} />
-          <DropdownMenuItem label={labels.moveStepDown} layout="inline" disabled={index === count - 1} onSelect={() => onMove(1)} />
-        </DropdownMenu>
+        <Button variant="tertiary" size="xs" iconOnly data-part="remove" aria-label={labels.removeItem(step.label)} className="-my-0.5 shrink-0" onClick={onRemove}>
+          {/* iconoir Xmark */}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M6.75827 17.2426L12.0009 12M17.2435 6.75736L12.0009 12M12.0009 12L6.75827 6.75736M12.0009 12L17.2435 17.2426" />
+          </svg>
+        </Button>
       ) : (
         <span aria-hidden className="size-6 shrink-0" />
       )}
@@ -674,10 +655,16 @@ function RunStep({ step, state }: { step: AgentPlanStep; state: AgentPlanStepSta
       labels.stepStatus('skipped')
     ) : step.tool && step.detail != null ? (
       <>
+        <ToolIcon step={step} />
         {step.tool} · {step.detail}
       </>
+    ) : step.tool ? (
+      <>
+        <ToolIcon step={step} />
+        {step.tool}
+      </>
     ) : (
-      (step.tool ?? step.detail)
+      step.detail
     )
 
   return (
@@ -726,6 +713,16 @@ function RunStep({ step, state }: { step: AgentPlanStep; state: AgentPlanStepSta
 }
 
 const ICON = 'size-icon-size-sm shrink-0 [stroke-width:1.875]'
+
+/** The tool's icon before its name in a read-only step's muted line, 14px, sitting on the text. */
+function ToolIcon({ step }: { step: AgentPlanStep }) {
+  if (step.toolIcon == null) return null
+  return (
+    <span aria-hidden className="me-1 inline-flex align-[-2px] [&_svg]:size-icon-size-sm [&_svg]:[stroke-width:1.875]">
+      {step.toolIcon}
+    </span>
+  )
+}
 
 /** The icon before a read-only step, 14px like Thinking's check. */
 function StepIcon({ state }: { state: AgentPlanStepState }) {

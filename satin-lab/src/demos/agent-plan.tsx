@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Calendar, Mail } from 'iconoir-react'
 import { AgentPlan, type AgentPlanStatus, type AgentPlanStep } from '@uisatin/pro/agent-plan'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -6,9 +7,9 @@ const TITLE = 'Schedule interviews for 3 shortlisted candidates'
 
 /** What the agent proposes. */
 const PLAN: AgentPlanStep[] = [
-  { id: 'slots', label: 'Find open slots', detail: 'Tue–Thu next week, 45 min with the panel', tool: 'Calendar' },
-  { id: 'draft', label: 'Draft invites', detail: 'One per candidate, with the role and a video link', tool: 'Mail' },
-  { id: 'send', label: 'Send invites', detail: 'To Maya Chen, Tomás Ruiz and Priya Nair', tool: 'Mail' },
+  { id: 'slots', label: 'Find open slots', detail: 'Tue–Thu next week, 45 min with the panel', tool: 'Calendar', toolIcon: <Calendar /> },
+  { id: 'draft', label: 'Draft invites', detail: 'One per candidate, with the role and a video link', tool: 'Mail', toolIcon: <Mail /> },
+  { id: 'send', label: 'Send invites', detail: 'To Maya Chen, Tomás Ruiz and Priya Nair', tool: 'Mail', toolIcon: <Mail /> },
 ]
 
 /** What each step leaves behind once it has run, in place of its detail. */
@@ -53,12 +54,13 @@ const RUN_PROPS: Record<string, string[]> = {
 
 function code(v: Record<string, string>) {
   const run = RUN_PROPS[v.state].map((p) => `      ${p}\n`).join('')
-  return `import { AgentPlan, type AgentPlanStep } from '@uisatin/pro/agent-plan'
+  return `import { Calendar, Mail } from 'iconoir-react'
+import { AgentPlan, type AgentPlanStep } from '@uisatin/pro/agent-plan'
 
 const plan: AgentPlanStep[] = [
-  { id: 'slots', label: 'Find open slots', detail: 'Tue–Thu next week, 45 min with the panel', tool: 'Calendar' },
-  { id: 'draft', label: 'Draft invites', detail: 'One per candidate, with the role and a video link', tool: 'Mail' },
-  { id: 'send', label: 'Send invites', detail: 'To Maya Chen, Tomás Ruiz and Priya Nair', tool: 'Mail' },
+  { id: 'slots', label: 'Find open slots', detail: 'Tue–Thu next week, 45 min with the panel', tool: 'Calendar', toolIcon: <Calendar /> },
+  { id: 'draft', label: 'Draft invites', detail: 'One per candidate, with the role and a video link', tool: 'Mail', toolIcon: <Mail /> },
+  { id: 'send', label: 'Send invites', detail: 'To Maya Chen, Tomás Ruiz and Priya Nair', tool: 'Mail', toolIcon: <Mail /> },
 ]
 
 export function InterviewPlan({ agent }: { agent: Agent }) {
@@ -153,8 +155,8 @@ function Preview({ v, set }: { v: Record<string, string>; set: (id: string, valu
         error={run.error}
         onRun={(toRun) => go({ status: 'running', current: toRun[0].id })}
         onStop={() => {
-          // Back to the plan as it was proposed, with the person's edits kept.
-          setSteps((all) => all.map((s) => ({ ...s, detail: PLAN.find((p) => p.id === s.id)?.detail })))
+          // Back to the plan as it was proposed, with the person's edits kept and nothing skipped.
+          setSteps((all) => all.map((s) => ({ ...s, detail: PLAN.find((p) => p.id === s.id)?.detail, skipped: false })))
           go({ status: 'draft' })
         }}
         onRetry={(step) => go({ status: 'running', current: step.id })}

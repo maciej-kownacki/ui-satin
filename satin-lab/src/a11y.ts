@@ -512,14 +512,13 @@ export const a11y: Record<string, A11y> = {
   },
   'agent-plan': {
     summary:
-      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step has a Checkbox named by its label (unchecked leaves it out), described as "Alt and arrow keys to move", and a ⋯ button named "Options for <step>" whose menu has Edit, Move up and Move down, so a pointer that can’t drag can still reorder. Edit turns the label into a field named "Step 2"; the grip is for the pointer only and hidden. Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
+      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step’s label is a button named by the label and described as "Press to rename. Alt and arrow keys to move"; pressing it turns the label into a field named "Step 2". Its × is named "Remove <step>"; after a removal focus goes to the next step’s × and the live region says "<step> removed". The step’s number is hidden, since the list already gives the position, and dragging it is pointer-only: a pointer that can’t drag has no other way to reorder (see Known gaps). Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
     keyboard: [
-      { keys: ['Tab'], action: 'Moves through each step’s checkbox and ⋯ button, then Run plan.' },
-      { keys: ['Space'], action: 'On a checkbox: leaves the step out of the run, or puts it back.' },
+      { keys: ['Tab'], action: 'Moves through each step’s label and ×, then Run plan.' },
+      { keys: ['Enter', 'Space'], action: 'On a label: renames the step. On ×: removes it.' },
       { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
-      { keys: ['Enter', 'Space', '↓'], action: 'On ⋯: opens the step’s menu (Edit, Move up, Move down).' },
-      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to ⋯ (an empty name keeps the old one).' },
-      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to ⋯. In the menu: closes it.' },
+      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to the label (an empty name keeps the old one).' },
+      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to the label.' },
     ],
   },
   'agent-loading': {

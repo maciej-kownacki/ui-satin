@@ -389,7 +389,7 @@
           "name": "onStepsChange",
           "type": "(steps: AgentPlanStep[]) => void",
           "required": false,
-          "description": "Called with every step after a rename, a move, a step left out or back in, or a skip."
+          "description": "Called with every step after a rename, a move, a removal, or a skip."
         },
         {
           "name": "status",
@@ -408,7 +408,7 @@
           "name": "onRun",
           "type": "(steps: AgentPlanStep[]) => void",
           "required": false,
-          "description": "Run plan was pressed: run these steps (the ones left in), in this order."
+          "description": "Run plan was pressed: run these steps (all but the skipped ones), in this order."
         },
         {
           "name": "onStop",
@@ -451,7 +451,7 @@
       ]
     },
     "AgentPlanHeader": {
-      "description": "The title, and under it how many steps there are or how far the run got. Other props, `ref` included, go to its `div`.",
+      "description": "The title; it names the plan. Other props, `ref` included, go to its `div`.",
       "type": "AgentPlanHeaderProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'title'>"

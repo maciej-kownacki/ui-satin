@@ -2123,7 +2123,7 @@
       "name": "agent-plan",
       "type": "registry:ui",
       "title": "Agent plan",
-      "description": "The steps an agent proposes before it acts: edit, reorder or leave some out, then Run, and watch them tick off.",
+      "description": "The steps an agent proposes before it acts: rename, reorder or remove some, then Run, and watch them tick off.",
       "dependencies": [],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
@@ -2132,8 +2132,6 @@
         "https://uisatin.dev/r/agent-loading.json",
         "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/checkbox.json",
-        "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/input.json",
         "https://uisatin.dev/r/labels.json"
       ],
