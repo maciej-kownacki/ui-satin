@@ -144,6 +144,15 @@ export const defaultLabels = {
   /** "1.0 of 2.4 MB": the part sent and the total, both already formatted. */
   sentOfTotal: (sent: string, total: string) => `${sent} of ${total}`,
   showMore: (count: number) => `Show ${count} more`,
+  didntGetCode: 'Didn’t get it?',
+  resendCode: 'Resend code',
+  /** Before an InputOTP suggestion's code, for screen readers: "Use code 428 193 From Messages". */
+  useCode: 'Use code',
+  fromMessages: 'From Messages',
+  /** "Resend in 0:27": the time is already formatted. */
+  resendIn: (time: string) => `Resend in ${time}`,
+  /** Read out when InputOTP's suggestion appears. */
+  codeReceived: (code: string) => `Code ${code} received`,
   noResultsFor: (query: string) => `No results for “${query}”`,
   selectRow: (row: number) => `Select row ${row}`,
   selectNamedRow: (name: string) => `Select ${name}`,

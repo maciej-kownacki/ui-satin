@@ -1101,6 +1101,9 @@
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/pointer-modality.json",
         "https://uisatin.dev/r/select.json"
       ],
       "docs": "Input OTP docs: https://uisatin.dev/components/input-otp",

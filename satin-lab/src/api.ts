@@ -577,7 +577,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'input-otp': {
-    description: 'The `InputOTP` component renders one `input` with `autocomplete="one-time-code"` over the cells, so typing, paste and SMS autofill work as in any field.',
+    description: 'The `InputOTP` component renders one `input` with `autocomplete="one-time-code"` over the cells, so typing, paste and SMS autofill work as in any field. `onResend` adds "Didn’t get it?" with a resend that opens after a countdown; `suggestion` offers a code that arrived by text in a popover under the cells.',
     props: [
       { name: 'length', type: ['number'], default: '6' },
       { name: 'groupSize', type: ['number'], default: '3' },
@@ -590,6 +590,10 @@ export const api: Record<string, Api> = {
       { name: 'hint', type: ['ReactNode'] },
       { name: 'error', type: ['ReactNode', 'boolean'] },
       { name: 'success', type: ['ReactNode', 'boolean'] },
+      { name: 'onResend', type: ['() => void | Promise<unknown>'] },
+      { name: 'resendAfter', type: ['number'], default: '30' },
+      { name: 'suggestion', type: ['string'] },
+      { name: 'suggestionFrom', type: ['ReactNode'], default: '"From Messages"' },
       { name: 'disabled', type: ['boolean'] },
       { name: 'name', type: ['string'] },
       { name: 'autoFocus', type: ['boolean'] },

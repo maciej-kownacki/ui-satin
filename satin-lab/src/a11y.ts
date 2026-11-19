@@ -258,8 +258,12 @@ export const a11y: Record<string, A11y> = {
   },
   'input-otp': {
     summary:
-      'One real `input` over the cells, with `autocomplete="one-time-code"` and a numeric keyboard for digits, so screen readers hear one text box and paste and SMS autofill work. Name it with `label` or `aria-label`. The cells, dashes and caret are hidden. The message under the cells is a polite live region, so a hint changing to "Checking…", success or an error is read out; an error also sets `aria-invalid`.',
-    keyboard: [{ keys: ['Backspace'], action: 'Deletes the last character. The caret always stays at the end.' }],
+      'One real `input` over the cells, with `autocomplete="one-time-code"` and a numeric keyboard for digits, so screen readers hear one text box and paste and SMS autofill work. Name it with `label` or `aria-label`. The cells, dashes and caret are hidden. The cell taking the next character shows the focus; a full field shows it on its last cell only when the keyboard tabs into it, so filling in the code doesn’t leave a ring behind. The message under the cells is a polite live region, so a hint changing to "Checking…", success or an error is read out; an error also sets `aria-invalid`. The resend countdown is plain text, so it isn’t read out every second; when it ends it becomes a "Resend code" button. A suggested code is announced once ("Code 428 193 received") and is a button right after the field, named "Use code 428 193 From Messages"; choosing it fills the field and leaves the focus there.',
+    keyboard: [
+      { keys: ['Backspace'], action: 'Deletes the last character. The caret always stays at the end.' },
+      { keys: ['Tab'], action: 'From the field, moves to the suggested code, then to Resend code once it’s open.' },
+      { keys: ['Esc'], action: 'Puts the suggested code away until a different one arrives.' },
+    ],
   },
   'number-input': {
     summary:

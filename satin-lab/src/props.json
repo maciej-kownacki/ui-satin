@@ -3240,6 +3240,31 @@
           "description": "The code checked out: a message under the cells (replaces the hint), or `true` for green cells alone. Ignored while there is an error."
         },
         {
+          "name": "onResend",
+          "type": "() => void | Promise<unknown>",
+          "required": false,
+          "description": "Shows \"Didn’t get it?\" with a resend under the cells, open after `resendAfter` seconds. Return a promise to show a spinner until the code is sent."
+        },
+        {
+          "name": "resendAfter",
+          "type": "number",
+          "required": false,
+          "default": "30",
+          "description": "Seconds before the code can be sent again, counted from when the field appears and from each resend."
+        },
+        {
+          "name": "suggestion",
+          "type": "string",
+          "required": false,
+          "description": "A code that arrived by text or email, offered in a popover under the cells; choosing it fills them."
+        },
+        {
+          "name": "suggestionFrom",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Where the suggested code came from, after it in the popover. Defaults to the `fromMessages` label."
+        },
+        {
           "name": "disabled",
           "type": "boolean",
           "required": false

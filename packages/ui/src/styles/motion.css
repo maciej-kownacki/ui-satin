@@ -243,6 +243,26 @@
 @media (prefers-reduced-motion: reduce) {
   [data-slot='input-otp-caret'] { animation: none; }
 }
+/* Its code suggestion (a code that came in by text) fades in from 4px above, under the cells. */
+[data-slot='input-otp-suggestion'] {
+  animation: satin-enter var(--duration-slow) var(--ease-out);
+}
+/* Chosen, it fades out. */
+[data-slot='input-otp-suggestion'][data-leaving] {
+  animation: satin-fade-out var(--duration-base) var(--ease-out) forwards;
+}
+
+/* A code that arrives at once rolls into the cells like slot-machine reels: each reel starts on
+   its blank and runs down through the digit before its own to it, lightly blurred while it moves
+   and settling softly; the component staggers the cells 100ms apart, left to right, so only a
+   couple move at once. The cell clips the reel. */
+@keyframes satin-otp-roll {
+  from { transform: translateY(-66.6667%); filter: blur(1.5px); }
+  to { transform: none; filter: none; }
+}
+[data-slot='input-otp-reel'] {
+  animation: satin-otp-roll 500ms var(--ease-out) backwards;
+}
 
 /* Sheen (Banner, AnnouncementBar `shimmer`): now and then a soft band of light crosses the
    surface, left to right, then nothing for a while — 1.2 s of sweep every 9 s, first after 2 s.

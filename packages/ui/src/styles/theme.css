@@ -294,6 +294,11 @@
   --component-decision-chip-selected-fg: var(--status-brand-fg);
   --component-file-icon-bg: var(--bg-muted);
   --component-input-otp-success-border: var(--status-green-fg);
+  --component-input-otp-suggestion-bg: var(--action-inverse-bg);
+  --component-input-otp-suggestion-bg-hover: var(--action-inverse-bg-hover);
+  --component-input-otp-suggestion-fg: var(--text-on-inverse);
+  --component-input-otp-suggestion-border: var(--color-transparent);
+  --component-input-otp-suggestion-badge: var(--color-green-soft-500);
   --component-message-bubble-bg: var(--action-inverse-bg);
   --component-message-bubble-fg: var(--text-on-inverse);
   --component-agent-suggestion-quote-bg: var(--bg-canvas);
@@ -405,6 +410,11 @@
   --component-decision-chip-selected-fg: var(--text-default);
   --component-file-icon-bg: var(--color-segmented-selected-dark);
   --component-input-otp-success-border: var(--color-green-soft-600);
+  --component-input-otp-suggestion-bg: var(--bg-popover);
+  --component-input-otp-suggestion-bg-hover: var(--bg-hover);
+  --component-input-otp-suggestion-fg: var(--text-default);
+  --component-input-otp-suggestion-border: var(--border-default);
+  --component-input-otp-suggestion-badge: var(--color-green-soft-500);
   --component-message-bubble-bg: var(--bg-muted);
   --component-message-bubble-fg: var(--text-default);
   --component-agent-suggestion-quote-bg: var(--bg-muted);
@@ -509,6 +519,11 @@
     --component-decision-chip-selected-fg: var(--text-default);
     --component-file-icon-bg: var(--color-segmented-selected-dark);
     --component-input-otp-success-border: var(--color-green-soft-600);
+    --component-input-otp-suggestion-bg: var(--bg-popover);
+    --component-input-otp-suggestion-bg-hover: var(--bg-hover);
+    --component-input-otp-suggestion-fg: var(--text-default);
+    --component-input-otp-suggestion-border: var(--border-default);
+    --component-input-otp-suggestion-badge: var(--color-green-soft-500);
     --component-message-bubble-bg: var(--bg-muted);
     --component-message-bubble-fg: var(--text-default);
     --component-agent-suggestion-quote-bg: var(--bg-muted);
@@ -703,6 +718,11 @@
   --color-component-decision-chip-selected-fg: var(--component-decision-chip-selected-fg);
   --color-component-file-icon-bg: var(--component-file-icon-bg);
   --color-component-input-otp-success-border: var(--component-input-otp-success-border);
+  --color-component-input-otp-suggestion-bg: var(--component-input-otp-suggestion-bg);
+  --color-component-input-otp-suggestion-bg-hover: var(--component-input-otp-suggestion-bg-hover);
+  --color-component-input-otp-suggestion-fg: var(--component-input-otp-suggestion-fg);
+  --color-component-input-otp-suggestion-border: var(--component-input-otp-suggestion-border);
+  --color-component-input-otp-suggestion-badge: var(--component-input-otp-suggestion-badge);
   --color-component-message-bubble-bg: var(--component-message-bubble-bg);
   --color-component-message-bubble-fg: var(--component-message-bubble-fg);
   --color-component-agent-suggestion-quote-bg: var(--component-agent-suggestion-quote-bg);
