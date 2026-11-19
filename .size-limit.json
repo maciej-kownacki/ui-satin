@@ -45,6 +45,18 @@
     "limit": "12 kB"
   },
   {
+    "name": "Toast batch (Satin Pro, with the rolling number; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/toast-batch.js",
+    "import": "{ toastBatch }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,
