@@ -1078,6 +1078,7 @@ export const api: Record<string, Api> = {
       { name: 'meta', type: ['ReactNode'] },
       { name: 'hints', type: ['boolean'], default: 'true' },
       { name: 'wrapperClassName', type: ['string'] },
+      { name: 'leading', type: ['ReactNode'] },
     ],
   },
 }

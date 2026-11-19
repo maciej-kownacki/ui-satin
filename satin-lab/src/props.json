@@ -4407,6 +4407,12 @@
       ],
       "props": [
         {
+          "name": "leading",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "field: shown in the field before the query, e.g. filter chips. The field wraps as they fill it."
+        },
+        {
           "name": "shortcut",
           "type": "boolean",
           "required": false,
