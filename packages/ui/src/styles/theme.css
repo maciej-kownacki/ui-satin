@@ -18,7 +18,6 @@
   --color-zinc-200: #E4E4E7;
   --color-zinc-300: #D4D4D8;
   --color-zinc-400: #A1A1AA;
-  --color-zinc-450: #7F7F86;
   --color-zinc-500: #71717A;
   --color-zinc-600: #52525B;
   --color-zinc-700: #3F3F46;
@@ -217,7 +216,7 @@
   --border-default: var(--color-zinc-200);
   --border-subtle: var(--color-border-subtle-light);
   --border-strong: var(--color-zinc-300);
-  --border-input: var(--color-zinc-500);
+  --border-input: var(--color-zinc-200);
   --border-focus: var(--color-blue-600);
   --action-primary-bg: var(--color-blue-600);
   --action-primary-bg-hover: var(--color-blue-500);
@@ -328,7 +327,7 @@
   --border-default: var(--color-border-dark);
   --border-subtle: var(--color-border-subtle-dark);
   --border-strong: var(--color-border-strong-dark);
-  --border-input: var(--color-zinc-450);
+  --border-input: var(--color-border-strong-dark);
   --border-focus: var(--color-primary-focus-dark);
   --action-primary-bg: var(--color-primary-dark);
   --action-primary-bg-hover: var(--color-primary-hover-dark);
@@ -390,7 +389,7 @@
   --component-table-zebra: var(--color-surface-dark);
   --component-table-header: var(--color-card-dark);
   --component-segmented-selected: var(--color-segmented-selected-dark);
-  --component-segmented-pressed: var(--color-black-a20);
+  --component-segmented-pressed: var(--color-white-a6);
   --component-rail-center: var(--color-white-a10);
   --component-rail-edge: var(--color-white-a3);
   --component-highlight-hover-from: var(--color-teal-950-a20);
@@ -432,7 +431,7 @@
     --border-default: var(--color-border-dark);
     --border-subtle: var(--color-border-subtle-dark);
     --border-strong: var(--color-border-strong-dark);
-    --border-input: var(--color-zinc-450);
+    --border-input: var(--color-border-strong-dark);
     --border-focus: var(--color-primary-focus-dark);
     --action-primary-bg: var(--color-primary-dark);
     --action-primary-bg-hover: var(--color-primary-hover-dark);
@@ -494,7 +493,7 @@
     --component-table-zebra: var(--color-surface-dark);
     --component-table-header: var(--color-card-dark);
     --component-segmented-selected: var(--color-segmented-selected-dark);
-    --component-segmented-pressed: var(--color-black-a20);
+    --component-segmented-pressed: var(--color-white-a6);
     --component-rail-center: var(--color-white-a10);
     --component-rail-edge: var(--color-white-a3);
     --component-highlight-hover-from: var(--color-teal-950-a20);

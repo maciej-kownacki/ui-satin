@@ -1,5 +1,5 @@
 /*
- * Radio, uiKit _radioBase (852:22410): a 16px circle. Off: bg/field, border/input (3:1+), shadow xs;
+ * Radio, uiKit _radioBase (852:22410): a 16px circle. Off: bg/field, border/strong, shadow xs;
  * hover adds shadow sm; pressed is bg/muted with no shadow; focus is border/focus with the 2px
  * focus ring; disabled is bg/muted with border/default. On: a solid action/primary fill (hover
  * and pressed take their own fill) with a 6px white dot; disabled-on is bg/pressed with a
@@ -12,7 +12,7 @@
   width: 16px;
   height: 16px;
   padding: 0;
-  border: 1px solid var(--border-input);
+  border: 1px solid var(--border-strong);
   border-radius: 9999px;
   background: var(--bg-field);
   color: var(--action-primary-fg);
