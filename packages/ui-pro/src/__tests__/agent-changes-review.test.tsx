@@ -62,8 +62,8 @@ describe('ReviewableChanges', () => {
     renderWithSatin(<ReviewableChanges changes={changes} />)
     const stage = within(row('Stage'))
     expect(stage.getByRole('button', { name: 'Accept Stage change' }).getAttribute('aria-pressed')).toBe('false')
-    // Reject isn't a toggle: it takes the row out.
-    expect(stage.getByRole('button', { name: 'Reject Stage change' }).hasAttribute('aria-pressed')).toBe(false)
+    // Dismiss isn't a toggle: it takes the card out.
+    expect(stage.getByRole('button', { name: 'Dismiss Stage change' }).hasAttribute('aria-pressed')).toBe(false)
     expect(row('Stage').getAttribute('data-state')).toBe('pending')
     // Nothing accepted yet: Apply can't run.
     expect((button('Apply changes') as HTMLButtonElement).disabled).toBe(true)
@@ -89,15 +89,15 @@ describe('ReviewableChanges', () => {
       <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted', value: 'accepted' }} onValueChange={onValueChange} />,
     )
     expect(button('Apply 2 changes')).toBeTruthy()
-    button('Reject Value change').focus()
+    button('Dismiss Value change').focus()
     await user.keyboard('{Enter}')
     expect(screen.queryByRole('group', { name: 'Value' })).toBeNull()
     expect(onValueChange).toHaveBeenLastCalledWith({ stage: 'accepted', value: 'rejected' })
-    expect(status().textContent).toBe('Value change rejected')
+    expect(status().textContent).toBe('Value change dismissed')
     expect(button('Apply 1 change')).toBeTruthy()
     expect(document.activeElement).toBe(button('Accept Close date change'))
     // The last row: focus goes to the footer.
-    await user.click(button('Reject Close date change'))
+    await user.click(button('Dismiss Close date change'))
     expect(document.activeElement).toBe(button('Accept all'))
     // Accept all leaves the rejected rows out.
     await user.click(button('Accept all'))
@@ -128,7 +128,7 @@ describe('ReviewableChanges', () => {
     const { user } = renderWithSatin(
       <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted', close: 'accepted' }} onApply={onApply} />,
     )
-    await user.click(button('Reject Value change'))
+    await user.click(button('Dismiss Value change'))
     await user.click(button('Apply 2 changes'))
     expect(onApply).toHaveBeenCalledTimes(1)
     expect(onApply.mock.calls[0][0]).toEqual([changes[0], changes[2]])
@@ -171,7 +171,7 @@ describe('ReviewableChanges', () => {
     await user.click(apply)
     expect(apply.getAttribute('aria-busy')).toBe('true')
     expect(status().textContent).toBe('Applying changes…')
-    expect((button('Reject Stage change') as HTMLButtonElement).disabled).toBe(true)
+    expect((button('Dismiss Stage change') as HTMLButtonElement).disabled).toBe(true)
     expect((button('Accept all') as HTMLButtonElement).disabled).toBe(true)
     // A second press while it runs does nothing.
     await user.click(apply)
@@ -181,7 +181,7 @@ describe('ReviewableChanges', () => {
       first.reject(new Error('Offline'))
       await first.promise.catch(() => {})
     })
-    expect((button('Reject Stage change') as HTMLButtonElement).disabled).toBe(false)
+    expect((button('Dismiss Stage change') as HTMLButtonElement).disabled).toBe(false)
     expect(button('Apply 1 change').getAttribute('aria-busy')).toBeNull()
   })
 
@@ -202,7 +202,7 @@ describe('ReviewableChanges', () => {
     }
     const { user } = renderWithSatin(<Controlled />)
     expect(row('Close date').getAttribute('data-state')).toBe('accepted')
-    await user.click(button('Reject Stage change'))
+    await user.click(button('Dismiss Stage change'))
     expect(seen.at(-1)).toEqual({ close: 'accepted', stage: 'rejected' })
     expect(screen.queryByRole('group', { name: 'Stage' })).toBeNull()
 
@@ -232,7 +232,7 @@ describe('ReviewableChanges', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Accept Value change' }))
     await user.click(screen.getByRole('checkbox', { name: 'Accept Value change' }))
     expect(row('Value').getAttribute('data-state')).toBe('rejected')
-    expect(screen.queryByRole('button', { name: 'Reject Stage change' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Dismiss Stage change' })).toBeNull()
     await user.click(button('Apply 1 change'))
     expect(onApply.mock.calls[0][0]).toEqual([changes[0]])
     expect((screen.getByRole('checkbox', { name: 'Accept Stage change' }) as HTMLButtonElement).disabled).toBe(true)
@@ -300,7 +300,7 @@ describe('ReviewableChanges', () => {
 describe('ReviewableChanges, rejecting with motion', () => {
   it('swipes the row out, keeps it inert until the gap closes, then lets it go', async () => {
     const { user } = renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} />)
-    await user.click(button('Reject Stage change'))
+    await user.click(button('Dismiss Stage change'))
     const leaving = screen.getAllByRole('group', { hidden: true })[0]
     expect(leaving.hasAttribute('data-leaving')).toBe(true)
     expect(leaving.hasAttribute('inert')).toBe(true)

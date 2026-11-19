@@ -349,12 +349,12 @@
           "type": "'buttons' | 'checkbox'",
           "required": false,
           "default": "'buttons'",
-          "description": "`buttons`: Accept and Reject at the end of each row. `checkbox`: a Checkbox at its start, checked to accept."
+          "description": "`buttons`: Accept and Dismiss on each card. `checkbox`: a Checkbox before each card's name, checked to accept."
         }
       ]
     },
     "ReviewableChangesList": {
-      "description": "The rows, one `role=\"group\"` per change. Other props, `ref` included, go to its `div`.",
+      "description": "The cards, one `role=\"group\"` per change. Other props, `ref` included, go to its `div`.",
       "type": "ReviewableChangesListProps",
       "extends": [
         "React.ComponentProps<'div'>"
@@ -378,7 +378,7 @@
       "props": []
     },
     "ReviewableChanges": {
-      "description": "The rows, then Accept all and Apply on the right, 4px further down as in AgentSuggestion's actions row. Other props, `ref` included, go to the root `div`.",
+      "description": "The cards, then Accept all and Apply on the right, 4px further down as in AgentSuggestion's actions row. Other props, `ref` included, go to the root `div`.",
       "type": "ReviewableChangesProps",
       "extends": [
         "Omit<ReviewableChangesRootProps, 'children'>"

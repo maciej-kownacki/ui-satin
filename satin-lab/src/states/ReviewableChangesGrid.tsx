@@ -3,7 +3,7 @@ import { Badge } from '@uisatin/ui/badge'
 import { ReviewableChanges, type ReviewableChange, type ReviewableChangesStatus } from '@uisatin/pro/agent-changes-review'
 
 /**
- * Every ReviewableChanges state: rows pending, accepted and rejected, the whole set in review,
+ * Every ReviewableChanges state: cards pending, accepted and rejected, the whole set in review,
  * applying and applied, with buttons and with checkboxes. Applying is held with `status`.
  */
 const changes: ReviewableChange[] = [
