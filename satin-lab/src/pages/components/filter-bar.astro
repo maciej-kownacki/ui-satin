@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import FilterBarDemo, { options } from '../../demos/filter-bar'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="filter-bar">
+  <DocSection item={page('filter-bar')} api={api['filter-bar']}>
+    <FilterBarDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

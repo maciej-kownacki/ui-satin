@@ -82,6 +82,19 @@ export const a11y: Record<string, A11y> = {
       { keys: ['An action\'s shortcut'], action: 'Runs that action while focus is in the table or the bar. A shortcut without ⌘ or ⌃ is left alone while typing in a field.' },
     ],
   },
+  'filter-bar': {
+    summary:
+      'A `group` named "Filters" (`filterBar` in SatinLabels). Each chip is a button named in words, "Value greater than €20,000" (`filterOperatorName` reads symbols out), that opens its editor: a Popover dialog named after the field, whose operator control is named after the field ("Stage") and value control after both ("Stage is"). A chip that can\'t apply is described by why ("Check the range"). Its remove button is named "Remove Stage is Interview". A polite `status` region reads the result count once it settles and which chip was removed; the rolling digits are hidden from screen readers.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the search, each chip and its remove button, `+ Filter`, the views menu and Save view.' },
+      { keys: ['Enter', 'Space'], action: 'On a chip: opens its editor, focus on the value. On `+ Filter`: opens the fields.' },
+      { keys: ['Backspace', 'Delete'], action: 'On a chip: removes it; focus moves to the chip that takes its place, or to `+ Filter`.' },
+      { keys: ['Backspace'], action: 'In the empty search: removes the last chip; focus stays in the search.' },
+      { keys: ['Enter'], action: 'In an editor\'s text or number field: keeps the value and closes the editor. A pick from a single-choice list or a calendar closes it too.' },
+      { keys: ['Esc'], action: 'Closes the editor as it is, focus back on its chip. A new chip still without a value goes, focus back on `+ Filter`.' },
+      { keys: ['F'], action: 'Opens `+ Filter` while focus is in the bar or the list it filters (not while typing). Set with `shortcut`, or `false` for none.' },
+    ],
+  },
   'button-group': {
     summary:
       'A `div` with `role="group"`; give it an `aria-label` that says what the buttons are for ("Text alignment"). Each button stays its own tab stop. `ButtonGroupSeparator` is a vertical `separator`.',

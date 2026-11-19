@@ -941,7 +941,9 @@ function FilterChip({ item }: { item: ChipItem }) {
     setDraftState(next)
   }
   const shown = open ? draft : item.filter
-  const problem = problemOf(shown, field)
+  // A new chip is empty on purpose: no error edge until it has had a value.
+  const found = problemOf(shown, field)
+  const problem = isNew && found === 'missing' ? null : found
   const words = wordsOf(shown, field, labels)
   const describedBy = React.useId()
 
@@ -988,6 +990,8 @@ function FilterChip({ item }: { item: ChipItem }) {
           if (isNew && target?.matches('button')) return
           const focusable = target?.matches('button, input') ? target : target?.querySelector<HTMLElement>('button[tabindex="0"], input, button')
           ;(focusable ?? content)?.focus()
+          // Typing replaces what a number field starts with.
+          if (focusable instanceof HTMLInputElement) focusable.select()
         }}
         onInteractOutside={() => {
           outside.current = true

@@ -150,6 +150,13 @@ export const nav: NavGroup[] = [
       },      { id: 'empty-state', title: 'Empty state', href: '/components/empty-state', description: 'Fills a space with no content yet: says why it is empty and offers the first step.' },
       { id: 'file-upload', title: 'File upload', href: '/components/file-upload', description: 'Takes files by drop or browse, shows each upload and what failed, then the attached files.' },
       {
+        id: 'filter-bar',
+        title: 'Filter bar',
+        href: '/components/filter-bar',
+        description: 'Filters as chips that read as sentences, each with its own editor, and the result count live as they change.',
+        edition: 'pro',
+      },
+      {
         id: 'form-family',
         title: 'Form',
         href: '/components/form',

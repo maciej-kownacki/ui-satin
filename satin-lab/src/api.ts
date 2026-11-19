@@ -42,6 +42,27 @@ export const api: Record<string, Api> = {
       { name: 'wrapperClassName', type: ['string'] },
     ],
   },
+  'filter-bar': {
+    description:
+      'The `FilterBar` component (Satin Pro, `@uisatin/pro/filter-bar`) is a `role="group"` of filter chips, `+ Filter` and, with `search`, a search field. `fields` are `{ key, label, type, options, operators, icon, me, min, max, step, format, placeholder }`, `type` one of `enum`, `multi`, `text`, `number`, `date`, `person`. `value` is `Filter[]` (`{ field, operator, value }`, plain JSON, dates as `YYYY-MM-DD`); `applyFilters(rows, value, fields, { getValue, today })` returns the rows they let through, for a List, Table or DataGrid, and `isFilterValid` says whether one applies. Parts: `FilterBarRoot`, `FilterBarSearch`, `FilterBarChips`, `FilterBarAdd`, `FilterBarCount`, `FilterBarViews`. Its words (`filterOperator`, `filterResults`, `filterDays`…) are translated with SatinLabels.',
+    props: [
+      { name: 'fields', type: ['FilterField[]'] },
+      { name: 'value', type: ['Filter[]'] },
+      { name: 'defaultValue', type: ['Filter[]'], default: '[]' },
+      { name: 'onValueChange', type: ['(value: Filter[]) => void'] },
+      { name: 'resultCount', type: ['number'] },
+      { name: 'resultLabel', type: ['(count: number, number: ReactNode) => ReactNode'] },
+      { name: 'views', type: ['FilterView[]'] },
+      { name: 'onSaveView', type: ['(name: string, value: Filter[]) => void'] },
+      { name: 'search', type: ['boolean'], default: 'false' },
+      { name: 'query', type: ['string'] },
+      { name: 'onQueryChange', type: ['(query: string) => void'] },
+      { name: 'searchPlaceholder', type: ['string'], default: '"Search…"' },
+      { name: 'maxVisible', type: ['number'], default: '6' },
+      { name: 'shortcut', type: ['string', 'false'], default: '"F"' },
+      { name: 'container', type: ['HTMLElement | null'] },
+    ],
+  },
   'button-group': {
     description: 'The `ButtonGroup` component is a `div` with `role="group"` that joins the Buttons inside into one block and hands them a variant, size and shape. `ButtonGroupSeparator` divides a loose group.',
     props: [
