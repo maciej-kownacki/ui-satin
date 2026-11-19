@@ -1,0 +1,55 @@
+/*
+ * Bulk action bar (components/bulk-action-bar.tsx). It rises 8px and fades in over
+ * --duration-slow and leaves the same way; hidden, it keeps its place and takes no pointer or
+ * focus (the component sets inert). Satin's reduced-motion rule (motion.css) cuts both.
+ */
+.satin-bulk-action-bar {
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out),
+    visibility 0s;
+}
+.satin-bulk-action-bar[data-state='closed'] {
+  opacity: 0;
+  transform: translateY(8px);
+  visibility: hidden;
+  /* Visible until the fade is over, then gone for the pointer and screen readers. */
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out),
+    visibility 0s linear var(--duration-slow);
+}
+
+/* The count's digits roll: the old one slides out, the new one in, 150 ms. Up when the count
+   grows, down when it shrinks. The component skips it under reduced motion. */
+.satin-bulk-roll {
+  display: inline-grid;
+  overflow: clip;
+}
+.satin-bulk-roll > * {
+  grid-area: 1 / 1;
+}
+.satin-bulk-roll[data-dir='up'] > [data-roll='out'] {
+  animation: satin-bulk-roll-out-up var(--duration-fast) var(--ease-out) forwards;
+}
+.satin-bulk-roll[data-dir='up'] > [data-roll='in'] {
+  animation: satin-bulk-roll-in-up var(--duration-fast) var(--ease-out);
+}
+.satin-bulk-roll[data-dir='down'] > [data-roll='out'] {
+  animation: satin-bulk-roll-out-down var(--duration-fast) var(--ease-out) forwards;
+}
+.satin-bulk-roll[data-dir='down'] > [data-roll='in'] {
+  animation: satin-bulk-roll-in-down var(--duration-fast) var(--ease-out);
+}
+@keyframes satin-bulk-roll-in-up {
+  from { transform: translateY(100%); }
+}
+@keyframes satin-bulk-roll-out-up {
+  to { transform: translateY(-100%); }
+}
+@keyframes satin-bulk-roll-in-down {
+  from { transform: translateY(-100%); }
+}
+@keyframes satin-bulk-roll-out-down {
+  to { transform: translateY(100%); }
+}

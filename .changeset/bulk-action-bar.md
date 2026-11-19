@@ -1,0 +1,5 @@
+---
+'@uisatin/pro': minor
+---
+
+Bulk action bar, the first Satin Pro component (`@uisatin/pro/bulk-action-bar`): the toolbar that appears when rows are selected, with the count (its digits roll as it changes, except under reduced motion) and a clear button, the actions as buttons with their shortcuts shown as Kbd, and the rest in a ⋯ menu. An action that returns a promise shows a Spinner, then a checkmark. Escape clears the selection and each shortcut runs its action while focus is in the table or the bar; arrow keys move along the toolbar. It sticks to the bottom of its container and keeps its place while hidden, so it never covers the last row. Works with Table's `selected` / `onSelectedChange` as they are. With it, `toastBatch()` (`@uisatin/pro/toast-batch`): one toast for the whole batch whose Undo reverts every item, and Show lists the items, each with its own Undo. Its words (`bulkActions`, `bulkSelected`, `clearSelection`, `selectionCleared`, `moreActions`, `undo`, `undoItem`, `undone`, `showItems`, `hideItems`) are translated with SatinLabels.

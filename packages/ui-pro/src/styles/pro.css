@@ -4,3 +4,4 @@
  * like packages/ui/src/styles/components/radio.css). Satin Free's tokens, motion and variants
  * come from @uisatin/ui/styles.css, which loads first.
  */
+@import "./components/bulk-action-bar.css";

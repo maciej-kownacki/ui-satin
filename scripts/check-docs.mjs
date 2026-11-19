@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url'
 import { nav, pagesOf } from '../satin-lab/src/nav.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-// Entries that are parts of other components, documented on their pages.
+// Entries (Free's or Pro's) that are parts of other components, documented on their pages.
 const INTERNAL = {
   'banner-mesh': 'the Banner and Announcement bar glows',
   chart: 'ChartCard, the frame every chart page uses',
@@ -27,6 +27,7 @@ const INTERNAL = {
   'selectable-card': 'what Selectable radio and Selectable checkbox share',
   'sliding-indicator': 'the sliding pill of Tabs, Pagination and Segmented control',
   'pointer-modality': 'how Tabs and the menus tell a mouse press from a key, for the focus ring',
+  'toast-batch': 'toastBatch (Satin Pro), documented on the Bulk action bar page',
 }
 // Pages whose component lives in another file (as in registry/build.mjs).
 const ALIASES = { 'area-chart': 'line-chart' }

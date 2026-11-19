@@ -2100,6 +2100,82 @@
       ]
     },
     {
+      "name": "satin-pro-styles",
+      "type": "registry:item",
+      "title": "Satin Pro styles",
+      "description": "Satin Pro's own classes and component CSS, precompiled: only what Satin styles doesn't already have. Import it after satin.css.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json"
+      ],
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/styles/satin-pro.css",
+          "type": "registry:file",
+          "target": "~/src/styles/satin-pro.css"
+        }
+      ]
+    },
+    {
+      "name": "bulk-action-bar",
+      "type": "registry:ui",
+      "title": "Bulk action bar",
+      "description": "Appears when rows are selected: the count, the actions with their shortcuts, and one toast to undo the batch.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/separator.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Bulk action bar docs: https://uisatin.dev/components/bulk-action-bar",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/bulk-action-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toast-batch",
+      "type": "registry:ui",
+      "title": "Toast batch",
+      "description": "The Satin Pro Toast batch component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/toast-batch.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "accordion-demo",
       "type": "registry:example",
       "title": "Accordion example",
@@ -3220,6 +3296,21 @@
       "files": [
         {
           "path": "registry/satin/examples/tooltip-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "bulk-action-bar-demo",
+      "type": "registry:example",
+      "title": "Bulk action bar example",
+      "description": "The shortest use of Bulk action bar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/bulk-action-bar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
           "type": "registry:example"
         }
       ]

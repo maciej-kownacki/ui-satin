@@ -70,6 +70,18 @@ export const a11y: Record<string, A11y> = {
       'A native `button` with `type="button"` unless you set `type`; `asChild` puts the styles on your own element instead. An `iconOnly` button needs an `aria-label`. While `loading` it keeps focus and its place in the tab order, adds `aria-busy` and `aria-disabled`, and ignores clicks.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Activates the button. Does nothing while `loading`.' }],
   },
+  'bulk-action-bar': {
+    summary:
+      'A `toolbar` named "Bulk actions" (`bulkActions` in SatinLabels), after the content it acts on. The count is read out from a polite `status` region as it changes ("3 selected"), and "Selection cleared" or "Done" when that happens; the rolling digits are hidden from screen readers. Each action names its shortcut with `aria-keyshortcuts` and shows it as Kbd. While hidden the bar is `inert`. When it hides with focus inside, focus goes back to where it came from (the row checkbox). The batch toast is read out like any toast; each item\'s Undo is named after the item ("Undo Acme Corp").',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves into the toolbar, onto the last button used, and out of it.' },
+      { keys: ['→', '←'], action: 'Moves to the next or previous button, wrapping around; mirrored right to left.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or last button.' },
+      { keys: ['Enter', 'Space'], action: 'Runs the focused action, or opens the ⋯ menu.' },
+      { keys: ['Esc'], action: 'Clears the selection, while focus is in the table or the bar (not while typing in a field).' },
+      { keys: ['An action\'s shortcut'], action: 'Runs that action while focus is in the table or the bar. A shortcut without ⌘ or ⌃ is left alone while typing in a field.' },
+    ],
+  },
   'button-group': {
     summary:
       'A `div` with `role="group"`; give it an `aria-label` that says what the buttons are for ("Text alignment"). Each button stays its own tab stop. `ButtonGroupSeparator` is a vertical `separator`.',

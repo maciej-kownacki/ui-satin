@@ -986,6 +986,104 @@
       ]
     }
   },
+  "bulk-action-bar": {
+    "BulkActionBarRoot": {
+      "description": "The floating toolbar on its own: the parts go inside.",
+      "type": "BulkActionBarRootProps",
+      "extends": [
+        "React.ComponentProps<typeof ToolbarPrimitive.Root>"
+      ],
+      "props": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": true,
+          "description": "How many items are selected. The bar shows from 1 and hides at 0."
+        },
+        {
+          "name": "onClear",
+          "type": "() => void",
+          "required": true,
+          "description": "Empties the selection: the clear button and Escape call it."
+        },
+        {
+          "name": "position",
+          "type": "'sticky' | 'absolute'",
+          "required": false,
+          "default": "'sticky'",
+          "description": "`sticky` sits after the content and sticks to the bottom of the screen while its container scrolls past; `absolute` lays it over the container's bottom edge (give the container `position: relative` and `pb-16`)."
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the element that places the bar (sticky or absolute, centred)."
+        }
+      ]
+    },
+    "BulkActionBarCount": {
+      "description": "\"3 selected\" with the clear button. Other props, `ref` included, go to its `div`.",
+      "type": "BulkActionBarCountProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "BulkActionBarSeparator": {
+      "description": "A thin rule between the count and the actions. Other props, `ref` included, go to its `div`.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "BulkActionBarAction": {
+      "description": "One action as a button in the bar. Other props, `ref` included, go to the Button.",
+      "type": "BulkActionBarActionProps",
+      "extends": [
+        "BulkAction",
+        "Omit<React.ComponentProps<typeof Button>, keyof BulkAction | 'children' | 'variant' | 'loading' | 'asChild' | 'iconOnly'>"
+      ],
+      "props": []
+    },
+    "BulkActionBarOverflow": {
+      "description": "The ⋯ button and its menu, for the actions that don't get a button. Other props, `ref` included, go to the ⋯ Button.",
+      "type": "BulkActionBarOverflowProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof Button>, 'children' | 'variant' | 'iconOnly' | 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "actions",
+          "type": "BulkAction[]",
+          "required": true,
+          "description": "The actions in the menu, in order."
+        }
+      ]
+    },
+    "BulkActionBar": {
+      "description": "The bar from props: the count and clear, a rule, a button per action, then the ⋯ menu. Other props, `ref` included, go to the toolbar element.",
+      "type": "BulkActionBarProps",
+      "extends": [
+        "Omit<BulkActionBarRootProps, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "actions",
+          "type": "BulkAction[]",
+          "required": false,
+          "default": "[]",
+          "description": "The actions, as buttons after the count."
+        },
+        {
+          "name": "overflow",
+          "type": "BulkAction[]",
+          "required": false,
+          "default": "[]",
+          "description": "More actions, in a ⋯ menu after the buttons."
+        }
+      ]
+    }
+  },
   "button-group": {
     "ButtonGroup": {
       "type": "ButtonGroupProps",
@@ -5541,6 +5639,12 @@
           "name": "description",
           "type": "React.ReactNode",
           "required": false
+        },
+        {
+          "name": "details",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Under the toast's row, aligned with its text: a list, a progress bar."
         },
         {
           "name": "intent",

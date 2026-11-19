@@ -98,6 +98,13 @@ export const nav: NavGroup[] = [
       { id: 'badge', title: 'Badge', href: '/components/badge', description: 'A short label for a status or a category.' },
       { id: 'breadcrumb', title: 'Breadcrumb', href: '/components/breadcrumb', description: 'Shows where the page sits and leads back up the path.' },
       {
+        id: 'bulk-action-bar',
+        title: 'Bulk action bar',
+        href: '/components/bulk-action-bar',
+        description: 'Appears when rows are selected: the count, the actions with their shortcuts, and one toast to undo the batch.',
+        edition: 'pro',
+      },
+      {
         id: 'button-family',
         title: 'Button',
         href: '/components/button',

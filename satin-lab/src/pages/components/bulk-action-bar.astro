@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import BulkActionBarDemo, { options } from '../../demos/bulk-action-bar'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="bulk-action-bar">
+  <DocSection item={page('bulk-action-bar')} api={api['bulk-action-bar']}>
+    <BulkActionBarDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>
