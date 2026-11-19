@@ -21,6 +21,16 @@ export type KnownIssue = {
 
 export const knownIssues: KnownIssue[] = [
   {
+    id: 'data-grid-cell-controls',
+    components: ['data-grid'],
+    title: 'Controls inside Data grid cells',
+    problem:
+      'The grid manages focus for its own cells, checkboxes, headers and editors. A link or button that `renderCell` draws inside a cell stays in the tab order on its own, so Tab stops on it as well as on the focused cell, and the arrow keys don\'t reach it as a widget of that cell (the APG asks for Enter to move into such a cell).',
+    affects: 'Keyboard and screen reader users, in grids whose cells hold their own controls.',
+    workaround: 'Keep cells to text, badges and avatars; put a row\'s actions in the toolbar (or a BulkActionBar over the selection), or give the control `tabIndex={-1}` and run it from a key on the row.',
+    wcag: ['2.1.1', '2.4.3'],
+  },
+  {
     id: 'control-borders',
     components: ['checkbox', 'radio', 'switch', 'selectable-radio', 'slider'],
     title: 'Control edges below 3:1',

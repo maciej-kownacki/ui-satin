@@ -136,6 +136,13 @@ export const nav: NavGroup[] = [
       { id: 'combobox', title: 'Combobox', href: '/components/combobox', description: 'Picks one or more values from a long list by typing to filter it, then Apply.' },
       { id: 'command-menu', title: 'Command menu', href: '/components/command-menu', description: 'The ⌘K palette: search every action and page, then run one with Enter.' },
       { id: 'cookie-consent', title: 'Cookie consent', href: '/components/cookie-consent', description: 'Asks once what the site may store: Customize, Reject all or Accept all.' },
+      {
+        id: 'data-grid',
+        title: 'Data grid',
+        href: '/components/data-grid',
+        description: 'The table people work in: sort, resize, pin and hide columns, edit cells in place, and save views.',
+        edition: 'pro',
+      },
       { id: 'dialog', title: 'Dialog', href: '/components/dialog', description: 'Asks for a decision or a short input before the user moves on.' },
       { id: 'dot', title: 'Dot', href: '/components/dot', description: 'A small status dot that marks state or category next to a label.' },
       {

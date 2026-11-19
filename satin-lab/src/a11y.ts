@@ -425,6 +425,23 @@ export const a11y: Record<string, A11y> = {
       'A Radix switch: a `button` with `role="switch"` and `aria-checked`. `label` names it with `aria-labelledby` and `description` adds `aria-describedby`; without a label, pass `aria-label`. Inside a `form` it also renders a hidden input, so the value submits.',
     keyboard: [{ keys: ['Space', 'Enter'], action: 'Turns the switch on or off.' }],
   },
+  'data-grid': {
+    summary:
+      'A `grid` (APG Grid pattern) named by `label`, with `aria-rowcount` and `aria-colcount` and each row and cell numbered, so the count stays right while only the rows on screen exist. One cell at a time is in the tab order; a sortable header holds a `button` and sets `aria-sort`. With `selectable` the grid is `aria-multiselectable` and rows set `aria-selected`; the checkboxes are named "Select <name>" after the first column or `rowLabel`. Each resize handle is a focusable `separator` named "Resize <column>" with its width as `aria-valuenow`. An editor is named after its column. A saving cell is `aria-busy`; a failed one is `aria-invalid` and described by its error. Sorting, saves and views are read out from a polite `status` region. The Columns menu is a menu of `menuitemcheckbox` rows; the view menu says "View: <name>, unsaved changes" when the grid has moved from the view.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves into the grid, onto the cell last focused. From a header, moves on to its resize handle; Tab again leaves the grid.' },
+      { keys: ['←', '→', '↑', '↓'], action: 'Moves one cell; ← and → are mirrored right to left. The header row is part of the grid.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or last cell of the row; with ⌃ or ⌘, of the grid.' },
+      { keys: ['Page Up', 'Page Down'], action: 'Moves up or down by a screen of rows.' },
+      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all. On a checkbox (Space): selects the row, or every row.' },
+      { keys: ['⇧ Space'], action: 'Selects or clears the focused cell’s row.' },
+      { keys: ['Enter', 'F2'], action: 'On an editable cell: opens its editor (double click does too). On a cell whose save failed: edits the value that failed.' },
+      { keys: ['Enter', 'Tab'], action: 'In an editor: saves. Tab then moves to the next cell, ⇧ Tab to the previous one.' },
+      { keys: ['Esc'], action: 'In an editor: cancels. On a cell whose save failed: drops the change.' },
+      { keys: ['←', '→'], action: 'On a resize handle: narrows or widens the column by 8px (40px with ⇧); Home and End go to its narrowest and widest. Enter or Esc goes back to the header.' },
+      { keys: ['⌥ ↑', '⌥ ↓'], action: 'In the Columns menu: moves the highlighted column up or down.' },
+    ],
+  },
   table: {
     summary:
       'A native `table` named by `label`, with `scope="col"` headers. A sortable header holds a `button` and sets `aria-sort`. With `selectable`, the header checkbox is named "Select all rows" and is `mixed` while some are picked; each row’s checkbox is named "Select row 3", or "Select <name>" with `rowLabel`, which stays right after sorting. With `overflow="scroll"` the table sits in a focusable `region` named "<label>, scrolls sideways", so keyboard users can scroll it; the fade and the scrollbar are hidden.',

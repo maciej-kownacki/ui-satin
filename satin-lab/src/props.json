@@ -1887,6 +1887,300 @@
       ]
     }
   },
+  "data-grid": {
+    "DataGrid": {
+      "type": "DataGridProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "columns",
+          "type": "DataGridColumn<R>[]",
+          "required": true
+        },
+        {
+          "name": "rows",
+          "type": "R[]",
+          "required": true
+        },
+        {
+          "name": "getRowId",
+          "type": "(row: R) => string",
+          "required": false,
+          "description": "The row's id, for selection, edits and React keys. Defaults to `row.id`."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "The grid's accessible name."
+        },
+        {
+          "name": "rowLabel",
+          "type": "(row: R) => string",
+          "required": false,
+          "description": "Names a row for its select checkbox (\"Select Ada Okafor\"). Defaults to the first column's text, else the row's number."
+        },
+        {
+          "name": "sort",
+          "type": "DataGridSort",
+          "required": false
+        },
+        {
+          "name": "defaultSort",
+          "type": "DataGridSort",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onSortChange",
+          "type": "(sort: DataGridSort) => void",
+          "required": false
+        },
+        {
+          "name": "manualSort",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Leave rows in the order given (sort them yourself in onSortChange)."
+        },
+        {
+          "name": "selectable",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "A checkbox column; `selection` holds the picked rows' ids."
+        },
+        {
+          "name": "selection",
+          "type": "string[]",
+          "required": false
+        },
+        {
+          "name": "defaultSelection",
+          "type": "string[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(ids: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "columnVisibility",
+          "type": "Record<string, boolean>",
+          "required": false,
+          "description": "Column key → shown. A key that's left out shows."
+        },
+        {
+          "name": "defaultColumnVisibility",
+          "type": "Record<string, boolean>",
+          "required": false,
+          "default": "{}"
+        },
+        {
+          "name": "onColumnVisibilityChange",
+          "type": "(visibility: Record<string, boolean>) => void",
+          "required": false
+        },
+        {
+          "name": "columnOrder",
+          "type": "string[]",
+          "required": false,
+          "description": "Column keys in the order to show them; keys left out follow in `columns` order. Pinned columns keep their edge."
+        },
+        {
+          "name": "defaultColumnOrder",
+          "type": "string[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onColumnOrderChange",
+          "type": "(order: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "columnSizing",
+          "type": "Record<string, number>",
+          "required": false,
+          "description": "Column key → width in px; a key that's left out takes the column's `width`."
+        },
+        {
+          "name": "defaultColumnSizing",
+          "type": "Record<string, number>",
+          "required": false,
+          "default": "{}"
+        },
+        {
+          "name": "onColumnSizingChange",
+          "type": "(sizing: Record<string, number>) => void",
+          "required": false
+        },
+        {
+          "name": "density",
+          "type": "'compact' | 'default'",
+          "required": false,
+          "default": "'default'",
+          "description": "Row height: 40 (`default`) or 32 (`compact`)."
+        },
+        {
+          "name": "onCellEdit",
+          "type": "(rowId: string, key: string, value: unknown) => unknown",
+          "required": false,
+          "description": "Called with an edited cell's new value; update `rows` with it. Return a promise and the cell shows a Spinner until it settles, or an error if it rejects (its message is shown)."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Skeleton rows in place of the body."
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "The rows failed to load: a message (or `true` for the default one) in place of the body."
+        },
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Try again on the error state."
+        },
+        {
+          "name": "filtered",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The rows are filtered: with none left, the grid says No results instead of empty."
+        },
+        {
+          "name": "onClearFilters",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Clear filters on the No results state."
+        },
+        {
+          "name": "empty",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What shows when there are no rows (not filtered). Defaults to an EmptyState."
+        },
+        {
+          "name": "virtualize",
+          "type": "boolean",
+          "required": false,
+          "description": "Draw only the rows on screen. Defaults to on above 200 rows."
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "required": false,
+          "description": "Rows per page, with a Pagination under the grid. Left out, every row is in one scrolling body."
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "required": false,
+          "description": "The current page, from 1."
+        },
+        {
+          "name": "defaultPage",
+          "type": "number",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "onPageChange",
+          "type": "(page: number) => void",
+          "required": false
+        },
+        {
+          "name": "toolbar",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Above the grid: `DataGridToolbar` with search, filters, `DataGridColumnsMenu`, `DataGridViewMenu`."
+        }
+      ]
+    },
+    "DataGridToolbar": {
+      "description": "A row above the grid for search, filters and the menus. Other props, `ref` included, go to its `div`.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "DataGridColumnsMenu": {
+      "description": "The Columns menu: a switch per column (a column with `hideable: false` stays on), Alt with ↑ or ↓ moves the highlighted column, and Reset columns brings back every column in its first order and width. Other props, `ref` included, go to the trigger Button.",
+      "type": "DataGridColumnsMenuProps",
+      "extends": [
+        "Omit<ButtonProps, 'children' | 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The trigger's text. Defaults to the `dataGridColumns` label (\"Columns\")."
+        }
+      ]
+    },
+    "DataGridViewMenu": {
+      "description": "The saved-views menu: pick a view to put the grid in its sort, columns and filters; save the grid as it is as a new view (a dialog asks for the name), save changes to the view in use, or delete it. A Dot on the trigger marks unsaved changes. Other props, `ref` included, go to the trigger Button.",
+      "type": "DataGridViewMenuProps",
+      "extends": [
+        "Omit<ButtonProps, 'children' | 'asChild' | 'value' | 'defaultValue'>"
+      ],
+      "props": [
+        {
+          "name": "views",
+          "type": "DataGridView<F>[]",
+          "required": false,
+          "description": "The saved views."
+        },
+        {
+          "name": "defaultViews",
+          "type": "DataGridView<F>[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onViewsChange",
+          "type": "(views: DataGridView<F>[]) => void",
+          "required": false,
+          "description": "Called with the new list after a save, an update or a delete."
+        },
+        {
+          "name": "value",
+          "type": "string | null",
+          "required": false,
+          "description": "The view in use, by id; null for none."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(id: string | null, view: DataGridView<F> | null) => void",
+          "required": false,
+          "description": "Called when a view is picked or saved, after the grid takes its sort and columns: apply its `filters` here."
+        },
+        {
+          "name": "filters",
+          "type": "F",
+          "required": false,
+          "description": "The filters in use, saved with a new view and compared to tell a view has unsaved changes."
+        }
+      ]
+    }
+  },
   "date-picker": {
     "Calendar": {
       "type": "CalendarProps",

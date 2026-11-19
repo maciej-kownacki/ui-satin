@@ -2151,6 +2151,46 @@
       ]
     },
     {
+      "name": "data-grid",
+      "type": "registry:ui",
+      "title": "Data grid",
+      "description": "The table people work in: sort, resize, pin and hide columns, edit cells in place, and save views.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/alert.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/dialog.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/pagination.json",
+        "https://uisatin.dev/r/select.json",
+        "https://uisatin.dev/r/skeleton.json",
+        "https://uisatin.dev/r/spinner.json",
+        "https://uisatin.dev/r/table.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Data grid docs: https://uisatin.dev/components/data-grid",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/data-grid.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast-batch",
       "type": "registry:ui",
       "title": "Toast batch",
@@ -3311,6 +3351,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "data-grid-demo",
+      "type": "registry:example",
+      "title": "Data grid example",
+      "description": "The shortest use of Data grid, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/data-grid.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/data-grid-demo.tsx",
           "type": "registry:example"
         }
       ]

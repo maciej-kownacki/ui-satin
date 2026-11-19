@@ -1,0 +1,172 @@
+/*
+ * Data grid (components/data-grid.tsx). Every row is a CSS grid on the same tracks
+ * (--satin-data-grid-columns, which the component sets on the grid element), so a resize
+ * changes one value and every row follows the pointer at once, with no transition. A 1fr track
+ * before the end-pinned columns takes the room left over, so they sit at the end.
+ *
+ * Rows are 40px (32 compact), the header 36 (32). The header sticks to the top; pinned cells
+ * stick to their edge on an opaque fill and cast a soft shadow once content scrolls under them.
+ * A saved view's switch fades the body in over --duration-base; Satin's reduced-motion rule
+ * (motion.css) cuts it.
+ */
+.satin-data-grid {
+  --satin-data-grid-row: 40px;
+  --satin-data-grid-head: 36px;
+}
+.satin-data-grid[data-density='compact'] {
+  --satin-data-grid-row: 32px;
+  --satin-data-grid-head: 32px;
+}
+.satin-data-grid[data-resizing] {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.satin-data-grid-grid {
+  position: relative;
+  width: max-content;
+  min-width: 100%;
+}
+
+.satin-data-grid-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.satin-data-grid-row {
+  display: grid;
+  grid-template-columns: var(--satin-data-grid-columns);
+  height: var(--satin-data-grid-row);
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-card);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.satin-data-grid-head > .satin-data-grid-row {
+  height: var(--satin-data-grid-head);
+  background-color: var(--component-table-header);
+}
+.satin-data-grid-body > .satin-data-grid-row:last-child {
+  border-bottom-color: transparent;
+}
+.satin-data-grid-body > .satin-data-grid-row:is(:hover, [data-force='hover']) {
+  background-color: var(--bg-hover);
+}
+.satin-data-grid-body > .satin-data-grid-row[aria-selected='true'] {
+  background-color: var(--bg-selected);
+}
+
+/* Cells take the row's fill, so a pinned cell hides what scrolls under it. No overflow here:
+   the pinned shadow hangs outside the cell; the content inside truncates instead. */
+.satin-data-grid-cell {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  background-color: inherit;
+  outline: none;
+}
+.satin-data-grid-cell[data-align='right'] {
+  justify-content: flex-end;
+  text-align: end;
+}
+.satin-data-grid-cell[data-pinned] {
+  position: sticky;
+  z-index: 2;
+}
+/* Focus: a 2px edge inside the cell (Satin's ring would hang over the neighbours and hide
+   under a pinned column). It replaces the base ring; forced colors still get their outline. */
+.satin-data-grid-cell:is(:focus-visible, [data-force='focus']) {
+  box-shadow: inset 0 0 0 2px var(--action-focus-ring);
+}
+/* Above its neighbours (the editor's ring), under the pinned columns. */
+.satin-data-grid-cell[data-state='editing'] {
+  z-index: 1;
+}
+/* A failed save: the destructive edge (3:1 on every surface a cell sits on). */
+.satin-data-grid-cell[aria-invalid='true'] {
+  box-shadow: inset 0 0 0 1px var(--action-destructive-bg);
+}
+.satin-data-grid-cell[aria-invalid='true']:is(:focus-visible, [data-force='focus']) {
+  box-shadow: inset 0 0 0 2px var(--action-focus-ring);
+}
+
+.satin-data-grid-cell[data-pinned-edge]::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  width: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+.satin-data-grid-cell[data-pinned-edge='start']::after {
+  inset-inline-start: 100%;
+  background: linear-gradient(to right, var(--effect-shadow-sm), transparent);
+}
+.satin-data-grid-cell[data-pinned-edge='end']::after {
+  inset-inline-end: 100%;
+  background: linear-gradient(to left, var(--effect-shadow-sm), transparent);
+}
+/* A gradient has no logical form: right to left, the start edge is on the left. */
+.satin-data-grid-cell[data-pinned-edge='start']:dir(rtl)::after {
+  background: linear-gradient(to left, var(--effect-shadow-sm), transparent);
+}
+.satin-data-grid-cell[data-pinned-edge='end']:dir(rtl)::after {
+  background: linear-gradient(to right, var(--effect-shadow-sm), transparent);
+}
+.satin-data-grid[data-scrolled-start] .satin-data-grid-cell[data-pinned-edge='start']::after,
+.satin-data-grid[data-scrolled-end] .satin-data-grid-cell[data-pinned-edge='end']::after {
+  opacity: 1;
+}
+
+/* The resize handle: 8px on the header cell's end edge, a 1px rule that turns into a 2px
+   focus-ring bar while hovered, dragged or focused. */
+.satin-data-grid-resize {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -4px;
+  /* Over the next header cell, under a pinned one it scrolls beneath. */
+  z-index: 1;
+  display: flex;
+  width: 8px;
+  justify-content: center;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+.satin-data-grid-resize::before {
+  content: '';
+  width: 1px;
+  margin-block: 8px;
+  border-radius: 1px;
+  background-color: var(--border-subtle);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+/* Focused, the bar is the ring. */
+.satin-data-grid-resize:focus-visible {
+  box-shadow: none;
+}
+.satin-data-grid-resize:is(:hover, :focus-visible, [data-active], [data-force='focus'])::before {
+  width: 2px;
+  margin-block: 4px;
+  background-color: var(--action-focus-ring);
+}
+.satin-data-grid[data-resizing] .satin-data-grid-resize::before {
+  transition: none;
+}
+
+.satin-data-grid-body[data-switch] {
+  animation: satin-data-grid-view-in var(--duration-base) var(--ease-out);
+}
+@keyframes satin-data-grid-view-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The row that holds the empty, no-results and error states: as tall as its content. */
+.satin-data-grid-row[data-kind='message'] {
+  height: auto;
+  border-bottom-color: transparent;
+}
