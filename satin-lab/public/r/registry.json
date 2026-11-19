@@ -2135,6 +2135,7 @@
         "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/kbd.json",
         "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/rolling-number.json",
         "https://uisatin.dev/r/separator.json",
         "https://uisatin.dev/r/tooltip.json"
       ],
@@ -2146,6 +2147,63 @@
       "files": [
         {
           "path": "registry/satin/ui/bulk-action-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "filter-bar",
+      "type": "registry:ui",
+      "title": "Filter bar",
+      "description": "Filters as chips that read as sentences, each with its own editor, and the result count live as they change.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/chip.json",
+        "https://uisatin.dev/r/combobox.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/number-input.json",
+        "https://uisatin.dev/r/popover.json",
+        "https://uisatin.dev/r/rolling-number.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "Filter bar docs: https://uisatin.dev/components/filter-bar",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/filter-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "rolling-number",
+      "type": "registry:ui",
+      "title": "Rolling number",
+      "description": "The Satin Pro Rolling number component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/rolling-number.tsx",
           "type": "registry:ui"
         }
       ]
@@ -3311,6 +3369,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "filter-bar-demo",
+      "type": "registry:example",
+      "title": "Filter bar example",
+      "description": "The shortest use of Filter bar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/filter-bar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/filter-bar-demo.tsx",
           "type": "registry:example"
         }
       ]

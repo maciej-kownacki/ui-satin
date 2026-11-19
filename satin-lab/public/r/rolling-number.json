@@ -1,0 +1,47 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "rolling-number",
+  "type": "registry:ui",
+  "title": "Rolling number",
+  "description": "The Satin Pro Rolling number component.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/satin-pro-styles.json",
+    "https://uisatin.dev/r/utils.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/rolling-number.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\n\n/**\n * RollingNumber: a count whose digits roll when it changes. Each character that differs slides\n * out as the new one slides in, 150 ms on --sa-ease-out: up when the number grows, down when it\n * shrinks. Under reduced motion it just changes. Satin Pro's counts use it (the Bulk action bar's\n * \"3 selected\", the Filter bar's \"14 deals\"); the rules are styles/components/rolling-number.css.\n *\n * It is `aria-hidden`: put the number in words next to it (`sr-only`), since the rolling\n * characters would read as noise.\n *\n * @internal Shared by Satin Pro's own components; not part of the public API and may change in any release.\n */\n\nconst REDUCED = '(prefers-reduced-motion: reduce)'\nconst subscribeMotion = (onChange: () => void) => {\n  if (typeof window === 'undefined' || !window.matchMedia) return () => {}\n  const list = window.matchMedia(REDUCED)\n  list.addEventListener('change', onChange)\n  return () => list.removeEventListener('change', onChange)\n}\n\n/** Whether the system asks for reduced motion, kept up to date. */\nexport const useReducedMotion = () =>\n  React.useSyncExternalStore(\n    subscribeMotion,\n    () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia(REDUCED).matches,\n    () => false,\n  )\n\nexport interface RollingNumberProps extends Omit<React.ComponentProps<'span'>, 'children'> {\n  /** The number as shown, already formatted (\"1,204\"). */\n  text: string\n  /** The number itself: which way the digits roll. */\n  value: number\n}\n\n/** The digits of `text`, rolling from the old to the new when they differ. Other props, `ref` included, go to its `span`. */\nexport function RollingNumber({ text, value, className, ...props }: RollingNumberProps) {\n  const reduced = useReducedMotion()\n  const last = React.useRef({ text, value })\n  const [roll, setRoll] = React.useState<{ from: string; dir: 'up' | 'down'; key: number } | null>(null)\n  const round = React.useRef(0)\n  React.useLayoutEffect(() => {\n    const prev = last.current\n    if (prev.text === text) return\n    last.current = { text, value }\n    setRoll(reduced ? null : { from: prev.text, dir: value > prev.value ? 'up' : 'down', key: ++round.current })\n  }, [text, value, reduced])\n\n  const width = Math.max(text.length, roll?.from.length ?? 0)\n  const to = text.padStart(width, ' ')\n  const from = (roll?.from ?? text).padStart(width, ' ')\n  return (\n    <span data-slot=\"rolling-number\" aria-hidden className={cn('sa:inline-flex sa:tabular-nums', className)} {...props}>\n      {[...to].map((ch, i) =>\n        roll && from[i] !== ch ? (\n          <span key={`${roll.key}-${i}`} className=\"satin-roll\" data-dir={roll.dir}>\n            <span data-roll=\"out\">{from[i] === ' ' ? '' : from[i]}</span>\n            <span data-roll=\"in\" onAnimationEnd={() => setRoll((r) => (r?.key === roll.key ? null : r))}>\n              {ch === ' ' ? '' : ch}\n            </span>\n          </span>\n        ) : ch === ' ' ? null : (\n          <span key={i}>{ch}</span>\n        ),\n      )}\n    </span>\n  )\n}\n"
+    }
+  ],
+  "meta": {
+    "version": "0.7.1",
+    "edition": "pro",
+    "props": {
+      "RollingNumber": {
+        "description": "The digits of `text`, rolling from the old to the new when they differ. Other props, `ref` included, go to its `span`.",
+        "type": "RollingNumberProps",
+        "extends": [
+          "Omit<React.ComponentProps<'span'>, 'children'>"
+        ],
+        "props": [
+          {
+            "name": "text",
+            "type": "string",
+            "required": true,
+            "description": "The number as shown, already formatted (\"1,204\")."
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "required": true,
+            "description": "The number itself: which way the digits roll."
+          }
+        ]
+      }
+    }
+  }
+}
