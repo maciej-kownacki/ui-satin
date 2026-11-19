@@ -365,6 +365,92 @@
       ]
     }
   },
+  "agent-presence": {
+    "AgentPresenceRoot": {
+      "description": "Tracks the target and lays a box over it, the size of the target, for the outline and the label inside; speaks `announcement` from a polite status region. Other props, `ref` included, go to the layer (an absolutely positioned `div`, hidden from screen readers).",
+      "type": "AgentPresenceRootProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "target",
+          "type": "AgentPresenceTarget",
+          "required": true,
+          "description": "The element the agent is on: a ref, the element, or a selector. `null` hides the presence (it fades out)."
+        },
+        {
+          "name": "state",
+          "type": "AgentPresenceState",
+          "required": false,
+          "default": "'working'",
+          "description": "`working` in the agent's tone, `done` green (then it fades out), `conflict` amber: a person edits the same target."
+        },
+        {
+          "name": "tone",
+          "type": "BadgeTone",
+          "required": false,
+          "default": "'brand'",
+          "description": "The agent's tone while it works, the Badge hue pairs. Done is always green, conflict amber."
+        },
+        {
+          "name": "announcement",
+          "type": "string",
+          "required": false,
+          "description": "What screen readers hear, politely, each time it changes: \"Satin is updating Tara Mendes\"."
+        },
+        {
+          "name": "doneDuration",
+          "type": "number",
+          "required": false,
+          "default": "1500",
+          "description": "How long `done` stays before it fades out, in ms; `Infinity` keeps it."
+        }
+      ]
+    },
+    "AgentPresenceOutline": {
+      "description": "The edge over the target, in the state's tone; dashed in a conflict. Other props, `ref` included, go to its `span`.",
+      "extends": [
+        "React.ComponentProps<'span'>"
+      ],
+      "props": []
+    },
+    "AgentPresenceLabel": {
+      "description": "The small label on the target's top edge, at its end corner: a small Badge in the state's tone. Put the mark and the words inside. Other props, `ref` included, go to the Badge.",
+      "type": "AgentPresenceLabelProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof Badge>, 'tone' | 'size'>"
+      ],
+      "props": []
+    },
+    "AgentPresence": {
+      "description": "The outline and the label from props: the agent's mark and name while it works, a check and Done, or the person's avatar and \"Jon Park is editing\" in a conflict. Other props, `ref` included, go to the layer.",
+      "type": "AgentPresenceProps",
+      "extends": [
+        "Omit<AgentPresenceRootProps, 'children' | 'announcement' | 'tone'>"
+      ],
+      "props": [
+        {
+          "name": "agent",
+          "type": "AgentPresenceAgent",
+          "required": true,
+          "description": "Who is editing: a name, or AgentPicker's agent (its `tone` colours the presence; `avatar: 'flappy'` runs the bird)."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "description": "The target's name, for screen readers: \"Tara Mendes\" makes \"Satin is updating Tara Mendes\"."
+        },
+        {
+          "name": "person",
+          "type": "AgentPresencePerson",
+          "required": false,
+          "description": "For `conflict`: the person editing the same target."
+        }
+      ]
+    }
+  },
   "agent-suggestion": {
     "AgentSuggestion": {
       "type": "AgentSuggestionProps",

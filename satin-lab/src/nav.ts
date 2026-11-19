@@ -59,6 +59,13 @@ export const nav: NavGroup[] = [
     title: 'AI patterns',
     items: [
       { id: 'agent-picker', title: 'Agent picker', href: '/ai-patterns/agent-picker', description: 'Switches which agent answers: avatar, name and one line on what it does.' },
+      {
+        id: 'agent-presence',
+        title: 'Agent presence',
+        href: '/ai-patterns/agent-presence',
+        description: 'Shows which row or card an agent is editing right now: an edge in its colour and a small label, read out politely.',
+        edition: 'pro',
+      },
       { id: 'attachment', title: 'Attachment', href: '/ai-patterns/attachment', description: 'A file attached to a prompt or a message, with its type, size and a preview.' },
       { id: 'agent-suggestion', title: 'Agent suggestion', href: '/ai-patterns/agent-suggestion', description: 'Something the agent prepared, an email, a meeting or a CRM update, for the user to approve.' },
       { id: 'decision-card', title: 'Decision card', href: '/ai-patterns/decision-card', description: 'One question from the agent, with answers to pick, rank or rewrite, and Skip or Continue.' },
