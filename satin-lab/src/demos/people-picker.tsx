@@ -1,9 +1,8 @@
 import * as React from 'react'
-import { Avatar, AvatarGroup } from '@uisatin/ui/avatar'
-import { PeoplePicker, initialsOf, type PeopleGroup, type Person } from '@uisatin/pro/people-picker'
+import { PeoplePicker, type PeopleGroup, type Person } from '@uisatin/pro/people-picker'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
-// The hiring team Tara's onsite interview draws its panel from.
+// The hiring team an interview panel is drawn from.
 const marta: Person = { id: 'marta', name: 'Marta Nowak', role: 'Hiring manager', tone: 'plum' }
 const jon: Person = { id: 'jon', name: 'Jon Park', role: 'Staff engineer', tone: 'sky' }
 const ada: Person = { id: 'ada', name: 'Ada Novak', role: 'Design lead', tone: 'fuchsia' }
@@ -24,7 +23,7 @@ const TEAMS: PeopleGroup[] = [
 const EVERYONE = TEAMS.flatMap((t) => t.people)
 const RECENT = [marta, priya, sam]
 
-/** Answers like a directory API would: after a moment, and not after the request is aborted. */
+/** Answers like a quick directory API: 100 ms for a query, suggestions at once, nothing once aborted. */
 const wait = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve, reject) => {
     const timer = setTimeout(resolve, ms)
@@ -37,7 +36,7 @@ const wait = (ms: number, signal: AbortSignal) =>
 const fold = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 
 async function searchDirectory(query: string, { signal }: { signal: AbortSignal }) {
-  await wait(query ? 600 : 300, signal)
+  await wait(query ? 100 : 0, signal)
   const q = fold(query.trim())
   return EVERYONE.filter((p) => !q || fold(`${p.name} ${p.role}`).includes(q))
 }
@@ -73,7 +72,8 @@ function code(v: Record<string, string>) {
   ].filter(Boolean)
   const source =
     v.source === 'search'
-      ? `// Called 250 ms after the last keystroke, and with '' when the list opens.
+      ? `// Called 150 ms after the last keystroke, and with '' when the list opens; meanwhile
+// the last results, narrowed by the query, stay on screen.
 // A newer query aborts this one through \`signal\`.
 async function searchPeople(query: string, { signal }: { signal: AbortSignal }) {
   const res = await fetch(\`/api/people?q=\${encodeURIComponent(query)}\`, { signal })
@@ -113,9 +113,8 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
 }))
 
 /**
- * The hiring scenario: Tara's onsite interview needs a panel of three. Marta, the hiring manager,
- * is on it already; the list is open on load, without taking focus from the page. The panel's
- * faces sit in the card's header as they're picked.
+ * The hiring scenario: an interview needs a panel of three. Marta, the hiring manager, is on it
+ * already; the list is open on load, without taking focus from the page.
  */
 function Preview({ v }: { v: Record<string, string> }) {
   const [stage, setStage] = React.useState<HTMLDivElement | null>(null)
@@ -126,22 +125,8 @@ function Preview({ v }: { v: Record<string, string> }) {
   const need = 3 - panel.length
 
   return (
-    <div className="relative flex h-[464px] w-80 max-w-full flex-col gap-4 pt-2">
+    <div className="relative flex h-[416px] w-80 max-w-full flex-col pt-6">
       <div ref={setStage} className="pointer-events-none absolute inset-0 z-10 *:pointer-events-auto" />
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-base leading-5 font-medium text-text-default">Onsite interview: Tara Mendes</p>
-          <p className="text-sm text-text-muted">Product designer · Thu, 10:00</p>
-        </div>
-        {panel.length > 0 && (
-          <AvatarGroup aria-label="Panel" className="gap-1">
-            {panel.slice(0, 3).map((p) => (
-              <Avatar key={p.id} size={24} initials={initialsOf(p.name)} tone={p.tone} name={p.name} />
-            ))}
-            {panel.length > 3 && <Avatar size={24} initials={`+${panel.length - 3}`} name={`${panel.length - 3} more`} />}
-          </AvatarGroup>
-        )}
-      </div>
       {stage && (
         <PeoplePicker
           container={stage}

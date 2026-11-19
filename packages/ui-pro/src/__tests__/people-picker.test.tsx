@@ -113,7 +113,7 @@ describe('PeoplePicker', () => {
     expect(field().textContent).toBe('Jon Park')
   })
 
-  it('searches after the debounce, busy meanwhile, and drops a stale answer', async () => {
+  it('searches after the debounce, says "Searching…" meanwhile, spins only when late, and drops a stale answer', async () => {
     const answers: Record<string, ReturnType<typeof deferred<Person[]>>> = {}
     const signals: Record<string, AbortSignal> = {}
     const search = vi.fn((query: string, { signal }: { signal: AbortSignal }) => {
@@ -123,19 +123,22 @@ describe('PeoplePicker', () => {
     })
     const { user } = renderWithSatin(<PeoplePicker label="Interviewers" multiple search={search} searchDelay={40} />)
     await user.click(field())
-    // Opening searches at once, with an empty query.
+    // Opening searches at once, with an empty query; nothing is listed yet, so it says so.
     await waitFor(() => expect(search).toHaveBeenCalledWith('', expect.anything()))
-    expect(screen.getByRole('listbox').getAttribute('aria-busy')).toBe('true')
     expect(screen.getByText('Searching…')).toBeTruthy()
+    // No Spinner for a quick answer; one that is late (300 ms) gets it.
+    expect(screen.getByRole('listbox').getAttribute('aria-busy')).toBeNull()
+    await waitFor(() => expect(screen.getByRole('listbox').getAttribute('aria-busy')).toBe('true'))
     await act(async () => answers[''].resolve([ada, jon]))
     expect(optionNames()).toEqual(['Ada Novak, Design lead', 'Jon Park, Staff engineer'])
     expect(screen.getByRole('listbox').getAttribute('aria-busy')).toBeNull()
 
-    // Two quick keys make one request.
+    // Two quick keys make one request. Neither old result matches 'ma': "Searching…", not "No one".
     await user.keyboard('ma')
+    expect(screen.getByText('Searching…')).toBeTruthy()
+    expect(screen.queryByText(/No one matches/)).toBeNull()
     await waitFor(() => expect(search).toHaveBeenCalledWith('ma', expect.anything()))
     expect(search.mock.calls.map(([q]) => q)).toEqual(['', 'ma'])
-    expect(screen.getByRole('listbox').getAttribute('aria-busy')).toBe('true')
 
     // A newer query aborts 'ma'; its late answer is dropped.
     await user.keyboard('r')
@@ -152,6 +155,23 @@ describe('PeoplePicker', () => {
     await act(async () => answers.x.resolve([]))
     expect(screen.getByText('No one matches “x”')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Remove Marta Nowak' })).toBeTruthy()
+  })
+
+  it('keeps the last results on screen, narrowed by the new query at once, until the search answers', async () => {
+    const answers: Record<string, ReturnType<typeof deferred<Person[]>>> = {}
+    const search = vi.fn((query: string) => (answers[query] = deferred<Person[]>()).promise)
+    const { user } = renderWithSatin(<PeoplePicker label="Interviewers" search={search} searchDelay={40} />)
+    await user.click(field())
+    await waitFor(() => expect(search).toHaveBeenCalledWith('', expect.anything()))
+    await act(async () => answers[''].resolve([ada, jon, marta]))
+    await user.keyboard('nov')
+    // Before the debounce is out, the list already shows who matches.
+    expect(search).not.toHaveBeenCalledWith('nov', expect.anything())
+    expect(optionNames()).toEqual(['Ada Novak, Design lead'])
+    // The app's answer replaces it, whatever it holds.
+    await waitFor(() => expect(search).toHaveBeenCalledWith('nov', expect.anything()))
+    await act(async () => answers.nov.resolve([ada, marta]))
+    expect(optionNames()).toEqual(['Ada Novak, Design lead', 'Marta Nowak, Hiring manager'])
   })
 
   it('says so when the search fails', async () => {

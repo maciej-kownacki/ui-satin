@@ -417,12 +417,12 @@ export const api: Record<string, Api> = {
   },
   'people-picker': {
     description:
-      'The `PeoplePicker` component (Satin Pro, `@uisatin/pro/people-picker`) is a Combobox for people: rows show an avatar, the name and the role (or email), picks show as chips with avatars. Each person is `{ id, name, role, email, avatar, tone, disabled }`; `avatar` is an image URL, and without one the initials show on the `tone`. People come from `people`, titled `groups` (`{ label, people }[]`), or `search(query, { signal })`, called `searchDelay` ms after the last keystroke and at once with \'\' on open; a newer query aborts the older one. `recent` is listed first while the query is empty. `value` holds the people, not their ids. Every other Combobox prop (label, hint, error, footer, size, open state) works as there.',
+      'The `PeoplePicker` component (Satin Pro, `@uisatin/pro/people-picker`) is a Combobox for people: rows show an avatar, the name and the role (or email), picks show as chips with avatars. Each person is `{ id, name, role, email, avatar, tone, disabled }`; `avatar` is an image URL, and without one the initials show on the `tone`. People come from `people`, titled `groups` (`{ label, people }[]`), or `search(query, { signal })`, called `searchDelay` ms after the last keystroke and at once with \'\' on open; a newer query aborts the older one, and meanwhile the last results stay, narrowed by the query. `people` and `groups` filter as you type, with no delay. `recent` is listed first while the query is empty. `value` holds the people, not their ids. Every other Combobox prop (label, hint, error, footer, size, open state) works as there.',
     props: [
       { name: 'people', type: ['Person[]'] },
       { name: 'groups', type: ['PeopleGroup[]'] },
       { name: 'search', type: ['(query, { signal }) => Promise<Person[] | PeopleGroup[]>'] },
-      { name: 'searchDelay', type: ['number'], default: '250' },
+      { name: 'searchDelay', type: ['number'], default: '150' },
       { name: 'recent', type: ['Person[]'] },
       { name: 'value', type: ['Person[]'] },
       { name: 'defaultValue', type: ['Person[]'] },
