@@ -91,6 +91,215 @@
       ]
     }
   },
+  "activity-timeline": {
+    "ActivityTimelineTime": {
+      "description": "A `<time>`: relative today (\"5 min. ago\"), the clock time before that, kept current by the shared clock. Screen readers hear the full date and time instead. Other props, `ref` included, go to the `time` element.",
+      "type": "ActivityTimelineTimeProps",
+      "extends": [
+        "Omit<React.ComponentProps<'time'>, 'children' | 'dateTime'>"
+      ],
+      "props": [
+        {
+          "name": "at",
+          "type": "ActivityItem['at']",
+          "required": true
+        },
+        {
+          "name": "withDate",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Past today, show the date before the clock time (for a timeline without day rules)."
+        }
+      ]
+    },
+    "ActivityTimelineRoot": {
+      "description": "The timeline's root on its own: Revert, its toast, and the fade of new entries for the parts inside.",
+      "type": "ActivityTimelineRootProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "onRevert",
+          "type": "(item: ActivityItem) => unknown",
+          "required": false,
+          "description": "Reverts an entry. Return a promise and the button spins until it settles; once it resolves the entry shows as reverted and a toast offers Undo. A rejection puts the button back."
+        },
+        {
+          "name": "onUndoRevert",
+          "type": "(item: ActivityItem) => unknown",
+          "required": false,
+          "description": "Undoes a revert, from the toast's Undo. Without it the toast has no Undo."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Shows skeleton rows (ActivityTimeline) and marks the region busy."
+        }
+      ]
+    },
+    "ActivityTimelineList": {
+      "description": "An ordered list of entries and runs, newest first. Name it (`aria-label`) when no day names it. Other props, `ref` included, go to the `ol`.",
+      "type": "ActivityTimelineListProps",
+      "extends": [
+        "React.ComponentProps<'ol'>"
+      ],
+      "props": []
+    },
+    "ActivityTimelineDay": {
+      "description": "A day: its name on a rule, then its entries in a list named after it. Other props, `ref` included, go to the `ol`.",
+      "type": "ActivityTimelineDayProps",
+      "extends": [
+        "Omit<React.ComponentProps<'ol'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "day",
+          "type": "Date | React.ReactNode",
+          "required": true,
+          "description": "The day: a Date (named \"Today\", \"Yesterday\" or by its date) or your own words."
+        }
+      ]
+    },
+    "ActivityTimelineEntry": {
+      "description": "One entry: the actor on the rail, the sentence, the time, the changes and Revert. Inside an ActivityTimelineRoot it can be reverted. Other props, `ref` included, go to the `li`.",
+      "type": "ActivityTimelineEntryProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "item",
+          "type": "ActivityItem",
+          "required": true
+        },
+        {
+          "name": "withDate",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Past today, write the date before the time (for a timeline without day rules)."
+        }
+      ]
+    },
+    "ActivityTimelineRun": {
+      "description": "Several entries by one actor folded into one row: \"Agent made 6 changes\", a button that opens onto them (their own list, fading in). Other props, `ref` included, go to the `li`.",
+      "type": "ActivityTimelineRunProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "actor",
+          "type": "ActivityActor",
+          "required": true,
+          "description": "Whose run it is: their avatar on the rail and their name in the summary."
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": true,
+          "description": "How many entries are folded."
+        },
+        {
+          "name": "at",
+          "type": "ActivityItem['at']",
+          "required": true,
+          "description": "The newest entry's time, beside the summary."
+        },
+        {
+          "name": "withDate",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Past today, write the date before the time."
+        },
+        {
+          "name": "summary",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "In place of \"Agent made 6 changes\"."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The run's entries (ActivityTimelineEntry), shown when it opens."
+        }
+      ]
+    },
+    "ActivityTimeline": {
+      "description": "A record's history from `items`, newest first: a rule and a list for each day, runs of one actor folded, Revert with a toast and Undo. Other props, `ref` included, go to the root `div`.",
+      "type": "ActivityTimelineProps",
+      "extends": [
+        "Omit<ActivityTimelineRootProps, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "items",
+          "type": "ActivityItem[]",
+          "required": true,
+          "description": "The entries, in any order: the timeline shows the newest first."
+        },
+        {
+          "name": "groupBy",
+          "type": "ActivityGroupBy",
+          "required": false,
+          "default": "'day'",
+          "description": "A rule and a list for each day, or one list."
+        },
+        {
+          "name": "collapseRuns",
+          "type": "number | false",
+          "required": false,
+          "default": "3",
+          "description": "Runs of this many entries or more by one actor fold into one row; `false` never folds."
+        },
+        {
+          "name": "expanded",
+          "type": "string[]",
+          "required": false,
+          "description": "The open runs, by the id of any entry in them."
+        },
+        {
+          "name": "defaultExpanded",
+          "type": "string[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(expanded: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "empty",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown when there are no items. Defaults to \"No activity yet\"."
+        }
+      ]
+    }
+  },
   "agent-loading": {
     "TetrisStill": {
       "description": "The tetris mark at rest, every dot filled: the finished header's mark.",

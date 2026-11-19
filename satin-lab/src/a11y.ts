@@ -32,6 +32,15 @@ export const a11y: Record<string, A11y> = {
       { keys: ['End'], action: 'Moves focus to the last header.' },
     ],
   },
+  'activity-timeline': {
+    summary:
+      'Each day is an ordered list named after its rule ("Today"); without days the list is named "Activity" (`activity` in SatinLabels). Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
+      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
+      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
+    ],
+  },
   alert: {
     summary:
       'Errors and warnings are `role="alert"`, so screen readers read them out when they appear; the other intents are `role="status"`, read politely. The status icon is hidden, so say the severity in the title when it matters. The close button is named "Dismiss" (`dismiss` in SatinLabels).',

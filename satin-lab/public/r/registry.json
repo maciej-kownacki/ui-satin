@@ -2120,6 +2120,37 @@
       ]
     },
     {
+      "name": "activity-timeline",
+      "type": "registry:ui",
+      "title": "Activity timeline",
+      "description": "A record’s history: who changed what and when, agent changes with Revert, runs folded into one row.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/agent-suggestion.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/separator.json",
+        "https://uisatin.dev/r/skeleton.json",
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "docs": "Activity timeline docs: https://uisatin.dev/components/activity-timeline",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/activity-timeline.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "bulk-action-bar",
       "type": "registry:ui",
       "title": "Bulk action bar",
@@ -3296,6 +3327,21 @@
       "files": [
         {
           "path": "registry/satin/examples/tooltip-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "activity-timeline-demo",
+      "type": "registry:example",
+      "title": "Activity timeline example",
+      "description": "The shortest use of Activity timeline, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/activity-timeline.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/activity-timeline-demo.tsx",
           "type": "registry:example"
         }
       ]

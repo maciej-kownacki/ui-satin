@@ -1,0 +1,10 @@
+/*
+ * Activity timeline (components/activity-timeline.tsx). An entry or a run that arrives after the
+ * timeline first showed its content (a new one at the top, a run's entries as it opens) fades in
+ * from 4px above, with Satin's satin-enter keyframes (motion.css), over --duration-base. Nothing
+ * animates height (MOTION.md, rule 5). Satin's reduced-motion rule cuts it.
+ */
+[data-slot='activity-timeline-entry'][data-enter],
+[data-slot='activity-timeline-run'][data-enter] {
+  animation: satin-enter var(--duration-base) var(--ease-out);
+}

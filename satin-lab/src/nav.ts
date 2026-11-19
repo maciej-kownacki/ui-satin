@@ -83,6 +83,13 @@ export const nav: NavGroup[] = [
     title: 'Components',
     items: [
       { id: 'accordion', title: 'Accordion', href: '/components/accordion', description: 'Folds sections of content under their titles, one or many open at a time.' },
+      {
+        id: 'activity-timeline',
+        title: 'Activity timeline',
+        href: '/components/activity-timeline',
+        description: 'A record’s history: who changed what and when, agent changes with Revert, runs folded into one row.',
+        edition: 'pro',
+      },
       { id: 'alert', title: 'Alert', href: '/components/alert', description: 'A message that stays on the page until it is dealt with: info, success, warning or error.' },
       {
         id: 'announcements',
