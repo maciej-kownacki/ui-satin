@@ -2205,6 +2205,35 @@
       ]
     },
     {
+      "name": "agent-undo-log",
+      "type": "registry:ui",
+      "title": "Agent action log",
+      "description": "What a coding agent changed, run by run: files with their diff counts, a Revert on each, ⌘Z for the last run.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-suggestion.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/toast.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Agent action log docs: https://uisatin.dev/ai-patterns/agent-undo-log",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-undo-log.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "bulk-action-bar",
       "type": "registry:ui",
       "title": "Bulk action bar",
@@ -3544,6 +3573,21 @@
       "files": [
         {
           "path": "registry/satin/examples/agent-changes-review-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-undo-log-demo",
+      "type": "registry:example",
+      "title": "Agent action log example",
+      "description": "The shortest use of Agent action log, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-undo-log.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-undo-log-demo.tsx",
           "type": "registry:example"
         }
       ]

@@ -33,17 +33,6 @@
     "limit": "30 kB"
   },
   {
-    "name": "Date picker (DatePicker, DateRangePicker and datePresets, with Radix Popover and Select)",
-    "path": "packages/ui/dist/components/date-picker.js",
-    "import": "{ DatePicker, DateRangePicker, datePresets }",
-    "ignore": [
-      "react",
-      "react-dom"
-    ],
-    "gzip": true,
-    "limit": "54 kB"
-  },
-  {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/bulk-action-bar.js",
     "import": "{ BulkActionBar }",
@@ -54,18 +43,6 @@
     ],
     "gzip": true,
     "limit": "12 kB"
-  },
-  {
-    "name": "Agent action log (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/agent-undo-log.js",
-    "import": "{ AgentActionLog }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "6 kB"
   },
   {
     "name": "styles.css",
@@ -82,9 +59,9 @@
     "rolldown": false
   },
   {
-    "name": "Grouped table (Pro)",
-    "path": "packages/ui-pro/dist/components/table-pro.js",
-    "import": "{ TableGrouped }",
+    "name": "Agent action log (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-undo-log.js",
+    "import": "{ AgentActionLog }",
     "ignore": [
       "react",
       "react-dom",
@@ -94,16 +71,38 @@
     "limit": "6 kB"
   },
   {
-    "name": "Toast batch (Satin Pro, with the rolling number; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/toast-batch.js",
-    "import": "{ toastBatch }",
+    "name": "Combobox (with Radix Popover, Chip, Spinner and the menu row)",
+    "path": "packages/ui/dist/components/combobox.js",
+    "import": "{ Combobox }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "44 kB"
+  },
+  {
+    "name": "Command pages (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/command-pages.js",
+    "import": "{ CommandPages }",
     "ignore": [
       "react",
       "react-dom",
       "@uisatin/ui"
     ],
     "gzip": true,
-    "limit": "4 kB"
+    "limit": "3 kB"
+  },
+  {
+    "name": "Date picker (DatePicker, DateRangePicker and datePresets, with Radix Popover and Select)",
+    "path": "packages/ui/dist/components/date-picker.js",
+    "import": "{ DatePicker, DateRangePicker, datePresets }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "54 kB"
   },
   {
     "name": "Reviewable changes (Satin Pro; @uisatin/ui left out, it is the peer)",
@@ -130,18 +129,6 @@
     "limit": "9 kB"
   },
   {
-    "name": "Command pages (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/command-pages.js",
-    "import": "{ CommandPages }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "3 kB"
-  },
-  {
     "name": "Stepper (with Progress, cn and the check icon)",
     "path": "packages/ui/dist/components/stepper.js",
     "import": "{ Stepper, StepperItem }",
@@ -153,15 +140,16 @@
     "limit": "14 kB"
   },
   {
-    "name": "Combobox (with Radix Popover, Chip, Spinner and the menu row)",
-    "path": "packages/ui/dist/components/combobox.js",
-    "import": "{ Combobox }",
+    "name": "Grouped table (Pro)",
+    "path": "packages/ui-pro/dist/components/table-pro.js",
+    "import": "{ TableGrouped }",
     "ignore": [
       "react",
-      "react-dom"
+      "react-dom",
+      "@uisatin/ui"
     ],
     "gzip": true,
-    "limit": "44 kB"
+    "limit": "6 kB"
   },
   {
     "name": "Time picker (TimePicker and DateTimePicker: the Date picker's Calendar and its year Select, Radix Popover, the menu rows)",
@@ -173,5 +161,17 @@
     ],
     "gzip": true,
     "limit": "55 kB"
+  },
+  {
+    "name": "Toast batch (Satin Pro, with the rolling number; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/toast-batch.js",
+    "import": "{ toastBatch }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "4 kB"
   }
 ]
