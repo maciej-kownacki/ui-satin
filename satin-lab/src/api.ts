@@ -940,6 +940,27 @@ export const api: Record<string, Api> = {
       { name: 'placeholder', type: ['string'] },
     ],
   },
+  'time-picker': {
+    description: '`TimePicker` is a text field with the Input skin that reads a typed time ("930", "9:30pm", "1430") or opens a list of times under it; its value is `{ hours, minutes }`, `null` when cleared or typed wrong. `DateTimePicker` is the Date picker field opening the Calendar with a column of times beside it; its value is a `Date`. `TimeList` and `DateTimePickerPanel` are the list and the panel on their own. Times are written in the `dateLocale` label, 12- or 24-hour as that locale writes them; with `name`, a hidden input submits `HH:mm` or `YYYY-MM-DDTHH:mm`.',
+    props: [
+      { name: 'TimePicker.value', type: ['{ hours: number, minutes: number }', 'null'] },
+      { name: 'TimePicker.defaultValue', type: ['TimeValue', 'null'] },
+      { name: 'TimePicker.onValueChange', type: ['(value: TimeValue | null) => void'] },
+      { name: 'TimePicker.min / max', type: ['TimeValue'] },
+      { name: 'DateTimePicker.value', type: ['Date', 'null'] },
+      { name: 'DateTimePicker.defaultValue', type: ['Date', 'null'] },
+      { name: 'DateTimePicker.onValueChange', type: ['(value: Date) => void'] },
+      { name: 'DateTimePicker.min / max', type: ['Date'] },
+      { name: 'DateTimePicker.minTime / maxTime', type: ['TimeValue'] },
+      { name: 'step', type: ['number'], default: '15' },
+      { name: 'isTimeDisabled', type: ['(time: TimeValue, day?: Date | null) => boolean'] },
+      { name: 'format', type: ['"12h"', '"24h"'], default: 'the locale\'s' },
+      { name: 'open / defaultOpen', type: ['boolean'] },
+      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+      { name: 'name', type: ['string'] },
+      { name: 'label / hint / error', type: ['ReactNode'] },
+    ],
+  },
   notification: {
     description: 'The `Notification` component is an `article` named by its title, with a picture on the left, a title and description, a badge on the right, optional cards stacked behind and a close button on its top-right corner. Several go in a `NotificationStack`, newest first, each with a `key`: it folds them into a pile and unfolds them on hover, focus or a tap (`expanded` keeps it open); a removed one fades out while the rest move up.',
     props: [

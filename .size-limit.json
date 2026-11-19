@@ -39,6 +39,9 @@
     "name": "Combobox (with Radix Popover, Chip, Spinner and the menu row)",
     "path": "packages/ui/dist/components/combobox.js",
     "import": "{ Combobox }",
+    "name": "Time picker (TimePicker and DateTimePicker: the Date picker's Calendar and its year Select, Radix Popover, the menu rows)",
+    "path": "packages/ui/dist/components/time-picker.js",
+    "import": "{ TimePicker, DateTimePicker }",
     "ignore": [
       "react",
       "react-dom"
@@ -46,6 +49,7 @@
     "gzip": true,
     "limit": "14 kB"
     "limit": "44 kB"
+    "limit": "55 kB"
   },
   {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",

@@ -2026,6 +2026,36 @@
       ]
     },
     {
+      "name": "time-picker",
+      "type": "registry:ui",
+      "title": "Time picker",
+      "description": "Takes a typed time or one from a list, alone or with a day.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/form-field.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "Time picker docs: https://uisatin.dev/components/time-picker",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/time-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast",
       "type": "registry:ui",
       "title": "Toast",
@@ -3348,6 +3378,21 @@
       "files": [
         {
           "path": "registry/satin/examples/thinking-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "time-picker-demo",
+      "type": "registry:example",
+      "title": "Time picker example",
+      "description": "The shortest use of Time picker, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/time-picker.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/time-picker-demo.tsx",
           "type": "registry:example"
         }
       ]
