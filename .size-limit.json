@@ -33,25 +33,6 @@
     "limit": "30 kB"
   },
   {
-    "name": "Stepper (with Progress, cn and the check icon)",
-    "path": "packages/ui/dist/components/stepper.js",
-    "import": "{ Stepper, StepperItem }",
-    "name": "Combobox (with Radix Popover, Chip, Spinner and the menu row)",
-    "path": "packages/ui/dist/components/combobox.js",
-    "import": "{ Combobox }",
-    "name": "Time picker (TimePicker and DateTimePicker: the Date picker's Calendar and its year Select, Radix Popover, the menu rows)",
-    "path": "packages/ui/dist/components/time-picker.js",
-    "import": "{ TimePicker, DateTimePicker }",
-    "ignore": [
-      "react",
-      "react-dom"
-    ],
-    "gzip": true,
-    "limit": "14 kB"
-    "limit": "44 kB"
-    "limit": "55 kB"
-  },
-  {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/bulk-action-bar.js",
     "import": "{ BulkActionBar }",
@@ -62,29 +43,6 @@
     ],
     "gzip": true,
     "limit": "12 kB"
-  },
-  {
-    "name": "Toast batch (Satin Pro, with the rolling number; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/toast-batch.js",
-    "import": "{ toastBatch }",
-    "name": "Reviewable changes (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/agent-changes-review.js",
-    "import": "{ ReviewableChanges }",
-    "name": "Filter bar (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/filter-bar.js",
-    "import": "{ FilterBar }",
-    "name": "Command pages (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/command-pages.js",
-    "import": "{ CommandPages }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "4 kB"
-    "limit": "9 kB"
-    "limit": "3 kB"
   },
   {
     "name": "styles.css",
@@ -111,5 +69,86 @@
     ],
     "gzip": true,
     "limit": "6 kB"
+  },
+  {
+    "name": "Toast batch (Satin Pro, with the rolling number; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/toast-batch.js",
+    "import": "{ toastBatch }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
+    "name": "Reviewable changes (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-changes-review.js",
+    "import": "{ ReviewableChanges }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
+    "name": "Filter bar (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/filter-bar.js",
+    "import": "{ FilterBar }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "9 kB"
+  },
+  {
+    "name": "Command pages (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/command-pages.js",
+    "import": "{ CommandPages }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "3 kB"
+  },
+  {
+    "name": "Stepper (with Progress, cn and the check icon)",
+    "path": "packages/ui/dist/components/stepper.js",
+    "import": "{ Stepper, StepperItem }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "14 kB"
+  },
+  {
+    "name": "Combobox (with Radix Popover, Chip, Spinner and the menu row)",
+    "path": "packages/ui/dist/components/combobox.js",
+    "import": "{ Combobox }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "44 kB"
+  },
+  {
+    "name": "Time picker (TimePicker and DateTimePicker: the Date picker's Calendar and its year Select, Radix Popover, the menu rows)",
+    "path": "packages/ui/dist/components/time-picker.js",
+    "import": "{ TimePicker, DateTimePicker }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "55 kB"
   }
 ]
