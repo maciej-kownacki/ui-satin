@@ -3163,6 +3163,171 @@
       ]
     }
   },
+  "filter-bar": {
+    "FilterBarRoot": {
+      "description": "The bar on its own: the parts go inside. Other props, `ref` included, go to its `div`.",
+      "type": "FilterBarRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "fields",
+          "type": "FilterField[]",
+          "required": true,
+          "description": "What can be filtered."
+        },
+        {
+          "name": "value",
+          "type": "Filter[]",
+          "required": false,
+          "description": "The filters (controlled). Plain JSON."
+        },
+        {
+          "name": "defaultValue",
+          "type": "Filter[]",
+          "required": false,
+          "default": "[]",
+          "description": "The filters to start with (uncontrolled)."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Filter[]) => void",
+          "required": false,
+          "description": "Every change: a chip added, edited into a complete value, or removed."
+        },
+        {
+          "name": "resultCount",
+          "type": "number",
+          "required": false,
+          "description": "How many rows the filters let through, shown live (\"14 results\"). Leave it out to hide the count."
+        },
+        {
+          "name": "resultLabel",
+          "type": "(count: number, number: React.ReactNode) => React.ReactNode",
+          "required": false,
+          "description": "The count's words, \"14 deals\": `number` is the rolling number, `count` picks the plural. Defaults to the `filterResults` label."
+        },
+        {
+          "name": "views",
+          "type": "FilterView[]",
+          "required": false,
+          "description": "Saved filters, in a menu that sets them. The one that matches the filters is checked and names the menu."
+        },
+        {
+          "name": "onSaveView",
+          "type": "(name: string, value: Filter[]) => void",
+          "required": false,
+          "description": "Shows Save view while the filters match no view; called with the name typed and the filters."
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "required": false,
+          "description": "The search's text (controlled)."
+        },
+        {
+          "name": "defaultQuery",
+          "type": "string",
+          "required": false,
+          "default": "''"
+        },
+        {
+          "name": "onQueryChange",
+          "type": "(query: string) => void",
+          "required": false
+        },
+        {
+          "name": "maxVisible",
+          "type": "number",
+          "required": false,
+          "default": "6",
+          "description": "Chips shown before the rest fold into \"+3 more\"."
+        },
+        {
+          "name": "shortcut",
+          "type": "string | false",
+          "required": false,
+          "default": "'F'",
+          "description": "One key that opens `+ Filter` while focus is in the bar's parent and not in a field; shown as Kbd. `false` for none."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target of the editors and menus. Defaults to `document.body`."
+        },
+        {
+          "name": "today",
+          "type": "Date",
+          "required": false,
+          "description": "Today, for the editors' calendars. Defaults to now."
+        }
+      ]
+    },
+    "FilterBarSearch": {
+      "description": "The bar's search field (Input sm with a search icon): its text is the bar's `query`. Backspace in it while empty removes the last chip. Other props, `ref` included, go to the `input`.",
+      "type": "FilterBarSearchProps",
+      "extends": [
+        "Omit<InputProps, 'value' | 'defaultValue' | 'size' | 'label' | 'hint' | 'error'>"
+      ],
+      "props": []
+    },
+    "FilterBarChips": {
+      "description": "The chips, then \"+3 more\" past `maxVisible`. Its `div` is `display: contents`, so the chips wrap along with whatever sits next to them in the bar. Other props, `ref` included, go to that `div`.",
+      "type": "FilterBarChipsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "FilterBarAdd": {
+      "description": "`+ Filter`: a menu of the fields; picking one adds its chip with the editor open. Shows the bar's `shortcut` as Kbd. Other props, `ref` included, go to the Button.",
+      "type": "FilterBarAddProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof Button>, 'variant' | 'asChild' | 'iconOnly'>"
+      ],
+      "props": []
+    },
+    "FilterBarCount": {
+      "description": "\"14 results\", its digits rolling as the count changes. Nothing without `resultCount`. Other props, `ref` included, go to its `span`.",
+      "type": "FilterBarCountProps",
+      "extends": [
+        "React.ComponentProps<'span'>"
+      ],
+      "props": []
+    },
+    "FilterBarViews": {
+      "description": "The views menu (named after the view the filters match, or \"Views\") and Save view, shown while the filters match no view. Other props, `ref` included, go to its `div`.",
+      "type": "FilterBarViewsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "FilterBar": {
+      "description": "The bar from props: the search (with `search`), the chips, `+ Filter`, then the count and the views at the end of the row. Other props, `ref` included, go to the bar's `div`.",
+      "type": "FilterBarProps",
+      "extends": [
+        "Omit<FilterBarRootProps, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "search",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "A search field before the chips; its text is `query`."
+        },
+        {
+          "name": "searchPlaceholder",
+          "type": "string",
+          "required": false,
+          "description": "The search's placeholder. Defaults to the `search` label."
+        }
+      ]
+    }
+  },
   "floating": {
     "Floating": {
       "type": "FloatingProps",
