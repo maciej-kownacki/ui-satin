@@ -51,6 +51,9 @@
     "name": "Reviewable changes (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/agent-changes-review.js",
     "import": "{ ReviewableChanges }",
+    "name": "Filter bar (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/filter-bar.js",
+    "import": "{ FilterBar }",
     "ignore": [
       "react",
       "react-dom",
@@ -58,6 +61,7 @@
     ],
     "gzip": true,
     "limit": "4 kB"
+    "limit": "9 kB"
   },
   {
     "name": "styles.css",

@@ -301,7 +301,7 @@ export function BulkActionBarCount({ className, ...props }: BulkActionBarCountPr
         {labels.bulkSelected(
           count,
           <>
-            <RollingNumber text={formatted} value={count} />
+            <RollingNumber text={formatted} value={count} data-slot="bulk-action-bar-number" />
             <span className="sr-only">{formatted}</span>
           </>,
         )}
