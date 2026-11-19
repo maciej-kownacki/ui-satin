@@ -417,6 +417,29 @@ export const api: Record<string, Api> = {
       { name: 'renderValue', type: ['(picked, { remove, disabled }) => ReactNode'] },
     ],
   },
+  'people-picker': {
+    description:
+      'The `PeoplePicker` component (Satin Pro, `@uisatin/pro/people-picker`) is a Combobox for people: rows show an avatar, the name and the role (or email), picks show as chips with avatars. Each person is `{ id, name, role, email, avatar, tone, disabled }`; `avatar` is an image URL, and without one the initials show on the `tone`. People come from `people`, titled `groups` (`{ label, people }[]`), or `search(query, { signal })`, called `searchDelay` ms after the last keystroke and at once with \'\' on open; a newer query aborts the older one, and meanwhile the last results stay, narrowed by the query. `people` and `groups` filter as you type, with no delay. `recent` is listed first while the query is empty. `value` holds the people, not their ids. Every other Combobox prop (label, hint, error, footer, size, open state) works as there.',
+    props: [
+      { name: 'people', type: ['Person[]'] },
+      { name: 'groups', type: ['PeopleGroup[]'] },
+      { name: 'search', type: ['(query, { signal }) => Promise<Person[] | PeopleGroup[]>'] },
+      { name: 'searchDelay', type: ['number'], default: '150' },
+      { name: 'recent', type: ['Person[]'] },
+      { name: 'value', type: ['Person[]'] },
+      { name: 'defaultValue', type: ['Person[]'] },
+      { name: 'onValueChange', type: ['(people: Person[]) => void'] },
+      { name: 'multiple', type: ['boolean'], default: 'false' },
+      { name: 'maxChips', type: ['number'] },
+      { name: 'label', type: ['ReactNode'] },
+      { name: 'hint', type: ['ReactNode'] },
+      { name: 'placeholder', type: ['string'], default: '"Add people"' },
+      { name: 'searchPlaceholder', type: ['string'], default: '"Search people…"' },
+      { name: 'emptyText', type: ['ReactNode'] },
+      { name: 'disabled', type: ['boolean'], default: 'false' },
+      { name: 'wrapperClassName', type: ['string'] },
+    ],
+  },
   'command-menu': {
     description: 'The `CommandMenu` component wraps the Radix dialog in a `div` with a search `input` (`role="combobox"`) and a `listbox` of grouped commands. ⌘K or Ctrl+K toggles it unless `hotkey` is off. For a menu that changes what it shows: `query` / `onQueryChange` control the search (emptied as the menu closes), an item with `keepOpen` runs without closing it, `header` goes above the search row, `children` take the list\'s place and `footer` replaces the key hints (compose it from `KbdHint`).',
     props: [

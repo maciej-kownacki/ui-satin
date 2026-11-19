@@ -166,6 +166,18 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the list, drops picks waiting for Apply and returns focus to the field.' },
     ],
   },
+  'people-picker': {
+    summary:
+      'Combobox\'s roles, with people in them: each option is named by the person and their role, "Marta Nowak, Hiring manager" (a hidden comma joins them; the avatar is hidden). Recent and every titled group are `group`s named by their headers. While a search runs the last results stay, narrowed by the query; one that takes longer than 300 ms marks the list `aria-busy`. "Searching…", "No one matches" or a failed search are read out from a `status` region. A disabled person is `aria-disabled`. Each chip has a "Remove <name>" button; after a removal focus moves to the chip that takes its place, or to the field. The "+N" chip is a button named "Show N more"; it shows the rest and moves focus to the first of them.',
+    keyboard: [
+      { keys: ['Enter', 'Space'], action: 'On the field: opens the list and focuses the search.' },
+      { keys: ['A–Z'], action: 'In the search: filters by name, role and email, ignoring accents, or runs `search` after a pause.' },
+      { keys: ['↑', '↓'], action: 'Moves the highlight across the groups, wrapping at the ends.' },
+      { keys: ['Enter'], action: 'Picks the highlighted person and, with `multiple`, drops one already picked; a single pick closes the list.' },
+      { keys: ['Esc'], action: 'Closes the list and returns focus to the field.' },
+      { keys: ['Tab'], action: 'Out of the field, through the chips\' remove buttons and the "+N" chip.' },
+    ],
+  },
   'command-menu': {
     summary:
       'A Radix dialog titled "Command menu" for screen readers. The search input is a `combobox` named "Search commands" that points at the highlighted row with `aria-activedescendant`; the rows are options in a `listbox` named "Commands", grouped under their headings. The key hints in the footer are hidden.',

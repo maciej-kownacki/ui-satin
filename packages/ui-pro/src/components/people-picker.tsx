@@ -14,12 +14,14 @@ import type { SelectGroup, SelectOption } from '@uisatin/ui/select'
  * role (or the email), read as one phrase: "Marta Nowak, Hiring manager". Picks show as chips
  * with a 16px avatar; one pick fills the field with its avatar and name.
  *
- * - Where the people come from: `people` (one list), `groups` (titled sections, e.g. teams), or
- *   `search(query, { signal })`, which the picker calls `searchDelay` ms (250) after the last
- *   keystroke, and at once with '' when the list opens. A newer query aborts the older request
- *   (`signal`) and its late answer is dropped. While it runs the search row shows a Spinner and
- *   the list is `aria-busy`; with nothing listed yet it says "Searching…". A rejected search
- *   says so in place of the list.
+ * - Where the people come from: `people` (one list) or `groups` (titled sections, e.g. teams),
+ *   filtered as you type with no delay; or `search(query, { signal })`, which the picker calls
+ *   `searchDelay` ms (150) after the last keystroke, and at once with '' when the list opens. A
+ *   newer query aborts the older request (`signal`) and its late answer is dropped.
+ * - While a search runs, the last results stay, narrowed by the new query at once, so the list
+ *   never blanks between keystrokes; with nothing left to show it says "Searching…", never "No
+ *   one matches". An answer later than 300 ms swaps the search icon for a Spinner and marks the
+ *   list `aria-busy`; quicker ones show none. A rejected search says so in place of the list.
  * - `recent` comes first, under "Recent", while the query is empty; the same people aren't listed
  *   again below. Typing filters `people` and `groups` by name, role and email, ignoring case and
  *   accents ("wisn" finds Wiśniewska).
@@ -197,11 +199,14 @@ const toOption = (person: Person): SelectOption => ({
 
 /* ---------- the picker ---------- */
 
+/** A search answering sooner than this shows no Spinner, so quick results don't flash one. */
+const SPINNER_DELAY = 300
+
 export function PeoplePicker({
   people,
   groups,
   search,
-  searchDelay = 250,
+  searchDelay = 150,
   recent,
   value,
   defaultValue,
@@ -236,7 +241,11 @@ export function PeoplePicker({
   /* Search: debounced, the stale request aborted, its late answer dropped. */
   const [query, setQuery] = React.useState('')
   const [results, setResults] = React.useState<Person[] | PeopleGroup[]>()
-  const [loading, setLoading] = React.useState(false)
+  // The query `results` answer; while it isn't the typed one, they're narrowed on the spot.
+  const [answered, setAnswered] = React.useState<string>()
+  // A search for the typed query hasn't answered yet / hasn't for SPINNER_DELAY.
+  const [pending, setPending] = React.useState(false)
+  const [slow, setSlow] = React.useState(false)
   const [failed, setFailed] = React.useState(false)
   const searchRef = React.useRef(search)
   React.useEffect(() => {
@@ -246,40 +255,46 @@ export function PeoplePicker({
 
   React.useEffect(() => {
     if (!searching || !open) {
-      setLoading(false)
+      setPending(false)
+      setSlow(false)
       return
     }
     const controller = new AbortController()
-    // Busy from the keystroke, so the wait before the request reads as searching, not as "no one".
-    setLoading(true)
+    // Pending from the keystroke, so an empty list reads "Searching…", not "No one matches".
+    setPending(true)
+    // The Spinner only once the answer is late: quick searches don't flash it.
+    const spinner = setTimeout(() => setSlow(true), SPINNER_DELAY)
+    const settle = (found: Person[] | PeopleGroup[], error: boolean) => {
+      if (controller.signal.aborted) return
+      clearTimeout(spinner)
+      setResults(found)
+      setAnswered(query)
+      setFailed(error)
+      setPending(false)
+      setSlow(false)
+    }
     const timer = setTimeout(
       () => {
         searchRef.current?.(query, { signal: controller.signal }).then(
-          (found) => {
-            if (controller.signal.aborted) return
-            setResults(found)
-            setFailed(false)
-            setLoading(false)
-          },
-          () => {
-            if (controller.signal.aborted) return
-            setResults([])
-            setFailed(true)
-            setLoading(false)
-          },
+          (found) => settle(found, false),
+          () => settle([], true),
         )
       },
       query ? searchDelay : 0,
     )
     return () => {
       clearTimeout(timer)
+      clearTimeout(spinner)
       controller.abort()
     }
   }, [searching, open, query, searchDelay])
 
   /* The list: Recent while the query is empty, then the rest, each person once. */
   const base = searching ? sectionsOf(results) : sectionsOf(groups ?? people)
-  const filtered = searching ? base : base.map((s) => ({ ...s, people: s.people.filter((p) => matchesPerson(p, query)) }))
+  // A local list filters as you type; search results are the app's answer, except while the
+  // answer to this query is on its way: then the last ones, narrowed by it, stand in.
+  const narrow = !searching || answered !== query
+  const filtered = narrow ? base.map((s) => ({ ...s, people: s.people.filter((p) => matchesPerson(p, query)) })) : base
   const showRecent = !query.trim() && recent != null && recent.length > 0
   const seen = new Set<string>()
   const once = (list: Person[]) => list.filter((p) => !seen.has(p.id) && seen.add(p.id))
@@ -330,9 +345,9 @@ export function PeoplePicker({
         options={options}
         filter={false}
         onQueryChange={setQuery}
-        loading={loading}
+        loading={slow}
         loadingText={labels.searchingPeople}
-        emptyText={failed ? labels.peopleSearchFailed : (emptyText ?? labels.noPeopleFound(query.trim()))}
+        emptyText={pending ? labels.searchingPeople : failed ? labels.peopleSearchFailed : (emptyText ?? labels.noPeopleFound(query.trim()))}
         placeholder={placeholder ?? (multiple ? labels.addPeople : labels.choosePerson)}
         searchPlaceholder={searchPlaceholder ?? labels.searchPeople}
         value={picked.map((p) => p.id)}

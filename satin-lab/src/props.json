@@ -6119,7 +6119,7 @@
           "name": "searchDelay",
           "type": "number",
           "required": false,
-          "default": "250",
+          "default": "150",
           "description": "Milliseconds without typing before `search` runs."
         },
         {
