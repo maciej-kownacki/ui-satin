@@ -44,6 +44,23 @@ describe('Combobox', () => {
     expect(screen.getByText('Brak wyników')).toBeTruthy()
   })
 
+  it('keeps the row the arrows reach in view', async () => {
+    // jsdom has no layout: watch the call instead of the scroll.
+    const scrolled: string[] = []
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.textContent ?? '')
+    }
+    try {
+      const { user } = renderWithSatin(<Combobox label="City" options={options} />)
+      await user.click(screen.getByRole('button', { name: /City/ }))
+      await user.keyboard('{ArrowDown}{ArrowDown}')
+      expect(scrolled.at(-1)).toBe('Warsaw')
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
   it('names its panel after the field', async () => {
     const { user } = renderWithSatin(<Combobox label="City" options={options} />)
     await user.click(screen.getByRole('button', { name: /City/ }))

@@ -223,6 +223,13 @@ export function Combobox({
     }
     setHighlight(null)
   }, [highlight])
+  // Focus stays in the query field, so nothing scrolls the list for the arrows: keep the
+  // highlighted row in view. Only for keys; a row under the pointer is in view already.
+  React.useEffect(() => {
+    if (!viaKeys) return
+    const id = shown[active] ? `${listId}-${shown[active].value}` : onCreateRow ? createId : undefined
+    if (id) document.getElementById(id)?.scrollIntoView?.({ block: 'nearest' })
+  }, [active, viaKeys])
 
   const added = (q: string, o: SelectOption | undefined) => {
     if (!o) return setFailed(q)
