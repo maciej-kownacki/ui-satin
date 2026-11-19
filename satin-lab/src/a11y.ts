@@ -610,6 +610,15 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space', '↓'], action: 'On ⋯: opens the step’s menu (Edit, Move up, Move down).' },
       { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to ⋯ (an empty name keeps the old one).' },
       { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to ⋯. In the menu: closes it.' },
+  'review-queue': {
+    summary:
+      'A `section` named after its `title` ("Review queue" without one). The item on show is a `group` named after it and its place ("Anna Kowalska, 4 of 12"); when it changes, a polite `status` region reads the new name and place, with the decision before it ("Approved. Jonas Weber, 5 of 12"). If focus was on the item, it moves to the new one, which reads itself instead. The bar is a `progressbar` named "Reviewed" with the value "3 of 12 reviewed". Skip, Edit and Approve name their keys with `aria-keyshortcuts`; the Kbd on them is hidden. On an approved item, or while Approve runs, the actions are `aria-disabled` and keep focus. Edit opens a Sheet (a dialog named "Edit", or `editTitle`, with the item as its description); closing it puts focus back where it was. When all are decided, focus that was in the queue moves to the summary\'s heading, and the summary is a region named "All reviewed" with the approved and the skipped as two named lists ("Approved 9").',
+    keyboard: [
+      { keys: ['J', 'K'], action: 'Next or previous item, while focus is in the queue and not in a field.' },
+      { keys: ['A'], action: 'Approves the item and moves on to the next undecided one.' },
+      { keys: ['S'], action: 'Skips the item and moves on.' },
+      { keys: ['E'], action: 'Opens the editor Sheet; Esc or Cancel closes it on the same item.' },
+      { keys: ['Tab'], action: 'Moves through ‹ ›, the item\'s own controls, then Skip, Edit and Approve.' },
     ],
   },
   'agent-loading': {

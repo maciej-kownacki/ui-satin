@@ -44,6 +44,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Agent action log': [472, 504],
   'Agent plan': [336, 504],
   'Decision card': [368, 392],
+  'Review queue': [464, 464],
   'Dialog': [352, 352],
   'Dot': [280, 280],
   'Dropdown': [440, 440],
