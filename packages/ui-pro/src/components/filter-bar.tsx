@@ -175,12 +175,13 @@ export const filterBarLabels = {
   filterBar: 'Filters',
   /** The `+ Filter` button. */
   filterAdd: 'Filter',
-  /** The menu of fields `+ Filter` opens. */
-  filterFields: 'Filter by',
   /** An operator as chips and the operator menu show it: "is", "contains", ">". */
   filterOperator: (operator: FilterOperator): string => OPERATOR_TEXT[operator],
-  /** An operator in words, where `filterOperator` is a symbol: "greater than". Screen readers hear this one. */
-  filterOperatorName: (operator: FilterOperator): string => OPERATOR_NAME[operator] ?? OPERATOR_TEXT[operator],
+  /**
+   * An operator in words where `filterOperator` is a symbol: "greater than". Screen readers hear
+   * this one. `undefined` (every word operator) means the same as `filterOperator`.
+   */
+  filterOperatorName: (operator: FilterOperator): string | undefined => OPERATOR_NAME[operator],
   /** The value control's name: the field and the operator ("Stage is"). */
   filterValueOf: (field: string, operator: string) => `${field} ${operator}`,
   /** The period after "this": "Close date this quarter". */
@@ -475,7 +476,7 @@ interface ChipWords {
 
 function wordsOf(filter: Filter, field: FilterField | undefined, labels: Labels): ChipWords {
   const operator = labels.filterOperator(filter.operator)
-  const operatorName = labels.filterOperatorName(filter.operator)
+  const operatorName = operatorWords(filter.operator, labels)
   const name = field?.label ?? filter.field
   const value = field ? valueWords(filter, field, labels) : ''
   return { field: name, operator, operatorName, value, text: [name, operatorName, value].filter(Boolean).join(' ') }
@@ -517,6 +518,9 @@ function valueWords(filter: Filter, field: FilterField, labels: Labels): string 
     }
   }
 }
+
+/** An operator in words: `filterOperatorName`, or `filterOperator` where it has none. */
+const operatorWords = (operator: FilterOperator, labels: Labels) => labels.filterOperatorName(operator) ?? labels.filterOperator(operator)
 
 const problemText = (problem: Problem, labels: Labels) =>
   problem === 'missing' ? labels.filterValueMissing : problem === 'range' ? labels.filterValueRange : labels.filterValueUnknown
@@ -1156,7 +1160,7 @@ function FilterEditor({ field, filter, onChange, onDone, isNew, labels, containe
   // "Add a value" only once there was one: a new chip starts empty on purpose.
   const message = problem && (problem !== 'missing' || !isNew) ? problemText(problem, labels) : undefined
   const messageId = React.useId()
-  const valueName = labels.filterValueOf(field.label, labels.filterOperatorName(op))
+  const valueName = labels.filterValueOf(field.label, operatorWords(op, labels))
   const locale = labels.dateLocale
 
   const set = (value: FilterValue) => onChange({ field: field.key, operator: op, value })
@@ -1338,7 +1342,7 @@ function FilterEditor({ field, filter, onChange, onDone, isNew, labels, containe
           value={op}
           onValueChange={(o) => setOperator(o as FilterOperator)}
           options={operators.map((o) => {
-            const name = labels.filterOperatorName(o)
+            const name = operatorWords(o, labels)
             const text = labels.filterOperator(o)
             return { value: o, label: text, description: name !== text ? name : undefined }
           })}
@@ -1373,7 +1377,6 @@ export function FilterBarAdd({ className, children, ...props }: FilterBarAddProp
     <DropdownMenu
       open={open}
       onOpenChange={setOpen}
-      aria-label={labels.filterFields}
       container={bar.container}
       // Picking a field hands focus to its editor, not back to this button.
       onCloseAutoFocus={(e: Event) => {
@@ -1503,7 +1506,6 @@ export function FilterBarViews({ className, ...props }: FilterBarViewsProps) {
       {!!views?.length && (
         <DropdownMenu
           align="end"
-          aria-label={labels.filterViews}
           container={bar.container}
           trigger={
             <Button variant="tertiary" data-slot="filter-bar-views-trigger" className="shrink-0">
