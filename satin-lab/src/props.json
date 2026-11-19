@@ -302,7 +302,7 @@
       ]
     },
     "AgentPermissionScopeList": {
-      "description": "The scopes as a list, one row each, between rules. Without children it lists `scopes`. Other props, `ref` included, go to the `ul`.",
+      "description": "The scopes as a list, one row each, kept apart by space rather than rules. Without children it lists `scopes`. Other props, `ref` included, go to the `ul`.",
       "type": "AgentPermissionScopeListProps",
       "extends": [
         "React.ComponentProps<'ul'>"
