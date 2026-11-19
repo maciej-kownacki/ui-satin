@@ -71,6 +71,13 @@ export const nav: NavGroup[] = [
       { id: 'decision-card', title: 'Decision card', href: '/ai-patterns/decision-card', description: 'One question from the agent, with answers to pick, rank or rewrite, and Skip or Continue.' },
       { id: 'agent-loading', title: 'Loading', href: '/ai-patterns/agent-loading', description: 'What shows while an agent works: a live mark, a shimmering label and the time so far.' },
       {
+        id: 'agent-undo-log',
+        title: 'Agent action log',
+        href: '/ai-patterns/agent-undo-log',
+        description: 'What a coding agent changed, run by run: files with their diff counts, a Revert on each, ⌘Z for the last run.',
+        edition: 'pro',
+      },
+      {
         id: 'message-group',
         title: 'Message',
         href: '/ai-patterns/message',
