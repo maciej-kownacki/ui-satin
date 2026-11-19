@@ -80,7 +80,7 @@ export const nav: NavGroup[] = [
         id: 'agent-plan',
         title: 'Agent plan',
         href: '/ai-patterns/agent-plan',
-        description: 'The steps an agent proposes before it acts: edit, reorder or leave some out, then Run, and watch them tick off.',
+        description: 'The steps an agent proposes before it acts: rename, reorder or remove some, then Run, and watch them tick off.',
         edition: 'pro',
       },
       { id: 'agent-loading', title: 'Loading', href: '/ai-patterns/agent-loading', description: 'What shows while an agent works: a live mark, a shimmering label and the time so far.' },

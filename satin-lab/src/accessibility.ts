@@ -98,6 +98,15 @@ export const knownIssues: KnownIssue[] = [
     wcag: ['2.5.7'],
   },
   {
+    id: 'plan-drag',
+    components: ['agent-plan'],
+    title: 'Reordering a plan by dragging',
+    problem: 'With a pointer, an Agent plan’s steps can only be reordered by dragging their number. The keyboard has Alt+↑ and Alt+↓, but a pointer user who can’t drag has no other way.',
+    affects: 'People with motor impairments who use a pointer.',
+    workaround: 'Where order matters, let the person ask the agent for a new plan, or offer move buttons beside the plan.',
+    wcag: ['2.5.7'],
+  },
+  {
     id: 'attachment-tabs',
     components: ['attachment'],
     title: 'Sheet tabs in the Attachment preview',

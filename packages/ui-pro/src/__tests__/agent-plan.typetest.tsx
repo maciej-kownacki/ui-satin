@@ -12,7 +12,7 @@ import {
 } from '../components/agent-plan'
 
 const steps: AgentPlanStep[] = [
-  { id: 'slots', label: 'Find open slots', detail: <>Tue–Thu, 45 min</>, tool: 'Calendar' },
+  { id: 'slots', label: 'Find open slots', detail: <>Tue–Thu, 45 min</>, tool: 'Calendar', toolIcon: <svg /> },
   { id: 'send', label: 'Send invites', editable: false, skipped: false },
 ]
 
@@ -66,7 +66,7 @@ export const translated = (
       close: 'Zamknij',
       runPlan: 'Uruchom plan',
       stepDone: (step) => `${step}: gotowe`,
-      planProgress: (position, count) => `Krok ${position} z ${count}`,
+      stepRemoved: (step) => `Usunięto: ${step}`,
       stepStatus: (status) => (status === 'done' ? 'Gotowe' : status),
     }}
   >
