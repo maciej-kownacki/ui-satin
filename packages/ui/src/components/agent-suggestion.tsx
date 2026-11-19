@@ -25,7 +25,8 @@ import { useSatinLabels } from './labels'
  *
  * The parts below cover the usual bodies: `AgentSuggestionQuote` (the message being answered),
  * `AgentSuggestionMetric` (a number against a limit), `AgentSuggestionDiff` (old text → new) and
- * `AgentSuggestionChanges` (fields from → to).
+ * `AgentSuggestionChanges` (fields from → to). `AgentSuggestionChangeValue` is one change's from → to,
+ * for a row of your own.
  */
 export interface AgentSuggestionProps extends Omit<React.ComponentProps<'section'>, 'title'> {
   /** What kind of suggestion: "Email suggestion", "Next steps", "CRM update". */
@@ -187,17 +188,32 @@ export function AgentSuggestionChanges({ changes, className }: { changes: AgentS
       {changes.map((c, i) => (
         <div key={i} className="flex min-h-[21px] items-center gap-2">
           <dt className="w-[88px] shrink-0 text-text-muted">{c.field}</dt>
-          <dd className="m-0 flex min-w-0 items-center gap-2">
-            {c.from != null && (
-              <>
-                <del className="text-text-muted">{c.from}</del>
-                <ArrowRight aria-hidden className="size-4 shrink-0 text-text-subtle [stroke-width:1.875] rtl:-scale-x-100" />
-              </>
-            )}
-            {typeof c.to === 'string' ? <span className="font-medium text-text-default">{c.to}</span> : c.to}
+          <dd className="m-0 flex min-w-0">
+            <AgentSuggestionChangeValue from={c.from} to={c.to} />
           </dd>
         </div>
       ))}
     </dl>
+  )
+}
+
+export interface AgentSuggestionChangeValueProps extends Omit<React.ComponentProps<'span'>, 'children'>, Pick<AgentSuggestionChange, 'from' | 'to'> {}
+
+/**
+ * One change's value as AgentSuggestionChanges draws it: the old value struck through, an arrow
+ * and the new one. For a row of your own (one with its own controls). Other props, `ref`
+ * included, go to its `span`.
+ */
+export function AgentSuggestionChangeValue({ from, to, className, ...props }: AgentSuggestionChangeValueProps) {
+  return (
+    <span data-slot="agent-suggestion-change-value" className={cn('flex min-w-0 items-center gap-2', className)} {...props}>
+      {from != null && (
+        <>
+          <del className="text-text-muted">{from}</del>
+          <ArrowRight aria-hidden className="size-4 shrink-0 text-text-subtle [stroke-width:1.875] rtl:-scale-x-100" />
+        </>
+      )}
+      {typeof to === 'string' ? <span className="font-medium text-text-default">{to}</span> : to}
+    </span>
   )
 }

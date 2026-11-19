@@ -505,6 +505,15 @@
           "required": false
         }
       ]
+    },
+    "AgentSuggestionChangeValue": {
+      "description": "One change's value as AgentSuggestionChanges draws it: the old value struck through, an arrow and the new one. For a row of your own (one with its own controls). Other props, `ref` included, go to its `span`.",
+      "type": "AgentSuggestionChangeValueProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>",
+        "Pick<AgentSuggestionChange, 'from' | 'to'>"
+      ],
+      "props": []
     }
   },
   "alert": {

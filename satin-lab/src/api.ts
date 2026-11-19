@@ -934,7 +934,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'agent-suggestion': {
-    description: 'The `AgentSuggestion` component is a card around something the agent prepared: its kind, who it concerns, a title and text, any content of its own and the actions that carry it out. `AgentSuggestionQuote`, `AgentSuggestionMetric`, `AgentSuggestionDiff` and `AgentSuggestionChanges` cover the usual bodies.',
+    description: 'The `AgentSuggestion` component is a card around something the agent prepared: its kind, who it concerns, a title and text, any content of its own and the actions that carry it out. `AgentSuggestionQuote`, `AgentSuggestionMetric`, `AgentSuggestionDiff` and `AgentSuggestionChanges` cover the usual bodies; `AgentSuggestionChangeValue` draws the from → to of one change, for a row with controls of its own.',
     props: [
       { name: 'kind', type: ['ReactNode'] },
       { name: 'icon', type: ['ReactNode'] },
@@ -947,6 +947,7 @@ export const api: Record<string, Api> = {
       { name: 'AgentSuggestionMetric', type: ['{ value, unit?, used?, max? }'] },
       { name: 'AgentSuggestionDiff', type: ['{ before, after }'] },
       { name: 'AgentSuggestionChanges', type: ['{ changes: { field, from?, to }[] }'] },
+      { name: 'AgentSuggestionChangeValue', type: ['{ from?, to }'] },
     ],
   },
   attachment: {
