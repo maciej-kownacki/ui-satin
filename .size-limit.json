@@ -45,6 +45,18 @@
     "limit": "12 kB"
   },
   {
+    "name": "Scoped search (Satin Pro, with Radix Popover and its floating-ui, shared with Free's Popover and Combobox; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/search-scoped.js",
+    "import": "{ ScopedSearch }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "28 kB"
+  },
+  {
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,
