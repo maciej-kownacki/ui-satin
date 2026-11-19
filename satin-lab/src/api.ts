@@ -453,7 +453,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'date-picker': {
-    description: '`DatePicker` and `DateRangePicker` are fields with the Input skin that open a `Calendar` in a popover. The range picker waits for Apply. `Calendar` works on its own too, as one month or two.',
+    description: '`DatePicker` and `DateRangePicker` are fields with the Input skin that open a `Calendar` in a popover. The range picker waits for Apply. `Calendar` works on its own too, as one month or two. `isDisabled(date)` rules out days besides `min`/`max`; they fade but stay reachable with the arrow keys. `renderDay(date, state)` draws each day: return a `CalendarDay`, the default day button, with your own children, `aria-label` or a Tooltip around it. Every picker passes both on to its Calendar.',
     props: [
       { name: 'DatePicker.value', type: ['Date', 'null'] },
       { name: 'DatePicker.defaultValue', type: ['Date', 'null'] },
@@ -466,6 +466,8 @@ export const api: Record<string, Api> = {
       { name: 'Calendar.months', type: ['1', '2'], default: '1' },
       { name: 'min / max', type: ['Date'] },
       { name: 'today', type: ['Date'] },
+      { name: 'isDisabled', type: ['(date: Date) => boolean'] },
+      { name: 'renderDay', type: ['(date: Date, state: CalendarDayState) => ReactNode'] },
       { name: 'label / hint / error', type: ['ReactNode'] },
     ],
   },

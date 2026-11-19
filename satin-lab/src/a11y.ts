@@ -257,7 +257,7 @@ export const a11y: Record<string, A11y> = {
   },
   'date-picker': {
     summary:
-      'Both pickers are a `button` named by `label` and described by the hint or error (`aria-describedby`, `aria-invalid`); it opens the Calendar in a popover and moves focus into it. Each month is a `grid` labelled by its title, and the grid is one tab stop. Each day is a `button` named by its full date; picked days have `aria-selected` and today `aria-current="date"`. The arrows are named "Previous month" and "Next month", and the year Select "Year".',
+      'Both pickers are a `button` named by `label` and described by the hint or error (`aria-describedby`, `aria-invalid`); it opens the Calendar in a popover and moves focus into it. Each month is a `grid` labelled by its title, and the grid is one tab stop. Each day is a `button` named by its full date; picked days have `aria-selected` and today `aria-current="date"`. Days that can\'t be picked (outside `min`/`max`, or `isDisabled`) have `aria-disabled` rather than `disabled`, so the arrow keys still reach them and a reason drawn with `renderDay` is heard and seen; Enter and clicks do nothing there. The arrows are named "Previous month" and "Next month", and the year Select "Year".',
     keyboard: [
       { keys: ['Enter', 'Space'], action: 'On the field: opens the calendar. On a day: picks it; a range takes its start, then its end.' },
       { keys: ['←', '→'], action: 'Moves a day back or forward, turning the month when needed.' },
