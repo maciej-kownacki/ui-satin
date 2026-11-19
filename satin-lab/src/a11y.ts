@@ -292,20 +292,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Drops what was typed and puts the last value back.' },
     ],
   },
-  'kanban-board': {
-    summary:
-      'Each column\'s cards are a list named after the column and its count ("Interview, 6 of 8 cards"; past the limit, "7 cards, over the limit of 6"). Every card is a focusable list item named by `getItemLabel`, described as a "draggable card" with how to move it from the keyboard. Moves are read out from a polite `status` region: "Picked up Tara Mendes. Screening, position 1 of 12.", each step, then "Moved Tara Mendes to Interview, position 2 of 7" or "Move cancelled". Dragging has a single-pointer alternative (WCAG 2.5.7): a card\'s ⋯ menu moves it to another column, or up and down. The Undo toast is read out like any toast. Every word is in SatinLabels (`kanbanBoardLabels`). Give the board an `aria-label` to make it a named region.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the cards and the buttons in them, column by column.' },
-      { keys: ['↑', '↓', '←', '→'], action: 'Moves focus to the card above or below, or to the nearest card in the next column; mirrored right to left.' },
-      { keys: ['Home', 'End'], action: 'Moves focus to the first or last card in the column.' },
-      { keys: ['Space'], action: 'Picks up the focused card, and drops it where it is.' },
-      { keys: ['↑', '↓'], action: 'With a card picked up: moves it one place up or down in its column.' },
-      { keys: ['←', '→'], action: 'With a card picked up: moves it to the previous or next column (collapsed ones are skipped); mirrored right to left.' },
-      { keys: ['Home', 'End'], action: 'With a card picked up: moves it to the top or bottom of its column.' },
-      { keys: ['Esc'], action: 'Puts a picked-up card back where it was, also during a pointer drag.' },
-    ],
-  },
   kbd: {
     summary:
       'A native `kbd` element, read as its text; screen readers may say symbols such as ⌘ in different ways. `KbdArrowUp`, `KbdArrowDown` and `KbdReturn` are hidden glyphs with no text, so add words for screen readers next to them, or hide the hint when the same help is spoken elsewhere.',
@@ -351,24 +337,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Tab'], action: 'Moves into the group, onto the checked radio (or the first), and out again.' },
       { keys: ['↑', '↓', '←', '→'], action: 'Moves to the previous or next radio and checks it, wrapping at the ends.' },
       { keys: ['Space'], action: 'Checks the focused radio. Enter does nothing, as WAI-ARIA asks.' },
-    ],
-  },
-  scheduler: {
-    summary:
-      'Day and Week are a `grid` named after the period and the time zone ("November 15 – 21, 2026, Central European Standard Time"): a column header per day (today with `aria-current="date"`), a row header per slot, and a `gridcell` per slot named with its day and time, "busy" or "free", and the events in it; picked slots are `aria-selected`. The time column\'s header gives the zone\'s long name. Month is a `grid` of day cells named with the date and how many events. Events are `button`s named with their title and full time, described by their attendees and how to move them; they sit in their slot, reached from the grid with Enter. Moves, resizes, picks and period changes are read out from a polite `status` region. Dragging works from the keyboard too (Alt and the arrows), so no move needs a pointer.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves into the grid, onto the last slot (or day) focused, and on out.' },
-      { keys: ['←', '→'], action: 'Grid: the slot on the previous or next day, paging past the period\'s ends; mirrored right to left.' },
-      { keys: ['↑', '↓'], action: 'Grid: the previous or next slot (the all-day row above the first); Month: the week before or after.' },
-      { keys: ['Home', 'End'], action: 'Grid: the first or last day shown (Ctrl: the all-day row, the last slot).' },
-      { keys: ['Page Up', 'Page Down'], action: 'Grid: the previous or next week, day or month.' },
-      { keys: ['Shift+↑', 'Shift+↓'], action: 'Grid: stretches a pick over more slots of the day; Enter picks them.' },
-      { keys: ['Enter', 'Space'], action: 'Grid: on an empty slot, picks it (`onSlotSelect`, and `slotPopover`); on an event\'s slot, moves to the event. Shift+Enter always picks. On an event: opens it (`onEventOpen`, and `eventPopover`).' },
-      { keys: ['Alt+←', 'Alt+→'], action: 'Event: moves it a day earlier or later, at the same time.' },
-      { keys: ['Alt+↑', 'Alt+↓'], action: 'Event: moves it a slot earlier or later (Month: a week).' },
-      { keys: ['Alt+Shift+↑', 'Alt+Shift+↓'], action: 'Event: ends it a slot earlier or later, never shorter than one slot.' },
-      { keys: ['↑', '↓'], action: 'Event: the previous or next event that day (Month: and "3 more").' },
-      { keys: ['Esc'], action: 'Event: back to its slot in the grid. Grid: clears the pick. While dragging: puts the event back.' },
     ],
   },
   'search-bar': {
@@ -460,23 +428,6 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A Radix switch: a `button` with `role="switch"` and `aria-checked`. `label` names it with `aria-labelledby` and `description` adds `aria-describedby`; without a label, pass `aria-label`. Inside a `form` it also renders a hidden input, so the value submits.',
     keyboard: [{ keys: ['Space', 'Enter'], action: 'Turns the switch on or off.' }],
-  },
-  'data-grid': {
-    summary:
-      'A `grid` (APG Grid pattern) named by `label`, with `aria-rowcount` and `aria-colcount` and each row and cell numbered, so the count stays right while only the rows on screen exist. One cell at a time is in the tab order; a sortable header holds a `button` and sets `aria-sort`. With `selectable` the grid is `aria-multiselectable` and rows set `aria-selected`; the checkboxes are named "Select <name>" after the first column or `rowLabel`. Each resize handle is a focusable `separator` named "Resize <column>" with its width as `aria-valuenow`. An editor is named after its column. A saving cell is `aria-busy`; a failed one is `aria-invalid` and described by its error. Sorting, saves and views are read out from a polite `status` region. The Columns menu is a menu of `menuitemcheckbox` rows; the view menu says "View: <name>, unsaved changes" when the grid has moved from the view.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves into the grid, onto the cell last focused. From a header, moves on to its resize handle; Tab again leaves the grid.' },
-      { keys: ['←', '→', '↑', '↓'], action: 'Moves one cell; ← and → are mirrored right to left. The header row is part of the grid.' },
-      { keys: ['Home', 'End'], action: 'Moves to the first or last cell of the row; with ⌃ or ⌘, of the grid.' },
-      { keys: ['Page Up', 'Page Down'], action: 'Moves up or down by a screen of rows.' },
-      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all. On a checkbox (Space): selects the row, or every row.' },
-      { keys: ['⇧ Space'], action: 'Selects or clears the focused cell’s row.' },
-      { keys: ['Enter', 'F2'], action: 'On an editable cell: opens its editor (double click does too). On a cell whose save failed: edits the value that failed.' },
-      { keys: ['Enter', 'Tab'], action: 'In an editor: saves. Tab then moves to the next cell, ⇧ Tab to the previous one.' },
-      { keys: ['Esc'], action: 'In an editor: cancels. On a cell whose save failed: drops the change.' },
-      { keys: ['←', '→'], action: 'On a resize handle: narrows or widens the column by 8px (40px with ⇧); Home and End go to its narrowest and widest. Enter or Esc goes back to the header.' },
-      { keys: ['⌥ ↑', '⌥ ↓'], action: 'In the Columns menu: moves the highlighted column up or down.' },
-    ],
   },
   table: {
     summary:
@@ -605,6 +556,37 @@ export const a11y: Record<string, A11y> = {
       'The header is a `button` with `aria-expanded` and `aria-controls`, named by the summary ("Thought for 2m 45s"). The steps are an ordered list; folded, they stay mounted but leave the tab order and screen readers. The mark, chevron and rail are hidden, and so is a task’s check.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Opens or folds the steps.' }],
   },
+  'data-grid': {
+    summary:
+      'A `grid` (APG Grid pattern) named by `label`, with `aria-rowcount` and `aria-colcount` and each row and cell numbered, so the count stays right while only the rows on screen exist. One cell at a time is in the tab order; a sortable header holds a `button` and sets `aria-sort`. With `selectable` the grid is `aria-multiselectable` and rows set `aria-selected`; the checkboxes are named "Select <name>" after the first column or `rowLabel`. Each resize handle is a focusable `separator` named "Resize <column>" with its width as `aria-valuenow`. An editor is named after its column. A saving cell is `aria-busy`; a failed one is `aria-invalid` and described by its error. Sorting, saves and views are read out from a polite `status` region. The Columns menu is a menu of `menuitemcheckbox` rows; the view menu says "View: <name>, unsaved changes" when the grid has moved from the view.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves into the grid, onto the cell last focused. From a header, moves on to its resize handle; Tab again leaves the grid.' },
+      { keys: ['←', '→', '↑', '↓'], action: 'Moves one cell; ← and → are mirrored right to left. The header row is part of the grid.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or last cell of the row; with ⌃ or ⌘, of the grid.' },
+      { keys: ['Page Up', 'Page Down'], action: 'Moves up or down by a screen of rows.' },
+      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all. On a checkbox (Space): selects the row, or every row.' },
+      { keys: ['⇧ Space'], action: 'Selects or clears the focused cell’s row.' },
+      { keys: ['Enter', 'F2'], action: 'On an editable cell: opens its editor (double click does too). On a cell whose save failed: edits the value that failed.' },
+      { keys: ['Enter', 'Tab'], action: 'In an editor: saves. Tab then moves to the next cell, ⇧ Tab to the previous one.' },
+      { keys: ['Esc'], action: 'In an editor: cancels. On a cell whose save failed: drops the change.' },
+      { keys: ['←', '→'], action: 'On a resize handle: narrows or widens the column by 8px (40px with ⇧); Home and End go to its narrowest and widest. Enter or Esc goes back to the header.' },
+      { keys: ['⌥ ↑', '⌥ ↓'], action: 'In the Columns menu: moves the highlighted column up or down.' },
+    ],
+  },
+  'kanban-board': {
+    summary:
+      'Each column\'s cards are a list named after the column and its count ("Interview, 6 of 8 cards"; past the limit, "7 cards, over the limit of 6"). Every card is a focusable list item named by `getItemLabel`, described as a "draggable card" with how to move it from the keyboard. Moves are read out from a polite `status` region: "Picked up Tara Mendes. Screening, position 1 of 12.", each step, then "Moved Tara Mendes to Interview, position 2 of 7" or "Move cancelled". Dragging has a single-pointer alternative (WCAG 2.5.7): a card\'s ⋯ menu moves it to another column, or up and down. The Undo toast is read out like any toast. Every word is in SatinLabels (`kanbanBoardLabels`). Give the board an `aria-label` to make it a named region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the cards and the buttons in them, column by column.' },
+      { keys: ['↑', '↓', '←', '→'], action: 'Moves focus to the card above or below, or to the nearest card in the next column; mirrored right to left.' },
+      { keys: ['Home', 'End'], action: 'Moves focus to the first or last card in the column.' },
+      { keys: ['Space'], action: 'Picks up the focused card, and drops it where it is.' },
+      { keys: ['↑', '↓'], action: 'With a card picked up: moves it one place up or down in its column.' },
+      { keys: ['←', '→'], action: 'With a card picked up: moves it to the previous or next column (collapsed ones are skipped); mirrored right to left.' },
+      { keys: ['Home', 'End'], action: 'With a card picked up: moves it to the top or bottom of its column.' },
+      { keys: ['Esc'], action: 'Puts a picked-up card back where it was, also during a pointer drag.' },
+    ],
+  },
   'agent-undo-log': {
     summary:
       'A `section` named "Agent actions" (`actionLog` in SatinLabels, or your `aria-label`), so it is a region landmark, around a list of runs. Each run\'s header is a `button` with `aria-expanded` and `aria-controls`, read as its name, how many actions and when; a closed run\'s actions leave the accessibility tree. Every Revert is an icon button named after its action and target ("Revert Edited src/routes/auth.ts"), with a tooltip, and stays the one focused button through the revert: busy (`aria-busy`) while it runs, then Restore, or Reverted with `aria-disabled`, or Try again after a failure, whose reason is shown as text. An action that can\'t be reverted has no button (its lock is hidden); its reason is read with "Can\'t be reverted:" before it. The glyphs and the rail are hidden. Failures and restores are read from a polite `status` region; a revert is read out by its toast, whose Undo screen readers hear as "Restore it from the action log", since the row\'s Restore does the same. The button of the run ⌘Z would revert carries `aria-keyshortcuts` and shows the keys as Kbd. Reverted rows are struck through and muted, and say so in their button.',
@@ -623,6 +605,24 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
       { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
       { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
+    ],
+  },
+  scheduler: {
+    summary:
+      'Day and Week are a `grid` named after the period and the time zone ("November 15 – 21, 2026, Central European Standard Time"): a column header per day (today with `aria-current="date"`), a row header per slot, and a `gridcell` per slot named with its day and time, "busy" or "free", and the events in it; picked slots are `aria-selected`. The time column\'s header gives the zone\'s long name. Month is a `grid` of day cells named with the date and how many events. Events are `button`s named with their title and full time, described by their attendees and how to move them; they sit in their slot, reached from the grid with Enter. Moves, resizes, picks and period changes are read out from a polite `status` region. Dragging works from the keyboard too (Alt and the arrows), so no move needs a pointer.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves into the grid, onto the last slot (or day) focused, and on out.' },
+      { keys: ['←', '→'], action: 'Grid: the slot on the previous or next day, paging past the period\'s ends; mirrored right to left.' },
+      { keys: ['↑', '↓'], action: 'Grid: the previous or next slot (the all-day row above the first); Month: the week before or after.' },
+      { keys: ['Home', 'End'], action: 'Grid: the first or last day shown (Ctrl: the all-day row, the last slot).' },
+      { keys: ['Page Up', 'Page Down'], action: 'Grid: the previous or next week, day or month.' },
+      { keys: ['Shift+↑', 'Shift+↓'], action: 'Grid: stretches a pick over more slots of the day; Enter picks them.' },
+      { keys: ['Enter', 'Space'], action: 'Grid: on an empty slot, picks it (`onSlotSelect`, and `slotPopover`); on an event\'s slot, moves to the event. Shift+Enter always picks. On an event: opens it (`onEventOpen`, and `eventPopover`).' },
+      { keys: ['Alt+←', 'Alt+→'], action: 'Event: moves it a day earlier or later, at the same time.' },
+      { keys: ['Alt+↑', 'Alt+↓'], action: 'Event: moves it a slot earlier or later (Month: a week).' },
+      { keys: ['Alt+Shift+↑', 'Alt+Shift+↓'], action: 'Event: ends it a slot earlier or later, never shorter than one slot.' },
+      { keys: ['↑', '↓'], action: 'Event: the previous or next event that day (Month: and "3 more").' },
+      { keys: ['Esc'], action: 'Event: back to its slot in the grid. Grid: clears the pick. While dragging: puts the event back.' },
     ],
   },
   stepper: {

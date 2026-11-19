@@ -2386,6 +2386,46 @@
       ]
     },
     {
+      "name": "data-grid",
+      "type": "registry:ui",
+      "title": "Data grid",
+      "description": "The table people work in: sort, resize, pin and hide columns, edit cells in place, and save views.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/alert.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/dialog.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/pagination.json",
+        "https://uisatin.dev/r/select.json",
+        "https://uisatin.dev/r/skeleton.json",
+        "https://uisatin.dev/r/spinner.json",
+        "https://uisatin.dev/r/table.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Data grid docs: https://uisatin.dev/components/data-grid",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/data-grid.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "date-availability",
       "type": "registry:ui",
       "title": "Availability calendar",
@@ -2448,6 +2488,38 @@
       ]
     },
     {
+      "name": "kanban-board",
+      "type": "registry:ui",
+      "title": "Kanban board",
+      "description": "Columns of cards moved between stages by drag, touch or keyboard, with counts, limits and Undo.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/card.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/skeleton.json",
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "docs": "Kanban board docs: https://uisatin.dev/components/kanban-board",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/kanban-board.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "review-queue",
       "type": "registry:ui",
       "title": "Review queue",
@@ -2496,6 +2568,41 @@
       "files": [
         {
           "path": "registry/satin/ui/rolling-number.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "scheduler",
+      "type": "registry:ui",
+      "title": "Scheduler",
+      "description": "A day, week or month of events over time slots: drag to move or resize, pick free slots to book.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/hover-card.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/popover.json",
+        "https://uisatin.dev/r/segmented-control.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Scheduler docs: https://uisatin.dev/components/scheduler",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/scheduler.tsx",
           "type": "registry:ui"
         }
       ]
@@ -3817,6 +3924,21 @@
       ]
     },
     {
+      "name": "data-grid-demo",
+      "type": "registry:example",
+      "title": "Data grid example",
+      "description": "The shortest use of Data grid, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/data-grid.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/data-grid-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "date-availability-demo",
       "type": "registry:example",
       "title": "Availability calendar example",
@@ -3847,6 +3969,21 @@
       ]
     },
     {
+      "name": "kanban-board-demo",
+      "type": "registry:example",
+      "title": "Kanban board example",
+      "description": "The shortest use of Kanban board, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/kanban-board.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/kanban-board-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "review-queue-demo",
       "type": "registry:example",
       "title": "Review queue example",
@@ -3857,6 +3994,21 @@
       "files": [
         {
           "path": "registry/satin/examples/review-queue-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "scheduler-demo",
+      "type": "registry:example",
+      "title": "Scheduler example",
+      "description": "The shortest use of Scheduler, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/scheduler.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/scheduler-demo.tsx",
           "type": "registry:example"
         }
       ]

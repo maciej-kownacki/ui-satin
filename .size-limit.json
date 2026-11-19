@@ -45,34 +45,6 @@
     "limit": "12 kB"
   },
   {
-    "name": "Availability calendar (Satin Pro; Calendar, Dot and Tooltip come from @uisatin/ui, the peer, left out)",
-    "path": "packages/ui-pro/dist/components/date-availability.js",
-    "import": "{ AvailabilityCalendar, AvailabilityDatePicker }",
-    "name": "Permission request (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/agent-permissions.js",
-    "import": "{ AgentPermissionRequest }",
-    "name": "Kanban board (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/kanban-board.js",
-    "import": "{ KanbanBoard, KanbanCard }",
-    "name": "Data grid (Satin Pro, with Radix DropdownMenu; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/data-grid.js",
-    "import": "{ DataGrid, DataGridColumnsMenu, DataGridViewMenu, DataGridToolbar }",
-    "name": "Scheduler (Satin Pro, with Radix Popover and its positioning, which an app shares with Free; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/scheduler.js",
-    "import": "{ Scheduler }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "2 kB"
-    "limit": "5 kB"
-    "limit": "8 kB"
-    "limit": "18 kB"
-    "limit": "36 kB"
-  },
-  {
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,
@@ -122,6 +94,18 @@
     "limit": "3 kB"
   },
   {
+    "name": "Data grid (Satin Pro, with Radix DropdownMenu; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/data-grid.js",
+    "import": "{ DataGrid, DataGridColumnsMenu, DataGridViewMenu, DataGridToolbar }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "18 kB"
+  },
+  {
     "name": "Date picker (DatePicker, DateRangePicker and datePresets, with Radix Popover and Select)",
     "path": "packages/ui/dist/components/date-picker.js",
     "import": "{ DatePicker, DateRangePicker, datePresets }",
@@ -133,6 +117,18 @@
     "limit": "54 kB"
   },
   {
+    "name": "Availability calendar (Satin Pro; Calendar, Dot and Tooltip come from @uisatin/ui, the peer, left out)",
+    "path": "packages/ui-pro/dist/components/date-availability.js",
+    "import": "{ AvailabilityCalendar, AvailabilityDatePicker }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "2 kB"
+  },
+  {
     "name": "DropdownMenu with submenus and checkable rows (Radix DropdownMenu, iconoir chevron)",
     "path": "packages/ui/dist/components/dropdown.js",
     "import": "{ DropdownMenu, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem }",
@@ -142,6 +138,18 @@
     ],
     "gzip": true,
     "limit": "46 kB"
+  },
+  {
+    "name": "Scheduler (Satin Pro, with Radix Popover and its positioning, which an app shares with Free; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/scheduler.js",
+    "import": "{ Scheduler }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "36 kB"
   },
   {
     "name": "Reviewable changes (Satin Pro; @uisatin/ui left out, it is the peer)",
@@ -166,6 +174,30 @@
     ],
     "gzip": true,
     "limit": "9 kB"
+  },
+  {
+    "name": "Kanban board (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/kanban-board.js",
+    "import": "{ KanbanBoard, KanbanCard }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "8 kB"
+  },
+  {
+    "name": "Permission request (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-permissions.js",
+    "import": "{ AgentPermissionRequest }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "5 kB"
   },
   {
     "name": "Agent plan (Satin Pro; @uisatin/ui left out, it is the peer)",

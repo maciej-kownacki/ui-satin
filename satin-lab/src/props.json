@@ -2522,6 +2522,300 @@
       ]
     }
   },
+  "data-grid": {
+    "DataGrid": {
+      "type": "DataGridProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "columns",
+          "type": "DataGridColumn<R>[]",
+          "required": true
+        },
+        {
+          "name": "rows",
+          "type": "R[]",
+          "required": true
+        },
+        {
+          "name": "getRowId",
+          "type": "(row: R) => string",
+          "required": false,
+          "description": "The row's id, for selection, edits and React keys. Defaults to `row.id`."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "The grid's accessible name."
+        },
+        {
+          "name": "rowLabel",
+          "type": "(row: R) => string",
+          "required": false,
+          "description": "Names a row for its select checkbox (\"Select Ada Okafor\"). Defaults to the first column's text, else the row's number."
+        },
+        {
+          "name": "sort",
+          "type": "DataGridSort",
+          "required": false
+        },
+        {
+          "name": "defaultSort",
+          "type": "DataGridSort",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onSortChange",
+          "type": "(sort: DataGridSort) => void",
+          "required": false
+        },
+        {
+          "name": "manualSort",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Leave rows in the order given (sort them yourself in onSortChange)."
+        },
+        {
+          "name": "selectable",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "A checkbox column; `selection` holds the picked rows' ids."
+        },
+        {
+          "name": "selection",
+          "type": "string[]",
+          "required": false
+        },
+        {
+          "name": "defaultSelection",
+          "type": "string[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(ids: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "columnVisibility",
+          "type": "Record<string, boolean>",
+          "required": false,
+          "description": "Column key → shown. A key that's left out shows."
+        },
+        {
+          "name": "defaultColumnVisibility",
+          "type": "Record<string, boolean>",
+          "required": false,
+          "default": "{}"
+        },
+        {
+          "name": "onColumnVisibilityChange",
+          "type": "(visibility: Record<string, boolean>) => void",
+          "required": false
+        },
+        {
+          "name": "columnOrder",
+          "type": "string[]",
+          "required": false,
+          "description": "Column keys in the order to show them; keys left out follow in `columns` order. Pinned columns keep their edge."
+        },
+        {
+          "name": "defaultColumnOrder",
+          "type": "string[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onColumnOrderChange",
+          "type": "(order: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "columnSizing",
+          "type": "Record<string, number>",
+          "required": false,
+          "description": "Column key → width in px; a key that's left out takes the column's `width`."
+        },
+        {
+          "name": "defaultColumnSizing",
+          "type": "Record<string, number>",
+          "required": false,
+          "default": "{}"
+        },
+        {
+          "name": "onColumnSizingChange",
+          "type": "(sizing: Record<string, number>) => void",
+          "required": false
+        },
+        {
+          "name": "density",
+          "type": "'compact' | 'default'",
+          "required": false,
+          "default": "'default'",
+          "description": "Row height: 40 (`default`) or 32 (`compact`)."
+        },
+        {
+          "name": "onCellEdit",
+          "type": "(rowId: string, key: string, value: unknown) => unknown",
+          "required": false,
+          "description": "Called with an edited cell's new value; update `rows` with it. Return a promise and the cell shows a Spinner until it settles, or an error if it rejects (its message is shown)."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Skeleton rows in place of the body."
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "The rows failed to load: a message (or `true` for the default one) in place of the body."
+        },
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Try again on the error state."
+        },
+        {
+          "name": "filtered",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The rows are filtered: with none left, the grid says No results instead of empty."
+        },
+        {
+          "name": "onClearFilters",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Clear filters on the No results state."
+        },
+        {
+          "name": "empty",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What shows when there are no rows (not filtered). Defaults to an EmptyState."
+        },
+        {
+          "name": "virtualize",
+          "type": "boolean",
+          "required": false,
+          "description": "Draw only the rows on screen. Defaults to on above 200 rows."
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "required": false,
+          "description": "Rows per page, with a Pagination under the grid. Left out, every row is in one scrolling body."
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "required": false,
+          "description": "The current page, from 1."
+        },
+        {
+          "name": "defaultPage",
+          "type": "number",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "onPageChange",
+          "type": "(page: number) => void",
+          "required": false
+        },
+        {
+          "name": "toolbar",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Above the grid: `DataGridToolbar` with search, filters, `DataGridColumnsMenu`, `DataGridViewMenu`."
+        }
+      ]
+    },
+    "DataGridToolbar": {
+      "description": "A row above the grid for search, filters and the menus. Other props, `ref` included, go to its `div`.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "DataGridColumnsMenu": {
+      "description": "The Columns menu: a switch per column (a column with `hideable: false` stays on), Alt with ↑ or ↓ moves the highlighted column, and Reset columns brings back every column in its first order and width. Other props, `ref` included, go to the trigger Button.",
+      "type": "DataGridColumnsMenuProps",
+      "extends": [
+        "Omit<ButtonProps, 'children' | 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The trigger's text. Defaults to the `dataGridColumns` label (\"Columns\")."
+        }
+      ]
+    },
+    "DataGridViewMenu": {
+      "description": "The saved-views menu: pick a view to put the grid in its sort, columns and filters; save the grid as it is as a new view (a dialog asks for the name), save changes to the view in use, or delete it. A Dot on the trigger marks unsaved changes. Other props, `ref` included, go to the trigger Button.",
+      "type": "DataGridViewMenuProps",
+      "extends": [
+        "Omit<ButtonProps, 'children' | 'asChild' | 'value' | 'defaultValue'>"
+      ],
+      "props": [
+        {
+          "name": "views",
+          "type": "DataGridView<F>[]",
+          "required": false,
+          "description": "The saved views."
+        },
+        {
+          "name": "defaultViews",
+          "type": "DataGridView<F>[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onViewsChange",
+          "type": "(views: DataGridView<F>[]) => void",
+          "required": false,
+          "description": "Called with the new list after a save, an update or a delete."
+        },
+        {
+          "name": "value",
+          "type": "string | null",
+          "required": false,
+          "description": "The view in use, by id; null for none."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(id: string | null, view: DataGridView<F> | null) => void",
+          "required": false,
+          "description": "Called when a view is picked or saved, after the grid takes its sort and columns: apply its `filters` here."
+        },
+        {
+          "name": "filters",
+          "type": "F",
+          "required": false,
+          "description": "The filters in use, saved with a new view and compared to tell a view has unsaved changes."
+        }
+      ]
+    }
+  },
   "date-availability": {
     "AvailabilityCalendar": {
       "description": "The Calendar with each day's free slots: a dot, a tooltip and its name. Other props, `ref` included, go to Calendar's root.",
@@ -5948,6 +6242,169 @@
           "description": "The number itself, which picks the way the digits roll."
         }
       ]
+    }
+  },
+  "scheduler": {
+    "SchedulerRoot": {
+      "description": "The card and its state: put `SchedulerToolbar` and `SchedulerGrid` inside. Other props, `ref` included, go to the card.",
+      "type": "SchedulerRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "view",
+          "type": "SchedulerView",
+          "required": false,
+          "description": "The view shown."
+        },
+        {
+          "name": "defaultView",
+          "type": "SchedulerView",
+          "required": false,
+          "default": "'week'"
+        },
+        {
+          "name": "onViewChange",
+          "type": "(view: SchedulerView) => void",
+          "required": false
+        },
+        {
+          "name": "views",
+          "type": "SchedulerView[]",
+          "required": false,
+          "default": "['day', 'week', 'month']",
+          "description": "The views the switch offers, in order."
+        },
+        {
+          "name": "date",
+          "type": "Date",
+          "required": false,
+          "description": "Any moment in the day, week or month shown. Defaults to today."
+        },
+        {
+          "name": "defaultDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "onDateChange",
+          "type": "(date: Date) => void",
+          "required": false,
+          "description": "Called with midnight (in `timeZone`) of the new day as the period changes."
+        },
+        {
+          "name": "events",
+          "type": "SchedulerEvent[]",
+          "required": false,
+          "description": "The events. Leave it out and pass `defaultEvents` to let the Scheduler keep them."
+        },
+        {
+          "name": "defaultEvents",
+          "type": "SchedulerEvent[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onEventChange",
+          "type": "(event: SchedulerEvent, previous: SchedulerEvent) => void",
+          "required": false,
+          "description": "After a drag, a resize or a keyboard move: the event with its new times, then as it was."
+        },
+        {
+          "name": "onEventOpen",
+          "type": "(event: SchedulerEvent) => void",
+          "required": false,
+          "description": "A click, Enter or Space on an event."
+        },
+        {
+          "name": "onSlotSelect",
+          "type": "(slot: SchedulerSlot) => void",
+          "required": false,
+          "description": "Slots picked with the pointer or Enter: their start and end, or a whole day."
+        },
+        {
+          "name": "availability",
+          "type": "SchedulerAvailability[]",
+          "required": false,
+          "default": "[]",
+          "description": "Free or busy times, drawn under the events."
+        },
+        {
+          "name": "slotMinutes",
+          "type": "number",
+          "required": false,
+          "default": "30",
+          "description": "Minutes per slot: the rows, the drag steps and the keyboard steps."
+        },
+        {
+          "name": "workingHours",
+          "type": "[number, number]",
+          "required": false,
+          "default": "[9, 18]",
+          "description": "From and to, in hours (`[9, 18]`); outside them the grid is bg/canvas."
+        },
+        {
+          "name": "timeZone",
+          "type": "string",
+          "required": false,
+          "description": "An IANA time zone (\"Europe/Warsaw\"). Defaults to the browser's."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "number",
+          "required": false,
+          "description": "The week's first day, 0 (Sunday) to 6. Defaults to `dateLocale`'s."
+        },
+        {
+          "name": "now",
+          "type": "Date",
+          "required": false,
+          "description": "Now, for the now line and today. Defaults to the clock, updated every minute."
+        },
+        {
+          "name": "eventPopover",
+          "type": "(event: SchedulerEvent, close: () => void) => React.ReactNode",
+          "required": false,
+          "description": "The body of a popover that opens on an event, under its title and time (and attendees)."
+        },
+        {
+          "name": "slotPopover",
+          "type": "(slot: SchedulerSlot, close: () => void) => React.ReactNode",
+          "required": false,
+          "description": "The body of a popover that opens on picked slots, under \"New event\" and the time."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target for the popovers and hover cards."
+        }
+      ]
+    },
+    "SchedulerToolbar": {
+      "description": "Today, ‹ ›, the period (a button that opens a DatePickerPanel) and the view switch. `children` go before the switch (a \"New event\" button, a filter). Other props, `ref` included, go to its `div`.",
+      "type": "SchedulerToolbarProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "SchedulerGrid": {
+      "description": "The current view: day and week as a time grid, month as day cells. A new view crossfades in. Other props, `ref` included, go to the `div` that holds it.",
+      "type": "SchedulerGridProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "Scheduler": {
+      "description": "The toolbar over the current view. Other props, `ref` included, go to the card's root `div`. <Scheduler events={events} onEventChange={(e) => save(e)} onSlotSelect={(slot) => create(slot)} timeZone=\"Europe/Warsaw\" />",
+      "type": "SchedulerProps",
+      "extends": [
+        "Omit<SchedulerRootProps, 'children'>"
+      ],
+      "props": []
     }
   },
   "search-bar": {

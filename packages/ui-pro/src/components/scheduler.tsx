@@ -5,7 +5,7 @@ import { Popover as PopoverPrimitive } from 'radix-ui'
 import { Avatar, AvatarGroup, type AvatarTone } from '@uisatin/ui/avatar'
 import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
-import { DatePickerPanel } from '@uisatin/ui/date-picker'
+import { DatePickerPanel, type WeekDay } from '@uisatin/ui/date-picker'
 import { Dot } from '@uisatin/ui/dot'
 import { HoverCard } from '@uisatin/ui/hover-card'
 import { useSatinLabels } from '@uisatin/ui/labels'
@@ -1172,7 +1172,7 @@ export function SchedulerToolbar({ className, children, ...props }: SchedulerToo
             <DatePickerPanel
               value={toLocal(s.anchor)}
               today={s.today !== null ? toLocal(s.today) : undefined}
-              weekStartsOn={s.weekStart}
+              weekStartsOn={s.weekStart as WeekDay}
               onValueChange={(d) => {
                 go(fromLocal(d))
                 setPickerOpen(false)
