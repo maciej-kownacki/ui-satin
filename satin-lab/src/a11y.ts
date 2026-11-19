@@ -177,6 +177,17 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the menu and returns focus to where it was.' },
     ],
   },
+  'command-pages': {
+    summary:
+      'Everything CommandMenu has (a Radix dialog, the search as a `combobox` pointing at the highlighted `option`), plus: on a sub-page a `Breadcrumb` (a `nav` named "Breadcrumb", the current page `aria-current="page"`, earlier pages as buttons) sits above the search, and a polite `status` region reads out each page\'s name with "Backspace goes back" (`commandPageOpened` in SatinLabels) as it opens, and the page\'s name on the way back. The ask row is an option named \'Ask the agent about "…"\' (`commandAskAbout`) under an "Agent" heading. On the agent\'s page the search stops pointing at a list (`aria-expanded="false"`); the answer is a focusable `region` named after the question, AgentLoading says "Thinking…", and the same status region reads the whole answer once it is complete. The key hints, ⌫ Back included, are hidden from screen readers, which hear the hint with each page instead. A row\'s kind icon (a person, a company) is decorative: its label and the group\'s heading say what it is. A completed command\'s `success` toast is read out by the Toaster\'s polite region after the menu closes and focus is back where it was.',
+    keyboard: [
+      { keys: ['↑', '↓'], action: 'Moves the highlight, wrapping at the ends.' },
+      { keys: ['Enter'], action: 'Runs the highlighted row: opens its page, runs it and closes the menu, or asks the agent. On the agent\'s page, asks the follow-up in the search.' },
+      { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
+      { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
+      { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
+    ],
+  },
   'cookie-consent': {
     summary:
       'A `section` named "Cookie consent" (`aria-label` overrides it), so it is a region landmark. It is not a modal and not a live region: focus stays where it was and the page stays usable. The answers are native buttons.',

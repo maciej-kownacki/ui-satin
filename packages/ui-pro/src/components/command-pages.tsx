@@ -8,6 +8,7 @@ import { KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from '@uisatin/ui/kbd'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
 import { StreamingText } from '@uisatin/ui/streaming-text'
+import { toast } from '@uisatin/ui/toast'
 
 /**
  * CommandPages: the Command menu with sub-pages, and the agent for what no command matches.
@@ -25,6 +26,14 @@ import { StreamingText } from '@uisatin/ui/streaming-text'
  *   the question sits over the answer: AgentLoading while `answering` and nothing has come yet,
  *   then StreamingText. The search asks follow-ups there (Enter). Without `answer` and
  *   `answering` the menu closes after onAsk, for an app that answers elsewhere (a chat panel).
+ * - A group's `icon` is the kind of record it lists (a person, a job, a company): every row in it
+ *   without an icon of its own shows it, so each row says what it is.
+ * - A command that completes says so: an item's `success` ("Moved to Negotiation") shows as a
+ *   success toast once it has run, after the promise its onSelect returns, if any. The app needs
+ *   a Toaster. Opening a page or asking the agent is not a completed command.
+ * - The panel opens where CommandMenu puts it, then keeps its top edge there: a page of another
+ *   length, or a shorter list as you type, grows or shrinks it downwards and the search never
+ *   moves.
  * - A new page slides in 8px from where it leads (from the end going in, from the start coming
  *   back) and fades in over --duration-base; not under reduced motion.
  *
@@ -87,13 +96,20 @@ export interface CommandPageItem extends Omit<CommandItem, 'onSelect' | 'keepOpe
   page?: CommandPage
   /**
    * Runs it. The menu closes after, unless it opened a page with `menu.push(page)` (or the item
-   * has a `page`).
+   * has a `page`). Return a promise to hold the `success` toast until it resolves.
    */
-  onSelect?: (menu: CommandPagesControl) => void
+  onSelect?: (menu: CommandPagesControl) => void | Promise<unknown>
+  /**
+   * What it did, in a success toast once it has run: "Moved to Negotiation", "Owner set to Jon
+   * Park". After a returned promise resolves; none if it rejects (report the error yourself).
+   */
+  success?: React.ReactNode
 }
 
 export interface CommandPageGroup {
   label: React.ReactNode
+  /** The kind of record the group lists (a person, a job): the icon of each row without its own. */
+  icon?: React.ReactNode
   items: CommandPageItem[]
 }
 
@@ -228,11 +244,18 @@ export function CommandPages({
   // Backspace went back and is still down: its repeats neither go back again nor delete.
   const heldBack = React.useRef(false)
 
-  // Closed, it forgets its pages: it opens again on the first one.
+  // Where the panel's top edge sits within CommandMenu's frame, from when it opened.
+  const [top, setTop] = React.useState<number | null>(null)
+
+  // Closed, it forgets its pages and its place: it opens again on the first page, where
+  // CommandMenu puts it.
   const [wasOpen, setWasOpen] = React.useState(open)
   if (wasOpen !== open) {
     setWasOpen(open)
-    if (!open && trail.length) setTrail([])
+    if (!open) {
+      if (trail.length) setTrail([])
+      setTop(null)
+    }
   }
 
   // One polite region for the page names and the agent's answer; a new key makes it speak again.
@@ -286,23 +309,28 @@ export function CommandPages({
 
   const select = (item: CommandPageItem) => {
     let pushed = false
-    item.onSelect?.({
+    const ran = item.onSelect?.({
       ...control,
       push: (page) => {
         pushed = true
         push(page, item.label)
       },
     })
-    if (item.page && !pushed) push(item.page, item.label)
-    else if (!pushed && !item.page) close()
+    if (item.page && !pushed) return push(item.page, item.label)
+    if (pushed) return
+    close()
+    const { success } = item
+    if (success == null) return
+    if (ran && typeof ran.then === 'function') ran.then(() => toast.success(success), () => {})
+    else toast.success(success)
   }
 
   const toGroups = (list: CommandPageGroup[]): CommandGroup[] =>
     list.map((g) => ({
       label: g.label,
       items: g.items.map((source) => {
-        const { page, onSelect, ...item } = source
-        return { ...item, keepOpen: true, onSelect: () => select(source) }
+        const { page, onSelect, success, icon, ...item } = source
+        return { ...item, icon: icon ?? g.icon, keepOpen: true, onSelect: () => select(source) }
       }),
     }))
 
@@ -341,9 +369,21 @@ export function CommandPages({
       panel.current = node
       if (typeof ref === 'function') ref(node)
       else if (ref) ref.current = node
+      // As it opens, CommandMenu centres it in its frame: keep that top edge from then on.
+      const frame = node?.parentElement
+      if (node && frame) {
+        const padding = parseFloat(getComputedStyle(frame).paddingTop) || 0
+        const at = Math.max(0, node.offsetTop - padding)
+        setTop((t) => t ?? at)
+      }
     },
     [ref],
   )
+  const anchored: React.CSSProperties | undefined =
+    top == null
+      ? undefined
+      : // CommandMenu's own cap on its height, and never past the frame's bottom.
+        { alignSelf: 'flex-start', marginTop: top, maxHeight: `min(480px, 76vh, calc(100% - ${top}px))` }
 
   React.useLayoutEffect(() => {
     if (!turn.n) return
@@ -387,6 +427,7 @@ export function CommandPages({
     <CommandMenu
       {...props}
       ref={setPanel}
+      style={{ ...props.style, ...anchored }}
       data-page={trail.length}
       open={open}
       onOpenChange={setOpen}

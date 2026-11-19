@@ -1,7 +1,8 @@
 import * as React from 'react'
-import { ArrowRight, EditPencil, Group, Phone, StatsReport, UserPlus, ViewColumns3 } from 'iconoir-react'
+import { ArrowRight, Building, EditPencil, Group, Link, Phone, Suitcase, TriangleFlag, User, UserPlus, ViewColumns3 } from 'iconoir-react'
 import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { SearchBar } from '@uisatin/ui/search-bar'
+import { Toaster } from '@uisatin/ui/toast'
 import { CommandPages, type CommandPage, type CommandPageGroup, type CommandPagesControl } from '@uisatin/pro/command-pages'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -9,6 +10,12 @@ type Stage = 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Won' | 'Lost'
 const STAGES: Stage[] = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost']
 const STAGE_TONE: Record<Stage, BadgeTone> = { Lead: 'neutral', Qualified: 'sky', Proposal: 'plum', Negotiation: 'amber', Won: 'green', Lost: 'neutral' }
 const OWNERS = ['Tara Mendes', 'Jon Park', 'Ada Novak']
+// What the deal touches, by kind: each kind has its icon.
+const RELATED = [
+  { label: 'People', icon: <User />, items: [['dana', 'Dana Whitfield', 'Head of operations'], ['marco', 'Marco Ruiz', 'Legal']] },
+  { label: 'Companies', icon: <Building />, items: [['acme-log', 'Acme Logistics', 'Subsidiary'], ['acme-eu', 'Acme Europe', 'Berlin']] },
+  { label: 'Jobs', icon: <Suitcase />, items: [['dpa', 'DPA review', 'Due Friday'], ['pilot', 'Berlin pilot', 'Q1']] },
+]
 
 const QUESTION = 'what did Acme say last call'
 const ANSWER =
@@ -35,10 +42,11 @@ const STATE_LABEL: Record<string, string> = { root: 'First page', page: 'Sub-pag
 function code(v: Record<string, string>) {
   return `import * as React from 'react'
 import { CommandPages, type CommandPage } from '@uisatin/pro/command-pages'
-import { ArrowRight, EditPencil, Group, Phone, StatsReport, UserPlus, ViewColumns3 } from 'iconoir-react'
+import { ArrowRight, EditPencil, Group, Link, Phone, TriangleFlag, User, UserPlus, ViewColumns3 } from 'iconoir-react'
 
 const stages = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost']
 
+// Mount the app's <Toaster /> once: each command's \`success\` shows there when it has run.
 export function DealCommands({ deal }: { deal: Deal }) {
   // The agent's answer, as it streams in (your chat hook, an SSE reader…).
   const { answer, answering, ask } = useAgentAnswer({ about: deal.id })
@@ -47,11 +55,28 @@ export function DealCommands({ deal }: { deal: Deal }) {
     groups: [
       {
         label: 'Stages',
+        // The kind of record every row is: a stage.
+        icon: <TriangleFlag />,
         items: stages.map((stage) => ({
           id: stage,
           label: stage,
           description: stage === deal.stage ? 'Now' : undefined,
-          onSelect: () => moveDeal(deal.id, stage),
+          onSelect: () => moveDeal(deal.id, stage), // a promise holds the toast until it resolves
+          success: \`Moved to \${stage}\`,
+        })),
+      },
+    ],
+  }
+  const owners: CommandPage = {
+    groups: [
+      {
+        label: 'People',
+        icon: <User />,
+        items: team.map((person) => ({
+          id: person.id,
+          label: person.name,
+          onSelect: () => setOwner(deal.id, person.id),
+          success: \`Owner set to \${person.name}\`,
         })),
       },
     ],
@@ -65,17 +90,17 @@ export function DealCommands({ deal }: { deal: Deal }) {
           label: deal.company,
           items: [
             { id: 'move', label: 'Move deal to…', icon: <ArrowRight />, page: moveTo },
-            { id: 'owner', label: 'Assign owner…', icon: <UserPlus />, page: ownersPage(deal) },
-            { id: 'call', label: 'Log a call', icon: <Phone />, onSelect: () => logCall(deal.id) },
-            { id: 'note', label: 'Add a note', icon: <EditPencil />, onSelect: () => addNote(deal.id) },
+            { id: 'owner', label: 'Assign owner…', icon: <UserPlus />, page: owners },
+            { id: 'related', label: 'Open related…', icon: <Link />, page: relatedPage(deal) },
+            { id: 'call', label: 'Log a call', icon: <Phone />, onSelect: () => logCall(deal.id), success: 'Call logged' },
+            { id: 'note', label: 'Add a note', icon: <EditPencil />, onSelect: () => addNote(deal.id), success: 'Note added' },
           ],
         },
         {
           label: 'Go to',
           items: [
-            { id: 'pipeline', label: 'Pipeline', icon: <ViewColumns3 />, onSelect: () => go('/pipeline') },
-            { id: 'contacts', label: 'Contacts', icon: <Group />, onSelect: () => go('/contacts') },
-            { id: 'reports', label: 'Reports', icon: <StatsReport />, onSelect: () => go('/reports') },
+            { id: 'pipeline', label: 'Pipeline', icon: <ViewColumns3 />, onSelect: () => go('/pipeline'), success: 'Opened Pipeline' },
+            { id: 'contacts', label: 'Contacts', icon: <Group />, onSelect: () => go('/contacts'), success: 'Opened Contacts' },
           ],
         },
       ]}
@@ -121,9 +146,10 @@ function useAgentAnswer() {
 }
 
 /**
- * Opened over a deal, in the middle of the stage. Dismissed (Escape, a click outside, a command),
- * it leaves the deal with its stage and the search it came from, which opens it again. The page's
- * own ⌘K stays with the docs search.
+ * Opened over a deal, in the middle of the stage, then held by its top edge. Dismissed (Escape, a
+ * click outside, a command), it leaves the deal with its stage and owner, the toast saying what
+ * changed, and the search it came from, which opens it again. The page's own ⌘K stays with the
+ * docs search.
  */
 function Preview({ v }: { v: Record<string, string> }) {
   const [stageEl, setStageEl] = React.useState<HTMLDivElement | null>(null)
@@ -138,7 +164,14 @@ function Preview({ v }: { v: Record<string, string> }) {
     groups: [
       {
         label: 'Stages',
-        items: STAGES.map((s) => ({ id: s, label: s, description: s === stage ? 'Now' : undefined, onSelect: () => setStage(s) })),
+        icon: <TriangleFlag />,
+        items: STAGES.map((s) => ({
+          id: s,
+          label: s,
+          description: s === stage ? 'Now' : undefined,
+          onSelect: () => setStage(s),
+          success: `Moved to ${s}`,
+        })),
       },
     ],
   }
@@ -146,9 +179,23 @@ function Preview({ v }: { v: Record<string, string> }) {
     groups: [
       {
         label: 'People',
-        items: OWNERS.map((o) => ({ id: o, label: o, description: o === owner ? 'Owner' : undefined, onSelect: () => setOwner(o) })),
+        icon: <User />,
+        items: OWNERS.map((o) => ({
+          id: o,
+          label: o,
+          description: o === owner ? 'Owner' : undefined,
+          onSelect: () => setOwner(o),
+          success: `Owner set to ${o}`,
+        })),
       },
     ],
+  }
+  const related: CommandPage = {
+    groups: RELATED.map((g) => ({
+      label: g.label,
+      icon: g.icon,
+      items: g.items.map(([id, label, description]) => ({ id, label, description, success: `Opened ${label}` })),
+    })),
   }
   const groups: CommandPageGroup[] = [
     {
@@ -156,16 +203,16 @@ function Preview({ v }: { v: Record<string, string> }) {
       items: [
         { id: 'move', label: 'Move deal to…', icon: <ArrowRight />, page: moveTo },
         { id: 'owner', label: 'Assign owner…', icon: <UserPlus />, page: owners },
-        { id: 'call', label: 'Log a call', icon: <Phone /> },
-        { id: 'note', label: 'Add a note', icon: <EditPencil /> },
+        { id: 'related', label: 'Open related…', icon: <Link />, page: related },
+        { id: 'call', label: 'Log a call', icon: <Phone />, success: 'Call logged' },
+        { id: 'note', label: 'Add a note', icon: <EditPencil />, success: 'Note added' },
       ],
     },
     {
       label: 'Go to',
       items: [
-        { id: 'pipeline', label: 'Pipeline', icon: <ViewColumns3 /> },
-        { id: 'contacts', label: 'Contacts', icon: <Group /> },
-        { id: 'reports', label: 'Reports', icon: <StatsReport /> },
+        { id: 'pipeline', label: 'Pipeline', icon: <ViewColumns3 />, success: 'Opened Pipeline' },
+        { id: 'contacts', label: 'Contacts', icon: <Group />, success: 'Opened Contacts' },
       ],
     },
   ]
@@ -205,6 +252,8 @@ function Preview({ v }: { v: Record<string, string> }) {
         <span>{owner}</span>
       </p>
       <div ref={setStageEl} className="pointer-events-none absolute inset-0 z-10 *:pointer-events-auto" />
+      {/* Each command's success shows here, at the foot of the stage. */}
+      <Toaster className="absolute inset-x-0 bottom-0 z-20 mx-auto w-[397px] max-w-full" />
       {stageEl && (
         <CommandPages
           container={stageEl}

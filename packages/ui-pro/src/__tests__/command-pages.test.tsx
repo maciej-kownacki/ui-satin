@@ -2,6 +2,7 @@ import * as React from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, screen, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin, setReducedMotion } from 'satin-test'
+import { Toaster, toast } from '@uisatin/ui/toast'
 import { CommandPages, type CommandPage, type CommandPageGroup, type CommandPagesControl, type CommandPagesProps } from '../components/command-pages'
 
 const moveTo = (onMove: (stage: string) => void): CommandPage => ({
@@ -59,10 +60,12 @@ const options = () => screen.getAllByRole('option').map((o) => o.textContent)
 const highlighted = () => screen.getAllByRole('option').find((o) => o.getAttribute('aria-selected') === 'true')?.textContent
 const status = () => screen.getAllByRole('status').find((s) => !s.hasAttribute('data-slot'))!
 
-afterEach(() => {
+afterEach(async () => {
   setReducedMotion(false)
   // @ts-expect-error: put jsdom back as it was
   delete HTMLElement.prototype.animate
+  act(() => toast.dismiss())
+  await act(() => new Promise((resolve) => setTimeout(resolve, 600)))
 })
 
 describe('CommandPages', () => {
@@ -212,6 +215,75 @@ describe('CommandPages', () => {
     await user.clear(field())
     await user.type(field(), 'move{Enter}')
     expect(animate).toHaveBeenCalledTimes(2)
+  })
+
+  it('shows a group’s icon, the kind of record it lists, on each row without its own', async () => {
+    const people: CommandPageGroup[] = [
+      {
+        label: 'People',
+        icon: <svg data-testid="person" />,
+        items: [
+          { id: 'tara', label: 'Tara Mendes' },
+          { id: 'acme', label: 'Acme Corp', icon: <svg data-testid="company" /> },
+        ],
+      },
+    ]
+    renderWithSatin(<CommandPages defaultOpen hotkey={false} groups={people} />)
+    const [tara, acme] = screen.getAllByRole('option')
+    expect(within(tara).getByTestId('person')).toBeTruthy()
+    expect(within(acme).queryByTestId('person')).toBeNull()
+    expect(within(acme).getByTestId('company')).toBeTruthy()
+  })
+
+  it('says what a completed command did in a success toast, after its promise, and not for a page', async () => {
+    let resolve = () => {}
+    const groups: CommandPageGroup[] = [
+      {
+        label: 'Deal',
+        items: [
+          { id: 'call', label: 'Log a call', success: 'Call logged' },
+          { id: 'save', label: 'Save', onSelect: () => new Promise<void>((r) => (resolve = r)), success: 'Saved' },
+          { id: 'move', label: 'Move deal to…', page: { groups: [] }, success: 'Never shown' },
+        ],
+      },
+    ]
+    function Menu() {
+      const [open, setOpen] = React.useState(true)
+      return (
+        <>
+          <button onClick={() => setOpen(true)}>Commands</button>
+          <CommandPages open={open} onOpenChange={setOpen} hotkey={false} groups={groups} />
+          <Toaster />
+        </>
+      )
+    }
+    const { user } = renderWithSatin(<Menu />)
+    await user.type(field(), 'move{Enter}')
+    expect(screen.queryByText('Never shown')).toBeNull()
+    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('button', { name: 'Commands' }))
+    await user.type(field(), 'call{Enter}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(await screen.findByText('Call logged')).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: 'Commands' }))
+    await user.type(field(), 'save{Enter}')
+    expect(screen.queryByText('Saved')).toBeNull()
+    await act(async () => resolve())
+    expect(await screen.findByText('Saved')).toBeTruthy()
+  })
+
+  it('keeps its top edge where it opened as pages change', async () => {
+    const offsetTop = vi.spyOn(HTMLElement.prototype, 'offsetTop', 'get').mockReturnValue(120)
+    const { user } = renderWithSatin(<CommandPages defaultOpen hotkey={false} groups={groupsFor()} />)
+    const panel = screen.getByRole('dialog')
+    expect(panel.style.alignSelf).toBe('flex-start')
+    expect(panel.style.marginTop).toBe('120px')
+    // Measured once: a page of another length doesn't move it.
+    offsetTop.mockReturnValue(40)
+    await user.type(field(), 'move{Enter}')
+    expect(panel.style.marginTop).toBe('120px')
+    offsetTop.mockRestore()
   })
 
   it('speaks the app’s language', async () => {
