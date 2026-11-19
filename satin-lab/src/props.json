@@ -3114,7 +3114,7 @@
           "name": "children",
           "type": "React.ReactNode",
           "required": true,
-          "description": "`DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s."
+          "description": "`DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s; also `DropdownMenuSub`s, `DropdownMenuCheckboxItem`s and `DropdownMenuRadioGroup`s."
         },
         {
           "name": "open",
@@ -3160,7 +3160,7 @@
           "name": "container",
           "type": "HTMLElement | null",
           "required": false,
-          "description": "Portal target. Defaults to `document.body`."
+          "description": "Portal target, for the menu and its submenus. Defaults to `document.body`."
         },
         {
           "name": "aria-label",
@@ -3173,6 +3173,12 @@
           "type": "(event: Event) => void",
           "required": false,
           "description": "Focus moved outside a non-modal menu; call `preventDefault()` to keep it open."
+        },
+        {
+          "name": "dir",
+          "type": "'ltr' | 'rtl'",
+          "required": false,
+          "description": "Reading direction: which arrow opens a submenu and the side it opens on. Read from the trigger when left out."
         },
         {
           "name": "className",
@@ -3262,6 +3268,171 @@
           "name": "label",
           "type": "string",
           "required": true
+        }
+      ]
+    },
+    "DropdownMenuSub": {
+      "description": "A submenu: holds the row that opens it, a `DropdownMenuSubTrigger`, and its panel, a `DropdownMenuSubContent` with the submenu's rows. Renders no element of its own.",
+      "type": "DropdownMenuSubProps",
+      "extends": [],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "A `DropdownMenuSubTrigger` and its `DropdownMenuSubContent`."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        }
+      ]
+    },
+    "DropdownMenuSubTrigger": {
+      "description": "The row that opens a submenu: an item's look, ending in a text/muted chevron (mirrored right to left). It stays filled bg/selected while its submenu is open. Hover, →, Enter or Space opens it. Other props, `ref` included, go to the row (the Radix SubTrigger).",
+      "type": "DropdownMenuSubTriggerProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownPrimitive.SubTrigger>, 'children' | 'asChild'>",
+        "Pick<MenuItemContentProps, 'description' | 'icon' | 'iconSize' | 'layout'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "DropdownMenuSubContent": {
+      "description": "A submenu's panel: the menu's surface, 220px wide, beside its row with the first rows level (4px off). It fades in from 4px on the side it opens, so it seems to come out of the row; right to left, or with no room on the right, that is the left. Other props, `ref` included, go to the panel (the Radix SubContent).",
+      "type": "DropdownMenuSubContentProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownPrimitive.SubContent>, 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The submenu's rows: `DropdownMenuItem`s, groups, checkable rows, or another `DropdownMenuSub`."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to the menu's own `container`."
+        }
+      ]
+    },
+    "DropdownMenuCheckboxItem": {
+      "description": "A row that turns something on or off, like a column of a view: a leading 16px checkbox (the Checkbox's look) before the item's content. Its role is `menuitemcheckbox`, with `aria-checked`. Enter or Space toggles it; the menu stays open unless `closeOnSelect`. Other props, `ref` included, go to the row (the Radix CheckboxItem).",
+      "type": "DropdownMenuCheckboxItemProps",
+      "extends": [
+        "Omit< React.ComponentProps<typeof DropdownPrimitive.CheckboxItem>, 'children' | 'checked' | 'defaultChecked' | 'onCheckedChange' >",
+        "Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "checked",
+          "type": "boolean | 'indeterminate'",
+          "required": false,
+          "description": "Controlled state. `'indeterminate'` for a row that stands for a set only partly on."
+        },
+        {
+          "name": "defaultChecked",
+          "type": "boolean | 'indeterminate'",
+          "required": false,
+          "default": "false",
+          "description": "The state it starts in, when uncontrolled."
+        },
+        {
+          "name": "onCheckedChange",
+          "type": "(checked: boolean) => void",
+          "required": false,
+          "description": "The row was toggled; an indeterminate row turns on."
+        },
+        {
+          "name": "closeOnSelect",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Closes the menu once toggled. Off, so several rows can be set in one go."
+        }
+      ]
+    },
+    "DropdownMenuRadioGroup": {
+      "description": "One choice among `DropdownMenuRadioItem`s, like a sort order or a stage: a group with the `DropdownMenuGroup` look (header, rule under it). Other props, `ref` included, go to the group (the Radix RadioGroup).",
+      "type": "DropdownMenuRadioGroupProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownPrimitive.RadioGroup>, 'value' | 'defaultValue' | 'onValueChange'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The 24px group header; it also names the group for screen readers."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "Controlled: the selected row's `value`."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "description": "The row selected at first, when uncontrolled."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false
+        }
+      ]
+    },
+    "DropdownMenuRadioItem": {
+      "description": "One option in a `DropdownMenuRadioGroup`. The selected row is filled bg/selected and ends in the same status-green check as a `selected` item. Its role is `menuitemradio`, with `aria-checked`. Other props, `ref` included, go to the row (the Radix RadioItem).",
+      "type": "DropdownMenuRadioItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownPrimitive.RadioItem>, 'children'>",
+        "Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "What `onValueChange` reports when this row is chosen."
+        },
+        {
+          "name": "closeOnSelect",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Closes the menu once chosen. On, since one choice ends the question."
         }
       ]
     }

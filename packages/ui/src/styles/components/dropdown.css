@@ -1,0 +1,18 @@
+/*
+ * Dropdown submenus (components/dropdown.tsx): the panel fades in from 4px on the side it opens,
+ * so it seems to come out of its row. Radix puts the side it took in data-side: right, or left
+ * right to left and when there is no room on the right, so the motion follows the panel. 150 ms,
+ * quicker than the menu itself, since submenus open as the pointer passes over their rows.
+ */
+@keyframes satin-submenu-in-right {
+  from { opacity: 0; transform: translateX(-4px); }
+}
+@keyframes satin-submenu-in-left {
+  from { opacity: 0; transform: translateX(4px); }
+}
+[data-slot='dropdown-sub-content'][data-state='open'][data-side='right'] {
+  animation: satin-submenu-in-right var(--duration-fast) var(--ease-out);
+}
+[data-slot='dropdown-sub-content'][data-state='open'][data-side='left'] {
+  animation: satin-submenu-in-left var(--duration-fast) var(--ease-out);
+}

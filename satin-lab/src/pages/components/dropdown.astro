@@ -1,16 +1,31 @@
 ---
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
+import Chip from '../../components/Chip.astro'
 import DropdownDemo, { options } from '../../demos/dropdown'
+import DropdownSubmenusDemo, { options as submenuOptions } from '../../demos/dropdown-submenus'
 import { api } from '../../api'
 import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
+const submenuHtml = await highlight(submenuOptions)
 ---
 
 <Docs current="dropdown">
   <DocSection item={page('dropdown')} api={api['dropdown']}>
     <DropdownDemo client:load codeHtml={codeHtml} />
+
+    <section aria-labelledby="submenus-title" class="flex flex-col gap-4 pt-8">
+      <h2 id="submenus-title" class="text-lg font-medium text-text-default">Submenus and checkable items</h2>
+      <p class="text-base leading-6 text-text-muted">
+        A row that leads to more choices, like Move to, is a <Chip>DropdownMenuSub</Chip>: its <Chip>DropdownMenuSubTrigger</Chip> opens
+        the <Chip>DropdownMenuSubContent</Chip> beside it on hover, → or Enter, and the pointer can cut across to it without closing
+        it. <Chip>DropdownMenuCheckboxItem</Chip> rows switch things on and off and keep the menu open, so a view can be set in one go;
+        <Chip>DropdownMenuRadioItem</Chip> rows in a <Chip>DropdownMenuRadioGroup</Chip> pick one value and mark it with the selected
+        check. Open a candidate’s menu to move them, or View to change the columns.
+      </p>
+      <DropdownSubmenusDemo client:load codeHtml={submenuHtml} />
+    </section>
   </DocSection>
 </Docs>

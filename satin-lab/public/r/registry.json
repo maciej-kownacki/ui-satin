@@ -857,6 +857,7 @@
       "title": "Dropdown",
       "description": "Opens a short list of actions or values from a button.",
       "dependencies": [
+        "iconoir-react@^7.12.2",
         "radix-ui@^1.8.1"
       ],
       "registryDependencies": [
