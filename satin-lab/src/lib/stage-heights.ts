@@ -50,6 +50,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'File upload': [440, 440],
   'Date picker': [540, 600],
   'Time picker': [508, 760],
+  'Date picker presets': [504, 504],
   'Input OTP': [240, 240],
   'Number input': [240, 240],
   'Context menu': [400, 400],

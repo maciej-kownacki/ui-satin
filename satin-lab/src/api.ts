@@ -515,7 +515,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'date-picker': {
-    description: '`DatePicker` and `DateRangePicker` are fields with the Input skin that open a `Calendar` in a popover. The range picker waits for Apply. `Calendar` works on its own too, as one month or two.',
+    description: '`DatePicker` and `DateRangePicker` are fields with the Input skin that open a `Calendar` in a popover. The range picker waits for Apply. `Calendar` works on its own too, as one month or two. `presets` lists shortcuts before the calendar; `datePresets` holds the common ones.',
     props: [
       { name: 'DatePicker.value', type: ['Date', 'null'] },
       { name: 'DatePicker.defaultValue', type: ['Date', 'null'] },
@@ -528,6 +528,8 @@ export const api: Record<string, Api> = {
       { name: 'Calendar.months', type: ['1', '2'], default: '1' },
       { name: 'min / max', type: ['Date'] },
       { name: 'today', type: ['Date'] },
+      { name: 'presets', type: ['DatePreset[]'] },
+      { name: 'weekStartsOn', type: ['0', '1', '2', '3', '4', '5', '6'], default: 'locale' },
       { name: 'label / hint / error', type: ['ReactNode'] },
     ],
   },
