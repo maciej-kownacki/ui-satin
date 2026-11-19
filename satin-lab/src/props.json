@@ -5622,6 +5622,332 @@
       ]
     }
   },
+  "time-picker": {
+    "TimeList": {
+      "description": "The list of times on its own: a focusable `listbox`, named \"Time\" (the `time` label) unless you name it. Arrows move the highlight, Home and End go to the first and last time, Page Up and Down an hour, typing jumps to the time typed, Enter or Space picks. Give it a height (or a flex parent) and it scrolls. Other props, `ref` included, go to the listbox.",
+      "type": "TimeListProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "TimeValue | null",
+          "required": false,
+          "description": "The picked time."
+        },
+        {
+          "name": "defaultValue",
+          "type": "TimeValue | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: TimeValue) => void",
+          "required": false,
+          "description": "Called when a time is picked (click, Enter or Space)."
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "required": false,
+          "default": "15",
+          "description": "Minutes between the listed times, from midnight."
+        },
+        {
+          "name": "min",
+          "type": "TimeValue",
+          "required": false,
+          "description": "Times before this are dimmed and can't be picked."
+        },
+        {
+          "name": "max",
+          "type": "TimeValue",
+          "required": false,
+          "description": "Times after this are dimmed and can't be picked."
+        },
+        {
+          "name": "isTimeDisabled",
+          "type": "(time: TimeValue) => boolean",
+          "required": false,
+          "description": "Dims a time and keeps it from being picked: a booked slot, a lunch break."
+        },
+        {
+          "name": "format",
+          "type": "TimeFormat",
+          "required": false,
+          "description": "12- or 24-hour. Defaults to how the `dateLocale` label's locale writes times."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "TimePicker": {
+      "description": "A time field: type a time or pick one from the list under it. Other props, `ref` included, go to the text input; `className` styles the field around it.",
+      "type": "TimePickerProps",
+      "extends": [
+        "Omit<React.ComponentProps<'input'>, 'value' | 'defaultValue' | 'size' | 'type' | 'min' | 'max' | 'step' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "TimeValue | null",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "TimeValue | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: TimeValue | null) => void",
+          "required": false,
+          "description": "A picked or typed time; `null` when the field is cleared or what was typed can't be picked."
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "required": false,
+          "default": "15",
+          "description": "Minutes between the listed times, from midnight. Typed times needn't fall on a step."
+        },
+        {
+          "name": "min",
+          "type": "TimeValue",
+          "required": false,
+          "description": "Times before this are dimmed in the list, and typing one marks the field invalid."
+        },
+        {
+          "name": "max",
+          "type": "TimeValue",
+          "required": false,
+          "description": "Times after this are dimmed in the list, and typing one marks the field invalid."
+        },
+        {
+          "name": "isTimeDisabled",
+          "type": "(time: TimeValue) => boolean",
+          "required": false,
+          "description": "Dims a time and keeps it from being picked or typed: a booked slot, a lunch break."
+        },
+        {
+          "name": "format",
+          "type": "TimeFormat",
+          "required": false,
+          "description": "12- or 24-hour. Defaults to how the `dateLocale` label's locale writes times."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "The list of times."
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md' | 'lg'",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "onInteractOutside",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "A press outside the field and the list; `preventDefault()` keeps the list open."
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer wrapper (label + field + hint). `className` styles the field."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    },
+    "DateTimePickerPanel": {
+      "description": "The date-and-time panel on its own, in place: DatePickerPanel's calendar with a column of times beside it. Picking a day moves focus to the times. Other props, `ref` included, go to the surface.",
+      "type": "DateTimePickerPanelProps",
+      "extends": [
+        "DateTimeOptions",
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false,
+          "description": "The picked date and time."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false,
+          "description": "Called once a day and a time are both picked, and on every change after."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "DateTimePicker": {
+      "description": "A date and time field: DatePicker's field, with a clock's worth of times beside the calendar. Pick a day, then a time; the time closes it. Other props, `ref` included, go to the trigger button.",
+      "type": "DateTimePickerProps",
+      "extends": [
+        "DateTimeOptions",
+        "DateTimeTriggerAttributes"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "Date | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false,
+          "description": "Called once a day and a time are both picked, and on every change after."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Shown while nothing is picked. Defaults to the `pickDateTime` label."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Submits `YYYY-MM-DDTHH:mm` with a form, as `<input type=\"datetime-local\">` does."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md' | 'lg'",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "onOpenAutoFocus",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "Called as the panel opens and takes focus; `preventDefault()` leaves focus where it was."
+        },
+        {
+          "name": "onInteractOutside",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "A press outside the panel; `preventDefault()` keeps it open."
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer wrapper (label + field + hint). `className` styles the field."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
   "toast": {
     "Toast": {
       "description": "A single toast on its own. Lives inside `<Toaster>` (it needs the Radix toast provider).",

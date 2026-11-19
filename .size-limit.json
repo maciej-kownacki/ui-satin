@@ -33,7 +33,7 @@
     "limit": "30 kB"
   },
   {
-    "name": "Time picker (TimePicker and DateTimePicker, with Radix Popover, the Calendar and Select's rows)",
+    "name": "Time picker (TimePicker and DateTimePicker: the Date picker's Calendar and its year Select, Radix Popover, the menu rows)",
     "path": "packages/ui/dist/components/time-picker.js",
     "import": "{ TimePicker, DateTimePicker }",
     "ignore": [
@@ -41,7 +41,7 @@
       "react-dom"
     ],
     "gzip": true,
-    "limit": "40 kB"
+    "limit": "55 kB"
   },
   {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
