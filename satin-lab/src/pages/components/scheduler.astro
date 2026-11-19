@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import SchedulerDemo, { options } from '../../demos/scheduler'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="scheduler">
+  <DocSection item={page('scheduler')} api={api['scheduler']}>
+    <SchedulerDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

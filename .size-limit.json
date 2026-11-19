@@ -57,6 +57,9 @@
     "name": "Data grid (Satin Pro, with Radix DropdownMenu; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/data-grid.js",
     "import": "{ DataGrid, DataGridColumnsMenu, DataGridViewMenu, DataGridToolbar }",
+    "name": "Scheduler (Satin Pro, with Radix Popover and its positioning, which an app shares with Free; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/scheduler.js",
+    "import": "{ Scheduler }",
     "ignore": [
       "react",
       "react-dom",
@@ -67,6 +70,7 @@
     "limit": "5 kB"
     "limit": "8 kB"
     "limit": "18 kB"
+    "limit": "36 kB"
   },
   {
     "name": "styles.css",

@@ -203,6 +203,26 @@ export const api: Record<string, Api> = {
       { name: 'disabled', type: ['boolean'], default: 'false' },
     ],
   },
+  scheduler: {
+    description:
+      'The `Scheduler` component (Satin Pro, `@uisatin/pro/scheduler`) shows `events` (`{ id, start, end, title, tone, attendees, readOnly, allDay }`) on a day or week of time slots, or a month of days. Dragging an event, its bottom edge or Alt and the arrow keys call `onEventChange(next, previous)`; picking slots calls `onSlotSelect({ start, end, allDay })`. `availability` marks slots `free` or `busy`. Everything is drawn in `timeZone`, and `zonedDate()` / `zonedParts()` convert wall-clock times in it. `eventPopover` and `slotPopover` fill a popover on an event or on picked slots. Parts: `SchedulerRoot`, `SchedulerToolbar`, `SchedulerGrid`.',
+    props: [
+      { name: 'view', type: ['"day"', '"week"', '"month"'], default: '"week"' },
+      { name: 'onViewChange', type: ['(view: SchedulerView) => void'] },
+      { name: 'date', type: ['Date'] },
+      { name: 'onDateChange', type: ['(date: Date) => void'] },
+      { name: 'events', type: ['SchedulerEvent[]'] },
+      { name: 'onEventChange', type: ['(event: SchedulerEvent, previous: SchedulerEvent) => void'] },
+      { name: 'onSlotSelect', type: ['(slot: SchedulerSlot) => void'] },
+      { name: 'onEventOpen', type: ['(event: SchedulerEvent) => void'] },
+      { name: 'availability', type: ['SchedulerAvailability[]'], default: '[]' },
+      { name: 'slotMinutes', type: ['number'], default: '30' },
+      { name: 'workingHours', type: ['[number, number]'], default: '[9, 18]' },
+      { name: 'timeZone', type: ['string'], default: 'the browser’s' },
+      { name: 'weekStartsOn', type: ['number'], default: 'from dateLocale' },
+      { name: 'eventPopover / slotPopover', type: ['(item, close) => ReactNode'] },
+    ],
+  },
   'segmented-control': {
     description: 'The `SegmentedControl` component is a Radix toggle group that always keeps one segment selected.',
     props: [
@@ -472,6 +492,7 @@ export const api: Record<string, Api> = {
       { name: 'Calendar.mode', type: ['"single"', '"range"'], default: '"single"' },
       { name: 'Calendar.header', type: ['"title"', '"picker"'], default: '"title"' },
       { name: 'Calendar.months', type: ['1', '2'], default: '1' },
+      { name: 'Calendar.weekStartsOn', type: ['number'], default: '1' },
       { name: 'min / max', type: ['Date'] },
       { name: 'today', type: ['Date'] },
       { name: 'presets', type: ['DatePreset[]'] },

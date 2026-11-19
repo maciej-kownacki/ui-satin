@@ -27,6 +27,12 @@ Element.prototype.hasPointerCapture ??= () => false
 Element.prototype.setPointerCapture ??= () => {}
 Element.prototype.releasePointerCapture ??= () => {}
 
+// The sliding pill (Segmented control, Tabs) runs on the Web Animations API, which jsdom lacks.
+Element.prototype.getAnimations ??= () => []
+Element.prototype.animate ??= function animate() {
+  return { cancel() {}, finish() {}, addEventListener() {}, onfinish: null } as unknown as Animation
+}
+
 afterEach(() => {
   cleanup()
   resetMedia()
