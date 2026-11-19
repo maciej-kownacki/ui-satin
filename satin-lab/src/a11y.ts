@@ -514,18 +514,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Alt+↑', 'Alt+↓'], action: '`ranking`: moves the focused row up or down and reads its new place.' },
     ],
   },
-  'agent-plan': {
-    summary:
-      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step’s label is a button named by the label and described as "Press to rename. Alt and arrow keys to move"; pressing it turns the label into a field named "Step 2". Its × is named "Remove <step>"; after a removal focus goes to the next step’s × and the live region says "<step> removed". The step’s number is hidden, since the list already gives the position, and dragging it is pointer-only: a pointer that can’t drag has no other way to reorder (see Known gaps). Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
-      'A `section` named after its `title` ("Review queue" without one). The item on show is a `group` named after it and its place ("Anna Kowalska, 4 of 12"); when it changes, a polite `status` region reads the new name and place, with the decision before it ("Approved. Jonas Weber, 5 of 12"). If focus was on the item, it moves to the new one, which reads itself instead. The bar is a `progressbar` named "Reviewed" with the value "3 of 12 reviewed". Skip, Edit and Approve name their keys with `aria-keyshortcuts`; the Kbd on them is hidden. On an approved item, or while Approve runs, the actions are `aria-disabled` and keep focus. Edit opens a Sheet (a dialog named "Edit", or `editTitle`, with the item as its description); closing it puts focus back where it was. When all are decided, focus that was in the queue moves to the summary\'s heading, and the summary is a region named "All reviewed". Over its list, a SegmentedControl (radios "Approved 9" and "Skipped 3"; arrow keys move between them, Enter or Space picks) picks what the list shows; the list is named after it ("Approved"), and `itemMedia` beside each name is hidden, since the name says who.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through each step’s label and ×, then Run plan.' },
-      { keys: ['Enter', 'Space'], action: 'On a label: renames the step. On ×: removes it.' },
-      { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
-      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to the label (an empty name keeps the old one).' },
-      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to the label.' },
-    ],
-  },
   'agent-loading': {
     summary:
       'A `role="status"` region with `aria-live="polite"`: screen readers read the label ("Thinking…") and read it again when it changes. `time` is hidden from screen readers, so a clock that ticks every second stays quiet. Mount the component before the work starts, or it may not be announced: a live region filled at the moment it appears is the one screen readers miss most. The tetris mark and the bird are hidden, and under reduced motion they stop moving.',
@@ -662,29 +650,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
     ],
   },
-  'agent-permissions': {
-    summary:
-      'A `role="group"` named by its title ("Recruiting agent wants to:") and described by `description`. The scopes are a list; each row is the label of its Checkbox, named by a plain verb and the resource ("Read candidates") and described by its detail, and a scope that sends adds ", Sends as you" to its name. Focus starts on Don’t allow, the safest answer, inside a Dialog (`autoFocus` elsewhere; it never takes focus from someone typing in a chat). After an answer, focus moves to the summary’s button (or the summary) and a polite `status` region reads the answer ("Always allowed: Read candidates, Write notes"); Change brings focus back to Don’t allow. While `onAllow`, `onDeny` or `onRevoke` runs, its button is `aria-busy` and the rest are disabled. The summary is a group named "Recruiting agent · Always allowed".',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the scopes’ checkboxes, then Don’t allow, Allow once and its arrow.' },
-      { keys: ['Space'], action: 'On a scope: ticks or unticks it.' },
-      { keys: ['Enter', 'Space'], action: 'On a button: answers, removes access, or brings the request back (Change).' },
-      { keys: ['Enter', 'Space', '↓'], action: 'On the arrow: opens the menu with Always allow.' },
-      { keys: ['↑', '↓'], action: 'Moves in the menu; Enter picks, Esc closes it and returns to the arrow.' },
-    ],
-  },
-  'agent-plan': {
-    summary:
-      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step has a Checkbox named by its label (unchecked leaves it out), described as "Alt and arrow keys to move", and a ⋯ button named "Options for <step>" whose menu has Edit, Move up and Move down, so a pointer that can’t drag can still reorder. Edit turns the label into a field named "Step 2"; the grip is for the pointer only and hidden. Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through each step’s checkbox and ⋯ button, then Run plan.' },
-      { keys: ['Space'], action: 'On a checkbox: leaves the step out of the run, or puts it back.' },
-      { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
-      { keys: ['Enter', 'Space', '↓'], action: 'On ⋯: opens the step’s menu (Edit, Move up, Move down).' },
-      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to ⋯ (an empty name keeps the old one).' },
-      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to ⋯. In the menu: closes it.' },
-    ],
-  },
   'prompt-mentions': {
     summary:
       'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list.',
@@ -712,15 +677,26 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
     ],
   },
-  'review-queue': {
+  'agent-permissions': {
     summary:
-      'A `section` named after its `title` ("Review queue" without one). The item on show is a `group` named after it and its place ("Anna Kowalska, 4 of 12"); when it changes, a polite `status` region reads the new name and place, with the decision before it ("Approved. Jonas Weber, 5 of 12"). If focus was on the item, it moves to the new one, which reads itself instead. The bar is a `progressbar` named "Reviewed" with the value "3 of 12 reviewed". Skip, Edit and Approve name their keys with `aria-keyshortcuts`; the Kbd on them is hidden. On an approved item, or while Approve runs, the actions are `aria-disabled` and keep focus. Edit opens a Sheet (a dialog named "Edit", or `editTitle`, with the item as its description); closing it puts focus back where it was. When all are decided, focus that was in the queue moves to the summary\'s heading, and the summary is a region named "All reviewed" with the approved and the skipped as two named lists ("Approved 9").',
+      'A `role="group"` named by its title ("Recruiting agent wants to:") and described by `description`. The scopes are a list; each row is the label of its Checkbox, named by a plain verb and the resource ("Read candidates") and described by its detail, and a scope that sends adds ", Sends as you" to its name. Focus starts on Don’t allow, the safest answer, inside a Dialog (`autoFocus` elsewhere; it never takes focus from someone typing in a chat). After an answer, focus moves to the summary’s button (or the summary) and a polite `status` region reads the answer ("Always allowed: Read candidates, Write notes"); Change brings focus back to Don’t allow. While `onAllow`, `onDeny` or `onRevoke` runs, its button is `aria-busy` and the rest are disabled. The summary is a group named "Recruiting agent · Always allowed".',
     keyboard: [
-      { keys: ['J', 'K'], action: 'Next or previous item, while focus is in the queue and not in a field.' },
-      { keys: ['A'], action: 'Approves the item and moves on to the next undecided one.' },
-      { keys: ['S'], action: 'Skips the item and moves on.' },
-      { keys: ['E'], action: 'Opens the editor Sheet; Esc or Cancel closes it on the same item.' },
-      { keys: ['Tab'], action: 'Moves through ‹ ›, the item\'s own controls, then Skip, Edit and Approve.' },
+      { keys: ['Tab'], action: 'Moves through the scopes’ checkboxes, then Don’t allow, Allow once and its arrow.' },
+      { keys: ['Space'], action: 'On a scope: ticks or unticks it.' },
+      { keys: ['Enter', 'Space'], action: 'On a button: answers, removes access, or brings the request back (Change).' },
+      { keys: ['Enter', 'Space', '↓'], action: 'On the arrow: opens the menu with Always allow.' },
+      { keys: ['↑', '↓'], action: 'Moves in the menu; Enter picks, Esc closes it and returns to the arrow.' },
+    ],
+  },
+  'agent-plan': {
+    summary:
+      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step’s label is a button named by the label and described as "Press to rename. Alt and arrow keys to move"; pressing it turns the label into a field named "Step 2". Its × is named "Remove <step>"; after a removal focus goes to the next step’s × and the live region says "<step> removed". The step’s number is hidden, since the list already gives the position, and dragging it is pointer-only: a pointer that can’t drag has no other way to reorder (see Known gaps). Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through each step’s label and ×, then Run plan.' },
+      { keys: ['Enter', 'Space'], action: 'On a label: renames the step. On ×: removes it.' },
+      { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
+      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to the label (an empty name keeps the old one).' },
+      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to the label.' },
     ],
   },
   'table-pro': {
@@ -757,6 +733,17 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'In an editor\'s text or number field: keeps the value and closes the editor. A pick from a single-choice list or a calendar closes it too.' },
       { keys: ['Esc'], action: 'Closes the editor as it is, focus back on its chip. A new chip still without a value goes, focus back on `+ Filter`.' },
       { keys: ['F'], action: 'Opens `+ Filter` while focus is in the bar or the list it filters (not while typing). Set with `shortcut`, or `false` for none.' },
+    ],
+  },
+  'review-queue': {
+    summary:
+      'A `section` named after its `title` ("Review queue" without one). The item on show is a `group` named after it and its place ("Anna Kowalska, 4 of 12"); when it changes, a polite `status` region reads the new name and place, with the decision before it ("Approved. Jonas Weber, 5 of 12"). If focus was on the item, it moves to the new one, which reads itself instead. The bar is a `progressbar` named "Reviewed" with the value "3 of 12 reviewed". Skip, Edit and Approve name their keys with `aria-keyshortcuts`; the Kbd on them is hidden. On an approved item, or while Approve runs, the actions are `aria-disabled` and keep focus. Edit opens a Sheet (a dialog named "Edit", or `editTitle`, with the item as its description); closing it puts focus back where it was. When all are decided, focus that was in the queue moves to the summary\'s heading, and the summary is a region named "All reviewed". Over its list, a SegmentedControl (radios "Approved 9" and "Skipped 3"; arrow keys move between them, Enter or Space picks) picks what the list shows; the list is named after it ("Approved"), and `itemMedia` beside each name is hidden, since the name says who.',
+    keyboard: [
+      { keys: ['J', 'K'], action: 'Next or previous item, while focus is in the queue and not in a field.' },
+      { keys: ['A'], action: 'Approves the item and moves on to the next undecided one.' },
+      { keys: ['S'], action: 'Skips the item and moves on.' },
+      { keys: ['E'], action: 'Opens the editor Sheet; Esc or Cancel closes it on the same item.' },
+      { keys: ['Tab'], action: 'Moves through ‹ ›, the item\'s own controls, then Skip, Edit and Approve.' },
     ],
   },
   'agent-changes-review': {
