@@ -2151,6 +2151,35 @@
       ]
     },
     {
+      "name": "command-pages",
+      "type": "registry:ui",
+      "title": "Command pages",
+      "description": "The ⌘K palette with sub-pages (Move deal to… › Negotiation), and what no command matches handed to an agent.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/breadcrumb.json",
+        "https://uisatin.dev/r/command-menu.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/streaming-text.json"
+      ],
+      "docs": "Command pages docs: https://uisatin.dev/components/command-pages",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/command-pages.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast-batch",
       "type": "registry:ui",
       "title": "Toast batch",
@@ -3311,6 +3340,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "command-pages-demo",
+      "type": "registry:example",
+      "title": "Command pages example",
+      "description": "The shortest use of Command pages, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/command-pages.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/command-pages-demo.tsx",
           "type": "registry:example"
         }
       ]

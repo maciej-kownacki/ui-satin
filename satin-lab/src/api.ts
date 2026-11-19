@@ -431,6 +431,25 @@ export const api: Record<string, Api> = {
       { name: 'children', type: ['ReactNode'] },
     ],
   },
+  'command-pages': {
+    description:
+      'The `CommandPages` component (Satin Pro, `@uisatin/pro/command-pages`) is a `CommandMenu` with sub-pages. An item with `page: { groups, title, placeholder }` opens it in place of the list; an item\'s `onSelect(menu)` can `menu.push(page)` instead, and the menu closes after any other item. A `Breadcrumb` above the search leads back; Backspace in the empty search goes back one page. With `onAsk`, every query adds \'Ask the agent about "…"\' as the last row; it calls `onAsk(query)` and shows the question over `answer` (StreamingText) and `answering` (AgentLoading until the first words). Without `answer` and `answering` the menu closes after `onAsk`. `controlRef` gets `{ push, back, ask, search, close }`. Part: `CommandPagesAnswer`. Every `CommandMenu` prop works as there.',
+    props: [
+      { name: 'groups', type: ['CommandPageGroup[]'] },
+      { name: 'item.page', type: ['CommandPage'] },
+      { name: 'item.onSelect', type: ['(menu: CommandPagesControl) => void'] },
+      { name: 'rootTitle', type: ['string'], default: '"Commands"' },
+      { name: 'onAsk', type: ['(query: string) => void'] },
+      { name: 'answer', type: ['string'] },
+      { name: 'answering', type: ['boolean'] },
+      { name: 'controlRef', type: ['Ref<CommandPagesControl>'] },
+      { name: 'open', type: ['boolean'] },
+      { name: 'defaultOpen', type: ['boolean'], default: 'false' },
+      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+      { name: 'hotkey', type: ['boolean'], default: 'true' },
+      { name: 'hints', type: ['boolean'], default: 'true' },
+    ],
+  },
   'context-menu': {
     description: 'The `ContextMenu` component opens on right-click or a long press of its `trigger`, at the pointer. `ContextMenuItem`, `ContextMenuSub` and `ContextMenuSeparator` build the list.',
     props: [
