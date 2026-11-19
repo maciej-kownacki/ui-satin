@@ -45,6 +45,18 @@
     "limit": "12 kB"
   },
   {
+    "name": "Permission request (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-permissions.js",
+    "import": "{ AgentPermissionRequest }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,

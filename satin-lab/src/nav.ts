@@ -73,6 +73,13 @@ export const nav: NavGroup[] = [
           { id: 'citations', title: 'Citations', href: '/ai-patterns/citations', description: 'Numbered sources in an answer, with a preview on hover and the list under it.' },
         ],
       },      { id: 'message-actions', title: 'Message actions', href: '/ai-patterns/message-actions', description: 'Status, feedback, copy and share under an assistant reply.' },
+      {
+        id: 'agent-permissions',
+        title: 'Permission request',
+        href: '/ai-patterns/agent-permissions',
+        description: 'What an agent will touch before it first runs: each resource and action in plain verbs, once or always.',
+        edition: 'pro',
+      },
       { id: 'prompt-bar', title: 'Prompt bar', href: '/ai-patterns/prompt-bar', description: 'Where people write to an agent: attachments, model, voice and send.' },
       { id: 'streaming-text', title: 'Streaming text', href: '/ai-patterns/streaming-text', description: 'An answer writing itself out as it arrives, at an even pace with a caret.' },
       { id: 'thinking', title: 'Thinking', href: '/ai-patterns/thinking', description: 'What an agent did, folded into a summary that opens onto its steps.' },
