@@ -48,6 +48,9 @@
     "name": "Availability calendar (Satin Pro; Calendar, Dot and Tooltip come from @uisatin/ui, the peer, left out)",
     "path": "packages/ui-pro/dist/components/date-availability.js",
     "import": "{ AvailabilityCalendar, AvailabilityDatePicker }",
+    "name": "Permission request (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-permissions.js",
+    "import": "{ AgentPermissionRequest }",
     "ignore": [
       "react",
       "react-dom",
@@ -55,6 +58,7 @@
     ],
     "gzip": true,
     "limit": "2 kB"
+    "limit": "5 kB"
   },
   {
     "name": "styles.css",

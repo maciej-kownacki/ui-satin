@@ -526,6 +526,17 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Alt+↑', 'Alt+↓'], action: '`ranking`: moves the focused row up or down and reads its new place.' },
     ],
   },
+  'agent-permissions': {
+    summary:
+      'A `role="group"` named by its title ("Recruiting agent wants to:") and described by `description`. The scopes are a list; each row is the label of its Checkbox, named by a plain verb and the resource ("Read candidates") and described by its detail, and a scope that sends adds ", Sends as you" to its name. Focus starts on Don’t allow, the safest answer, inside a Dialog (`autoFocus` elsewhere; it never takes focus from someone typing in a chat). After an answer, focus moves to the summary’s button (or the summary) and a polite `status` region reads the answer ("Always allowed: Read candidates, Write notes"); Change brings focus back to Don’t allow. While `onAllow`, `onDeny` or `onRevoke` runs, its button is `aria-busy` and the rest are disabled. The summary is a group named "Recruiting agent · Always allowed".',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the scopes’ checkboxes, then Don’t allow, Allow once and its arrow.' },
+      { keys: ['Space'], action: 'On a scope: ticks or unticks it.' },
+      { keys: ['Enter', 'Space'], action: 'On a button: answers, removes access, or brings the request back (Change).' },
+      { keys: ['Enter', 'Space', '↓'], action: 'On the arrow: opens the menu with Always allow.' },
+      { keys: ['↑', '↓'], action: 'Moves in the menu; Enter picks, Esc closes it and returns to the arrow.' },
+    ],
+  },
   'agent-loading': {
     summary:
       'A `role="status"` region with `aria-live="polite"`: screen readers read the label ("Thinking…") and read it again when it changes. `time` is hidden from screen readers, so a clock that ticks every second stays quiet. Mount the component before the work starts, or it may not be announced: a live region filled at the moment it appears is the one screen readers miss most. The tetris mark and the bird are hidden, and under reduced motion they stop moving.',

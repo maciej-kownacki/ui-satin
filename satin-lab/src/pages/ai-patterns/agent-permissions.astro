@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import AgentPermissionsDemo, { options } from '../../demos/agent-permissions'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="agent-permissions">
+  <DocSection item={page('agent-permissions')} api={api['agent-permissions']}>
+    <AgentPermissionsDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

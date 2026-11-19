@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every state of the permission request (Satin Pro), side by side. Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { AgentPermissionsGrid } from '../../states/AgentPermissionsGrid'
+---
+
+<Layout title="Permission request states · Satin" description="Every state of the permission request, side by side.">
+  <main class="min-h-dvh bg-bg-card">
+    <AgentPermissionsGrid client:load />
+  </main>
+</Layout>

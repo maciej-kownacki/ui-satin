@@ -1041,6 +1041,26 @@ export const api: Record<string, Api> = {
       { name: 'skipLabel', type: ['string'], default: '"Skip"' },
     ],
   },
+  'agent-permissions': {
+    description:
+      'The `AgentPermissionRequest` component (Satin Pro, `@uisatin/pro/agent-permissions`) is a `div` with `role="group"` that asks for the `scopes` an agent needs, one Checkbox row each, and answers with Don’t allow, Allow once or Always allow. Each scope is `{ id, resource, actions, detail, label }`; `actions` take `"read"`, `"write"` and `"send"`, and the title says them as verbs ("Read and write notes"). Once answered it folds to a summary row. `status` (`"request"`, `"allowed"`, `"denied"`, `"revoked"`) and `value` (the ticked ids) can be controlled; `onAllow`, `onDeny` and `onRevoke` may return a promise. Parts: `AgentPermissionRoot`, `AgentPermissionHeader`, `AgentPermissionScopeList`, `AgentPermissionScope`, `AgentPermissionFooter`, `AgentPermissionSummary`.',
+    props: [
+      { name: 'agent', type: ['string', '{ name, initials?, tone?, avatar? }'] },
+      { name: 'scopes', type: ['AgentPermissionScope[]'] },
+      { name: 'description', type: ['ReactNode'] },
+      { name: 'status', type: ['"request"', '"allowed"', '"denied"', '"revoked"'] },
+      { name: 'defaultStatus', type: ['"request"', '"allowed"', '"denied"', '"revoked"'], default: '"request"' },
+      { name: 'onStatusChange', type: ['(status) => void'] },
+      { name: 'mode', type: ['"once"', '"always"'] },
+      { name: 'value', type: ['string[]'] },
+      { name: 'defaultValue', type: ['string[]'], default: 'every scope' },
+      { name: 'onValueChange', type: ['(value) => void'] },
+      { name: 'onAllow', type: ['(mode, scopes) => void | Promise'] },
+      { name: 'onDeny', type: ['() => void | Promise'] },
+      { name: 'onRevoke', type: ['() => void | Promise'] },
+      { name: 'autoFocus', type: ['boolean'], default: 'true in a Dialog' },
+    ],
+  },
   'message-actions': {
     description: 'The `MessageActions` component is a wrapper around the `div` element that renders the status, feedback, copy and share actions.',
     props: [
