@@ -109,7 +109,7 @@
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "Past today, show the date before the clock time (for a timeline without day rules)."
+          "description": "Past today, show the date before the clock time (for a timeline not grouped by day)."
         }
       ]
     },
@@ -150,7 +150,7 @@
       "props": []
     },
     "ActivityTimelineDay": {
-      "description": "A day: its name on a rule, then its entries in a list named after it. Other props, `ref` included, go to the `ol`.",
+      "description": "A day: its name, then its entries in a list named after it. Other props, `ref` included, go to the `ol`.",
       "type": "ActivityTimelineDayProps",
       "extends": [
         "Omit<React.ComponentProps<'ol'>, 'title'>"
@@ -181,7 +181,7 @@
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "Past today, write the date before the time (for a timeline without day rules)."
+          "description": "Past today, write the date before the time (for a timeline not grouped by day)."
         }
       ]
     },
@@ -248,7 +248,7 @@
       ]
     },
     "ActivityTimeline": {
-      "description": "A record's history from `items`, newest first: a rule and a list for each day, runs of one actor folded, Revert with a toast and Undo. Other props, `ref` included, go to the root `div`.",
+      "description": "A record's history from `items`, newest first: a list under its name for each day, runs of one actor folded, Revert with a toast and Undo. The root is a group named \"Activity\" (`activity` in SatinLabels); pass `aria-labelledby` when a heading of yours names it. Other props, `ref` included, go to the root `div`.",
       "type": "ActivityTimelineProps",
       "extends": [
         "Omit<ActivityTimelineRootProps, 'children'>"
@@ -265,7 +265,7 @@
           "type": "ActivityGroupBy",
           "required": false,
           "default": "'day'",
-          "description": "A rule and a list for each day, or one list."
+          "description": "A list under its name for each day, or one list."
         },
         {
           "name": "collapseRuns",

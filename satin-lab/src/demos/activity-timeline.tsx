@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Avatar } from '@uisatin/ui/avatar'
 import { Badge } from '@uisatin/ui/badge'
-import { Button } from '@uisatin/ui/button'
 import { Toaster, toast } from '@uisatin/ui/toast'
 import { ActivityTimeline, type ActivityActor, type ActivityItem } from '@uisatin/pro/activity-timeline'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
@@ -145,27 +144,14 @@ function history(now: number): ActivityItem[] {
   ]
 }
 
-/** What "New activity" adds, in turn: someone else working on the record while you watch. */
-const NEXT: Omit<ActivityItem, 'id' | 'at'>[] = [
-  { actor: JON, verb: 'left a note:', target: '“Strong portfolio, keep her warm.”' },
-  { actor: AGENT, verb: 'sent', target: 'offer email' },
-  { actor: JON, verb: 'added', target: 'reference check' },
-]
-
 /** The Recruiting scenario: Tara Mendes's record, its salary undone from the timeline. */
 function Preview({ v }: { v: Record<string, string> }) {
   // Timed from the reader's clock, so built on the client: the server's page shows the skeleton.
   const [items, setItems] = React.useState<ActivityItem[] | null>(null)
   React.useLayoutEffect(() => setItems(history(Date.now())), [])
   const [salary, setSalary] = React.useState('€8–10k')
-  const added = React.useRef(0)
 
   React.useEffect(() => () => toast.dismiss(), [])
-
-  const add = () => {
-    const next = NEXT[added.current++ % NEXT.length]
-    setItems((all) => [{ ...next, id: `new-${added.current}`, at: new Date() }, ...(all ?? [])])
-  }
 
   return (
     <div className="relative w-[480px] max-w-full pb-16">
@@ -180,30 +166,21 @@ function Preview({ v }: { v: Record<string, string> }) {
           </div>
           {stage('Interview', 'sky')}
         </div>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h3 className="m-0 text-sm leading-5 font-medium text-text-default">Activity</h3>
-            {v.state === 'entries' && (
-              <Button size="xs" variant="tertiary" onClick={add}>
-                New activity
-              </Button>
-            )}
-          </div>
-          <ActivityTimeline
-            items={v.state === 'entries' ? (items ?? []) : []}
-            loading={v.state === 'loading' || (v.state === 'entries' && !items)}
-            empty="Nothing has happened to Tara Mendes yet."
-            groupBy={v.group === 'none' ? 'none' : 'day'}
-            collapseRuns={v.fold === 'on' ? 3 : false}
-            onRevert={async (item) => {
-              await wait(900)
-              if (item.id === 'salary') setSalary('€7–9k')
-            }}
-            onUndoRevert={(item) => {
-              if (item.id === 'salary') setSalary('€8–10k')
-            }}
-          />
-        </div>
+        {/* Right under the record: the timeline names itself "Activity" for screen readers. */}
+        <ActivityTimeline
+          items={v.state === 'entries' ? (items ?? []) : []}
+          loading={v.state === 'loading' || (v.state === 'entries' && !items)}
+          empty="Nothing has happened to Tara Mendes yet."
+          groupBy={v.group === 'none' ? 'none' : 'day'}
+          collapseRuns={v.fold === 'on' ? 3 : false}
+          onRevert={async (item) => {
+            await wait(900)
+            if (item.id === 'salary') setSalary('€7–9k')
+          }}
+          onUndoRevert={(item) => {
+            if (item.id === 'salary') setSalary('€8–10k')
+          }}
+        />
       </div>
       {/* The revert toast comes up inside the stage, under the record. */}
       <Toaster className="absolute inset-x-0 bottom-0 mx-auto w-[397px] max-w-full" />

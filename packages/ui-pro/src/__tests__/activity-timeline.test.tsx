@@ -67,11 +67,12 @@ describe('ActivityTimeline', () => {
     vi.useRealTimers()
   })
 
-  it('puts each day in an ordered list named after it, newest first', () => {
+  it('puts each day in an ordered list named after it, newest first, in a group named Activity', () => {
     const now = Date.now()
     // Given oldest first: the timeline sorts.
     renderWithSatin(<ActivityTimeline items={[...history(now)].reverse()} />)
-    const today = screen.getByRole('list', { name: 'Today' })
+    const timeline = screen.getByRole('group', { name: 'Activity' })
+    const today = within(timeline).getByRole('list', { name: 'Today' })
     expect(today.tagName).toBe('OL')
     const rows = within(today).getAllByRole('listitem')
     expect(rows.map((r) => r.querySelector('p')!.textContent)).toEqual([
@@ -201,14 +202,25 @@ describe('ActivityTimeline', () => {
     expect(entry(/salary range/).hasAttribute('data-enter')).toBe(false)
   })
 
-  it('without days is one list named Activity, with dates before the times', () => {
+  it('without days is one list in the Activity group, with dates before the times', () => {
     const now = Date.now()
     renderWithSatin(<ActivityTimeline items={history(now)} groupBy="none" />)
-    const list = screen.getByRole('list', { name: 'Activity' })
-    expect(within(list).queryByRole('list', { name: 'Today' })).toBeNull()
+    const list = within(screen.getByRole('group', { name: 'Activity' })).getAllByRole('list')[0]
+    expect(list.hasAttribute('aria-label')).toBe(false)
+    expect(screen.queryByRole('list', { name: 'Today' })).toBeNull()
     const time = entry(/^Jon Park/).querySelector('time [aria-hidden]')!
     const expected = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', month: 'short', day: 'numeric', ...(yesterday(now, 11, 20).getFullYear() !== new Date(now).getFullYear() && { year: 'numeric' }) }).format(yesterday(now, 11, 20))
     expect(time.textContent).toBe(expected)
+  })
+
+  it('takes its name from a heading of yours', () => {
+    renderWithSatin(
+      <section>
+        <h2 id="history">History</h2>
+        <ActivityTimeline aria-labelledby="history" items={history(Date.now())} />
+      </section>,
+    )
+    expect(screen.getByRole('group', { name: 'History' })).toBeTruthy()
   })
 
   it('shows skeletons while loading, and a line when empty', () => {
