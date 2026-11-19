@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import DataGridDemo, { options } from '../../demos/data-grid'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="data-grid">
+  <DocSection item={page('data-grid')} api={api['data-grid']}>
+    <DataGridDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

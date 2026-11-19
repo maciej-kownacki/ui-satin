@@ -54,6 +54,9 @@
     "name": "Kanban board (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/kanban-board.js",
     "import": "{ KanbanBoard, KanbanCard }",
+    "name": "Data grid (Satin Pro, with Radix DropdownMenu; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/data-grid.js",
+    "import": "{ DataGrid, DataGridColumnsMenu, DataGridViewMenu, DataGridToolbar }",
     "ignore": [
       "react",
       "react-dom",
@@ -63,6 +66,7 @@
     "limit": "2 kB"
     "limit": "5 kB"
     "limit": "8 kB"
+    "limit": "18 kB"
   },
   {
     "name": "styles.css",
