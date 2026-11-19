@@ -45,6 +45,28 @@
     "limit": "12 kB"
   },
   {
+    "name": "PromptBar with mentions and commands (Radix Popover, DropdownMenu, Avatar's Tooltip; 51 kB before mentions)",
+    "path": "packages/ui/dist/components/prompt-bar.js",
+    "import": "{ PromptBar }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "60 kB"
+  },
+  {
+    "name": "Prompt mentions (usePromptMentions, Radix Popover)",
+    "path": "packages/ui/dist/components/prompt-mentions.js",
+    "import": "{ usePromptMentions }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "44 kB"
+  },
+  {
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,

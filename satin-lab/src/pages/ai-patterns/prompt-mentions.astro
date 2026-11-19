@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import PromptMentionsDemo, { options } from '../../demos/prompt-mentions'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="prompt-mentions">
+  <DocSection item={page('prompt-mentions')} api={api['prompt-mentions']}>
+    <PromptMentionsDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

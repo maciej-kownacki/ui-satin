@@ -74,6 +74,7 @@ export const nav: NavGroup[] = [
         ],
       },      { id: 'message-actions', title: 'Message actions', href: '/ai-patterns/message-actions', description: 'Status, feedback, copy and share under an assistant reply.' },
       { id: 'prompt-bar', title: 'Prompt bar', href: '/ai-patterns/prompt-bar', description: 'Where people write to an agent: attachments, model, voice and send.' },
+      { id: 'prompt-mentions', title: 'Mentions and commands', href: '/ai-patterns/prompt-mentions', description: 'Reference people and records with @ and run actions with / from the prompt bar.' },
       { id: 'streaming-text', title: 'Streaming text', href: '/ai-patterns/streaming-text', description: 'An answer writing itself out as it arrives, at an even pace with a caret.' },
       { id: 'thinking', title: 'Thinking', href: '/ai-patterns/thinking', description: 'What an agent did, folded into a summary that opens onto its steps.' },
     ],
