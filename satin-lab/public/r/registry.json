@@ -624,7 +624,8 @@
         "https://uisatin.dev/r/chip.json",
         "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/labels.json",
-        "https://uisatin.dev/r/select.json"
+        "https://uisatin.dev/r/select.json",
+        "https://uisatin.dev/r/spinner.json"
       ],
       "docs": "Combobox docs: https://uisatin.dev/components/combobox",
       "meta": {
