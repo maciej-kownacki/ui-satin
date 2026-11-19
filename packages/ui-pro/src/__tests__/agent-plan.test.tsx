@@ -142,7 +142,7 @@ describe('AgentPlan, draft', () => {
 
 describe('AgentPlan, running', () => {
   /** A run the test steps through: status and current step from props, like an app's agent. */
-  function Run({ status, current, ...props }: { status: AgentPlanStatus; current?: string } & Partial<AgentPlanProps>) {
+  function Run({ status, current, ...props }: { status: AgentPlanStatus; current?: string; onChange?: (steps: AgentPlanStep[]) => void } & Partial<AgentPlanProps>) {
     return <Plan status={status} currentStep={current} {...props} />
   }
 
