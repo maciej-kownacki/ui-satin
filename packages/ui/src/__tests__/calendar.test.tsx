@@ -2,7 +2,7 @@ import * as React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { act, screen } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
-import { Calendar, CalendarDay } from '../components/date-picker'
+import { Calendar, CalendarDay, DatePicker, DateRangePicker } from '../components/date-picker'
 
 // Thursday 19 November 2026; Saturday the 21st and Sunday the 22nd are the weekend.
 const TODAY = new Date(2026, 10, 19)
@@ -87,6 +87,23 @@ describe('Calendar day hooks', () => {
 
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
     renderWithSatin(<Picker />, { theme })
+    await expectNoAxeViolations()
+  })
+})
+
+describe('Date pickers', () => {
+  it('name their open calendar after the field', async () => {
+    const { user } = renderWithSatin(
+      <>
+        <DatePicker label="Delivery date" today={TODAY} />
+        <DateRangePicker aria-label="Period" today={TODAY} />
+      </>,
+    )
+    await user.click(screen.getByRole('button', { name: 'Delivery date' }))
+    expect(screen.getByRole('dialog', { name: 'Delivery date' })).toBeTruthy()
+    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('button', { name: 'Period' }))
+    expect(screen.getByRole('dialog', { name: 'Period' })).toBeTruthy()
     await expectNoAxeViolations()
   })
 })

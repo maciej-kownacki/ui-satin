@@ -567,7 +567,16 @@ export function DatePicker({
           />
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal container={container}>
-          <PopoverPrimitive.Content data-slot="date-picker" align="start" sideOffset={4} collisionPadding={8} className={popClass}>
+          <PopoverPrimitive.Content
+            data-slot="date-picker"
+            align="start"
+            sideOffset={4}
+            collisionPadding={8}
+            // The panel is a dialog: it takes the field's name (its label, or its aria-label).
+            aria-labelledby={label ? `${chrome.controlId}-label` : undefined}
+            aria-label={label ? undefined : (props['aria-label'] ?? placeholder ?? labels.pickDate)}
+            className={popClass}
+          >
             <DatePickerPanel
               value={value}
               min={min}
@@ -662,7 +671,15 @@ export function DateRangePicker({
           />
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal container={container}>
-          <PopoverPrimitive.Content data-slot="date-range-picker" align="start" sideOffset={4} collisionPadding={8} className={popClass}>
+          <PopoverPrimitive.Content
+            data-slot="date-range-picker"
+            align="start"
+            sideOffset={4}
+            collisionPadding={8}
+            aria-labelledby={label ? `${chrome.controlId}-label` : undefined}
+            aria-label={label ? undefined : (props['aria-label'] ?? placeholder ?? labels.pickDates)}
+            className={popClass}
+          >
             <DateRangePickerPanel
               value={value}
               min={min}
