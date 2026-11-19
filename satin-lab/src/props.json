@@ -4450,18 +4450,18 @@
         },
         {
           "name": "decisions",
-          "type": "ReviewDecisions",
+          "type": "ReviewQueueDecisions",
           "required": false,
           "description": "What was decided, by key."
         },
         {
           "name": "defaultDecisions",
-          "type": "ReviewDecisions",
+          "type": "ReviewQueueDecisions",
           "required": false
         },
         {
           "name": "onDecisionsChange",
-          "type": "(decisions: ReviewDecisions) => void",
+          "type": "(decisions: ReviewQueueDecisions) => void",
           "required": false
         },
         {

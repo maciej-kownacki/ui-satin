@@ -5,7 +5,7 @@ import { Avatar, type AvatarTone } from '@uisatin/ui/avatar'
 import { Button } from '@uisatin/ui/button'
 import { Input } from '@uisatin/ui/input'
 import { Textarea } from '@uisatin/ui/textarea'
-import { ReviewQueue, type ReviewDecisions } from '@uisatin/pro/review-queue'
+import { ReviewQueue, type ReviewQueueDecisions } from '@uisatin/pro/review-queue'
 import { Showcase, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 /** A follow-up the agent drafted from the booth notes after Packaging Expo North. */
@@ -179,7 +179,7 @@ export const options: ShowcaseOption[] = states.map((s) => ({ id: s.value, label
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /** Where each state starts: three decided and the fourth on show, or all twelve decided. */
-const START: Record<string, { index: number; decisions: ReviewDecisions }> = {
+const START: Record<string, { index: number; decisions: ReviewQueueDecisions }> = {
   reviewing: { index: 3, decisions: { anna: 'approved', jonas: 'approved', lea: 'skipped' } },
   editing: { index: 3, decisions: { anna: 'approved', jonas: 'approved', lea: 'skipped' } },
   done: {
