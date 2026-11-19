@@ -407,7 +407,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'command-menu': {
-    description: 'The `CommandMenu` component wraps the Radix dialog in a `div` with a search `input` (`role="combobox"`) and a `listbox` of grouped commands. ⌘K or Ctrl+K toggles it unless `hotkey` is off.',
+    description: 'The `CommandMenu` component wraps the Radix dialog in a `div` with a search `input` (`role="combobox"`) and a `listbox` of grouped commands. ⌘K or Ctrl+K toggles it unless `hotkey` is off. For a menu that changes what it shows: `query` / `onQueryChange` control the search (emptied as the menu closes), an item with `keepOpen` runs without closing it, `header` goes above the search row, `children` take the list\'s place and `footer` replaces the key hints (compose it from `KbdHint`).',
     props: [
       { name: 'groups', type: ['CommandGroup[]'] },
       { name: 'item.label', type: ['string'] },
@@ -423,6 +423,12 @@ export const api: Record<string, Api> = {
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
       { name: 'emptyText', type: ['(query: string) => ReactNode'] },
       { name: 'modal', type: ['boolean'], default: 'true' },
+      { name: 'item.keepOpen', type: ['boolean'], default: 'false' },
+      { name: 'query', type: ['string'] },
+      { name: 'onQueryChange', type: ['(query: string) => void'] },
+      { name: 'header', type: ['ReactNode'] },
+      { name: 'footer', type: ['ReactNode'] },
+      { name: 'children', type: ['ReactNode'] },
     ],
   },
   'context-menu': {
