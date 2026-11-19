@@ -30,6 +30,12 @@ import { useSatinLabels, type SatinLabelSet } from './labels'
  *
  * `details` goes under the row, aligned with the text and running to the card's end: a list of
  * what a batch changed, a progress bar. The icon tile and the buttons stay beside the title.
+ *
+ * `countdown` shows how long the action stays: a 2px bar along the card's bottom edge drains,
+ * linear, over `duration`, towards the reading start. It stops and goes on with the timer, and
+ * it's absolutely placed, so the card keeps its size. Hidden under reduced motion; the toast says
+ * the same without it:
+ *   toast('Candidate rejected', { action: { label: 'Undo', altText: 'Undo with Ctrl+Z' }, countdown: true })
  */
 export type ToastIntent = 'neutral' | 'info' | 'success' | 'warning' | 'error'
 
@@ -61,12 +67,22 @@ export interface ToastOptions {
   closeButton?: boolean
   /** The status icon tile on the left. */
   icon?: boolean
-  /** Milliseconds before it closes by itself. `Infinity` keeps it until dismissed. */
+  /**
+   * Milliseconds before it closes by itself. `Infinity` keeps it until dismissed. Updating a toast
+   * (same `id`) with a new duration starts the time over; with `Infinity` it stops.
+   */
   duration?: number
+  /**
+   * A thin bar along the bottom that drains over `duration`, so people see how long the action
+   * (an Undo) stays. It pauses with the timer while the toasts are hovered or focused, and is
+   * hidden from screen readers and under reduced motion. Not shown with `duration: Infinity`.
+   */
+  countdown?: boolean
   id?: string
 }
 
-type ExitReason = 'close' | 'action'
+/** Why a toast left: its close button or Escape or a swipe, its action, or its time ran out. */
+type ExitReason = 'close' | 'action' | 'expire'
 type ToastRecord = ToastOptions & { id: string; title: React.ReactNode; open: boolean; exit?: ExitReason }
 
 /** Enter, exit and re-stack, ms. A closed toast stays this long to play out. */
@@ -325,9 +341,60 @@ const ease = 'var(--ease-out)'
 const cardMotion = `transform ${MOTION_MS}ms ${ease}, height 150ms ${ease}`
 const contentMotion = `opacity 250ms ${ease}`
 
+/** How long a toast stays when it doesn't say: Radix's default, which a `duration` of 0 also meant. */
+const DEFAULT_DURATION = 5000
+
+/**
+ * The time a toast from toast() has left. The stack keeps it, not Radix: Radix can't stop a
+ * timer it has started (a `duration` turned to Infinity keeps running), and with one clock the
+ * countdown bar and the close stop and go on together. A new `duration`, or the toast shown
+ * again, starts the time over, as Radix did.
+ */
+function useToastClock(duration: number, running: boolean, cycle: number, onExpire: () => void) {
+  const clock = React.useRef({ left: duration })
+  const expire = React.useRef(onExpire)
+  expire.current = onExpire
+  // Effects run in order: this reset lands before the timer below starts again.
+  React.useEffect(() => {
+    clock.current = { left: duration }
+  }, [duration, cycle])
+  React.useEffect(() => {
+    if (!running || duration === Infinity) return
+    const time = clock.current
+    const start = Date.now()
+    const timer = setTimeout(() => expire.current(), time.left)
+    return () => {
+      clearTimeout(timer)
+      time.left = Math.max(0, time.left - (Date.now() - start))
+    }
+  }, [running, duration, cycle])
+}
+
+/**
+ * The countdown bar, 2px along the card's bottom edge (the card clips it to its corners). It
+ * runs one CSS animation and stops it in place (`animation-play-state`), so it shows the
+ * clock's time to the frame. Only transform moves, so the card never changes size.
+ */
+function ToastCountdown({ duration, running, expired }: { duration: number; running: boolean; expired: boolean }) {
+  return (
+    <span
+      aria-hidden
+      data-slot="toast-countdown"
+      data-state={expired ? 'expired' : running ? 'running' : 'paused'}
+      className={cn(
+        'pointer-events-none absolute inset-x-0 bottom-0 h-0.5 origin-left bg-action-primary-bg rtl:origin-right',
+        'animate-[satin-toast-countdown_linear_forwards] motion-reduce:hidden',
+      )}
+      style={{ animationDuration: `${duration}ms`, animationPlayState: running ? 'running' : 'paused' }}
+    />
+  )
+}
+
 interface StackedToastProps {
   record: ToastRecord
   index: number
+  /** The toasts are hovered or focused, or the window is in the background: every clock waits. */
+  paused: boolean
   /** Its place in the stack, px up from the bottom, and its scale. */
   y: number
   scale: number
@@ -343,8 +410,26 @@ interface StackedToastProps {
  * One toast in the stack, on two elements so the two movements never fight over one transform:
  * the `li` (the Radix root) takes its place in the stack, the card inside slides in and out.
  */
-function StackedToast({ record, index, y, scale, height, beyond, contentVisible, onMeasure, onForget }: StackedToastProps) {
-  const { id, title, open, duration, exit: _exit, intent = 'neutral', icon = true, closeButton = true, details, ...options } = record
+function StackedToast({ record, index, paused, y, scale, height, beyond, contentVisible, onMeasure, onForget }: StackedToastProps) {
+  const { id, title, open, duration: given, exit, intent = 'neutral', icon = true, closeButton = true, details, countdown, ...options } = record
+  const duration = given || DEFAULT_DURATION
+  const running = open && !paused
+
+  // Each time it's shown (again, under the same id while it was leaving) its time starts over.
+  const [cycle, setCycle] = React.useState(0)
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) setCycle((c) => c + 1)
+  }
+  const rootRef = React.useRef<HTMLLIElement>(null)
+  useToastClock(duration, running, cycle, () => {
+    // As Radix does: focus in a toast that closes by itself goes to the region, not the page.
+    const root = rootRef.current
+    if (root?.contains(document.activeElement)) (root.parentElement as HTMLElement | null)?.focus()
+    close(id, 'expire')
+  })
+
   const [entered, setEntered] = React.useState(false)
   const cardRef = React.useRef<HTMLDivElement>(null)
   React.useLayoutEffect(() => {
@@ -379,13 +464,15 @@ function StackedToast({ record, index, y, scale, height, beyond, contentVisible,
 
   return (
     <ToastPrimitive.Root
+      ref={rootRef}
       data-slot="toast"
       data-intent={intent}
       // Kept mounted while it plays out; the store drops it one motion later.
       forceMount
       open={open}
       onOpenChange={(next) => !next && close(id)}
-      duration={duration ?? 5000}
+      // The stack keeps the time (useToastClock), so Radix never closes it on its own.
+      duration={Infinity}
       type={radixType(intent)}
       className={cn(
         'absolute inset-x-0 bottom-0 origin-bottom outline-none',
@@ -424,6 +511,10 @@ function StackedToast({ record, index, y, scale, height, beyond, contentVisible,
             <ToastContent title={title} intent={intent} icon={icon} closeButton={closeButton} onAction={() => close(id, 'action')} {...options} />
           </div>
           {details ? <ToastDetails icon={icon}>{details}</ToastDetails> : null}
+          {/* Placed against the card, so it sits on its bottom edge; it fades with the content behind the front toast. */}
+          {countdown && duration !== Infinity ? (
+            <ToastCountdown key={`${duration}-${cycle}`} duration={duration} running={running} expired={exit === 'expire'} />
+          ) : null}
         </div>
       </div>
     </ToastPrimitive.Root>
@@ -449,6 +540,7 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
 
   const [hovered, setHovered] = React.useState(false)
   const [focused, setFocused] = React.useState(false)
+  const [away, setAway] = React.useState(false)
   // Native listeners: the toasts are portalled into the viewport, so React's own events from
   // them never reach it. pointermove (as Radix's pause uses) also catches a pointer at rest there.
   const viewportRef = React.useRef<HTMLOListElement>(null)
@@ -461,18 +553,27 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
     const focusOut = (e: FocusEvent) => {
       if (!el.contains(e.relatedTarget as Node | null)) setFocused(false)
     }
+    // Another window or tab in front stops the clocks too, as Radix's timer did.
+    const blur = () => setAway(true)
+    const back = () => setAway(false)
     el.addEventListener('pointermove', enter)
     el.addEventListener('pointerleave', leave)
     el.addEventListener('focusin', focusIn)
     el.addEventListener('focusout', focusOut)
+    window.addEventListener('blur', blur)
+    window.addEventListener('focus', back)
     return () => {
       el.removeEventListener('pointermove', enter)
       el.removeEventListener('pointerleave', leave)
       el.removeEventListener('focusin', focusIn)
       el.removeEventListener('focusout', focusOut)
+      window.removeEventListener('blur', blur)
+      window.removeEventListener('focus', back)
     }
   }, [])
   const expanded = (hovered || focused) && stack.some((r) => r.open)
+  // While someone reads or works in the toasts, none of them closes and every countdown stops.
+  const paused = hovered || focused || away
 
   // The stack sits at the end of the row, so it swipes away towards it: to the left in
   // right-to-left. Read from the page, so `dir` alone is enough.
@@ -533,6 +634,7 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
             key={record.id}
             record={record}
             index={index}
+            paused={paused}
             y={-offset(slot)}
             scale={scaleOf(slot)}
             height={!expanded && slot > 0 && record.open ? frontHeight : heights[record.id]}

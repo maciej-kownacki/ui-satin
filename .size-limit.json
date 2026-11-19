@@ -36,12 +36,16 @@
     "name": "Tool call (with CodeBlock, Button, Spinner)",
     "path": "packages/ui/dist/components/tool-call.js",
     "import": "{ ToolCall }",
+    "name": "Toast (Toaster and toast(), with Radix Toast)",
+    "path": "packages/ui/dist/components/toast.js",
+    "import": "{ Toaster, toast }",
     "ignore": [
       "react",
       "react-dom"
     ],
     "gzip": true,
     "limit": "21 kB"
+    "limit": "30 kB"
   },
   {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",

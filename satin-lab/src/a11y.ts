@@ -520,7 +520,7 @@ export const a11y: Record<string, A11y> = {
   },
   toast: {
     summary:
-      'Radix toasts in a `region` named "Notifications (F8)". Each toast is read out when it appears: errors and warnings at once (`aria-live="assertive"`), the others politely. Give an action `altText` that says how to do the same without the toast ("Undo with Ctrl+Z"): Radix reads it instead of the button, which a screen reader user may not reach in time; without it the label is used. The close button is named "Close". Hovering or focusing the stack pauses the timers; a swipe to the right dismisses.',
+      'Radix toasts in a `region` named "Notifications (F8)". Each toast is read out when it appears: errors and warnings at once (`aria-live="assertive"`), the others politely. Give an action `altText` that says how to do the same without the toast ("Undo with Ctrl+Z"): Radix reads it instead of the button, which a screen reader user may not reach in time; without it the label is used. The close button is named "Close". Hovering or focusing the stack pauses the timers; a swipe to the right dismisses. The `countdown` bar is `aria-hidden` and hidden under reduced motion, so give the action an `altText` with the keyboard way to undo.',
     keyboard: [
       { keys: ['F8'], action: 'Moves focus to the toasts.' },
       { keys: ['Tab', 'Shift+Tab'], action: 'Moves through the toasts and their buttons.' },
