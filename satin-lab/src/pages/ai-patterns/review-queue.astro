@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ReviewQueueDemo, { options } from '../../demos/review-queue'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="review-queue">
+  <DocSection item={page('review-queue')} api={api['review-queue']}>
+    <ReviewQueueDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>
