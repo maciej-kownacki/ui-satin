@@ -461,7 +461,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'date-picker': {
-    description: '`DatePicker` and `DateRangePicker` are fields with the Input skin that open a `Calendar` in a popover. The range picker waits for Apply. `Calendar` works on its own too, as one month or two. `presets` lists shortcuts before the calendar; `datePresets` holds the common ones.',
+    description: '`DatePicker` and `DateRangePicker` are fields with the Input skin that open a `Calendar` in a popover. The range picker waits for Apply. `Calendar` works on its own too, as one month or two. `presets` lists shortcuts before the calendar; `datePresets` holds the common ones. The week starts where the `dateLocale` starts it, or on `weekStartsOn`. `isDisabled(date)` rules out days besides `min`/`max`; they fade but stay reachable with the arrow keys. `renderDay(date, state)` draws each day: return a `CalendarDay`, the default day button, with your own children, `aria-label` or a Tooltip around it. Every picker passes `weekStartsOn`, `isDisabled` and `renderDay` on to its Calendar.',
     props: [
       { name: 'DatePicker.value', type: ['Date', 'null'] },
       { name: 'DatePicker.defaultValue', type: ['Date', 'null'] },
@@ -476,7 +476,23 @@ export const api: Record<string, Api> = {
       { name: 'today', type: ['Date'] },
       { name: 'presets', type: ['DatePreset[]'] },
       { name: 'weekStartsOn', type: ['0', '1', '2', '3', '4', '5', '6'], default: 'locale' },
+      { name: 'isDisabled', type: ['(date: Date) => boolean'] },
+      { name: 'renderDay', type: ['(date: Date, state: CalendarDayState) => ReactNode'] },
       { name: 'label / hint / error', type: ['ReactNode'] },
+    ],
+  },
+  'date-availability': {
+    description:
+      'The `AvailabilityCalendar` component (Satin Pro, `@uisatin/pro/date-availability`) is a `Calendar` whose days show their free slots: a green dot (a ring at `fewSlots` or fewer) and a Tooltip ("3 slots"), said in the day\'s name too. A day listed with 0 is fully booked: faded, not pickable, still reachable with the arrow keys, its reason in the tooltip and the name. A day left out has no slots. `availability` is keyed by ISO date; `isoDate(date)` makes the key. `AvailabilityDatePicker` is the same in a DatePicker field, and `useAvailability({ availability })` returns the `isDisabled` and `renderDay` to give any Calendar or picker. Every other Calendar prop (`month`, `min`, `max`, `today`, `header`, `weekStartsOn`) passes through, and AvailabilityDatePicker takes `presets`: one on a day without free slots is off.',
+    props: [
+      { name: 'availability', type: ['Record<string, number>'] },
+      { name: 'fewSlots', type: ['number'], default: '2' },
+      { name: 'reason', type: ['(date: Date) => string | undefined'] },
+      { name: 'isDisabled', type: ['(date: Date) => boolean'] },
+      { name: 'value', type: ['Date', 'null'] },
+      { name: 'defaultValue', type: ['Date', 'null'], default: 'null' },
+      { name: 'onValueChange', type: ['(value: Date) => void'] },
+      { name: 'today', type: ['Date'] },
     ],
   },
   dialog: {

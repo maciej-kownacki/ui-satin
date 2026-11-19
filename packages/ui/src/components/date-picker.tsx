@@ -26,6 +26,11 @@ import { FieldChrome, Select, useFieldChrome } from './select'
  * Keyboard: the grid is one tab stop; arrows move a day or a week, Page Up / Down a month, Home /
  * End the week, Enter or Space picks.
  *
+ * Days that can't be picked (outside `min`/`max`, or ruled out by `isDisabled`) fade to 40% and
+ * stay in the arrows' path with `aria-disabled`, so keyboard and screen reader users meet them
+ * too, and whatever `renderDay` says about them. `renderDay(date, state)` draws each day: return
+ * a `CalendarDay` (the default button) with your own children, name or a Tooltip around it.
+ *
  * Month and weekday names and the dates on the triggers are written in the `dateLocale` label
  * (en-US by default). The week starts on that locale's first day (Sunday in en-US, Monday in
  * pl-PL), or on `weekStartsOn`.
@@ -128,9 +133,110 @@ export interface CalendarProps extends Omit<React.ComponentProps<'div'>, 'defaul
   max?: Date
   /** Today, for the dash. Defaults to now. */
   today?: Date
+  /**
+   * Days that can't be picked, on top of those outside `min`/`max` (weekends, booked days). Like
+   * those, they stay reachable with the arrow keys and are read as unavailable.
+   */
+  isDisabled?: (date: Date) => boolean
+  /**
+   * Draws each day, for a mark, a name or a tooltip of your own. Return a `CalendarDay`, the
+   * default day button, so picking and the arrow keys keep working.
+   */
+  renderDay?: (date: Date, state: CalendarDayState) => React.ReactNode
   /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's (Sunday in en-US, Monday in pl-PL). */
   weekStartsOn?: WeekDay
   className?: string
+}
+
+/** A day as `renderDay` gets it. */
+export interface CalendarDayState {
+  /** The full date in the `dateLocale` ("Thursday, November 26, 2026"): the day's name unless you give it another. */
+  label: string
+  today: boolean
+  /** Picked: the single value, or either end of a range. */
+  selected: boolean
+  /** Between the two ends of a range, picked or being picked, the ends included. */
+  inRange: boolean
+  /** Outside `min`/`max` or ruled out by `isDisabled`: it can't be picked, but the arrow keys still reach it. */
+  disabled: boolean
+  /** From the month before or after, filling the first and last weeks. */
+  outside: boolean
+  /** Holds the grid's one tab stop: the day the arrow keys move from. */
+  focused: boolean
+}
+
+type DayContextValue = {
+  date: Date
+  state: CalendarDayState
+  /** A range end: a rounded square instead of a circle. */
+  end: boolean
+  /** The end under the pointer while a range's end is being picked. */
+  hoverEnd: boolean
+  /** A range's end is being picked: the band and the end move together, so neither fades. */
+  picking: boolean
+  pick: () => void
+  focus: () => void
+}
+
+const DayContext = React.createContext<DayContextValue | null>(null)
+
+export type CalendarDayProps = Omit<React.ComponentProps<'button'>, 'type'>
+
+/**
+ * One day of the Calendar, to return from `renderDay`: the default day button, which picks, holds
+ * the arrow keys' focus and draws today, the pick and the range. Children replace the number,
+ * `aria-label` the full date as its name. Other props, `ref` included, go to the button, so a
+ * Tooltip can wrap it.
+ */
+export function CalendarDay({ children, className, onClick, onFocus, 'aria-label': name, ...props }: CalendarDayProps) {
+  const day = React.useContext(DayContext)
+  if (!day) throw new Error('CalendarDay belongs inside the renderDay of a Calendar.')
+  const { date, state, end, hoverEnd, picking } = day
+  return (
+    <button
+      type="button"
+      tabIndex={state.focused ? 0 : -1}
+      data-slot="calendar-day"
+      data-focus={state.focused || undefined}
+      data-today={state.today || undefined}
+      data-selected={state.selected || undefined}
+      data-disabled={state.disabled || undefined}
+      data-outside={state.outside || undefined}
+      // Not `disabled`: a disabled button takes no focus, and the arrow keys would skip the day
+      // and anything said about it.
+      aria-disabled={state.disabled || undefined}
+      aria-current={state.today ? 'date' : undefined}
+      {...props}
+      aria-label={name ?? state.label}
+      onClick={(e) => {
+        onClick?.(e)
+        day.focus()
+        day.pick()
+      }}
+      onFocus={(e) => {
+        onFocus?.(e)
+        day.focus()
+      }}
+      className={cn(
+        'relative grid size-9 place-items-center text-sm leading-5 font-medium outline-none',
+        // While the end is being picked the band and the end circle move together,
+        // so neither fades: a fade here would trail the pointer.
+        !picking && 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
+        'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+        // A day that can't be picked fades, but not while it has the focus: the fade would take
+        // the ring below 3:1. Focused, its number is muted instead.
+        'aria-disabled:not-focus-visible:opacity-40 aria-disabled:focus-visible:text-text-muted',
+        end ? 'rounded-md' : 'rounded-full',
+        state.selected
+          ? 'bg-action-primary-bg text-text-on-solid'
+          : cn(state.outside ? 'text-text-subtle' : 'text-text-default', hoverEnd ? 'bg-bg-hover' : !state.inRange && !state.disabled && 'hover:bg-bg-hover'),
+        className,
+      )}
+    >
+      {children ?? date.getDate()}
+      {state.today && !state.selected && <span aria-hidden className="absolute bottom-1 left-1/2 h-0.5 w-3 -translate-x-1/2 rounded-full bg-action-primary-bg" />}
+    </button>
+  )
 }
 
 export function Calendar({
@@ -146,6 +252,8 @@ export function Calendar({
   min,
   max,
   today: todayProp,
+  isDisabled,
+  renderDay,
   weekStartsOn,
   className,
   ref,
@@ -200,7 +308,7 @@ export function Calendar({
     [ref],
   )
 
-  const disabled = (d: Date) => (min && d < startOfDay(min)) || (max && d > startOfDay(max)) || false
+  const disabled = (d: Date) => (min && d < startOfDay(min)) || (max && d > startOfDay(max)) || !!isDisabled?.(d)
   const picking = mode === 'range' && !!range?.from && !range?.to
 
   const pick = (d: Date) => {
@@ -315,49 +423,29 @@ export function Calendar({
                   const bandFrom = inBand && sameDay(d, lo) ? 'start-1/2' : 'start-0'
                   const bandTo = inBand && sameDay(d, hi) ? 'end-1/2' : 'end-0'
                   const isHoverEnd = picking && !out && sameDay(d, hover) && !isEnd
-                  const isToday = sameDay(d, today)
                   const off = disabled(d)
-                  const focused = sameDay(d, tabDay) && !out
+                  const state: CalendarDayState = {
+                    label: words.fullDate.format(d),
+                    today: sameDay(d, today),
+                    selected: isSingle || isEnd,
+                    inRange: !!inBand,
+                    disabled: off,
+                    outside: out,
+                    focused: sameDay(d, tabDay) && !out,
+                  }
+                  const day: DayContextValue = { date: d, state, end: isEnd, hoverEnd: isHoverEnd, picking, pick: () => pick(d), focus: () => setFocus(d) }
                   return (
                     <div
                       key={d.toISOString()}
                       role="gridcell"
-                      aria-selected={isSingle || isEnd || undefined}
+                      aria-selected={state.selected || undefined}
                       // The whole 40px cell tracks the pointer, so the preview never stalls in the
                       // gaps between the 36px days.
                       onPointerEnter={() => picking && !out && !off && setHover(d)}
                       className="relative grid size-10 place-items-center"
                     >
                       {inBand && <span aria-hidden className={cn('absolute inset-y-0.5 bg-status-brand-bg', bandFrom, bandTo)} />}
-                      <button
-                        type="button"
-                        tabIndex={focused ? 0 : -1}
-                        data-focus={focused || undefined}
-                        disabled={off}
-                        aria-label={words.fullDate.format(d)}
-                        aria-current={isToday ? 'date' : undefined}
-                        onClick={() => {
-                          setFocus(d)
-                          pick(d)
-                        }}
-                        onFocus={() => setFocus(d)}
-                        className={cn(
-                          'relative grid size-9 place-items-center text-sm leading-5 font-medium outline-none',
-                          // While the end is being picked the band and the end circle move together,
-                          // so neither fades: a fade here would trail the pointer.
-                          !picking && 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
-                          'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)] disabled:pointer-events-none disabled:opacity-40',
-                          isEnd ? 'rounded-md' : 'rounded-full',
-                          isSingle || isEnd
-                            ? 'bg-action-primary-bg text-text-on-solid'
-                            : cn(out ? 'text-text-subtle' : 'text-text-default', isHoverEnd ? 'bg-bg-hover' : !inBand && 'hover:bg-bg-hover'),
-                        )}
-                      >
-                        {d.getDate()}
-                        {isToday && !isSingle && !isEnd && (
-                          <span aria-hidden className="absolute bottom-1 left-1/2 h-0.5 w-3 -translate-x-1/2 rounded-full bg-action-primary-bg" />
-                        )}
-                      </button>
+                      <DayContext.Provider value={day}>{renderDay ? renderDay(d, state) : <CalendarDay />}</DayContext.Provider>
                     </div>
                   )
                 })}
@@ -446,7 +534,7 @@ interface PresetItem {
  * Presets as days to show: the label in the app's words, the value worked out from today, a range
  * cut to min and max (This quarter with `max` today ends today).
  */
-function usePresetItems(presets: DatePreset[] | undefined, today: Date | undefined, weekStartsOn: WeekDay, min?: Date, max?: Date): PresetItem[] {
+function usePresetItems(presets: DatePreset[] | undefined, today: Date | undefined, weekStartsOn: WeekDay, min?: Date, max?: Date, isDisabled?: (date: Date) => boolean): PresetItem[] {
   const labels = useSatinLabels()
   if (!presets?.length) return []
   const day = startOfDay(today ?? new Date())
@@ -459,7 +547,8 @@ function usePresetItems(presets: DatePreset[] | undefined, today: Date | undefin
     if (from && min && from < startOfDay(min)) from = startOfDay(min)
     if (to && max && to > startOfDay(max)) to = startOfDay(max)
     const label = typeof p.label === 'function' ? p.label(labels) : p.label
-    return from && to ? { label, from, to, disabled: from > to } : { label, from: day, to: day, disabled: true }
+    // A day preset (DatePicker's) whose day isDisabled rules out is off, like the day itself.
+    return from && to ? { label, from, to, disabled: from > to || !!isDisabled?.(from) } : { label, from: day, to: day, disabled: true }
   })
 }
 
@@ -598,6 +687,10 @@ export interface DatePickerPanelProps extends Omit<React.ComponentProps<'div'>, 
   min?: Date
   max?: Date
   today?: Date
+  /** As on Calendar: days that can't be picked, besides those outside min/max. */
+  isDisabled?: CalendarProps['isDisabled']
+  /** As on Calendar: draws each day; return a `CalendarDay`. */
+  renderDay?: CalendarProps['renderDay']
   /** Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one moves the calendar to its month. */
   presets?: DatePreset<Date>[]
   /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's. */
@@ -606,12 +699,12 @@ export interface DatePickerPanelProps extends Omit<React.ComponentProps<'div'>, 
 }
 
 /** The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick, and the presets. Other props, `ref` included, go to the surface. */
-export function DatePickerPanel({ value, onValueChange, min, max, today, presets, weekStartsOn, className, ...props }: DatePickerPanelProps) {
+export function DatePickerPanel({ value, onValueChange, min, max, today, isDisabled, renderDay, presets, weekStartsOn, className, ...props }: DatePickerPanelProps) {
   const weekStart = useWeekStart(weekStartsOn)
   const [month, setMonth] = React.useState(() => addMonths(value ?? today ?? todayDate(), 0))
-  const items = usePresetItems(presets, today, weekStart, min, max)
+  const items = usePresetItems(presets, today, weekStart, min, max, isDisabled)
   const calendar = (
-    <Calendar header="picker" value={value} onValueChange={onValueChange} month={month} onMonthChange={setMonth} min={min} max={max} today={today} weekStartsOn={weekStart} />
+    <Calendar header="picker" value={value} onValueChange={onValueChange} month={month} onMonthChange={setMonth} min={min} max={max} today={today} isDisabled={isDisabled} renderDay={renderDay} weekStartsOn={weekStart} />
   )
   if (!items.length)
     return (
@@ -643,6 +736,10 @@ export interface DatePickerProps extends FieldBits, TriggerAttributes {
   min?: Date
   max?: Date
   today?: Date
+  /** As on Calendar: days that can't be picked, besides those outside min/max. */
+  isDisabled?: CalendarProps['isDisabled']
+  /** As on Calendar: draws each day; return a `CalendarDay`. */
+  renderDay?: CalendarProps['renderDay']
   /** Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one picks its day and closes. */
   presets?: DatePreset<Date>[]
   /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's. */
@@ -662,6 +759,8 @@ export function DatePicker({
   min,
   max,
   today,
+  isDisabled,
+  renderDay,
   presets,
   weekStartsOn,
   label,
@@ -697,12 +796,23 @@ export function DatePicker({
           />
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal container={container}>
-          <PopoverPrimitive.Content data-slot="date-picker" align="start" sideOffset={4} collisionPadding={8} className={popClass}>
+          <PopoverPrimitive.Content
+            data-slot="date-picker"
+            align="start"
+            sideOffset={4}
+            collisionPadding={8}
+            // The panel is a dialog: it takes the field's name (its label, or its aria-label).
+            aria-labelledby={label ? `${chrome.controlId}-label` : undefined}
+            aria-label={label ? undefined : (props['aria-label'] ?? placeholder ?? labels.pickDate)}
+            className={popClass}
+          >
             <DatePickerPanel
               value={value}
               min={min}
               max={max}
               today={today}
+              isDisabled={isDisabled}
+              renderDay={renderDay}
               presets={presets}
               weekStartsOn={weekStartsOn}
               onValueChange={(d) => {
@@ -726,6 +836,10 @@ export interface DateRangePickerProps extends FieldBits, TriggerAttributes {
   min?: Date
   max?: Date
   today?: Date
+  /** As on Calendar: days that can't be picked, besides those outside min/max. */
+  isDisabled?: CalendarProps['isDisabled']
+  /** As on Calendar: draws each day; return a `CalendarDay`. */
+  renderDay?: CalendarProps['renderDay']
   /** Shortcuts listed before the calendar: `[datePresets.last7Days, datePresets.last30Days]`. Picking one shows its range, which waits for Apply like any other. */
   presets?: DatePreset<DateRange | Date>[]
   /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's. */
@@ -748,6 +862,8 @@ export function DateRangePicker({
   min,
   max,
   today,
+  isDisabled,
+  renderDay,
   presets,
   weekStartsOn,
   label,
@@ -790,12 +906,22 @@ export function DateRangePicker({
           />
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal container={container}>
-          <PopoverPrimitive.Content data-slot="date-range-picker" align="start" sideOffset={4} collisionPadding={8} className={popClass}>
+          <PopoverPrimitive.Content
+            data-slot="date-range-picker"
+            align="start"
+            sideOffset={4}
+            collisionPadding={8}
+            aria-labelledby={label ? `${chrome.controlId}-label` : undefined}
+            aria-label={label ? undefined : (props['aria-label'] ?? placeholder ?? labels.pickDates)}
+            className={popClass}
+          >
             <DateRangePickerPanel
               value={value}
               min={min}
               max={max}
               today={today}
+              isDisabled={isDisabled}
+              renderDay={renderDay}
               presets={presets}
               weekStartsOn={weekStartsOn}
               applyLabel={applyLabel}
@@ -819,6 +945,10 @@ export interface DateRangePickerPanelProps extends Omit<React.ComponentProps<'di
   min?: Date
   max?: Date
   today?: Date
+  /** As on Calendar: days that can't be picked, besides those outside min/max. */
+  isDisabled?: CalendarProps['isDisabled']
+  /** As on Calendar: draws each day; return a `CalendarDay`. */
+  renderDay?: CalendarProps['renderDay']
   /** Shortcuts listed before the calendar. Picking one shows its range; a range picked by hand leaves none selected. */
   presets?: DatePreset<DateRange | Date>[]
   /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's. */
@@ -838,6 +968,8 @@ export function DateRangePickerPanel({
   min,
   max,
   today,
+  isDisabled,
+  renderDay,
   presets,
   weekStartsOn,
   applyLabel,
@@ -853,7 +985,7 @@ export function DateRangePickerPanel({
   const body = (
     <>
       <div className="p-3">
-        <Calendar mode="range" months={2} range={draft} onRangeChange={setDraft} month={month} onMonthChange={setMonth} min={min} max={max} today={today} weekStartsOn={weekStart} />
+        <Calendar mode="range" months={2} range={draft} onRangeChange={setDraft} month={month} onMonthChange={setMonth} min={min} max={max} today={today} isDisabled={isDisabled} renderDay={renderDay} weekStartsOn={weekStart} />
       </div>
       <div className="flex items-center justify-end gap-2 border-t border-border-subtle px-3 py-2">
         <Button variant="secondary" onClick={() => { setDraft(value); onCancel?.() }}>

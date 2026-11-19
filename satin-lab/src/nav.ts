@@ -214,6 +214,13 @@ export const nav: NavGroup[] = [
           { id: 'password-input', title: 'Password input', href: '/components/password-input', description: 'A password field with a show and hide button.' },
           { id: 'date-picker', title: 'Date picker', href: '/components/date-picker', description: 'Picks a day or a range from a calendar, with a quick year.' },
           { id: 'time-picker', title: 'Time picker', href: '/components/time-picker', description: 'Takes a typed time or one from a list, alone or with a day.' },
+          {
+            id: 'date-availability',
+            title: 'Availability calendar',
+            href: '/components/date-availability',
+            description: 'A calendar for booking: which days have free slots and how many, full days off with the reason.',
+            edition: 'pro',
+          },
           { id: 'input-otp', title: 'Input OTP', href: '/components/input-otp', description: 'A one-time code in separate cells, with paste and SMS autofill.' },
           { id: 'number-input', title: 'Number input', href: '/components/number-input', description: 'A number with − and + and the arrow keys, kept between a min and a max.' },
         ],

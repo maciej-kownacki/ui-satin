@@ -259,7 +259,7 @@ export const a11y: Record<string, A11y> = {
   },
   'date-picker': {
     summary:
-      'Both pickers are a `button` named by `label` and described by the hint or error (`aria-describedby`, `aria-invalid`); it opens the Calendar in a popover and moves focus into it. Each month is a `grid` labelled by its title, and the grid is one tab stop. Each day is a `button` named by its full date; picked days have `aria-selected` and today `aria-current="date"`. The arrows are named "Previous month" and "Next month", and the year Select "Year". Presets come before the calendar as a `listbox` named "Presets", one tab stop; each preset is an `option` named by its label, the one matching the value `aria-selected`, one outside `min` and `max` `aria-disabled`. Picking a preset moves the calendar to its month.',
+      'Both pickers are a `button` named by `label` and described by the hint or error (`aria-describedby`, `aria-invalid`); it opens the Calendar in a popover and moves focus into it. Each month is a `grid` labelled by its title, and the grid is one tab stop. Each day is a `button` named by its full date; picked days have `aria-selected` and today `aria-current="date"`. Days that can\'t be picked (outside `min`/`max`, or `isDisabled`) have `aria-disabled` rather than `disabled`, so the arrow keys still reach them and a reason drawn with `renderDay` is heard and seen; Enter and clicks do nothing there. The arrows are named "Previous month" and "Next month", and the year Select "Year". Presets come before the calendar as a `listbox` named "Presets", one tab stop; each preset is an `option` named by its label, the one matching the value `aria-selected`, one outside `min` and `max` (or, in DatePicker, on a day `isDisabled` rules out) `aria-disabled`. Picking a preset moves the calendar to its month.',
     keyboard: [
       { keys: ['Enter', 'Space'], action: 'On the field: opens the calendar. On a day: picks it; a range takes its start, then its end.' },
       { keys: ['←', '→'], action: 'Moves a day back or forward, turning the month when needed.' },
@@ -270,6 +270,18 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'On a preset: picks it. DatePicker closes; a range picker shows the range and waits for Apply.' },
       { keys: ['Tab', 'Shift+Tab'], action: 'Moves between the presets, the arrows, the year, the days and, in a range, Cancel and Apply.' },
       { keys: ['Esc'], action: 'Closes the calendar and returns focus to the field; a range not yet applied is dropped.' },
+    ],
+  },
+  'date-availability': {
+    summary:
+      'Calendar\'s grid, one tab stop, with each day a `button` named by its full date and what it offers: "Thursday, November 26, 2026, 3 free slots", or why it can\'t be picked ("…, Fully booked", or the app\'s `reason`). A full day has `aria-disabled` instead of `disabled`, so the arrow keys reach it and its tooltip opens there; Enter and clicks do nothing. The dots are hidden from screen readers, and the tooltip isn\'t added as a description, since the name already says it. Few slots read as a ring, not only a colour. Translate the words with `availabilitySlots`, `availabilityFreeSlots`, `availabilityFull` and `availabilityDay` in SatinLabels.',
+    keyboard: [
+      { keys: ['←', '→'], action: 'Moves a day back or forward, onto full days too, turning the month when needed; mirrored right to left.' },
+      { keys: ['↑', '↓'], action: 'Moves a week back or forward.' },
+      { keys: ['Page Up', 'Page Down'], action: 'Moves a month back or forward.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or the last day of the week (from the locale, or `weekStartsOn`).' },
+      { keys: ['Enter', 'Space'], action: 'Picks the focused day if it has free slots.' },
+      { keys: ['Esc'], action: 'Closes the open tooltip; in AvailabilityDatePicker, a second Esc closes the calendar and returns focus to the field.' },
     ],
   },
   'input-otp': {
