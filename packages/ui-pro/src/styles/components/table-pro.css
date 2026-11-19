@@ -1,0 +1,100 @@
+/*
+ * Grouped table (components/table-pro.tsx), on top of Satin Free's Table (data-slot="table-pro"
+ * on Table's frame). Rows that come into view as a group or parent opens fade in; nothing
+ * animates height. Satin's reduced-motion rule (motion.css) cuts the fade.
+ */
+@keyframes satin-table-pro-enter {
+  from { opacity: 0; }
+}
+[data-slot='table-pro'] tbody > tr[data-enter] {
+  animation: satin-table-pro-enter var(--duration-base) var(--ease-out);
+}
+
+/* Compact: 32px rows. Table's own cells are 40px high with 8px above and below. */
+[data-slot='table-pro'][data-density='compact'] :is(tbody, tfoot) > tr > :is(td, th) {
+  height: 32px;
+  padding-block: 4px;
+}
+
+/* A row with focus (the treegrid moves it with the arrows): a 2px focus-ring edge inside the
+   row, rounded at its ends like the hover. Drawn on the cells, as rows can't take a radius. */
+[data-slot='table-pro'] tbody > tr:focus-visible {
+  outline: none;
+}
+[data-slot='table-pro'] tbody > tr:focus-visible > * {
+  box-shadow: inset 0 2px 0 var(--action-focus-ring), inset 0 -2px 0 var(--action-focus-ring);
+}
+[data-slot='table-pro'] tbody > tr:focus-visible > :first-child {
+  box-shadow: inset 2px 0 0 var(--action-focus-ring), inset 0 2px 0 var(--action-focus-ring), inset 0 -2px 0 var(--action-focus-ring);
+  border-start-start-radius: var(--radius-xl);
+  border-end-start-radius: var(--radius-xl);
+}
+[data-slot='table-pro'] tbody > tr:focus-visible > :last-child {
+  box-shadow: inset -2px 0 0 var(--action-focus-ring), inset 0 2px 0 var(--action-focus-ring), inset 0 -2px 0 var(--action-focus-ring);
+  border-start-end-radius: var(--radius-xl);
+  border-end-end-radius: var(--radius-xl);
+}
+/* An inset shadow has no logical form: right to left, the start edge is on the right. */
+[data-slot='table-pro'] tbody > tr:focus-visible > :first-child:dir(rtl) {
+  box-shadow: inset -2px 0 0 var(--action-focus-ring), inset 0 2px 0 var(--action-focus-ring), inset 0 -2px 0 var(--action-focus-ring);
+}
+[data-slot='table-pro'] tbody > tr:focus-visible > :last-child:dir(rtl) {
+  box-shadow: inset 2px 0 0 var(--action-focus-ring), inset 0 2px 0 var(--action-focus-ring), inset 0 -2px 0 var(--action-focus-ring);
+}
+[data-slot='table-pro'] tbody > tr:focus-visible > :first-child:last-child {
+  box-shadow: inset 0 0 0 2px var(--action-focus-ring);
+}
+
+/* The first column, and the checkbox column before it, stay in place while the rest scroll
+   (pinned, or Table's overflow="scroll"), in every row: header, groups, rows and totals. They
+   take their row's fill so the columns scrolling under them don't show through. */
+[data-slot='table-pro'][data-sticky] :is(thead, tbody, tfoot) > tr > :first-child,
+[data-slot='table-pro'][data-sticky][data-selectable] :is(thead, tbody, tfoot) > tr > :nth-child(2) {
+  position: sticky;
+  z-index: 1;
+  background-color: inherit;
+}
+[data-slot='table-pro'][data-sticky] :is(thead, tbody, tfoot) > tr > :first-child {
+  inset-inline-start: 0;
+}
+/* Table's checkbox column is 24px wide. */
+[data-slot='table-pro'][data-sticky][data-selectable] :is(thead, tbody, tfoot) > tr > :nth-child(2) {
+  inset-inline-start: 24px;
+}
+/* The row fill would hide the hover's on those cells; give it back. */
+@media (hover: hover) {
+  [data-slot='table-pro'][data-sticky] tbody > tr:not([data-group]):hover > :first-child,
+  [data-slot='table-pro'][data-sticky][data-selectable] tbody > tr:not([data-group]):hover > :nth-child(2) {
+    background-color: var(--bg-hover);
+  }
+}
+[data-slot='table-pro'][data-sticky] tbody > tr[data-force='hover'] > :first-child,
+[data-slot='table-pro'][data-sticky][data-selectable] tbody > tr[data-force='hover'] > :nth-child(2) {
+  background-color: var(--bg-hover);
+}
+
+/* Pinned: a 12px shadow off the pinned column's edge, over the columns that have scrolled
+   under it. It shows once they have (data-scrolled), over --duration-fast. */
+[data-slot='table-pro'][data-pinned='start']:not([data-selectable]) :is(thead, tbody, tfoot) > tr > :first-child,
+[data-slot='table-pro'][data-pinned='start'][data-selectable] :is(thead, tbody, tfoot) > tr > :nth-child(2) {
+  /* The cell's content keeps its own clip and ellipsis; the cell lets the shadow out. */
+  overflow: visible;
+}
+[data-slot='table-pro'][data-pinned='start']:not([data-selectable]) :is(thead, tbody, tfoot) > tr > :first-child::after,
+[data-slot='table-pro'][data-pinned='start'][data-selectable] :is(thead, tbody, tfoot) > tr > :nth-child(2)::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 100%;
+  width: 12px;
+  pointer-events: none;
+  background: linear-gradient(to right, var(--effect-shadow-md), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+[data-slot='table-pro'][data-pinned='start'] :is(thead, tbody, tfoot) > tr > :is(:first-child, :nth-child(2)):dir(rtl)::after {
+  background: linear-gradient(to left, var(--effect-shadow-md), transparent);
+}
+[data-slot='table-pro'][data-pinned='start'][data-scrolled] :is(thead, tbody, tfoot) > tr > :is(:first-child, :nth-child(2))::after {
+  opacity: 1;
+}
