@@ -1,0 +1,17 @@
+/*
+ * Agent plan (components/agent-plan.tsx). A step's check fades in as the step finishes, from
+ * 0.95 (nothing grows from zero); a plan that first shows already done draws its checks at rest
+ * (the component sets data-enter only on checks that appear later). Satin's reduced-motion rule
+ * (motion.css) cuts it.
+ */
+.satin-agent-plan-check[data-enter] {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: satin-agent-plan-check var(--duration-base) var(--ease-out);
+}
+@keyframes satin-agent-plan-check {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}

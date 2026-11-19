@@ -62,6 +62,13 @@ export const nav: NavGroup[] = [
       { id: 'attachment', title: 'Attachment', href: '/ai-patterns/attachment', description: 'A file attached to a prompt or a message, with its type, size and a preview.' },
       { id: 'agent-suggestion', title: 'Agent suggestion', href: '/ai-patterns/agent-suggestion', description: 'Something the agent prepared, an email, a meeting or a CRM update, for the user to approve.' },
       { id: 'decision-card', title: 'Decision card', href: '/ai-patterns/decision-card', description: 'One question from the agent, with answers to pick, rank or rewrite, and Skip or Continue.' },
+      {
+        id: 'agent-plan',
+        title: 'Agent plan',
+        href: '/ai-patterns/agent-plan',
+        description: 'The steps an agent proposes before it acts: edit, reorder or leave some out, then Run, and watch them tick off.',
+        edition: 'pro',
+      },
       { id: 'agent-loading', title: 'Loading', href: '/ai-patterns/agent-loading', description: 'What shows while an agent works: a live mark, a shimmering label and the time so far.' },
       {
         id: 'message-group',
