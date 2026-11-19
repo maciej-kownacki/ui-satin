@@ -1004,7 +1004,19 @@
           "name": "onClear",
           "type": "() => void",
           "required": true,
-          "description": "Empties the selection: the clear button and Escape call it."
+          "description": "Empties the selection: the clear button, Escape and the checkbox (when all are selected) call it."
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "required": false,
+          "description": "How many items there are in all, so the checkbox knows when all of them are selected."
+        },
+        {
+          "name": "onSelectAll",
+          "type": "() => void",
+          "required": false,
+          "description": "Selects every item. With it, the bar starts with a select-all Checkbox."
         },
         {
           "name": "position",
@@ -1022,15 +1034,22 @@
       ]
     },
     "BulkActionBarCount": {
-      "description": "\"3 selected\" with the clear button. Other props, `ref` included, go to its `div`.",
+      "description": "The select-all Checkbox (when the root has `onSelectAll`) and \"[3] selected\", the number in a grey Badge. Other props, `ref` included, go to its `div`.",
       "type": "BulkActionBarCountProps",
       "extends": [
         "React.ComponentProps<'div'>"
       ],
       "props": []
     },
+    "BulkActionBarClear": {
+      "description": "The clear button (×), at the end of the bar. Other props, `ref` included, go to the Button.",
+      "extends": [
+        "Omit<React.ComponentProps<typeof Button>, 'children' | 'iconOnly' | 'asChild'>"
+      ],
+      "props": []
+    },
     "BulkActionBarSeparator": {
-      "description": "A thin rule between the count and the actions. Other props, `ref` included, go to its `div`.",
+      "description": "A thin rule between the count and the actions, and before the clear button. Other props, `ref` included, go to its `div`.",
       "extends": [
         "React.ComponentProps<'div'>"
       ],
@@ -1061,7 +1080,7 @@
       ]
     },
     "BulkActionBar": {
-      "description": "The bar from props: the count and clear, a rule, a button per action, then the ⋯ menu. Other props, `ref` included, go to the toolbar element.",
+      "description": "The bar from props: the checkbox and the count, a rule, a button per action, the ⋯ menu, then a rule and the clear button. Other props, `ref` included, go to the toolbar element.",
       "type": "BulkActionBarProps",
       "extends": [
         "Omit<BulkActionBarRootProps, 'children'>"
@@ -4395,6 +4414,28 @@
           "type": "'hover' | 'focus' | 'pressed'",
           "required": false,
           "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
+  "rolling-number": {
+    "RollingNumber": {
+      "type": "RollingNumberProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "The number as shown, already formatted: \"1,204\"."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": true,
+          "description": "The number itself, which picks the way the digits roll."
         }
       ]
     }

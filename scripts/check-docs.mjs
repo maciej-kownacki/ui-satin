@@ -28,6 +28,7 @@ const INTERNAL = {
   'sliding-indicator': 'the sliding pill of Tabs, Pagination and Segmented control',
   'pointer-modality': 'how Tabs and the menus tell a mouse press from a key, for the focus ring',
   'toast-batch': 'toastBatch (Satin Pro), documented on the Bulk action bar page',
+  'rolling-number': 'the rolling count of Bulk action bar and Toast batch (Satin Pro)',
 }
 // Pages whose component lives in another file (as in registry/build.mjs).
 const ALIASES = { 'area-chart': 'line-chart' }

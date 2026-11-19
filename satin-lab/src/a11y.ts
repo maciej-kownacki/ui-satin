@@ -72,14 +72,14 @@ export const a11y: Record<string, A11y> = {
   },
   'bulk-action-bar': {
     summary:
-      'A `toolbar` named "Bulk actions" (`bulkActions` in SatinLabels), after the content it acts on. The count is read out from a polite `status` region as it changes ("3 selected"), and "Selection cleared" or "Done" when that happens; the rolling digits are hidden from screen readers. Each action names its shortcut with `aria-keyshortcuts` and shows it as Kbd. While hidden the bar is `inert`. When it hides with focus inside, focus goes back to where it came from (the row checkbox). The batch toast is read out like any toast; each item\'s Undo is named after the item ("Undo Acme Corp").',
+      'A `toolbar` named "Bulk actions" (`bulkActions` in SatinLabels), after the content it acts on. It starts with a "Select all" checkbox (`aria-checked="mixed"` while some are selected). The count is read out from a polite `status` region as it changes ("3 selected"), and "Selection cleared" or "Done" when that happens; the rolling digits are hidden from screen readers. The clear button carries `aria-keyshortcuts="Escape"`; the actions have no shortcuts. While hidden the bar is `inert`. When it hides with focus inside, focus goes back to where it came from (the row checkbox). The batch toast is read out like any toast; each item\'s Undo is named after the item ("Undo Acme Corp").',
     keyboard: [
       { keys: ['Tab'], action: 'Moves into the toolbar, onto the last button used, and out of it.' },
       { keys: ['→', '←'], action: 'Moves to the next or previous button, wrapping around; mirrored right to left.' },
       { keys: ['Home', 'End'], action: 'Moves to the first or last button.' },
-      { keys: ['Enter', 'Space'], action: 'Runs the focused action, or opens the ⋯ menu.' },
+      { keys: ['Space'], action: 'On the checkbox: selects all, or clears when all are selected.' },
+      { keys: ['Enter', 'Space'], action: 'Runs the focused action, opens the ⋯ menu, or clears with ×.' },
       { keys: ['Esc'], action: 'Clears the selection, while focus is in the table or the bar (not while typing in a field).' },
-      { keys: ['An action\'s shortcut'], action: 'Runs that action while focus is in the table or the bar. A shortcut without ⌘ or ⌃ is left alone while typing in a field.' },
     ],
   },
   'button-group': {

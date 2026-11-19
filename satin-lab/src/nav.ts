@@ -101,7 +101,7 @@ export const nav: NavGroup[] = [
         id: 'bulk-action-bar',
         title: 'Bulk action bar',
         href: '/components/bulk-action-bar',
-        description: 'Appears when rows are selected: the count, the actions with their shortcuts, and one toast to undo the batch.',
+        description: 'Appears when rows are selected: select all, the count and the actions, and one toast to undo the batch.',
         edition: 'pro',
       },
       {

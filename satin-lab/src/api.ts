@@ -32,10 +32,12 @@ export const api: Record<string, Api> = {
   },
   'bulk-action-bar': {
     description:
-      'The `BulkActionBar` component (Satin Pro, `@uisatin/pro/bulk-action-bar`) is a `role="toolbar"` that shows from `count` 1 and hides at 0. Each entry of `actions` and `overflow` is `{ label, icon, onSelect, shortcut, tone, disabled, running }`; an `onSelect` that returns a promise shows a Spinner until it settles. Parts: `BulkActionBarRoot`, `BulkActionBarCount`, `BulkActionBarSeparator`, `BulkActionBarAction`, `BulkActionBarOverflow`. With `position="absolute"`, give the container `position: relative` and `pb-16`. `toastBatch({ title, items, undoAll, intent, duration, id })` from `@uisatin/pro/toast-batch` shows one toast whose Undo reverts every item; Show lists the items, each with its own Undo, and `title` can be `(count) => …` to count what is left.',
+      'The `BulkActionBar` component (Satin Pro, `@uisatin/pro/bulk-action-bar`) is a `role="toolbar"` that shows from `count` 1 and hides at 0. With `total` and `onSelectAll` it starts with a select-all Checkbox: indeterminate while some are selected, checked when all are; a click selects all, or clears when all are selected. The count sits in a grey Badge, and the clear button (×) at the end, after a rule. Each entry of `actions` and `overflow` is `{ label, icon, onSelect, tone, disabled, running }`; an `onSelect` that returns a promise shows a Spinner until it settles. Parts: `BulkActionBarRoot`, `BulkActionBarCount`, `BulkActionBarSeparator`, `BulkActionBarAction`, `BulkActionBarOverflow`, `BulkActionBarClear`. With `position="absolute"`, give the container `position: relative` and `pb-16`. `toastBatch({ title, items, undoAll, intent, duration, id })` from `@uisatin/pro/toast-batch` shows one toast whose Undo reverts every item; Show lists the items, each with its own Undo, and `title` can be `(count) => …` to count what is left.',
     props: [
       { name: 'count', type: ['number'] },
       { name: 'onClear', type: ['() => void'] },
+      { name: 'total', type: ['number'] },
+      { name: 'onSelectAll', type: ['() => void'] },
       { name: 'actions', type: ['BulkAction[]'], default: '[]' },
       { name: 'overflow', type: ['BulkAction[]'], default: '[]' },
       { name: 'position', type: ['"sticky"', '"absolute"'], default: '"sticky"' },

@@ -37,18 +37,22 @@ const columns: Column<Deal>[] = [
 ]
 
 export const controls: ShowcaseControl[] = [
+  { id: 'selectAll', label: 'Select all', type: 'switch', default: 'on' },
   { id: 'overflow', label: 'More menu', type: 'switch', default: 'on' },
-  { id: 'shortcuts', label: 'Shortcuts', type: 'switch', default: 'on' },
 ]
 
 function code(v: Record<string, string>) {
-  const keys = v.shortcuts === 'on'
-  const k = (s: string) => (keys ? `, shortcut: '${s}'` : '')
+  const selectAll =
+    v.selectAll === 'on'
+      ? `
+        total={deals.length}
+        onSelectAll={() => setSelected(deals.map((d) => d.id))}`
+      : ''
   const overflow =
     v.overflow === 'on'
       ? `
         overflow={[
-          { label: 'Export CSV', icon: <Download />${k('⇧E')}, onSelect: () => exportCsv(picked) },
+          { label: 'Export CSV', icon: <Download />, onSelect: () => exportCsv(picked) },
           { label: 'Add tag', icon: <Label />, onSelect: () => openTagPicker(picked) },
           { label: 'Archive', icon: <Archive />, onSelect: () => archive(picked) },
         ]}`
@@ -61,17 +65,17 @@ export function Deals({ deals }: { deals: Deal[] }) {
   const [selected, setSelected] = React.useState<string[]>([])
   const picked = deals.filter((d) => selected.includes(d.id))
 
-  // Escape and the shortcuts work while focus is anywhere in this div: the table and the bar.
+  // Escape clears the selection while focus is anywhere in this div: the table and the bar.
   return (
     <div>
       <Table label="Deals" columns={columns} rows={deals} selectable selected={selected} onSelectedChange={setSelected} rowLabel={(d) => d.company} />
       <BulkActionBar
-        count={selected.length}
+        count={selected.length}${selectAll}
         onClear={() => setSelected([])}
         actions={[
           {
             label: 'Move to Negotiation',
-            icon: <ArrowRight />${k('M')},
+            icon: <ArrowRight />,
             onSelect: async () => {
               await moveDeals(picked, 'Negotiation')
               setSelected([])
@@ -81,8 +85,8 @@ export function Deals({ deals }: { deals: Deal[] }) {
               })
             },
           },
-          { label: 'Assign', icon: <UserPlus />${k('A')}, onSelect: () => openAssign(picked) },
-          { label: 'Delete', icon: <Trash />${k('⌫')}, tone: 'destructive', onSelect: () => confirmDelete(picked) },
+          { label: 'Assign', icon: <UserPlus />, onSelect: () => openAssign(picked) },
+          { label: 'Delete', icon: <Trash />, tone: 'destructive', onSelect: () => confirmDelete(picked) },
         ]}${overflow}
       />
     </div>
@@ -92,7 +96,7 @@ export function Deals({ deals }: { deals: Deal[] }) {
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   id: comboId(controls, v),
-  label: [v.overflow === 'on' ? 'More menu' : 'No more menu', v.shortcuts === 'on' ? 'Shortcuts' : 'No shortcuts'].join(' · '),
+  label: [v.selectAll === 'on' ? 'Select all' : 'No select all', v.overflow === 'on' ? 'More menu' : 'No more menu'].join(' · '),
   code: code(v),
 }))
 
@@ -103,7 +107,6 @@ function Preview({ v }: { v: Record<string, string> }) {
   const [deals, setDeals] = React.useState(DEALS)
   const [selected, setSelected] = React.useState<string[]>(['acme', 'globex', 'initech'])
   const picked = deals.filter((d) => selected.includes(d.id))
-  const keys = v.shortcuts === 'on'
 
   const setStage = (ids: string[], stage: (d: Deal) => Stage) => setDeals((all) => all.map((d) => (ids.includes(d.id) ? { ...d, stage: stage(d) } : d)))
 
@@ -113,7 +116,6 @@ function Preview({ v }: { v: Record<string, string> }) {
     {
       label: 'Move to Negotiation',
       icon: <ArrowRight />,
-      shortcut: keys ? 'M' : undefined,
       onSelect: async () => {
         const moved = picked
         await wait(700)
@@ -129,11 +131,10 @@ function Preview({ v }: { v: Record<string, string> }) {
         })
       },
     },
-    { label: 'Assign', icon: <UserPlus />, shortcut: keys ? 'A' : undefined, onSelect: () => wait(600) },
+    { label: 'Assign', icon: <UserPlus />, onSelect: () => wait(600) },
     {
       label: 'Delete',
       icon: <Trash />,
-      shortcut: keys ? '⌫' : undefined,
       tone: 'destructive',
       onSelect: () => {
         setDeals((all) => all.filter((d) => !selected.includes(d.id)))
@@ -144,7 +145,7 @@ function Preview({ v }: { v: Record<string, string> }) {
   const overflow: BulkAction[] =
     v.overflow === 'on'
       ? [
-          { label: 'Export CSV', icon: <Download />, shortcut: keys ? '⇧E' : undefined, onSelect: () => {} },
+          { label: 'Export CSV', icon: <Download />, onSelect: () => {} },
           { label: 'Add tag', icon: <Label />, onSelect: () => {} },
           { label: 'Archive', icon: <Archive />, onSelect: () => setSelected([]) },
         ]
@@ -153,7 +154,14 @@ function Preview({ v }: { v: Record<string, string> }) {
   return (
     <div className="relative w-[640px] max-w-full pb-3">
       <Table label="Deals" columns={columns} rows={deals} selectable selected={selected} onSelectedChange={setSelected} rowLabel={(d) => d.company} />
-      <BulkActionBar count={selected.length} onClear={() => setSelected([])} actions={actions} overflow={overflow} />
+      <BulkActionBar
+        count={selected.length}
+        total={deals.length}
+        onSelectAll={v.selectAll === 'on' ? () => setSelected(deals.map((d) => d.id)) : undefined}
+        onClear={() => setSelected([])}
+        actions={actions}
+        overflow={overflow}
+      />
       {/* The batch toast comes up where the bar was, inside the stage. */}
       <Toaster className="absolute inset-x-0 bottom-0 mx-auto w-[397px] max-w-full" />
     </div>
