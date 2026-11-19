@@ -67,7 +67,7 @@ export const nav: NavGroup[] = [
         id: 'agent-undo-log',
         title: 'Agent action log',
         href: '/ai-patterns/agent-undo-log',
-        description: 'What an agent did, run by run, with Revert on every action, ⌘Z for the last run and a toast to undo the revert.',
+        description: 'What a coding agent changed, run by run: files with their diff counts, a Revert on each, ⌘Z for the last run.',
         edition: 'pro',
       },
       {

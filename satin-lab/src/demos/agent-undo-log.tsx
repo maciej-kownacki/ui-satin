@@ -1,56 +1,44 @@
 import * as React from 'react'
-import { ArrowRight, Label, Mail, Bookmark } from 'iconoir-react'
+import { EditPencil, GitBranch, PagePlus } from 'iconoir-react'
 import { Toaster, toast } from '@uisatin/ui/toast'
-import { AgentActionLog, type AgentRun } from '@uisatin/pro/agent-undo-log'
+import { AgentActionLog, type AgentAction, type AgentRun } from '@uisatin/pro/agent-undo-log'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 /*
- * Recruiting: the agent screened new applicants. It moved three candidates and sent one email;
- * the reader reverts one move. The email can't be unsent, and the log says why.
+ * A coding agent: asked to add rate limiting, it created a middleware, edited the route and the
+ * tests, and pushed the branch. The reader reverts one edit; the push can't be undone from here,
+ * and the log says why. An older run sits folded under it.
  *
  * Times are local wall-clock strings, so the page renders the same on the server and in the
  * browser whatever the time zone; the log writes them as times today and with the date after.
  */
 const RUNS: AgentRun[] = [
   {
-    id: 'screening',
-    label: 'Screened new applicants for Product Designer',
+    id: 'rate-limit',
+    label: 'Add rate limiting to the login endpoint',
     at: '2026-11-19T10:42:00',
     actions: [
+      { id: 'middleware', label: 'Created', target: 'src/middleware/rate-limit.ts', added: 48, icon: <PagePlus /> },
+      { id: 'route', label: 'Edited', target: 'src/routes/auth.ts', added: 6, removed: 2, icon: <EditPencil /> },
+      { id: 'test', label: 'Edited', target: 'test/auth.test.ts', added: 31, removed: 4, icon: <EditPencil /> },
       {
-        id: 'ana',
-        label: 'Moved Ana Silva to Interview',
-        icon: <ArrowRight />,
-        changes: [{ field: 'Stage', from: 'Screening', to: 'Interview' }],
-      },
-      {
-        id: 'tom',
-        label: 'Moved Tom Becker to Interview',
-        icon: <ArrowRight />,
-        changes: [{ field: 'Stage', from: 'Screening', to: 'Interview' }],
-      },
-      {
-        id: 'lee',
-        label: 'Moved Lee Wong to Rejected',
-        icon: <ArrowRight />,
-        changes: [{ field: 'Stage', from: 'Screening', to: 'Rejected' }],
-      },
-      {
-        id: 'lee-email',
-        label: 'Sent a rejection email to Lee Wong',
-        icon: <Mail />,
+        id: 'push',
+        label: 'Pushed',
+        target: 'feat/rate-limit → origin',
+        icon: <GitBranch />,
         revertible: false,
-        reason: "Emails can't be unsent once delivered. If it was a mistake, write to Lee yourself.",
+        reason: 'Pushed commits stay on the remote. Revert them with a new commit.',
       },
     ],
   },
   {
-    id: 'tagging',
-    label: 'Tagged applicants from the LinkedIn campaign',
+    id: 'rename',
+    label: 'Rename getUser to fetchUser',
     at: '2026-11-19T09:15:00',
     actions: [
-      { id: 'tag', label: 'Tagged 8 applicants LinkedIn', icon: <Label />, at: '2026-11-19T09:15:00' },
-      { id: 'view', label: 'Saved the view LinkedIn applicants', icon: <Bookmark />, at: '2026-11-19T09:16:00' },
+      { id: 'users', label: 'Edited', target: 'src/api/users.ts', added: 4, removed: 4, icon: <EditPencil /> },
+      { id: 'profile', label: 'Edited', target: 'src/routes/profile.ts', added: 2, removed: 2, icon: <EditPencil /> },
+      { id: 'admin', label: 'Edited', target: 'src/routes/admin.ts', added: 2, removed: 2, icon: <EditPencil /> },
     ],
   },
 ]
@@ -64,33 +52,29 @@ function code(v: Record<string, string>) {
   const restore =
     v.undo === 'on'
       ? `
-        // The toast's Undo, and Restore on a reverted row.
-        onRestore={(actions) => api.restore(actions.map((a) => a.id))}`
+        // The toast's Undo, and Restore on a reverted line: apply the change again.
+        onRestore={(actions) => agent.reapply(actions.map((a) => a.id))}`
       : ''
   return `import { Toaster } from '@uisatin/ui/toast'
 import { AgentActionLog, type AgentRun } from '@uisatin/pro/agent-undo-log'
-import { ArrowRight, Mail } from 'iconoir-react'
+import { EditPencil, GitBranch, PagePlus } from 'iconoir-react'
 
 const runs: AgentRun[] = [
   {
-    id: 'screening',
-    label: 'Screened new applicants for Product Designer',
+    id: 'rate-limit',
+    label: 'Add rate limiting to the login endpoint',
     at: '2026-11-19T10:42',
     actions: [
+      { id: 'middleware', label: 'Created', target: 'src/middleware/rate-limit.ts', added: 48, icon: <PagePlus /> },
+      { id: 'route', label: 'Edited', target: 'src/routes/auth.ts', added: 6, removed: 2, icon: <EditPencil /> },
+      { id: 'test', label: 'Edited', target: 'test/auth.test.ts', added: 31, removed: 4, icon: <EditPencil /> },
       {
-        id: 'ana',
-        label: 'Moved Ana Silva to Interview',
-        icon: <ArrowRight />,
-        at: '2026-11-19T10:42',
-        changes: [{ field: 'Stage', from: 'Screening', to: 'Interview' }],
-      },
-      // …Tom Becker to Interview, Lee Wong to Rejected
-      {
-        id: 'lee-email',
-        label: 'Sent a rejection email to Lee Wong',
-        icon: <Mail />,
+        id: 'push',
+        label: 'Pushed',
+        target: 'feat/rate-limit → origin',
+        icon: <GitBranch />,
         revertible: false,
-        reason: "Emails can't be unsent once delivered. If it was a mistake, write to Lee yourself.",
+        reason: 'Pushed commits stay on the remote. Revert them with a new commit.',
       },
     ],
   },
@@ -101,8 +85,8 @@ export function AgentActivity() {
     <>
       <AgentActionLog
         runs={runs}
-        // A rejected promise marks the row: "Couldn't revert", and Try again.
-        onRevert={(action) => api.revert(action.id)}${restore}
+        // Throw an Error to say why it couldn't: "src/routes/auth.ts changed after this edit".
+        onRevert={(action) => agent.revert(action.id)}${restore}
       />
       {/* Once, near the root: the toast after each revert. */}
       <Toaster />
@@ -126,9 +110,10 @@ function Preview({ v }: { v: Record<string, string> }) {
     <div className="relative w-[600px] max-w-full pb-[104px]">
       <AgentActionLog
         runs={RUNS}
-        onRevert={async () => {
+        onRevert={async (action: AgentAction) => {
           await wait(600)
-          if (v.fails === 'on') throw new Error('The ATS did not answer')
+          // The file moved on since the agent's edit: the revert would overwrite someone's work.
+          if (v.fails === 'on') throw new Error(`${action.target} changed after this edit`)
         }}
         onRestore={v.undo === 'on' ? () => wait(400) : undefined}
         // Only while focus is in the log, so ⌘Z elsewhere on the docs page stays the browser's.

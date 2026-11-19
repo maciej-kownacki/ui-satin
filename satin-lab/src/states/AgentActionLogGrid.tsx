@@ -1,18 +1,18 @@
-import { ArrowRight, Mail } from 'iconoir-react'
+import { EditPencil, GitBranch, PagePlus } from 'iconoir-react'
 import { AgentActionLogAction, AgentActionLogRoot, AgentActionLogRun, type AgentActionState, type AgentRun } from '@uisatin/pro/agent-undo-log'
 
-/** Every state of the Agent action log (prompt 18): a run open, an action reverted, a revert failed, a run partly and fully reverted. */
+/** Every state of the Agent action log (prompt 18): a run open and folded, reverting, reverted, failed, partly and fully reverted. */
 const run: AgentRun = {
-  id: 'screening',
-  label: 'Screened new applicants for Product Designer',
+  id: 'rate-limit',
+  label: 'Add rate limiting to the login endpoint',
   at: '2026-11-19T10:42:00',
   actions: [
-    { id: 'ana', label: 'Moved Ana Silva to Interview', icon: <ArrowRight />, changes: [{ field: 'Stage', from: 'Screening', to: 'Interview' }] },
-    { id: 'tom', label: 'Moved Tom Becker to Interview', icon: <ArrowRight />, changes: [{ field: 'Stage', from: 'Screening', to: 'Interview' }] },
-    { id: 'email', label: 'Sent a rejection email to Lee Wong', icon: <Mail />, revertible: false, reason: "Emails can't be unsent once delivered." },
+    { id: 'middleware', label: 'Created', target: 'src/middleware/rate-limit.ts', added: 48, icon: <PagePlus /> },
+    { id: 'route', label: 'Edited', target: 'src/routes/auth.ts', added: 6, removed: 2, icon: <EditPencil /> },
+    { id: 'push', label: 'Pushed', target: 'feat/rate-limit → origin', icon: <GitBranch />, revertible: false, reason: 'Pushed commits stay on the remote.' },
   ],
 }
-const revertible: AgentRun = { ...run, id: 'moves', actions: run.actions.slice(0, 2) }
+const edits: AgentRun = { ...run, id: 'edits', actions: run.actions.slice(0, 2) }
 
 const noop = () => {}
 
@@ -34,15 +34,15 @@ function Cell({ title, log, reverted = [], rows = {}, restore = true, open = tru
 
 export function AgentActionLogGrid() {
   return (
-    <div className="grid grid-cols-[repeat(2,520px)] gap-8 p-8 text-xs text-text-muted">
+    <div className="grid grid-cols-[repeat(2,560px)] gap-8 p-8 text-xs text-text-muted">
       <Cell title="run collapsed" log={run} open={false} />
       <Cell title="run expanded" log={run} />
-      <Cell title="reverting" log={run} rows={{ ana: 'reverting' }} />
-      <Cell title="action reverted (with Restore)" log={run} reverted={['ana']} />
-      <Cell title="action reverted (no onRestore)" log={run} reverted={['ana']} restore={false} />
-      <Cell title="revert failed" log={run} rows={{ tom: 'failed' }} />
-      <Cell title="partially reverted run" log={run} reverted={['ana', 'tom']} />
-      <Cell title="run fully reverted" log={revertible} reverted={['ana', 'tom']} />
+      <Cell title="reverting" log={run} rows={{ route: 'reverting' }} />
+      <Cell title="action reverted (with Restore)" log={run} reverted={['route']} />
+      <Cell title="action reverted (no onRestore)" log={run} reverted={['route']} restore={false} />
+      <Cell title="revert failed" log={run} rows={{ route: 'failed' }} />
+      <Cell title="partially reverted run" log={run} reverted={['middleware', 'route']} />
+      <Cell title="run fully reverted" log={edits} reverted={['middleware', 'route']} />
     </div>
   )
 }

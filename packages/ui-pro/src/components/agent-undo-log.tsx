@@ -6,22 +6,27 @@ import { Button } from '@uisatin/ui/button'
 import { KbdGroup } from '@uisatin/ui/kbd'
 import { useSatinLabels, type SatinLabelSet } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
-import { Item, List } from '@uisatin/ui/list'
 import { toast } from '@uisatin/ui/toast'
+import { Tooltip } from '@uisatin/ui/tooltip'
 
 /**
  * AgentActionLog: what an agent did, run by run, and a way back for each of it. Undo over
  * confirm: the agent acts without asking, and every action it took can be reverted on its own.
+ * Made for coding agents first (files edited, commands run, a push), and fine for any agent.
  *
- * - A run is a header (its name, how many actions, when) that opens onto its actions, with a
- *   Revert run button for whatever of it is still in effect. The newest run starts open.
- * - Each action is a row: its icon, what it did, the fields it changed (AgentSuggestionChanges,
- *   from → to), the time, and Revert. An action that can't be reverted (an email already sent)
- *   has no button; it says why in its place.
- * - Revert calls `onRevert`; while its promise runs the button shows a Spinner. Done, the row
+ * - A run is a header (what the agent was asked, how many actions, the lines it added and
+ *   removed, when) that opens onto its actions, on a rail like Thinking's steps, with a Revert
+ *   run button for whatever of it is still in effect. The newest run starts open.
+ * - Each action is one line, like a Thinking tool step: its icon, what it did ("Edited"), its
+ *   target in mono (`src/routes/auth.ts`), +added −removed, and a quiet Revert icon button
+ *   with a tooltip. Fields it changed (AgentSuggestionChanges) and a description go under it.
+ *   An action that can't be reverted (a push, a sent email) shows a lock where the button
+ *   would be, and says why under it.
+ * - Revert calls `onRevert`; while its promise runs the button shows a Spinner. Done, the line
  *   strikes through and fades to text/muted, and a toast says so, with Undo when `onRestore` is
- *   given (the row then offers Restore too, for anyone the toast is gone for). A rejected
- *   promise leaves the row as it was, says it couldn't, and turns the button into Try again.
+ *   given (the line then offers Restore too, for anyone the toast is gone for). A rejected
+ *   promise leaves the line as it was, says it couldn't (with the Error's message, when it has
+ *   one: "src/routes/auth.ts changed after this edit"), and turns the button into Try again.
  * - ⌘Z (Ctrl+Z off Apple) reverts the newest run with anything left to revert, anywhere on the
  *   page (`shortcut="log"`: only while focus is in the log; `"off"`: never). It leaves ⌘Z alone
  *   while focus is in a text field, and when there is nothing left to revert. The run it would
@@ -60,6 +65,8 @@ export const agentActionLogLabels = {
   actionLogCantRevert: "Can't be reverted",
   /** Under an action whose revert failed. */
   actionLogRevertFailed: "Couldn't revert",
+  /** The same with the reason the app gave (the rejected Error's message). */
+  actionLogRevertFailedWhy: (reason: string) => `Couldn't revert: ${reason}`,
   /** The button of an action whose revert failed. */
   actionLogRetry: 'Try again',
   actionLogRetryAction: (action: string) => `Try again to revert ${action}`,
@@ -100,11 +107,20 @@ export type AgentActionTime = Date | string | number
 
 export interface AgentAction {
   id: string
-  /** What the agent did, as a sentence: "Moved Ana Silva to Interview". It names the row's buttons and the toast. */
+  /**
+   * What the agent did: a verb before a `target` ("Edited"), or the whole sentence without one
+   * ("Moved Ana Silva to Interview"). With the target, it names the row's buttons and the toast.
+   */
   label: string
+  /** What it acted on, in mono after the label: a file path, a command, a branch. */
+  target?: string
+  /** Lines added, shown as +n in green. */
+  added?: number
+  /** Lines removed, shown as −n in red. */
+  removed?: number
   /** A 16px icon before it. */
   icon?: React.ReactNode
-  /** One more line under it, cut to fit: where, for whom. */
+  /** One more line under it, cut to fit. */
   description?: React.ReactNode
   /** The fields it changed, as AgentSuggestionChanges shows them: field, from, to. */
   changes?: AgentSuggestionChange[]
@@ -118,7 +134,7 @@ export interface AgentAction {
 
 export interface AgentRun {
   id: string
-  /** What the agent was asked to do, or did: "Screened new applicants for Product Designer". */
+  /** What the agent was asked to do, or did: "Add rate limiting to the login endpoint". */
   label: string
   /** When the run started. ⌘Z reverts the newest run with anything left to revert. */
   at: AgentActionTime
@@ -131,6 +147,8 @@ export interface AgentRun {
 export type AgentActionState = 'done' | 'reverting' | 'reverted' | 'failed'
 
 const toDate = (t: AgentActionTime) => (t instanceof Date ? t : new Date(t))
+/** An action's name for buttons, toasts and screen readers: "Edited src/routes/auth.ts". */
+export const actionName = (action: AgentAction) => (action.target ? `${action.label} ${action.target}` : action.label)
 const timeOf = (t: AgentActionTime) => toDate(t).getTime()
 
 /* ---------- small hooks ---------- */
@@ -175,6 +193,8 @@ const attempt = (run: () => unknown) => new Promise((resolve) => resolve(run()))
 interface LogContextValue {
   labels: ReturnType<typeof useLabels>
   stateOf: (action: AgentAction) => AgentActionState
+  /** Why its revert failed, when the app said. */
+  failureOf: (action: AgentAction) => string | undefined
   isExpanded: (run: AgentRun) => boolean
   toggle: (run: AgentRun) => void
   revert: (action: AgentAction, run: AgentRun) => void
@@ -261,7 +281,8 @@ export function AgentActionLogRoot({
   const [expanded, setExpanded] = useIds(expandedProp, () => defaultExpanded ?? (runs[0] ? [runs[0].id] : []), onExpandedChange)
   // In-flight and failed reverts are the log's own business.
   const [busy, setBusy] = React.useState<ReadonlySet<string>>(() => new Set())
-  const [failed, setFailed] = React.useState<ReadonlySet<string>>(() => new Set())
+  // Failed reverts, with the reason the app gave when it gave one.
+  const [failed, setFailed] = React.useState<ReadonlyMap<string, string | undefined>>(() => new Map())
   const [busyRuns, setBusyRuns] = React.useState<ReadonlySet<string>>(() => new Set())
   const [message, setMessage] = React.useState('')
   const busyRef = React.useRef(busy)
@@ -274,6 +295,16 @@ export function AgentActionLogRoot({
     set((current) => {
       const next = new Set(current)
       for (const id of ids) on ? next.add(id) : next.delete(id)
+      return next
+    })
+  /** Marks a failure, with the Error's message as its reason; without an error, clears it. */
+  const markFailed = (ids: string[], error?: unknown) =>
+    setFailed((current) => {
+      const next = new Map(current)
+      for (const id of ids) {
+        if (error === undefined) next.delete(id)
+        else next.set(id, error instanceof Error && error.message ? error.message : undefined)
+      }
       return next
     })
 
@@ -295,7 +326,7 @@ export function AgentActionLogRoot({
       toasts.current.delete(id)
     }
     edit(setBusy, ids, true)
-    const name = targets.length === 1 ? targets[0].label : run.label
+    const name = targets.length === 1 ? actionName(targets[0]) : run.label
     attempt(() => onRestore(targets, run)).then(
       () => {
         setReverted((current) => current.filter((id) => !ids.includes(id)))
@@ -311,7 +342,7 @@ export function AgentActionLogRoot({
       const { labels, onRestore } = latest.current
       const id = toast(labels.actionLogToastReverted(actions.length), {
         intent: 'success',
-        description: actions.length === 1 ? actions[0].label : run.label,
+        description: actions.length === 1 ? actionName(actions[0]) : run.label,
         action: onRestore
           ? {
               // Picked under the Toaster, from the app's words over this file's defaults.
@@ -330,15 +361,15 @@ export function AgentActionLogRoot({
     (action: AgentAction, run: AgentRun) => {
       if (action.revertible === false || latest.current.revertedSet.has(action.id) || busyRef.current.has(action.id)) return
       edit(setBusy, [action.id], true)
-      edit(setFailed, [action.id], false)
+      markFailed([action.id])
       attempt(() => latest.current.onRevert(action, run)).then(
         () => {
           setReverted((current) => (current.includes(action.id) ? current : [...current, action.id]))
           announceReverted([action], run)
         },
-        () => {
-          edit(setFailed, [action.id], true)
-          setMessage(latest.current.labels.actionLogRevertFailedNamed(action.label))
+        (error) => {
+          markFailed([action.id], error ?? null)
+          setMessage(latest.current.labels.actionLogRevertFailedNamed(actionName(action)))
         },
       ).finally(() => edit(setBusy, [action.id], false))
     },
@@ -356,14 +387,14 @@ export function AgentActionLogRoot({
       const ids = targets.map((a) => a.id)
       edit(setBusyRuns, [run.id], true)
       edit(setBusy, ids, true)
-      edit(setFailed, ids, false)
+      markFailed(ids)
       const done: AgentAction[] = []
-      const failedNow: AgentAction[] = []
+      const failedNow: { action: AgentAction; error: unknown }[] = []
       const { onRevertRun, onRevert } = latest.current
       if (onRevertRun) {
         await attempt(() => onRevertRun(run, targets)).then(
           () => done.push(...targets),
-          () => failedNow.push(...targets),
+          (error) => failedNow.push(...targets.map((action) => ({ action, error: error ?? null }))),
         )
         setReverted((current) => [...current, ...done.map((a) => a.id).filter((id) => !current.includes(id))])
         edit(setBusy, ids, false)
@@ -375,15 +406,15 @@ export function AgentActionLogRoot({
               done.push(action)
               setReverted((current) => (current.includes(action.id) ? current : [...current, action.id]))
             },
-            () => failedNow.push(action),
+            (error) => failedNow.push({ action, error: error ?? null }),
           )
           edit(setBusy, [action.id], false)
         }
       }
-      edit(setFailed, failedNow.map((a) => a.id), true)
+      for (const f of failedNow) markFailed([f.action.id], f.error)
       edit(setBusyRuns, [run.id], false)
       if (done.length) announceReverted(done, run)
-      if (failedNow.length) setMessage(latest.current.labels.actionLogRevertFailedNamed(failedNow.length === 1 ? failedNow[0].label : run.label))
+      if (failedNow.length) setMessage(latest.current.labels.actionLogRevertFailedNamed(failedNow.length === 1 ? actionName(failedNow[0].action) : run.label))
     },
     // leftOf reads refs only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -443,6 +474,7 @@ export function AgentActionLogRoot({
     () => ({
       labels,
       stateOf: (action) => (busy.has(action.id) ? 'reverting' : revertedSet.has(action.id) ? 'reverted' : failed.has(action.id) ? 'failed' : 'done'),
+      failureOf: (action) => failed.get(action.id),
       isExpanded: (run) => expandedSet.has(run.id),
       toggle: (run) => setExpanded((current) => (current.includes(run.id) ? current.filter((id) => id !== run.id) : [...current, run.id])),
       revert,
@@ -481,13 +513,61 @@ export function AgentActionLogRoot({
   )
 }
 
-/* ---------- a run ---------- */
+/* ---------- glyphs, 16px on a 1.25 stroke like Satin's ---------- */
+
+const glyph = { width: 16, height: 16, viewBox: '0 0 16 16', fill: 'none', 'aria-hidden': true } as const
+const line = { stroke: 'currentColor', strokeWidth: 1.25, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
 
 const Chevron = ({ className }: { className?: string }) => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className={className}>
-    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+  <svg {...glyph} className={className}>
+    <path d="M4 6L8 10L12 6" {...line} />
   </svg>
 )
+/** Back along a curve: Revert. Mirrored right to left. */
+const UndoGlyph = ({ className }: { className?: string }) => (
+  <svg {...glyph} className={cn('rtl:-scale-x-100', className)}>
+    <path d="M5.5 3.5L2.5 6.5L5.5 9.5" {...line} />
+    <path d="M2.5 6.5H9.75C11.82 6.5 13.5 8.18 13.5 10.25C13.5 12.32 11.82 14 9.75 14H8" {...line} />
+  </svg>
+)
+/** The same curve forward: Restore. */
+const RedoGlyph = () => <UndoGlyph className="-scale-x-100 rtl:scale-x-100" />
+const RetryGlyph = () => (
+  <svg {...glyph}>
+    <path d="M13.25 8A5.25 5.25 0 1 1 11.7 4.3" {...line} />
+    <path d="M12.25 2.25V4.75H9.75" {...line} />
+  </svg>
+)
+const CheckGlyph = () => (
+  <svg {...glyph}>
+    <path d="M3.33 8.67L6 11.33L12.67 4.67" {...line} />
+  </svg>
+)
+const LockGlyph = () => (
+  <svg {...glyph}>
+    <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.25" />
+    <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" {...line} />
+  </svg>
+)
+const WarningGlyph = () => (
+  <svg {...glyph} width="14" height="14" className="mt-[3px] shrink-0">
+    <path d="M8 5.34V8.3M8 10.66l.01-.01" {...line} />
+    <path d="M8 13.9A5.9 5.9 0 1 0 8 2.1a5.9 5.9 0 0 0 0 11.8Z" stroke="currentColor" strokeWidth="1.25" />
+  </svg>
+)
+
+/** +added −removed in mono, green and red, as on Thinking's tool steps. Muted once reverted (CSS). */
+function DiffStat({ added, removed, className }: { added?: number; removed?: number; className?: string }) {
+  if (added == null && removed == null) return null
+  return (
+    <span data-slot="agent-action-log-diff" className={cn('flex shrink-0 gap-1.5 font-mono tracking-normal whitespace-nowrap', className)}>
+      {added != null && <span className="text-status-green-fg">+{added}</span>}
+      {removed != null && <span className="text-status-red-fg">−{removed}</span>}
+    </span>
+  )
+}
+
+/* ---------- a run ---------- */
 
 export interface AgentActionLogRunProps extends Omit<React.ComponentProps<'li'>, 'children'> {
   run: AgentRun
@@ -496,8 +576,8 @@ export interface AgentActionLogRunProps extends Omit<React.ComponentProps<'li'>,
 }
 
 /**
- * One run: a header that opens onto its actions, with Revert run (or Restore run once it's all
- * reverted). Other props, `ref` included, go to its `li`.
+ * One run: a header that opens onto its actions, on a rail, with Revert run (or Restore run once
+ * it's all reverted). Other props, `ref` included, go to its `li`.
  */
 export function AgentActionLogRun({ run, children, className, ...props }: AgentActionLogRunProps) {
   const log = useLog('AgentActionLogRun')
@@ -513,6 +593,8 @@ export function AgentActionLogRun({ run, children, className, ...props }: AgentA
   const left = states.some((s) => s === 'done' || s === 'failed')
   const revertible = states.some((s) => s !== 'fixed')
   const state = revertedCount === 0 ? 'done' : revertedCount === count ? 'reverted' : 'partial'
+  const sum = (key: 'added' | 'removed') =>
+    run.actions.some((a) => a[key] != null) ? run.actions.reduce((total, a) => total + (a[key] ?? 0), 0) : undefined
 
   const shortcut = log.shortcutRun === run.id && !busy
   // Revert run while anything is left; Restore run once nothing is (with onRestore); else it stays, done.
@@ -546,7 +628,7 @@ export function AgentActionLogRun({ run, children, className, ...props }: AgentA
 
   return (
     <RunContext.Provider value={run}>
-      <li data-slot="agent-action-log-run" data-state={state} data-expanded={open || undefined} className={cn('satin-agent-action-log-run min-w-0', className)} {...props}>
+      <li data-slot="agent-action-log-run" data-state={state} data-expanded={open || undefined} className={cn('min-w-0', className)} {...props}>
         <div className="flex min-h-12 items-center gap-2 py-2 ps-2 pe-3">
           <button
             type="button"
@@ -561,14 +643,20 @@ export function AgentActionLogRun({ run, children, className, ...props }: AgentA
               <span data-slot="agent-action-log-run-label" className="truncate text-sm leading-5 font-medium text-text-default">
                 {run.label}
               </span>
-              <span className="truncate text-sm leading-5 text-text-muted">
+              <span className="flex min-w-0 items-center gap-1.5 text-sm leading-5 whitespace-nowrap text-text-muted">
                 <span>{revertedCount ? labels.actionLogRevertedCount(revertedCount, count) : labels.actionLogActionCount(count)}</span>
-                {' · '}
+                {(sum('added') != null || sum('removed') != null) && (
+                  <>
+                    <span aria-hidden>·</span>
+                    <DiffStat added={sum('added')} removed={sum('removed')} />
+                  </>
+                )}
+                <span aria-hidden>·</span>
                 <time dateTime={toDate(run.at).toISOString()}>{log.formatTime(run.at)}</time>
                 {failedCount > 0 && (
                   <>
-                    {' · '}
-                    <span className="text-text-destructive">{labels.actionLogFailedCount(failedCount)}</span>
+                    <span aria-hidden>·</span>
+                    <span className="truncate text-text-destructive">{labels.actionLogFailedCount(failedCount)}</span>
                   </>
                 )}
               </span>
@@ -580,9 +668,15 @@ export function AgentActionLogRun({ run, children, className, ...props }: AgentA
             Closed, they leave tab order and screen readers at once, while they fold. */}
         <div id={bodyId} data-state={open ? 'open' : 'closed'} inert={!open || undefined} className="satin-expand">
           <div>
-            <List size="sm" className="pe-2 pb-2 ps-7">
-              {children ?? run.actions.map((action) => <AgentActionLogAction key={action.id} action={action} />)}
-            </List>
+            <div className="flex ps-3 pe-3 pb-2">
+              {/* The rail under the chevron, as on Thinking: the steps of one run. */}
+              <div aria-hidden className="relative w-4 shrink-0">
+                <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-linear-to-b from-component-rail-edge via-component-rail-center to-component-rail-edge" />
+              </div>
+              <ul role="list" className="m-0 ms-0.5 flex min-w-0 flex-1 list-none flex-col p-0">
+                {children ?? run.actions.map((action) => <AgentActionLogAction key={action.id} action={action} />)}
+              </ul>
+            </div>
           </div>
         </div>
       </li>
@@ -592,32 +686,18 @@ export function AgentActionLogRun({ run, children, className, ...props }: AgentA
 
 /* ---------- an action ---------- */
 
-const Lock = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden className="mt-[3px] shrink-0">
-    <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.25" />
-    <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
-  </svg>
-)
-const Warning = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden className="mt-[3px] shrink-0">
-    <path d="M8 5.34V8.3M8 10.66l.01-.01" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M8 13.9A5.9 5.9 0 1 0 8 2.1a5.9 5.9 0 0 0 0 11.8Z" stroke="currentColor" strokeWidth="1.25" />
-  </svg>
-)
-
-// Item types its root as the div it is alone; in the run's List it is an li.
-export interface AgentActionLogActionProps extends Omit<React.ComponentProps<'div'>, 'title' | 'children' | 'onClick'> {
+export interface AgentActionLogActionProps extends Omit<React.ComponentProps<'li'>, 'children'> {
   action: AgentAction
   /** Sets the row's state yourself, for a log you drive. Default: the log's. */
   state?: AgentActionState
-  /** More under the action's fields: a link to the record, a note. */
+  /** More under the action: a link to the diff, a note. */
   children?: React.ReactNode
 }
 
 /**
- * One action, an Item: its icon, what it did, what it changed, the time and its button (Revert,
- * then Restore or Reverted; Try again after a failure). One that can't be reverted says why in
- * the button's place. Other props, `ref` included, go to its `li`.
+ * One action on one line: its icon, what it did, its target in mono, +added −removed, and a
+ * Revert icon button (then Restore or a check; Try again after a failure). One that can't be
+ * reverted shows a lock there and says why under it. Other props, `ref` included, go to its `li`.
  */
 export function AgentActionLogAction({ action, state: stateProp, children, className, ...props }: AgentActionLogActionProps) {
   const log = useLog('AgentActionLogAction')
@@ -626,85 +706,105 @@ export function AgentActionLogAction({ action, state: stateProp, children, class
   const { labels } = log
   const state = stateProp ?? log.stateOf(action)
   const fixed = action.revertible === false
+  const name = actionName(action)
+  const failure = state === 'failed' ? log.failureOf(action) : undefined
 
-  // One button that changes its words, so focus stays on it through the whole revert.
-  const button = fixed ? null : state === 'reverted' ? (
+  // One button that changes its glyph and name, so focus stays on it through the whole revert.
+  const icon = (tip: string, button: React.ReactElement) => <Tooltip label={tip}>{button}</Tooltip>
+  const trailing = fixed ? (
+    <span className="flex size-6 items-center justify-center text-text-muted">
+      <LockGlyph />
+    </span>
+  ) : state === 'reverted' ? (
     log.canRestore ? (
-      <Button variant="tertiary" size="xs" aria-label={labels.actionLogRestoreAction(action.label)} onClick={() => log.restore([action], run)} className="-my-0.5 text-text-muted">
-        {labels.actionLogRestore}
-      </Button>
+      icon(
+        labels.actionLogRestore,
+        <Button variant="tertiary" size="xs" iconOnly aria-label={labels.actionLogRestoreAction(name)} onClick={() => log.restore([action], run)}>
+          <RedoGlyph />
+        </Button>,
+      )
     ) : (
       // Done, it keeps its place and the focus, and does nothing more.
-      <Button variant="tertiary" size="xs" aria-disabled aria-label={labels.actionLogRevertedAction(action.label)} className="-my-0.5 cursor-default text-text-muted">
-        {labels.actionLogReverted}
-      </Button>
+      icon(
+        labels.actionLogReverted,
+        <Button variant="tertiary" size="xs" iconOnly aria-disabled aria-label={labels.actionLogRevertedAction(name)} className="cursor-default">
+          <CheckGlyph />
+        </Button>,
+      )
     )
   ) : (
-    <Button
-      variant="tertiary"
-      size="xs"
-      loading={state === 'reverting'}
-      aria-label={state === 'failed' ? labels.actionLogRetryAction(action.label) : labels.actionLogRevertAction(action.label)}
-      onClick={() => log.revert(action, run)}
-      className="-my-0.5"
-    >
-      {state === 'failed' ? labels.actionLogRetry : labels.actionLogRevert}
-    </Button>
+    icon(
+      state === 'failed' ? labels.actionLogRetry : labels.actionLogRevert,
+      <Button
+        variant="tertiary"
+        size="xs"
+        iconOnly
+        loading={state === 'reverting'}
+        aria-label={state === 'failed' ? labels.actionLogRetryAction(name) : labels.actionLogRevertAction(name)}
+        onClick={() => log.revert(action, run)}
+      >
+        {state === 'failed' ? <RetryGlyph /> : <UndoGlyph />}
+      </Button>,
+    )
   )
 
   const below = (
     <>
+      {action.description != null && <p className="m-0 truncate text-sm leading-5 text-text-muted">{action.description}</p>}
       {action.changes?.length ? <AgentSuggestionChanges changes={action.changes} className="text-sm [&>div]:min-h-5" /> : null}
       {fixed && (
-        <p data-slot="agent-action-log-reason" className="m-0 flex gap-1.5 text-sm leading-5 text-text-muted">
-          <Lock />
-          <span>
-            {action.reason ? (
-              <>
-                <span className="sr-only">{labels.actionLogCantRevert}: </span>
-                {action.reason}
-              </>
-            ) : (
-              labels.actionLogCantRevert
-            )}
-          </span>
+        <p data-slot="agent-action-log-reason" className="m-0 text-sm leading-5 text-text-muted">
+          {action.reason ? (
+            <>
+              <span className="sr-only">{labels.actionLogCantRevert}: </span>
+              {action.reason}
+            </>
+          ) : (
+            labels.actionLogCantRevert
+          )}
         </p>
       )}
       {state === 'failed' && (
         <p data-slot="agent-action-log-error" className="m-0 flex gap-1.5 text-sm leading-5 text-text-destructive">
-          <Warning />
-          <span>{labels.actionLogRevertFailed}</span>
+          <WarningGlyph />
+          <span>{failure ? labels.actionLogRevertFailedWhy(failure) : labels.actionLogRevertFailed}</span>
         </p>
       )}
       {children}
     </>
   )
-  const hasBelow = !!action.changes?.length || fixed || state === 'failed' || children != null
+  const hasBelow = action.description != null || !!action.changes?.length || fixed || state === 'failed' || children != null
 
   return (
-    <Item
-      size="sm"
+    <li
       data-slot="agent-action-log-action"
       data-state={state}
       data-revertible={fixed ? 'false' : undefined}
-      media={action.icon ? <span className="flex h-5 w-4 items-center justify-center text-text-muted [&_svg]:size-4 [&_svg]:[stroke-width:1.875]">{action.icon}</span> : undefined}
-      title={<span data-slot="agent-action-log-action-label">{action.label}</span>}
-      // The time sits in the text column, so the buttons on the right line up whatever they say.
-      description={
-        action.description != null || action.at != null ? (
-          <>
-            {action.description}
-            {action.description != null && action.at != null ? ' · ' : null}
-            {action.at != null ? <time dateTime={toDate(action.at).toISOString()}>{log.formatTime(action.at)}</time> : null}
-          </>
-        ) : undefined
-      }
-      actions={button}
-      className={cn('satin-agent-action items-start', className)}
+      className={cn('min-w-0 rounded-md px-1.5 py-1 transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-hover', className)}
       {...props}
     >
-      {hasBelow ? <div className="flex flex-col gap-1.5">{below}</div> : undefined}
-    </Item>
+      <div className="flex min-h-6 min-w-0 items-center gap-2 text-sm leading-5">
+        {action.icon && <span className="flex size-4 shrink-0 items-center justify-center text-text-muted [&_svg]:size-4 [&_svg]:[stroke-width:1.875]">{action.icon}</span>}
+        <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
+          <span data-slot="agent-action-log-action-label" className={cn('text-text-default', action.target ? 'shrink-0 whitespace-nowrap' : 'min-w-0 truncate')}>
+            {action.label}
+          </span>
+          {action.target && (
+            <span data-slot="agent-action-log-action-target" className="min-w-0 truncate font-mono tracking-normal text-text-muted">
+              {action.target}
+            </span>
+          )}
+        </span>
+        <DiffStat added={action.added} removed={action.removed} />
+        {action.at != null && (
+          <time dateTime={toDate(action.at).toISOString()} className="shrink-0 text-text-muted tabular-nums">
+            {log.formatTime(action.at)}
+          </time>
+        )}
+        <span className="-my-0.5 flex shrink-0">{trailing}</span>
+      </div>
+      {hasBelow ? <div className={cn('flex flex-col gap-1 pe-8 pt-0.5 pb-0.5', action.icon && 'ps-6')}>{below}</div> : null}
+    </li>
   )
 }
 

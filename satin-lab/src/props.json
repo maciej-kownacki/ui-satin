@@ -589,7 +589,7 @@
       ]
     },
     "AgentActionLogRun": {
-      "description": "One run: a header that opens onto its actions, with Revert run (or Restore run once it's all reverted). Other props, `ref` included, go to its `li`.",
+      "description": "One run: a header that opens onto its actions, on a rail, with Revert run (or Restore run once it's all reverted). Other props, `ref` included, go to its `li`.",
       "type": "AgentActionLogRunProps",
       "extends": [
         "Omit<React.ComponentProps<'li'>, 'children'>"
@@ -609,10 +609,10 @@
       ]
     },
     "AgentActionLogAction": {
-      "description": "One action, an Item: its icon, what it did, what it changed, the time and its button (Revert, then Restore or Reverted; Try again after a failure). One that can't be reverted says why in the button's place. Other props, `ref` included, go to its `li`.",
+      "description": "One action on one line: its icon, what it did, its target in mono, +added −removed, and a Revert icon button (then Restore or a check; Try again after a failure). One that can't be reverted shows a lock there and says why under it. Other props, `ref` included, go to its `li`.",
       "type": "AgentActionLogActionProps",
       "extends": [
-        "Omit<React.ComponentProps<'div'>, 'title' | 'children' | 'onClick'>"
+        "Omit<React.ComponentProps<'li'>, 'children'>"
       ],
       "props": [
         {
@@ -630,7 +630,7 @@
           "name": "children",
           "type": "React.ReactNode",
           "required": false,
-          "description": "More under the action's fields: a link to the record, a note."
+          "description": "More under the action: a link to the diff, a note."
         }
       ]
     },

@@ -65,6 +65,33 @@ describe('AgentActionLog', () => {
     expect(within(runOf('Screened applicants')).getByText('4 actions')).toBeTruthy()
   })
 
+  it('names a coding action by its verb and target, with its +added −removed', async () => {
+    const code: AgentRun[] = [
+      {
+        id: 'rate',
+        label: 'Add rate limiting',
+        at: '2026-11-19T10:42:00',
+        actions: [
+          { id: 'route', label: 'Edited', target: 'src/routes/auth.ts', added: 6, removed: 2 },
+          { id: 'push', label: 'Pushed', target: 'feat/rate-limit', revertible: false, reason: 'Pushed commits stay on the remote.' },
+        ],
+      },
+    ]
+    const onRevert = vi.fn(async () => {
+      throw new Error('src/routes/auth.ts changed after this edit')
+    })
+    const { user } = renderWithSatin(<AgentActionLog runs={code} onRevert={onRevert} />)
+    const route = row('src/routes/auth.ts')
+    expect(route.querySelector('[data-slot="agent-action-log-diff"]')!.textContent).toBe('+6−2')
+    // The run's header sums them.
+    expect(within(header('Add rate limiting')).getByText('+6')).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: 'Revert Edited src/routes/auth.ts' }))
+    await flush()
+    expect(within(route).getByText("Couldn't revert: src/routes/auth.ts changed after this edit")).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Try again to revert Edited src/routes/auth.ts' })).toBeTruthy()
+    expect(within(row('feat/rate-limit')).queryByRole('button')).toBeNull()
+  })
+
   it('says why an action can’t be reverted, in place of its button', () => {
     renderWithSatin(<AgentActionLog runs={runs} onRevert={() => {}} />)
     expect(within(row('Sent an email to Lee Wong')).queryByRole('button')).toBeNull()
@@ -129,7 +156,8 @@ describe('AgentActionLog', () => {
     await user.click(screen.getByRole('button', { name: 'Revert Moved Lee Wong to Rejected' }))
     await flush()
     expect(row('Moved Lee Wong to Rejected').getAttribute('data-state')).toBe('failed')
-    expect(within(row('Moved Lee Wong to Rejected')).getByText("Couldn't revert")).toBeTruthy()
+    // The Error's message says why.
+    expect(within(row('Moved Lee Wong to Rejected')).getByText("Couldn't revert: offline")).toBeTruthy()
     expect(status().textContent).toBe("Couldn't revert Moved Lee Wong to Rejected")
     expect(within(runOf('Screened applicants')).getByText("1 couldn't be reverted")).toBeTruthy()
 

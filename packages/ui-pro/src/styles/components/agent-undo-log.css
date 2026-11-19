@@ -1,11 +1,12 @@
 /*
  * Agent action log (components/agent-undo-log.tsx). A reverted action strikes through and fades
- * to text/muted: its colour and the colour of its line change together over --duration-base, so
- * the line comes in with the fade instead of popping. What it changed fades to muted with it. A
- * run strikes through too once every action in it is reverted. Satin's reduced-motion rule
- * (motion.css) cuts the fade.
+ * to text/muted: its label and target, and their line, change colour together over
+ * --duration-base, so the line comes in with the fade instead of popping. Its +added −removed and
+ * the fields it changed lose their colour too. A run strikes through once every action in it is
+ * reverted. Satin's reduced-motion rule (motion.css) cuts the fade.
  */
 [data-slot='agent-action-log-action-label'],
+[data-slot='agent-action-log-action-target'],
 [data-slot='agent-action-log-run-label'] {
   text-decoration-line: line-through;
   text-decoration-color: transparent;
@@ -14,23 +15,23 @@
     color var(--duration-base) var(--ease-out),
     text-decoration-color var(--duration-base) var(--ease-out);
 }
-[data-slot='agent-action-log-action'][data-state='reverted'] [data-slot='agent-action-log-action-label'],
+[data-slot='agent-action-log-action'][data-state='reverted'] :is([data-slot='agent-action-log-action-label'], [data-slot='agent-action-log-action-target']),
 [data-slot='agent-action-log-run'][data-state='reverted'] [data-slot='agent-action-log-run-label'] {
   color: var(--text-muted);
   text-decoration-color: currentColor;
 }
 
-/* The fields it changed: the new value loses its weight of colour too (the old one is muted already). */
-[data-slot='agent-action-log-action'] [data-slot='agent-suggestion-changes'] dd > span {
+/* What it changed: the +/− counts and the new values of its fields fade to muted with it. */
+[data-slot='agent-action-log-action'] :is([data-slot='agent-action-log-diff'] > span, [data-slot='agent-suggestion-changes'] dd > span) {
   transition: color var(--duration-base) var(--ease-out);
 }
-[data-slot='agent-action-log-action'][data-state='reverted'] [data-slot='agent-suggestion-changes'] dd > span {
+[data-slot='agent-action-log-action'][data-state='reverted'] :is([data-slot='agent-action-log-diff'] > span, [data-slot='agent-suggestion-changes'] dd > span) {
   color: var(--text-muted);
 }
 
 /* Forced colours paint every line in the text colour: only a reverted label keeps its line. */
 @media (forced-colors: active) {
-  [data-slot='agent-action-log-action']:not([data-state='reverted']) [data-slot='agent-action-log-action-label'],
+  [data-slot='agent-action-log-action']:not([data-state='reverted']) :is([data-slot='agent-action-log-action-label'], [data-slot='agent-action-log-action-target']),
   [data-slot='agent-action-log-run']:not([data-state='reverted']) [data-slot='agent-action-log-run-label'] {
     text-decoration-line: none;
   }

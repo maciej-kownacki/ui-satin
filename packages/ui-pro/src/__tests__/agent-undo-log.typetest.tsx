@@ -56,7 +56,7 @@ const state: AgentActionState = 'failed'
 const wrongState: AgentActionState = 'undone'
 
 const runRef = React.createRef<HTMLLIElement>()
-const rowRef = React.createRef<HTMLDivElement>()
+const rowRef = React.createRef<HTMLLIElement>()
 export const parts = (
   <AgentActionLogRoot runs={runs} onRevert={() => {}} aria-label="Recruiting agent">
     <AgentActionLogRun ref={runRef} run={runs[0]}>
