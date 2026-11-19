@@ -857,6 +857,7 @@ export const api: Record<string, Api> = {
       { name: 'intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"neutral"' },
       { name: 'icon', type: ['boolean'], default: 'true' },
       { name: 'description', type: ['string'] },
+      { name: 'details', type: ['ReactNode'] },
       { name: 'action', type: ['{ label, onClick, altText }', 'label: string | (labels) => string'] },
       { name: 'closeButton', type: ['boolean'], default: 'true' },
       { name: 'duration', type: ['number'], default: '5000' },

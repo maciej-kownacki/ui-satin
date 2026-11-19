@@ -22,6 +22,14 @@ describe('Toast', () => {
     expect(onUndo).toHaveBeenCalledOnce()
   })
 
+  it('shows details under the row', async () => {
+    renderWithSatin(<Toaster />)
+    act(() => {
+      toast('3 files uploaded', { details: <ul aria-label="Files"><li>a.pdf</li></ul> })
+    })
+    expect(screen.getByRole('list', { name: 'Files' }).closest('[data-slot="toast-details"]')).toBeTruthy()
+  })
+
   it('takes the action word from the labels when given a function', async () => {
     renderWithSatin(<Toaster />, { labels: { cancel: 'Anuluj' } })
     act(() => {

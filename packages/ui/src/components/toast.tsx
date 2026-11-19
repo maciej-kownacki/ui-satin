@@ -27,6 +27,9 @@ import { useSatinLabels, type SatinLabelSet } from './labels'
  * their new places at the same time. Every move is one transform on one element, 500 ms on the
  * kit's ease-out, so a toast added or closed mid-move just carries on from where it is. The
  * cut to the front one's height eases over 150 ms, the content fade over 250 ms.
+ *
+ * `details` goes under the row, aligned with the text and running to the card's end: a list of
+ * what a batch changed, a progress bar. The icon tile and the buttons stay beside the title.
  */
 export type ToastIntent = 'neutral' | 'info' | 'success' | 'warning' | 'error'
 
@@ -50,6 +53,8 @@ export interface ToastAction {
 
 export interface ToastOptions {
   description?: React.ReactNode
+  /** Under the toast's row, aligned with its text: a list, a progress bar. The stack follows its height. */
+  details?: React.ReactNode
   intent?: ToastIntent
   action?: ToastAction
   /** The small close button on the right. */
@@ -174,6 +179,8 @@ function IntentIcon({ intent }: { intent: ToastIntent }) {
 export interface ToastProps extends Omit<React.ComponentProps<typeof ToastPrimitive.Root>, 'title'> {
   title: React.ReactNode
   description?: React.ReactNode
+  /** Under the toast's row, aligned with its text: a list, a progress bar. */
+  details?: React.ReactNode
   intent?: ToastIntent
   action?: ToastAction
   closeButton?: boolean
@@ -188,6 +195,15 @@ const card = (intent: ToastIntent) =>
     'rounded-xl border border-border-subtle bg-bg-popover',
     '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
   )
+
+/** `details` under the row: in from the start by the icon tile and its gap, so it lines up with the title. */
+function ToastDetails({ icon, children }: { icon?: boolean; children: React.ReactNode }) {
+  return (
+    <div data-slot="toast-details" className={cn('mt-1.5 w-full min-w-0 text-sm', icon && 'ps-[46px]')}>
+      {children}
+    </div>
+  )
+}
 
 /** What sits on the card: the icon tile, title and description, the action and the close. */
 function ToastContent({
@@ -260,6 +276,7 @@ const radixType = (intent: ToastIntent) => (intent === 'error' || intent === 'wa
 export function Toast({
   title,
   description,
+  details,
   intent = 'neutral',
   action,
   closeButton = true,
@@ -283,7 +300,13 @@ export function Toast({
       )}
       {...props}
     >
-      <ToastContent title={title} description={description} intent={intent} action={action} closeButton={closeButton} icon={icon} />
+      {/* The row, and the details under it. Always this shape, so details coming or going never remount (and blur) the row. */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex w-full min-w-0 items-center gap-2.5">
+          <ToastContent title={title} description={description} intent={intent} action={action} closeButton={closeButton} icon={icon} />
+        </div>
+        {details ? <ToastDetails icon={icon}>{details}</ToastDetails> : null}
+      </div>
     </ToastPrimitive.Root>
   )
 }
@@ -321,7 +344,7 @@ interface StackedToastProps {
  * the `li` (the Radix root) takes its place in the stack, the card inside slides in and out.
  */
 function StackedToast({ record, index, y, scale, height, beyond, contentVisible, onMeasure, onForget }: StackedToastProps) {
-  const { id, title, open, duration, exit: _exit, intent = 'neutral', icon = true, closeButton = true, ...options } = record
+  const { id, title, open, duration, exit: _exit, intent = 'neutral', icon = true, closeButton = true, details, ...options } = record
   const [entered, setEntered] = React.useState(false)
   const cardRef = React.useRef<HTMLDivElement>(null)
   React.useLayoutEffect(() => {
@@ -390,20 +413,17 @@ function StackedToast({ record, index, y, scale, height, beyond, contentVisible,
       >
         <div
           ref={measured}
-          className="flex w-full min-w-0 items-center gap-2.5"
+          className="flex w-full min-w-0 flex-col"
           style={{ opacity: contentVisible ? 1 : 0, transition: contentMotion }}
           // The cards behind the front one show no content, so nothing in them can be reached.
           aria-hidden={!contentVisible || undefined}
           inert={!contentVisible || undefined}
         >
-          <ToastContent
-            title={title}
-            intent={intent}
-            icon={icon}
-            closeButton={closeButton}
-            onAction={() => close(id, 'action')}
-            {...options}
-          />
+          {/* Always this shape, so details coming or going never remount (and blur) the row. */}
+          <div className="flex w-full min-w-0 items-center gap-2.5">
+            <ToastContent title={title} intent={intent} icon={icon} closeButton={closeButton} onAction={() => close(id, 'action')} {...options} />
+          </div>
+          {details ? <ToastDetails icon={icon}>{details}</ToastDetails> : null}
         </div>
       </div>
     </ToastPrimitive.Root>
