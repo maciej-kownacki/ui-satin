@@ -577,6 +577,8 @@ export const a11y: Record<string, A11y> = {
     keyboard: [
       { keys: ['Tab'], action: 'Moves through each row\'s Accept and Reject (or its Checkbox), then Accept all and Apply.' },
       { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the row pending again when pressed. On Reject: takes the row out and moves focus on. On a Checkbox, Space accepts or rejects.' },
+    ],
+  },
   'agent-undo-log': {
     summary:
       'A `section` named "Agent actions" (`actionLog` in SatinLabels, or your `aria-label`), so it is a region landmark, around a list of runs. Each run\'s header is a `button` with `aria-expanded` and `aria-controls`, read as its name, how many actions and when; a closed run\'s actions leave the accessibility tree. Every Revert is an icon button named after its action and target ("Revert Edited src/routes/auth.ts"), with a tooltip, and stays the one focused button through the revert: busy (`aria-busy`) while it runs, then Restore, or Reverted with `aria-disabled`, or Try again after a failure, whose reason is shown as text. An action that can\'t be reverted has no button (its lock is hidden); its reason is read with "Can\'t be reverted:" before it. The glyphs and the rail are hidden. Failures and restores are read from a polite `status` region; a revert is read out by its toast, whose Undo screen readers hear as "Restore it from the action log", since the row\'s Restore does the same. The button of the run ⌘Z would revert carries `aria-keyshortcuts` and shows the keys as Kbd. Reverted rows are struck through and muted, and say so in their button.',
