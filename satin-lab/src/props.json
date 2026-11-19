@@ -451,6 +451,138 @@
       ]
     }
   },
+  "agent-plan": {
+    "AgentPlanRoot": {
+      "description": "The card and its state; the parts go inside. Other props, `ref` included, go to the card's `div`.",
+      "type": "AgentPlanRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title' | 'onChange' | 'defaultValue'>"
+      ],
+      "props": [
+        {
+          "name": "steps",
+          "type": "AgentPlanStep[]",
+          "required": false,
+          "description": "The steps, in order (controlled)."
+        },
+        {
+          "name": "defaultSteps",
+          "type": "AgentPlanStep[]",
+          "required": false,
+          "description": "The steps to start from (uncontrolled)."
+        },
+        {
+          "name": "onStepsChange",
+          "type": "(steps: AgentPlanStep[]) => void",
+          "required": false,
+          "description": "Called with every step after a rename, a move, a step left out or back in, or a skip."
+        },
+        {
+          "name": "status",
+          "type": "AgentPlanStatus",
+          "required": false,
+          "default": "'draft'",
+          "description": "`draft` while the person edits the plan; `running`, `failed` and `done` show it read-only."
+        },
+        {
+          "name": "currentStep",
+          "type": "string",
+          "required": false,
+          "description": "The id of the step running, or the one that failed. Steps before it are done."
+        },
+        {
+          "name": "onRun",
+          "type": "(steps: AgentPlanStep[]) => void",
+          "required": false,
+          "description": "Run plan was pressed: run these steps (the ones left in), in this order."
+        },
+        {
+          "name": "onStop",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Stop while the plan runs or waits at a failed step."
+        },
+        {
+          "name": "onRetry",
+          "type": "(step: AgentPlanStep) => void",
+          "required": false,
+          "description": "Shows Retry under the failed step."
+        },
+        {
+          "name": "onSkip",
+          "type": "(step: AgentPlanStep) => void",
+          "required": false,
+          "description": "Shows Skip under the failed step. The step is marked `skipped` first, through `onStepsChange`."
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Why the current step failed, under it."
+        },
+        {
+          "name": "indicator",
+          "type": "AgentLoadingIndicator",
+          "required": false,
+          "default": "'tetris'",
+          "description": "The current step's mark, as on AgentLoading."
+        },
+        {
+          "name": "glimmer",
+          "type": "Glimmer",
+          "required": false,
+          "default": "'color'",
+          "description": "The light across the tetris mark and the label, as on AgentLoading."
+        }
+      ]
+    },
+    "AgentPlanHeader": {
+      "description": "The title, and under it how many steps there are or how far the run got. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPlanHeaderProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What the plan is for, e.g. \"Schedule interviews for 3 shortlisted candidates\". Defaults to the `agentPlan` label (\"Plan\")."
+        }
+      ]
+    },
+    "AgentPlanSteps": {
+      "description": "The steps as an ordered list: editable rows in a draft, Thinking's steps on a rail once the plan runs. Other props, `ref` included, go to the `div` around the list.",
+      "type": "AgentPlanStepsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "AgentPlanActions": {
+      "description": "Run plan in a draft (disabled while no step is left in), Stop while it runs or waits at a failed step (with `onStop`). Children go before the button. Nothing shows once it's done, unless you pass children. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPlanActionsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "AgentPlan": {
+      "description": "The plan from props: the title, the steps, and Run plan or Stop. Other props, `ref` included, go to the card's `div`.",
+      "type": "AgentPlanProps",
+      "extends": [
+        "AgentPlanRootProps"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What the plan is for, e.g. \"Schedule interviews for 3 shortlisted candidates\". Defaults to the `agentPlan` label (\"Plan\")."
+        }
+      ]
+    }
+  },
   "agent-suggestion": {
     "AgentSuggestion": {
       "type": "AgentSuggestionProps",

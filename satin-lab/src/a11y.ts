@@ -598,6 +598,18 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Alt+↑', 'Alt+↓'], action: '`ranking`: moves the focused row up or down and reads its new place.' },
     ],
   },
+  'agent-plan': {
+    summary:
+      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step has a Checkbox named by its label (unchecked leaves it out), described as "Alt and arrow keys to move", and a ⋯ button named "Options for <step>" whose menu has Edit, Move up and Move down, so a pointer that can’t drag can still reorder. Edit turns the label into a field named "Step 2"; the grip is for the pointer only and hidden. Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through each step’s checkbox and ⋯ button, then Run plan.' },
+      { keys: ['Space'], action: 'On a checkbox: leaves the step out of the run, or puts it back.' },
+      { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
+      { keys: ['Enter', 'Space', '↓'], action: 'On ⋯: opens the step’s menu (Edit, Move up, Move down).' },
+      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to ⋯ (an empty name keeps the old one).' },
+      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to ⋯. In the menu: closes it.' },
+    ],
+  },
   'agent-loading': {
     summary:
       'A `role="status"` region with `aria-live="polite"`: screen readers read the label ("Thinking…") and read it again when it changes. `time` is hidden from screen readers, so a clock that ticks every second stays quiet. Mount the component before the work starts, or it may not be announced: a live region filled at the moment it appears is the one screen readers miss most. The tetris mark and the bird are hidden, and under reduced motion they stop moving.',
