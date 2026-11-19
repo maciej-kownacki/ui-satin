@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { act, screen } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import { Calendar, CalendarDay, DatePicker, DatePickerPanel, DateRangePicker, datePresets } from '../components/date-picker'
 
@@ -112,5 +112,34 @@ describe('Date pickers', () => {
     renderWithSatin(<DatePickerPanel today={new Date(2026, 10, 20)} isDisabled={weekend} presets={[datePresets.today, datePresets.tomorrow]} />)
     expect(screen.getByRole('option', { name: 'Today' }).hasAttribute('aria-disabled')).toBe(false)
     expect(screen.getByRole('option', { name: 'Tomorrow' }).getAttribute('aria-disabled')).toBe('true')
+  })
+})
+
+describe('Calendar week start', () => {
+  const weekdays = () => screen.getAllByRole('columnheader').map((h) => h.getAttribute('aria-label'))
+  const firstDay = () => within(screen.getAllByRole('row')[1]).getAllByRole('button')[0].getAttribute('aria-label')
+
+  it('starts the week where dateLocale starts it', () => {
+    const { unmount } = renderWithSatin(<Calendar value={TODAY} today={TODAY} />, { labels: { dateLocale: 'en-US' } })
+    expect(weekdays()[0]).toBe('Sunday')
+    expect(firstDay()).toBe('Sunday, November 1, 2026')
+    unmount()
+    // en-GB: Monday. November 2026 begins on a Sunday, so the first row starts on Monday 26 October.
+    renderWithSatin(<Calendar value={TODAY} today={TODAY} />, { labels: { dateLocale: 'en-GB' } })
+    expect(weekdays()[0]).toBe('Monday')
+    expect(firstDay()).toBe('Monday, 26 October 2026')
+  })
+
+  it('starts the week where weekStartsOn says, Home and End included', async () => {
+    const { user } = renderWithSatin(<Calendar value={TODAY} today={TODAY} weekStartsOn={0} />, { labels: { dateLocale: 'en-GB' } })
+    expect(weekdays()).toEqual(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+    expect(firstDay()).toBe('Sunday, 1 November 2026')
+    day('Thursday, 19 November 2026').focus()
+    await user.keyboard('{Home}')
+    await frame()
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Sunday, 15 November 2026')
+    await user.keyboard('{End}')
+    await frame()
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Saturday, 21 November 2026')
   })
 })

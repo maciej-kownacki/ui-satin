@@ -6769,7 +6769,7 @@
         },
         {
           "name": "weekStartsOn",
-          "type": "number",
+          "type": "WeekDay",
           "required": false,
           "description": "The week's first day, 0 (Sunday) to 6. Defaults to `dateLocale`'s."
         },

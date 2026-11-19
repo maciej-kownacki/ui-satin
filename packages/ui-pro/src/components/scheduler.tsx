@@ -246,17 +246,19 @@ const fromLocal = (d: Date): Day => Date.UTC(d.getFullYear(), d.getMonth(), d.ge
 
 /* ---------- the locale's week ---------- */
 
-type WeekInfo = { firstDay: number; weekend: number[] }
+type WeekInfo = { firstDay: WeekDay; weekend: number[] }
+/** Intl's own: 1 (Monday) to 7 (Sunday). */
+type IntlWeekInfo = { firstDay: number; weekend: number[] }
 // Browsers without Intl.Locale weekInfo (Firefox): CLDR's first day by region; Monday elsewhere.
 const SUNDAY_FIRST = new Set('AG AS BD BR BS BT BW BZ CA CN CO DM DO ET GT GU HK HN ID IL IN JM JP KE KH KR LA MH MM MO MT MX MZ NI NP PA PE PH PK PR PT PY SA SG SV TH TT TW UM US VE VI WS YE ZA ZW'.split(' '))
 const SATURDAY_FIRST = new Set('AE AF BH DJ DZ EG IQ IR JO KW LY OM QA SD SY'.split(' '))
 
 function localeWeek(locale: string): WeekInfo {
   try {
-    const l = new Intl.Locale(locale) as Intl.Locale & { getWeekInfo?: () => WeekInfo; weekInfo?: WeekInfo }
+    const l = new Intl.Locale(locale) as Intl.Locale & { getWeekInfo?: () => IntlWeekInfo; weekInfo?: IntlWeekInfo }
     const info = l.getWeekInfo?.() ?? l.weekInfo
     // Intl counts 1 (Monday) to 7 (Sunday); Date counts 0 (Sunday) to 6.
-    if (info) return { firstDay: info.firstDay % 7, weekend: info.weekend.map((d) => d % 7) }
+    if (info) return { firstDay: (info.firstDay % 7) as WeekDay, weekend: info.weekend.map((d) => d % 7) }
     const region = l.maximize().region ?? ''
     if (SUNDAY_FIRST.has(region)) return { firstDay: 0, weekend: [6, 0] }
     if (SATURDAY_FIRST.has(region)) return { firstDay: 6, weekend: [5, 6] }
@@ -268,7 +270,7 @@ function localeWeek(locale: string): WeekInfo {
 
 /* ---------- periods ---------- */
 
-const startOfWeek = (day: Day, weekStart: number) => day - ((weekdayOf(day) - weekStart + 7) % 7) * DAY_MS
+const startOfWeek = (day: Day, weekStart: WeekDay) => day - ((weekdayOf(day) - weekStart + 7) % 7) * DAY_MS
 const firstOfMonth = (day: Day) => {
   const d = new Date(day)
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)
@@ -280,7 +282,7 @@ const addMonths = (day: Day, n: number) => {
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + n, Math.min(d.getUTCDate(), last))
 }
 
-function daysOf(view: SchedulerView, day: Day, weekStart: number): Day[] {
+function daysOf(view: SchedulerView, day: Day, weekStart: WeekDay): Day[] {
   if (view === 'day') return [day]
   if (view === 'week') {
     const start = startOfWeek(day, weekStart)
@@ -521,7 +523,7 @@ interface SchedulerContextValue {
   setView: (view: SchedulerView) => void
   anchor: Day
   setAnchor: (day: Day) => void
-  weekStart: number
+  weekStart: WeekDay
   weekend: number[]
   today: Day | null
   now: Date | null
@@ -594,7 +596,7 @@ export interface SchedulerRootProps extends Omit<React.ComponentProps<'div'>, 'd
   /** An IANA time zone ("Europe/Warsaw"). Defaults to the browser's. */
   timeZone?: string
   /** The week's first day, 0 (Sunday) to 6. Defaults to `dateLocale`'s. */
-  weekStartsOn?: number
+  weekStartsOn?: WeekDay
   /** Now, for the now line and today. Defaults to the clock, updated every minute. */
   now?: Date
   /** The body of a popover that opens on an event, under its title and time (and attendees). */
@@ -638,7 +640,8 @@ export function SchedulerRoot({
   const locale = labels.dateLocale
   const fmt = React.useMemo(() => formatsOf(locale, zone), [locale, zone])
   const week = React.useMemo(() => localeWeek(locale), [locale])
-  const weekStart = weekStartsOn !== undefined ? ((Math.trunc(weekStartsOn) % 7) + 7) % 7 : week.firstDay
+  // Kept in 0–6 for callers without types.
+  const weekStart = weekStartsOn !== undefined ? ((((Math.trunc(weekStartsOn) % 7) + 7) % 7) as WeekDay) : week.firstDay
   const slotMinutes = Math.min(240, Math.max(5, Math.round(slotMinutesProp)))
   const slotHeight = slotHeightOf(slotMinutes)
   const now = useNow(nowProp)
