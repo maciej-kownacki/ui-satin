@@ -391,7 +391,7 @@ export function ReviewableChangesApply({ variant = 'primary', children, classNam
     >
       {applied ? (
         <>
-          <CheckGlyph className="text-status-green-fg" />
+          <CheckGlyph />
           {labels.fieldChangeApplied}
         </>
       ) : (

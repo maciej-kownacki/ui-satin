@@ -95,7 +95,7 @@ function DealRecord({ deal, updated, onReset }: { deal: Deal; updated: boolean; 
       <div className="flex min-h-6 items-center justify-between gap-2 text-sm text-text-muted">
         {updated ? (
           <>
-            <span>Updated just now</span>
+            <span>Updated now</span>
             <Button variant="tertiary" size="xs" onClick={onReset}>
               Start over
             </Button>

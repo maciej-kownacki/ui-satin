@@ -30,3 +30,8 @@
 .satin-changes-review-toggle[aria-pressed='true'][data-decision='reject'] svg {
   color: var(--text-default);
 }
+
+/* Applied: Apply's check is green, like each applied row's. */
+[data-slot='reviewable-changes-apply'][data-status='applied'] svg {
+  color: var(--status-green-fg);
+}
