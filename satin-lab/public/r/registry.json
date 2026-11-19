@@ -2356,6 +2356,34 @@
       ]
     },
     {
+      "name": "agent-presence",
+      "type": "registry:ui",
+      "title": "Agent presence",
+      "description": "Shows which row or card an agent is editing right now: an edge in its colour and a small label, read out politely.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/agent-picker.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Agent presence docs: https://uisatin.dev/ai-patterns/agent-presence",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-presence.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "agent-undo-log",
       "type": "registry:ui",
       "title": "Agent action log",
@@ -4025,6 +4053,21 @@
       "files": [
         {
           "path": "registry/satin/examples/agent-plan-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-presence-demo",
+      "type": "registry:example",
+      "title": "Agent presence example",
+      "description": "The shortest use of Agent presence, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-presence.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-presence-demo.tsx",
           "type": "registry:example"
         }
       ]

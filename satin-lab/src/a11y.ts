@@ -500,10 +500,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'Opens the file, or removes it from the remove button.' },
     ],
   },
-  'agent-presence': {
-    summary:
-      'The edge and the label are hidden from screen readers; what they show is read out from a polite `status` region instead: "Hiring assistant is updating Tara Mendes" as the agent starts on a target or moves to the next, "Hiring assistant updated Lena Fischer" when it\'s done, and "Jon Park is editing Omar Haddad; Hiring assistant is waiting" in a conflict (`agentPresenceWorking`, `agentPresenceDone`, `agentPresenceConflict` in SatinLabels). `label` names the target in those sentences, so give it the row\'s or card\'s name. Each state has its own words on the label, so colour is never the only cue, and a conflict\'s edge is dashed. It takes no focus and no pointer, and never changes the target, so nothing moves under it. Under reduced motion it neither fades nor glides and the mark stands still.',
-  },
   'agent-suggestion': {
     summary:
       'A `section`, labelled by `title` when there is one, so it is a region landmark. In `AgentSuggestionDiff` the old text is a `del` and the new an `ins`, read as "Remove:" and "Add:". `AgentSuggestionChanges` is a description list with the arrows hidden, and `AgentSuggestionMetric`’s bar is a Progress named by `unit`. The actions are your own buttons; name them by what they do ("Send email").',
@@ -549,19 +545,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['↑', '↓'], action: 'In the + panel’s search: moves the highlight, wrapping at the ends.' },
       { keys: ['Enter'], action: 'In the + panel’s search: runs the highlighted row.' },
       { keys: ['Esc'], action: 'Closes the open panel or menu.' },
-    ],
-  },
-  'prompt-mentions': {
-    summary:
-      'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list.',
-    keyboard: [
-      { keys: ['@', '/'], action: 'At the start or after a space: opens the mentions or the commands. The text typed after it filters them.' },
-      { keys: ['↑', '↓'], action: 'In the open menu: moves the highlight, wrapping at the ends.' },
-      { keys: ['Enter', 'Tab'], action: 'In the open menu: inserts the highlighted row as a token, followed by a space.' },
-      { keys: ['Esc'], action: 'Closes the menu until the next @ or /.' },
-      { keys: ['Backspace'], action: 'Right after a token: removes the whole token. Delete does the same just before one.' },
-      { keys: ['←', '→'], action: 'Steps over a token in one move.' },
-      { keys: ['Enter'], action: 'With the menu shut or empty: sends; a message with a command runs it.' },
     ],
   },
   'streaming-text': {
@@ -621,6 +604,10 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'On a run header: opens or closes its actions. On a button: reverts, restores or tries again.' },
       { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
     ],
+  },
+  'agent-presence': {
+    summary:
+      'The edge and the label are hidden from screen readers; what they show is read out from a polite `status` region instead: "Hiring assistant is updating Tara Mendes" as the agent starts on a target or moves to the next, "Hiring assistant updated Lena Fischer" when it\'s done, and "Jon Park is editing Omar Haddad; Hiring assistant is waiting" in a conflict (`agentPresenceWorking`, `agentPresenceDone`, `agentPresenceConflict` in SatinLabels). `label` names the target in those sentences, so give it the row\'s or card\'s name. Each state has its own words on the label, so colour is never the only cue, and a conflict\'s edge is dashed. It takes no focus and no pointer, and never changes the target, so nothing moves under it. Under reduced motion it neither fades nor glides and the mark stands still.',
   },
   'command-pages': {
     summary:
@@ -704,15 +691,17 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to ⋯. In the menu: closes it.' },
     ],
   },
-  'review-queue': {
+  'prompt-mentions': {
     summary:
-      'A `section` named after its `title` ("Review queue" without one). The item on show is a `group` named after it and its place ("Anna Kowalska, 4 of 12"); when it changes, a polite `status` region reads the new name and place, with the decision before it ("Approved. Jonas Weber, 5 of 12"). If focus was on the item, it moves to the new one, which reads itself instead. The bar is a `progressbar` named "Reviewed" with the value "3 of 12 reviewed". Skip, Edit and Approve name their keys with `aria-keyshortcuts`; the Kbd on them is hidden. On an approved item, or while Approve runs, the actions are `aria-disabled` and keep focus. Edit opens a Sheet (a dialog named "Edit", or `editTitle`, with the item as its description); closing it puts focus back where it was. When all are decided, focus that was in the queue moves to the summary\'s heading, and the summary is a region named "All reviewed" with the approved and the skipped as two named lists ("Approved 9").',
+      'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list.',
     keyboard: [
-      { keys: ['J', 'K'], action: 'Next or previous item, while focus is in the queue and not in a field.' },
-      { keys: ['A'], action: 'Approves the item and moves on to the next undecided one.' },
-      { keys: ['S'], action: 'Skips the item and moves on.' },
-      { keys: ['E'], action: 'Opens the editor Sheet; Esc or Cancel closes it on the same item.' },
-      { keys: ['Tab'], action: 'Moves through ‹ ›, the item\'s own controls, then Skip, Edit and Approve.' },
+      { keys: ['@', '/'], action: 'At the start or after a space: opens the mentions or the commands. The text typed after it filters them.' },
+      { keys: ['↑', '↓'], action: 'In the open menu: moves the highlight, wrapping at the ends.' },
+      { keys: ['Enter', 'Tab'], action: 'In the open menu: inserts the highlighted row as a token, followed by a space.' },
+      { keys: ['Esc'], action: 'Closes the menu until the next @ or /.' },
+      { keys: ['Backspace'], action: 'Right after a token: removes the whole token. Delete does the same just before one.' },
+      { keys: ['←', '→'], action: 'Steps over a token in one move.' },
+      { keys: ['Enter'], action: 'With the menu shut or empty: sends; a message with a command runs it.' },
     ],
   },
   'time-picker': {
@@ -727,6 +716,17 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'Picks the highlighted time once the arrows or the pointer moved there; otherwise reads what was typed ("930", "9:30pm"). In a TimeList, Space picks too.' },
       { keys: ['Esc'], action: 'Closes the list and leaves focus in the field. With the list closed, puts back the time the field showed.' },
       { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
+    ],
+  },
+  'review-queue': {
+    summary:
+      'A `section` named after its `title` ("Review queue" without one). The item on show is a `group` named after it and its place ("Anna Kowalska, 4 of 12"); when it changes, a polite `status` region reads the new name and place, with the decision before it ("Approved. Jonas Weber, 5 of 12"). If focus was on the item, it moves to the new one, which reads itself instead. The bar is a `progressbar` named "Reviewed" with the value "3 of 12 reviewed". Skip, Edit and Approve name their keys with `aria-keyshortcuts`; the Kbd on them is hidden. On an approved item, or while Approve runs, the actions are `aria-disabled` and keep focus. Edit opens a Sheet (a dialog named "Edit", or `editTitle`, with the item as its description); closing it puts focus back where it was. When all are decided, focus that was in the queue moves to the summary\'s heading, and the summary is a region named "All reviewed" with the approved and the skipped as two named lists ("Approved 9").',
+    keyboard: [
+      { keys: ['J', 'K'], action: 'Next or previous item, while focus is in the queue and not in a field.' },
+      { keys: ['A'], action: 'Approves the item and moves on to the next undecided one.' },
+      { keys: ['S'], action: 'Skips the item and moves on.' },
+      { keys: ['E'], action: 'Opens the editor Sheet; Esc or Cancel closes it on the same item.' },
+      { keys: ['Tab'], action: 'Moves through ‹ ›, the item\'s own controls, then Skip, Edit and Approve.' },
     ],
   },
   'table-pro': {

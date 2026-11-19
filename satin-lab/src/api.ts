@@ -971,18 +971,6 @@ export const api: Record<string, Api> = {
       { name: 'agent.avatar', type: ['"initials"', '"flappy"'], default: '"initials"' },
     ],
   },
-  'agent-presence': {
-    description:
-      'The `AgentPresence` component (Satin Pro, `@uisatin/pro/agent-presence`) lays an edge in the agent\'s tone and a small label over `target` (a ref, an element or a selector) without touching it; render it inside the same `position: relative` box as the targets. `label` names the target for screen readers ("Hiring assistant is updating Tara Mendes"). For a list, `useAgentPresence()` returns `item(id)` to spread on each row or card, `start(id, label)`, `done()`, `conflict(person)`, `clear()` and the `props` to spread on AgentPresence; it takes `value`, `defaultValue` and `onValueChange`. Parts: `AgentPresenceRoot`, `AgentPresenceOutline`, `AgentPresenceLabel`.',
-    props: [
-      { name: 'target', type: ['RefObject<Element>', 'Element', 'string', 'null'] },
-      { name: 'agent', type: ['string', 'Agent'] },
-      { name: 'label', type: ['string'] },
-      { name: 'state', type: ['"working"', '"done"', '"conflict"'], default: '"working"' },
-      { name: 'person', type: ['string', '{ name, initials?, tone? }'] },
-      { name: 'doneDuration', type: ['number'], default: '1500' },
-    ],
-  },
   'agent-suggestion': {
     description: 'The `AgentSuggestion` component is a card around something the agent prepared: its kind, who it concerns, a title and text, any content of its own and the actions that carry it out. `AgentSuggestionQuote`, `AgentSuggestionMetric`, `AgentSuggestionDiff` and `AgentSuggestionChanges` cover the usual bodies; `AgentSuggestionChangeValue` draws the from → to of one change, for a row with controls of its own.',
     props: [
@@ -1094,21 +1082,6 @@ export const api: Record<string, Api> = {
       { name: 'onSubmit', type: ['(value: string, attachments: File[], detail: PromptValue) => void'] },
       { name: 'mentions', type: ['PromptMentions'] },
       { name: 'commands', type: ['PromptCommand[]'] },
-    ],
-  },
-  'prompt-mentions': {
-    description:
-      'Mentions and commands are props on `PromptBar`. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`.',
-    props: [
-      { name: 'mentions', type: ['PromptMentions'] },
-      { name: 'mentions.trigger', type: ['string'], default: '"@"' },
-      { name: 'mentions.search', type: ['(query: string) => PromptMention[] | Promise<PromptMention[]>'] },
-      { name: 'commands', type: ['PromptCommand[]'] },
-      { name: 'command.run', type: ['(input: { args, value, attachments }) => void'] },
-      { name: 'value', type: ['string', 'PromptValue'] },
-      { name: 'defaultValue', type: ['string', 'PromptValue'], default: '""' },
-      { name: 'onValueChange', type: ['(value: string, detail: PromptValue) => void'] },
-      { name: 'onSubmit', type: ['(value: string, attachments: File[], detail: PromptValue) => void'] },
     ],
   },
   'streaming-text': {
@@ -1235,6 +1208,18 @@ export const api: Record<string, Api> = {
       { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
       { name: 'shortcut', type: ['"document"', '"log"', '"off"'], default: '"document"' },
       { name: 'formatTime', type: ['(at: Date) => ReactNode'], default: 'time of day, date when not today' },
+    ],
+  },
+  'agent-presence': {
+    description:
+      'The `AgentPresence` component (Satin Pro, `@uisatin/pro/agent-presence`) lays an edge in the agent\'s tone and a small label over `target` (a ref, an element or a selector) without touching it; render it inside the same `position: relative` box as the targets. `label` names the target for screen readers ("Hiring assistant is updating Tara Mendes"). For a list, `useAgentPresence()` returns `item(id)` to spread on each row or card, `start(id, label)`, `done()`, `conflict(person)`, `clear()` and the `props` to spread on AgentPresence; it takes `value`, `defaultValue` and `onValueChange`. Parts: `AgentPresenceRoot`, `AgentPresenceOutline`, `AgentPresenceLabel`.',
+    props: [
+      { name: 'target', type: ['RefObject<Element>', 'Element', 'string', 'null'] },
+      { name: 'agent', type: ['string', 'Agent'] },
+      { name: 'label', type: ['string'] },
+      { name: 'state', type: ['"working"', '"done"', '"conflict"'], default: '"working"' },
+      { name: 'person', type: ['string', '{ name, initials?, tone? }'] },
+      { name: 'doneDuration', type: ['number'], default: '1500' },
     ],
   },
   'command-pages': {
@@ -1376,6 +1361,42 @@ export const api: Record<string, Api> = {
       { name: 'glimmer', type: ['"color"', '"neutral"'], default: '"color"' },
     ],
   },
+  'prompt-mentions': {
+    description:
+      'Mentions and commands are props on `PromptBar`. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`.',
+    props: [
+      { name: 'mentions', type: ['PromptMentions'] },
+      { name: 'mentions.trigger', type: ['string'], default: '"@"' },
+      { name: 'mentions.search', type: ['(query: string) => PromptMention[] | Promise<PromptMention[]>'] },
+      { name: 'commands', type: ['PromptCommand[]'] },
+      { name: 'command.run', type: ['(input: { args, value, attachments }) => void'] },
+      { name: 'value', type: ['string', 'PromptValue'] },
+      { name: 'defaultValue', type: ['string', 'PromptValue'], default: '""' },
+      { name: 'onValueChange', type: ['(value: string, detail: PromptValue) => void'] },
+      { name: 'onSubmit', type: ['(value: string, attachments: File[], detail: PromptValue) => void'] },
+    ],
+  },
+  'time-picker': {
+    description: '`TimePicker` is a text field with the Input skin that reads a typed time ("930", "9:30pm", "1430") or opens a list of times under it; its value is `{ hours, minutes }`, `null` when cleared or typed wrong. `DateTimePicker` is the Date picker field opening the Calendar with a column of times beside it; its value is a `Date`. `TimeList` and `DateTimePickerPanel` are the list and the panel on their own. Times are written in the `dateLocale` label, 12- or 24-hour as that locale writes them; with `name`, a hidden input submits `HH:mm` or `YYYY-MM-DDTHH:mm`.',
+    props: [
+      { name: 'TimePicker.value', type: ['{ hours: number, minutes: number }', 'null'] },
+      { name: 'TimePicker.defaultValue', type: ['TimeValue', 'null'] },
+      { name: 'TimePicker.onValueChange', type: ['(value: TimeValue | null) => void'] },
+      { name: 'TimePicker.min / max', type: ['TimeValue'] },
+      { name: 'DateTimePicker.value', type: ['Date', 'null'] },
+      { name: 'DateTimePicker.defaultValue', type: ['Date', 'null'] },
+      { name: 'DateTimePicker.onValueChange', type: ['(value: Date) => void'] },
+      { name: 'DateTimePicker.min / max', type: ['Date'] },
+      { name: 'DateTimePicker.minTime / maxTime', type: ['TimeValue'] },
+      { name: 'step', type: ['number'], default: '15' },
+      { name: 'isTimeDisabled', type: ['(time: TimeValue, day?: Date | null) => boolean'] },
+      { name: 'format', type: ['"12h"', '"24h"'], default: 'the locale\'s' },
+      { name: 'open / defaultOpen', type: ['boolean'] },
+      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+      { name: 'name', type: ['string'] },
+      { name: 'label / hint / error', type: ['ReactNode'] },
+    ],
+  },
   'review-queue': {
     description:
       'The `ReviewQueue` component (Satin Pro, `@uisatin/pro/review-queue`) is a `section` that shows one of `items` at a time through `renderItem` (usually an AgentSuggestion), its place ("4 of 12") over a Progress bar of how many are decided, and Skip, Edit and Approve under it. `onApprove` and `onSkip` get the item, and the queue moves on to the next undecided one; an `onApprove` that returns a promise shows a Spinner until it settles. `renderEditor` returns the fields, each with a `name`, for a Sheet that Edit opens; Save calls `onEdit(item, values)` and brings you back to the same item. Without `renderEditor`, Edit calls `onEdit(item)`. When every item is decided, a summary lists the approved and the skipped by `itemLabel`. `index`, `decisions` and `editing` can each be controlled. Parts: `ReviewQueueRoot`, `ReviewQueueHeader`, `ReviewQueueItem`, `ReviewQueueActions`, `ReviewQueueSummary`, and `useReviewQueue()` for parts of your own.',
@@ -1402,27 +1423,6 @@ export const api: Record<string, Api> = {
       { name: 'approveLabel', type: ['string'], default: '"Approve"' },
       { name: 'sheetProps', type: ['SheetProps'] },
       { name: 'summaryActions', type: ['ReactNode'] },
-    ],
-  },
-  'time-picker': {
-    description: '`TimePicker` is a text field with the Input skin that reads a typed time ("930", "9:30pm", "1430") or opens a list of times under it; its value is `{ hours, minutes }`, `null` when cleared or typed wrong. `DateTimePicker` is the Date picker field opening the Calendar with a column of times beside it; its value is a `Date`. `TimeList` and `DateTimePickerPanel` are the list and the panel on their own. Times are written in the `dateLocale` label, 12- or 24-hour as that locale writes them; with `name`, a hidden input submits `HH:mm` or `YYYY-MM-DDTHH:mm`.',
-    props: [
-      { name: 'TimePicker.value', type: ['{ hours: number, minutes: number }', 'null'] },
-      { name: 'TimePicker.defaultValue', type: ['TimeValue', 'null'] },
-      { name: 'TimePicker.onValueChange', type: ['(value: TimeValue | null) => void'] },
-      { name: 'TimePicker.min / max', type: ['TimeValue'] },
-      { name: 'DateTimePicker.value', type: ['Date', 'null'] },
-      { name: 'DateTimePicker.defaultValue', type: ['Date', 'null'] },
-      { name: 'DateTimePicker.onValueChange', type: ['(value: Date) => void'] },
-      { name: 'DateTimePicker.min / max', type: ['Date'] },
-      { name: 'DateTimePicker.minTime / maxTime', type: ['TimeValue'] },
-      { name: 'step', type: ['number'], default: '15' },
-      { name: 'isTimeDisabled', type: ['(time: TimeValue, day?: Date | null) => boolean'] },
-      { name: 'format', type: ['"12h"', '"24h"'], default: 'the locale\'s' },
-      { name: 'open / defaultOpen', type: ['boolean'] },
-      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
-      { name: 'name', type: ['string'] },
-      { name: 'label / hint / error', type: ['ReactNode'] },
     ],
   },
   'table-pro': {

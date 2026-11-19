@@ -45,38 +45,6 @@
     "limit": "12 kB"
   },
   {
-    "name": "Agent presence (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/agent-presence.js",
-    "import": "{ AgentPresence, useAgentPresence }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "3 kB"
-    "name": "PromptBar with mentions and commands (Radix Popover, DropdownMenu, Avatar's Tooltip; 51 kB before mentions)",
-    "path": "packages/ui/dist/components/prompt-bar.js",
-    "import": "{ PromptBar }",
-    "ignore": [
-      "react",
-      "react-dom"
-    ],
-    "gzip": true,
-    "limit": "60 kB"
-  },
-  {
-    "name": "Prompt mentions (usePromptMentions, Radix Popover)",
-    "path": "packages/ui/dist/components/prompt-mentions.js",
-    "import": "{ usePromptMentions }",
-    "ignore": [
-      "react",
-      "react-dom"
-    ],
-    "gzip": true,
-    "limit": "44 kB"
-  },
-  {
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,
@@ -113,6 +81,18 @@
     ],
     "gzip": true,
     "limit": "6 kB"
+  },
+  {
+    "name": "Agent presence (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-presence.js",
+    "import": "{ AgentPresence, useAgentPresence }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "3 kB"
   },
   {
     "name": "Combobox (with Radix Popover, Chip, Spinner and the menu row)",
@@ -266,6 +246,28 @@
     ],
     "gzip": true,
     "limit": "6 kB"
+  },
+  {
+    "name": "PromptBar with mentions and commands (Radix Popover, DropdownMenu, Avatar's Tooltip; 51 kB before mentions)",
+    "path": "packages/ui/dist/components/prompt-bar.js",
+    "import": "{ PromptBar }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "60 kB"
+  },
+  {
+    "name": "Prompt mentions (usePromptMentions, Radix Popover)",
+    "path": "packages/ui/dist/components/prompt-mentions.js",
+    "import": "{ usePromptMentions }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "44 kB"
   },
   {
     "name": "Review queue (Satin Pro; @uisatin/ui left out, it is the peer)",
