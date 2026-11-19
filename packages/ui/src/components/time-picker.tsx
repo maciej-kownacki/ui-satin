@@ -972,8 +972,9 @@ function DateTimeBody({
           }}
         />
       </div>
-      <div className="flex w-34 shrink-0 flex-col border-s border-border-subtle max-[480px]:h-56 max-[480px]:w-auto max-[480px]:border-s-0 max-[480px]:border-t">
-        <p id={headId} className="mx-3 mt-3 mb-2 flex h-8 shrink-0 items-center text-sm leading-5 font-medium text-text-default">
+      {/* The column is as tall as the calendar: the list fills it and scrolls, instead of making it grow. */}
+      <div className="relative w-34 shrink-0 border-s border-border-subtle max-[480px]:h-56 max-[480px]:w-auto max-[480px]:border-s-0 max-[480px]:border-t">
+        <p id={headId} className="mx-3 mt-3 flex h-8 items-center text-sm leading-5 font-medium text-text-default">
           {labels.time}
         </p>
         <TimeList
@@ -990,7 +991,7 @@ function DateTimeBody({
               onTimePicked?.()
             }
           }}
-          className="min-h-0 flex-1 pt-0"
+          className="absolute inset-x-0 top-13 bottom-0 pt-0"
         />
       </div>
     </div>

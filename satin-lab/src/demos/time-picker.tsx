@@ -80,7 +80,7 @@ function Preview({ v }: { v: Record<string, string> }) {
   const error = on(v, 'error') ? ERROR : undefined
   return (
     <SatinLabels labels={{ dateLocale: v.locale }}>
-      <div className="relative flex h-[460px] w-[440px] max-w-full flex-col gap-4 pt-6">
+      <div className="relative flex h-[460px] w-[440px] max-w-full flex-col gap-4 pt-6 max-[480px]:h-[720px]">
         <div ref={setStage} className="pointer-events-none absolute inset-0 z-10 *:pointer-events-auto" />
         <p className="text-base leading-5 font-medium text-text-default">Book a client demo</p>
         {stage &&
