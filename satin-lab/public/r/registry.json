@@ -1852,6 +1852,32 @@
       ]
     },
     {
+      "name": "stepper",
+      "type": "registry:ui",
+      "title": "Stepper",
+      "description": "Shows where a multi-step flow is: the steps done, the current one and the ones ahead.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/progress.json"
+      ],
+      "docs": "Stepper docs: https://uisatin.dev/components/stepper",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/stepper.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "streaming-text",
       "type": "registry:ui",
       "title": "Streaming text",
@@ -3161,6 +3187,21 @@
       "files": [
         {
           "path": "registry/satin/examples/split-button-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "stepper-demo",
+      "type": "registry:example",
+      "title": "Stepper example",
+      "description": "The shortest use of Stepper, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/stepper.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/stepper-demo.tsx",
           "type": "registry:example"
         }
       ]

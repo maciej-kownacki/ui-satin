@@ -5287,6 +5287,116 @@
       ]
     }
   },
+  "stepper": {
+    "StepperItem": {
+      "description": "One step, for the Stepper's children: the place to put content under a vertical step, or a label that needs more than text (a Badge). Takes its number and state from its place. Other props, `ref` included, go to the `li`.",
+      "type": "StepperItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'value' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "Names the step; the Stepper's `value` picks the current one."
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A line under the label: what the step asks for, or what went wrong."
+        },
+        {
+          "name": "state",
+          "type": "StepperStepState",
+          "required": false,
+          "description": "See `StepperStep.state`."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The step's content, shown under its label while it is the current step (vertical only)."
+        }
+      ]
+    },
+    "Stepper": {
+      "type": "StepperProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "steps",
+          "type": "StepperStep[]",
+          "required": false,
+          "description": "The steps as data. Or leave it out and write them as `StepperItem` children."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The steps as elements, when one needs content under it or more than text in its label."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The current step's `value`. A value that matches no step leaves none current."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "description": "The current step to start on, uncontrolled. Defaults to the first."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Called with a step's `value` when it is clicked (only when `linear` is false)."
+        },
+        {
+          "name": "orientation",
+          "type": "'horizontal' | 'vertical'",
+          "required": false,
+          "default": "'horizontal'",
+          "description": "Steps in a row with their labels under them, or down the start side with content under the current one."
+        },
+        {
+          "name": "linear",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "True: steps go in order, the ones before the current step are complete, and none is clickable. False: every step that isn't disabled is a button that makes it current."
+        },
+        {
+          "name": "layout",
+          "type": "'auto' | 'full' | 'compact'",
+          "required": false,
+          "default": "'auto'",
+          "description": "`auto`: a horizontal stepper narrower than 120px a step shows \"Step 3 of 4\" over a Progress bar instead. `full` always shows the steps, `compact` always the count and bar."
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Names the list of steps."
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
   "streaming-text": {
     "StreamingText": {
       "type": "StreamingTextProps",

@@ -6,35 +6,7 @@ import { cn } from '../lib/utils'
 import { useSatinLabels } from './labels'
 import { Progress } from './progress'
 
-/**
- * Stepper: where a multi-step flow is (onboarding, checkout, an application). An ordered list of
- * steps, each a 24px circle with its number, a label and an optional description, joined by a
- * 2px connector. Steps are upcoming, current, complete (a check), error (an exclamation mark) or
- * disabled; stepper.css draws them from the tokens.
- *
- * - `linear` (the default): steps before the current one are complete unless they say
- *   otherwise, and nothing is clickable; the app moves `value` with its own Back and Next.
- * - `linear={false}`: each step is a button that sets `value`; only steps marked
- *   `state: 'complete'` are complete.
- *
- * Horizontal, the circles sit in a row with the labels under them. Below 120px a step it gives
- * way to "Step 3 of 4" over a Progress bar (`layout`; a container query, so it needs a width
- * from its parent, and nothing shifts after the page loads). Vertical, the circles run down the
- * start side and the current step's content (a `StepperItem`'s children) opens under its label.
- *
- * Motion: when a step completes, its connector fills over --duration-base and the check fades
- * in; the content of a new current step fades and settles in. Keyboard focus moves nothing.
- *
- * The steps come as `steps` (data) or as children, one `StepperItem` each:
- *
- *   <Stepper value={step} orientation="vertical" aria-label="Application">
- *     <StepperItem value="details" label="Details" description="Name and contact" />
- *     <StepperItem value="cv" label="CV">…the step's form…</StepperItem>
- *   </Stepper>
- *
- * `aria-label` and `aria-labelledby` name the list. Other props, `ref` included, go to the root
- * `div`.
- */
+/** What a step's place in the flow doesn't say on its own. */
 export type StepperStepState = 'complete' | 'error' | 'disabled'
 
 export interface StepperStep {
@@ -188,6 +160,35 @@ export function StepperItem({ value, label, description, state, children, classN
   )
 }
 
+/**
+ * Stepper: where a multi-step flow is (onboarding, checkout, an application). An ordered list of
+ * steps, each a 24px circle with its number, a label and an optional description, joined by a
+ * 2px connector. Steps are upcoming, current, complete (a check), error (an exclamation mark) or
+ * disabled; stepper.css draws them from the tokens.
+ *
+ * - `linear` (the default): steps before the current one are complete unless they say
+ *   otherwise, and nothing is clickable; the app moves `value` with its own Back and Next.
+ * - `linear={false}`: each step is a button that sets `value`; only steps marked
+ *   `state: 'complete'` are complete.
+ *
+ * Horizontal, the circles sit in a row with the labels under them. Below 120px a step it gives
+ * way to "Step 3 of 4" over a Progress bar (`layout`; a container query, so it needs a width
+ * from its parent, and nothing shifts after the page loads). Vertical, the circles run down the
+ * start side and the current step's content (a `StepperItem`'s children) opens under its label.
+ *
+ * Motion: when a step completes, its connector fills over --duration-base and the check fades
+ * in; the content of a new current step fades and settles in. Keyboard focus moves nothing.
+ *
+ * The steps come as `steps` (data) or as children, one `StepperItem` each:
+ *
+ *   <Stepper value={step} orientation="vertical" aria-label="Application">
+ *     <StepperItem value="details" label="Details" description="Name and contact" />
+ *     <StepperItem value="cv" label="CV">…the step's form…</StepperItem>
+ *   </Stepper>
+ *
+ * `aria-label` and `aria-labelledby` name the list. Other props, `ref` included, go to the root
+ * `div`.
+ */
 export interface StepperProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children' | 'onChange'> {
   /** The steps as data. Or leave it out and write them as `StepperItem` children. */
   steps?: StepperStep[]
@@ -200,7 +201,7 @@ export interface StepperProps extends Omit<React.ComponentProps<'div'>, 'default
   /** Called with a step's `value` when it is clicked (only when `linear` is false). */
   onValueChange?: (value: string) => void
   /** Steps in a row with their labels under them, or down the start side with content under the current one. */
-  orientation?: Orientation
+  orientation?: 'horizontal' | 'vertical'
   /**
    * True: steps go in order, the ones before the current step are complete, and none is
    * clickable. False: every step that isn't disabled is a button that makes it current.
