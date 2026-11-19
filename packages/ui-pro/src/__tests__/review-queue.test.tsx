@@ -37,6 +37,8 @@ const status = () => screen.getByRole('status')
 const item = () => screen.getByRole('group', { name: /of 3$/ })
 const bar = () => screen.getByRole('progressbar', { name: 'Reviewed' })
 const button = (name: string) => screen.getByRole('button', { name })
+/** The names in the summary's list, top to bottom. */
+const listed = (list: HTMLElement) => within(list).getAllByRole('listitem').map((li) => li.querySelector('[data-slot="item-title"]')?.textContent)
 
 describe('ReviewQueue', () => {
   it('shows the first item, its place and how many are reviewed', () => {
@@ -95,7 +97,7 @@ describe('ReviewQueue', () => {
     expect((screen.getByRole('textbox', { name: 'Note' }) as HTMLInputElement).value).toBe('jaks')
   })
 
-  it('ends with a summary of what was approved and skipped, with focus on it, and takes the skipped round again', async () => {
+  it('ends with a summary of what was approved and skipped, filtered by a toggle, with focus on it, and takes the skipped round again', async () => {
     const { user } = renderWithSatin(<Queue />)
     button('Approve').focus()
     await user.keyboard('a')
@@ -105,16 +107,42 @@ describe('ReviewQueue', () => {
     expect(document.activeElement).toBe(within(summary).getByText('All reviewed'))
     expect(status().textContent).toBe('All reviewed. 2 approved, 1 skipped')
     expect(bar().getAttribute('aria-valuetext')).toBe('3 of 3 reviewed')
-    const approved = within(summary).getByRole('list', { name: 'Approved 2' })
-    expect(within(approved).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Anna Kowalska', 'Léa Martin'])
-    const skipped = within(summary).getByRole('list', { name: 'Skipped 1' })
-    expect(within(skipped).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Jonas Weber'])
+    // One list, Approved first; the toggle over it switches to Skipped.
+    expect(within(summary).getAllByRole('list')).toHaveLength(1)
+    expect(within(summary).getByRole('radio', { name: 'Approved 2' }).getAttribute('aria-checked')).toBe('true')
+    expect(listed(within(summary).getByRole('list', { name: 'Approved' }))).toEqual(['Anna Kowalska', 'Léa Martin'])
+    await user.click(within(summary).getByRole('radio', { name: 'Skipped 1' }))
+    expect(within(summary).getByRole('radio', { name: 'Skipped 1' }).getAttribute('aria-checked')).toBe('true')
+    expect(listed(within(summary).getByRole('list', { name: 'Skipped' }))).toEqual(['Jonas Weber'])
+    // And back with the keyboard: an arrow moves between the two, Enter picks.
+    await user.keyboard('{ArrowLeft}')
+    expect(document.activeElement).toBe(within(summary).getByRole('radio', { name: 'Approved 2' }))
+    await user.keyboard('{Enter}')
+    expect(listed(within(summary).getByRole('list', { name: 'Approved' }))).toEqual(['Anna Kowalska', 'Léa Martin'])
     expect(screen.queryByRole('button', { name: 'Approve' })).toBeNull()
 
     await user.click(within(summary).getByRole('button', { name: 'Review skipped' }))
     expect(item().getAttribute('aria-label')).toBe('Jonas Weber, 2 of 3')
     expect(document.activeElement).toBe(item())
     expect(bar().getAttribute('aria-valuetext')).toBe('2 of 3 reviewed')
+  })
+
+  it('shows itemMedia beside each name, hidden from screen readers, and opens on Skipped when nothing was approved', async () => {
+    const { user } = renderWithSatin(<Queue itemMedia={(e) => <span data-testid="avatar">{e.to.slice(0, 1)}</span>} />)
+    button('Skip').focus()
+    await user.keyboard('s')
+    await user.keyboard('s')
+    await user.keyboard('s')
+    const summary = screen.getByRole('region', { name: 'All reviewed' })
+    expect(within(summary).getByRole('radio', { name: 'Skipped 3' }).getAttribute('aria-checked')).toBe('true')
+    const list = within(summary).getByRole('list', { name: 'Skipped' })
+    expect(listed(list)).toEqual(['Anna Kowalska', 'Jonas Weber', 'Léa Martin'])
+    const avatars = within(list).getAllByTestId('avatar')
+    expect(avatars.map((a) => a.textContent)).toEqual(['A', 'J', 'L'])
+    expect(avatars.every((a) => a.closest('[aria-hidden="true"]'))).toBe(true)
+    await user.click(within(summary).getByRole('radio', { name: 'Approved 0' }))
+    expect(within(summary).queryByRole('list')).toBeNull()
+    expect(within(summary).getByText('None')).toBeTruthy()
   })
 
   it('keeps an approved item done: its Badge shows and its actions stay off', async () => {
