@@ -33,6 +33,17 @@
     "limit": "30 kB"
   },
   {
+    "name": "Stepper (with Progress)",
+    "path": "packages/ui/dist/components/stepper.js",
+    "import": "{ Stepper, StepperItem }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "12 kB"
+  },
+  {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/bulk-action-bar.js",
     "import": "{ BulkActionBar }",
