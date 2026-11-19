@@ -2165,7 +2165,8 @@
         "https://uisatin.dev/r/command-menu.json",
         "https://uisatin.dev/r/kbd.json",
         "https://uisatin.dev/r/labels.json",
-        "https://uisatin.dev/r/streaming-text.json"
+        "https://uisatin.dev/r/streaming-text.json",
+        "https://uisatin.dev/r/toast.json"
       ],
       "docs": "Command pages docs: https://uisatin.dev/components/command-pages",
       "meta": {

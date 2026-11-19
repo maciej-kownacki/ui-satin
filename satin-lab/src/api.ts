@@ -433,11 +433,13 @@ export const api: Record<string, Api> = {
   },
   'command-pages': {
     description:
-      'The `CommandPages` component (Satin Pro, `@uisatin/pro/command-pages`) is a `CommandMenu` with sub-pages. An item with `page: { groups, title, placeholder }` opens it in place of the list; an item\'s `onSelect(menu)` can `menu.push(page)` instead, and the menu closes after any other item. A `Breadcrumb` above the search leads back; Backspace in the empty search goes back one page. With `onAsk`, every query adds \'Ask the agent about "…"\' as the last row; it calls `onAsk(query)` and shows the question over `answer` (StreamingText) and `answering` (AgentLoading until the first words). Without `answer` and `answering` the menu closes after `onAsk`. `controlRef` gets `{ push, back, ask, search, close }`. Part: `CommandPagesAnswer`. Every `CommandMenu` prop works as there.',
+      'The `CommandPages` component (Satin Pro, `@uisatin/pro/command-pages`) is a `CommandMenu` with sub-pages. An item with `page: { groups, title, placeholder }` opens it in place of the list; an item\'s `onSelect(menu)` can `menu.push(page)` instead, and the menu closes after any other item. A group\'s `icon` is the kind of record it lists (a person, a job, a company) and shows on every row without its own. An item\'s `success` shows as a success toast once it has run, after the promise `onSelect` returns, if any (the app needs a `Toaster`). The panel keeps the top edge it opened with, so pages of other lengths grow or shrink it downwards. A `Breadcrumb` above the search leads back; Backspace in the empty search goes back one page. With `onAsk`, every query adds \'Ask the agent about "…"\' as the last row; it calls `onAsk(query)` and shows the question over `answer` (StreamingText) and `answering` (AgentLoading until the first words). Without `answer` and `answering` the menu closes after `onAsk`. `controlRef` gets `{ push, back, ask, search, close }`. Part: `CommandPagesAnswer`. Every `CommandMenu` prop works as there.',
     props: [
       { name: 'groups', type: ['CommandPageGroup[]'] },
       { name: 'item.page', type: ['CommandPage'] },
-      { name: 'item.onSelect', type: ['(menu: CommandPagesControl) => void'] },
+      { name: 'item.onSelect', type: ['(menu: CommandPagesControl) => void | Promise<unknown>'] },
+      { name: 'item.success', type: ['ReactNode'] },
+      { name: 'group.icon', type: ['ReactNode'] },
       { name: 'rootTitle', type: ['string'], default: '"Commands"' },
       { name: 'onAsk', type: ['(query: string) => void'] },
       { name: 'answer', type: ['string'] },

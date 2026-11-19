@@ -14,7 +14,8 @@ import {
 const stages: CommandPage = {
   title: 'Move deal to…',
   placeholder: 'Pick a stage…',
-  groups: [{ label: 'Stages', items: [{ id: 'won', label: 'Won', onSelect: () => {} }] }],
+  // A group's icon is the kind of record it lists; `success` is the toast once it has run.
+  groups: [{ label: 'Stages', icon: <svg />, items: [{ id: 'won', label: 'Won', onSelect: () => {}, success: 'Moved to Won' }] }],
 }
 
 const groups: CommandPageGroup[] = [
@@ -25,6 +26,8 @@ const groups: CommandPageGroup[] = [
       // A page made on the spot, from onSelect.
       { id: 'owner', label: 'Assign owner…', onSelect: (menu) => menu.push({ groups: [] }) },
       { id: 'call', label: 'Log a call', shortcut: '⌘L', keywords: ['phone'], disabled: false, onSelect: (menu) => menu.close() },
+      // A promise holds the success toast until it resolves.
+      { id: 'save', label: 'Save', onSelect: async () => {}, success: <>Saved</> },
     ],
   },
 ]
