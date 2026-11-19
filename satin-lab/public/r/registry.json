@@ -2206,6 +2206,36 @@
       ]
     },
     {
+      "name": "agent-plan",
+      "type": "registry:ui",
+      "title": "Agent plan",
+      "description": "The steps an agent proposes before it acts: edit, reorder or leave some out, then Run, and watch them tick off.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Agent plan docs: https://uisatin.dev/ai-patterns/agent-plan",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-plan.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "agent-undo-log",
       "type": "registry:ui",
       "title": "Agent action log",
@@ -3574,6 +3604,21 @@
       "files": [
         {
           "path": "registry/satin/examples/agent-changes-review-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-plan-demo",
+      "type": "registry:example",
+      "title": "Agent plan example",
+      "description": "The shortest use of Agent plan, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-plan.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-plan-demo.tsx",
           "type": "registry:example"
         }
       ]

@@ -33,17 +33,6 @@
     "limit": "30 kB"
   },
   {
-    "name": "DropdownMenu with submenus and checkable rows (Radix DropdownMenu, iconoir chevron)",
-    "path": "packages/ui/dist/components/dropdown.js",
-    "import": "{ DropdownMenu, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem }",
-    "ignore": [
-      "react",
-      "react-dom"
-    ],
-    "gzip": true,
-    "limit": "46 kB"
-  },
-  {
     "name": "Bulk action bar (Satin Pro, with Radix Toolbar; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/bulk-action-bar.js",
     "import": "{ BulkActionBar }",
@@ -54,18 +43,6 @@
     ],
     "gzip": true,
     "limit": "12 kB"
-  },
-  {
-    "name": "Agent plan (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/agent-plan.js",
-    "import": "{ AgentPlan }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "6 kB"
   },
   {
     "name": "styles.css",
@@ -128,6 +105,17 @@
     "limit": "54 kB"
   },
   {
+    "name": "DropdownMenu with submenus and checkable rows (Radix DropdownMenu, iconoir chevron)",
+    "path": "packages/ui/dist/components/dropdown.js",
+    "import": "{ DropdownMenu, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "46 kB"
+  },
+  {
     "name": "Reviewable changes (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/agent-changes-review.js",
     "import": "{ ReviewableChanges }",
@@ -150,6 +138,18 @@
     ],
     "gzip": true,
     "limit": "9 kB"
+  },
+  {
+    "name": "Agent plan (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-plan.js",
+    "import": "{ AgentPlan }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "6 kB"
   },
   {
     "name": "Stepper (with Progress, cn and the check icon)",
