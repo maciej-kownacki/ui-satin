@@ -5,13 +5,14 @@ import { Popover as PopoverPrimitive } from 'radix-ui'
 import { Calendar as CalendarIcon, NavArrowDown, NavArrowLeft, NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
-import { useSatinLabels } from './labels'
+import { MenuItemContent, menuItemClass } from './dropdown'
+import { useSatinLabels, type SatinLabelSet } from './labels'
 import { FieldChrome, Select, useFieldChrome } from './select'
 
 /**
  * Calendar, DatePicker and DateRangePicker, 1:1 with the uiKit design (🆕 date picker).
  *
- * Calendar: one month (or two side by side), Monday first, weekdays as one letter in text/xs muted.
+ * Calendar: one month (or two side by side), weekdays as one letter in text/xs muted.
  * Days are 36px in 40px cells, their numbers text/sm (13px) medium. A picked day is a primary circle; the two ends of a range are
  * primary squares rounded radius-md, with a band in status/brand/bg — a tint of the brand —
  * from the middle of the first to the middle of the last. While the end is being picked the day
@@ -26,7 +27,12 @@ import { FieldChrome, Select, useFieldChrome } from './select'
  * End the week, Enter or Space picks.
  *
  * Month and weekday names and the dates on the triggers are written in the `dateLocale` label
- * (en-US by default). The week still starts on Monday.
+ * (en-US by default). The week starts on that locale's first day (Sunday in en-US, Monday in
+ * pl-PL), or on `weekStartsOn`.
+ *
+ * Presets: `presets` puts a list of shortcuts ("Last 30 days") before the calendar, at its side,
+ * or above it on narrow screens. Most people pick a preset rather than days. `datePresets` holds
+ * the common ones, worded through SatinLabels.
  *
  * Other props, `ref` included, go to: Calendar's root, DatePicker's and DateRangePicker's trigger
  * button (`className` styles it too), and the panels' surface.
@@ -34,10 +40,41 @@ import { FieldChrome, Select, useFieldChrome } from './select'
 
 export type DateRange = { from: Date | null; to: Date | null }
 
+/** A day of the week, counted as `Date#getDay()` counts them: 0 is Sunday, 1 Monday. */
+export type WeekDay = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
 const sameDay = (a?: Date | null, b?: Date | null) => !!a && !!b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n)
 const addMonths = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth() + n, 1)
+const startOfWeek = (d: Date, weekStart: WeekDay) => addDays(d, -((d.getDay() - weekStart + 7) % 7))
+const todayDate = () => startOfDay(new Date())
+
+// CLDR's first day of the week by region, for engines without Intl's week info (Firefox): Sunday
+// in these, Saturday in the next, Friday in the Maldives, Monday everywhere else.
+const SUNDAY_FIRST = 'AG AS BD BR BS BT BW BZ CA CO DM DO ET GT GU HK HN ID IL IN JM JP KE KH KR LA MH MM MO MT MX MZ NI NP PA PE PH PK PR PT PY SA SG SV TH TT TW UM US VE VI WS YE ZA ZW'
+const SATURDAY_FIRST = 'AF BH DJ DZ EG IQ IR JO KW LY OM QA SD SY'
+
+/** The first day of the week in `locale`. */
+function weekStartOf(locale: string): WeekDay {
+  try {
+    const l = new Intl.Locale(locale) as Intl.Locale & { getWeekInfo?: () => { firstDay: number }; weekInfo?: { firstDay: number } }
+    // Intl counts 1 (Monday) to 7 (Sunday).
+    const info = l.getWeekInfo?.() ?? l.weekInfo
+    if (info) return (info.firstDay % 7) as WeekDay
+    const region = l.maximize().region
+    if (!region) return 1
+    return region === 'MV' ? 5 : SATURDAY_FIRST.includes(region) ? 6 : SUNDAY_FIRST.includes(region) ? 0 : 1
+  } catch {
+    return 1
+  }
+}
+
+/** The week's first day: the prop, or the `dateLocale` label's. */
+function useWeekStart(weekStartsOn?: WeekDay): WeekDay {
+  const { dateLocale } = useSatinLabels()
+  return React.useMemo(() => weekStartsOn ?? weekStartOf(dateLocale), [weekStartsOn, dateLocale])
+}
 export const formatDate = (d: Date, locale = 'en-US') =>
   new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' }).format(d)
 export const formatRange = ({ from, to }: DateRange, locale = 'en-US') => {
@@ -48,14 +85,14 @@ export const formatRange = ({ from, to }: DateRange, locale = 'en-US') => {
   return `${f} – ${formatDate(to, locale)}`
 }
 
-/** The calendar's words in `locale`: month titles, weekday letters (Monday first) and each day's full date. */
-function calendarWords(locale: string) {
+/** The calendar's words in `locale`: month titles, weekday letters (from `weekStart`) and each day's full date. */
+function calendarWords(locale: string, weekStart: WeekDay) {
   const month = new Intl.DateTimeFormat(locale, { month: 'long' })
   const monthYear = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' })
   const narrow = new Intl.DateTimeFormat(locale, { weekday: 'narrow' })
   const long = new Intl.DateTimeFormat(locale, { weekday: 'long' })
-  // 1 January 2024 was a Monday.
-  const week = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + i))
+  // 1 January 2024 was a Monday, so 1 + (weekStart + 6) % 7 is the first weekday of that week.
+  const week = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + ((weekStart + 6) % 7) + i))
   return {
     month: (d: Date) => month.format(d),
     monthYear: (d: Date) => monthYear.format(d),
@@ -65,12 +102,11 @@ function calendarWords(locale: string) {
 }
 
 /**
- * Always six weeks, Monday first, filled with the end of the month before and the start of the
+ * Always six weeks from `weekStart`, filled with the end of the month before and the start of the
  * one after, so the calendar keeps its height from month to month.
  */
-function weeksOf(month: Date) {
-  const first = new Date(month.getFullYear(), month.getMonth(), 1)
-  const start = addDays(first, -((first.getDay() + 6) % 7))
+function weeksOf(month: Date, weekStart: WeekDay) {
+  const start = startOfWeek(new Date(month.getFullYear(), month.getMonth(), 1), weekStart)
   return Array.from({ length: 6 }, (_, w) => Array.from({ length: 7 }, (_, i) => addDays(start, w * 7 + i)))
 }
 
@@ -92,6 +128,8 @@ export interface CalendarProps extends Omit<React.ComponentProps<'div'>, 'defaul
   max?: Date
   /** Today, for the dash. Defaults to now. */
   today?: Date
+  /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's (Sunday in en-US, Monday in pl-PL). */
+  weekStartsOn?: WeekDay
   className?: string
 }
 
@@ -108,13 +146,15 @@ export function Calendar({
   min,
   max,
   today: todayProp,
+  weekStartsOn,
   className,
   ref,
   onPointerLeave,
   ...props
 }: CalendarProps) {
   const labels = useSatinLabels()
-  const words = React.useMemo(() => calendarWords(labels.dateLocale), [labels.dateLocale])
+  const weekStart = useWeekStart(weekStartsOn)
+  const words = React.useMemo(() => calendarWords(labels.dateLocale, weekStart), [labels.dateLocale, weekStart])
   const today = startOfDay(todayProp ?? new Date())
   const anchor = mode === 'range' ? range?.from : value
   const [innerMonth, setInnerMonth] = React.useState(() => addMonths(anchor ?? today, 0))
@@ -124,6 +164,18 @@ export function Calendar({
     onMonthChange?.(m)
   }
   const [focus, setFocus] = React.useState<Date>(() => startOfDay(anchor ?? today))
+  // A value set from outside (a preset) takes the focus with it, so Tab lands on it.
+  const [seenAnchor, setSeenAnchor] = React.useState(anchor ? +startOfDay(anchor) : null)
+  const anchorKey = anchor ? +startOfDay(anchor) : null
+  if (anchorKey !== seenAnchor) {
+    setSeenAnchor(anchorKey)
+    if (anchor) setFocus(startOfDay(anchor))
+  }
+  // The grid's one tab stop is a day in view: the focused one, else the value, else the 1st. A
+  // month turned with the arrows would otherwise leave no day to Tab to.
+  const end = addMonths(month, months)
+  const inView = (d?: Date | null): d is Date => !!d && d >= month && d < end
+  const tabDay = inView(focus) ? focus : inView(anchor) ? startOfDay(anchor) : month
   const [hover, setHover] = React.useState<Date | null>(null)
   const gridRef = React.useRef<HTMLDivElement>(null)
   // The year list ends where the date picker does (its panel, or the calendar on its own), not at
@@ -170,14 +222,14 @@ export function Calendar({
     // Right to left the week runs leftwards, so Left is the next day; Page, Home and End stay.
     const step = getComputedStyle(e.currentTarget).direction === 'rtl' ? -1 : 1
     const map: Record<string, () => Date> = {
-      ArrowLeft: () => addDays(focus, -step),
-      ArrowRight: () => addDays(focus, step),
-      ArrowUp: () => addDays(focus, -7),
-      ArrowDown: () => addDays(focus, 7),
-      PageUp: () => new Date(focus.getFullYear(), focus.getMonth() - 1, focus.getDate()),
-      PageDown: () => new Date(focus.getFullYear(), focus.getMonth() + 1, focus.getDate()),
-      Home: () => addDays(focus, -((focus.getDay() + 6) % 7)),
-      End: () => addDays(focus, 6 - ((focus.getDay() + 6) % 7)),
+      ArrowLeft: () => addDays(tabDay, -step),
+      ArrowRight: () => addDays(tabDay, step),
+      ArrowUp: () => addDays(tabDay, -7),
+      ArrowDown: () => addDays(tabDay, 7),
+      PageUp: () => new Date(tabDay.getFullYear(), tabDay.getMonth() - 1, tabDay.getDate()),
+      PageDown: () => new Date(tabDay.getFullYear(), tabDay.getMonth() + 1, tabDay.getDate()),
+      Home: () => startOfWeek(tabDay, weekStart),
+      End: () => addDays(startOfWeek(tabDay, weekStart), 6),
     }
     if (map[e.key]) {
       e.preventDefault()
@@ -186,7 +238,7 @@ export function Calendar({
       if (picking) setHover(next)
     } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
-      pick(focus)
+      pick(tabDay)
     }
   }
 
@@ -252,7 +304,7 @@ export function Calendar({
                 </span>
               ))}
             </div>
-            {weeksOf(m).map((week, w) => (
+            {weeksOf(m, weekStart).map((week, w) => (
               <div key={w} role="row" className="flex">
                 {week.map((d) => {
                   const out = d.getMonth() !== m.getMonth()
@@ -265,7 +317,7 @@ export function Calendar({
                   const isHoverEnd = picking && !out && sameDay(d, hover) && !isEnd
                   const isToday = sameDay(d, today)
                   const off = disabled(d)
-                  const focused = sameDay(d, focus) && !out
+                  const focused = sameDay(d, tabDay) && !out
                   return (
                     <div
                       key={d.toISOString()}
@@ -343,6 +395,148 @@ function yearOptions(shown: number, thisYear: number, min?: Date, max?: Date) {
   })
 }
 
+/* ---------- presets ---------- */
+
+/** What a preset's value function gets besides today. */
+export interface DatePresetContext {
+  /** The week's first day in effect: the picker's `weekStartsOn`, or the locale's. */
+  weekStartsOn: WeekDay
+}
+
+/**
+ * A shortcut in the picker's preset list. DatePicker takes presets of a day; DateRangePicker takes
+ * ranges, and a day as a one-day range.
+ */
+export interface DatePreset<T extends Date | DateRange = Date | DateRange> {
+  /** The preset's name in the list. A function gets the SatinLabels in effect, so a shared preset speaks the app's language. */
+  label: string | ((labels: SatinLabelSet) => string)
+  /** The day or range it picks, or a function of today (the picker's `today`, at midnight) that returns it. */
+  value: T | ((today: Date, context: DatePresetContext) => T)
+}
+
+const preset = <T extends Date | DateRange>(label: (l: SatinLabelSet) => string, value: (today: Date, context: DatePresetContext) => T): DatePreset<T> => ({ label, value })
+
+/**
+ * The common presets, named after the words they show (`presetToday`, `presetLast30Days`…).
+ * Days: `today`, `tomorrow`, `nextWeek` (the first day of next week). Ranges, both ends
+ * included: `last7Days` and `last30Days` (ending today), `thisQuarter` (all of it).
+ * Spread one to reword it: `{ ...datePresets.today, label: 'Now' }`.
+ */
+export const datePresets = {
+  today: preset((l) => l.presetToday, (today) => startOfDay(today)),
+  tomorrow: preset((l) => l.presetTomorrow, (today) => addDays(today, 1)),
+  nextWeek: preset((l) => l.presetNextWeek, (today, { weekStartsOn }) => addDays(startOfWeek(today, weekStartsOn), 7)),
+  last7Days: preset((l) => l.presetLast7Days, (today): DateRange => ({ from: addDays(today, -6), to: startOfDay(today) })),
+  last30Days: preset((l) => l.presetLast30Days, (today): DateRange => ({ from: addDays(today, -29), to: startOfDay(today) })),
+  thisQuarter: preset((l) => l.presetThisQuarter, (today): DateRange => {
+    const first = today.getMonth() - (today.getMonth() % 3)
+    return { from: new Date(today.getFullYear(), first, 1), to: new Date(today.getFullYear(), first + 3, 0) }
+  }),
+}
+
+interface PresetItem {
+  label: string
+  from: Date
+  to: Date
+  /** Nothing of it lies within min and max. */
+  disabled: boolean
+}
+
+/**
+ * Presets as days to show: the label in the app's words, the value worked out from today, a range
+ * cut to min and max (This quarter with `max` today ends today).
+ */
+function usePresetItems(presets: DatePreset[] | undefined, today: Date | undefined, weekStartsOn: WeekDay, min?: Date, max?: Date): PresetItem[] {
+  const labels = useSatinLabels()
+  if (!presets?.length) return []
+  const day = startOfDay(today ?? new Date())
+  return presets.map((p) => {
+    const v = typeof p.value === 'function' ? p.value(day, { weekStartsOn }) : p.value
+    const first = v instanceof Date ? v : v.from
+    const last = v instanceof Date ? v : (v.to ?? v.from)
+    let from = first && startOfDay(first)
+    let to = last && startOfDay(last)
+    if (from && min && from < startOfDay(min)) from = startOfDay(min)
+    if (to && max && to > startOfDay(max)) to = startOfDay(max)
+    const label = typeof p.label === 'function' ? p.label(labels) : p.label
+    return from && to ? { label, from, to, disabled: from > to } : { label, from: day, to: day, disabled: true }
+  })
+}
+
+// Beside the calendar from `sm` (one month) or `lg` (two), above it below that.
+const presetLayouts = {
+  sm: {
+    list: 'sm:min-w-36 sm:flex-col sm:flex-nowrap sm:gap-0.5 sm:border-e sm:border-b-0 sm:px-2 sm:py-3',
+    item: 'sm:w-full',
+  },
+  lg: {
+    list: 'lg:min-w-36 lg:flex-col lg:flex-nowrap lg:gap-0.5 lg:border-e lg:border-b-0 lg:px-2 lg:py-3',
+    item: 'lg:w-full',
+  },
+}
+
+/**
+ * The preset list: a listbox before the calendar, one tab stop (the active preset, else the
+ * first). Arrows and Home / End move, Enter or Space picks; the active one is aria-selected.
+ * Picking doesn't follow the arrows, since a pick closes DatePicker's popover.
+ */
+function PresetList({ items, active, onPick, side }: { items: PresetItem[]; active: number; onPick: (item: PresetItem) => void; side: 'sm' | 'lg' }) {
+  const labels = useSatinLabels()
+  const listRef = React.useRef<HTMLDivElement>(null)
+  const [current, setCurrent] = React.useState<number | null>(null)
+  const enabled = items.flatMap((p, i) => (p.disabled ? [] : [i]))
+  const tabStop = current !== null && enabled.includes(current) ? current : enabled.includes(active) ? active : enabled[0]
+  const layout = presetLayouts[side]
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    // Right to left the stacked row runs leftwards, so Left is the next preset.
+    const step = getComputedStyle(e.currentTarget).direction === 'rtl' ? -1 : 1
+    const at = enabled.indexOf(tabStop)
+    const moves: Record<string, number> = { ArrowDown: at + 1, ArrowUp: at - 1, ArrowRight: at + step, ArrowLeft: at - step, Home: 0, End: enabled.length - 1 }
+    if (e.key in moves) {
+      e.preventDefault()
+      const i = enabled[Math.max(0, Math.min(enabled.length - 1, moves[e.key]))]
+      if (i === undefined) return
+      setCurrent(i)
+      listRef.current?.querySelectorAll<HTMLElement>('[role=option]')[i]?.focus()
+    } else if ((e.key === 'Enter' || e.key === ' ') && tabStop !== undefined) {
+      e.preventDefault()
+      onPick(items[tabStop])
+    }
+  }
+
+  return (
+    <div
+      ref={listRef}
+      role="listbox"
+      aria-label={labels.presets}
+      data-slot="date-picker-presets"
+      onKeyDown={onKeyDown}
+      className={cn('flex shrink-0 flex-wrap gap-1 border-b border-border-subtle p-2', layout.list)}
+    >
+      {items.map((p, i) => {
+        const selected = i === active
+        return (
+          <div
+            key={i}
+            role="option"
+            aria-selected={selected}
+            aria-disabled={p.disabled || undefined}
+            data-selected={selected || undefined}
+            data-disabled={p.disabled || undefined}
+            tabIndex={i === tabStop ? 0 : -1}
+            onFocus={() => setCurrent(i)}
+            onClick={() => !p.disabled && onPick(p)}
+            className={cn(menuItemClass, 'w-auto', layout.item, !selected && 'hover:bg-bg-hover')}
+          >
+            <MenuItemContent label={p.label} layout="inline" selected={selected} />
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 /* ---------- pickers ---------- */
 
 /** The panels' surface: Popover's bg, border, radius and lg shadow. */
@@ -399,18 +593,44 @@ function Trigger({ text, placeholder, chrome, size, open, className, ...props }:
 
 export interface DatePickerPanelProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'> {
   value?: Date | null
+  /** A day picked in the calendar or from the presets. */
   onValueChange?: (value: Date) => void
   min?: Date
   max?: Date
   today?: Date
+  /** Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one moves the calendar to its month. */
+  presets?: DatePreset<Date>[]
+  /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's. */
+  weekStartsOn?: WeekDay
   className?: string
 }
 
-/** The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick. Other props, `ref` included, go to the surface. */
-export function DatePickerPanel({ value, onValueChange, min, max, today, className, ...props }: DatePickerPanelProps) {
+/** The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick, and the presets. Other props, `ref` included, go to the surface. */
+export function DatePickerPanel({ value, onValueChange, min, max, today, presets, weekStartsOn, className, ...props }: DatePickerPanelProps) {
+  const weekStart = useWeekStart(weekStartsOn)
+  const [month, setMonth] = React.useState(() => addMonths(value ?? today ?? todayDate(), 0))
+  const items = usePresetItems(presets, today, weekStart, min, max)
+  const calendar = (
+    <Calendar header="picker" value={value} onValueChange={onValueChange} month={month} onMonthChange={setMonth} min={min} max={max} today={today} weekStartsOn={weekStart} />
+  )
+  if (!items.length)
+    return (
+      <div {...props} data-slot="date-picker-panel" className={cn(surfaceClass, 'w-fit p-3', className)}>
+        {calendar}
+      </div>
+    )
   return (
-    <div {...props} data-slot="date-picker-panel" className={cn(surfaceClass, 'w-fit p-3', className)}>
-      <Calendar header="picker" value={value} onValueChange={onValueChange} min={min} max={max} today={today} />
+    <div {...props} data-slot="date-picker-panel" className={cn(surfaceClass, 'flex w-fit flex-col overflow-hidden sm:flex-row', className)}>
+      <PresetList
+        side="sm"
+        items={items}
+        active={items.findIndex((p) => !p.disabled && sameDay(p.from, value))}
+        onPick={(p) => {
+          setMonth(addMonths(p.from, 0))
+          onValueChange?.(p.from)
+        }}
+      />
+      <div className="p-3">{calendar}</div>
     </div>
   )
 }
@@ -424,6 +644,10 @@ export interface DatePickerProps extends FieldBits, TriggerAttributes {
   min?: Date
   max?: Date
   today?: Date
+  /** Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one picks its day and closes. */
+  presets?: DatePreset<Date>[]
+  /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's. */
+  weekStartsOn?: WeekDay
   /** Portal target. */
   container?: HTMLElement | null
 }
@@ -439,6 +663,8 @@ export function DatePicker({
   min,
   max,
   today,
+  presets,
+  weekStartsOn,
   label,
   hint,
   error,
@@ -478,6 +704,8 @@ export function DatePicker({
               min={min}
               max={max}
               today={today}
+              presets={presets}
+              weekStartsOn={weekStartsOn}
               onValueChange={(d) => {
                 if (valueProp === undefined) setInner(d)
                 onValueChange?.(d)
@@ -491,8 +719,6 @@ export function DatePicker({
   )
 }
 
-const todayDate = () => startOfDay(new Date())
-
 export interface DateRangePickerProps extends FieldBits, TriggerAttributes {
   value?: DateRange
   defaultValue?: DateRange
@@ -501,6 +727,10 @@ export interface DateRangePickerProps extends FieldBits, TriggerAttributes {
   min?: Date
   max?: Date
   today?: Date
+  /** Shortcuts listed before the calendar: `[datePresets.last7Days, datePresets.last30Days]`. Picking one shows its range, which waits for Apply like any other. */
+  presets?: DatePreset<DateRange | Date>[]
+  /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's. */
+  weekStartsOn?: WeekDay
   /** Defaults to the `apply` label. */
   applyLabel?: string
   /** Defaults to the `cancel` label. */
@@ -519,6 +749,8 @@ export function DateRangePicker({
   min,
   max,
   today,
+  presets,
+  weekStartsOn,
   label,
   hint,
   error,
@@ -565,6 +797,8 @@ export function DateRangePicker({
               min={min}
               max={max}
               today={today}
+              presets={presets}
+              weekStartsOn={weekStartsOn}
               applyLabel={applyLabel}
               cancelLabel={cancelLabel}
               onApply={commit}
@@ -586,6 +820,10 @@ export interface DateRangePickerPanelProps extends Omit<React.ComponentProps<'di
   min?: Date
   max?: Date
   today?: Date
+  /** Shortcuts listed before the calendar. Picking one shows its range; a range picked by hand leaves none selected. */
+  presets?: DatePreset<DateRange | Date>[]
+  /** The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's. */
+  weekStartsOn?: WeekDay
   /** Defaults to the `apply` label. */
   applyLabel?: string
   /** Defaults to the `cancel` label. */
@@ -593,7 +831,7 @@ export interface DateRangePickerPanelProps extends Omit<React.ComponentProps<'di
   className?: string
 }
 
-/** The range picker's panel on its own, in place: two months, Cancel and Apply. Other props, `ref` included, go to the surface. */
+/** The range picker's panel on its own, in place: the presets, two months, Cancel and Apply. Other props, `ref` included, go to the surface. */
 export function DateRangePickerPanel({
   value = { from: null, to: null },
   onApply,
@@ -601,18 +839,22 @@ export function DateRangePickerPanel({
   min,
   max,
   today,
+  presets,
+  weekStartsOn,
   applyLabel,
   cancelLabel,
   className,
   ...props
 }: DateRangePickerPanelProps) {
   const labels = useSatinLabels()
+  const weekStart = useWeekStart(weekStartsOn)
   const [draft, setDraft] = React.useState<DateRange>(value)
   const [month, setMonth] = React.useState(() => addMonths(value.from ?? today ?? todayDate(), 0))
-  return (
-    <div {...props} data-slot="date-range-picker-panel" className={cn(surfaceClass, 'flex w-fit shrink-0 flex-col overflow-hidden', className)}>
+  const items = usePresetItems(presets, today, weekStart, min, max)
+  const body = (
+    <>
       <div className="p-3">
-        <Calendar mode="range" months={2} range={draft} onRangeChange={setDraft} month={month} onMonthChange={setMonth} min={min} max={max} today={today} />
+        <Calendar mode="range" months={2} range={draft} onRangeChange={setDraft} month={month} onMonthChange={setMonth} min={min} max={max} today={today} weekStartsOn={weekStart} />
       </div>
       <div className="flex items-center justify-end gap-2 border-t border-border-subtle px-3 py-2">
         <Button variant="secondary" onClick={() => { setDraft(value); onCancel?.() }}>
@@ -622,6 +864,26 @@ export function DateRangePickerPanel({
           {applyLabel ?? labels.apply}
         </Button>
       </div>
+    </>
+  )
+  if (!items.length)
+    return (
+      <div {...props} data-slot="date-range-picker-panel" className={cn(surfaceClass, 'flex w-fit shrink-0 flex-col overflow-hidden', className)}>
+        {body}
+      </div>
+    )
+  return (
+    <div {...props} data-slot="date-range-picker-panel" className={cn(surfaceClass, 'flex w-fit shrink-0 flex-col overflow-hidden lg:flex-row', className)}>
+      <PresetList
+        side="lg"
+        items={items}
+        active={items.findIndex((p) => !p.disabled && sameDay(p.from, draft.from) && sameDay(p.to, draft.to))}
+        onPick={(p) => {
+          setDraft({ from: p.from, to: p.to })
+          setMonth(addMonths(p.from, 0))
+        }}
+      />
+      <div className="flex flex-col">{body}</div>
     </div>
   )
 }

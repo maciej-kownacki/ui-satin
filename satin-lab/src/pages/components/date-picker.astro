@@ -1,16 +1,35 @@
 ---
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
+import Chip from '../../components/Chip.astro'
 import Demo, { options } from '../../demos/date-picker'
+import PresetsDemo, { options as presetOptions } from '../../demos/date-picker-presets'
 import { api } from '../../api'
 import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
+const presetCodeHtml = await highlight(presetOptions)
 ---
 
 <Docs current="date-picker">
   <DocSection item={page('date-picker')} api={api['date-picker']}>
     <Demo client:load codeHtml={codeHtml} />
+
+    <section aria-labelledby="presets-title" class="flex flex-col gap-4 pt-8">
+      <h2 id="presets-title" class="text-lg font-medium text-text-default">Presets</h2>
+      <p class="text-base leading-6 text-text-muted">
+        Most people click Last 30 days rather than pick two dates, so presets come first: a list before the calendar, at its
+        side, or above it on narrow screens. <Chip>datePresets</Chip> holds <Chip>today</Chip>, <Chip>tomorrow</Chip>,
+        <Chip>nextWeek</Chip>, <Chip>last7Days</Chip>, <Chip>last30Days</Chip> and <Chip>thisQuarter</Chip>, worded through
+        SatinLabels; a preset of your own is a label and a day, a range, or a function of today. Picking one moves the calendar
+        to its month; a range still waits for Apply. A range picked by hand is a custom range, and no preset stays selected.
+      </p>
+      <p class="text-base leading-6 text-text-muted">
+        The week starts where the <Chip>dateLocale</Chip> label's locale starts it (Sunday in en-US, Monday in pl-PL), for the
+        calendar and for Next week alike; <Chip>weekStartsOn</Chip> pins it.
+      </p>
+      <PresetsDemo client:visible codeHtml={presetCodeHtml} />
+    </section>
   </DocSection>
 </Docs>
