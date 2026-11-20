@@ -4740,13 +4740,6 @@
           "description": "Chips shown before the rest fold into \"+3 more\"."
         },
         {
-          "name": "shortcut",
-          "type": "string | false",
-          "required": false,
-          "default": "'F'",
-          "description": "One key that opens `+ Filter` while focus is in the bar's parent and not in a field; shown as Kbd. `false` for none."
-        },
-        {
           "name": "container",
           "type": "HTMLElement | null",
           "required": false,
@@ -4777,7 +4770,7 @@
       "props": []
     },
     "FilterBarAdd": {
-      "description": "`+ Filter`: a menu of the fields; picking one adds its chip with the editor open. Shows the bar's `shortcut` as Kbd. Other props, `ref` included, go to the Button.",
+      "description": "`+ Filter`: a menu of the fields; picking one adds its chip with the editor open. Other props, `ref` included, go to the Button.",
       "type": "FilterBarAddProps",
       "extends": [
         "Omit<React.ComponentProps<typeof Button>, 'variant' | 'asChild' | 'iconOnly'>"

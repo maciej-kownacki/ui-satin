@@ -63,7 +63,6 @@ export const controlled = (
     query="acme"
     onQueryChange={(q: string) => q}
     maxVisible={4}
-    shortcut={false}
   />
 )
 
@@ -111,3 +110,6 @@ export const translated = (
 export const wrongLabel = <SatinLabels labels={{ filterDays: 'dni' }}>{controlled}</SatinLabels>
 
 export { wrongType, wrongOperator }
+
+// @ts-expect-error: no keyboard shortcut any more
+export const noShortcut = <FilterBar fields={fields} shortcut="F" />

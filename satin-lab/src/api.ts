@@ -1354,7 +1354,7 @@ export const api: Record<string, Api> = {
   },
   'filter-bar': {
     description:
-      'The `FilterBar` component (Satin Pro, `@uisatin/pro/filter-bar`) is a `role="group"` of filter chips, `+ Filter` and, with `search`, a search field. `fields` are `{ key, label, type, options, operators, icon, me, min, max, step, format, placeholder }`, `type` one of `enum`, `multi`, `text`, `number`, `date`, `person`. `value` is `Filter[]` (`{ field, operator, value }`, plain JSON, dates as `YYYY-MM-DD`); `applyFilters(rows, value, fields, { getValue, today })` returns the rows they let through, for a List, Table or DataGrid, and `isFilterValid` says whether one applies. Parts: `FilterBarRoot`, `FilterBarSearch`, `FilterBarChips`, `FilterBarAdd`, `FilterBarCount`, `FilterBarViews`. Its words (`filterOperator`, `filterResults`, `filterDays`…) are translated with SatinLabels.',
+      'The `FilterBar` component (Satin Pro, `@uisatin/pro/filter-bar`) is a `role="group"` of filter chips, `+ Filter` and, with `search`, a search field. `fields` are `{ key, label, type, options, operators, icon, me, min, max, step, format, placeholder }`, `type` one of `enum`, `multi`, `text`, `number`, `date`, `person`. `value` is `Filter[]` (`{ field, operator, value }`, plain JSON, dates as `YYYY-MM-DD`); `applyFilters(rows, value, fields, { getValue, today })` returns the rows they let through, for a List, Table or DataGrid, and `isFilterValid` says whether one applies. The editor is one surface: choices are listed in it and the operator opens its list in place of the value, so no menu opens over another. Parts: `FilterBarRoot`, `FilterBarSearch`, `FilterBarChips`, `FilterBarAdd`, `FilterBarCount`, `FilterBarViews`. Its words (`filterOperator`, `filterResults`, `filterDays`…) are translated with SatinLabels.',
     props: [
       { name: 'fields', type: ['FilterField[]'] },
       { name: 'value', type: ['Filter[]'] },
@@ -1369,7 +1369,6 @@ export const api: Record<string, Api> = {
       { name: 'onQueryChange', type: ['(query: string) => void'] },
       { name: 'searchPlaceholder', type: ['string'], default: '"Search…"' },
       { name: 'maxVisible', type: ['number'], default: '6' },
-      { name: 'shortcut', type: ['string', 'false'], default: '"F"' },
       { name: 'container', type: ['HTMLElement | null'] },
     ],
   },
