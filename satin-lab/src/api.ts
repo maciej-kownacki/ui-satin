@@ -862,6 +862,31 @@ export const api: Record<string, Api> = {
       { name: 'tableProps', type: ['ComponentProps<"table">'] },
     ],
   },
+  'table-pro': {
+    description:
+      'The `TableGrouped` component (Satin Pro, `@uisatin/pro/table-pro`) is Table, with every Table prop, plus: `getSubRows` opens rows onto rows of their own; `groupBy` gathers rows under a header row per value, with the count and each column\'s subtotal (`renderGroup` draws the name, `groupOrder` sets the order); a column\'s `format` writes its numbers and `aggregate` (`"sum"`, `"avg"`, `"min"`, `"max"`, `"count"` or `(rows) => number`) totals them in group headers and the `footer` row, a `tfoot`; `pinned="start"` keeps the first column in place with a shadow over what scrolls under it. Totals count the rows you pass, not their sub-rows. With sub-rows or groups the table is a `treegrid`. The part `TableRowToggle` is the chevron, for a Table of your own; `aggregateRows(rows, column)` gives a total as a number.',
+    props: [
+      { name: 'columns', type: ['TableGroupedColumn[]'] },
+      { name: 'rows', type: ['Row[]'] },
+      { name: 'getSubRows', type: ['(row: Row) => Row[] | undefined'] },
+      { name: 'expanded', type: ['string[]'] },
+      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
+      { name: 'onExpandedChange', type: ['(ids: string[]) => void'] },
+      { name: 'groupBy', type: ['keyof Row'] },
+      { name: 'groupOrder', type: ['string[]'] },
+      { name: 'renderGroup', type: ['({ value, rows }) => ReactNode'] },
+      { name: 'collapsedGroups', type: ['string[]'] },
+      { name: 'defaultCollapsedGroups', type: ['string[]'], default: '[]' },
+      { name: 'onCollapsedGroupsChange', type: ['(values: string[]) => void'] },
+      { name: 'pinned', type: ['"start"'] },
+      { name: 'footer', type: ['boolean'], default: 'false' },
+      { name: 'density', type: ['"default"', '"compact"'], default: '"default"' },
+      { name: 'selected', type: ['string[]'] },
+      { name: 'defaultSelected', type: ['string[]'], default: '[]' },
+      { name: 'column.format', type: ['(value: number) => ReactNode'] },
+      { name: 'column.aggregate', type: ['"sum"', '"avg"', '"min"', '"max"', '"count"', '(rows) => number'] },
+    ],
+  },
   tabs: {
     description: 'The `Tabs` component wraps the Radix tabs in a `div` with a tablist of buttons. An item is a string or `{ value, label, icon, disabled }`; put `TabsContent` panels in `children`.',
     props: [

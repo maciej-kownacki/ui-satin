@@ -438,6 +438,19 @@ export const a11y: Record<string, A11y> = {
       { keys: ['←', '→'], action: 'Scrolls a scrolling table sideways while its region has focus.' },
     ],
   },
+  'table-pro': {
+    summary:
+      'Table as it is (named by `label`, `aria-sort` on sortable headers, named checkboxes), plus: with sub-rows or groups the `table` takes `role="treegrid"`, and its body rows carry `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` when they open and `aria-selected` when `selectable`. One row is in the Tab order at a time; the row checkboxes stay in it too, as in Table. Each chevron is a button named "Rows under <name>" with `aria-expanded`, left out of the Tab order because the row\'s keys do the same. A group header\'s name is its row header and its count reads "3 rows"; the totals row sits in a `tfoot` with a "Total" row header. The pinned column\'s shadow is decoration.',
+    keyboard: [
+      { keys: ['↓', '↑'], action: 'Moves to the next or previous row, group headers included.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or last row.' },
+      { keys: ['→'], action: 'Opens a closed row or group; on an open one, moves to its first row. Mirrored right to left.' },
+      { keys: ['←'], action: 'Closes an open row or group; otherwise moves to the row or group it sits under. Mirrored right to left.' },
+      { keys: ['Enter'], action: 'Opens or closes the row or group.' },
+      { keys: ['Space'], action: 'With `selectable`, picks or drops the row, or every row of a group.' },
+      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all, inside each group.' },
+    ],
+  },
   tabs: {
     summary:
       'Built on Radix Tabs: a `tablist` (named by `aria-label`) of `tab` buttons with `aria-selected`; each `TabsContent` is a `tabpanel` labelled by its tab and focusable. Without panels the tabs drop `aria-controls`. Moving onto a tab selects it. The sliding indicator is hidden.',

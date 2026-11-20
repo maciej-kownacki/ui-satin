@@ -495,8 +495,9 @@ export function TableGrouped<R extends Row = Row>({
     )
   }
 
+  // The totals row sits a quiet step off the rows: darker in Light, lighter in Dark.
   const totalsRow = footer ? (
-    <tr className="bg-component-table-header">
+    <tr className="bg-component-table-pro-total-bg">
       {selectable && <td className={cn(checkBox[density], 'border-t border-border-subtle')} />}
       {columns.map((c, i) =>
         i === 0 ? (

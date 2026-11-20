@@ -82,6 +82,8 @@ const pairs = [
   // Counts in a neutral Badge on a popover: the Notification badge and the Bulk action bar's count (Satin Pro).
   ['text', 'status-neutral-fg', 'component-notification-badge-bg'],
   ['text', 'status-neutral-fg', 'component-bulk-action-bar-count-bg'],
+  // The grouped table's totals row (Satin Pro): its words and figures on its own fill.
+  ...['text-default', 'text-muted'].map((fg) => ['text', fg, 'component-table-pro-total-bg']),
   ...['action-focus-ring', 'border-focus'].flatMap((fg) => SURFACES.map((bg) => ['focus', fg, bg])),
   ...FIELD_SURFACES.map((bg) => ['edge', 'action-destructive-bg', bg]),
   // Agent presence's edge (Satin Pro) in each tone, over the rows and cards it outlines.
