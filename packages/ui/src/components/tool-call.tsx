@@ -16,7 +16,8 @@ import { Spinner } from './spinner'
  *
  * Statuses: `pending` (queued, "Pending"), `running` (a Spinner and the time so far), `success`
  * (a green check and how long it took), `error` ("Failed" in red, the card opens on its own) and
- * `cancelled`. The status icons sit on one cell and cross-fade as the status changes.
+ * `cancelled`. The status icons sit on one cell next to the chevron, after the words, so they keep
+ * one place whatever the words say, and cross-fade there as the status changes.
  *
  * The header is a button with `aria-expanded` (click, Enter, Space); its name is the tool, the
  * target and the status, so "Find slots calendar.findSlots Running" is what a screen reader hears.
@@ -238,8 +239,10 @@ export function ToolCallHeader({ name, icon, target, duration, ref, onClick, cla
           {name}
         </span>
         <span className="min-w-0 flex-1 truncate font-mono tracking-normal text-text-muted">{target}</span>
+        {/* The words first and the icon last, next to the chevron: the icon keeps one place
+            whatever the status says ("Failed", "0.4s", "Cancelled"), so a change of status
+            cross-fades it in place instead of moving it sideways while the card folds. */}
         <span data-slot="tool-call-status" className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-          <StatusIcon status={status} />
           {status === 'running' ? (
             <>
               <span className="sr-only">{word}</span>
@@ -258,6 +261,7 @@ export function ToolCallHeader({ name, icon, target, duration, ref, onClick, cla
           ) : (
             <span className={status === 'error' ? 'text-status-red-fg' : 'text-text-muted'}>{word}</span>
           )}
+          <StatusIcon status={status} />
         </span>
         <NavArrowDown
           aria-hidden
