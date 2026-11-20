@@ -21,7 +21,10 @@ const changes: ReviewableChange[] = [
 
 const row = (field: string) => screen.getByRole('group', { name: field })
 const button = (name: string) => screen.getByRole('button', { name })
-const status = () => screen.getByRole('status')
+// The component's own live region; "applied" is said from one on the body, which outlives it.
+const status = () => document.querySelector('[data-slot="reviewable-changes"] [role="status"]')!
+const announced = () => document.querySelector('[data-slot="reviewable-changes-announcer"]')?.textContent
+const waitForAnnouncement = () => act(() => new Promise((resolve) => setTimeout(resolve, 60)))
 
 function deferred() {
   let resolve!: () => void
@@ -140,28 +143,49 @@ describe('ReviewableChanges', () => {
     expect(row('Value').getAttribute('data-state')).toBe('pending')
   })
 
-  it('Apply sends only the accepted fields, then says Applied and marks each row', async () => {
+  it('Apply sends only the accepted fields, then the suggestion leaves and onApplied fires', async () => {
     const onApply = vi.fn()
+    const onApplied = vi.fn()
     const { user } = renderWithSatin(
-      <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted', close: 'accepted' }} onApply={onApply} />,
+      <AgentSuggestion kind="CRM update" title="Update the Quanta deal">
+        <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted', close: 'accepted' }} onApply={onApply} onApplied={onApplied} />
+      </AgentSuggestion>,
     )
     await user.click(button('Dismiss Value change'))
     await user.click(button('Apply 2 changes'))
     expect(onApply).toHaveBeenCalledTimes(1)
     expect(onApply.mock.calls[0][0]).toEqual([changes[0], changes[2]])
     expect(onApply.mock.calls[0][1]).toEqual({ stage: 'accepted', value: 'rejected', close: 'accepted' })
+    // Under reduced motion it goes at once: the whole AgentSuggestion, faded out and inert.
+    expect(onApplied).toHaveBeenCalledWith([changes[0], changes[2]], { stage: 'accepted', value: 'rejected', close: 'accepted' })
+    const card = document.querySelector('[data-slot="agent-suggestion"]')!
+    expect(card.classList.contains('satin-changes-review-exit')).toBe(true)
+    expect(card.hasAttribute('inert')).toBe(true)
+    // Focus was on Apply: with no returnFocus it goes to the body, and the body's live region says why.
+    expect(document.activeElement).toBe(document.body)
+    await waitForAnnouncement()
+    expect(announced()).toBe('2 changes applied')
+  })
 
-    // Focus stays on the button, which now says Applied and does nothing.
-    const done = button('Applied')
-    expect(document.activeElement).toBe(done)
-    expect(done.getAttribute('aria-disabled')).toBe('true')
-    await user.click(done)
-    expect(onApply).toHaveBeenCalledTimes(1)
-    expect(status().textContent).toBe('2 changes applied')
-    expect(within(row('Stage')).getByText('Applied')).toBeTruthy()
-    expect(screen.queryByRole('group', { name: 'Value' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Accept Stage change' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Accept all' })).toBeNull()
+  it('hands focus to returnFocus when it leaves', async () => {
+    function App() {
+      const [open, setOpen] = React.useState(true)
+      const deal = React.useRef<HTMLHeadingElement>(null)
+      return (
+        <>
+          <h2 ref={deal} tabIndex={-1}>
+            Quanta
+          </h2>
+          {open && (
+            <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} onApply={() => {}} onApplied={() => setOpen(false)} returnFocus={() => deal.current} />
+          )}
+        </>
+      )
+    }
+    const { user } = renderWithSatin(<App />)
+    await user.click(button('Apply 1 change'))
+    expect(screen.queryByRole('group', { name: 'Stage' })).toBeNull()
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Quanta' }))
   })
 
   it('Accept all accepts every field and says so', async () => {
@@ -174,16 +198,11 @@ describe('ReviewableChanges', () => {
     expect(onApply.mock.calls[0][0]).toEqual(changes)
   })
 
-  it('says Not applied after a row left pending at Apply', async () => {
-    const { user } = renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} onApply={() => {}} />)
-    await user.click(button('Apply 1 change'))
-    expect(within(row('Value')).getByText('Not applied')).toBeTruthy()
-  })
-
   it('locks the rows while a promise from onApply runs, and unlocks them if it fails', async () => {
     const first = deferred()
     const onApply = vi.fn(() => first.promise)
-    const { user } = renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} onApply={onApply} />)
+    const onApplied = vi.fn()
+    const { user } = renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} onApply={onApply} onApplied={onApplied} />)
     const apply = button('Apply 1 change')
     await user.click(apply)
     expect(apply.getAttribute('aria-busy')).toBe('true')
@@ -200,6 +219,17 @@ describe('ReviewableChanges', () => {
     })
     expect((button('Dismiss Stage change') as HTMLButtonElement).disabled).toBe(false)
     expect(button('Apply 1 change').getAttribute('aria-busy')).toBeNull()
+
+    // The second try goes through: it leaves only once the promise resolves.
+    const second = deferred()
+    onApply.mockImplementation(() => second.promise)
+    await user.click(button('Apply 1 change'))
+    expect(onApplied).not.toHaveBeenCalled()
+    await act(async () => {
+      second.resolve()
+      await second.promise
+    })
+    expect(onApplied).toHaveBeenCalledTimes(1)
   })
 
   it('is controlled with value and onValueChange', async () => {
@@ -256,9 +286,10 @@ describe('ReviewableChanges', () => {
   })
 
   it('follows a status the app sets', () => {
-    renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} status="applied" />)
-    expect(button('Applied').getAttribute('aria-disabled')).toBe('true')
-    expect(screen.getByRole('group', { name: 'Stage' }).closest('[data-slot="reviewable-changes"]')?.getAttribute('data-status')).toBe('applied')
+    renderWithSatin(<ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} status="applying" />)
+    expect(button('Apply 1 change').getAttribute('aria-busy')).toBe('true')
+    expect((button('Accept Stage change') as HTMLButtonElement).disabled).toBe(true)
+    expect(row('Stage').closest('[data-slot="reviewable-changes"]')?.getAttribute('data-status')).toBe('applying')
   })
 
   it('composes with AgentSuggestion through its parts, with Apply in the card’s actions', async () => {
@@ -285,8 +316,6 @@ describe('ReviewableChanges', () => {
         acceptAll: 'Zaakceptuj wszystko',
         applyFieldChanges: (count, number) => `Zastosuj zmiany (${number})`,
         fieldChangesApplied: (count, number) => `Zastosowano zmiany: ${number}`,
-        fieldChangeApplied: 'Zastosowano',
-        fieldChangeNotApplied: 'Pominięto',
         allFieldChangesAccepted: 'Zaakceptowano wszystko',
         fieldChangeRejected: (field) => `Odrzucono: ${field}`,
         dateLocale: 'pl-PL',
@@ -297,8 +326,8 @@ describe('ReviewableChanges', () => {
     await user.click(button('Zaakceptuj wszystko'))
     expect(status().textContent).toBe('Zaakceptowano wszystko')
     await user.click(button('Zastosuj zmiany (2)'))
-    expect(status().textContent).toBe('Zastosowano zmiany: 2')
-    expect(button('Zastosowano')).toBeTruthy()
+    await waitForAnnouncement()
+    expect(announced()).toBe('Zastosowano zmiany: 2')
   })
 
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
@@ -306,7 +335,7 @@ describe('ReviewableChanges', () => {
       <AgentSuggestion kind="CRM update" title="Update the Quanta deal">
         <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted', value: 'rejected' }} />
         <ReviewableChanges changes={changes} control="checkbox" defaultValue={{ stage: 'accepted' }} />
-        <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} status="applied" />
+        <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} status="applying" />
       </AgentSuggestion>,
       { theme },
     )
@@ -330,5 +359,24 @@ describe('ReviewableChanges, rejecting with motion', () => {
     // The rows under it are back in place.
     expect(row('Value').style.transform).toBe('')
     expect(row('Value').classList.contains('satin-changes-review-shift')).toBe(false)
+  })
+
+  it('fades the suggestion out after Apply, then calls onApplied', async () => {
+    const onApplied = vi.fn()
+    const { user } = renderWithSatin(
+      <AgentSuggestion kind="CRM update" title="Update the Quanta deal">
+        <ReviewableChanges changes={changes} defaultValue={{ stage: 'accepted' }} onApply={() => {}} onApplied={onApplied} />
+      </AgentSuggestion>,
+    )
+    await user.click(button('Apply 1 change'))
+    const card = document.querySelector('[data-slot="agent-suggestion"]')!
+    expect(card.classList.contains('satin-changes-review-exit')).toBe(true)
+    // Still fading: Apply stays busy, and onApplied waits for the end.
+    expect(button('Apply 1 change').getAttribute('aria-busy')).toBe('true')
+    expect(onApplied).not.toHaveBeenCalled()
+    // jsdom fires no transitionend: the fallback ends it.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 400)))
+    expect(onApplied).toHaveBeenCalledTimes(1)
+    expect(card.hasAttribute('inert')).toBe(true)
   })
 })

@@ -504,6 +504,14 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A `section`, labelled by `title` when there is one, so it is a region landmark. In `AgentSuggestionDiff` the old text is a `del` and the new an `ins`, read as "Remove:" and "Add:". `AgentSuggestionChanges` is a description list with the arrows hidden, and `AgentSuggestionMetric`’s bar is a Progress named by `unit`. The actions are your own buttons; name them by what they do ("Send email").',
   },
+  'agent-changes-review': {
+    summary:
+      'Each card is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` (its visible text "Accept" starts its name) and Dismiss a plain button, both named after the change ("Accept Stage change", "Dismiss Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the card\'s Checkbox carries the Accept name. Dismiss takes the card out: focus moves first to the next card\'s Accept, or to Accept all or Apply when no card is left below, the leaving card is `inert`, and "Value change dismissed" (`fieldChangeRejected`) is read out. Under reduced motion the card goes without the slide. Accepted is `aria-pressed` and the pressed fill, never colour alone. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all and "Applying changes…" are also read out from a polite `status` region. While applying, Apply is `aria-busy` (it keeps focus) and the cards are disabled. Once applied, the suggestion leaves: focus goes to `returnFocus()`, or to the page\'s body when the app gives none, the suggestion turns `inert`, and "2 changes applied" is read out from a polite `status` region on the body, which outlives it. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through each card\'s Dismiss and Accept (or its Checkbox), then Accept all and Apply.' },
+      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the card pending again when pressed. On Dismiss: takes the card out and moves focus on. On a Checkbox, Space accepts or rejects.' },
+    ],
+  },
   'decision-card': {
     summary:
       'A `role="group"` labelled by the title. The answers follow `type`: `radio` is a Radix radio group, `checkbox` a list of Checkboxes, `chips` buttons with `aria-pressed`, `ranking` an ordered list of focusable rows announced as "sortable item" with the hint "Alt and arrow keys to move", and `draft` the text that Rewrite (`aria-pressed`) turns into a textarea named "Draft". After a move, a polite live region reads the row’s new place ("Budget, position 2 of 4"). The step buttons are named "Previous question" and "Next question" and the step count is a polite live region. In `summary`, Change is named "Change <title>".',

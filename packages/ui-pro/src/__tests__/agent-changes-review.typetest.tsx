@@ -26,8 +26,8 @@ export const noSourceLabel: ReviewableChange = { field: 'Stage', to: 'Negotiatio
 // @ts-expect-error: no such decision
 const wrong: ReviewableChangesValue = { stage: 'maybe' }
 
-// @ts-expect-error: no such stage
-const wrongStatus: ReviewableChangesStatus = 'done'
+// @ts-expect-error: applied isn't a stage any more; the suggestion leaves (onApplied)
+const wrongStatus: ReviewableChangesStatus = 'applied'
 
 const rootRef = React.createRef<HTMLDivElement>()
 const buttonRef = React.createRef<HTMLButtonElement>()
@@ -45,6 +45,11 @@ export function Controlled() {
         void fields
         void decisions.value
       }}
+      onApplied={(accepted, decisions) => {
+        void accepted.length
+        void decisions
+      }}
+      returnFocus={() => document.getElementById('deal')}
       control="checkbox"
       status="review"
       aria-describedby="hint"
@@ -85,7 +90,6 @@ export const labels = (
       rejectFieldChange: (field) => `Odrzuć zmianę: ${field}`,
       applyFieldChanges: (count, number) => `Zastosuj (${number})`,
       fieldChangesApplied: (count, number) => `Zastosowano: ${number}`,
-      fieldChangeApplied: 'Zastosowano',
     }}
   >
     {uncontrolled}

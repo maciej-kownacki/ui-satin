@@ -339,10 +339,22 @@
           "description": "Apply: gets the accepted changes only, in their order, and every decision. Return a promise to hold the `applying` stage until it settles; if it rejects, review starts again."
         },
         {
+          "name": "onApplied",
+          "type": "(accepted: ReviewableChange[], value: ReviewableChangesValue) => void",
+          "required": false,
+          "description": "Called once the accepted changes are applied and the suggestion has left: remove it here (it stays faded out until you do). Gets what `onApply` got."
+        },
+        {
+          "name": "returnFocus",
+          "type": "() => HTMLElement | null | undefined",
+          "required": false,
+          "description": "Where focus goes when the suggestion leaves with focus inside it: the record it updated, the next suggestion. Without it, or when it gives nothing, focus goes to the page's body."
+        },
+        {
           "name": "status",
           "type": "ReviewableChangesStatus",
           "required": false,
-          "description": "Sets the stage yourself; without it, it follows `onApply`."
+          "description": "Holds the stage yourself; without it, it follows `onApply`."
         },
         {
           "name": "control",
@@ -362,7 +374,7 @@
       "props": []
     },
     "ReviewableChangesAcceptAll": {
-      "description": "Accepts every change. Gone once they're applied. Its text is `acceptAll` from SatinLabels unless you pass children. Other props, `ref` included, go to the Button.",
+      "description": "Accepts every change. Its text is `acceptAll` from SatinLabels unless you pass children. Other props, `ref` included, go to the Button.",
       "type": "ReviewableChangesAcceptAllProps",
       "extends": [
         "Omit<ButtonProps, 'asChild' | 'loading'>"
@@ -370,7 +382,7 @@
       "props": []
     },
     "ReviewableChangesApply": {
-      "description": "Applies the accepted changes: \"Apply 2 changes\", or your children. Disabled while none is accepted, busy while `applying`; once `applied` it stays in place, says Applied and does nothing, so focus isn't lost. Other props, `ref` included, go to the Button.",
+      "description": "Applies the accepted changes: \"Apply 2 changes\", or your children. Disabled while none is accepted, busy (and still focusable) while `applying` and while the suggestion leaves after. Other props, `ref` included, go to the Button.",
       "type": "ReviewableChangesApplyProps",
       "extends": [
         "Omit<ButtonProps, 'asChild' | 'loading'>"

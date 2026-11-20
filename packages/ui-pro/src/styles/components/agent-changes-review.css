@@ -1,9 +1,9 @@
 /*
  * Field-level review of agent changes (components/agent-changes-review.tsx).
  *
- * Each change is a card on component/changes-review/card-bg. With checkboxes, a rejected card's new value fades to text/muted over --duration-base, and a
- * rich value (a Badge) loses its colour, which keeps its text's contrast; nothing moves. Once the set is
- * applied, every row that wasn't applied looks the same. Satin's reduced-motion rule
+ * Each change is a card on component/changes-review/card-bg. With checkboxes, a rejected
+ * card's new value fades to text/muted over --duration-base, and a rich value (a Badge) loses
+ * its colour, which keeps its text's contrast; nothing moves. Satin's reduced-motion rule
  * (motion.css) cuts the fade.
  */
 .satin-changes-review-row [data-slot='agent-suggestion-change-value'] > :last-child {
@@ -11,8 +11,7 @@
     color var(--duration-base) var(--ease-out),
     filter var(--duration-base) var(--ease-out);
 }
-.satin-changes-review-row[data-state='rejected'] [data-slot='agent-suggestion-change-value'] > :last-child,
-[data-slot='reviewable-changes'][data-status='applied'] .satin-changes-review-row:not([data-state='accepted']) [data-slot='agent-suggestion-change-value'] > :last-child {
+.satin-changes-review-row[data-state='rejected'] [data-slot='agent-suggestion-change-value'] > :last-child {
   color: var(--text-muted);
   filter: grayscale(1);
 }
@@ -29,9 +28,18 @@
   box-shadow: 0 0 0 1px var(--border-strong);
 }
 
-/* Applied: Apply's check is green, like each applied row's. */
-[data-slot='reviewable-changes-apply'][data-status='applied'] svg {
-  color: var(--status-green-fg);
+/*
+ * Applied: the suggestion the set sits in (its AgentSuggestion, or the root) fades out and rises
+ * 4px over --duration-base; then onApplied hands it to the app to remove. Under reduced motion,
+ * motion.css cuts it to nothing.
+ */
+.satin-changes-review-exit {
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
 }
 
 /*
