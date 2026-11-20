@@ -13,7 +13,7 @@ trackPointerModality()
 /**
  * Tabs, 1:1 with the uiKit `Tabs` (3635:18677) and `tabs/item` (3635:18591) sets.
  *
- * Underline: tabs 32px apart on a 1px border/default rule; md is 36px high with a 14px label,
+ * Underline: tabs 32px apart on a border/default rule; md is 36px high with a 14px label,
  * sm 32px with 13px. The selected tab has a 2px action/primary indicator sitting on the rule;
  * hover shows it in border/strong. Focus draws a 1.5px border/focus ring around the label.
  *
@@ -64,7 +64,7 @@ const list = cva('relative flex', {
   variants: {
     variant: {
       // The rule is an inset shadow, so the 2px indicator can sit on top of it (as in Figma).
-      underline: 'items-end gap-8 [box-shadow:inset_0_-1px_0_var(--border-default)]',
+      underline: 'items-end gap-8 [box-shadow:inset_0_calc(var(--border-width-default)*-1)_0_var(--border-default)]',
       pill: 'items-center gap-1',
     },
   },

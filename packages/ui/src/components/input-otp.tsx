@@ -211,7 +211,7 @@ export function InputOTP({
                 aria-hidden
                 data-active={isActive || undefined}
                 className={cn(
-                  'relative grid size-9 shrink-0 place-items-center overflow-clip rounded-lg border bg-bg-field text-base leading-[21px] font-medium text-text-default',
+                  'relative grid size-9 shrink-0 place-items-center overflow-clip rounded-lg border border-strong bg-bg-field text-base leading-[21px] font-medium text-text-default',
                   '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
                   'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
                   chrome.invalid ? 'border-action-destructive-bg' : isSuccess ? 'border-component-input-otp-success-border' : 'border-border-default',
@@ -306,7 +306,7 @@ export function InputOTP({
               isLeaving && 'pointer-events-none',
               'absolute inset-x-0 top-full z-10 mx-auto mt-4 flex h-8 w-fit items-center gap-2 rounded-lg ps-1.5 pe-3 text-sm whitespace-nowrap select-none',
               'bg-component-input-otp-suggestion-bg text-component-input-otp-suggestion-fg',
-              '[box-shadow:0_8px_12px_0_var(--effect-shadow-md),0_1px_1.5px_0_var(--effect-shadow-ambient),inset_0_1px_0_0_var(--effect-highlight-top),inset_0_0_0_1px_var(--component-input-otp-suggestion-border)]',
+              '[box-shadow:0_8px_12px_0_var(--effect-shadow-md),0_1px_1.5px_0_var(--effect-shadow-ambient),inset_0_1px_0_0_var(--effect-highlight-top),inset_0_0_0_var(--border-width-default)_var(--component-input-otp-suggestion-border)]',
               // Pressed like a Button: a step darker and down to 97%, and it stays down while it fades out.
               'transition-[background-color,scale] duration-(--duration-fast) ease-(--ease-out)',
               'satin-hover:bg-component-input-otp-suggestion-bg-hover',

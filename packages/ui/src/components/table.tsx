@@ -10,8 +10,8 @@ import { useSatinLabels } from './labels'
  * table/row (3410:18040), table/cell (3409:17760), table/headerCell (3409:17734) and
  * table/checkboxCell (3409:17703). A real `<table>`.
  *
- * - Frame: bg/card, 1px border-subtle, radius-xl, clipped.
- * - Header row: component/table-header fill, 1px border-subtle under it. Header cells pad
+ * - Frame: bg/card, a border-subtle edge, radius-xl, clipped.
+ * - Header row: component/table-header fill, a border-subtle rule under it. Header cells pad
  *   4 / 8 / 4 / 4 around a label button (8px sides, 3px top and bottom, radius-md, medium
  *   13/18, text-muted); hover tints the button bg-hover. Sortable headers cycle
  *   none → asc → desc with a 14px arrow 10px after the label, and set aria-sort.
@@ -127,25 +127,25 @@ function SortIcon({ direction }: { direction: 'asc' | 'desc' }) {
 // Tailwind sees every class. Corners are logical, so the outline mirrors right to left.
 const cellHover = {
   first: [
-    'group-hover/row:rounded-s-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rounded-s-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:rounded-s-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_var(--border-width-default)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rounded-s-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_var(--border-width-default)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
     // An inset shadow has no logical form: right to left, the start line is on the right.
-    'group-hover/row:rtl:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rtl:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:rtl:[box-shadow:inset_calc(var(--border-width-default)*-1)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rtl:[box-shadow:inset_calc(var(--border-width-default)*-1)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
   ].join(' '),
   middle: [
-    'group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
   ].join(' '),
   last: [
-    'group-hover/row:rounded-e-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rounded-e-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-hover/row:rtl:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rtl:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:rounded-e-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_calc(var(--border-width-default)*-1)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rounded-e-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_calc(var(--border-width-default)*-1)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-hover/row:rtl:[box-shadow:inset_var(--border-width-default)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rtl:[box-shadow:inset_var(--border-width-default)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
   ].join(' '),
   only: [
-    'group-hover/row:rounded-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_0_0_1px_var(--border-strong)]',
-    'group-data-[force=hover]/row:rounded-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_0_0_0_1px_var(--border-strong)]',
+    'group-hover/row:rounded-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-strong)]',
+    'group-data-[force=hover]/row:rounded-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-strong)]',
   ].join(' '),
 }
 

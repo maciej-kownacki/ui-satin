@@ -12,7 +12,7 @@ import { cn } from '../lib/utils'
  * - title in text/lg medium (16/24), description in Body/lg (14/21) text/muted, 8 apart, centred.
  * - actions: a row of Buttons 8 apart: Primary + Secondary, Secondary alone, or a Tertiary
  *   "Learn more" with a trailing arrow. Pass them as `<Button>` elements.
- * - border: ghost (none), dashed or outline, both 1px border/default.
+ * - border: ghost (none), dashed or outline, both border/default.
  */
 const emptyStateVariants = cva(
   'flex w-[350px] max-w-[560px] min-w-[min(320px,100%)] flex-col items-center gap-4 rounded-2xl px-4 pt-4 pb-5 text-center',

@@ -224,7 +224,7 @@ export function AttachmentPreview({
           className="pointer-events-none absolute start-0 end-2.5 bottom-0 h-8 bg-linear-to-b from-transparent to-bg-popover"
         />
       </div>
-      <div className="h-px bg-border-subtle" />
+      <div className="h-(--border-width-default) bg-border-subtle" />
       <div className="flex items-center gap-2 px-2 py-1.5">
         <div className="flex min-w-0 flex-1 items-center gap-1">{navigation}</div>
         <Button variant="tertiary" size="xs" onClick={onOpen}>

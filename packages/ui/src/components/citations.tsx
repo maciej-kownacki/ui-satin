@@ -58,7 +58,7 @@ export function Citation({ index, source, className, 'aria-label': ariaLabel, ..
       className={cn(
         'mx-0.5 inline-grid h-4 min-w-4 translate-y-[-1px] place-items-center rounded-sm bg-bg-muted px-1 align-middle text-xs leading-none font-medium text-text-default no-underline tabular-nums outline-none',
         'transition-[background-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
-        'hover:bg-bg-hover hover:[box-shadow:inset_0_0_0_1px_var(--border-strong)] focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+        'hover:bg-bg-hover hover:[box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-strong)] focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
         className,
       )}
     >

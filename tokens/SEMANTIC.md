@@ -46,6 +46,16 @@ Stan dziś: kolekcja `theme` (102 zmienne, Light/Dark) to mieszanka nazw shadcn 
 | `border/input` | color/input |
 | `border/focus` | color/ring — obrys focusu w inputach i tabach (24 użycia), obok glow `action/focus-ring` |
 
+### border-width — stroke widths (added 20 November 2026)
+| token | value | where |
+|---|---|---|
+| `border-width/default` | 0.75px | Every edge: cards, menus, popovers, buttons (their outline and ring), chips, outline badges, rules and separators, table lines, the bulk action bar. Tailwind's `border`, `border-t`…, `divide-*` read it (`--default-border-width`); a box-shadow stroke writes `var(--border-width-default)`. |
+| `border-width/strong` | 1px | The boundary of a form control: Input, Textarea, Select, Combobox, Date picker and Number input fields, Input group parts, OTP cells, Search bar, Prompt bar, Decision card's answer field and radios, Checkbox, Radio, Selectable cards, the Slider thumb, the outline Dot. Tailwind: `border-strong`. |
+
+- In CSS, `default` is written as what browsers draw for a 0.75px border: whole device pixels, rounded down, at least one. 1px on 1x screens, 0.5px on 2x, 0.667px on 3x (`@media (min-resolution: …)` in theme.css). Borders would snap that way anyway; writing it out makes box-shadow strokes, which browsers don't snap, as crisp as borders instead of a soft 1.5-pixel smear.
+- Field and control edges keep `strong`: their edge is what marks them (WCAG 1.4.11), and border/default and border/input on bg/field are already under 3:1 (known issues on /accessibility); thinner would be fainter still.
+- Not stroke widths, so untouched: focus rings (the 2px `action/focus-ring`, the field's 1px `border/focus` ring that doubles the edge to 2px), error and success edges on fields, shadow offsets (`0 1px 2px`), the 1px top highlight on tooltips and the OTP suggestion, carets, the Thinking rail, the dash between OTP groups.
+
 ### action — przyciski, toggle, kontrolki (`bg`, `bg-hover`, `bg-pressed`, `border`, `fg`, `glow`, `shadow`)
 | nowa | dziś |
 |---|---|

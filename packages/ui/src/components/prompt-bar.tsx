@@ -266,7 +266,7 @@ export function PromptBar({
             submit()
           }}
           className={cn(
-            'flex w-full flex-col gap-2 border border-border-default bg-bg-field p-2 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
+            'flex w-full flex-col gap-2 border border-strong border-border-default bg-bg-field p-2 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             'transition-[border-color,border-radius] duration-(--duration-fast) ease-(--ease-out)',
             'data-filled:border-border-strong',
             // Focus: a 2px border/focus edge, as on every field.
@@ -449,7 +449,7 @@ function AddMenu({
           <Plus />
         </Button>
       </div>
-      <div aria-hidden className="h-px bg-border-subtle" />
+      <div aria-hidden className="h-(--border-width-default) bg-border-subtle" />
       <div id={`${id}-list`} role="listbox" aria-label={labels.agentsAndTools} className="flex flex-col p-1">
         {shown.map((a, i) => (
           <div

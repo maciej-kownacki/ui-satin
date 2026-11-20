@@ -23,7 +23,7 @@ trackPointerModality()
  * Groups: `DropdownMenuGroup`. Content: a 14px medium label (20px line). `stacked` puts the
  * description under it, 2px apart, at 13px / 18px in text/muted; `inline` puts it on the same
  * baseline 12px after the label, at 13px, truncated. Groups have a 24px header in 12px
- * text/subtle and are 4px apart with a 1px bg/muted rule between them. Items are 4px apart.
+ * text/subtle and are 4px apart with a bg/muted rule between them. Items are 4px apart.
  *
  * Submenus: `DropdownMenuSub` holds a `DropdownMenuSubTrigger` row (ending in a chevron) and a
  * `DropdownMenuSubContent` panel, which opens beside the row on hover, → or Enter and fades in
@@ -45,7 +45,7 @@ export const menuSurfaceClass = cn(
 )
 /** A group of rows, with a 1px bg/muted rule under every group but the last. */
 /** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
-export const menuGroupClass = 'flex flex-col gap-1 not-last:after:block not-last:after:h-px not-last:after:bg-bg-muted'
+export const menuGroupClass = 'flex flex-col gap-1 not-last:after:block not-last:after:h-(--border-width-default) not-last:after:bg-bg-muted'
 /** The 24px group header in 12px text/subtle. */
 // text/muted: a group's name is read to find a row, so it needs 4.5:1 (subtle is 2.6:1).
 export const menuGroupLabelClass = 'flex h-6 items-center px-3 text-xs leading-3 tracking-normal text-text-muted'

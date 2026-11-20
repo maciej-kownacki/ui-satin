@@ -633,6 +633,21 @@
   --text-display: 24px;
   --text-display--line-height: 1.25;
   --text-display--letter-spacing: -0.015em;
+  --border-width-default: 1px;
+  --border-width-strong: 1px;
+  --default-border-width: var(--border-width-default);
+}
+
+@media (min-resolution: 2dppx) {
+  :root {
+    --border-width-default: 0.5px;
+  }
+}
+
+@media (min-resolution: 3dppx) {
+  :root {
+    --border-width-default: 0.667px;
+  }
 }
 
 @theme inline {

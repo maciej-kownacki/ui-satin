@@ -53,8 +53,8 @@ export const defaultFormat = (n: number) => n.toLocaleString('en-US')
 /* ---------- shared parts ---------- */
 
 /**
- * The card every chart sits in (uiKit "chart explorations" A, 4084:3591): bg/card, 1px
- * border-default, radius-2xl, 16px in and 16 between rows. Row one: the title (16/24 medium,
+ * The card every chart sits in (uiKit "chart explorations" A, 4084:3591): bg/card, a
+ * border-default edge, radius-2xl, 16px in and 16 between rows. Row one: the title (16/24 medium,
  * text/default) and, when there are `periods`, a small Select for the period at the right. Row
  * two: the KPI (text/xl semibold) with its change badge, and the range under it in text/muted, 2px
  * apart; without a KPI the range sits 4px under the title. Then the chart. The card is a size
@@ -99,7 +99,7 @@ export function ChartCard({
               <Badge
                 tone={/^[−-]/.test(change) ? 'red' : 'green'}
                 size="sm"
-                className="[box-shadow:inset_0_0_0_1px_var(--tone-border)]"
+                className="[box-shadow:inset_0_0_0_var(--border-width-default)_var(--tone-border)]"
               >
                 {change}
               </Badge>

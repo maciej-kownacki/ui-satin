@@ -42,6 +42,7 @@ Pro components import Free's from `@uisatin/ui/<name>` (and `cn` from `@uisatin/
 
 - Components take `ref` as a prop and spread the rest onto their main element; document where in the component's JSDoc ("Other props, `ref` included, go to …").
 - Words a component says on its own go through `SatinLabels` (`labels.tsx`), never as English literals.
+- Stroke widths: an edge is `border` (Tailwind reads `--default-border-width`, which is `border-width/default`, 0.75px) or, in a box-shadow, `var(--border-width-default)`; a form control's boundary is `border-strong` / `var(--border-width-strong)` (1px). Never write `1px` for an edge. Focus rings, error edges and shadow offsets keep their own widths.
 - Focus: never remove it without drawing it. Use the `--action-focus-ring` colour (solid, 3:1 on every surface): an outline 2px off for standalone controls, a 2px edge for fields. Text colours need 4.5:1 on every surface they sit on; `npm run check:contrast` checks the tokens. Known gaps live in `satin-lab/src/accessibility.ts` and on /accessibility: add one when you find it, delete it when you fix it.
 - Props for the common case, parts for composition (see `dialog.tsx`, `segmented-control.tsx`).
 - Every change to `packages/ui` that users see needs a changeset (`npm run changeset`).
