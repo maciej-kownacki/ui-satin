@@ -379,17 +379,20 @@ export const nav: NavGroup[] = allNav.map((g) => ({ ...g, items: released(g.item
 
 /**
  * Pages built or changed in the P1 batch, marked New in the sidebar so they are easy to find
- * while they are reviewed (preview only). The last four existed before and gained a feature:
- * Combobox (creatable), Dropdown (submenus), Date picker (presets), Toast (Undo countdown).
+ * while they are reviewed (preview only: the public build shows no New marks). The last four
+ * existed before and gained a feature: Combobox (creatable), Dropdown (submenus), Date picker
+ * (presets), Toast (Undo countdown).
  */
 export const newPages = new Set<string>(
-  [
+  publicBuild
+    ? []
+    : [
     'agent-presence', 'agent-changes-review', 'agent-plan', 'agent-undo-log', 'agent-permissions', 'review-queue',
     'prompt-mentions', 'tool-call',
     'activity-timeline', 'bulk-action-bar', 'people-picker', 'command-pages', 'data-grid', 'filter-bar',
     'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'search-scoped', 'stepper', 'table-pro',
     'combobox', 'dropdown', 'date-picker', 'toast',
-  ].filter(isReleased),
+  ],
 )
 
 /** The package a page's component comes from. */
