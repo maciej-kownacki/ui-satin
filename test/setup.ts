@@ -27,6 +27,12 @@ Element.prototype.hasPointerCapture ??= () => false
 Element.prototype.setPointerCapture ??= () => {}
 Element.prototype.releasePointerCapture ??= () => {}
 
+// DecisionCard's step slide runs on the Web Animations API, which jsdom lacks: nothing animates.
+Element.prototype.getAnimations ??= () => []
+Element.prototype.animate ??= function animate() {
+  return { finished: Promise.resolve(), cancel() {} } as unknown as Animation
+}
+
 afterEach(() => {
   cleanup()
   resetMedia()
