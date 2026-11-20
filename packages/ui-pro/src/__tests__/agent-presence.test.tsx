@@ -209,6 +209,31 @@ describe('AgentPresence', () => {
     await waitFor(() => expect(status().textContent).toBe('Satin is updating Tara Mendes'))
   })
 
+  it('sits on its target inside a scaled container (a preview shrunk with scale())', async () => {
+    // The box is 600 × 800 of its own pixels, drawn at half size from (100, 50); the row inside
+    // it shows at (110, 70), 250 × 20 on screen. In the box's own pixels: (20, 40), 500 × 40.
+    function Scaled({ on }: { on: boolean }) {
+      const ref = React.useRef<HTMLDivElement>(null)
+      return (
+        <div data-testid="box" className="relative" data-rect="100,50,300,400">
+          <div ref={ref} data-rect="110,70,250,20">
+            Tara Mendes
+          </div>
+          <AgentPresence target={on ? ref : null} agent="Satin" label="Tara Mendes" />
+        </div>
+      )
+    }
+    const { rerender } = renderWithSatin(<Scaled on={false} />)
+    const parent = screen.getByTestId('box')
+    // jsdom has no layout: give the box its own size and make it the layer's positioned parent.
+    Object.defineProperty(parent, 'offsetWidth', { value: 600 })
+    Object.defineProperty(parent, 'offsetHeight', { value: 800 })
+    Object.defineProperty(layer(), 'offsetParent', { get: () => parent })
+    rerender(<Scaled on />)
+    await waitFor(() => expect(layer().style.transform).toBe('translate(20px, 40px)'))
+    expect([layer().style.width, layer().style.height]).toEqual(['500px', '40px'])
+  })
+
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
     renderWithSatin(<Candidates />, { theme })
     act(() => list.start('omar', 'Omar Haddad'))

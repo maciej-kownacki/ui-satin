@@ -105,26 +105,33 @@ function radiusOf(el: Element) {
 
 type Box = { x: number; y: number; w: number; h: number }
 
-/** Where the target shows, in the layer's parent's coordinates, cut to what clips it; null when none of it shows. */
-function place(el: Element, clips: Element[], parent: Element): Box | null {
+/**
+ * Where the target shows, in the layer's parent's own pixels, cut to what clips it; null when none
+ * of it shows. Measured on screen, then divided by the parent's scale on screen: under a scaled
+ * ancestor (a preview shrunk with `scale()`, CSS zoom) every rect comes back scaled, but the layer
+ * is laid out in the parent's unscaled pixels, like the parent's own children.
+ */
+function place(el: Element, clips: Element[], parent: HTMLElement): Box | null {
+  const p = parent.getBoundingClientRect()
+  const sx = parent.offsetWidth ? p.width / parent.offsetWidth : 1
+  const sy = parent.offsetHeight ? p.height / parent.offsetHeight : 1
   let { left, top, right, bottom } = el.getBoundingClientRect()
   for (const clip of clips) {
     const r = clip.getBoundingClientRect()
-    left = Math.max(left, r.left + clip.clientLeft)
-    top = Math.max(top, r.top + clip.clientTop)
-    right = Math.min(right, r.left + clip.clientLeft + clip.clientWidth)
-    bottom = Math.min(bottom, r.top + clip.clientTop + clip.clientHeight)
+    left = Math.max(left, r.left + clip.clientLeft * sx)
+    top = Math.max(top, r.top + clip.clientTop * sy)
+    right = Math.min(right, r.left + (clip.clientLeft + clip.clientWidth) * sx)
+    bottom = Math.min(bottom, r.top + (clip.clientTop + clip.clientHeight) * sy)
   }
-  if (right - left < 1 || bottom - top < 1) return null
-  const p = parent.getBoundingClientRect()
-  // On whole device pixels, so the label's text stays sharp and the edge doesn't shimmer.
+  if (right - left < 0.5 || bottom - top < 0.5) return null
+  // On whole device pixels as drawn, so the label's text stays sharp and the edge doesn't shimmer.
   const dpr = window.devicePixelRatio || 1
-  const snap = (v: number) => Math.round(v * dpr) / dpr
+  const snap = (v: number, scale: number) => Math.round(v * scale * dpr) / (scale * dpr)
   return {
-    x: snap(left - p.left - parent.clientLeft + parent.scrollLeft),
-    y: snap(top - p.top - parent.clientTop + parent.scrollTop),
-    w: snap(right - left),
-    h: snap(bottom - top),
+    x: snap((left - p.left) / sx - parent.clientLeft + parent.scrollLeft, sx),
+    y: snap((top - p.top) / sy - parent.clientTop + parent.scrollTop, sy),
+    w: snap((right - left) / sx, sx),
+    h: snap((bottom - top) / sy, sy),
   }
 }
 
@@ -171,7 +178,7 @@ function useTrack(layerRef: React.RefObject<HTMLDivElement | null>, target: Agen
           radius = el ? radiusOf(el) : ''
         }
       }
-      const parent = (layer.offsetParent as Element | null) ?? document.body
+      const parent = (layer.offsetParent as HTMLElement | null) ?? document.body
       const box = el ? place(el, clips, parent) : null
       if (!box) {
         layer.removeAttribute('data-shown')
