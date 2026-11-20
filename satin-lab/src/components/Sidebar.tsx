@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Badge, Button, SearchBar, cn } from '@uisatin/ui'
 import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
-import { allComponents, componentPages, pagesOf, type NavGroup, type NavItem } from '../nav'
+import { allComponents, componentPages, newPages, pagesOf, type NavGroup, type NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
 import { AiPatternsIcon, AllComponentsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, GuidesIcon, IntroIcon, RecipesIcon } from './icons'
 
@@ -176,12 +176,14 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
             isCurrent ? cn('bg-bg-selected text-text-default', currentEase) : cn('text-text-muted hover:bg-bg-hover hover:text-text-default active:bg-bg-selected', pressEase),
           )}
         >
-          {item.edition === 'pro' ? (
+          {item.edition === 'pro' || newPages.has(item.id) ? (
             <>
               <span className="min-w-0 flex-1 truncate">
                 <Highlight text={item.title} query={q} />
               </span>
-              <ProMark />
+              {/* While a page is marked New for review, New takes the Pro badge's place: both don't
+                  fit beside the longer titles in the 246 sidebar. The page header still says Pro. */}
+              <span className={cn('flex shrink-0', newPages.has(item.id) ? 'ms-0.5' : 'ms-2')}>{newPages.has(item.id) ? <NewMark /> : <ProMark />}</span>
             </>
           ) : (
             <Highlight text={item.title} query={q} />
@@ -433,6 +435,7 @@ function NavParent({
         <span className="min-w-0 flex-1 truncate">
           <Highlight text={item.title} query={query} />
         </span>
+        {item.children!.some((c) => newPages.has(c.id)) && <NewMark />}
         <Count>
           <span className="sr-only">, </span>
           {item.children!.length}
@@ -592,8 +595,18 @@ const swapIn =
 /** Marks a Satin Pro page's row, in the place a parent row shows its count. */
 function ProMark() {
   return (
-    <Badge size="sm" tone="brand" className="ms-2 text-xs leading-4">
+    <Badge size="sm" tone="brand" className="text-xs leading-4">
       Pro
+    </Badge>
+  )
+}
+
+/** Marks a page built or changed in the P1 batch (`newPages`), in place of the Pro badge. */
+function NewMark() {
+  return (
+    // 4px sides, not the Small badge's 6: "Mentions and commands" with New fits the 246 sidebar.
+    <Badge size="sm" tone="green" className="px-1 text-xs leading-4">
+      New
     </Badge>
   )
 }

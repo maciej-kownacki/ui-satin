@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every Agent action log state (prompt 18). Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { AgentActionLogGrid } from '../../states/AgentActionLogGrid'
+---
+
+<Layout title="Agent action log states · Satin" description="Every Agent action log state, for review.">
+  <main class="min-h-dvh bg-bg-card">
+    <AgentActionLogGrid />
+  </main>
+</Layout>

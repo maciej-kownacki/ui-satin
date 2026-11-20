@@ -25,9 +25,16 @@ import { useCommandList, type CommandGroup } from './command-menu'
  * `groups` filtered by label, description and keywords, as in CommandMenu: the arrows move the
  * highlight, Enter runs the item's `onSelect`, focus stays in the field.
  *
+ * `leading` puts something in the field before the query: filter chips, a scope. The field then
+ * grows a row at a time as they fill it, the query keeping at least 96px, and still focuses the
+ * query wherever it's clicked, chip buttons aside.
+ *
  * Other props, `ref` included, go to the input; `wrapperClassName` styles the field around it.
  */
 export interface SearchBarProps extends Omit<React.ComponentProps<'input'>, 'size'> {
+  /** field: shown in the field before the query, e.g. filter chips. The field wraps as they fill it. */
+  leading?: React.ReactNode
+
   /** Show the ⌘K keycaps and listen for the shortcut. */
   shortcut?: boolean
   /** Listen for ⌘K / Ctrl+K. Defaults to `shortcut`; turn it off when something else owns the
@@ -65,10 +72,15 @@ export function SearchBar({
   onChange,
   value,
   defaultValue,
+  leading,
   ref: forwarded,
   ...props
 }: SearchBarProps) {
   const labels = useSatinLabels()
+  // The field is a label that points at the query by id, so a click on it never lands on a
+  // button in `leading` (a label without `for` takes its first button as its control).
+  const autoId = React.useId()
+  const inputId = props.id ?? autoId
   const inner = React.useRef<HTMLInputElement>(null)
   React.useImperativeHandle(forwarded, () => inner.current as HTMLInputElement)
   // The query, yours (value) or ours, so the panel can filter on it.
@@ -93,6 +105,7 @@ export function SearchBar({
   const input = (
     <input
       ref={inner}
+      id={inputId}
       type="search"
       // A name of its own: a placeholder isn't one every screen reader reads. Your aria-label wins.
       aria-label={labels.searchField}
@@ -117,6 +130,7 @@ export function SearchBar({
         'min-w-0 flex-1 bg-transparent text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0',
         panel ? 'text-lg leading-6' : 'text-sm',
         '[&::-webkit-search-cancel-button]:appearance-none',
+        leading != null && 'min-w-24',
         className,
       )}
       {...props}
@@ -136,7 +150,7 @@ export function SearchBar({
         data-slot="search-bar"
         data-variant="panel"
         className={cn(
-          'flex w-full flex-col overflow-clip rounded-2xl border border-border-subtle bg-bg-muted',
+          'flex w-full flex-col overflow-clip rounded-2xl border border-strong border-border-subtle bg-bg-muted',
           // Keycaps take the sheet's colour: on bg/muted their own bg/muted would vanish.
           '[--component-kbd-bg:var(--bg-card)]',
           'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
@@ -179,17 +193,27 @@ export function SearchBar({
   return (
     <label
       data-slot="search-bar"
+      htmlFor={inputId}
       className={cn(
-        'flex h-control-height-lg w-full cursor-text items-center gap-2 rounded-lg border border-border-default bg-bg-card px-2',
+        'flex h-control-height-lg w-full cursor-text items-center gap-2 rounded-lg border border-strong border-border-default bg-bg-card px-2',
         '[box-shadow:0_1px_1px_0_var(--effect-shadow-xs)] transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
         'hover:border-border-strong',
         // Focus: a 2px border/focus edge, as on every field.
         'has-[input:focus-visible]:border-border-focus has-[input:focus-visible]:[box-shadow:0_0_0_1px_var(--border-focus)]',
+        // Rows of 24px chips 4px from the edge: one row keeps the field at 32px.
+        leading != null && 'h-auto min-h-control-height-lg py-[3px]',
         wrapperClassName,
       )}
     >
       <Search aria-hidden className="size-4 shrink-0 text-text-muted [stroke-width:1.875]" />
-      {input}
+      {leading != null ? (
+        <span data-slot="search-bar-leading" className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+          {leading}
+          {input}
+        </span>
+      ) : (
+        input
+      )}
       {keys}
     </label>
   )

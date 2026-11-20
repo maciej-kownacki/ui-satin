@@ -10,8 +10,8 @@ import { Spinner } from './spinner'
  * Button, 1:1 with the uiKit `button` component set (10:1838): five styles, four sizes
  * xs / md / lg / xl (24 / 28 / 32 / 36), Default or Rounded shape, and an icon-only form.
  *
- * Solid styles (primary, destructive, inverse) are a 1px border in the style's `border`
- * token, a 1px outer ring in the current background and a 0 3 6 drop shadow (gone when
+ * Solid styles (primary, destructive, inverse) are a border in the style's `border`
+ * token, an outer ring of the same width in the current background and a 0 3 6 drop shadow (gone when
  * pressed); no inner glow. Focus adds a 2px `action/focus-ring` spread; disabled
  * is the default look at 50% opacity. Icons take the label colour on solid styles and
  * text/muted on secondary and tertiary.
@@ -43,35 +43,35 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          'border border-action-primary-border bg-action-primary-bg text-action-primary-fg',
-          '[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-hover:bg-action-primary-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-primary-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-focus:[box-shadow:0_0_0_1px_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-pressed:bg-action-primary-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-primary-bg-pressed)]',
+          'border border-strong border-action-primary-border bg-action-primary-bg text-action-primary-fg',
+          '[box-shadow:0_0_0_var(--border-width-strong)_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-hover:bg-action-primary-bg-hover satin-hover:[box-shadow:0_0_0_var(--border-width-strong)_var(--action-primary-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-focus:[box-shadow:0_0_0_var(--border-width-strong)_var(--action-primary-bg),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-pressed:bg-action-primary-bg-pressed satin-pressed:[box-shadow:0_0_0_var(--border-width-strong)_var(--action-primary-bg-pressed)]',
         ],
         destructive: [
-          'border border-action-destructive-border bg-action-destructive-bg text-text-on-solid',
-          '[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-hover:bg-action-destructive-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-destructive-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-focus:[box-shadow:0_0_0_1px_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-pressed:bg-action-destructive-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-destructive-bg-pressed)]',
+          'border border-strong border-action-destructive-border bg-action-destructive-bg text-text-on-solid',
+          '[box-shadow:0_0_0_var(--border-width-strong)_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-hover:bg-action-destructive-bg-hover satin-hover:[box-shadow:0_0_0_var(--border-width-strong)_var(--action-destructive-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-focus:[box-shadow:0_0_0_var(--border-width-strong)_var(--action-destructive-bg),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-pressed:bg-action-destructive-bg-pressed satin-pressed:[box-shadow:0_0_0_var(--border-width-strong)_var(--action-destructive-bg-pressed)]',
         ],
         inverse: [
-          'border border-action-inverse-border bg-action-inverse-bg text-text-on-inverse',
-          '[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-hover:bg-action-inverse-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--action-inverse-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-focus:[box-shadow:0_0_0_1px_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow)]',
-          'satin-pressed:bg-action-inverse-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--action-inverse-bg-pressed)]',
+          'border border-strong border-action-inverse-border bg-action-inverse-bg text-text-on-inverse',
+          '[box-shadow:0_0_0_var(--border-width-strong)_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-hover:bg-action-inverse-bg-hover satin-hover:[box-shadow:0_0_0_var(--border-width-strong)_var(--action-inverse-bg-hover),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-focus:[box-shadow:0_0_0_var(--border-width-strong)_var(--action-inverse-bg),0_3px_6px_0_var(--action-primary-shadow)]',
+          'satin-pressed:bg-action-inverse-bg-pressed satin-pressed:[box-shadow:0_0_0_var(--border-width-strong)_var(--action-inverse-bg-pressed)]',
         ],
-        // The outline is a 1px ring outside the box, like the filled variants' ring, so all of
+        // The outline is a ring outside the box, like the filled variants' ring, so all of
         // them read the same height; the border underneath takes the fill.
         secondary: [
-          'border border-transparent bg-bg-popover text-text-default [&_svg]:text-text-muted',
-          '[box-shadow:0_0_0_1px_var(--border-default),0_1px_2px_1px_var(--effect-shadow-xs)]',
-          'disabled:[box-shadow:0_0_0_1px_var(--border-strong)]',
-          'satin-hover:bg-action-secondary-bg-hover satin-hover:[box-shadow:0_0_0_1px_var(--border-strong),0_1px_2px_1px_var(--effect-shadow-xs)]',
-          'satin-focus:bg-bg-popover satin-focus:[box-shadow:0_0_0_1px_var(--border-strong),0_1px_2px_1px_var(--effect-shadow-xs)]',
-          'satin-pressed:bg-action-secondary-bg-pressed satin-pressed:[box-shadow:0_0_0_1px_var(--border-strong)]',
+          'border border-strong border-transparent bg-bg-popover text-text-default [&_svg]:text-text-muted',
+          '[box-shadow:0_0_0_var(--border-width-strong)_var(--border-default),0_1px_2px_1px_var(--effect-shadow-xs)]',
+          'disabled:[box-shadow:0_0_0_var(--border-width-strong)_var(--border-strong)]',
+          'satin-hover:bg-action-secondary-bg-hover satin-hover:[box-shadow:0_0_0_var(--border-width-strong)_var(--border-strong),0_1px_2px_1px_var(--effect-shadow-xs)]',
+          'satin-focus:bg-bg-popover satin-focus:[box-shadow:0_0_0_var(--border-width-strong)_var(--border-strong),0_1px_2px_1px_var(--effect-shadow-xs)]',
+          'satin-pressed:bg-action-secondary-bg-pressed satin-pressed:[box-shadow:0_0_0_var(--border-width-strong)_var(--border-strong)]',
         ],
         tertiary: [
           'bg-transparent text-text-default [&_svg]:text-text-muted',

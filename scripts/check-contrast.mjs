@@ -76,10 +76,23 @@ const pairs = [
   ...['action-inverse-bg', 'action-inverse-bg-hover', 'action-inverse-bg-pressed'].map((bg) => ['text', 'text-on-inverse', bg]),
   ...TONES.map((tone) => ['text', `status-${tone}-fg`, `status-${tone}-bg`]),
   ['text', 'text-destructive', 'status-red-bg'],
+  // PromptBar's tokens: the field's text over a mention's and a command's fill.
+  ['text', 'text-default', 'status-brand-bg'],
+  ['text', 'text-default', 'action-secondary-bg'],
+  // Counts in a neutral Badge on a popover: the Notification badge and the Bulk action bar's count (Satin Pro).
+  ['text', 'status-neutral-fg', 'component-notification-badge-bg'],
+  ['text', 'status-neutral-fg', 'component-bulk-action-bar-count-bg'],
+  // The grouped table's totals row (Satin Pro): its words and figures on its own fill.
+  ...['text-default', 'text-muted'].map((fg) => ['text', fg, 'component-table-pro-total-bg']),
   ...['action-focus-ring', 'border-focus'].flatMap((fg) => SURFACES.map((bg) => ['focus', fg, bg])),
   ...FIELD_SURFACES.map((bg) => ['edge', 'action-destructive-bg', bg]),
   // Agent presence's edge (Satin Pro) in each tone, over the rows and cards it outlines.
   ...TONES.flatMap((tone) => ['bg-canvas', 'bg-card', 'bg-popover', 'bg-hover'].map((bg) => ['edge', `status-${tone}-fg`, bg])),
+  // Reviewable changes (Pro): the source preview inside a step, and the Accepted note's green check on the card.
+  ['text', 'text-default', 'component-changes-review-source-bg'],
+  ['text', 'text-muted', 'component-changes-review-source-bg'],
+  ['focus', 'action-focus-ring', 'component-changes-review-source-bg'],
+  ['text', 'status-green-fg', 'bg-popover'],
 ]
 const MIN = { text: 4.5, focus: 3, edge: 3 }
 

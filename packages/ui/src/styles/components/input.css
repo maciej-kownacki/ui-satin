@@ -1,6 +1,7 @@
 /*
  * The field skin shared by Input (uiKit 820:51657) and Textarea (3647:17812): surface fill, 1px
- * border/default, shadow xs, radius-lg. Hover: border/strong. Focus: a 2px border/focus edge
+ * border/default (border-width/strong: a field keeps a full pixel where other edges are 0.75, its
+ * edge is all that marks it), shadow xs, radius-lg. Hover: border/strong. Focus: a 2px border/focus edge
  * (the border and a 1px ring), at least 3:1 on every surface, no drop shadow. Error: an
  * action/destructive/bg border, 2px with focus. Disabled: bg/muted, border/default.
  *
@@ -15,7 +16,7 @@
   width: 100%;
   min-width: 0;
   padding: 0 12px;
-  border: 1px solid var(--border-default);
+  border: var(--border-width-strong) solid var(--border-default);
   border-radius: var(--radius-lg);
   background: var(--bg-field);
   /* Icons are muted while empty and take the text colour once there is a value. */
@@ -154,7 +155,7 @@
 
 /*
  * InputGroup (input-group.tsx): fields, addons, selects and buttons joined into one block.
- * Every part after the first steps 1px back so neighbours share a border; inner corners go
+ * Every part after the first steps one border back so neighbours share it; inner corners go
  * square. Logical sides, so the block joins the same way right to left. Parts are matched by
  * data-slot, not class, so the same rules hold in the prefixed npm build.
  */
@@ -162,7 +163,7 @@
   position: relative;
 }
 [data-slot="input-group"] > :not(:first-child) {
-  margin-inline-start: -1px;
+  margin-inline-start: calc(var(--border-width-strong) * -1);
 }
 [data-slot="input-group"] > [data-slot="input-wrapper"] {
   flex: 1;
@@ -192,7 +193,7 @@
   align-items: center;
   gap: 6px;
   padding: 0 12px;
-  border: 1px solid var(--border-default);
+  border: var(--border-width-strong) solid var(--border-default);
   border-radius: var(--radius-lg);
   background: var(--bg-muted);
   color: var(--text-muted);
@@ -211,9 +212,10 @@
   stroke-width: 1.875;
 }
 
-/* A button in a group draws its outline as a 1px border, like the field, so both are the same
-   height; the outer ring and drop shadow give way to the field's xs shadow. */
+/* A button in a group draws its outline as a border as wide as the field's (border-width/strong),
+   so both are the same height; the outer ring and drop shadow give way to the field's xs shadow. */
 [data-slot="input-group"] > [data-slot="button"] {
+  border-width: var(--border-width-strong);
   box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
 }
 [data-slot="input-group"] > [data-slot="button"][data-variant="secondary"] {

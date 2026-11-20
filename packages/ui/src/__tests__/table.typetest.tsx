@@ -19,3 +19,18 @@ const typo: Column<Invoice> = { key: 'custmer', header: 'Customer' }
 
 export const ok = <Table<Invoice> columns={columns} rows={[{ id: '1', customer: 'Acme', amount: 10 }]} label="Invoices" />
 export { typo }
+
+// Rows of your own in a tfoot, and props for the table element itself.
+export const withFooter = (
+  <Table<Invoice>
+    columns={columns}
+    rows={[]}
+    footer={
+      <tr>
+        <th scope="row">Total</th>
+        <td>0</td>
+      </tr>
+    }
+    tableProps={{ role: 'treegrid', 'aria-describedby': 'hint' }}
+  />
+)

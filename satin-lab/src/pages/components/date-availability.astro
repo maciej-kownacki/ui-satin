@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import DateAvailabilityDemo, { options } from '../../demos/date-availability'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="date-availability">
+  <DocSection item={page('date-availability')} api={api['date-availability']}>
+    <DateAvailabilityDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

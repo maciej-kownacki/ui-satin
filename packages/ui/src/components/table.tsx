@@ -10,8 +10,8 @@ import { useSatinLabels } from './labels'
  * table/row (3410:18040), table/cell (3409:17760), table/headerCell (3409:17734) and
  * table/checkboxCell (3409:17703). A real `<table>`.
  *
- * - Frame: bg/card, 1px border-subtle, radius-xl, clipped.
- * - Header row: component/table-header fill, 1px border-subtle under it. Header cells pad
+ * - Frame: bg/card, a border-subtle edge, radius-xl, clipped.
+ * - Header row: component/table-header fill, a border-subtle rule under it. Header cells pad
  *   4 / 8 / 4 / 4 around a label button (8px sides, 3px top and bottom, radius-md, medium
  *   13/18, text-muted); hover tints the button bg-hover. Sortable headers cycle
  *   none → asc → desc with a 14px arrow 10px after the label, and set aria-sort.
@@ -26,6 +26,9 @@ import { useSatinLabels } from './labels'
  *
  * The row edge is drawn with inset shadows on the cells, since table rows can't take a
  * border radius. `data-force="hover"` on a `<tr>` shows the hover state.
+ *
+ * `footer` puts rows of your own in a `<tfoot>` (a totals row), and `tableProps` reaches the
+ * `<table>` itself (a `role`, `aria-*`). Other props, `ref` included, go to the frame.
  */
 
 export type Sort = { key: string; direction: 'asc' | 'desc' } | null
@@ -86,6 +89,16 @@ export interface TableProps<R extends Row = Row> extends Omit<React.ComponentPro
    * `renderRow={({ row, rowProps, children }) => <tr {...rowProps} onClick={() => open(row)}>{children}</tr>}`.
    */
   renderRow?: (row: { row: R; index: number; selected: boolean; rowProps: React.ComponentProps<'tr'>; children: React.ReactNode }) => React.ReactNode
+  /**
+   * Rows for a `<tfoot>` under the body, such as a totals row: give `<tr>`s with one cell per
+   * column, plus one first for the checkbox column when `selectable`.
+   */
+  footer?: React.ReactNode
+  /**
+   * Props for the `<table>` element itself (the rest go to the frame around it): a `role` such as
+   * `"treegrid"` when rows expand, `aria-*`, handlers. `className` and `style` add to the table's own.
+   */
+  tableProps?: Omit<React.ComponentProps<'table'>, 'children'>
 }
 
 /** The Figma sort arrow, 14 at 1.09. Pointing down for descending. */
@@ -114,25 +127,25 @@ function SortIcon({ direction }: { direction: 'asc' | 'desc' }) {
 // Tailwind sees every class. Corners are logical, so the outline mirrors right to left.
 const cellHover = {
   first: [
-    'group-hover/row:rounded-s-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rounded-s-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:rounded-s-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_var(--border-width-default)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rounded-s-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_var(--border-width-default)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
     // An inset shadow has no logical form: right to left, the start line is on the right.
-    'group-hover/row:rtl:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rtl:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:rtl:[box-shadow:inset_calc(var(--border-width-default)*-1)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rtl:[box-shadow:inset_calc(var(--border-width-default)*-1)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
   ].join(' '),
   middle: [
-    'group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
   ].join(' '),
   last: [
-    'group-hover/row:rounded-e-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rounded-e-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_-1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-hover/row:rtl:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
-    'group-data-[force=hover]/row:rtl:[box-shadow:inset_1px_0_0_var(--border-strong),inset_0_1px_0_var(--border-strong),inset_0_-1px_0_var(--border-strong)]',
+    'group-hover/row:rounded-e-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_calc(var(--border-width-default)*-1)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rounded-e-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_calc(var(--border-width-default)*-1)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-hover/row:rtl:[box-shadow:inset_var(--border-width-default)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
+    'group-data-[force=hover]/row:rtl:[box-shadow:inset_var(--border-width-default)_0_0_var(--border-strong),inset_0_var(--border-width-default)_0_var(--border-strong),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-strong)]',
   ].join(' '),
   only: [
-    'group-hover/row:rounded-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_0_0_1px_var(--border-strong)]',
-    'group-data-[force=hover]/row:rounded-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_0_0_0_1px_var(--border-strong)]',
+    'group-hover/row:rounded-xl group-hover/row:bg-bg-hover group-hover/row:[box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-strong)]',
+    'group-data-[force=hover]/row:rounded-xl group-data-[force=hover]/row:bg-bg-hover group-data-[force=hover]/row:[box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-strong)]',
   ].join(' '),
 }
 
@@ -160,6 +173,8 @@ export function Table<R extends Row = Row>({
   rowLabel,
   renderCell,
   renderRow,
+  footer,
+  tableProps,
   className,
   ...props
 }: TableProps<R>) {
@@ -227,12 +242,16 @@ export function Table<R extends Row = Row>({
 
   const table = (
     <table
-      aria-label={label}
+      {...tableProps}
+      aria-label={label ?? tableProps?.['aria-label']}
       // Not text-start: a <th> centres its text unless the table sets an alignment, so it's
       // explicit, and right to left it's the right.
-      className="w-full table-fixed border-separate border-spacing-0 text-left rtl:text-right"
+      className={cn('w-full table-fixed border-separate border-spacing-0 text-left rtl:text-right', tableProps?.className)}
       // With overflow="fit" the columns keep at least 120px each, so a phone scrolls instead of crushing them.
-      style={tableWidth ? { width: tableWidth, minWidth: '100%' } : { minWidth: columns.length * 120 + (selectable ? 24 : 0) }}
+      style={{
+        ...(tableWidth ? { width: tableWidth, minWidth: '100%' } : { minWidth: columns.length * 120 + (selectable ? 24 : 0) }),
+        ...tableProps?.style,
+      }}
     >
       <colgroup>
         {selectable && <col style={{ width: 24 }} />}
@@ -346,6 +365,7 @@ export function Table<R extends Row = Row>({
           )
         })}
       </tbody>
+      {footer != null && <tfoot>{footer}</tfoot>}
     </table>
   )
 

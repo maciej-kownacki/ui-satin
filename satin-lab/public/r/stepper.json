@@ -1,0 +1,138 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "stepper",
+  "type": "registry:ui",
+  "title": "Stepper",
+  "description": "Shows where a multi-step flow is: the steps done, the current one and the ones ahead.",
+  "dependencies": [
+    "iconoir-react@^7.12.2"
+  ],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/labels.json",
+    "https://uisatin.dev/r/progress.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/stepper.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { Check } from 'iconoir-react'\nimport { cn } from '@/lib/utils'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\nimport { Progress } from '@/registry/satin/ui/progress'\n\n/** What a step's place in the flow doesn't say on its own. */\nexport type StepperStepState = 'complete' | 'error' | 'disabled'\n\nexport interface StepperStep {\n  /** Names the step; the Stepper's `value` picks the current one. */\n  value: string\n  label: React.ReactNode\n  /** A line under the label: what the step asks for, or what went wrong. */\n  description?: React.ReactNode\n  /**\n   * What the step's place in the flow doesn't say: `complete` (a check, \"Completed\" to screen\n   * readers), `error` (an exclamation mark, \"Error\"), `disabled` (dimmed, and not a button when\n   * the stepper isn't linear). Left out, a linear stepper marks the steps before the current one\n   * complete.\n   */\n  state?: StepperStepState\n}\n\ntype Orientation = 'horizontal' | 'vertical'\ntype Status = 'upcoming' | StepperStepState\n\ntype ItemContext = {\n  index: number\n  count: number\n  /** The current step's index, -1 when `value` matches none. */\n  current: number\n  linear: boolean\n  orientation: Orientation\n  select: (value: string) => void\n  /** The step number in the labels' locale. */\n  format: (n: number) => string\n  /** False during the first render, so what is there on load doesn't animate in. */\n  mounted: boolean\n}\nconst ItemContext = React.createContext<ItemContext | null>(null)\n\nexport interface StepperItemProps extends Omit<React.ComponentProps<'li'>, 'value' | 'children'> {\n  /** Names the step; the Stepper's `value` picks the current one. */\n  value: string\n  label: React.ReactNode\n  /** A line under the label: what the step asks for, or what went wrong. */\n  description?: React.ReactNode\n  /** See `StepperStep.state`. */\n  state?: StepperStepState\n  /** The step's content, shown under its label while it is the current step (vertical only). */\n  children?: React.ReactNode\n}\n\n/** An exclamation mark, drawn like the iconoir icons beside it. */\nfunction ErrorMark() {\n  return (\n    <svg data-slot=\"stepper-error-mark\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" strokeLinecap=\"round\">\n      <path d=\"M12 6.5v7\" />\n      <path d=\"M12 17.5h.01\" />\n    </svg>\n  )\n}\n\n/** A step's content: fades in when its step becomes current, but not on load. */\nfunction StepperContent({ children }: { children: React.ReactNode }) {\n  const context = React.useContext(ItemContext)\n  const [enter] = React.useState(() => context?.mounted ?? false)\n  return (\n    <div data-slot=\"stepper-content\" data-enter={enter ? '' : undefined} className=\"sa:min-w-0 sa:ps-9 sa:pt-3\">\n      {children}\n    </div>\n  )\n}\n\n/**\n * One step, for the Stepper's children: the place to put content under a vertical step, or a\n * label that needs more than text (a Badge). Takes its number and state from its place.\n * Other props, `ref` included, go to the `li`.\n */\nexport function StepperItem({ value, label, description, state, children, className, ...props }: StepperItemProps) {\n  const context = React.useContext(ItemContext)\n  const labels = useSatinLabels()\n  const id = React.useId()\n  if (!context) throw new Error('StepperItem goes inside a Stepper.')\n  const { index, count, current: currentIndex, linear, orientation, select, format } = context\n\n  const current = index === currentIndex\n  const passed = linear && currentIndex >= 0 && index < currentIndex\n  const status: Status = state ?? (passed ? 'complete' : 'upcoming')\n  // The connector after this step fills once the flow is past it.\n  const filled = status === 'complete' || passed\n  const vertical = orientation === 'vertical'\n  const said = status === 'complete' ? labels.stepCompleted : status === 'error' ? labels.stepError : undefined\n  const stateAttrs = { 'data-state': status, 'data-current': current ? '' : undefined }\n\n  const content = (\n    <>\n      <span data-slot=\"stepper-indicator\" aria-hidden {...stateAttrs}>\n        <span data-slot=\"stepper-number\">{format(index + 1)}</span>\n        <Check data-slot=\"stepper-check\" />\n        <ErrorMark />\n      </span>\n      <span className={cn('sa:flex sa:min-w-0 sa:flex-col', vertical && 'sa:pt-0.5')}>\n        <span id={`${id}-label`} data-slot=\"stepper-label\" {...stateAttrs} className=\"sa:text-base sa:leading-5 sa:font-medium\">\n          {label}\n          {said && <span className=\"sa:sr-only\">, {said}</span>}\n        </span>\n        {description != null && (\n          <span id={`${id}-description`} data-slot=\"stepper-description\" {...stateAttrs} className=\"sa:mt-0.5 sa:text-sm sa:leading-[18px]\">\n            {description}\n          </span>\n        )}\n      </span>\n    </>\n  )\n  // 4px of padding the margin takes back: room for the focus ring without moving anything.\n  const stepClass = cn('sa:relative sa:z-[1] sa:-m-1 sa:flex sa:max-w-[calc(100%+8px)] sa:min-w-0 sa:p-1 sa:text-start', vertical ? 'sa:items-start sa:gap-3' : 'sa:flex-col sa:items-start sa:gap-2')\n\n  return (\n    <li\n      data-slot=\"stepper-item\"\n      {...stateAttrs}\n      // Linear, the item is the step; otherwise its button carries aria-current.\n      aria-current={linear && current ? 'step' : undefined}\n      {...props}\n      className={cn('sa:relative sa:flex sa:min-w-0 sa:flex-col', vertical ? 'sa:pb-6 sa:last:pb-0' : 'sa:flex-1 sa:pe-4 sa:last:flex-[0_1_auto] sa:last:pe-0', className)}\n    >\n      {index < count - 1 && (\n        <span\n          data-slot=\"stepper-connector\"\n          data-orientation={orientation}\n          data-state={filled ? 'complete' : undefined}\n          aria-hidden\n          className={cn('sa:absolute', vertical ? 'sa:start-[11px] sa:top-7 sa:bottom-1 sa:w-0.5' : 'sa:start-8 sa:end-2 sa:top-[11px] sa:h-0.5')}\n        />\n      )}\n      {linear ? (\n        <div data-slot=\"stepper-step\" className={stepClass}>\n          {content}\n        </div>\n      ) : (\n        <button\n          type=\"button\"\n          data-slot=\"stepper-step\"\n          disabled={status === 'disabled'}\n          aria-current={current ? 'step' : undefined}\n          aria-labelledby={`${id}-label`}\n          aria-describedby={description != null ? `${id}-description` : undefined}\n          onClick={() => select(value)}\n          className={cn(stepClass, 'sa:cursor-pointer sa:disabled:cursor-not-allowed')}\n        >\n          {content}\n        </button>\n      )}\n      {vertical && current && children != null && <StepperContent>{children}</StepperContent>}\n    </li>\n  )\n}\n\n/**\n * Stepper: where a multi-step flow is (onboarding, checkout, an application). An ordered list of\n * steps, each a 24px circle with its number, a label and an optional description, joined by a\n * 2px connector. Steps are upcoming, current, complete (a check), error (an exclamation mark) or\n * disabled; stepper.css draws them from the tokens.\n *\n * - `linear` (the default): steps before the current one are complete unless they say\n *   otherwise, and nothing is clickable; the app moves `value` with its own Back and Next.\n * - `linear={false}`: each step is a button that sets `value`; only steps marked\n *   `state: 'complete'` are complete.\n *\n * Horizontal, the circles sit in a row with the labels under them. Below 120px a step it gives\n * way to \"Step 3 of 4\" over a Progress bar (`layout`; a container query, so it needs a width\n * from its parent, and nothing shifts after the page loads). Vertical, the circles run down the\n * start side and the current step's content (a `StepperItem`'s children) opens under its label.\n *\n * Motion: when a step completes, its connector fills over --sa-duration-base and the check fades\n * in; the content of a new current step fades and settles in. Keyboard focus moves nothing.\n *\n * The steps come as `steps` (data) or as children, one `StepperItem` each:\n *\n *   <Stepper value={step} orientation=\"vertical\" aria-label=\"Application\">\n *     <StepperItem value=\"details\" label=\"Details\" description=\"Name and contact\" />\n *     <StepperItem value=\"cv\" label=\"CV\">…the step's form…</StepperItem>\n *   </Stepper>\n *\n * `aria-label` and `aria-labelledby` name the list. Other props, `ref` included, go to the root\n * `div`.\n */\nexport interface StepperProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children' | 'onChange'> {\n  /** The steps as data. Or leave it out and write them as `StepperItem` children. */\n  steps?: StepperStep[]\n  /** The steps as elements, when one needs content under it or more than text in its label. */\n  children?: React.ReactNode\n  /** The current step's `value`. A value that matches no step leaves none current. */\n  value?: string\n  /** The current step to start on, uncontrolled. Defaults to the first. */\n  defaultValue?: string\n  /** Called with a step's `value` when it is clicked (only when `linear` is false). */\n  onValueChange?: (value: string) => void\n  /** Steps in a row with their labels under them, or down the start side with content under the current one. */\n  orientation?: 'horizontal' | 'vertical'\n  /**\n   * True: steps go in order, the ones before the current step are complete, and none is\n   * clickable. False: every step that isn't disabled is a button that makes it current.\n   */\n  linear?: boolean\n  /**\n   * `auto`: a horizontal stepper narrower than 120px a step shows \"Step 3 of 4\" over a Progress\n   * bar instead. `full` always shows the steps, `compact` always the count and bar.\n   */\n  layout?: 'auto' | 'full' | 'compact'\n  /** Names the list of steps. */\n  'aria-label'?: string\n  'aria-labelledby'?: string\n}\n\nexport function Stepper({\n  steps,\n  children,\n  value: valueProp,\n  defaultValue,\n  onValueChange,\n  orientation = 'horizontal',\n  linear = true,\n  layout = 'auto',\n  className,\n  'aria-label': ariaLabel,\n  'aria-labelledby': ariaLabelledBy,\n  ...props\n}: StepperProps) {\n  const labels = useSatinLabels()\n  const items = steps\n    ? steps.map((step) => <StepperItem key={step.value} {...step} />)\n    : (React.Children.toArray(children).filter(React.isValidElement) as React.ReactElement<StepperItemProps>[])\n  const [inner, setInner] = React.useState(() => defaultValue ?? items[0]?.props.value)\n  const value = valueProp ?? inner\n  const current = items.findIndex((item) => item.props.value === value)\n  const count = items.length\n  const vertical = orientation === 'vertical'\n  // Vertical steps fit any width, so only a horizontal stepper folds.\n  const mode = vertical && layout === 'auto' ? 'full' : layout\n\n  const [mounted, setMounted] = React.useState(false)\n  React.useEffect(() => setMounted(true), [])\n\n  const select = React.useCallback(\n    (next: string) => {\n      setInner(next)\n      onValueChange?.(next)\n    },\n    [onValueChange],\n  )\n  const numbers = React.useMemo(() => new Intl.NumberFormat(labels.dateLocale), [labels.dateLocale])\n  const format = React.useCallback((n: number) => numbers.format(n), [numbers])\n\n  const currentItem = items[current]?.props\n  const currentSaid = currentItem?.state === 'error' ? labels.stepError : undefined\n\n  return (\n    <div\n      data-slot=\"stepper\"\n      data-orientation={orientation}\n      data-layout={mode}\n      data-count={count}\n      {...props}\n      className={cn(!vertical && 'sa:w-full', className)}\n    >\n      {mode !== 'compact' && (\n        <ol\n          role=\"list\"\n          data-slot=\"stepper-list\"\n          aria-label={ariaLabel}\n          aria-labelledby={ariaLabelledBy}\n          className={cn('sa:m-0 sa:flex sa:list-none sa:p-0', vertical ? 'sa:flex-col' : 'sa:items-start')}\n        >\n          {items.map((item, index) => (\n            <ItemContext.Provider key={item.key ?? index} value={{ index, count, current, linear, orientation, select, format, mounted }}>\n              {item}\n            </ItemContext.Provider>\n          ))}\n        </ol>\n      )}\n      {mode !== 'full' && (\n        <div data-slot=\"stepper-compact\">\n          <Progress\n            value={current + 1}\n            max={count}\n            label={\n              currentItem && (\n                <>\n                  {currentItem.label}\n                  {currentSaid && <span className=\"sa:sr-only\">, {currentSaid}</span>}\n                </>\n              )\n            }\n            aria-label={currentItem ? undefined : ariaLabel}\n            formatValue={(step, total) => labels.stepOf(step, total)}\n          />\n        </div>\n      )}\n    </div>\n  )\n}\n"
+    }
+  ],
+  "docs": "Stepper docs: https://uisatin.dev/components/stepper",
+  "meta": {
+    "version": "0.7.1",
+    "edition": "free",
+    "props": {
+      "StepperItem": {
+        "description": "One step, for the Stepper's children: the place to put content under a vertical step, or a label that needs more than text (a Badge). Takes its number and state from its place. Other props, `ref` included, go to the `li`.",
+        "type": "StepperItemProps",
+        "extends": [
+          "Omit<React.ComponentProps<'li'>, 'value' | 'children'>"
+        ],
+        "props": [
+          {
+            "name": "value",
+            "type": "string",
+            "required": true,
+            "description": "Names the step; the Stepper's `value` picks the current one."
+          },
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "A line under the label: what the step asks for, or what went wrong."
+          },
+          {
+            "name": "state",
+            "type": "StepperStepState",
+            "required": false,
+            "description": "See `StepperStep.state`."
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "The step's content, shown under its label while it is the current step (vertical only)."
+          }
+        ]
+      },
+      "Stepper": {
+        "type": "StepperProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children' | 'onChange'>"
+        ],
+        "props": [
+          {
+            "name": "steps",
+            "type": "StepperStep[]",
+            "required": false,
+            "description": "The steps as data. Or leave it out and write them as `StepperItem` children."
+          },
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "The steps as elements, when one needs content under it or more than text in its label."
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "required": false,
+            "description": "The current step's `value`. A value that matches no step leaves none current."
+          },
+          {
+            "name": "defaultValue",
+            "type": "string",
+            "required": false,
+            "description": "The current step to start on, uncontrolled. Defaults to the first."
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: string) => void",
+            "required": false,
+            "description": "Called with a step's `value` when it is clicked (only when `linear` is false)."
+          },
+          {
+            "name": "orientation",
+            "type": "'horizontal' | 'vertical'",
+            "required": false,
+            "default": "'horizontal'",
+            "description": "Steps in a row with their labels under them, or down the start side with content under the current one."
+          },
+          {
+            "name": "linear",
+            "type": "boolean",
+            "required": false,
+            "default": "true",
+            "description": "True: steps go in order, the ones before the current step are complete, and none is clickable. False: every step that isn't disabled is a button that makes it current."
+          },
+          {
+            "name": "layout",
+            "type": "'auto' | 'full' | 'compact'",
+            "required": false,
+            "default": "'auto'",
+            "description": "`auto`: a horizontal stepper narrower than 120px a step shows \"Step 3 of 4\" over a Progress bar instead. `full` always shows the steps, `compact` always the count and bar."
+          },
+          {
+            "name": "aria-label",
+            "type": "string",
+            "required": false,
+            "description": "Names the list of steps."
+          },
+          {
+            "name": "aria-labelledby",
+            "type": "string",
+            "required": false
+          }
+        ]
+      }
+    }
+  }
+}

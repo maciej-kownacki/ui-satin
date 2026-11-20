@@ -9,7 +9,7 @@ import { ButtonDefaultsContext, type ButtonDefaults } from './button'
  * SplitButton.
  *
  * `attached` (the default) joins them into one block: the inner corners go square, the buttons
- * touch, and the only line between two of them is the later one's 1px leading border (the
+ * touch, and the only line between two of them is the later one's leading border (the
  * outline colour on secondary). Each button's outer ring and shadow are clipped on the sides it
  * shares, so they run unbroken along the top and bottom of the block, with no notch at a seam. The button under the
  * pointer or with focus comes to the front, so its ring and focus ring are never cut by a
@@ -91,7 +91,7 @@ export function ButtonGroupSeparator({ className, ...props }: React.ComponentPro
       className={cn(
         'shrink-0 self-center bg-border-default',
         // Vertical in a row, horizontal in a column.
-        'h-4 w-px [[data-orientation=vertical]>&]:h-px [[data-orientation=vertical]>&]:w-full',
+        'h-4 w-(--border-width-default) [[data-orientation=vertical]>&]:h-(--border-width-default) [[data-orientation=vertical]>&]:w-full',
         className,
       )}
       {...props}

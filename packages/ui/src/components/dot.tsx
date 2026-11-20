@@ -9,7 +9,7 @@ export type DotTone = 'fuchsia' | 'sky' | 'plum' | 'green'
 /**
  * Dot, 1:1 with the uiKit `Dot` set (369:6759, page dotIndicator): a 16px box with an 8px
  * indicator in the middle, in the tone's `tone/fg` colour. Solid is a filled circle; outline
- * is the same 8px circle drawn with a 1px stroke inside it, nothing in the middle.
+ * is the same 8px circle drawn with a 1px stroke inside it (border-width/strong: on 8px a thinner ring would read as a filled dot), nothing in the middle.
  *
  * With a `label` the dot is an image with that name; without one it is decorative and hidden
  * from assistive tech (pair it with visible text, as the docs ask).
@@ -20,7 +20,7 @@ const dotVariants = cva(
     variants: {
       variant: {
         solid: 'bg-tone-fg',
-        outline: 'border border-tone-fg',
+        outline: 'border border-strong border-tone-fg',
       },
     },
     defaultVariants: { variant: 'solid' },

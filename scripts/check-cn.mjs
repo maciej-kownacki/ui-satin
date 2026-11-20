@@ -22,6 +22,11 @@ const cases = [
   ['sa:text-body sa:text-text-muted', 'sa:text-body sa:text-text-muted'],
   ['sa:rounded-pill rounded-lg', 'rounded-lg'],
   ['sa:px-2.5 px-4', 'px-4'],
+  // border-strong is a width (border-width/strong), not a colour: it replaces border and stays next to a colour.
+  ['border border-strong border-border-default', 'border-strong border-border-default'],
+  ['sa:border sa:border-strong sa:border-action-primary-border', 'sa:border-strong sa:border-action-primary-border'],
+  ['border-b border-b-strong border-border-subtle', 'border-b-strong border-border-subtle'],
+  ['border-strong border', 'border'],
 ]
 
 let failed = 0

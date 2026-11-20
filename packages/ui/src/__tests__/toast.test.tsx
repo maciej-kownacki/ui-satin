@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { act, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { act, fireEvent, screen } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
-import { Toaster, toast } from '../components/toast'
+import { Toaster, toast, type ToastOptions } from '../components/toast'
 
 // toast() keeps one store for the page; empty it between tests.
 afterEach(async () => {
@@ -57,6 +57,193 @@ describe('Toast', () => {
     renderWithSatin(<Toaster />, { theme })
     act(() => {
       toast.warning('Sync paused', { description: 'Reconnect to carry on.', action: { label: 'Retry' } })
+    })
+    await expectNoAxeViolations()
+  })
+})
+
+/* ---------- countdown: on a fake clock, so the timing holds on a busy machine ---------- */
+
+const tick = (ms: number) =>
+  act(() => {
+    vi.advanceTimersByTime(ms)
+  })
+const bar = () => document.querySelector<HTMLElement>('[data-slot="toast-countdown"]')
+/** F8, as Radix listens for it: focus goes to the toasts' region. */
+const pressF8 = () => act(() => void fireEvent.keyDown(document, { key: 'F8', code: 'F8' }))
+
+/** The demo's toast: Undo for 400 ms, with its keyboard way for screen readers. */
+const rejected = (options: ToastOptions = {}) =>
+  toast('Candidate rejected', {
+    description: 'Maya Chen · Product designer',
+    action: { label: 'Undo', altText: 'Undo with Ctrl+Z' },
+    duration: 400,
+    countdown: true,
+    ...options,
+  })
+
+describe('Toast timer and countdown', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    act(() => toast.dismiss())
+    tick(600)
+    vi.useRealTimers()
+  })
+
+  it('closes a toast by itself after its duration', () => {
+    renderWithSatin(<Toaster />)
+    act(() => {
+      toast('Saved', { duration: 200 })
+    })
+    tick(199)
+    expect(screen.getByText('Saved')).toBeTruthy()
+    tick(1 + 500)
+    expect(screen.queryByText('Saved')).toBeNull()
+  })
+
+  it('draws a bar hidden from screen readers that drains over the duration', () => {
+    renderWithSatin(<Toaster />)
+    act(() => {
+      rejected()
+    })
+    const countdown = bar()
+    expect(countdown?.getAttribute('aria-hidden')).toBe('true')
+    expect(countdown?.dataset.state).toBe('running')
+    expect(countdown?.style.animationDuration).toBe('400ms')
+    expect(countdown?.style.animationPlayState).toBe('running')
+    expect(countdown?.closest('[data-slot="toast"]')).toBeTruthy()
+    // The action still tells screen readers the way to undo without the toast.
+    expect(screen.getByRole('button', { name: 'Undo' }).getAttribute('data-radix-toast-announce-alt')).toBe('Undo with Ctrl+Z')
+  })
+
+  it('draws nothing without countdown, or with no time to count', () => {
+    renderWithSatin(<Toaster />)
+    act(() => {
+      toast('Saved', { duration: 400 })
+      toast('Uploading', { duration: Infinity, countdown: true })
+    })
+    expect(bar()).toBeNull()
+  })
+
+  it('stops with the timer while focus is in the toasts, and goes on from there when it leaves', () => {
+    renderWithSatin(
+      <>
+        <button type="button">Reject</button>
+        <Toaster />
+      </>,
+      { labels: { notifications: 'Powiadomienia' } },
+    )
+    act(() => {
+      rejected()
+    })
+    tick(100)
+    pressF8()
+    expect(screen.getByRole('region', { name: /Powiadomienia/ }).contains(document.activeElement)).toBe(true)
+    expect(bar()?.dataset.state).toBe('paused')
+    expect(bar()?.style.animationPlayState).toBe('paused')
+    // Paused well past its whole duration, it's still there.
+    tick(5000)
+    expect(screen.getByText('Candidate rejected')).toBeTruthy()
+
+    act(() => screen.getByRole('button', { name: 'Reject' }).focus())
+    expect(bar()?.dataset.state).toBe('running')
+    // It goes on with the 300 ms it had left, no more, no less.
+    tick(299)
+    expect(bar()?.dataset.state).toBe('running')
+    tick(1)
+    expect(bar()?.dataset.state).toBe('expired')
+    tick(500)
+    expect(screen.queryByText('Candidate rejected')).toBeNull()
+  })
+
+  it('stops while the pointer is over the toasts', () => {
+    renderWithSatin(<Toaster />)
+    act(() => {
+      rejected()
+    })
+    const region = screen.getByRole('region').querySelector('ol') as HTMLElement
+    act(() => void fireEvent.pointerMove(screen.getByText('Candidate rejected')))
+    expect(bar()?.dataset.state).toBe('paused')
+    tick(5000)
+    expect(screen.getByText('Candidate rejected')).toBeTruthy()
+    act(() => void fireEvent.pointerLeave(region))
+    expect(bar()?.dataset.state).toBe('running')
+    tick(400)
+    expect(bar()?.dataset.state).toBe('expired')
+  })
+
+  it('stops while the window is in the background', () => {
+    renderWithSatin(<Toaster />)
+    act(() => {
+      rejected()
+    })
+    act(() => {
+      window.dispatchEvent(new Event('blur'))
+    })
+    expect(bar()?.dataset.state).toBe('paused')
+    tick(5000)
+    expect(screen.getByText('Candidate rejected')).toBeTruthy()
+    act(() => {
+      window.dispatchEvent(new Event('focus'))
+    })
+    expect(bar()?.dataset.state).toBe('running')
+  })
+
+  it('stops for good when the same toast is updated to Infinity', () => {
+    renderWithSatin(<Toaster />)
+    act(() => {
+      rejected({ id: 'reject-maya' })
+    })
+    tick(200)
+    act(() => {
+      rejected({ id: 'reject-maya', duration: Infinity })
+    })
+    expect(bar()).toBeNull()
+    tick(5000)
+    expect(screen.getByText('Candidate rejected')).toBeTruthy()
+  })
+
+  it('starts over when the same toast gets a new duration', () => {
+    renderWithSatin(<Toaster />)
+    act(() => {
+      rejected({ id: 'reject-maya' })
+    })
+    tick(300)
+    act(() => {
+      rejected({ id: 'reject-maya', duration: 500 })
+    })
+    expect(bar()?.style.animationDuration).toBe('500ms')
+    tick(499)
+    expect(bar()?.dataset.state).toBe('running')
+    tick(1)
+    expect(bar()?.dataset.state).toBe('expired')
+  })
+})
+
+describe('Toast countdown, by keyboard and on the real clock', () => {
+  it('takes Undo with Enter, in the app’s words, and leaves by it', async () => {
+    const onUndo = vi.fn()
+    const { user } = renderWithSatin(<Toaster />, { labels: { close: 'Zamknij' } })
+    act(() => {
+      rejected({ duration: 5000, action: { label: 'Undo', altText: 'Undo with Ctrl+Z', onClick: onUndo } })
+    })
+    expect(screen.getByRole('button', { name: 'Zamknij' })).toBeTruthy()
+    await user.keyboard('[F8]')
+    await user.tab()
+    await user.tab()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Undo' }))
+    await user.keyboard('{Enter}')
+    expect(onUndo).toHaveBeenCalledOnce()
+    // It left by its action, not by running out: the bar stops where it was.
+    expect(bar()?.dataset.state).toBe('paused')
+  })
+
+  it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
+    renderWithSatin(<Toaster />, { theme })
+    act(() => {
+      rejected({ duration: 5000 })
     })
     await expectNoAxeViolations()
   })

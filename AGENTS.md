@@ -42,6 +42,7 @@ Pro components import Free's from `@uisatin/ui/<name>` (and `cn` from `@uisatin/
 
 - Components take `ref` as a prop and spread the rest onto their main element; document where in the component's JSDoc ("Other props, `ref` included, go to …").
 - Words a component says on its own go through `SatinLabels` (`labels.tsx`), never as English literals.
+- Stroke widths, one rule: interactive → strong, surfaces → default. Anything you click, press, type into, toggle or drag draws its edge with `border-strong` / `var(--border-width-strong)` (1px): buttons and their rings, chips, toggles, fields, checkbox, radio. A surface or a decoration (card, popover, menu, dialog, sheet, toast, table, separator, badge, kbd) uses `border` / `var(--border-width-default)` (0.75px). Both at once: interactive wins. Never write a raw width for an edge. Focus rings, error edges and shadow offsets keep their own widths. Details: tokens/SEMANTIC.md.
 - Focus: never remove it without drawing it. Use the `--action-focus-ring` colour (solid, 3:1 on every surface): an outline 2px off for standalone controls, a 2px edge for fields. Text colours need 4.5:1 on every surface they sit on; `npm run check:contrast` checks the tokens. Known gaps live in `satin-lab/src/accessibility.ts` and on /accessibility: add one when you find it, delete it when you fix it.
 - Props for the common case, parts for composition (see `dialog.tsx`, `segmented-control.tsx`).
 - Every change to `packages/ui` that users see needs a changeset (`npm run changeset`).

@@ -4,8 +4,7 @@ import { act, screen, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin, setReducedMotion } from 'satin-test'
 import { Table, type Column } from '@uisatin/ui/table'
 import { Toaster, toast } from '@uisatin/ui/toast'
-import { BulkActionBar, parseShortcut, type BulkAction } from '../components/bulk-action-bar'
-import { toastBatch } from '../components/toast-batch'
+import { BulkActionBar, type BulkAction } from '../components/bulk-action-bar'
 
 type Deal = { id: string; company: string }
 const deals: Deal[] = [
@@ -16,12 +15,29 @@ const deals: Deal[] = [
 const columns: Column<Deal>[] = [{ key: 'company', header: 'Deal' }]
 
 /** A Table with the bar under it, wired the way the docs show. */
-function Deals({ initial = [] as string[], actions, overflow }: { initial?: string[]; actions?: BulkAction[]; overflow?: BulkAction[] }) {
+function Deals({
+  initial = [] as string[],
+  actions,
+  overflow,
+  selectAll = true,
+}: {
+  initial?: string[]
+  actions?: BulkAction[]
+  overflow?: BulkAction[]
+  selectAll?: boolean
+}) {
   const [selected, setSelected] = React.useState<string[]>(initial)
   return (
     <div>
       <Table label="Deals" columns={columns} rows={deals} selectable selected={selected} onSelectedChange={setSelected} rowLabel={(d) => d.company} />
-      <BulkActionBar count={selected.length} onClear={() => setSelected([])} actions={actions} overflow={overflow} />
+      <BulkActionBar
+        count={selected.length}
+        total={deals.length}
+        onSelectAll={selectAll ? () => setSelected(deals.map((d) => d.id)) : undefined}
+        onClear={() => setSelected([])}
+        actions={actions}
+        overflow={overflow}
+      />
     </div>
   )
 }
@@ -46,21 +62,48 @@ describe('BulkActionBar', () => {
     expect(status().textContent).toBe('2 selected')
   })
 
-  it('moves along the toolbar with the arrow keys, Home and End', async () => {
+  it('moves along the toolbar with the arrow keys, Home and End: select all, the actions, then clear', async () => {
     const actions = ['Move', 'Assign', 'Delete'].map((label) => ({ label, onSelect: () => {} }))
     const { user } = renderWithSatin(<Deals initial={['acme']} actions={actions} />)
     const bar = within(toolbar())
-    bar.getByRole('button', { name: 'Clear selection' }).focus()
+    const selectAll = bar.getByRole('checkbox', { name: 'Select all' })
+    selectAll.focus()
     await user.keyboard('{ArrowRight}')
     expect(document.activeElement).toBe(bar.getByRole('button', { name: 'Move' }))
     await user.keyboard('{ArrowRight}')
     expect(document.activeElement).toBe(bar.getByRole('button', { name: 'Assign' }))
     await user.keyboard('{End}')
-    expect(document.activeElement).toBe(bar.getByRole('button', { name: 'Delete' }))
-    await user.keyboard('{Home}')
     expect(document.activeElement).toBe(bar.getByRole('button', { name: 'Clear selection' }))
     await user.keyboard('{ArrowLeft}')
     expect(document.activeElement).toBe(bar.getByRole('button', { name: 'Delete' }))
+    await user.keyboard('{Home}')
+    expect(document.activeElement).toBe(selectAll)
+    await user.keyboard('{ArrowLeft}')
+    expect(document.activeElement).toBe(bar.getByRole('button', { name: 'Clear selection' }))
+  })
+
+  it('puts clear at the end, after a rule that follows the ⋯ menu', async () => {
+    renderWithSatin(<Deals initial={['acme']} actions={[{ label: 'Move', onSelect: () => {} }]} overflow={[{ label: 'Archive', onSelect: () => {} }]} />)
+    const slots = [...toolbar().querySelectorAll('[data-slot]')].map((el) => el.getAttribute('data-slot')).filter((s) => s?.startsWith('bulk-action-bar-') && s !== 'bulk-action-bar-number')
+    expect(slots.slice(-3)).toEqual(['bulk-action-bar-overflow', 'bulk-action-bar-separator', 'bulk-action-bar-clear'])
+  })
+
+  it('selects all from its checkbox: indeterminate while some are picked, checked when all are, and a click then clears', async () => {
+    const { user } = renderWithSatin(<Deals initial={['acme']} actions={[{ label: 'Move', onSelect: () => {} }]} />)
+    const selectAll = screen.getByRole('checkbox', { name: 'Select all' })
+    expect(selectAll.getAttribute('aria-checked')).toBe('mixed')
+    await user.click(selectAll)
+    expect(selectAll.getAttribute('aria-checked')).toBe('true')
+    expect(status().textContent).toBe('3 selected')
+    expect(screen.getByRole('checkbox', { name: 'Select Initech' }).getAttribute('aria-checked')).toBe('true')
+    await user.click(selectAll)
+    expect(toolbar().getAttribute('data-state')).toBe('closed')
+    expect(status().textContent).toBe('Selection cleared')
+  })
+
+  it('has no select-all checkbox without onSelectAll', () => {
+    renderWithSatin(<Deals initial={['acme']} selectAll={false} actions={[{ label: 'Move', onSelect: () => {} }]} />)
+    expect(within(toolbar()).queryByRole('checkbox')).toBeNull()
   })
 
   it('clears with Escape from the table, and with the clear button', async () => {
@@ -80,23 +123,21 @@ describe('BulkActionBar', () => {
     const checkbox = screen.getByRole('checkbox', { name: 'Select Initech' })
     checkbox.focus()
     await user.tab()
+    expect(document.activeElement).toBe(screen.getByRole('checkbox', { name: 'Select all' }))
+    await user.keyboard('{End}')
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Clear selection' }))
     await user.keyboard('{Enter}')
     expect(document.activeElement).toBe(checkbox)
   })
 
-  it('runs an action from its shortcut, and lists it with Kbd and aria-keyshortcuts', async () => {
+  it('shows no key hints on the actions, and keys other than Escape do nothing', async () => {
     const move = vi.fn()
-    const { user } = renderWithSatin(<Deals initial={['acme']} actions={[{ label: 'Move', shortcut: '⇧M', onSelect: move }]} />)
-    const button = screen.getByRole('button', { name: /^Move/ })
-    expect(button.getAttribute('aria-keyshortcuts')).toBe('Shift+M')
-    expect(button.querySelectorAll('kbd').length).toBe(2)
+    const { user } = renderWithSatin(<Deals initial={['acme']} actions={[{ label: 'Move', onSelect: move }]} />)
+    expect(toolbar().querySelector('kbd')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Move' }).hasAttribute('aria-keyshortcuts')).toBe(false)
     screen.getByRole('checkbox', { name: 'Select Acme Corp' }).focus()
-    await user.keyboard('{Shift>}M{/Shift}')
-    expect(move).toHaveBeenCalledOnce()
-    // Not without its modifier, and not while typing a plain key in a field.
     await user.keyboard('m')
-    expect(move).toHaveBeenCalledOnce()
+    expect(move).not.toHaveBeenCalled()
   })
 
   it('shows a Spinner while the action runs, then says it is done', async () => {
@@ -121,17 +162,18 @@ describe('BulkActionBar', () => {
     expect(archive).toHaveBeenCalledOnce()
   })
 
-  it('rolls the count when it changes, but not under reduced motion', async () => {
+  it('shows the count in a Badge and rolls it when it changes, but not under reduced motion', async () => {
     const { user } = renderWithSatin(<Deals initial={['acme']} actions={[{ label: 'Move', onSelect: () => {} }]} />)
+    expect(document.querySelector('[data-slot="bulk-action-bar-number"]')?.closest('[data-slot="badge"]')).toBeTruthy()
     await user.click(screen.getByRole('checkbox', { name: 'Select Globex' }))
-    const roll = document.querySelector('.satin-bulk-roll')
+    const roll = document.querySelector('.satin-roll')
     expect(roll?.getAttribute('data-dir')).toBe('up')
     expect(roll?.querySelector('[data-roll="out"]')?.textContent).toBe('1')
     expect(roll?.querySelector('[data-roll="in"]')?.textContent).toBe('2')
 
     setReducedMotion(true)
     await user.click(screen.getByRole('checkbox', { name: 'Select Initech' }))
-    expect(document.querySelector('.satin-bulk-roll')).toBeNull()
+    expect(document.querySelector('.satin-roll')).toBeNull()
     expect(document.querySelector('[data-slot="bulk-action-bar-number"]')?.textContent).toBe('3')
   })
 
@@ -141,10 +183,12 @@ describe('BulkActionBar', () => {
         bulkActions: 'Akcje zbiorcze',
         bulkSelected: (count, number) => <>Zaznaczono: {number}</>,
         clearSelection: 'Wyczyść zaznaczenie',
+        selectAll: 'Zaznacz wszystkie',
         moreActions: 'Więcej akcji',
       },
     })
     expect(screen.getByRole('toolbar', { name: 'Akcje zbiorcze' })).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: 'Zaznacz wszystkie' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Wyczyść zaznaczenie' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Więcej akcji' })).toBeTruthy()
     expect(status().textContent).toBe('Zaznaczono: 2')
@@ -152,7 +196,7 @@ describe('BulkActionBar', () => {
 
   it.each(['light', 'dark'] as const)('has no axe violations, shown and hidden, in %s', async (theme) => {
     const { user } = renderWithSatin(
-      <Deals initial={['acme']} actions={[{ label: 'Move', shortcut: 'M', onSelect: () => {} }, { label: 'Delete', tone: 'destructive', onSelect: () => {} }]} overflow={[{ label: 'Archive', onSelect: () => {} }]} />,
+      <Deals initial={['acme']} actions={[{ label: 'Move', onSelect: () => {} }, { label: 'Delete', tone: 'destructive', onSelect: () => {} }]} overflow={[{ label: 'Archive', onSelect: () => {} }]} />,
       { theme },
     )
     await expectNoAxeViolations()
@@ -160,80 +204,6 @@ describe('BulkActionBar', () => {
     await expectNoAxeViolations()
     await user.keyboard('{Escape}')
     await user.click(screen.getByRole('button', { name: 'Clear selection' }))
-    await expectNoAxeViolations()
-  })
-})
-
-describe('parseShortcut', () => {
-  it('reads glyphs and words', () => {
-    expect(parseShortcut('⌘⇧M')).toEqual({ meta: true, ctrl: false, shift: true, alt: false, key: 'M' })
-    expect(parseShortcut('Ctrl + Shift + K')).toEqual({ meta: false, ctrl: true, shift: true, alt: false, key: 'K' })
-    expect(parseShortcut('⌫').key).toBe('Backspace')
-  })
-})
-
-describe('toastBatch', () => {
-  const batch = () => {
-    const undo = { acme: vi.fn(), globex: vi.fn(), initech: vi.fn() }
-    const id = toastBatch({
-      title: (count) => `${count} deals moved`,
-      items: deals.map((d) => ({ id: d.id, label: d.company, undo: undo[d.id as keyof typeof undo] })),
-    })
-    return { undo, id }
-  }
-
-  it('undoes every item with the toast’s Undo', async () => {
-    const { user } = renderWithSatin(<Toaster />)
-    let undo!: ReturnType<typeof batch>['undo']
-    act(() => void (undo = batch().undo))
-    expect(screen.getByText('3 deals moved')).toBeTruthy()
-    await user.click(screen.getByRole('button', { name: 'Undo' }))
-    expect(undo.acme).toHaveBeenCalledOnce()
-    expect(undo.globex).toHaveBeenCalledOnce()
-    expect(undo.initech).toHaveBeenCalledOnce()
-  })
-
-  it('opens a list with an Undo per item; the title counts what is left', async () => {
-    const { user } = renderWithSatin(<Toaster />, { labels: { showItems: 'Pokaż', undoItem: (item) => `Cofnij ${item}`, undone: 'Cofnięto' } })
-    let undo!: ReturnType<typeof batch>['undo']
-    act(() => void (undo = batch().undo))
-    const show = screen.getByRole('button', { name: 'Pokaż' })
-    expect(show.getAttribute('aria-expanded')).toBe('false')
-    await user.click(show)
-    // The same button, still focused, now open.
-    expect(show.getAttribute('aria-expanded')).toBe('true')
-    expect(document.activeElement).toBe(show)
-    await user.click(screen.getByRole('button', { name: 'Cofnij Globex' }))
-    expect(undo.globex).toHaveBeenCalledOnce()
-    expect(undo.acme).not.toHaveBeenCalled()
-    expect(screen.getByText('2 deals moved')).toBeTruthy()
-    // The undone row keeps its button (and the focus), which now does nothing.
-    const done = screen.getByRole('button', { name: 'Globex, Cofnięto' })
-    expect(document.activeElement).toBe(done)
-    await user.click(done)
-    expect(undo.globex).toHaveBeenCalledOnce()
-  })
-
-  it('stays while its list is open, and closes after the last item is undone', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    try {
-      const { user } = renderWithSatin(<Toaster />)
-      act(() => void batch())
-      await user.click(screen.getByRole('button', { name: 'Show' }))
-      await act(async () => void vi.advanceTimersByTime(20_000))
-      expect(screen.getByText('3 deals moved')).toBeTruthy()
-      for (const name of ['Acme Corp', 'Globex', 'Initech']) await user.click(screen.getByRole('button', { name: `Undo ${name}` }))
-      await act(async () => void vi.advanceTimersByTime(600))
-      expect(screen.queryByText(/deals moved/)).toBeNull()
-    } finally {
-      vi.useRealTimers()
-    }
-  })
-
-  it.each(['light', 'dark'] as const)('has no axe violations open, in %s', async (theme) => {
-    const { user } = renderWithSatin(<Toaster />, { theme })
-    act(() => void batch())
-    await user.click(screen.getByRole('button', { name: 'Show' }))
     await expectNoAxeViolations()
   })
 })

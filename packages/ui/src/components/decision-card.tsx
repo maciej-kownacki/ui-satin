@@ -6,7 +6,6 @@ import { Check, EditPencil, NavArrowLeft, NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { Checkbox } from './checkbox'
-import { SLIDE_MS } from './sliding-indicator'
 import { useSatinLabels } from './labels'
 
 /**
@@ -25,11 +24,21 @@ import { useSatinLabels } from './labels'
  * - `draft`: the agent's text in a bubble (radius-2xl, 4px top-left); Rewrite makes it editable.
  * - `summary`: what the card collapses to once answered, with a Change action.
  *
- * Stepping between questions moves like Pagination: the new title and answers slide in 24px from
- * the side of the step (from the right going forward), the old ones slide the other way and fade
- * out a little faster, and the card eases to its new height, all 300 ms on the kit ease-out. The
- * step navigator and the footer stay put. Stepping again mid-slide carries on from where things
- * are. Under reduced motion the parts only cross-fade (150 ms) and the height snaps.
+ * Stepping between questions slides like a track: the old title and answers and the new ones sit
+ * side by side, 24px apart, and move a whole card's width to the side (the new ones in from the
+ * right going forward), the one leaving fading out; each part's box eases to the new height as
+ * they go, clipped while it moves. All of it is 360 ms on cubic-bezier(0.22, 1, 0.36, 1). The
+ * "1/3" count rolls its changed digit like an odometer (up going forward, down going back, 350
+ * ms). The navigator and the footer stay put. Stepping again mid-slide carries on from where
+ * things are. A part that reads the same on both steps (a title every step shares) stays still.
+ * Under reduced motion nothing moves: the step just changes. Moving on with Continue or Skip
+ * puts focus into the new question (its picked answer, or its first control); the step buttons
+ * keep it. The card doesn't step by itself: move `step`, `title` and the answers from
+ * `onContinue` and `onSkip`.
+ *
+ * For a step none of the types covers, pass `children`: they take the answers' place and move
+ * with the step. `footer` takes Skip and Continue's place, in the same row. Other props, `ref`
+ * included, go to the card's `div`.
  */
 
 export type DecisionOption = {
@@ -73,6 +82,14 @@ export interface DecisionCardProps
   continueLabel?: string
   /** Defaults to the `skip` label. */
   skipLabel?: string
+  /** The step navigator's previous button. Defaults to the `previousQuestion` label. */
+  previousStepLabel?: string
+  /** The step navigator's next button. Defaults to the `nextQuestion` label. */
+  nextStepLabel?: string
+  /** A body of your own, in place of the type's answers; it moves with the step. */
+  children?: React.ReactNode
+  /** Actions of your own, in place of Skip and Continue, in the footer row (not on a draft). */
+  footer?: React.ReactNode
 }
 
 export function DecisionCard({
@@ -95,6 +112,11 @@ export function DecisionCard({
   onRewrite,
   continueLabel,
   skipLabel: skipLabelProp,
+  previousStepLabel,
+  nextStepLabel,
+  children,
+  footer,
+  ref,
   ...props
 }: DecisionCardProps) {
   const labels = useSatinLabels()
@@ -118,7 +140,51 @@ export function DecisionCard({
   const cardRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef<HTMLDivElement>(null)
   const bodyRef = React.useRef<HTMLDivElement>(null)
+  const footerRef = React.useRef<HTMLDivElement>(null)
   useStepSlide(question, step, cardRef, [titleRef, bodyRef])
+
+  // Continue or Skip took the user to another question: focus goes into it (its picked answer,
+  // or the first control), so the new question is read out and answered from there. From the
+  // step buttons, focus stays on them. `inStep` remembers focus in the answers or the footer, for
+  // when the step takes that control away (a draft's footer is its own) and focus falls to the page.
+  const inStep = React.useRef(false)
+  React.useEffect(() => {
+    const card = cardRef.current
+    if (!card) return
+    const onFocusIn = (e: FocusEvent) => {
+      inStep.current = !!(footerRef.current?.contains(e.target as Node) || bodyRef.current?.contains(e.target as Node))
+    }
+    // Leaving the card clears it, but not a control the step took away: browsers send focusout
+    // for that too, so it waits until after the step's layout effects and checks the control is
+    // still on the page.
+    const onFocusOut = (e: FocusEvent) => {
+      if (card.contains(e.relatedTarget as Node | null)) return
+      const from = e.target as Node
+      queueMicrotask(() => {
+        if (from.isConnected) inStep.current = false
+      })
+    }
+    card.addEventListener('focusin', onFocusIn)
+    card.addEventListener('focusout', onFocusOut)
+    return () => {
+      card.removeEventListener('focusin', onFocusIn)
+      card.removeEventListener('focusout', onFocusOut)
+    }
+  }, [])
+  const shown = React.useRef(question)
+  React.useLayoutEffect(() => {
+    if (shown.current === question) return
+    shown.current = question
+    const active = document.activeElement
+    const lost = !active || active === document.body
+    if (!footerRef.current?.contains(active) && !(lost && inStep.current)) return
+    const body = bodyRef.current
+    const target =
+      body?.querySelector<HTMLElement>('[role="radio"][aria-checked="true"]') ??
+      [...(body?.querySelectorAll<HTMLElement>(TABBABLE) ?? [])].find((n) => n.getAttribute('role') !== 'radiogroup') ??
+      body?.querySelector<HTMLElement>('[role="radio"]:not(:disabled)')
+    target?.focus({ preventScroll: true })
+  }, [question])
 
   const card = cn(
     'flex w-[364px] max-w-full flex-col overflow-clip rounded-2xl border border-border-default bg-bg-popover',
@@ -130,7 +196,7 @@ export function DecisionCard({
     const values = asArray(value)
     const picked = values.map((v) => options.find((o) => o.value === v)?.label ?? v)
     return (
-      <div data-slot="decision-card" data-type="summary" className={card} {...props}>
+      <div ref={ref} data-slot="decision-card" data-type="summary" className={card} {...props}>
         <div className="flex items-center gap-2.5 py-2.5 ps-3 pe-2.5">
           <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-action-primary-bg text-action-primary-fg">
             <Check aria-hidden className="size-icon-size-sm [stroke-width:1.875]" />
@@ -149,12 +215,17 @@ export function DecisionCard({
     )
   }
 
+  const own = children != null
   const empty =
     type === 'radio' ? !value : type === 'checkbox' || type === 'chips' ? asArray(value).length === 0 : false
 
   return (
     <div
-      ref={cardRef}
+      ref={(node: HTMLDivElement | null) => {
+        cardRef.current = node
+        if (typeof ref === 'function') ref(node)
+        else if (ref) ref.current = node
+      }}
       role="group"
       aria-labelledby={titleId}
       data-slot="decision-card"
@@ -170,11 +241,14 @@ export function DecisionCard({
         hint={hint}
         onPreviousStep={onPreviousStep}
         onNextStep={onNextStep}
+        previousStepLabel={previousStepLabel}
+        nextStepLabel={nextStepLabel}
       />
       <div className="relative">
         <div ref={bodyRef}>
+      {own && children}
 
-      {type === 'radio' && (
+      {!own && type === 'radio' && (
         <RadioGroup.Root
           aria-labelledby={titleId}
           value={typeof value === 'string' ? value : ''}
@@ -189,7 +263,7 @@ export function DecisionCard({
         </RadioGroup.Root>
       )}
 
-      {type === 'checkbox' && (
+      {!own && type === 'checkbox' && (
         <div className="flex flex-col gap-0.5 px-2">
           {options.map((option) => {
             const checked = asArray(value).includes(option.value)
@@ -206,7 +280,7 @@ export function DecisionCard({
         </div>
       )}
 
-      {type === 'chips' && (
+      {!own && type === 'chips' && (
         <div className="flex flex-wrap gap-1.5 px-3 pb-1">
           {options.map((option) => {
             const chosen = asArray(value)
@@ -225,11 +299,11 @@ export function DecisionCard({
         </div>
       )}
 
-      {type === 'ranking' && (
+      {!own && type === 'ranking' && (
         <Ranking key={question} options={options} value={asArray(value)} onValueChange={set} labelledBy={titleId} />
       )}
 
-      {type === 'draft' && (
+      {!own && type === 'draft' && (
         <Draft
           key={question}
           title={draftTitle}
@@ -246,8 +320,13 @@ export function DecisionCard({
         </div>
       </div>
 
-      {type !== 'draft' && (
-        <div className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">
+      {type !== 'draft' && footer !== undefined && (
+        <div ref={footerRef} className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">
+          {footer}
+        </div>
+      )}
+      {type !== 'draft' && footer === undefined && (
+        <div ref={footerRef} className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">
           {onSkip && (
             <Button variant="tertiary" onClick={onSkip} className="text-text-muted">
               {skipLabel}
@@ -270,6 +349,8 @@ function Header({
   hint,
   onPreviousStep,
   onNextStep,
+  previousStepLabel,
+  nextStepLabel,
 }: {
   titleRef: React.Ref<HTMLDivElement>
   titleId: string
@@ -278,6 +359,8 @@ function Header({
   hint?: string
   onPreviousStep?: () => void
   onNextStep?: () => void
+  previousStepLabel?: string
+  nextStepLabel?: string
 }) {
   const labels = useSatinLabels()
   return (
@@ -298,20 +381,20 @@ function Header({
             size="xs"
             shape="rounded"
             iconOnly
-            aria-label={labels.previousQuestion}
+            aria-label={previousStepLabel ?? labels.previousQuestion}
             disabled={!onPreviousStep}
             onClick={onPreviousStep}
           >
             {/* Mirrored right to left, where the previous question is to the right. */}
             <NavArrowLeft aria-hidden className="rtl:-scale-x-100" />
           </Button>
-          <span aria-live="polite" className="text-sm whitespace-nowrap text-text-muted tabular-nums">{step}</span>
+          <StepCount step={step} />
           <Button
             variant="tertiary"
             size="xs"
             shape="rounded"
             iconOnly
-            aria-label={labels.nextQuestion}
+            aria-label={nextStepLabel ?? labels.nextQuestion}
             disabled={!onNextStep}
             onClick={onNextStep}
           >
@@ -323,14 +406,22 @@ function Header({
   )
 }
 
-const SLIDE_PX = 24
-const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
+// The controls a question's answers can take focus at. A radio group's root is left out: it only
+// hands focus on to its items, which it hasn't registered yet when the question is new.
+const TABBABLE = 'button:not(:disabled):not([tabindex="-1"]), input:not(:disabled):not([tabindex="-1"]), textarea:not(:disabled), [tabindex="0"]'
+
+const STEP_MS = 360
+const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
+const GAP = 24
+const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+const stepIndex = (step?: string) => (step ? parseInt(step, 10) || 0 : 0)
 
 /**
- * Slides the parts in `refs` when `key` changes, the way Pagination moves its pages: each part
- * comes in SLIDE_PX from the side of the step while a copy of how it looked slides out the other
- * way and fades, and the card eases between its old and new height. The direction comes from the
- * "2/3" step; without one it moves forward.
+ * Slides the parts in `refs` when `key` changes, as one horizontal track: a copy of how each part
+ * looked and the part itself sit side by side, GAP apart, and move a card's width plus GAP to the
+ * side together, the copy fading out and the part fading in, while the part's box (its parent)
+ * eases from the old height to the new one and clips them. The direction comes from the "2/3"
+ * step; without one it moves forward. A part that reads the same on both steps stays still.
  */
 function useStepSlide(
   key: string,
@@ -338,64 +429,125 @@ function useStepSlide(
   cardRef: React.RefObject<HTMLDivElement | null>,
   refs: React.RefObject<HTMLDivElement | null>[],
 ) {
-  const last = React.useRef<{ key: string; index: number; height: number; copies: (Node | null)[] } | null>(null)
-  const index = step ? parseInt(step, 10) || 0 : 0
+  const last = React.useRef<{ key: string; index: number; heights: number[]; copies: (Node | null)[] } | null>(null)
+  const index = stepIndex(step)
 
   React.useLayoutEffect(() => {
     const card = cardRef.current
     const prev = last.current
-    // The card's own height, not a frame of a running resize.
-    let height = card && card.getAnimations().length > 0 && prev ? prev.height : (card?.getBoundingClientRect().height ?? 0)
-    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-    if (card && prev && prev.key !== key) {
+    if (card && prev && prev.key !== key && !reducedMotion()) {
       // The next question comes in from the end side: the right, or the left in right-to-left.
       const sign = (index < prev.index ? -1 : 1) * (getComputedStyle(card).direction === 'rtl' ? -1 : 1)
-      // Under reduced motion the parts only cross-fade, quicker, and the card snaps to its height.
-      const dx = reduce ? 0 : SLIDE_PX
-      const timing: KeyframeAnimationOptions = { duration: reduce ? 150 : SLIDE_MS, easing: EASE }
+      const distance = card.clientWidth + GAP
+      const timing: KeyframeAnimationOptions = { duration: STEP_MS, easing: EASE }
       refs.forEach((ref, i) => {
         const el = ref.current
+        const host = el?.parentElement
         const copy = prev.copies[i] as HTMLElement | null
-        if (!el) return
-        // Stepping again mid-slide: the copy leaves from where the part was, not from rest.
+        if (!el || !host) return
+        // The same on both steps (a title every step shares): it stays still.
+        if (copy?.isEqualNode(el)) return
+        // Stepping again mid-slide: everything goes on from where it is now, not from rest.
         const midway = el.getAnimations().length > 0
-        const from = midway ? getComputedStyle(el) : null
-        const start: Keyframe = { transform: from?.transform && from.transform !== 'none' ? from.transform : 'none', opacity: from ? Number(from.opacity) : 1 }
-        el.getAnimations().forEach((a) => a.cancel())
-        el.parentElement?.querySelectorAll(':scope > [data-step-copy]').forEach((n) => n.remove())
-        el.animate([{ transform: `translateX(${sign * dx}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], timing)
-        const host = el.parentElement
-        if (!copy || !host) return
-        copy.setAttribute('data-step-copy', '')
-        copy.setAttribute('aria-hidden', 'true')
-        copy.setAttribute('inert', '')
-        copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'))
-        copy.style.cssText += ';position:absolute;top:0;left:0;right:0;pointer-events:none'
-        host.appendChild(copy)
-        copy
-          .animate([start, { transform: `translateX(${-sign * dx}px)`, opacity: 0 }], {
-            ...timing,
-            duration: (timing.duration as number) * 0.6,
-          })
-          .finished.then(
-            () => copy.remove(),
-            () => copy.remove(),
-          )
+        const now = midway ? getComputedStyle(el) : null
+        const start: Keyframe = {
+          transform: now && now.transform !== 'none' ? now.transform : 'translate3d(0, 0, 0)',
+          opacity: now ? Number(now.opacity) : 1,
+        }
+        const fromHeight = host.getAnimations().length > 0 ? host.getBoundingClientRect().height : prev.heights[i]
+        for (const n of [el, host]) n.getAnimations().forEach((a) => a.cancel())
+        host.querySelectorAll(':scope > [data-step-copy]').forEach((n) => n.remove())
+        const toHeight = el.offsetHeight
+
+        host.style.overflow = 'clip'
+        const slide = el.animate(
+          [{ transform: `translate3d(${sign * distance}px, 0, 0)`, opacity: 0 }, { transform: 'translate3d(0, 0, 0)', opacity: 1 }],
+          timing,
+        )
+        if (Math.abs(fromHeight - toHeight) > 0.5) host.animate([{ height: `${fromHeight}px` }, { height: `${toHeight}px` }], timing)
+        if (copy) {
+          copy.setAttribute('data-step-copy', '')
+          copy.setAttribute('aria-hidden', 'true')
+          copy.setAttribute('inert', '')
+          copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'))
+          copy.style.cssText += ';position:absolute;top:0;left:0;right:0;pointer-events:none'
+          host.appendChild(copy)
+          copy.animate([start, { transform: `translate3d(${-sign * distance}px, 0, 0)`, opacity: 0 }], timing)
+        }
+        // Done: the copy goes and the box stops clipping. Cut short by another step: that one takes over.
+        slide.finished.then(
+          () => {
+            copy?.remove()
+            host.style.overflow = ''
+          },
+          () => {},
+        )
       })
-      // Mid-resize, the card goes on from the height it shows now.
-      const running = card.getAnimations().length > 0
-      const fromHeight = running ? card.getBoundingClientRect().height : prev.height
-      card.getAnimations().forEach((a) => a.cancel())
-      const toHeight = card.getBoundingClientRect().height
-      height = toHeight
-      if (!reduce && Math.abs(fromHeight - toHeight) > 0.5) {
-        card.animate([{ height: `${fromHeight}px` }, { height: `${toHeight}px` }], timing)
-      }
     }
 
-    last.current = { key, index, height, copies: refs.map((r) => r.current?.cloneNode(true) ?? null) }
+    // Each part's own height, which no running animation changes.
+    last.current = { key, index, heights: refs.map((r) => r.current?.offsetHeight ?? 0), copies: refs.map((r) => r.current?.cloneNode(true) ?? null) }
   })
+}
+
+const ROLL_MS = 350
+const ROLL_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)'
+
+/**
+ * The "1/3" count. Its changed digits roll like an odometer, in a box one line high: up going
+ * forward, down going back. Screen readers get the plain count from a polite live region.
+ */
+function StepCount({ step }: { step: string }) {
+  const last = React.useRef(step)
+  const round = React.useRef(0)
+  const [roll, setRoll] = React.useState<{ from: string; up: boolean; key: number } | null>(null)
+  React.useLayoutEffect(() => {
+    const from = last.current
+    if (from === step) return
+    last.current = step
+    setRoll(reducedMotion() ? null : { from, up: stepIndex(step) >= stepIndex(from), key: ++round.current })
+  }, [step])
+
+  // Right-aligned, so units stay over units when a digit is gained or lost.
+  const width = Math.max(step.length, roll?.from.length ?? 0)
+  const to = step.padStart(width, ' ')
+  const from = (roll?.from ?? step).padStart(width, ' ')
+  const cell = (ch: string) => (ch === ' ' ? '' : ch)
+  return (
+    <span className="text-sm whitespace-nowrap text-text-muted tabular-nums">
+      <span aria-live="polite" className="sr-only">
+        {step}
+      </span>
+      <span aria-hidden className="inline-flex">
+        {[...to].map((ch, i) =>
+          roll && from[i] !== ch ? (
+            <span key={`${roll.key}-${i}`} className="inline-flex h-lh flex-col overflow-hidden">
+              <span
+                className="flex flex-col"
+                ref={(column) => {
+                  if (!column || column.dataset.rolled) return
+                  column.dataset.rolled = ''
+                  const end = roll.up ? 'translateY(-50%)' : 'translateY(0)'
+                  column
+                    .animate([{ transform: roll.up ? 'translateY(0)' : 'translateY(-50%)' }, { transform: end }], { duration: ROLL_MS, easing: ROLL_EASE })
+                    .finished.then(
+                      () => setRoll((r) => (r?.key === roll.key ? null : r)),
+                      () => {},
+                    )
+                }}
+              >
+                <span className="h-lh">{cell(roll.up ? from[i] : ch)}</span>
+                <span className="h-lh">{cell(roll.up ? ch : from[i])}</span>
+              </span>
+            </span>
+          ) : ch === ' ' ? null : (
+            <span key={i}>{ch}</span>
+          ),
+        )}
+      </span>
+    </span>
+  )
 }
 
 /** `decisionItem` (3092:61608): 4px padding, radius-md, action/secondary fill on hover. */
@@ -418,7 +570,7 @@ function RadioRow({ option }: { option: DecisionOption }) {
         id={id}
         value={option.value}
         className={cn(
-          'flex size-4 shrink-0 items-center justify-center rounded-full border border-border-strong bg-bg-field outline-none',
+          'flex size-4 shrink-0 items-center justify-center rounded-full border border-strong border-border-strong bg-bg-field outline-none',
           '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
           'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
           'data-[state=checked]:border-action-primary-bg data-[state=checked]:bg-action-primary-bg data-[state=checked]:[box-shadow:none]',
@@ -472,7 +624,7 @@ function DecisionChip({
       disabled={disabled}
       onClick={() => onPressedChange(!selected)}
       className={cn(
-        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-pill border ps-2 pe-2.5 text-base font-medium outline-none select-none',
+        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-pill border border-strong ps-2 pe-2.5 text-base font-medium outline-none select-none',
         'transition-[background-color,border-color,color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out) active:scale-[0.97]',
         '[&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
         'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
@@ -573,7 +725,7 @@ function Ranking({
               onPointerCancel={onPointerUp}
               onKeyDown={(e) => onKeyDown(e, i)}
               className={cn(
-                'group/rank flex cursor-grab touch-none items-center gap-2 rounded-lg border border-border-default bg-bg-popover py-2 ps-2 pe-2.5 outline-none select-none',
+                'group/rank flex cursor-grab touch-none items-center gap-2 rounded-lg border border-strong border-border-default bg-bg-popover py-2 ps-2 pe-2.5 outline-none select-none',
                 'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
                 'hover:border-border-strong focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
                 'data-dragging:cursor-grabbing data-dragging:border-border-strong',
@@ -656,7 +808,7 @@ function Draft({
       <div className="px-3 pb-1">
         <div
           className={cn(
-            'flex flex-col gap-2 rounded-2xl rounded-ss-[4px] border border-border-default bg-bg-popover px-3 py-2.5 text-base text-text-default',
+            'flex flex-col gap-2 rounded-2xl rounded-ss-[4px] border border-strong border-border-default bg-bg-popover px-3 py-2.5 text-base text-text-default',
             '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             'transition-[box-shadow,border-color] duration-(--duration-fast) ease-(--ease-out)',
             'has-[textarea:focus-visible]:border-border-focus has-[textarea:focus-visible]:[box-shadow:0_0_0_1px_var(--border-focus)]',

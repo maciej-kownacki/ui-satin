@@ -60,7 +60,7 @@
   max-width: calc(100% - 16px);
   overflow: hidden;
   transform: translateY(-50%);
-  box-shadow: 0 0 0 1px var(--tone-border);
+  box-shadow: 0 0 0 var(--border-width-default) var(--tone-border);
 }
 /* The tetris mark plays in the label's tone: its pieces in tone/fg, its empty grid in tone/border. */
 .satin-agent-presence-label .satin-tetris {

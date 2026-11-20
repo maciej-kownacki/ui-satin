@@ -106,6 +106,19 @@ export const defaultLabels = {
   thinking: 'Thinking…',
   thought: 'Thought',
   thoughtForAMoment: 'Thought for a moment',
+  /** ToolCall's statuses, in its header and its accessible name. */
+  toolCallPending: 'Pending',
+  toolCallRunning: 'Running',
+  toolCallDone: 'Done',
+  toolCallFailed: 'Failed',
+  toolCallCancelled: 'Cancelled',
+  /** ToolCall's sections. */
+  toolCallInput: 'Input',
+  toolCallOutput: 'Output',
+  toolCallRetry: 'Retry',
+  /** Under a ToolCall input or output cut short: "Show all 48 lines". */
+  toolCallShowAll: (count: number) => `Show all ${count} lines`,
+  toolCallShowLess: 'Show less',
   newAgent: 'New agent',
   chooseAgent: 'Choose an agent',
   writeMessage: 'Write a message',
@@ -117,6 +130,13 @@ export const defaultLabels = {
   selectItem: 'Select',
   dictate: 'Dictate',
   stopDictation: 'Stop dictation',
+  /** PromptBar's @ menu: its name, and the header over its rows. */
+  mentions: 'Mentions',
+  /** Read out while PromptBar's @ or / menu is open: "3 suggestions". */
+  suggestionsCount: (count: number) => (count === 1 ? '1 suggestion' : `${count} suggestions`),
+  /** Read out when a token goes into or out of the prompt: "@Tara Mendes added". */
+  tokenAdded: (token: string) => `${token} added`,
+  tokenRemoved: (token: string) => `${token} removed`,
   sending: 'Sending',
   delivered: 'Delivered',
   share: 'Share',
@@ -132,13 +152,33 @@ export const defaultLabels = {
   browseFiles: 'Browse files',
   typeNotSupported: 'Type not supported',
   uploadFailed: 'Upload failed',
+  /** Under Combobox's create row when `onCreate` fails; picking the row again retries. */
+  createFailed: 'Couldn’t create it. Try again.',
   waiting: 'Waiting…',
   cookieConsent: 'Cookie consent',
   cookieNotice: "We use essential cookies to run this site. With your OK, we'd also use optional ones to remember settings and learn what helps.",
   acceptAll: 'Accept all',
   rejectAll: 'Reject all',
   customize: 'Customize',
+  /** TimePicker and DateTimePicker. Times are written in `dateLocale`, 12- or 24-hour as it writes them. */
+  time: 'Time',
+  showTimes: 'Show times',
+  pickDateTime: 'Pick a date and time',
+  /** The field's format hint, read out with it: the example is a time written in `dateLocale`. */
+  timeHint: (example: string) => `Type a time like ${example}`,
+  /** Shown when the typed text isn't a time. */
+  timeInvalid: (example: string) => `Enter a time like ${example}`,
+  /** Shown when the typed time is outside min and max, or disabled. */
+  timeUnavailable: (time: string) => `${time} isn’t available`,
   dateLocale: 'en-US',
+  /** The date pickers' preset list, and the words of `datePresets`. */
+  presets: 'Presets',
+  presetToday: 'Today',
+  presetTomorrow: 'Tomorrow',
+  presetNextWeek: 'Next week',
+  presetLast7Days: 'Last 7 days',
+  presetLast30Days: 'Last 30 days',
+  presetThisQuarter: 'This quarter',
   removeItem: (name: string) => `Remove ${name}`,
   cancelItem: (name: string) => `Cancel ${name}`,
   changeItem: (name: string) => `Change ${name}`,
@@ -158,6 +198,8 @@ export const defaultLabels = {
   /** Read out when InputOTP's suggestion appears. */
   codeReceived: (code: string) => `Code ${code} received`,
   noResultsFor: (query: string) => `No results for “${query}”`,
+  /** Combobox's create row (`creatable`), which it also names: "Create “Figma”". */
+  createOption: (query: string) => `Create “${query}”`,
   selectRow: (row: number) => `Select row ${row}`,
   selectNamedRow: (name: string) => `Select ${name}`,
   /** The scroll region around a sideways-scrolling Table, named after the table when it has a label. */
@@ -167,6 +209,11 @@ export const defaultLabels = {
   chartPoints: (title: string, count: number) => `${title}, ${count} ${count === 1 ? 'point' : 'points'}`,
   /** Read out after a ranking row moves. */
   positionOf: (item: string, position: number, count: number) => `${item}, position ${position} of ${count}`,
+  /** A narrow Stepper's count, shown and read out: "Step 3 of 4". */
+  stepOf: (step: number, count: number) => `Step ${step} of ${count}`,
+  /** After a Stepper step's label, for screen readers: "Details, Completed". */
+  stepCompleted: 'Completed',
+  stepError: 'Error',
   page: (page: number) => `Page ${page}`,
   /** "Page 5 of 12". `page` can be an element (Pagination's animated number). */
   pageOf: (page: React.ReactNode, count: number): React.ReactNode => (

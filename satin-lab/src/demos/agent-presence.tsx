@@ -6,6 +6,7 @@ import { Separator } from '@uisatin/ui/separator'
 import { StreamingText } from '@uisatin/ui/streaming-text'
 import { Table, type Column } from '@uisatin/ui/table'
 import { AgentPresence, useAgentPresence, type AgentPresenceList } from '@uisatin/pro/agent-presence'
+import { KanbanBoard, KanbanCard, moveKanbanItem, type KanbanColumn } from '@uisatin/pro/kanban-board'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 type Invite = 'none' | 'sent' | 'accepted'
@@ -102,18 +103,16 @@ function code(v: Record<string, string>) {
   const conflict = v.conflict === 'on'
   const item = kanban ? 'card' : 'row'
   const list = kanban
-    ? `      {/* Each card is a target: spread item(id) on it. A card that moves column is followed. */}
-      <div className="grid grid-cols-3 gap-3">
-        {['none', 'sent', 'accepted'].map((invite) => (
-          <section key={invite} aria-label={inviteLabel[invite]} className="flex flex-col gap-2">
-            {candidates
-              .filter((c) => c.invite === invite)
-              .map((c) => (
-                <Card key={c.id} size="sm" title={c.name} description={c.role} {...presence.item(c.id)} />
-              ))}
-          </section>
-        ))}
-      </div>`
+    ? `      {/* KanbanBoard: spread item(id) on each KanbanCard. A card that moves column is followed. */}
+      <KanbanBoard
+        aria-label="Invites"
+        columns={columns}
+        items={items}
+        getItemId={(c) => c.id}
+        getItemLabel={(c) => c.name}
+        onMove={(id, column, index) => setItems((all) => moveKanbanItem(all, (c) => c.id, id, column, index))}
+        renderCard={(c) => <KanbanCard title={c.name} meta={c.role} {...presence.item(c.id)} />}
+      />`
     : `      {/* Table rows: Table's renderRow puts the data attribute on each <tr>. */}
       <Table
         label="Candidates"
@@ -134,11 +133,17 @@ function code(v: Record<string, string>) {
         await editingEnds(c.id)
       }`
     : ''
-  return `import { AgentPresence, useAgentPresence } from '@uisatin/pro/agent-presence'
-${kanban ? "import { Card } from '@uisatin/ui/card'" : "import { Table } from '@uisatin/ui/table'"}
+  return `${kanban ? "import * as React from 'react'\n" : ''}import { AgentPresence, useAgentPresence } from '@uisatin/pro/agent-presence'
+${kanban ? "import { KanbanBoard, KanbanCard, moveKanbanItem } from '@uisatin/pro/kanban-board'" : "import { Table } from '@uisatin/ui/table'"}
 
-export function Invites({ candidates }: { candidates: Candidate[] }) {
-  const presence = useAgentPresence()
+${
+  kanban
+    ? `export function Invites({ byInvite }: { byInvite: Record<string, Candidate[]> }) {
+  const [items, setItems] = React.useState(byInvite)
+  const presence = useAgentPresence()`
+    : `export function Invites({ candidates }: { candidates: Candidate[] }) {
+  const presence = useAgentPresence()`
+}
 
   async function sendInvites(picked: Candidate[]) {
     for (const c of picked) {${conflictStep}
@@ -150,7 +155,7 @@ export function Invites({ candidates }: { candidates: Candidate[] }) {
       const email = await draftInvite(c, slot)
       presence.start(c.id, c.name, 'Sending…')
       await send(email)
-      await setInvite(c.id, 'sent')
+      ${kanban ? "setItems((all) => moveKanbanItem(all, (x) => x.id, c.id, 'sent', all.sent.length))" : "await setInvite(c.id, 'sent')"}
       presence.done() // green with a check; the next start() takes it on${kanban ? ', and it follows the card to Invite sent' : ''}
     }
   }
@@ -171,49 +176,40 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   code: code(v),
 }))
 
-/** Compact: the name and, once picked, the time; then the role. */
-function CandidateCard({ c, ...props }: { c: Candidate } & React.ComponentProps<typeof Card>) {
-  return (
-    <Card size="sm" className="w-full" {...props}>
-      <div className="flex flex-col gap-0.5 text-sm">
-        <div className="flex items-center justify-between gap-2">
-          <span className="truncate font-medium text-text-default">{c.name}</span>
-          {c.slot && <span className="shrink-0 text-text-muted tabular-nums">{c.slot.short}</span>}
-        </div>
-        <span className="truncate text-text-muted">{c.role}</span>
-      </div>
-    </Card>
-  )
-}
+const BOARD_COLUMNS: KanbanColumn[] = [
+  { id: 'none', title: INVITE.none.label },
+  { id: 'sent', title: INVITE.sent.label, tone: 'sky' },
+  { id: 'accepted', title: INVITE.accepted.label, tone: 'green' },
+]
+const byInvite = (all: Candidate[]) => Object.fromEntries(INVITES.map((s) => [s, all.filter((c) => c.invite === s)]))
+const fromBoard = (items: Record<string, Candidate[]>) => INVITES.flatMap((s) => items[s].map((c) => ({ ...c, invite: s })))
 
-/** The most cards a column holds: the three to invite, before and after. */
-const ROOM = 3
-
-/** The board: a column per invite status, the candidates in it as cards. */
-function Board({ candidates, item }: { candidates: Candidate[]; item: AgentPresenceList['item'] }) {
+/**
+ * Satin Pro's Kanban board, a column per invite status. Its height is set, so a column filling
+ * up never moves the email under it. A person can move cards too, by drag or the ⋯ menu.
+ */
+function Board({
+  candidates,
+  setCandidates,
+  item,
+}: {
+  candidates: Candidate[]
+  setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
+  item: AgentPresenceList['item']
+}) {
   return (
-    <div className="grid grid-cols-3 gap-3">
-      {INVITES.map((invite) => {
-        const inColumn = candidates.filter((c) => c.invite === invite)
-        return (
-          <section key={invite} aria-label={INVITE[invite].label} className="flex min-w-0 flex-col gap-2 rounded-xl bg-bg-muted p-2">
-            <div className="flex items-center gap-2 px-1 pt-0.5">
-              <Badge size="sm" tone={INVITE[invite].tone}>
-                {INVITE[invite].label}
-              </Badge>
-              <span className="text-sm text-text-muted tabular-nums">{inColumn.length}</span>
-            </div>
-            {inColumn.map((c) => (
-              <CandidateCard key={c.id} c={c} {...item(c.id)} />
-            ))}
-            {/* Room for the rest, unseen: the board keeps its height as cards move, so the email under it stays put. */}
-            {Array.from({ length: ROOM - inColumn.length }, (_, i) => (
-              <CandidateCard key={`room-${i}`} c={CANDIDATES[0]} className="invisible w-full" aria-hidden />
-            ))}
-          </section>
-        )
-      })}
-    </div>
+    <KanbanBoard
+      aria-label="Invites"
+      className="h-[288px]"
+      columnWidth={205}
+      columns={BOARD_COLUMNS}
+      items={byInvite(candidates)}
+      getItemId={(c) => c.id}
+      getItemLabel={(c) => c.name}
+      onMove={(id, column, index) => setCandidates((all) => fromBoard(moveKanbanItem(byInvite(all), (c) => c.id, id, column, index)))}
+      undoToast={false}
+      renderCard={(c) => <KanbanCard title={c.name} meta={c.role} {...item(c.id)} />}
+    />
   )
 }
 
@@ -331,7 +327,7 @@ function Preview({ v }: { v: Record<string, string> }) {
       </div>
       <div className="relative">
         {v.target === 'kanban' ? (
-          <Board candidates={candidates} item={presence.item} />
+          <Board candidates={candidates} setCandidates={setCandidates} item={presence.item} />
         ) : (
           <Table
             label="Candidates"

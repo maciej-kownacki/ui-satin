@@ -8,7 +8,7 @@ import { useSatinLabels } from './labels'
 
 /**
  * CodeBlock, 1:1 with the uiKit `CodeBlock` set (3179:20414) and its `CodeLine` rows
- * (3124:20131): a card-surface block, 1px border-default, radius-2xl, 12px bottom padding.
+ * (3124:20131): a card-surface block, a border-default edge, radius-2xl, 12px bottom padding.
  * The header holds the file icon, the filename (medium 13/18), diff stats in a diff, and a
  * tertiary xs Copy button that reads "Copied" with a check for 1.5 s. Lines are Geist Mono
  * 13/19.5, 24 high, 16px side padding, a 20px right-aligned number column 16px from the
@@ -20,6 +20,10 @@ import { useSatinLabels } from './labels'
  * `code` is plain text. In `view="diff"` each line starts with "+", "-" or a space, like a
  * unified diff. Highlighting is a small JS/TS tokenizer: keyword, string, function, parameter
  * and variable, in the `code/*` colours.
+ *
+ * The code scrolls sideways in a focusable region named "<filename> code" (`codeRegion`).
+ * `aria-label` and `aria-labelledby` name that region instead, where they mean something: give
+ * each block its own name when a page shows several with the same file name.
  *
  * The `code/*` variables exist only in Figma so far, not in theme.css, so each colour is
  * `var(--code-…, <Figma light value>)` with the Figma dark value under `dark:`. Once the
@@ -156,6 +160,8 @@ export function CodeBlock({
   highlightLines = [],
   highlight = true,
   className,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
   ...props
 }: CodeBlockProps) {
   const labels = useSatinLabels()
@@ -221,7 +227,8 @@ export function CodeBlock({
         dir="ltr"
         tabIndex={0}
         role="region"
-        aria-label={labels.codeRegion(filename)}
+        aria-label={ariaLabelledBy ? undefined : (ariaLabel ?? labels.codeRegion(filename))}
+        aria-labelledby={ariaLabelledBy}
         className={cn(
           'outline-none focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
           'overflow-x-auto font-mono text-sm leading-(--text-sm--line-height) font-normal tracking-normal',

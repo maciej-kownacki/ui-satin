@@ -7,6 +7,7 @@ import { cn } from '../lib/utils'
 import { Button } from './button'
 import { KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
 import { defaultLabels, useSatinLabels, type SatinLabelSet } from './labels'
+import { toPromptValue, usePromptMentions, type PromptCommand, type PromptMentions, type PromptValue } from './prompt-mentions'
 
 /**
  * PromptBar, 1:1 with the uiKit `PromptBar` set (3158:21803), its input row
@@ -26,6 +27,12 @@ import { defaultLabels, useSatinLabels, type SatinLabelSet } from './labels'
  * select opens the models list (241px, right-aligned); the trigger shows its pressed fill.
  * Dictation toggles to the primary button with a three-bar wave that moves while it records.
  * Enter sends, Shift+Enter adds a line.
+ *
+ * `mentions` and `commands` add @mentions and /commands to the field (see prompt-mentions.tsx):
+ * a menu across the bar while one is typed, and tokens in the text. `value` can then be a
+ * `PromptValue` (`{ text, mentions, command }`), and `onValueChange` and `onSubmit` report one.
+ *
+ * Other props, `ref` included, go to the `form`.
  */
 export interface PromptBarModel {
   value: string
@@ -44,12 +51,17 @@ export interface PromptBarAction {
   onSelect?: () => void
 }
 
-export interface PromptBarProps extends Omit<React.ComponentProps<'form'>, 'onSubmit'> {
+export interface PromptBarProps extends Omit<React.ComponentProps<'form'>, 'onSubmit' | 'defaultValue'> {
   shape?: 'pill' | 'default'
-  /** The text. Pass it with onValueChange to control it. */
-  value?: string
-  defaultValue?: string
-  onValueChange?: (value: string) => void
+  /**
+   * The text. Pass it with onValueChange to control it. With `mentions` or `commands`, pass the
+   * `PromptValue` that onValueChange reports to keep its tokens (a string keeps them too, while it
+   * matches).
+   */
+  value?: string | PromptValue
+  defaultValue?: string | PromptValue
+  /** The text, and the same as a `PromptValue` with its mentions and command. */
+  onValueChange?: (value: string, detail: PromptValue) => void
   /** Defaults to the `writeMessage` label. */
   placeholder?: string
   /** Files shown as chips above the field; people can remove them before sending. */
@@ -68,7 +80,15 @@ export interface PromptBarProps extends Omit<React.ComponentProps<'form'>, 'onSu
   onAddAgent?: () => void
   onDictationChange?: (recording: boolean) => void
   disabled?: boolean
-  onSubmit?: (value: string, attachments: File[]) => void
+  /**
+   * The trimmed text, the files, and the message as a `PromptValue`. A message whose command has
+   * `run` goes to `run` instead.
+   */
+  onSubmit?: (value: string, attachments: File[], detail: PromptValue) => void
+  /** `@` (or `trigger`) opens a menu of what `search` returns; a pick goes into the text as a token. */
+  mentions?: PromptMentions
+  /** `/` opens a menu of these; a pick goes into the text as a token, and Send runs it. */
+  commands?: PromptCommand[]
 }
 
 /** Upload a file and Web search, in the words of `labels`. */
@@ -108,13 +128,29 @@ export function PromptBar({
   onDictationChange,
   disabled = false,
   onSubmit,
+  mentions,
+  commands,
   className,
+  ref,
   ...props
 }: PromptBarProps) {
   const labels = useSatinLabels()
   const actions = React.useMemo(() => actionsProp ?? actionsIn(labels), [actionsProp, labels])
-  const [innerValue, setInnerValue] = React.useState(defaultValue)
-  const value = valueProp ?? innerValue
+  const trigger = mentions?.trigger ?? '@'
+  const [innerValue, setInnerValue] = React.useState(() => toPromptValue(defaultValue, trigger))
+  // A string `value` keeps the tokens PromptBar holds, as long as their text is still there.
+  const prompt = React.useMemo(
+    () =>
+      valueProp == null
+        ? innerValue
+        : typeof valueProp === 'string'
+          ? valueProp === innerValue.text
+            ? innerValue
+            : toPromptValue({ ...innerValue, text: valueProp }, trigger)
+          : toPromptValue(valueProp, trigger),
+    [valueProp, innerValue, trigger],
+  )
+  const value = prompt.text
   const [files, setFiles] = React.useState<File[]>(attachmentsProp ?? [])
   React.useEffect(() => setFiles(attachmentsProp ?? []), [attachmentsProp])
   const [model, setModel] = React.useState(modelProp ?? models?.[0]?.value ?? '')
@@ -128,10 +164,19 @@ export function PromptBar({
   const [expanded, setExpanded] = React.useState(false)
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
   const fileRef = React.useRef<HTMLInputElement>(null)
+  const formRef = React.useRef<HTMLFormElement>(null)
+  const setFormRef = React.useCallback(
+    (node: HTMLFormElement | null) => {
+      formRef.current = node
+      if (typeof ref === 'function') ref(node)
+      else if (ref) ref.current = node
+    },
+    [ref],
+  )
 
-  const setValue = (next: string) => {
+  const setValue = (next: PromptValue) => {
     setInnerValue(next)
-    onValueChange?.(next)
+    onValueChange?.(next.text, next)
   }
   const setAttachments = (next: File[]) => {
     setFiles(next)
@@ -154,12 +199,52 @@ export function PromptBar({
     else if (h > 28) setExpanded(true)
   }, [value, expanded])
 
+  // The menu opens above the whole bar, as the + menu does.
+  const tokens = usePromptMentions({
+    textareaRef,
+    anchorRef: formRef,
+    value: prompt,
+    onValueChange: setValue,
+    mentions,
+    commands,
+    disabled,
+  })
+
   const submit = () => {
     if (!canSend) return
-    onSubmit?.(value.trim(), files)
-    setValue('')
+    const sent = trimmed(prompt)
+    const command = sent.command && commands?.find((c) => c.name === sent.command!.name)
+    if (command?.run) command.run({ args: sent.command!.args, value: sent, attachments: files })
+    else onSubmit?.(sent.text, files, sent)
+    setValue({ text: '', mentions: [] })
     setAttachments([])
   }
+
+  const field = (
+    <textarea
+      ref={textareaRef}
+      rows={1}
+      value={value}
+      disabled={disabled}
+      placeholder={placeholder ?? labels.writeMessage}
+      aria-label={labels.message}
+      {...tokens.textareaProps}
+      onKeyDown={(e) => {
+        tokens.textareaProps.onKeyDown(e)
+        if (e.defaultPrevented) return
+        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+          e.preventDefault()
+          submit()
+        }
+      }}
+      className={cn(
+        'block h-7 resize-none bg-transparent py-[3.5px] text-base leading-[21px] text-text-default',
+        tokens.overlay ? 'relative w-full' : cn('min-w-0 flex-1', expanded && 'order-first basis-full'),
+        expanded && 'px-1',
+        'outline-none placeholder:text-text-muted focus-visible:ring-0 disabled:cursor-not-allowed',
+      )}
+    />
+  )
 
   const runAction = (action: PromptBarAction) => {
     setAddOpen(false)
@@ -171,6 +256,7 @@ export function PromptBar({
     <Popover.Root open={addOpen} onOpenChange={setAddOpen}>
       <Popover.Anchor asChild>
         <form
+          ref={setFormRef}
           data-slot="prompt-bar"
           data-shape={shape}
           data-filled={value.length > 0 || undefined}
@@ -180,7 +266,7 @@ export function PromptBar({
             submit()
           }}
           className={cn(
-            'flex w-full flex-col gap-2 border border-border-default bg-bg-field p-2 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
+            'flex w-full flex-col gap-2 border border-strong border-border-default bg-bg-field p-2 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             'transition-[border-color,border-radius] duration-(--duration-fast) ease-(--ease-out)',
             'data-filled:border-border-strong',
             // Focus: a 2px border/focus edge, as on every field.
@@ -235,26 +321,16 @@ export function PromptBar({
               </Button>
             </Popover.Trigger>
 
-            <textarea
-              ref={textareaRef}
-              rows={1}
-              value={value}
-              disabled={disabled}
-              placeholder={placeholder ?? labels.writeMessage}
-              aria-label={labels.message}
-              onChange={(e) => setValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                  e.preventDefault()
-                  submit()
-                }
-              }}
-              className={cn(
-                'block h-7 min-w-0 flex-1 resize-none bg-transparent py-[3.5px] text-base leading-[21px] text-text-default',
-                expanded && 'order-first basis-full px-1',
-                'outline-none placeholder:text-text-muted focus-visible:ring-0 disabled:cursor-not-allowed',
-              )}
-            />
+            {tokens.overlay ? (
+              // With mentions or commands the field sits on the tokens' fills, in a box of its own.
+              <div className={cn('relative min-w-0 flex-1', expanded && 'order-first basis-full')}>
+                {tokens.overlay}
+                {field}
+              </div>
+            ) : (
+              field
+            )}
+            {tokens.menu}
 
             <div className={cn('flex shrink-0 items-center gap-1', expanded && 'contents')}>
               <ModelSelect
@@ -301,6 +377,15 @@ export function PromptBar({
       </Popover.Portal>
     </Popover.Root>
   )
+}
+
+/** The value as sent: the text trimmed, the tokens moved with it. */
+function trimmed(v: PromptValue): PromptValue {
+  const lead = v.text.length - v.text.trimStart().length
+  const text = v.text.trim()
+  const move = <T extends { start: number; end: number }>(t: T): T => ({ ...t, start: t.start - lead, end: t.end - lead })
+  const mentions = v.mentions.map(move)
+  return v.command ? { text, mentions, command: move(v.command) } : { text, mentions }
 }
 
 /* ---------- add to conversation ---------- */
@@ -364,7 +449,7 @@ function AddMenu({
           <Plus />
         </Button>
       </div>
-      <div aria-hidden className="h-px bg-border-subtle" />
+      <div aria-hidden className="h-(--border-width-default) bg-border-subtle" />
       <div id={`${id}-list`} role="listbox" aria-label={labels.agentsAndTools} className="flex flex-col p-1">
         {shown.map((a, i) => (
           <div
@@ -561,7 +646,7 @@ function AttachmentChip({
     <span
       data-slot="attachment"
       className={cn(
-        'flex h-control-height items-center gap-1.5 border border-border-default bg-bg-popover ps-2 pe-0.5',
+        'flex h-control-height items-center gap-1.5 border border-strong border-border-default bg-bg-popover ps-2 pe-0.5',
         '[filter:drop-shadow(0_1px_1px_var(--effect-shadow-xs))]',
         'transition-[background-color,border-color] duration-(--duration-fast) ease-(--ease-out)',
         'hover:border-border-strong hover:bg-bg-canvas active:border-border-strong active:bg-bg-muted',

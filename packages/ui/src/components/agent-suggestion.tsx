@@ -12,8 +12,8 @@ import { useSatinLabels } from './labels'
  * something the agent has prepared and the user only approves — an email, a reply, a meeting,
  * tasks, an insight, an edit or a CRM update.
  *
- * A bg/popover card (lighter than the page in Dark, like DecisionCard and Message), border/default,
- * radius-xl, shadow-sm, 12px in and 12px between its parts:
+ * A bg/card card (as in the uiKit: in Dark it sits below the popover fill, so cards and buttons
+ * inside it read lighter), border/subtle, radius-xl, shadow-sm, 12px in and 12px between its parts:
  *
  * - the kind row: what it is, as a neutral Large Outline Badge (white, border/default) with a 14px icon
  *   or app logo (`kind`, `icon`), and on the right who or what it concerns (`meta`: avatars, a
@@ -25,7 +25,8 @@ import { useSatinLabels } from './labels'
  *
  * The parts below cover the usual bodies: `AgentSuggestionQuote` (the message being answered),
  * `AgentSuggestionMetric` (a number against a limit), `AgentSuggestionDiff` (old text → new) and
- * `AgentSuggestionChanges` (fields from → to).
+ * `AgentSuggestionChanges` (fields from → to). `AgentSuggestionChangeValue` is one change's from → to,
+ * for a row of your own.
  */
 export interface AgentSuggestionProps extends Omit<React.ComponentProps<'section'>, 'title'> {
   /** What kind of suggestion: "Email suggestion", "Next steps", "CRM update". */
@@ -57,7 +58,7 @@ export function AgentSuggestion({
       data-slot="agent-suggestion"
       aria-labelledby={title ? titleId : undefined}
       className={cn(
-        'flex w-full max-w-[400px] flex-col gap-3 rounded-xl border border-border-default bg-bg-popover p-3 text-text-default [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+        'flex w-full max-w-[400px] flex-col gap-3 rounded-xl border border-border-subtle bg-bg-card p-3 text-text-default [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
         className,
       )}
       {...props}
@@ -68,7 +69,7 @@ export function AgentSuggestion({
             size="lg"
             tone="neutral"
             variant="outline"
-            // The card's own fill behind the edge: outline's bg/card would sit darker than the card in Dark.
+            // No fill of its own: only the edge, with the card behind it, as in the uiKit.
             className="max-w-full bg-transparent [&_img]:size-3.5 [&_img]:shrink-0"
           >
             {icon}
@@ -187,17 +188,32 @@ export function AgentSuggestionChanges({ changes, className }: { changes: AgentS
       {changes.map((c, i) => (
         <div key={i} className="flex min-h-[21px] items-center gap-2">
           <dt className="w-[88px] shrink-0 text-text-muted">{c.field}</dt>
-          <dd className="m-0 flex min-w-0 items-center gap-2">
-            {c.from != null && (
-              <>
-                <del className="text-text-muted">{c.from}</del>
-                <ArrowRight aria-hidden className="size-4 shrink-0 text-text-subtle [stroke-width:1.875] rtl:-scale-x-100" />
-              </>
-            )}
-            {typeof c.to === 'string' ? <span className="font-medium text-text-default">{c.to}</span> : c.to}
+          <dd className="m-0 flex min-w-0">
+            <AgentSuggestionChangeValue from={c.from} to={c.to} />
           </dd>
         </div>
       ))}
     </dl>
+  )
+}
+
+export interface AgentSuggestionChangeValueProps extends Omit<React.ComponentProps<'span'>, 'children'>, Pick<AgentSuggestionChange, 'from' | 'to'> {}
+
+/**
+ * One change's value as AgentSuggestionChanges draws it: the old value struck through, an arrow
+ * and the new one. For a row of your own (one with its own controls). Other props, `ref`
+ * included, go to its `span`.
+ */
+export function AgentSuggestionChangeValue({ from, to, className, ...props }: AgentSuggestionChangeValueProps) {
+  return (
+    <span data-slot="agent-suggestion-change-value" className={cn('flex min-w-0 items-center gap-2', className)} {...props}>
+      {from != null && (
+        <>
+          <del className="text-text-muted">{from}</del>
+          <ArrowRight aria-hidden className="size-4 shrink-0 text-text-subtle [stroke-width:1.875] rtl:-scale-x-100" />
+        </>
+      )}
+      {typeof to === 'string' ? <span className="font-medium text-text-default">{to}</span> : to}
+    </span>
   )
 }

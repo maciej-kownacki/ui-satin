@@ -13,7 +13,7 @@ trackPointerModality()
 /**
  * ContextMenu, 1:1 with the uiKit design (🆕 context menu & hover card): DropdownMenu's surface
  * and rows, opened by right-click (or a long press) on its target, at the pointer. 255 wide, 4px
- * in, rows 0 apart, separators a 1px bg/muted rule. Shortcuts on the right as Kbd; a submenu row
+ * in, rows 0 apart, separators a bg/muted rule. Shortcuts on the right as Kbd; a submenu row
  * ends in a text/muted chevron (the kit's `showSubmenu`) and opens beside it, 4px off; destructive
  * rows are action/destructive/fg (red-400 in dark), icon included, and go last.
  *
@@ -137,5 +137,5 @@ export function ContextMenuSub({ label, icon, children, disabled, className, ...
 
 /** A 1px bg/muted rule between groups of rows. */
 export function ContextMenuSeparator({ className }: { className?: string }) {
-  return <ContextPrimitive.Separator className={cn('-mx-1 my-1 h-px bg-bg-muted', className)} />
+  return <ContextPrimitive.Separator className={cn('-mx-1 my-1 h-(--border-width-default) bg-bg-muted', className)} />
 }

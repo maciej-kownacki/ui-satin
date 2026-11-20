@@ -12,7 +12,7 @@
   width: 16px;
   height: 16px;
   padding: 0;
-  border: 1px solid var(--border-strong);
+  border: var(--border-width-strong) solid var(--border-strong);
   border-radius: 9999px;
   background: var(--bg-field);
   color: var(--action-primary-fg);

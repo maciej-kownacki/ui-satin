@@ -91,6 +91,293 @@
       ]
     }
   },
+  "activity-timeline": {
+    "ActivityTimelineTime": {
+      "description": "A `<time>`: relative today (\"5 min. ago\"), the clock time before that, kept current by the shared clock. Screen readers hear the full date and time instead. Other props, `ref` included, go to the `time` element.",
+      "type": "ActivityTimelineTimeProps",
+      "extends": [
+        "Omit<React.ComponentProps<'time'>, 'children' | 'dateTime'>"
+      ],
+      "props": [
+        {
+          "name": "at",
+          "type": "ActivityItem['at']",
+          "required": true
+        },
+        {
+          "name": "withDate",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Past today, show the date before the clock time (for a timeline not grouped by day)."
+        }
+      ]
+    },
+    "ActivityTimelineRoot": {
+      "description": "The timeline's root on its own: Revert, its toast, and the fade of new entries for the parts inside.",
+      "type": "ActivityTimelineRootProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "onRevert",
+          "type": "(item: ActivityItem) => unknown",
+          "required": false,
+          "description": "Reverts an entry. Return a promise and the button spins until it settles; once it resolves the entry shows as reverted and a toast offers Undo. A rejection puts the button back."
+        },
+        {
+          "name": "onUndoRevert",
+          "type": "(item: ActivityItem) => unknown",
+          "required": false,
+          "description": "Undoes a revert, from the toast's Undo. Without it the toast has no Undo."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Shows skeleton rows (ActivityTimeline) and marks the region busy."
+        }
+      ]
+    },
+    "ActivityTimelineList": {
+      "description": "An ordered list of entries and runs, newest first. Name it (`aria-label`) when no day names it. Other props, `ref` included, go to the `ol`.",
+      "type": "ActivityTimelineListProps",
+      "extends": [
+        "React.ComponentProps<'ol'>"
+      ],
+      "props": []
+    },
+    "ActivityTimelineDay": {
+      "description": "A day: its name, then its entries in a list named after it. Other props, `ref` included, go to the `ol`.",
+      "type": "ActivityTimelineDayProps",
+      "extends": [
+        "Omit<React.ComponentProps<'ol'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "day",
+          "type": "Date | React.ReactNode",
+          "required": true,
+          "description": "The day: a Date (named \"Today\", \"Yesterday\" or by its date) or your own words."
+        }
+      ]
+    },
+    "ActivityTimelineEntry": {
+      "description": "One entry: the actor on the rail, the sentence, the time, the changes and Revert. Inside an ActivityTimelineRoot it can be reverted. Other props, `ref` included, go to the `li`.",
+      "type": "ActivityTimelineEntryProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "item",
+          "type": "ActivityItem",
+          "required": true
+        },
+        {
+          "name": "withDate",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Past today, write the date before the time (for a timeline not grouped by day)."
+        }
+      ]
+    },
+    "ActivityTimelineRun": {
+      "description": "Several entries by one actor folded into one row: \"Agent made 6 changes\", a button that opens onto them (their own list, opening in height). Other props, `ref` included, go to the `li`.",
+      "type": "ActivityTimelineRunProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "actor",
+          "type": "ActivityActor",
+          "required": true,
+          "description": "Whose run it is: their avatar on the rail and their name in the summary."
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": true,
+          "description": "How many entries are folded."
+        },
+        {
+          "name": "at",
+          "type": "ActivityItem['at']",
+          "required": true,
+          "description": "The newest entry's time, beside the summary."
+        },
+        {
+          "name": "withDate",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Past today, write the date before the time."
+        },
+        {
+          "name": "summary",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "In place of \"Agent made 6 changes\"."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The run's entries (ActivityTimelineEntry), shown when it opens."
+        }
+      ]
+    },
+    "ActivityTimeline": {
+      "description": "A record's history from `items`, newest first: a list under its name for each day, runs of one actor folded, Revert with a toast and Undo. The root is a group named \"Activity\" (`activity` in SatinLabels); pass `aria-labelledby` when a heading of yours names it. Other props, `ref` included, go to the root `div`.",
+      "type": "ActivityTimelineProps",
+      "extends": [
+        "Omit<ActivityTimelineRootProps, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "items",
+          "type": "ActivityItem[]",
+          "required": true,
+          "description": "The entries, in any order: the timeline shows the newest first."
+        },
+        {
+          "name": "groupBy",
+          "type": "ActivityGroupBy",
+          "required": false,
+          "default": "'day'",
+          "description": "A list under its name for each day, or one list."
+        },
+        {
+          "name": "collapseRuns",
+          "type": "number | false",
+          "required": false,
+          "default": "3",
+          "description": "Runs of this many entries or more by one actor fold into one row; `false` never folds."
+        },
+        {
+          "name": "expanded",
+          "type": "string[]",
+          "required": false,
+          "description": "The open runs, by the id of any entry in them."
+        },
+        {
+          "name": "defaultExpanded",
+          "type": "string[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(expanded: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "empty",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown when there are no items. Defaults to \"No activity yet\"."
+        }
+      ]
+    }
+  },
+  "agent-changes-review": {
+    "ReviewableChanges": {
+      "description": "One change per step of a DecisionCard; see above. Other props, `ref` included, go to the card's `div`.",
+      "type": "ReviewableChangesProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title' | 'defaultValue' | 'onChange' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "changes",
+          "type": "ReviewableChange[]",
+          "required": true,
+          "description": "The fields the agent wants to change, as AgentSuggestionChanges takes them; add an `id` to each to key `value` by it."
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "The suggestion, in the header: \"Update the Quanta deal\". Without it, each change's field is the title."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "description": "A muted line under the title: \"Based on today's call\"."
+        },
+        {
+          "name": "value",
+          "type": "ReviewableChangesValue",
+          "required": false,
+          "description": "Each change's decision, by id (controlled). A change left out is pending."
+        },
+        {
+          "name": "defaultValue",
+          "type": "ReviewableChangesValue",
+          "required": false,
+          "description": "The decisions to start from (uncontrolled). Everything is pending without it."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: ReviewableChangesValue) => void",
+          "required": false,
+          "description": "Called with every decision whenever one changes."
+        },
+        {
+          "name": "defaultStep",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The change to open on, by its place in `changes`. Defaults to the first."
+        },
+        {
+          "name": "onApply",
+          "type": "(accepted: ReviewableChange[], value: ReviewableChangesValue) => unknown",
+          "required": false,
+          "description": "The review is done: gets the accepted changes only, in their order, and every decision. Not called when none is accepted. Return a promise to hold the `applying` stage until it settles; if it rejects, review starts again."
+        },
+        {
+          "name": "onApplied",
+          "type": "(accepted: ReviewableChange[], value: ReviewableChangesValue) => void",
+          "required": false,
+          "description": "Called once the accepted changes are applied (or none was) and the card has left: remove it here (it stays faded out until you do). Gets what `onApply` got."
+        },
+        {
+          "name": "returnFocus",
+          "type": "() => HTMLElement | null | undefined",
+          "required": false,
+          "description": "Where focus goes when the card leaves with focus inside it: the record it updated, the next suggestion. Without it, or when it gives nothing, focus goes to the page's body."
+        },
+        {
+          "name": "status",
+          "type": "ReviewableChangesStatus",
+          "required": false,
+          "description": "Holds the stage yourself; without it, it follows `onApply`."
+        }
+      ]
+    }
+  },
   "agent-loading": {
     "TetrisStill": {
       "description": "The tetris mark at rest, every dot filled: the finished header's mark.",
@@ -195,6 +482,163 @@
           "required": false,
           "default": "'color'",
           "description": "The light that crosses the tetris mark and its label as rows clear: glimm's prism, or neutral."
+        }
+      ]
+    }
+  },
+  "agent-permissions": {
+    "AgentPermissionRoot": {
+      "description": "The card and its state; the parts go inside. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPermissionRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "agent",
+          "type": "AgentPermissionAgent",
+          "required": true,
+          "description": "Who asks: a name, or an Agent picker agent (`{ name, initials, tone, avatar }`)."
+        },
+        {
+          "name": "scopes",
+          "type": "AgentPermissionScope[]",
+          "required": true,
+          "description": "What it asks for, one row each: `{ resource, actions, detail }`."
+        },
+        {
+          "name": "status",
+          "type": "AgentPermissionStatus",
+          "required": false,
+          "description": "Where the request stands. Set it to control it; Allow, Don't allow, Remove access and Change move it."
+        },
+        {
+          "name": "defaultStatus",
+          "type": "AgentPermissionStatus",
+          "required": false,
+          "default": "'request'",
+          "description": "The status to start from when it isn't controlled."
+        },
+        {
+          "name": "onStatusChange",
+          "type": "(status: AgentPermissionStatus) => void",
+          "required": false
+        },
+        {
+          "name": "mode",
+          "type": "AgentPermissionMode",
+          "required": false,
+          "description": "How it was allowed, for the summary. Allow sets it on its own; pass it with a controlled `status` of `allowed` (a permission loaded from the server)."
+        },
+        {
+          "name": "value",
+          "type": "string[]",
+          "required": false,
+          "description": "The ticked scopes' ids (`id`, or `resource`)."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string[]",
+          "required": false,
+          "description": "The ticked scopes to start from. Defaults to every scope."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "onAllow",
+          "type": "(mode: AgentPermissionMode, scopes: AgentPermissionScope[]) => unknown",
+          "required": false,
+          "description": "Allow once (`once`) or Always allow (`always`), with the ticked scopes. Return a promise and the button shows a Spinner until it settles; if it rejects, the request stays."
+        },
+        {
+          "name": "onDeny",
+          "type": "() => unknown",
+          "required": false,
+          "description": "Don't allow. A promise works as for `onAllow`."
+        },
+        {
+          "name": "onRevoke",
+          "type": "() => unknown",
+          "required": false,
+          "description": "Shows Remove access on an allowed summary, which calls it. A promise works as for `onAllow`."
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "required": false,
+          "description": "Focus Don't allow, the safest answer, when the request appears. Defaults to true inside a Dialog and false elsewhere, so a request arriving in a chat never takes the keys from someone typing."
+        }
+      ]
+    },
+    "AgentPermissionHeader": {
+      "description": "The agent's avatar and \"<agent> wants to:\", with why it asks under them. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPermissionHeaderProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Why it asks, in a sentence: \"To screen this week's applicants for Product Designer.\""
+        }
+      ]
+    },
+    "AgentPermissionScopeList": {
+      "description": "The scopes as a list, one row each, kept apart by space rather than rules. Without children it lists `scopes`. Other props, `ref` included, go to the `ul`.",
+      "type": "AgentPermissionScopeListProps",
+      "extends": [
+        "React.ComponentProps<'ul'>"
+      ],
+      "props": []
+    },
+    "AgentPermissionScope": {
+      "description": "One scope: its verb as an icon, its title and detail, and a Checkbox. The whole row is the Checkbox's label. Other props, `ref` included, go to the `li`.",
+      "type": "AgentPermissionScopeProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "scope",
+          "type": "AgentPermissionScope",
+          "required": true,
+          "description": "The scope this row asks for. Its tick is the `value` entry under its id."
+        }
+      ]
+    },
+    "AgentPermissionFooter": {
+      "description": "The answers: Don't allow, then Allow once with Always allow in its menu. While some scopes are unticked, how many are left sits on the other side. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPermissionFooterProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "AgentPermissionSummary": {
+      "description": "The answered request on one row: who and the answer, what it covers, and Remove access or Change. The Root shows it in place of its children once the status isn't `request`. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPermissionSummaryProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "AgentPermissionRequest": {
+      "description": "The request from props: the header, the scopes and the answers, folding to its summary once answered. Other props, `ref` included, go to the card's `div`.",
+      "type": "AgentPermissionRequestProps",
+      "extends": [
+        "Omit<AgentPermissionRootProps, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Why it asks, in a sentence under the title."
         }
       ]
     }
@@ -361,6 +805,138 @@
           "type": "16 | 20",
           "required": false,
           "default": "16"
+        }
+      ]
+    }
+  },
+  "agent-plan": {
+    "AgentPlanRoot": {
+      "description": "The card and its state; the parts go inside. Other props, `ref` included, go to the card's `div`.",
+      "type": "AgentPlanRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title' | 'onChange' | 'defaultValue'>"
+      ],
+      "props": [
+        {
+          "name": "steps",
+          "type": "AgentPlanStep[]",
+          "required": false,
+          "description": "The steps, in order (controlled)."
+        },
+        {
+          "name": "defaultSteps",
+          "type": "AgentPlanStep[]",
+          "required": false,
+          "description": "The steps to start from (uncontrolled)."
+        },
+        {
+          "name": "onStepsChange",
+          "type": "(steps: AgentPlanStep[]) => void",
+          "required": false,
+          "description": "Called with every step after a rename, a move, a removal, or a skip."
+        },
+        {
+          "name": "status",
+          "type": "AgentPlanStatus",
+          "required": false,
+          "default": "'draft'",
+          "description": "`draft` while the person edits the plan; `running`, `failed` and `done` show it read-only."
+        },
+        {
+          "name": "currentStep",
+          "type": "string",
+          "required": false,
+          "description": "The id of the step running, or the one that failed. Steps before it are done."
+        },
+        {
+          "name": "onRun",
+          "type": "(steps: AgentPlanStep[]) => void",
+          "required": false,
+          "description": "Run plan was pressed: run these steps (all but the skipped ones), in this order."
+        },
+        {
+          "name": "onStop",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Stop while the plan runs or waits at a failed step."
+        },
+        {
+          "name": "onRetry",
+          "type": "(step: AgentPlanStep) => void",
+          "required": false,
+          "description": "Shows Retry under the failed step."
+        },
+        {
+          "name": "onSkip",
+          "type": "(step: AgentPlanStep) => void",
+          "required": false,
+          "description": "Shows Skip under the failed step. The step is marked `skipped` first, through `onStepsChange`."
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Why the current step failed, under it."
+        },
+        {
+          "name": "indicator",
+          "type": "AgentLoadingIndicator",
+          "required": false,
+          "default": "'tetris'",
+          "description": "The current step's mark, as on AgentLoading."
+        },
+        {
+          "name": "glimmer",
+          "type": "Glimmer",
+          "required": false,
+          "default": "'color'",
+          "description": "The light across the tetris mark and the label, as on AgentLoading."
+        }
+      ]
+    },
+    "AgentPlanHeader": {
+      "description": "The title; it names the plan. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPlanHeaderProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What the plan is for, e.g. \"Schedule interviews for 3 shortlisted candidates\". Defaults to the `agentPlan` label (\"Plan\")."
+        }
+      ]
+    },
+    "AgentPlanSteps": {
+      "description": "The steps as an ordered list: editable rows in a draft, Thinking's steps on a rail once the plan runs. Other props, `ref` included, go to the `div` around the list.",
+      "type": "AgentPlanStepsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "AgentPlanActions": {
+      "description": "Run plan in a draft (disabled while no step is left in), Stop while it runs or waits at a failed step (with `onStop`). Children go before the button. Nothing shows once it's done, unless you pass children. Other props, `ref` included, go to its `div`.",
+      "type": "AgentPlanActionsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "AgentPlan": {
+      "description": "The plan from props: the title, the steps, and Run plan or Stop. Other props, `ref` included, go to the card's `div`.",
+      "type": "AgentPlanProps",
+      "extends": [
+        "AgentPlanRootProps"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What the plan is for, e.g. \"Schedule interviews for 3 shortlisted candidates\". Defaults to the `agentPlan` label (\"Plan\")."
         }
       ]
     }
@@ -597,6 +1173,151 @@
           "required": false
         }
       ]
+    },
+    "AgentSuggestionChangeValue": {
+      "description": "One change's value as AgentSuggestionChanges draws it: the old value struck through, an arrow and the new one. For a row of your own (one with its own controls). Other props, `ref` included, go to its `span`.",
+      "type": "AgentSuggestionChangeValueProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>",
+        "Pick<AgentSuggestionChange, 'from' | 'to'>"
+      ],
+      "props": []
+    }
+  },
+  "agent-undo-log": {
+    "AgentActionLogRoot": {
+      "description": "The log on its own: the state, ⌘Z and the list. `AgentActionLogRun`s go inside.",
+      "type": "AgentActionLogRootProps",
+      "extends": [
+        "React.ComponentProps<'section'>"
+      ],
+      "props": [
+        {
+          "name": "runs",
+          "type": "AgentRun[]",
+          "required": true,
+          "description": "The runs, in the order shown: newest first, usually."
+        },
+        {
+          "name": "onRevert",
+          "type": "(action: AgentAction, run: AgentRun) => unknown",
+          "required": true,
+          "description": "Reverts one action. Return a promise: the button shows a Spinner until it settles, and a rejection marks the row as failed, with Try again."
+        },
+        {
+          "name": "onRevertRun",
+          "type": "(run: AgentRun, actions: AgentAction[]) => unknown",
+          "required": false,
+          "description": "Reverts what is left of a run in one go (one request), for Revert run and ⌘Z. Gets the actions still in effect, newest first. Without it, `onRevert` runs for each, newest first."
+        },
+        {
+          "name": "onRestore",
+          "type": "(actions: AgentAction[], run: AgentRun) => unknown",
+          "required": false,
+          "description": "Puts reverted actions back: the toast's Undo, and Restore on a reverted row or run. Without it the toast has no Undo and a reverted row just says Reverted."
+        },
+        {
+          "name": "reverted",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the reverted actions, controlled."
+        },
+        {
+          "name": "defaultReverted",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the actions already reverted when the log mounts."
+        },
+        {
+          "name": "onRevertedChange",
+          "type": "(reverted: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "expanded",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the open runs, controlled."
+        },
+        {
+          "name": "defaultExpanded",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the runs open when the log mounts. Default: the first run."
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(expanded: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "shortcut",
+          "type": "'document' | 'log' | 'off'",
+          "required": false,
+          "default": "'document'",
+          "description": "Where ⌘Z (Ctrl+Z off Apple) reverts the newest run: anywhere on the page (`document`, the default), only while focus is in the log (`log`), or nowhere (`off`)."
+        },
+        {
+          "name": "formatTime",
+          "type": "(at: Date) => React.ReactNode",
+          "required": false,
+          "description": "Writes a time. Default: the time of day, with the date when it isn't today, in `dateLocale`."
+        }
+      ]
+    },
+    "AgentActionLogRun": {
+      "description": "One run: a header that opens onto its actions, on a rail, with Revert run (or Restore run once it's all reverted). Other props, `ref` included, go to its `li`.",
+      "type": "AgentActionLogRunProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "run",
+          "type": "AgentRun",
+          "required": true
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The rows. Default: an `AgentActionLogAction` for each of the run's actions."
+        }
+      ]
+    },
+    "AgentActionLogAction": {
+      "description": "One action on one line: its icon, what it did, its target in mono, +added −removed, and a Revert icon button (then Restore or a check; Try again after a failure). One that can't be reverted shows a lock there and says why under it. Other props, `ref` included, go to its `li`.",
+      "type": "AgentActionLogActionProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "action",
+          "type": "AgentAction",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "AgentActionState",
+          "required": false,
+          "description": "Sets the row's state yourself, for a log you drive. Default: the log's."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "More under the action: a link to the diff, a note."
+        }
+      ]
+    },
+    "AgentActionLog": {
+      "description": "The log from `runs`: each run's header and its actions, Revert on each, Revert run and ⌘Z for the newest. Other props, `ref` included, go to the `section`.",
+      "type": "AgentActionLogProps",
+      "extends": [
+        "Omit<AgentActionLogRootProps, 'children'>"
+      ],
+      "props": []
     }
   },
   "alert": {
@@ -1096,7 +1817,19 @@
           "name": "onClear",
           "type": "() => void",
           "required": true,
-          "description": "Empties the selection: the clear button and Escape call it."
+          "description": "Empties the selection: the clear button, Escape and the checkbox (when all are selected) call it."
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "required": false,
+          "description": "How many items there are in all, so the checkbox knows when all of them are selected."
+        },
+        {
+          "name": "onSelectAll",
+          "type": "() => void",
+          "required": false,
+          "description": "Selects every item. With it, the bar starts with a select-all Checkbox."
         },
         {
           "name": "position",
@@ -1114,15 +1847,22 @@
       ]
     },
     "BulkActionBarCount": {
-      "description": "\"3 selected\" with the clear button. Other props, `ref` included, go to its `div`.",
+      "description": "The select-all Checkbox (when the root has `onSelectAll`) and \"[3] selected\", the number in a grey Badge. Other props, `ref` included, go to its `div`.",
       "type": "BulkActionBarCountProps",
       "extends": [
         "React.ComponentProps<'div'>"
       ],
       "props": []
     },
+    "BulkActionBarClear": {
+      "description": "The clear button (×), at the end of the bar. Other props, `ref` included, go to the Button.",
+      "extends": [
+        "Omit<React.ComponentProps<typeof Button>, 'children' | 'iconOnly' | 'asChild'>"
+      ],
+      "props": []
+    },
     "BulkActionBarSeparator": {
-      "description": "A thin rule between the count and the actions. Other props, `ref` included, go to its `div`.",
+      "description": "A thin rule between the count and the actions, and before the clear button. Other props, `ref` included, go to its `div`.",
       "extends": [
         "React.ComponentProps<'div'>"
       ],
@@ -1153,7 +1893,7 @@
       ]
     },
     "BulkActionBar": {
-      "description": "The bar from props: the count and clear, a rule, a button per action, then the ⋯ menu. Other props, `ref` included, go to the toolbar element.",
+      "description": "The bar from props: the checkbox and the count, a rule, a button per action, the ⋯ menu, then a rule and the clear button. Other props, `ref` included, go to the toolbar element.",
       "type": "BulkActionBarProps",
       "extends": [
         "Omit<BulkActionBarRootProps, 'children'>"
@@ -1281,7 +2021,7 @@
   },
   "chart": {
     "ChartCard": {
-      "description": "The card every chart sits in: bg/card, 1px border-default, radius-2xl, 16px in and 16 between rows. Row one: the title (16/24 medium, text/default) and, when there are `periods`, a small Select for the period at the right. Row two: the KPI (text/xl semibold) with its change badge, and the range under it in text/muted, 2px apart; without a KPI the range sits 4px under the title. Then the chart. The card is a size container, so a chart can lay itself out wider from 560px (`@min-[560px]:`).",
+      "description": "The card every chart sits in: bg/card, a border-default edge, radius-2xl, 16px in and 16 between rows. Row one: the title (16/24 medium, text/default) and, when there are `periods`, a small Select for the period at the right. Row two: the KPI (text/xl semibold) with its change badge, and the range under it in text/muted, 2px apart; without a KPI the range sits 4px under the title. Then the chart. The card is a size container, so a chart can lay itself out wider from 560px (`@min-[560px]:`).",
       "extends": [
         "Omit<ChartCardBaseProps, 'data' | 'formatValue' | 'highlight'>"
       ],
@@ -1577,8 +2317,9 @@
       "props": [
         {
           "name": "options",
-          "type": "SelectOption[]",
-          "required": true
+          "type": "SelectOption[] | SelectGroup[]",
+          "required": true,
+          "description": "Options, or titled groups of options."
         },
         {
           "name": "value",
@@ -1629,6 +2370,50 @@
           "description": "Shown when nothing matches the query. Defaults to the `noResults` label."
         },
         {
+          "name": "filter",
+          "type": "boolean | ((option: SelectOption, query: string) => boolean)",
+          "required": false,
+          "default": "true",
+          "description": "How typing narrows the list: by label and description (`true`), by your own test, or not at all (`false`), when the app searches and passes the results as `options`."
+        },
+        {
+          "name": "onQueryChange",
+          "type": "(query: string) => void",
+          "required": false,
+          "description": "The query as it's typed, and '' when the list opens again: for searching on the app's side."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The app is searching: a Spinner in place of the search icon, `aria-busy` on the list."
+        },
+        {
+          "name": "loadingText",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown in place of `emptyText` while `loading` and nothing is listed. Defaults to the `loading` label."
+        },
+        {
+          "name": "selectedOptions",
+          "type": "SelectOption[]",
+          "required": false,
+          "description": "The picks as options, for picks `options` doesn't hold right now (search results change with the query). The field takes a pick's label and icon from here first."
+        },
+        {
+          "name": "renderOption",
+          "type": "(option: SelectOption, state: { selected: boolean }) => React.ReactNode",
+          "required": false,
+          "description": "Draws a row's content in place of the default label, description, icon and check."
+        },
+        {
+          "name": "renderValue",
+          "type": "(picked: SelectOption[], api: { remove: (value: string) => void; disabled: boolean }) => React.ReactNode",
+          "required": false,
+          "description": "Draws the picks in the field in place of the chips (`multiple`) or the picked label. `remove` drops one pick."
+        },
+        {
           "name": "applyLabel",
           "type": "string",
           "required": false,
@@ -1645,6 +2430,18 @@
           "type": "string",
           "required": false,
           "description": "Defaults to the `clear` label."
+        },
+        {
+          "name": "creatable",
+          "type": "boolean | { label?: (query: string) => React.ReactNode }",
+          "required": false,
+          "description": "Offer a `Create \"…\"` row at the end of the list while the query matches no option exactly. `label` words the row (default: the `createOption` label, which also names it for screen readers)."
+        },
+        {
+          "name": "onCreate",
+          "type": "(query: string) => SelectOption | Promise<SelectOption>",
+          "required": false,
+          "description": "Makes the option for a query from the create row (trimmed). Return it, or a promise of it: the row shows a Spinner until it settles, and a rejection (or a throw) shows the `createFailed` label under the row. The option is added to the list and picked; it stays while the Combobox is mounted, so add it to `options` to keep it. Left out, the option is `{ value: query, label: query }`."
         },
         {
           "name": "label",
@@ -1810,6 +2607,109 @@
           "name": "className",
           "type": "string",
           "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "required": false,
+          "description": "The search text. Pass it with onQueryChange to control it; it is emptied each time the menu closes."
+        },
+        {
+          "name": "onQueryChange",
+          "type": "(query: string) => void",
+          "required": false
+        },
+        {
+          "name": "header",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Above the search row, such as a Breadcrumb of the pages opened so far."
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Key hints in place of Navigate, Open and Close; compose them from KbdHint. Shown when `hints` is on."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown in place of the list, such as an answer to the query; the search row and the footer stay."
+        }
+      ]
+    }
+  },
+  "command-pages": {
+    "CommandPagesAnswer": {
+      "description": "The question, then AgentLoading while the answer is on its way and StreamingText once it comes. It scrolls when long, and takes focus (Tab) so the keyboard can scroll it. Other props, `ref` included, go to its scroll box.",
+      "type": "CommandPagesAnswerProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "question",
+          "type": "string",
+          "required": true,
+          "description": "What was asked, over the answer."
+        },
+        {
+          "name": "answer",
+          "type": "string",
+          "required": false,
+          "description": "The answer so far."
+        },
+        {
+          "name": "answering",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "More is coming."
+        }
+      ]
+    },
+    "CommandPages": {
+      "type": "CommandPagesProps",
+      "extends": [
+        "Omit<CommandMenuProps, 'groups' | 'header' | 'footer' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "groups",
+          "type": "CommandPageGroup[]",
+          "required": true,
+          "description": "The first page."
+        },
+        {
+          "name": "rootTitle",
+          "type": "string",
+          "required": false,
+          "description": "The first page's name: the breadcrumb's first item. Defaults to the `commands` label."
+        },
+        {
+          "name": "onAsk",
+          "type": "(query: string) => void",
+          "required": false,
+          "description": "Adds 'Ask the agent about \"…\"' as the last row whenever there is a query. Running it (Enter when nothing else matches) calls this with the query and opens the agent's page; each follow-up asked there calls it again."
+        },
+        {
+          "name": "answer",
+          "type": "string",
+          "required": false,
+          "description": "The agent's answer so far. Grow it as it streams; empty it when onAsk is called."
+        },
+        {
+          "name": "answering",
+          "type": "boolean",
+          "required": false,
+          "description": "More of the answer is coming: AgentLoading until the first words, then the caret."
+        },
+        {
+          "name": "controlRef",
+          "type": "React.Ref<CommandPagesControl>",
+          "required": false,
+          "description": "Gets the menu's moves, for opening it on a page or an answer from outside."
         }
       ]
     }
@@ -1979,7 +2879,403 @@
       ]
     }
   },
+  "data-grid": {
+    "DataGrid": {
+      "type": "DataGridProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "columns",
+          "type": "DataGridColumn<R>[]",
+          "required": true
+        },
+        {
+          "name": "rows",
+          "type": "R[]",
+          "required": true
+        },
+        {
+          "name": "getRowId",
+          "type": "(row: R) => string",
+          "required": false,
+          "description": "The row's id, for selection, edits and React keys. Defaults to `row.id`."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "The grid's accessible name."
+        },
+        {
+          "name": "rowLabel",
+          "type": "(row: R) => string",
+          "required": false,
+          "description": "Names a row for its select checkbox (\"Select Ada Okafor\"). Defaults to the first column's text, else the row's number."
+        },
+        {
+          "name": "sort",
+          "type": "DataGridSort",
+          "required": false
+        },
+        {
+          "name": "defaultSort",
+          "type": "DataGridSort",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onSortChange",
+          "type": "(sort: DataGridSort) => void",
+          "required": false
+        },
+        {
+          "name": "manualSort",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Leave rows in the order given (sort them yourself in onSortChange)."
+        },
+        {
+          "name": "selectable",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "A checkbox column; `selection` holds the picked rows' ids."
+        },
+        {
+          "name": "selection",
+          "type": "string[]",
+          "required": false
+        },
+        {
+          "name": "defaultSelection",
+          "type": "string[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(ids: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "columnVisibility",
+          "type": "Record<string, boolean>",
+          "required": false,
+          "description": "Column key → shown. A key that's left out shows."
+        },
+        {
+          "name": "defaultColumnVisibility",
+          "type": "Record<string, boolean>",
+          "required": false,
+          "default": "{}"
+        },
+        {
+          "name": "onColumnVisibilityChange",
+          "type": "(visibility: Record<string, boolean>) => void",
+          "required": false
+        },
+        {
+          "name": "columnOrder",
+          "type": "string[]",
+          "required": false,
+          "description": "Column keys in the order to show them; keys left out follow in `columns` order. Pinned columns keep their edge."
+        },
+        {
+          "name": "defaultColumnOrder",
+          "type": "string[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onColumnOrderChange",
+          "type": "(order: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "columnSizing",
+          "type": "Record<string, number>",
+          "required": false,
+          "description": "Column key → width in px; a key that's left out takes the column's `width`."
+        },
+        {
+          "name": "defaultColumnSizing",
+          "type": "Record<string, number>",
+          "required": false,
+          "default": "{}"
+        },
+        {
+          "name": "onColumnSizingChange",
+          "type": "(sizing: Record<string, number>) => void",
+          "required": false
+        },
+        {
+          "name": "density",
+          "type": "'compact' | 'default'",
+          "required": false,
+          "default": "'default'",
+          "description": "Row height: 40 (`default`) or 32 (`compact`)."
+        },
+        {
+          "name": "onCellEdit",
+          "type": "(rowId: string, key: string, value: unknown) => unknown",
+          "required": false,
+          "description": "Called with an edited cell's new value; update `rows` with it. Return a promise and the cell shows a Spinner until it settles, or an error if it rejects (its message is shown)."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Skeleton rows in place of the body."
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "The rows failed to load: a message (or `true` for the default one) in place of the body."
+        },
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Try again on the error state."
+        },
+        {
+          "name": "filtered",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The rows are filtered: with none left, the grid says No results instead of empty."
+        },
+        {
+          "name": "onClearFilters",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Clear filters on the No results state."
+        },
+        {
+          "name": "empty",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What shows when there are no rows (not filtered). Defaults to an EmptyState with a table icon."
+        },
+        {
+          "name": "noResults",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What shows when `filtered` leaves no rows. Defaults to an EmptyState with a search icon, \"No results\" and, with `onClearFilters`, Clear filters. Pass your own to name the search."
+        },
+        {
+          "name": "virtualize",
+          "type": "boolean",
+          "required": false,
+          "description": "Draw only the rows on screen. Defaults to on above 200 rows."
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "required": false,
+          "description": "Rows per page, with a Pagination under the grid. Left out, every row is in one scrolling body."
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "required": false,
+          "description": "The current page, from 1."
+        },
+        {
+          "name": "defaultPage",
+          "type": "number",
+          "required": false,
+          "default": "1"
+        },
+        {
+          "name": "onPageChange",
+          "type": "(page: number) => void",
+          "required": false
+        },
+        {
+          "name": "toolbar",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Above the grid: `DataGridToolbar` with search, filters, `DataGridColumnsMenu`, `DataGridViewMenu`."
+        }
+      ]
+    },
+    "DataGridToolbar": {
+      "description": "A row above the grid for search, filters and the menus. Other props, `ref` included, go to its `div`.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "DataGridColumnsMenu": {
+      "description": "The Columns menu: a switch per column (a column with `hideable: false` stays on), Alt with ↑ or ↓ moves the highlighted column, and Reset columns brings back every column in its first order and width. Other props, `ref` included, go to the trigger Button.",
+      "type": "DataGridColumnsMenuProps",
+      "extends": [
+        "Omit<ButtonProps, 'children' | 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The trigger's text. Defaults to the `dataGridColumns` label (\"Columns\")."
+        }
+      ]
+    },
+    "DataGridViewMenu": {
+      "description": "The saved-views menu: pick a view to put the grid in its sort, columns and filters; save the grid as it is as a new view (a dialog asks for the name), save changes to the view in use, or delete it. A Dot on the trigger marks unsaved changes. Other props, `ref` included, go to the trigger Button.",
+      "type": "DataGridViewMenuProps",
+      "extends": [
+        "Omit<ButtonProps, 'children' | 'asChild' | 'value' | 'defaultValue'>"
+      ],
+      "props": [
+        {
+          "name": "views",
+          "type": "DataGridView<F>[]",
+          "required": false,
+          "description": "The saved views."
+        },
+        {
+          "name": "defaultViews",
+          "type": "DataGridView<F>[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onViewsChange",
+          "type": "(views: DataGridView<F>[]) => void",
+          "required": false,
+          "description": "Called with the new list after a save, an update or a delete."
+        },
+        {
+          "name": "value",
+          "type": "string | null",
+          "required": false,
+          "description": "The view in use, by id; null for none."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(id: string | null, view: DataGridView<F> | null) => void",
+          "required": false,
+          "description": "Called when a view is picked or saved, after the grid takes its sort and columns: apply its `filters` here."
+        },
+        {
+          "name": "filters",
+          "type": "F",
+          "required": false,
+          "description": "The filters in use, saved with a new view and compared to tell a view has unsaved changes."
+        }
+      ]
+    }
+  },
+  "date-availability": {
+    "AvailabilityCalendar": {
+      "description": "The Calendar with each day's free slots: a dot, a tooltip and its name. Other props, `ref` included, go to Calendar's root.",
+      "type": "AvailabilityCalendarProps",
+      "extends": [
+        "Omit<CalendarProps, 'mode' | 'range' | 'onRangeChange' | 'value' | 'onValueChange' | 'isDisabled' | 'renderDay'>"
+      ],
+      "props": [
+        {
+          "name": "availability",
+          "type": "Availability",
+          "required": true,
+          "description": "Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked."
+        },
+        {
+          "name": "fewSlots",
+          "type": "number",
+          "required": false,
+          "default": "2",
+          "description": "At or below this many free slots a day reads as nearly full: its dot becomes a ring."
+        },
+        {
+          "name": "reason",
+          "type": "(date: Date) => string | undefined",
+          "required": false,
+          "description": "Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0."
+        },
+        {
+          "name": "isDisabled",
+          "type": "(date: Date) => boolean",
+          "required": false,
+          "description": "More days that can't be picked, whatever their slots."
+        },
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false,
+          "description": "The picked day (controlled)."
+        },
+        {
+          "name": "defaultValue",
+          "type": "Date | null",
+          "required": false,
+          "default": "null",
+          "description": "The day picked at first (uncontrolled)."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false
+        }
+      ]
+    },
+    "AvailabilityDatePicker": {
+      "description": "A DatePicker field whose calendar shows each day's free slots. Other props, `ref` included, go to the trigger button.",
+      "type": "AvailabilityDatePickerProps",
+      "extends": [
+        "Omit<DatePickerProps, 'isDisabled' | 'renderDay'>"
+      ],
+      "props": [
+        {
+          "name": "availability",
+          "type": "Availability",
+          "required": true,
+          "description": "Free slots per day, keyed by ISO date (\"2026-11-26\"). 0 is a full day. A day left out has no slots and can't be picked."
+        },
+        {
+          "name": "fewSlots",
+          "type": "number",
+          "required": false,
+          "default": "2",
+          "description": "At or below this many free slots a day reads as nearly full: its dot becomes a ring."
+        },
+        {
+          "name": "reason",
+          "type": "(date: Date) => string | undefined",
+          "required": false,
+          "description": "Why a day without free slots can't be picked: its tooltip, read after its date. Defaults to \"Fully booked\" for a day listed with 0."
+        },
+        {
+          "name": "isDisabled",
+          "type": "(date: Date) => boolean",
+          "required": false,
+          "description": "More days that can't be picked, whatever their slots."
+        }
+      ]
+    }
+  },
   "date-picker": {
+    "CalendarDay": {
+      "description": "One day of the Calendar, to return from `renderDay`: the default day button, which picks, holds the arrow keys' focus and draws today, the pick and the range. Children replace the number, `aria-label` the full date as its name. Other props, `ref` included, go to the button, so a Tooltip can wrap it.",
+      "type": "CalendarDayProps",
+      "extends": [
+        "Omit<React.ComponentProps<'button'>, 'type'>"
+      ],
+      "props": []
+    },
     "Calendar": {
       "type": "CalendarProps",
       "extends": [
@@ -2055,6 +3351,24 @@
           "description": "Today, for the dash. Defaults to now."
         },
         {
+          "name": "isDisabled",
+          "type": "(date: Date) => boolean",
+          "required": false,
+          "description": "Days that can't be picked, on top of those outside `min`/`max` (weekends, booked days). Like those, they stay reachable with the arrow keys and are read as unavailable."
+        },
+        {
+          "name": "renderDay",
+          "type": "(date: Date, state: CalendarDayState) => React.ReactNode",
+          "required": false,
+          "description": "Draws each day, for a mark, a name or a tooltip of your own. Return a `CalendarDay`, the default day button, so picking and the arrow keys keep working."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's (Sunday in en-US, Monday in pl-PL)."
+        },
+        {
           "name": "className",
           "type": "string",
           "required": false
@@ -2062,7 +3376,7 @@
       ]
     },
     "DatePickerPanel": {
-      "description": "The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick. Other props, `ref` included, go to the surface.",
+      "description": "The date picker's panel on its own, in place: the popover surface with the Calendar, month and year to pick, and the presets. Other props, `ref` included, go to the surface.",
       "type": "DatePickerPanelProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'>"
@@ -2076,7 +3390,8 @@
         {
           "name": "onValueChange",
           "type": "(value: Date) => void",
-          "required": false
+          "required": false,
+          "description": "A day picked in the calendar or from the presets."
         },
         {
           "name": "min",
@@ -2092,6 +3407,30 @@
           "name": "today",
           "type": "Date",
           "required": false
+        },
+        {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one moves the calendar to its month."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
         },
         {
           "name": "className",
@@ -2138,6 +3477,30 @@
           "name": "today",
           "type": "Date",
           "required": false
+        },
+        {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar: `[datePresets.today, datePresets.tomorrow]`. Picking one picks its day and closes."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
         },
         {
           "name": "container",
@@ -2188,6 +3551,30 @@
           "required": false
         },
         {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<DateRange | Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar: `[datePresets.last7Days, datePresets.last30Days]`. Picking one shows its range, which waits for Apply like any other."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
+        },
+        {
           "name": "applyLabel",
           "type": "string",
           "required": false,
@@ -2207,7 +3594,7 @@
       ]
     },
     "DateRangePickerPanel": {
-      "description": "The range picker's panel on its own, in place: two months, Cancel and Apply. Other props, `ref` included, go to the surface.",
+      "description": "The range picker's panel on its own, in place: the presets, two months, Cancel and Apply. Other props, `ref` included, go to the surface.",
       "type": "DateRangePickerPanelProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children'>"
@@ -2245,6 +3632,30 @@
           "name": "today",
           "type": "Date",
           "required": false
+        },
+        {
+          "name": "isDisabled",
+          "type": "CalendarProps['isDisabled']",
+          "required": false,
+          "description": "As on Calendar: days that can't be picked, besides those outside min/max."
+        },
+        {
+          "name": "renderDay",
+          "type": "CalendarProps['renderDay']",
+          "required": false,
+          "description": "As on Calendar: draws each day; return a `CalendarDay`."
+        },
+        {
+          "name": "presets",
+          "type": "DatePreset<DateRange | Date>[]",
+          "required": false,
+          "description": "Shortcuts listed before the calendar. Picking one shows its range; a range picked by hand leaves none selected."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 for Sunday. Defaults to the `dateLocale` label's."
         },
         {
           "name": "applyLabel",
@@ -2373,6 +3784,30 @@
           "type": "string",
           "required": false,
           "description": "Defaults to the `skip` label."
+        },
+        {
+          "name": "previousStepLabel",
+          "type": "string",
+          "required": false,
+          "description": "The step navigator's previous button. Defaults to the `previousQuestion` label."
+        },
+        {
+          "name": "nextStepLabel",
+          "type": "string",
+          "required": false,
+          "description": "The step navigator's next button. Defaults to the `nextQuestion` label."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A body of your own, in place of the type's answers; it moves with the step."
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Actions of your own, in place of Skip and Continue, in the footer row (not on a draft)."
         }
       ]
     },
@@ -2673,7 +4108,7 @@
           "name": "children",
           "type": "React.ReactNode",
           "required": true,
-          "description": "`DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s."
+          "description": "`DropdownMenuItem`s, optionally inside `DropdownMenuGroup`s; also `DropdownMenuSub`s, `DropdownMenuCheckboxItem`s and `DropdownMenuRadioGroup`s."
         },
         {
           "name": "open",
@@ -2719,7 +4154,7 @@
           "name": "container",
           "type": "HTMLElement | null",
           "required": false,
-          "description": "Portal target. Defaults to `document.body`."
+          "description": "Portal target, for the menu and its submenus. Defaults to `document.body`."
         },
         {
           "name": "aria-label",
@@ -2732,6 +4167,12 @@
           "type": "(event: Event) => void",
           "required": false,
           "description": "Focus moved outside a non-modal menu; call `preventDefault()` to keep it open."
+        },
+        {
+          "name": "dir",
+          "type": "'ltr' | 'rtl'",
+          "required": false,
+          "description": "Reading direction: which arrow opens a submenu and the side it opens on. Read from the trigger when left out."
         },
         {
           "name": "className",
@@ -2821,6 +4262,171 @@
           "name": "label",
           "type": "string",
           "required": true
+        }
+      ]
+    },
+    "DropdownMenuSub": {
+      "description": "A submenu: holds the row that opens it, a `DropdownMenuSubTrigger`, and its panel, a `DropdownMenuSubContent` with the submenu's rows. Renders no element of its own.",
+      "type": "DropdownMenuSubProps",
+      "extends": [],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "A `DropdownMenuSubTrigger` and its `DropdownMenuSubContent`."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        }
+      ]
+    },
+    "DropdownMenuSubTrigger": {
+      "description": "The row that opens a submenu: an item's look, ending in a text/muted chevron (mirrored right to left). It stays filled bg/selected while its submenu is open. Hover, →, Enter or Space opens it. Other props, `ref` included, go to the row (the Radix SubTrigger).",
+      "type": "DropdownMenuSubTriggerProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownPrimitive.SubTrigger>, 'children' | 'asChild'>",
+        "Pick<MenuItemContentProps, 'description' | 'icon' | 'iconSize' | 'layout'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "DropdownMenuSubContent": {
+      "description": "A submenu's panel: the menu's surface, 220px wide, beside its row with the first rows level (4px off). It fades in from 4px on the side it opens, so it seems to come out of the row; right to left, or with no room on the right, that is the left. Other props, `ref` included, go to the panel (the Radix SubContent).",
+      "type": "DropdownMenuSubContentProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownPrimitive.SubContent>, 'asChild'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The submenu's rows: `DropdownMenuItem`s, groups, checkable rows, or another `DropdownMenuSub`."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to the menu's own `container`."
+        }
+      ]
+    },
+    "DropdownMenuCheckboxItem": {
+      "description": "A row that turns something on or off, like a column of a view: a leading 16px checkbox (the Checkbox's look) before the item's content. Its role is `menuitemcheckbox`, with `aria-checked`. Enter or Space toggles it; the menu stays open unless `closeOnSelect`. Other props, `ref` included, go to the row (the Radix CheckboxItem).",
+      "type": "DropdownMenuCheckboxItemProps",
+      "extends": [
+        "Omit< React.ComponentProps<typeof DropdownPrimitive.CheckboxItem>, 'children' | 'checked' | 'defaultChecked' | 'onCheckedChange' >",
+        "Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "checked",
+          "type": "boolean | 'indeterminate'",
+          "required": false,
+          "description": "Controlled state. `'indeterminate'` for a row that stands for a set only partly on."
+        },
+        {
+          "name": "defaultChecked",
+          "type": "boolean | 'indeterminate'",
+          "required": false,
+          "default": "false",
+          "description": "The state it starts in, when uncontrolled."
+        },
+        {
+          "name": "onCheckedChange",
+          "type": "(checked: boolean) => void",
+          "required": false,
+          "description": "The row was toggled; an indeterminate row turns on."
+        },
+        {
+          "name": "closeOnSelect",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Closes the menu once toggled. Off, so several rows can be set in one go."
+        }
+      ]
+    },
+    "DropdownMenuRadioGroup": {
+      "description": "One choice among `DropdownMenuRadioItem`s, like a sort order or a stage: a group with the `DropdownMenuGroup` look (header, rule under it). Other props, `ref` included, go to the group (the Radix RadioGroup).",
+      "type": "DropdownMenuRadioGroupProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownPrimitive.RadioGroup>, 'value' | 'defaultValue' | 'onValueChange'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The 24px group header; it also names the group for screen readers."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "Controlled: the selected row's `value`."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "description": "The row selected at first, when uncontrolled."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false
+        }
+      ]
+    },
+    "DropdownMenuRadioItem": {
+      "description": "One option in a `DropdownMenuRadioGroup`. The selected row is filled bg/selected and ends in the same status-green check as a `selected` item. Its role is `menuitemradio`, with `aria-checked`. Other props, `ref` included, go to the row (the Radix RadioItem).",
+      "type": "DropdownMenuRadioItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof DropdownPrimitive.RadioItem>, 'children'>",
+        "Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "What `onValueChange` reports when this row is chosen."
+        },
+        {
+          "name": "closeOnSelect",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Closes the menu once chosen. On, since one choice ends the question."
         }
       ]
     }
@@ -3041,6 +4647,171 @@
           "name": "className",
           "type": "string",
           "required": false
+        }
+      ]
+    }
+  },
+  "filter-bar": {
+    "FilterBarRoot": {
+      "description": "The bar on its own: the parts go inside. Other props, `ref` included, go to its `div`.",
+      "type": "FilterBarRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "fields",
+          "type": "FilterField[]",
+          "required": true,
+          "description": "What can be filtered."
+        },
+        {
+          "name": "value",
+          "type": "Filter[]",
+          "required": false,
+          "description": "The filters (controlled). Plain JSON."
+        },
+        {
+          "name": "defaultValue",
+          "type": "Filter[]",
+          "required": false,
+          "default": "[]",
+          "description": "The filters to start with (uncontrolled)."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Filter[]) => void",
+          "required": false,
+          "description": "Every change: a chip added, edited into a complete value, or removed."
+        },
+        {
+          "name": "resultCount",
+          "type": "number",
+          "required": false,
+          "description": "How many rows the filters let through, shown live (\"14 results\"). Leave it out to hide the count."
+        },
+        {
+          "name": "resultLabel",
+          "type": "(count: number, number: React.ReactNode) => React.ReactNode",
+          "required": false,
+          "description": "The count's words, \"14 deals\": `number` is the rolling number, `count` picks the plural. Defaults to the `filterResults` label."
+        },
+        {
+          "name": "views",
+          "type": "FilterView[]",
+          "required": false,
+          "description": "Saved filters, in a menu that sets them. The one that matches the filters is checked and names the menu."
+        },
+        {
+          "name": "onSaveView",
+          "type": "(name: string, value: Filter[]) => void",
+          "required": false,
+          "description": "Shows Save view while the filters match no view; called with the name typed and the filters."
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "required": false,
+          "description": "The search's text (controlled)."
+        },
+        {
+          "name": "defaultQuery",
+          "type": "string",
+          "required": false,
+          "default": "''"
+        },
+        {
+          "name": "onQueryChange",
+          "type": "(query: string) => void",
+          "required": false
+        },
+        {
+          "name": "maxVisible",
+          "type": "number",
+          "required": false,
+          "default": "6",
+          "description": "Chips shown before the rest fold into \"+3 more\"."
+        },
+        {
+          "name": "shortcut",
+          "type": "string | false",
+          "required": false,
+          "default": "'F'",
+          "description": "One key that opens `+ Filter` while focus is in the bar's parent and not in a field; shown as Kbd. `false` for none."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target of the editors and menus. Defaults to `document.body`."
+        },
+        {
+          "name": "today",
+          "type": "Date",
+          "required": false,
+          "description": "Today, for the editors' calendars. Defaults to now."
+        }
+      ]
+    },
+    "FilterBarSearch": {
+      "description": "The bar's search field (Input sm with a search icon): its text is the bar's `query`. Backspace in it while empty removes the last chip. Other props, `ref` included, go to the `input`.",
+      "type": "FilterBarSearchProps",
+      "extends": [
+        "Omit<InputProps, 'value' | 'defaultValue' | 'size' | 'label' | 'hint' | 'error'>"
+      ],
+      "props": []
+    },
+    "FilterBarChips": {
+      "description": "The chips, then \"+3 more\" past `maxVisible`. Its `div` is `display: contents`, so the chips wrap along with whatever sits next to them in the bar. Other props, `ref` included, go to that `div`.",
+      "type": "FilterBarChipsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "FilterBarAdd": {
+      "description": "`+ Filter`: a menu of the fields; picking one adds its chip with the editor open. Shows the bar's `shortcut` as Kbd. Other props, `ref` included, go to the Button.",
+      "type": "FilterBarAddProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof Button>, 'variant' | 'asChild' | 'iconOnly'>"
+      ],
+      "props": []
+    },
+    "FilterBarCount": {
+      "description": "\"14 results\", its digits rolling as the count changes. Nothing without `resultCount`. Other props, `ref` included, go to its `span`.",
+      "type": "FilterBarCountProps",
+      "extends": [
+        "React.ComponentProps<'span'>"
+      ],
+      "props": []
+    },
+    "FilterBarViews": {
+      "description": "The views menu (named after the view the filters match, or \"Views\") and Save view, shown while the filters match no view. Other props, `ref` included, go to its `div`.",
+      "type": "FilterBarViewsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "FilterBar": {
+      "description": "The bar from props: the search (with `search`), the chips, `+ Filter`, then the count and the views at the end of the row. Other props, `ref` included, go to the bar's `div`.",
+      "type": "FilterBarProps",
+      "extends": [
+        "Omit<FilterBarRootProps, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "search",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "A search field before the chips; its text is `query`."
+        },
+        {
+          "name": "searchPlaceholder",
+          "type": "string",
+          "required": false,
+          "description": "The search's placeholder. Defaults to the `search` label."
         }
       ]
     }
@@ -3548,6 +5319,155 @@
           "type": "'hover' | 'focus'",
           "required": false,
           "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
+  "kanban-board": {
+    "KanbanBoard": {
+      "type": "KanbanBoardProps",
+      "extends": [
+        "Omit<React.ComponentProps<'section'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "columns",
+          "type": "KanbanColumn[]",
+          "required": true,
+          "description": "The columns, in order."
+        },
+        {
+          "name": "items",
+          "type": "Record<string, T[]>",
+          "required": true,
+          "description": "Each column's cards, in order, by column id."
+        },
+        {
+          "name": "getItemId",
+          "type": "(item: T) => string",
+          "required": true,
+          "description": "A card's id: unique on the board, stable across moves."
+        },
+        {
+          "name": "getItemLabel",
+          "type": "(item: T) => string",
+          "required": true,
+          "description": "A card's name for screen readers, announcements and the toast: \"Tara Mendes\"."
+        },
+        {
+          "name": "renderCard",
+          "type": "(item: T, state: KanbanCardState) => React.ReactNode",
+          "required": true,
+          "description": "The card itself, usually a `KanbanCard`."
+        },
+        {
+          "name": "onMove",
+          "type": "(itemId: string, toColumn: string, index: number) => void",
+          "required": true,
+          "description": "A card was dropped. `index` is its place in `toColumn` once it's there, from 0. Move it in `items` (`moveKanbanItem()` does it); until you do, the board shows it where it was."
+        },
+        {
+          "name": "collapsedColumns",
+          "type": "string[]",
+          "required": false,
+          "description": "Collapsed columns, by id: a narrow strip with the title and count. Controlled."
+        },
+        {
+          "name": "defaultCollapsedColumns",
+          "type": "string[]",
+          "required": false,
+          "description": "Collapsed columns at first, when `collapsedColumns` isn't set."
+        },
+        {
+          "name": "onCollapsedColumnsChange",
+          "type": "(collapsedColumns: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "collapsible",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "A collapse button in every column header, and an expand button on collapsed ones."
+        },
+        {
+          "name": "onAddItem",
+          "type": "(columnId: string) => void",
+          "required": false,
+          "description": "A + button in every column header, which calls this with the column's id."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Skeleton cards in every column, and `aria-busy` on the board."
+        },
+        {
+          "name": "renderEmpty",
+          "type": "(column: KanbanColumn) => React.ReactNode",
+          "required": false,
+          "description": "What an empty column shows. Defaults to an EmptyState saying \"No cards\"."
+        },
+        {
+          "name": "undoToast",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "The \"Moved to Interview\" toast with Undo after a move to another column. Needs a `<Toaster />`."
+        },
+        {
+          "name": "columnWidth",
+          "type": "number",
+          "required": false,
+          "default": "272",
+          "description": "A column's width in px."
+        }
+      ]
+    },
+    "KanbanCard": {
+      "description": "A card for `renderCard`: Satin's Card (small) with the title, a line of meta, badges and an avatar, and a ⋯ menu that moves it without dragging. The menu button shows on hover and focus (always on touch screens). Children go between the title and the bottom row. Other props, `ref` included, go to the Card.",
+      "type": "KanbanCardProps",
+      "extends": [
+        "Omit<React.ComponentProps<typeof Card>, 'title' | 'size' | 'onClose' | 'closeLabel' | 'description' | 'footer'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "What the card is: a person, a deal, an order."
+        },
+        {
+          "name": "meta",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "One line under the title, in text/muted: a role, an amount, a date."
+        },
+        {
+          "name": "badges",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Badges, in a row at the bottom."
+        },
+        {
+          "name": "avatar",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "An Avatar or AvatarGroup at the end of the bottom row: who owns it."
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "More DropdownMenuItems for the ⋯ menu, after the moves."
+        },
+        {
+          "name": "moveActions",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "\"Move to\" each other column, and up and down, in the ⋯ menu."
         }
       ]
     }
@@ -4192,6 +6112,69 @@
       ]
     }
   },
+  "people-picker": {
+    "PeoplePicker": {
+      "type": "PeoplePickerProps",
+      "extends": [
+        "Omit< ComboboxProps, | 'options' | 'value' | 'defaultValue' | 'onValueChange' | 'filter' | 'onQueryChange' | 'loading' | 'loadingText' | 'selectedOptions' | 'renderOption' | 'renderValue' >"
+      ],
+      "props": [
+        {
+          "name": "people",
+          "type": "Person[]",
+          "required": false,
+          "description": "Everyone who can be picked, in one list."
+        },
+        {
+          "name": "groups",
+          "type": "PeopleGroup[]",
+          "required": false,
+          "description": "Everyone who can be picked, in titled groups (teams, offices) instead of one list."
+        },
+        {
+          "name": "search",
+          "type": "(query: string, options: PeopleSearchOptions) => Promise<Person[] | PeopleGroup[]>",
+          "required": false,
+          "description": "Searches on the app's side, in place of `people` and `groups`. Resolve to people, or to titled groups of them."
+        },
+        {
+          "name": "searchDelay",
+          "type": "number",
+          "required": false,
+          "default": "150",
+          "description": "Milliseconds without typing before `search` runs."
+        },
+        {
+          "name": "recent",
+          "type": "Person[]",
+          "required": false,
+          "description": "People picked lately: listed first, under \"Recent\", while the query is empty."
+        },
+        {
+          "name": "value",
+          "type": "Person[]",
+          "required": false,
+          "description": "The picked people."
+        },
+        {
+          "name": "defaultValue",
+          "type": "Person[]",
+          "required": false
+        },
+        {
+          "name": "onValueChange",
+          "type": "(people: Person[]) => void",
+          "required": false
+        },
+        {
+          "name": "maxChips",
+          "type": "number",
+          "required": false,
+          "description": "With `multiple`: chips shown before the rest fold into a \"+N\" chip. All of them by default."
+        }
+      ]
+    }
+  },
   "popover": {
     "Popover": {
       "type": "PopoverProps",
@@ -4354,7 +6337,7 @@
     "PromptBar": {
       "type": "PromptBarProps",
       "extends": [
-        "Omit<React.ComponentProps<'form'>, 'onSubmit'>"
+        "Omit<React.ComponentProps<'form'>, 'onSubmit' | 'defaultValue'>"
       ],
       "props": [
         {
@@ -4365,20 +6348,21 @@
         },
         {
           "name": "value",
-          "type": "string",
+          "type": "string | PromptValue",
           "required": false,
-          "description": "The text. Pass it with onValueChange to control it."
+          "description": "The text. Pass it with onValueChange to control it. With `mentions` or `commands`, pass the `PromptValue` that onValueChange reports to keep its tokens (a string keeps them too, while it matches)."
         },
         {
           "name": "defaultValue",
-          "type": "string",
+          "type": "string | PromptValue",
           "required": false,
           "default": "''"
         },
         {
           "name": "onValueChange",
-          "type": "(value: string) => void",
-          "required": false
+          "type": "(value: string, detail: PromptValue) => void",
+          "required": false,
+          "description": "The text, and the same as a `PromptValue` with its mentions and command."
         },
         {
           "name": "placeholder",
@@ -4445,8 +6429,21 @@
         },
         {
           "name": "onSubmit",
-          "type": "(value: string, attachments: File[]) => void",
-          "required": false
+          "type": "(value: string, attachments: File[], detail: PromptValue) => void",
+          "required": false,
+          "description": "The trimmed text, the files, and the message as a `PromptValue`. A message whose command has `run` goes to `run` instead."
+        },
+        {
+          "name": "mentions",
+          "type": "PromptMentions",
+          "required": false,
+          "description": "`@` (or `trigger`) opens a menu of what `search` returns; a pick goes into the text as a token."
+        },
+        {
+          "name": "commands",
+          "type": "PromptCommand[]",
+          "required": false,
+          "description": "`/` opens a menu of these; a pick goes into the text as a token, and Send runs it."
         }
       ]
     }
@@ -4491,6 +6488,395 @@
       ]
     }
   },
+  "review-queue": {
+    "ReviewQueueRoot": {
+      "description": "The queue's state, keys and editor; the parts go inside.",
+      "type": "ReviewQueueRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'section'>, 'title' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "items",
+          "type": "readonly T[]",
+          "required": true,
+          "description": "Everything to review, decided or not, in order."
+        },
+        {
+          "name": "itemLabel",
+          "type": "(item: T) => string",
+          "required": true,
+          "description": "The item in a few words (\"Anna Kowalska\"): names it to screen readers and in the summary."
+        },
+        {
+          "name": "itemKey",
+          "type": "(item: T, index: number) => string",
+          "required": false,
+          "description": "A stable key per item, for `decisions`. Defaults to the item's `id`, else its index."
+        },
+        {
+          "name": "itemMedia",
+          "type": "(item: T) => React.ReactNode",
+          "required": false,
+          "description": "Beside the item's name in the summary: an Avatar, an icon. Hidden from screen readers, which read the name."
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "Over the bar, and the queue's name (\"Trade fair follow-ups\"). Without it the queue is named \"Review queue\"."
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "required": false,
+          "description": "The item on show, from 0."
+        },
+        {
+          "name": "defaultIndex",
+          "type": "number",
+          "required": false,
+          "default": "0"
+        },
+        {
+          "name": "onIndexChange",
+          "type": "(index: number) => void",
+          "required": false
+        },
+        {
+          "name": "decisions",
+          "type": "ReviewQueueDecisions",
+          "required": false,
+          "description": "What was decided, by key."
+        },
+        {
+          "name": "defaultDecisions",
+          "type": "ReviewQueueDecisions",
+          "required": false
+        },
+        {
+          "name": "onDecisionsChange",
+          "type": "(decisions: ReviewQueueDecisions) => void",
+          "required": false
+        },
+        {
+          "name": "editing",
+          "type": "boolean",
+          "required": false,
+          "description": "The editor Sheet is open."
+        },
+        {
+          "name": "onEditingChange",
+          "type": "(editing: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "onApprove",
+          "type": "(item: T) => unknown",
+          "required": false,
+          "description": "Carries the item out (sends the email). Return a promise and Approve shows a Spinner until it settles."
+        },
+        {
+          "name": "onSkip",
+          "type": "(item: T) => void",
+          "required": false
+        },
+        {
+          "name": "onEdit",
+          "type": "(item: T, values?: FormValues) => unknown",
+          "required": false,
+          "description": "With `renderEditor`, Save calls it with the form's values, then the Sheet closes (after the promise, if it returns one). Without, Edit calls it with the item alone."
+        },
+        {
+          "name": "renderEditor",
+          "type": "(item: T) => React.ReactNode",
+          "required": false,
+          "description": "The editor's fields for one item, in a Sheet that Edit opens. Give each field a `name`."
+        },
+        {
+          "name": "editTitle",
+          "type": "(item: T) => React.ReactNode",
+          "required": false,
+          "description": "The editor Sheet's title. Defaults to \"Edit\", with the item's label under it."
+        },
+        {
+          "name": "sheetProps",
+          "type": "Omit<SheetProps, 'open' | 'defaultOpen' | 'onOpenChange' | 'title' | 'description' | 'footer' | 'children' | 'trigger'>",
+          "required": false,
+          "description": "More for the editor Sheet: `side`, `container`, `className`."
+        },
+        {
+          "name": "shortcuts",
+          "type": "ReviewQueueShortcuts | false",
+          "required": false,
+          "description": "Rename the keys, or `false` for none."
+        },
+        {
+          "name": "approveLabel",
+          "type": "string",
+          "required": false,
+          "description": "Approve's word, when the action is better named (\"Send\"). Defaults to `reviewApprove`."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false
+        }
+      ]
+    },
+    "ReviewQueueHeader": {
+      "description": "The title, the decision of an item gone back to, ‹ \"4 of 12\" › and the bar of how many are decided. Other props, `ref` included, go to its `div`.",
+      "type": "ReviewQueueHeaderProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "ReviewQueueItem": {
+      "description": "The item on show, as a group named after it and its place. Hidden once all are decided. Other props, `ref` included, go to its `div`.",
+      "type": "ReviewQueueItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "(item: T, state: ReviewQueueItemState) => React.ReactNode",
+          "required": true,
+          "description": "Draws the item on show."
+        }
+      ]
+    },
+    "ReviewQueueActions": {
+      "description": "The J K hint, then Skip, Edit and Approve with their keys. Hidden once all are decided. Other props, `ref` included, go to its `div`.",
+      "type": "ReviewQueueActionsProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "ReviewQueueSummary": {
+      "description": "Once every item is decided: the tally, then the items one under another (`itemMedia` beside each name), Approved or Skipped as the SegmentedControl above them picks, and Review skipped. Hidden until then. Other props, `ref` included, go to its `section`.",
+      "type": "ReviewQueueSummaryProps",
+      "extends": [
+        "React.ComponentProps<'section'>"
+      ],
+      "props": [
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Buttons after Review skipped: what to do with the approved ones (\"Back to inbox\")."
+        }
+      ]
+    },
+    "ReviewQueue": {
+      "description": "The queue from props: the header with the bar, the item, the actions, and the summary at the end. Other props, `ref` included, go to the `section`.",
+      "type": "ReviewQueueProps",
+      "extends": [
+        "Omit<ReviewQueueRootProps<T>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "renderItem",
+          "type": "(item: T, state: ReviewQueueItemState) => React.ReactNode",
+          "required": true,
+          "description": "Draws one item, usually an AgentSuggestion (give it `className=\"max-w-none\"` to take the queue's width)."
+        },
+        {
+          "name": "summaryActions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Buttons for the summary, after Review skipped."
+        }
+      ]
+    }
+  },
+  "rolling-number": {
+    "RollingNumber": {
+      "type": "RollingNumberProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "description": "The number as shown, already formatted: \"1,204\"."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": true,
+          "description": "The number itself, which picks the way the digits roll."
+        }
+      ]
+    }
+  },
+  "scheduler": {
+    "SchedulerRoot": {
+      "description": "The card and its state: put `SchedulerToolbar` and `SchedulerGrid` inside. Other props, `ref` included, go to the card.",
+      "type": "SchedulerRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "view",
+          "type": "SchedulerView",
+          "required": false,
+          "description": "The view shown."
+        },
+        {
+          "name": "defaultView",
+          "type": "SchedulerView",
+          "required": false,
+          "default": "'week'"
+        },
+        {
+          "name": "onViewChange",
+          "type": "(view: SchedulerView) => void",
+          "required": false
+        },
+        {
+          "name": "views",
+          "type": "SchedulerView[]",
+          "required": false,
+          "default": "['day', 'week', 'month']",
+          "description": "The views the switch offers, in order."
+        },
+        {
+          "name": "date",
+          "type": "Date",
+          "required": false,
+          "description": "Any moment in the day, week or month shown. Defaults to today."
+        },
+        {
+          "name": "defaultDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "name": "onDateChange",
+          "type": "(date: Date) => void",
+          "required": false,
+          "description": "Called with midnight (in `timeZone`) of the new day as the period changes."
+        },
+        {
+          "name": "events",
+          "type": "SchedulerEvent[]",
+          "required": false,
+          "description": "The events. Leave it out and pass `defaultEvents` to let the Scheduler keep them."
+        },
+        {
+          "name": "defaultEvents",
+          "type": "SchedulerEvent[]",
+          "required": false,
+          "default": "[]"
+        },
+        {
+          "name": "onEventChange",
+          "type": "(event: SchedulerEvent, previous: SchedulerEvent) => void",
+          "required": false,
+          "description": "After a drag, a resize or a keyboard move: the event with its new times, then as it was."
+        },
+        {
+          "name": "onEventOpen",
+          "type": "(event: SchedulerEvent) => void",
+          "required": false,
+          "description": "A click, Enter or Space on an event."
+        },
+        {
+          "name": "onSlotSelect",
+          "type": "(slot: SchedulerSlot) => void",
+          "required": false,
+          "description": "Slots picked with the pointer or Enter: their start and end, or a whole day."
+        },
+        {
+          "name": "availability",
+          "type": "SchedulerAvailability[]",
+          "required": false,
+          "default": "[]",
+          "description": "Free or busy times, drawn under the events."
+        },
+        {
+          "name": "slotMinutes",
+          "type": "number",
+          "required": false,
+          "default": "30",
+          "description": "Minutes per slot: the rows, the drag steps and the keyboard steps."
+        },
+        {
+          "name": "workingHours",
+          "type": "[number, number]",
+          "required": false,
+          "default": "[9, 18]",
+          "description": "From and to, in hours (`[9, 18]`); outside them the grid is bg/canvas."
+        },
+        {
+          "name": "timeZone",
+          "type": "string",
+          "required": false,
+          "description": "An IANA time zone (\"Europe/Warsaw\"). Defaults to the browser's."
+        },
+        {
+          "name": "weekStartsOn",
+          "type": "WeekDay",
+          "required": false,
+          "description": "The week's first day, 0 (Sunday) to 6. Defaults to `dateLocale`'s."
+        },
+        {
+          "name": "now",
+          "type": "Date",
+          "required": false,
+          "description": "Now, for the now line and today. Defaults to the clock, updated every minute."
+        },
+        {
+          "name": "eventPopover",
+          "type": "(event: SchedulerEvent, close: () => void) => React.ReactNode",
+          "required": false,
+          "description": "The body of a popover that opens on an event, under its title and time (and attendees)."
+        },
+        {
+          "name": "slotPopover",
+          "type": "(slot: SchedulerSlot, close: () => void) => React.ReactNode",
+          "required": false,
+          "description": "The body of a popover that opens on picked slots, under \"New event\" and the time."
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target for the popovers and hover cards."
+        }
+      ]
+    },
+    "SchedulerToolbar": {
+      "description": "Today, ‹ ›, the period (a button that opens a DatePickerPanel) and the view switch. `children` go before the switch (a \"New event\" button, a filter). Other props, `ref` included, go to its `div`.",
+      "type": "SchedulerToolbarProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "SchedulerGrid": {
+      "description": "The current view: day and week as a time grid, month as day cells. A new view crossfades in. Other props, `ref` included, go to the `div` that holds it.",
+      "type": "SchedulerGridProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "Scheduler": {
+      "description": "The toolbar over the current view. Other props, `ref` included, go to the card's root `div`. <Scheduler events={events} onEventChange={(e) => save(e)} onSlotSelect={(slot) => create(slot)} timeZone=\"Europe/Warsaw\" />",
+      "type": "SchedulerProps",
+      "extends": [
+        "Omit<SchedulerRootProps, 'children'>"
+      ],
+      "props": []
+    }
+  },
   "search-bar": {
     "SearchBar": {
       "type": "SearchBarProps",
@@ -4498,6 +6884,12 @@
         "Omit<React.ComponentProps<'input'>, 'size'>"
       ],
       "props": [
+        {
+          "name": "leading",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "field: shown in the field before the query, e.g. filter chips. The field wraps as they fill it."
+        },
         {
           "name": "shortcut",
           "type": "boolean",
@@ -4555,6 +6947,115 @@
           "required": false,
           "default": "true",
           "description": "panel: show the Navigate and Open key hints."
+        }
+      ]
+    }
+  },
+  "search-scoped": {
+    "ScopedSearch": {
+      "type": "ScopedSearchProps",
+      "extends": [
+        "Omit<SearchBarProps, 'value' | 'defaultValue' | 'onChange' | 'onSelect' | 'leading' | 'variant' | 'groups' | 'idleText' | 'emptyText' | 'meta' | 'hints'>"
+      ],
+      "props": [
+        {
+          "name": "scopes",
+          "type": "ScopedSearchScope[]",
+          "required": true,
+          "description": "What the query can be narrowed by, typed as `key:value`."
+        },
+        {
+          "name": "groups",
+          "type": "ScopedSearchGroup[]",
+          "required": true,
+          "description": "The results, one group per kind of record. Filtered here unless `filter` is off."
+        },
+        {
+          "name": "recent",
+          "type": "string[]",
+          "required": false,
+          "default": "[]",
+          "description": "Earlier queries as strings (`formatScopedQuery`), newest first; shown before anything is typed."
+        },
+        {
+          "name": "value",
+          "type": "ScopedSearchQuery",
+          "required": false,
+          "description": "The chips and the words, controlled."
+        },
+        {
+          "name": "defaultValue",
+          "type": "ScopedSearchQuery",
+          "required": false,
+          "description": "The chips and the words to start with."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(query: ScopedSearchQuery) => void",
+          "required": false,
+          "description": "Every change: a chip added or removed, a word typed."
+        },
+        {
+          "name": "onSelect",
+          "type": "(item: ScopedSearchItem, query: ScopedSearchQuery) => void",
+          "required": false,
+          "description": "A result picked (Enter or a click): the row, and the query that found it. The list closes."
+        },
+        {
+          "name": "filter",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Filter `groups` here by the chips and the words. Off when your server does it: then they show as given."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The results are on their way: a Spinner and \"Searching…\" under what is shown."
+        },
+        {
+          "name": "emptyText",
+          "type": "(query: string) => React.ReactNode",
+          "required": false,
+          "description": "Shown when nothing matches; gets the query as a string. Defaults to the `noResultsFor` label."
+        },
+        {
+          "name": "hints",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Key hints and the result count under the list."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "The list, controlled. It opens on focus, typing and ↓, and closes on Escape, a pick or a press outside."
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target for the list. Defaults to `document.body`."
+        },
+        {
+          "name": "onInteractOutside",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "A press or focus outside the field and the list; `preventDefault()` keeps the list open."
         }
       ]
     }
@@ -4629,7 +7130,7 @@
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "A 1px border-subtle outline around the track."
+          "description": "A border-subtle outline around the track (border-width/strong: the track is a control)."
         },
         {
           "name": "fullWidth",
@@ -5379,6 +7880,116 @@
       ]
     }
   },
+  "stepper": {
+    "StepperItem": {
+      "description": "One step, for the Stepper's children: the place to put content under a vertical step, or a label that needs more than text (a Badge). Takes its number and state from its place. Other props, `ref` included, go to the `li`.",
+      "type": "StepperItemProps",
+      "extends": [
+        "Omit<React.ComponentProps<'li'>, 'value' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "Names the step; the Stepper's `value` picks the current one."
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A line under the label: what the step asks for, or what went wrong."
+        },
+        {
+          "name": "state",
+          "type": "StepperStepState",
+          "required": false,
+          "description": "See `StepperStep.state`."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The step's content, shown under its label while it is the current step (vertical only)."
+        }
+      ]
+    },
+    "Stepper": {
+      "type": "StepperProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "steps",
+          "type": "StepperStep[]",
+          "required": false,
+          "description": "The steps as data. Or leave it out and write them as `StepperItem` children."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The steps as elements, when one needs content under it or more than text in its label."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The current step's `value`. A value that matches no step leaves none current."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "description": "The current step to start on, uncontrolled. Defaults to the first."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Called with a step's `value` when it is clicked (only when `linear` is false)."
+        },
+        {
+          "name": "orientation",
+          "type": "'horizontal' | 'vertical'",
+          "required": false,
+          "default": "'horizontal'",
+          "description": "Steps in a row with their labels under them, or down the start side with content under the current one."
+        },
+        {
+          "name": "linear",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "True: steps go in order, the ones before the current step are complete, and none is clickable. False: every step that isn't disabled is a button that makes it current."
+        },
+        {
+          "name": "layout",
+          "type": "'auto' | 'full' | 'compact'",
+          "required": false,
+          "default": "'auto'",
+          "description": "`auto`: a horizontal stepper narrower than 120px a step shows \"Step 3 of 4\" over a Progress bar instead. `full` always shows the steps, `compact` always the count and bar."
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Names the list of steps."
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
   "streaming-text": {
     "StreamingText": {
       "type": "StreamingTextProps",
@@ -5450,6 +8061,145 @@
           "type": "'left' | 'right'",
           "required": false,
           "default": "'left'"
+        }
+      ]
+    }
+  },
+  "table-pro": {
+    "TableRowToggle": {
+      "description": "The chevron that opens a row: a tertiary xs icon Button with `aria-expanded`, pointing to the row's end when closed and down when open. Other props, `ref` included, go to the button.",
+      "type": "TableRowToggleProps",
+      "extends": [
+        "Omit<ButtonProps, 'children' | 'onClick' | 'variant' | 'size' | 'iconOnly'>"
+      ],
+      "props": [
+        {
+          "name": "expanded",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(expanded: boolean) => void",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The row it opens, for its name: \"Rows under <name>\"."
+        }
+      ]
+    },
+    "TableGrouped": {
+      "type": "TableGroupedProps",
+      "extends": [
+        "Omit<TableProps<R>, 'columns' | 'footer' | 'tableProps' | 'renderCell' | 'renderRow'>"
+      ],
+      "props": [
+        {
+          "name": "columns",
+          "type": "TableGroupedColumn<R>[]",
+          "required": true
+        },
+        {
+          "name": "getSubRows",
+          "type": "(row: R) => R[] | undefined",
+          "required": false,
+          "description": "A row's own rows, shown under it when it's open. Rows without any get no chevron."
+        },
+        {
+          "name": "expanded",
+          "type": "string[]",
+          "required": false,
+          "description": "Ids of the open rows (controlled)."
+        },
+        {
+          "name": "defaultExpanded",
+          "type": "string[]",
+          "required": false,
+          "default": "[]",
+          "description": "Ids of the rows open at first (uncontrolled)."
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(ids: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "groupBy",
+          "type": "keyof R & string",
+          "required": false,
+          "description": "Gathers the rows under a header row per value of this field."
+        },
+        {
+          "name": "groupOrder",
+          "type": "string[]",
+          "required": false,
+          "description": "Group values in the order to show them; groups left out follow, in the order of their first row."
+        },
+        {
+          "name": "renderGroup",
+          "type": "(group: TableGroup<R>) => React.ReactNode",
+          "required": false,
+          "description": "Draws a group's name in its header (a Badge, say); the value as text by default."
+        },
+        {
+          "name": "collapsedGroups",
+          "type": "string[]",
+          "required": false,
+          "description": "Values of the closed groups (controlled). Groups are open unless listed."
+        },
+        {
+          "name": "defaultCollapsedGroups",
+          "type": "string[]",
+          "required": false,
+          "default": "[]",
+          "description": "Values of the groups closed at first (uncontrolled)."
+        },
+        {
+          "name": "onCollapsedGroupsChange",
+          "type": "(values: string[]) => void",
+          "required": false
+        },
+        {
+          "name": "pinned",
+          "type": "'start'",
+          "required": false,
+          "description": "Keeps the first column (and the checkbox column) in place while the rest scroll sideways, with a shadow over them."
+        },
+        {
+          "name": "footer",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Adds the totals row, in a `<tfoot>`: \"Total\", then each column's `aggregate` in its `format`."
+        },
+        {
+          "name": "density",
+          "type": "'default' | 'compact'",
+          "required": false,
+          "default": "'default'",
+          "description": "Row height: 40px, or 32px with `compact`."
+        },
+        {
+          "name": "defaultSelected",
+          "type": "string[]",
+          "required": false,
+          "default": "[]",
+          "description": "Ids of the rows picked at first (uncontrolled)."
+        },
+        {
+          "name": "renderCell",
+          "type": "(cell: { row: R; column: TableGroupedColumn<R>; depth: number; content: React.ReactNode }) => React.ReactNode",
+          "required": false,
+          "description": "Draws a body cell's content, after the column's own `cell`; the first column keeps the chevron and the indent in front of it. `depth` is 0 for a row you passed, 1 for its sub-rows."
+        },
+        {
+          "name": "renderRow",
+          "type": "(row: { row: R; depth: number; selected: boolean; rowProps: React.ComponentProps<'tr'>; children: React.ReactNode }) => React.ReactNode",
+          "required": false,
+          "description": "Draws each body row, as Table's `renderRow`: spread `rowProps` (focus, keys, ARIA and styles) on your `<tr>` and put `children` inside. Group header rows are drawn by the table."
         }
       ]
     }
@@ -5541,6 +8291,18 @@
           "type": "(row: { row: R; index: number; selected: boolean; rowProps: React.ComponentProps<'tr'>; children: React.ReactNode }) => React.ReactNode",
           "required": false,
           "description": "Draws each body row. Spread `rowProps` (state and styles) on your `<tr>` and put `children` (the cells) inside, to add a handler, a data attribute or a context provider: `renderRow={({ row, rowProps, children }) => <tr {...rowProps} onClick={() => open(row)}>{children}</tr>}`."
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Rows for a `<tfoot>` under the body, such as a totals row: give `<tr>`s with one cell per column, plus one first for the checkbox column when `selectable`."
+        },
+        {
+          "name": "tableProps",
+          "type": "Omit<React.ComponentProps<'table'>, 'children'>",
+          "required": false,
+          "description": "Props for the `<table>` element itself (the rest go to the frame around it): a `role` such as `\"treegrid\"` when rows expand, `aria-*`, handlers. `className` and `style` add to the table's own."
         }
       ]
     }
@@ -5714,6 +8476,332 @@
       ]
     }
   },
+  "time-picker": {
+    "TimeList": {
+      "description": "The list of times on its own: a focusable `listbox`, named \"Time\" (the `time` label) unless you name it. Arrows move the highlight, Home and End go to the first and last time, Page Up and Down an hour, typing jumps to the time typed, Enter or Space picks. Give it a height (or a flex parent) and it scrolls. Other props, `ref` included, go to the listbox.",
+      "type": "TimeListProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "TimeValue | null",
+          "required": false,
+          "description": "The picked time."
+        },
+        {
+          "name": "defaultValue",
+          "type": "TimeValue | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: TimeValue) => void",
+          "required": false,
+          "description": "Called when a time is picked (click, Enter or Space)."
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "required": false,
+          "default": "15",
+          "description": "Minutes between the listed times, from midnight."
+        },
+        {
+          "name": "min",
+          "type": "TimeValue",
+          "required": false,
+          "description": "Times before this are dimmed and can't be picked."
+        },
+        {
+          "name": "max",
+          "type": "TimeValue",
+          "required": false,
+          "description": "Times after this are dimmed and can't be picked."
+        },
+        {
+          "name": "isTimeDisabled",
+          "type": "(time: TimeValue) => boolean",
+          "required": false,
+          "description": "Dims a time and keeps it from being picked: a booked slot, a lunch break."
+        },
+        {
+          "name": "format",
+          "type": "TimeFormat",
+          "required": false,
+          "description": "12- or 24-hour. Defaults to how the `dateLocale` label's locale writes times."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "TimePicker": {
+      "description": "A time field: type a time or pick one from the list under it. Other props, `ref` included, go to the text input; `className` styles the field around it.",
+      "type": "TimePickerProps",
+      "extends": [
+        "Omit<React.ComponentProps<'input'>, 'value' | 'defaultValue' | 'size' | 'type' | 'min' | 'max' | 'step' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "TimeValue | null",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "TimeValue | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: TimeValue | null) => void",
+          "required": false,
+          "description": "A picked or typed time; `null` when the field is cleared or what was typed can't be picked."
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "required": false,
+          "default": "15",
+          "description": "Minutes between the listed times, from midnight. Typed times needn't fall on a step."
+        },
+        {
+          "name": "min",
+          "type": "TimeValue",
+          "required": false,
+          "description": "Times before this are dimmed in the list, and typing one marks the field invalid."
+        },
+        {
+          "name": "max",
+          "type": "TimeValue",
+          "required": false,
+          "description": "Times after this are dimmed in the list, and typing one marks the field invalid."
+        },
+        {
+          "name": "isTimeDisabled",
+          "type": "(time: TimeValue) => boolean",
+          "required": false,
+          "description": "Dims a time and keeps it from being picked or typed: a booked slot, a lunch break."
+        },
+        {
+          "name": "format",
+          "type": "TimeFormat",
+          "required": false,
+          "description": "12- or 24-hour. Defaults to how the `dateLocale` label's locale writes times."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "The list of times."
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md' | 'lg'",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "onInteractOutside",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "A press outside the field and the list; `preventDefault()` keeps the list open."
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer wrapper (label + field + hint). `className` styles the field."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    },
+    "DateTimePickerPanel": {
+      "description": "The date-and-time panel on its own, in place: DatePickerPanel's calendar with a column of times beside it. Picking a day moves focus to the times. Other props, `ref` included, go to the surface.",
+      "type": "DateTimePickerPanelProps",
+      "extends": [
+        "DateTimeOptions",
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false,
+          "description": "The picked date and time."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false,
+          "description": "Called once a day and a time are both picked, and on every change after."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "DateTimePicker": {
+      "description": "A date and time field: DatePicker's field, with a clock's worth of times beside the calendar. Pick a day and a time; each pick sets the value and the panel stays open until Escape, a press outside, or Enter on the picked time. Other props, `ref` included, go to the trigger button.",
+      "type": "DateTimePickerProps",
+      "extends": [
+        "DateTimeOptions",
+        "DateTimeTriggerAttributes"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "Date | null",
+          "required": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "Date | null",
+          "required": false,
+          "default": "null"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: Date) => void",
+          "required": false,
+          "description": "Called once a day and a time are both picked, and on every change after."
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Shown while nothing is picked. Defaults to the `pickDateTime` label."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Submits `YYYY-MM-DDTHH:mm` with a form, as `<input type=\"datetime-local\">` does."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "'sm' | 'md' | 'lg'",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "HTMLElement | null",
+          "required": false,
+          "description": "Portal target. Defaults to `document.body`."
+        },
+        {
+          "name": "onOpenAutoFocus",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "Called as the panel opens and takes focus; `preventDefault()` leaves focus where it was."
+        },
+        {
+          "name": "onInteractOutside",
+          "type": "(event: Event) => void",
+          "required": false,
+          "description": "A press outside the panel; `preventDefault()` keeps it open."
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the outer wrapper (label + field + hint). `className` styles the field."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  },
   "toast": {
     "Toast": {
       "description": "A single toast on its own. Lives inside `<Toaster>` (it needs the Radix toast provider).",
@@ -5808,6 +8896,190 @@
           "type": "'hover' | 'focus'",
           "required": false,
           "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
+  "tool-call": {
+    "ToolCallRoot": {
+      "description": "The card and its open state. Other props, `ref` included, go to the card's `<div>`.",
+      "type": "ToolCallRootProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "status",
+          "type": "ToolCallStatus",
+          "required": true
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "Open, controlled."
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "description": "Open at first, uncontrolled. Left out, it follows the status: open only on `error`."
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "startedAt",
+          "type": "Date | number",
+          "required": false,
+          "description": "When the call started, for the time shown while it runs. Defaults to when this card first saw it running."
+        }
+      ]
+    },
+    "ToolCallHeader": {
+      "description": "The button that opens and folds the card. Other props, `ref` included, go to the `<button>`.",
+      "type": "ToolCallHeaderProps",
+      "extends": [
+        "Omit<React.ComponentProps<'button'>, 'name' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "name",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The tool, e.g. \"Find slots\"."
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 16px icon before the name. Defaults to a hammer and wrench."
+        },
+        {
+          "name": "target",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What it ran on, in mono after the name: a function, a file, a URL. Truncates."
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "required": false,
+          "description": "How long the call took, in ms, shown once it ends. Defaults to the time this card measured."
+        }
+      ]
+    },
+    "ToolCallContent": {
+      "description": "The body under the header: its sections, a rule between each. Folded, it stays mounted but leaves tab order and screen readers. Other props, `ref` included, go to the `<div>` that holds the sections.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    },
+    "ToolCallSection": {
+      "description": "One titled part of the body: JSON (or a string) in a CodeBlock with Copy, or the app's own node under the title. Other props, `ref` included, go to the section's `<div>`.",
+      "type": "ToolCallSectionProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title'>"
+      ],
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "description": "What it holds, e.g. \"Input\". Names the CodeBlock (as its file name) or the group."
+        },
+        {
+          "name": "value",
+          "type": "ToolCallValue",
+          "required": true
+        },
+        {
+          "name": "maxLines",
+          "type": "number",
+          "required": false,
+          "default": "10",
+          "description": "JSON longer than this is cut at that line, with \"Show all N lines\" under it."
+        }
+      ]
+    },
+    "ToolCallError": {
+      "description": "What went wrong, in red, with Retry. Other props, `ref` included, go to its `<div>`.",
+      "type": "ToolCallErrorProps",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": [
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Retry. Focus goes back to the header, since Retry leaves with the error."
+        }
+      ]
+    },
+    "ToolCall": {
+      "description": "One tool call as a card. Other props, `ref` included, go to the card's `<div>`.",
+      "type": "ToolCallProps",
+      "extends": [
+        "Omit<ToolCallRootProps, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "name",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "The tool, e.g. \"Find slots\"."
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 16px icon before the name. Defaults to a hammer and wrench."
+        },
+        {
+          "name": "target",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What it ran on, in mono after the name: a function, a file, a URL. Truncates."
+        },
+        {
+          "name": "input",
+          "type": "ToolCallValue",
+          "required": false,
+          "description": "The arguments: JSON in a CodeBlock, or a node of your own."
+        },
+        {
+          "name": "output",
+          "type": "ToolCallValue",
+          "required": false,
+          "description": "What came back: JSON in a CodeBlock, or a node of your own."
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "What went wrong, shown on `error` above the output."
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "required": false,
+          "description": "How long the call took, in ms, shown once it ends. Defaults to the time this card measured."
+        },
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Shows Retry on `error`."
+        },
+        {
+          "name": "maxLines",
+          "type": "number",
+          "required": false,
+          "description": "JSON longer than this is cut at that line, with \"Show all N lines\" under it."
         }
       ]
     }

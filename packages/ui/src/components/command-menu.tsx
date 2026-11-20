@@ -25,6 +25,11 @@ import { Kbd, KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
  * Built on the Radix Dialog (focus trap, Escape, focus back to where it was). With `hotkey`,
  * ⌘K or Ctrl+K anywhere on the page toggles it.
  *
+ * For a menu that changes what it shows (sub-pages, an answer), `query` / `onQueryChange` drive
+ * the search, an item with `keepOpen` runs without closing the menu, `header` goes above the
+ * search row, `children` take the list's place, and `footer` replaces the key hints. Satin Pro's
+ * CommandPages is built this way.
+ *
  * Other props, `ref` included, go to the menu's panel (the Radix Content).
  */
 export interface CommandItem {
@@ -37,6 +42,8 @@ export interface CommandItem {
   /** More words to match on. */
   keywords?: string[]
   disabled?: boolean
+  /** Running it leaves the menu open: for an item that changes what the menu shows, such as a sub-page. */
+  keepOpen?: boolean
   onSelect?: () => void
 }
 
@@ -65,6 +72,15 @@ export interface CommandMenuProps
   container?: HTMLElement | null
   onOpenAutoFocus?: (event: Event) => void
   className?: string
+  /** The search text. Pass it with onQueryChange to control it; it is emptied each time the menu closes. */
+  query?: string
+  onQueryChange?: (query: string) => void
+  /** Above the search row, such as a Breadcrumb of the pages opened so far. */
+  header?: React.ReactNode
+  /** Key hints in place of Navigate, Open and Close; compose them from KbdHint. Shown when `hints` is on. */
+  footer?: React.ReactNode
+  /** Shown in place of the list, such as an answer to the query; the search row and the footer stay. */
+  children?: React.ReactNode
 }
 
 const hit = (item: CommandItem, q: string) => {
@@ -89,8 +105,14 @@ export function useCommandList(groups: CommandGroup[], query: string, onRun: (it
   const flat = shown.flatMap((g) => g.items)
   const optionId = (i: number) => `${listId}-${i}`
 
-  // A new query starts from its first match.
-  React.useEffect(() => setActive(0), [query])
+  // A new query, or new rows for the same one (another page), starts from its first match. Set
+  // while rendering, so the old highlight never shows on the new rows.
+  const rowsKey = `${query}\n${flat.map((i) => i.id).join('\n')}`
+  const [seenRows, setSeenRows] = React.useState(rowsKey)
+  if (seenRows !== rowsKey) {
+    setSeenRows(rowsKey)
+    setActive(0)
+  }
   // Keep the highlighted row in view as the arrows move it.
   React.useEffect(() => {
     listRef.current?.querySelector(`[id="${optionId(active)}"]`)?.scrollIntoView({ block: 'nearest' })
@@ -177,6 +199,11 @@ export function CommandMenu({
   container,
   onOpenAutoFocus,
   className,
+  query: queryProp,
+  onQueryChange,
+  header,
+  footer,
+  children,
   ...props
 }: CommandMenuProps) {
   const labels = useSatinLabels()
@@ -190,11 +217,23 @@ export function CommandMenu({
     [openProp, onOpenChange],
   )
 
-  const [query, setQuery] = React.useState('')
+  const [uncontrolledQuery, setUncontrolledQuery] = React.useState('')
+  const query = queryProp ?? uncontrolledQuery
+  const queryChange = React.useRef(onQueryChange)
+  queryChange.current = onQueryChange
+  const setQuery = React.useCallback(
+    (next: string) => {
+      if (queryProp == null) setUncontrolledQuery(next)
+      queryChange.current?.(next)
+    },
+    [queryProp],
+  )
   const list = useCommandList(groups, query, (item) => {
-    setOpen(false)
+    if (!item.keepOpen) setOpen(false)
     item.onSelect?.()
   })
+  // Children in place of the list: the field no longer points at one.
+  const showList = children == null
 
   React.useEffect(() => {
     if (!hotkey) return
@@ -208,10 +247,13 @@ export function CommandMenu({
     return () => document.removeEventListener('keydown', onKey)
   }, [hotkey, open, setOpen])
 
-  // A fresh query every time it opens.
+  // A fresh query every time it opens. Emptied as it closes, so a query set while it is closed
+  // (to open it on a search) is the one it opens with.
+  const wasOpen = React.useRef(open)
   React.useEffect(() => {
-    if (open) setQuery('')
-  }, [open])
+    if (wasOpen.current && !open) setQuery('')
+    wasOpen.current = open
+  }, [open, setQuery])
 
   const position = container ? 'absolute' : 'fixed'
 
@@ -235,15 +277,16 @@ export function CommandMenu({
             )}
           >
             <DialogPrimitive.Title className="sr-only">{labels.commandMenu}</DialogPrimitive.Title>
+            {header}
             <label className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-4 text-text-muted">
               <Search aria-hidden className="size-4 shrink-0 [stroke-width:1.875]" />
               <input
-                {...list.inputProps}
+                {...(showList ? list.inputProps : { role: 'combobox', 'aria-expanded': false, 'aria-autocomplete': 'list' })}
                 aria-label={labels.searchCommands}
                 value={query}
                 placeholder={placeholder ?? labels.commandPlaceholder}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={list.onKeyDown}
+                onKeyDown={showList ? list.onKeyDown : undefined}
                 className="min-w-0 flex-1 bg-transparent text-base leading-[21px] text-text-default outline-none placeholder:text-text-muted focus-visible:ring-0"
               />
               <Kbd size="md" aria-hidden>
@@ -251,16 +294,22 @@ export function CommandMenu({
               </Kbd>
             </label>
 
-            {list.renderList({
-              label: labels.commands,
-              empty: <p className="px-2 py-8 text-center text-sm text-text-muted">{(emptyText ?? labels.noResultsFor)(query)}</p>,
-            })}
+            {showList
+              ? list.renderList({
+                  label: labels.commands,
+                  empty: <p className="px-2 py-8 text-center text-sm text-text-muted">{(emptyText ?? labels.noResultsFor)(query)}</p>,
+                })
+              : children}
 
             {hints && (
               <div aria-hidden className="flex h-10 shrink-0 items-center gap-4 border-t border-border-subtle px-4">
-                <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
-                <KbdHint keys={[<KbdReturn key="return" />]} label={labels.openItem} />
-                <KbdHint className="ms-auto" keys={['Esc']} label={labels.close} />
+                {footer ?? (
+                  <>
+                    <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
+                    <KbdHint keys={[<KbdReturn key="return" />]} label={labels.openItem} />
+                    <KbdHint className="ms-auto" keys={['Esc']} label={labels.close} />
+                  </>
+                )}
               </div>
             )}
           </DialogPrimitive.Content>

@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every ReviewableChanges state (Satin Pro). Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { ReviewableChangesGrid } from '../../states/ReviewableChangesGrid'
+---
+
+<Layout title="Reviewable changes states · Satin" description="Every Reviewable changes state: a change pending, accepted and skipped, and applying, with a title and without.">
+  <main class="min-h-dvh bg-bg-card">
+    <ReviewableChangesGrid />
+  </main>
+</Layout>

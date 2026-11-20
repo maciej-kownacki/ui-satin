@@ -8,7 +8,7 @@ import { Button } from './button'
 import { useSatinLabels } from './labels'
 
 /**
- * Card, 1:1 with the uiKit `Card` set (1122:20156): bg/popover (like Decision card), 1px border/default, radius-2xl (16),
+ * Card, 1:1 with the uiKit `Card` set (1122:20156): bg/popover (like Decision card), a border/default edge, radius-2xl (16),
  * no shadow, 405 wide by default. Three stacked sections with no gap between them:
  *
  * - header: title in Label/lg (14/14 medium), description in text/sm muted, 4px apart.

@@ -45,18 +45,6 @@
     "limit": "12 kB"
   },
   {
-    "name": "Agent presence (Satin Pro; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/agent-presence.js",
-    "import": "{ AgentPresence, useAgentPresence }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "3 kB"
-  },
-  {
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,
@@ -69,5 +57,308 @@
     "gzip": true,
     "limit": "3 kB",
     "rolldown": false
+  },
+  {
+    "name": "Agent action log (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-undo-log.js",
+    "import": "{ AgentActionLog }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
+    "name": "Activity timeline (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/activity-timeline.js",
+    "import": "{ ActivityTimeline }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
+    "name": "Agent presence (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-presence.js",
+    "import": "{ AgentPresence, useAgentPresence }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "3 kB"
+  },
+  {
+    "name": "Combobox (with Radix Popover, Chip, Spinner and the menu row)",
+    "path": "packages/ui/dist/components/combobox.js",
+    "import": "{ Combobox }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "44 kB"
+  },
+  {
+    "name": "Command pages (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/command-pages.js",
+    "import": "{ CommandPages }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "3 kB"
+  },
+  {
+    "name": "Data grid (Satin Pro, with Radix DropdownMenu; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/data-grid.js",
+    "import": "{ DataGrid, DataGridColumnsMenu, DataGridViewMenu, DataGridToolbar }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "18 kB"
+  },
+  {
+    "name": "Date picker (DatePicker, DateRangePicker and datePresets, with Radix Popover and Select)",
+    "path": "packages/ui/dist/components/date-picker.js",
+    "import": "{ DatePicker, DateRangePicker, datePresets }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "54 kB"
+  },
+  {
+    "name": "Availability calendar (Satin Pro; Calendar, Dot and Tooltip come from @uisatin/ui, the peer, left out)",
+    "path": "packages/ui-pro/dist/components/date-availability.js",
+    "import": "{ AvailabilityCalendar, AvailabilityDatePicker }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "2 kB"
+  },
+  {
+    "name": "DropdownMenu with submenus and checkable rows (Radix DropdownMenu, iconoir chevron)",
+    "path": "packages/ui/dist/components/dropdown.js",
+    "import": "{ DropdownMenu, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "46 kB"
+  },
+  {
+    "name": "Scheduler (Satin Pro, with Radix Popover and its positioning, which an app shares with Free; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/scheduler.js",
+    "import": "{ Scheduler }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "36 kB"
+  },
+  {
+    "name": "Reviewable changes (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-changes-review.js",
+    "import": "{ ReviewableChanges }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
+    "name": "Filter bar (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/filter-bar.js",
+    "import": "{ FilterBar }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "9 kB"
+  },
+  {
+    "name": "Kanban board (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/kanban-board.js",
+    "import": "{ KanbanBoard, KanbanCard }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "8 kB"
+  },
+  {
+    "name": "People picker (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/people-picker.js",
+    "import": "{ PeoplePicker }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
+    "name": "Permission request (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-permissions.js",
+    "import": "{ AgentPermissionRequest }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "Agent plan (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/agent-plan.js",
+    "import": "{ AgentPlan }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
+    "name": "PromptBar with mentions and commands (Radix Popover, DropdownMenu, Avatar's Tooltip; 51 kB before mentions)",
+    "path": "packages/ui/dist/components/prompt-bar.js",
+    "import": "{ PromptBar }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "60 kB"
+  },
+  {
+    "name": "Prompt mentions (usePromptMentions, Radix Popover)",
+    "path": "packages/ui/dist/components/prompt-mentions.js",
+    "import": "{ usePromptMentions }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "44 kB"
+  },
+  {
+    "name": "Review queue (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/review-queue.js",
+    "import": "{ ReviewQueue }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
+    "name": "Scoped search (Satin Pro, with Radix Popover and its floating-ui, shared with Free's Popover and Combobox; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/search-scoped.js",
+    "import": "{ ScopedSearch }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "28 kB"
+  },
+  {
+    "name": "Stepper (with Progress, cn and the check icon)",
+    "path": "packages/ui/dist/components/stepper.js",
+    "import": "{ Stepper, StepperItem }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "14 kB"
+  },
+  {
+    "name": "Grouped table (Pro)",
+    "path": "packages/ui-pro/dist/components/table-pro.js",
+    "import": "{ TableGrouped }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
+    "name": "Time picker (TimePicker and DateTimePicker: the Date picker's Calendar and its year Select, Radix Popover, the menu rows)",
+    "path": "packages/ui/dist/components/time-picker.js",
+    "import": "{ TimePicker, DateTimePicker }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "55 kB"
+  },
+  {
+    "name": "Toast batch (Satin Pro, with the rolling number; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/toast-batch.js",
+    "import": "{ toastBatch }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
+    "name": "Toast (Toaster and toast(), with Radix Toast)",
+    "path": "packages/ui/dist/components/toast.js",
+    "import": "{ Toaster, toast }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "30 kB"
+  },
+  {
+    "name": "Tool call (with CodeBlock, Button, Spinner)",
+    "path": "packages/ui/dist/components/tool-call.js",
+    "import": "{ ToolCall }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "21 kB"
   }
 ]

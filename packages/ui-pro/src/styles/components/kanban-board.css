@@ -1,0 +1,60 @@
+/*
+ * Kanban board (components/kanban-board.tsx). The board sets data-flip on a card for the length
+ * of one move; everything else is a Tailwind class in the component.
+ *
+ * - Lifted (the keyboard's pick-up, and the card under the pointer): scale 1.02 and the toast's
+ *   shadow, eased in over --duration-fast.
+ * - The card under the pointer follows it with `translate` set from script on every move: no
+ *   easing there, only its scale and shadow ease in when it lifts.
+ * - Cards making room shift to their new place with --ease-in-out (data-flip="shift"); a dropped
+ *   card settles into its place with --ease-out over --duration-base (data-flip="settle").
+ * Satin's reduced-motion rule (motion.css) cuts all of it; the component skips the shifts too.
+ */
+.satin-kanban-item {
+  transition:
+    scale var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+.satin-kanban-item[data-lifted],
+.satin-kanban-item[data-flip='lift'],
+.satin-kanban-overlay {
+  scale: 1.02;
+  box-shadow:
+    0 10px 15px -3px var(--effect-shadow-sm),
+    0 4px 6px -4px var(--effect-shadow-sm);
+  z-index: 1;
+}
+.satin-kanban-item[data-lifted] {
+  cursor: grabbing;
+}
+
+/* The card that follows the pointer lifts out of its place. */
+.satin-kanban-overlay {
+  transition:
+    scale var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+@starting-style {
+  .satin-kanban-overlay {
+    scale: 1;
+    box-shadow:
+      0 0 0 0 transparent,
+      0 0 0 0 transparent;
+  }
+}
+
+/* FLIP: jump back to where the card was (no transition), then glide to where it is. */
+.satin-kanban-item[data-flip='invert'],
+.satin-kanban-item[data-flip='lift'] {
+  transition: none;
+}
+.satin-kanban-item[data-flip='shift'] {
+  transition: translate var(--duration-base) var(--ease-in-out);
+}
+.satin-kanban-item[data-flip='settle'] {
+  z-index: 1;
+  transition:
+    translate var(--duration-base) var(--ease-out),
+    scale var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+}

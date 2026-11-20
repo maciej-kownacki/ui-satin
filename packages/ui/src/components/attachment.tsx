@@ -60,7 +60,7 @@ export function Attachment({
     <div
       data-slot="attachment"
       className={cn(
-        'group/attachment relative inline-flex max-w-full shrink-0 items-center border border-border-default bg-bg-popover',
+        'group/attachment relative inline-flex max-w-full shrink-0 items-center border border-strong border-border-default bg-bg-popover',
         '[box-shadow:0_1px_1px_0_var(--effect-shadow-xs)]',
         'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
         lg ? 'gap-2.5 px-2' : 'h-control-height gap-1.5 ps-2',
@@ -224,7 +224,7 @@ export function AttachmentPreview({
           className="pointer-events-none absolute start-0 end-2.5 bottom-0 h-8 bg-linear-to-b from-transparent to-bg-popover"
         />
       </div>
-      <div className="h-px bg-border-subtle" />
+      <div className="h-(--border-width-default) bg-border-subtle" />
       <div className="flex items-center gap-2 px-2 py-1.5">
         <div className="flex min-w-0 flex-1 items-center gap-1">{navigation}</div>
         <Button variant="tertiary" size="xs" onClick={onOpen}>
