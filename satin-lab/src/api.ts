@@ -32,7 +32,7 @@ export const api: Record<string, Api> = {
   },
   'bulk-action-bar': {
     description:
-      'The `BulkActionBar` component (Satin Pro, `@uisatin/pro/bulk-action-bar`) is a `role="toolbar"` that shows from `count` 1 and hides at 0. With `total` and `onSelectAll` it starts with a select-all Checkbox: indeterminate while some are selected, checked when all are; a click selects all, or clears when all are selected. The count sits in a grey Badge, and the clear button (×) at the end, after a rule. Each entry of `actions` and `overflow` is `{ label, icon, onSelect, tone, disabled, running }`; an `onSelect` that returns a promise shows a Spinner until it settles. Parts: `BulkActionBarRoot`, `BulkActionBarCount`, `BulkActionBarSeparator`, `BulkActionBarAction`, `BulkActionBarOverflow`, `BulkActionBarClear`. With `position="absolute"`, give the container `position: relative` and `pb-16`. `toastBatch({ title, items, undoAll, intent, duration, id })` from `@uisatin/pro/toast-batch` shows one toast whose Undo reverts every item; Show lists the items, each with its own Undo, and `title` can be `(count) => …` to count what is left.',
+      'The `BulkActionBar` component (Satin Pro, `@uisatin/pro/bulk-action-bar`) is a `role="toolbar"` that shows from `count` 1 and hides at 0. With `total` and `onSelectAll` it starts with a select-all Checkbox: indeterminate while some are selected, checked when all are; a click selects all, or clears when all are selected. The count sits in a grey Badge, and the clear button (×) at the end, after a rule. Each entry of `actions` and `overflow` is `{ label, icon, onSelect, tone, disabled, running }`; an `onSelect` that returns a promise shows a Spinner until it settles. Parts: `BulkActionBarRoot`, `BulkActionBarCount`, `BulkActionBarSeparator`, `BulkActionBarAction`, `BulkActionBarOverflow`, `BulkActionBarClear`. With `position="absolute"`, give the container `position: relative` and `pb-16`.',
     props: [
       { name: 'count', type: ['number'] },
       { name: 'onClear', type: ['() => void'] },
@@ -1350,20 +1350,6 @@ export const api: Record<string, Api> = {
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
       { name: 'name', type: ['string'] },
       { name: 'label / hint / error', type: ['ReactNode'] },
-    ],
-  },
-  'toast-batch': {
-    description:
-      '`toastBatch(options)` (Satin Pro, `@uisatin/pro/toast-batch`) is a function, not a component: it shows one `toast()` for many changes and returns its id, so it needs the app\'s `Toaster`. Each item is `{ id, label, description, media, undo }`; the list is a Satin `List` of `Item`s. Called again with the same `id` while the toast is open, the items join it and the count rolls; an item already there takes its place again. `toastBatch.undo(id?)` undoes a batch from code, as ⌘Z does. The words (`undo`, `undoItem`, `undone`, `allUndone`, `undoWithShortcut`, `showItems`, `hideItems`) are translated with SatinLabels.',
-    props: [
-      { name: 'title', type: ['ReactNode', '(count, number) => ReactNode'] },
-      { name: 'items', type: ['ToastBatchItem[]'] },
-      { name: 'change', type: ['string'] },
-      { name: 'undoAll', type: ['(items) => unknown'] },
-      { name: 'undoShortcut', type: ['boolean'], default: 'true' },
-      { name: 'intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"success"' },
-      { name: 'duration', type: ['number'], default: '8000' },
-      { name: 'id', type: ['string'] },
     ],
   },
   'filter-bar': {

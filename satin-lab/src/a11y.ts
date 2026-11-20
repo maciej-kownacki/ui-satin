@@ -679,16 +679,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
     ],
   },
-  'toast-batch': {
-    summary:
-      'A toast like any other, read out as it arrives with its Undo replaced by "Undo with ⌘Z" (`undoWithShortcut`), since a screen reader user may not reach the button in time. When items join or are undone, the new title is read once at the end of the burst ("6 candidates moved"), from a polite `status` region; the rolling digits are hidden and the number is there as text. Show is a disclosure button (`aria-expanded`, `aria-controls`) for a list named by the title. Each item\'s Undo is named after the change and the item ("Undo move of Tara Mendes"); once undone it says "Tara Mendes, Undone", keeps the focus and is `aria-disabled`. When ⌘Z empties the batch with focus on its Undo, focus moves to Show.',
-    keyboard: [
-      { keys: ['⌘Z', 'Ctrl+Z'], action: 'Undoes the newest batch on screen, unless focus is in a text field.' },
-      { keys: ['Enter', 'Space'], action: 'On Show, opens or folds the list; on an Undo, undoes the batch or that item.' },
-      { keys: ['Tab', 'Shift+Tab'], action: 'Moves through Show, Undo, Close, then the items\' Undo buttons.' },
-      { keys: ['F8'], action: 'Moves focus to the toasts.' },
-    ],
-  },
   'filter-bar': {
     summary:
       'A `group` named "Filters" (`filterBar` in SatinLabels). Each chip is a button named in words, "Value greater than €20,000" (`filterOperatorName` reads symbols out), that opens its editor: a Popover dialog named after the field, whose operator control is named after the field ("Stage") and value control after both ("Stage is"). A chip that can\'t apply is described by why ("Check the range"). Its remove button is named "Remove Stage is Interview". A polite `status` region reads the result count once it settles and which chip was removed; the rolling digits are hidden from screen readers.',

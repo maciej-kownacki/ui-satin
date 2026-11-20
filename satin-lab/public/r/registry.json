@@ -2786,34 +2786,6 @@
       ]
     },
     {
-      "name": "toast-batch",
-      "type": "registry:ui",
-      "title": "Toast batch",
-      "description": "One toast for many changes: a rolling count, and the list to undo each item or all of them with ⌘Z.",
-      "dependencies": [],
-      "registryDependencies": [
-        "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/satin-pro-styles.json",
-        "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/labels.json",
-        "https://uisatin.dev/r/list.json",
-        "https://uisatin.dev/r/rolling-number.json",
-        "https://uisatin.dev/r/toast.json"
-      ],
-      "docs": "Toast batch docs: https://uisatin.dev/components/toast-batch",
-      "meta": {
-        "version": "0.7.1",
-        "edition": "pro"
-      },
-      "files": [
-        {
-          "path": "registry/satin/ui/toast-batch.tsx",
-          "type": "registry:ui"
-        }
-      ]
-    },
-    {
       "name": "accordion-demo",
       "type": "registry:example",
       "title": "Accordion example",
@@ -4249,21 +4221,6 @@
       "files": [
         {
           "path": "registry/satin/examples/table-pro-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "toast-batch-demo",
-      "type": "registry:example",
-      "title": "Toast batch example",
-      "description": "The shortest use of Toast batch, from its docs page.",
-      "registryDependencies": [
-        "https://uisatin.dev/r/toast-batch.json"
-      ],
-      "files": [
-        {
-          "path": "registry/satin/examples/toast-batch-demo.tsx",
           "type": "registry:example"
         }
       ]

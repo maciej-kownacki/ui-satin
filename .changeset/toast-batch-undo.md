@@ -1,5 +1,0 @@
----
-'@uisatin/pro': minor
----
-
-toastBatch (`@uisatin/pro/toast-batch`) gets its own page and grows into a batch an agent can build up. Called again with the same `id` while its toast is open, the new items join it: the count's digits roll and no second toast stacks, so a burst of changes stays one toast within the Toaster's `limit`. ⌘Z (Ctrl+Z) undoes the newest open batch unless focus is in a text field, and `toastBatch.undo(id?)` does the same from code (`undoShortcut: false` leaves ⌘Z to the app). Undone by ⌘Z or item by item, the toast says "All undone" with every item struck, then closes. The list is a Satin List of Items, so an item can show `media` (an Avatar) and a `description`; `change: 'move'` names each Undo "Undo move of Tara Mendes". Screen readers hear the new count once per burst, not at every item. New words in SatinLabels: `allUndone`, `undoWithShortcut`, and `undoItem` takes the change as a second argument. The Bulk action bar's rolling count moved to `@uisatin/pro/rolling-number` (`RollingNumber`), shared by both.

@@ -1,6 +1,5 @@
 /*
- * Rolling number (components/rolling-number.tsx): the count of the Bulk action bar and of
- * toastBatch. A changed digit rolls: the old one slides out, the new one in, 150 ms. Up when the
+ * Rolling number (components/rolling-number.tsx): the count of the Bulk action bar. A changed digit rolls: the old one slides out, the new one in, 150 ms. Up when the
  * count grows, down when it shrinks. The component skips it under reduced motion.
  */
 .satin-roll {

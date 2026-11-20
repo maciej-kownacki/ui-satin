@@ -83,7 +83,7 @@ export const agentActionLogLabels = {
   actionLogFailedCount: (count: number) => `${count} couldn't be reverted`,
   /** The toast's title after a revert; the action or the run is its description. */
   actionLogToastReverted: (count: number) => (count === 1 ? 'Action reverted' : `${count} actions reverted`),
-  /** The toast's Undo, which restores what was just reverted. Shared with toastBatch. */
+  /** The toast's Undo, which restores what was just reverted. */
   undo: 'Undo',
   /** How to undo it without the toast, read to screen readers in place of the button. */
   actionLogUndoHint: 'Restore it from the action log',

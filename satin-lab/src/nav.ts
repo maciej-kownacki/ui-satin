@@ -330,13 +330,6 @@ export const nav: NavGroup[] = [
       { id: 'tabs', title: 'Tabs', href: '/components/tabs', description: 'Switches between two to six views of the same page or panel.' },
       { id: 'textarea', title: 'Textarea', href: '/components/textarea', description: 'Multi-line text input for notes, requests and longer answers.' },
       { id: 'toast', title: 'Toast', href: '/components/toast', description: 'A short, passing message about something that just happened.' },
-      {
-        id: 'toast-batch',
-        title: 'Toast batch',
-        href: '/components/toast-batch',
-        description: 'One toast for many changes: a rolling count, and the list to undo each item or all of them with ⌘Z.',
-        edition: 'pro',
-      },
       { id: 'toggle', title: 'Toggle', href: '/components/toggle', description: 'A button that stays pressed to switch an option on or off.' },
       { id: 'tooltip', title: 'Tooltip', href: '/components/tooltip', description: 'Names an icon-only control and shows the shortcut that runs it.' },
     ],
@@ -352,7 +345,7 @@ export const newPages = new Set<string>([
   'agent-presence', 'agent-changes-review', 'agent-plan', 'agent-undo-log', 'agent-permissions', 'review-queue',
   'prompt-mentions', 'tool-call',
   'activity-timeline', 'bulk-action-bar', 'people-picker', 'command-pages', 'data-grid', 'filter-bar',
-  'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'search-scoped', 'stepper', 'table-pro', 'toast-batch',
+  'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'search-scoped', 'stepper', 'table-pro',
   'combobox', 'dropdown', 'date-picker', 'toast',
 ])
 

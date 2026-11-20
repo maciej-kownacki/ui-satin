@@ -383,7 +383,7 @@ export function KanbanBoard<T>({
     const fromCount = (items[from.column] ?? []).length
     toast.success(labels.kanbanMovedTo(titleOf(to.column)), {
       description: label,
-      // As long as toastBatch's Undo: time to notice the move and take it back.
+      // As long as a batch Undo toast: time to notice the move and take it back.
       duration: UNDO_MS,
       action: {
         label: labels.undo,

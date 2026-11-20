@@ -27,10 +27,9 @@ const INTERNAL = {
   'selectable-card': 'what Selectable radio and Selectable checkbox share',
   'sliding-indicator': 'the sliding pill of Tabs, Pagination and Segmented control',
   'pointer-modality': 'how Tabs and the menus tell a mouse press from a key, for the focus ring',
-  'rolling-number': 'the rolling count of Bulk action bar and Toast batch (Satin Pro)',
-  'toast-batch': 'toastBatch (Satin Pro), documented on the Bulk action bar page',
+  'rolling-number': 'the rolling count of Bulk action bar (Satin Pro)',
   'rolling-number': 'the rolling digits of the Satin Pro counts (Bulk action bar, Filter bar)',
-  'rolling-number': 'the rolling count of Bulk action bar and Toast batch (Satin Pro)',
+  'rolling-number': 'the rolling count of Bulk action bar (Satin Pro)',
 }
 // Pages whose component lives in another file (as in registry/build.mjs).
 const ALIASES = { 'area-chart': 'line-chart' }
