@@ -33,7 +33,7 @@ const rows = () => within(list()).getAllByRole('listitem')
 const labelsInOrder = () => rows().map((row) => row.querySelector('[data-part="label"]')?.textContent)
 const numbers = () => rows().map((row) => row.querySelector('[data-part="number"]')?.textContent)
 const status = () => screen.getByRole('status')
-const icon = <svg data-testid="calendar-icon" />
+const logo = <img data-testid="calendar-logo" src="google-calendar.png" alt="" />
 
 describe('AgentPlan, draft', () => {
   it('renders numbered steps as an ordered list in a group named by the title, with no step count', () => {
@@ -48,14 +48,16 @@ describe('AgentPlan, draft', () => {
     expect(screen.queryByRole('checkbox')).toBeNull()
   })
 
-  it('shows the tool as a plain Badge with its icon, and the icon again once the plan runs', () => {
-    const steps = [{ ...PLAN[0], toolIcon: icon }, ...PLAN.slice(1)]
+  it('shows the tool as a plain Badge with its logo, and the logo again once the plan runs', () => {
+    const steps = [{ ...PLAN[0], toolIcon: logo }, ...PLAN.slice(1)]
     const { rerender } = renderWithSatin(<Plan initial={steps} />)
     const badge = screen.getByText('Calendar').closest('[data-slot="badge"]')!
     expect(badge.className).toContain('bg-transparent')
-    expect(within(badge as HTMLElement).getByTestId('calendar-icon').parentElement?.getAttribute('aria-hidden')).toBe('true')
+    // A logo img is sized by the badge (16px), and hidden: the name beside it says the same.
+    expect(badge.className).toContain('[&_img]:size-4')
+    expect(within(badge as HTMLElement).getByTestId('calendar-logo').parentElement?.getAttribute('aria-hidden')).toBe('true')
     rerender(<Plan initial={steps} status="done" />)
-    expect(within(rows()[0]).getByTestId('calendar-icon')).toBeTruthy()
+    expect(within(rows()[0]).getByTestId('calendar-logo')).toBeTruthy()
   })
 
   it('removes a step with its ×, renumbers the rest, reads it out, and moves focus to the next ×', async () => {

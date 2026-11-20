@@ -16,7 +16,7 @@ import { cn } from '@uisatin/ui/lib/utils'
  * the title, the steps, then Run.
  *
  * - `draft`: each step is a row with its number in a Badge, its label and detail, the tool as a
- *   plain Badge with its icon, and an × that removes it. Pressing the label renames the step in
+ *   plain Badge with its logo, and an × that removes it. Pressing the label renames the step in
  *   place. Drag the number, or press Alt+↑ / Alt+↓ anywhere in the row, to move it; its new
  *   place is read out. Run plan is disabled while the plan is empty.
  * - `running`, `failed`, `done`: read-only, drawn like Thinking's open steps: a rail, then each
@@ -83,7 +83,7 @@ export interface AgentPlanStep {
   detail?: React.ReactNode
   /** The tool or app the step uses: a plain Badge in a draft, muted before the detail once the plan runs. */
   tool?: string
-  /** The tool's icon, before its name: an iconoir icon, drawn at 14px like a Badge's. */
+  /** The tool's logo or icon, before its name: the app's logo as an `img` (drawn at 16px; give it `alt=""`, the name follows), or an iconoir icon (14px, like a Badge's). */
   toolIcon?: React.ReactNode
   /** `false` keeps the step as the agent wrote it: it can't be renamed, removed or moved (other steps still move past it). */
   editable?: boolean
@@ -582,54 +582,60 @@ function DraftStep({
       >
         {index + 1}
       </Badge>
-      <div className="flex min-w-0 flex-1 flex-col items-start">
-        {editing ? (
-          <Input
-            ref={inputRef}
-            size="sm"
-            aria-label={labels.stepName(index + 1)}
-            defaultValue={step.label}
-            wrapperClassName="-my-1 self-stretch"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-                e.preventDefault()
-                finish(true, true)
-              } else if (e.key === 'Escape') {
-                e.preventDefault()
-                e.stopPropagation()
-                finish(false, true)
-              }
-            }}
-            onBlur={() => finish(true, false)}
-          />
-        ) : editable ? (
-          // The label renames the step when pressed; its ring sits 4px out from the text.
-          <button
-            type="button"
-            data-part="label"
-            aria-description={labels.stepHint}
-            onClick={() => onEdit(true)}
-            className={cn(labelClass, '-mx-1 cursor-text rounded-xs px-1 text-start outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]')}
-          >
-            {step.label}
-          </button>
-        ) : (
-          <span data-part="label" className={labelClass}>
-            {step.label}
-          </span>
-        )}
+      {/* The tool sits on the label's line, so the detail runs on under it to the ×. Where the
+          label would get under 96px, the tool drops to a line of its own, still on the right. */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex flex-wrap items-start gap-x-2">
+          <div className="flex min-w-0 grow basis-24 flex-col items-start">
+            {editing ? (
+              <Input
+                ref={inputRef}
+                size="sm"
+                aria-label={labels.stepName(index + 1)}
+                defaultValue={step.label}
+                wrapperClassName="-my-1 self-stretch"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                    e.preventDefault()
+                    finish(true, true)
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    finish(false, true)
+                  }
+                }}
+                onBlur={() => finish(true, false)}
+              />
+            ) : editable ? (
+              // The label renames the step when pressed; its ring sits 4px out from the text.
+              <button
+                type="button"
+                data-part="label"
+                aria-description={labels.stepHint}
+                onClick={() => onEdit(true)}
+                className={cn(labelClass, '-mx-1 cursor-text rounded-xs px-1 text-start outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]')}
+              >
+                {step.label}
+              </button>
+            ) : (
+              <span data-part="label" className={labelClass}>
+                {step.label}
+              </span>
+            )}
+          </div>
+          {step.tool && (
+            <Badge size="sm" variant="plain" className="ms-auto [&_img]:size-4 [&_img]:shrink-0">
+              {step.toolIcon != null && (
+                <span aria-hidden className="inline-flex">
+                  {step.toolIcon}
+                </span>
+              )}
+              {step.tool}
+            </Badge>
+          )}
+        </div>
         {step.detail != null && <span className={cn('text-sm text-text-muted', editing && 'mt-1')}>{step.detail}</span>}
       </div>
-      {step.tool && (
-        <Badge size="sm" variant="plain">
-          {step.toolIcon != null && (
-            <span aria-hidden className="inline-flex">
-              {step.toolIcon}
-            </span>
-          )}
-          {step.tool}
-        </Badge>
-      )}
       {editable ? (
         <Button variant="tertiary" size="xs" iconOnly data-part="remove" aria-label={labels.removeItem(step.label)} className="-my-0.5 shrink-0" onClick={onRemove}>
           {/* iconoir Xmark */}
@@ -714,11 +720,14 @@ function RunStep({ step, state }: { step: AgentPlanStep; state: AgentPlanStepSta
 
 const ICON = 'size-icon-size-sm shrink-0 [stroke-width:1.875]'
 
-/** The tool's icon before its name in a read-only step's muted line, 14px, sitting on the text. */
+/** The tool's logo or icon before its name in a read-only step's muted line, centred on the line. */
 function ToolIcon({ step }: { step: AgentPlanStep }) {
   if (step.toolIcon == null) return null
   return (
-    <span aria-hidden className="me-1 inline-flex align-[-2px] [&_svg]:size-icon-size-sm [&_svg]:[stroke-width:1.875]">
+    <span
+      aria-hidden
+      className="me-1 inline-flex h-[1lh] items-center align-top [&_img]:size-4 [&_svg]:size-icon-size-sm [&_svg]:[stroke-width:1.875]"
+    >
       {step.toolIcon}
     </span>
   )

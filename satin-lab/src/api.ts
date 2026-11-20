@@ -1036,6 +1036,25 @@ export const api: Record<string, Api> = {
       { name: 'skipLabel', type: ['string'], default: '"Skip"' },
     ],
   },
+  'agent-plan': {
+    description:
+      'The `AgentPlan` component (Satin Pro, `@uisatin/pro/agent-plan`) is a `role="group"` card named by its title, around an ordered list of steps. Each step is `{ id, label, detail, tool, toolIcon, editable, skipped }`. In a `draft` each step shows its number, its tool as a plain Badge with the app’s logo (`toolIcon`: an `img`, drawn at 16px, or an iconoir icon), and an × that removes it; the person renames a step by pressing its label and reorders by dragging the number or with Alt+↑/↓ (`onStepsChange`). Run plan, disabled while the plan is empty, calls `onRun` with the steps to run. The app then drives `status` and `currentStep`: steps before it are done, the current one shows AgentLoading, and a `failed` one shows `error` with Retry and Skip. Parts: `AgentPlanRoot`, `AgentPlanHeader`, `AgentPlanSteps`, `AgentPlanActions`.',
+    props: [
+      { name: 'steps', type: ['AgentPlanStep[]'] },
+      { name: 'defaultSteps', type: ['AgentPlanStep[]'], default: '[]' },
+      { name: 'onStepsChange', type: ['(steps: AgentPlanStep[]) => void'] },
+      { name: 'status', type: ['"draft"', '"running"', '"failed"', '"done"'], default: '"draft"' },
+      { name: 'currentStep', type: ['string'] },
+      { name: 'onRun', type: ['(steps: AgentPlanStep[]) => void'] },
+      { name: 'onStop', type: ['() => void'] },
+      { name: 'onRetry', type: ['(step: AgentPlanStep) => void'] },
+      { name: 'onSkip', type: ['(step: AgentPlanStep) => void'] },
+      { name: 'error', type: ['ReactNode'] },
+      { name: 'title', type: ['ReactNode'], default: '"Plan"' },
+      { name: 'indicator', type: ['"tetris"', '"flappy"'], default: '"tetris"' },
+      { name: 'glimmer', type: ['"color"', '"neutral"'], default: '"color"' },
+    ],
+  },
   'message-actions': {
     description: 'The `MessageActions` component is a wrapper around the `div` element that renders the status, feedback, copy and share actions.',
     props: [

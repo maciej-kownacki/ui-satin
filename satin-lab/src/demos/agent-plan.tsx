@@ -1,15 +1,16 @@
 import * as React from 'react'
-import { Calendar, Mail } from 'iconoir-react'
 import { AgentPlan, type AgentPlanStatus, type AgentPlanStep } from '@uisatin/pro/agent-plan'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
+import googleCalendar from './assets/app-google-calendar.png'
+import gmail from './assets/app-gmail.png'
 
 const TITLE = 'Schedule interviews for 3 shortlisted candidates'
 
-/** What the agent proposes. */
+/** What the agent proposes. Each tool is an app the agent is connected to, shown with its logo. */
 const PLAN: AgentPlanStep[] = [
-  { id: 'slots', label: 'Find open slots', detail: 'Tue–Thu next week, 45 min with the panel', tool: 'Calendar', toolIcon: <Calendar /> },
-  { id: 'draft', label: 'Draft invites', detail: 'One per candidate, with the role and a video link', tool: 'Mail', toolIcon: <Mail /> },
-  { id: 'send', label: 'Send invites', detail: 'To Maya Chen, Tomás Ruiz and Priya Nair', tool: 'Mail', toolIcon: <Mail /> },
+  { id: 'slots', label: 'Find open slots', detail: 'Tue–Thu next week, 45 min with the panel', tool: 'Google Calendar', toolIcon: <img src={googleCalendar.src} alt="" /> },
+  { id: 'draft', label: 'Draft invites', detail: 'One per candidate, with the role and a video link', tool: 'Gmail', toolIcon: <img src={gmail.src} alt="" /> },
+  { id: 'send', label: 'Send invites', detail: 'To Maya Chen, Tomás Ruiz and Priya Nair', tool: 'Gmail', toolIcon: <img src={gmail.src} alt="" /> },
 ]
 
 /** What each step leaves behind once it has run, in place of its detail. */
@@ -19,7 +20,7 @@ const RESULTS: Record<string, string> = {
   send: 'Sent to 3 candidates',
 }
 
-const ERROR = 'The Mail connection expired. Reconnect it, then retry.'
+const ERROR = 'The Gmail connection expired. Reconnect it, then retry.'
 
 /** How long the agent spends on a step, in ms. */
 const STEP_MS = 1800
@@ -54,13 +55,16 @@ const RUN_PROPS: Record<string, string[]> = {
 
 function code(v: Record<string, string>) {
   const run = RUN_PROPS[v.state].map((p) => `      ${p}\n`).join('')
-  return `import { Calendar, Mail } from 'iconoir-react'
-import { AgentPlan, type AgentPlanStep } from '@uisatin/pro/agent-plan'
+  return `import { AgentPlan, type AgentPlanStep } from '@uisatin/pro/agent-plan'
+
+// The logos of the apps the agent is connected to, as your app already has them. An img is drawn at 16px.
+const googleCalendar = <img src="/logos/google-calendar.png" alt="" />
+const gmail = <img src="/logos/gmail.png" alt="" />
 
 const plan: AgentPlanStep[] = [
-  { id: 'slots', label: 'Find open slots', detail: 'Tue–Thu next week, 45 min with the panel', tool: 'Calendar', toolIcon: <Calendar /> },
-  { id: 'draft', label: 'Draft invites', detail: 'One per candidate, with the role and a video link', tool: 'Mail', toolIcon: <Mail /> },
-  { id: 'send', label: 'Send invites', detail: 'To Maya Chen, Tomás Ruiz and Priya Nair', tool: 'Mail', toolIcon: <Mail /> },
+  { id: 'slots', label: 'Find open slots', detail: 'Tue–Thu next week, 45 min with the panel', tool: 'Google Calendar', toolIcon: googleCalendar },
+  { id: 'draft', label: 'Draft invites', detail: 'One per candidate, with the role and a video link', tool: 'Gmail', toolIcon: gmail },
+  { id: 'send', label: 'Send invites', detail: 'To Maya Chen, Tomás Ruiz and Priya Nair', tool: 'Gmail', toolIcon: gmail },
 ]
 
 export function InterviewPlan({ agent }: { agent: Agent }) {
