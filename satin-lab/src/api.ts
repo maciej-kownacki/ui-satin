@@ -990,21 +990,6 @@ export const api: Record<string, Api> = {
       { name: 'AgentSuggestionChangeValue', type: ['{ from?, to }'] },
     ],
   },
-  'agent-changes-review': {
-    description:
-      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) takes the `changes` AgentSuggestionChanges takes and draws each as a card: the field\'s name on top, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line); quote the line that justifies that change, short and specific to it, not a summary. At the card\'s bottom right sit Dismiss (X) and Accept (a green check and "Accept"), both bordered xs buttons (or a Checkbox before the name, `control="checkbox"`); then Accept all and Apply. Dismiss slides the card out of the list and the cards under it move up into its place; the UI has no way back, but a controlled `value` can set it to `"pending"` again. With checkboxes a cleared card stays and fades. Put it in an AgentSuggestion as its body. `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. Once applied, the AgentSuggestion it sits in fades out and rises 4px (`--duration-base`; at once under reduced motion), then `onApplied(accepted, value)` fires: remove it there, as you would after an `onDismiss`. If focus was inside, it goes to `returnFocus()` or, without one, to the page, and "2 changes applied" is read out from a live region on the body. `label` names a change for its buttons when `field` isn\'t a string. Parts: `ReviewableChangesRoot` (around the whole card, so Apply can sit in its `actions`), `ReviewableChangesList`, `ReviewableChangesAcceptAll`, `ReviewableChangesApply`. For a new set of changes, give it a new `key`.',
-    props: [
-      { name: 'changes', type: ['{ id?, field, label?, from?, to, source? }[]'] },
-      { name: 'value', type: ['ReviewableChangesValue'] },
-      { name: 'defaultValue', type: ['ReviewableChangesValue'], default: '{}' },
-      { name: 'onValueChange', type: ['(value) => void'] },
-      { name: 'onApply', type: ['(accepted, value) => unknown'] },
-      { name: 'onApplied', type: ['(accepted, value) => void'] },
-      { name: 'returnFocus', type: ['() => HTMLElement | null | undefined'] },
-      { name: 'status', type: ['"review"', '"applying"'] },
-      { name: 'control', type: ['"buttons"', '"checkbox"'], default: '"buttons"' },
-    ],
-  },
   attachment: {
     description: 'The `Attachment` component is a wrapper around the `button` that shows a file name, type and size.',
     props: [
@@ -1265,27 +1250,6 @@ export const api: Record<string, Api> = {
       { name: 'formatTime', type: ['(at: Date) => ReactNode'], default: 'time of day, date when not today' },
     ],
   },
-  'command-pages': {
-    description:
-      'The `CommandPages` component (Satin Pro, `@uisatin/pro/command-pages`) is a `CommandMenu` with sub-pages. An item with `page: { groups, title, placeholder }` opens it in place of the list; an item\'s `onSelect(menu)` can `menu.push(page)` instead, and the menu closes after any other item. A group\'s `icon` is the kind of record it lists (a person, a job, a company) and shows on every row without its own. An item\'s `success` shows as a success toast once it has run, after the promise `onSelect` returns, if any (the app needs a `Toaster`). The panel keeps the top edge it opened with, so pages of other lengths grow or shrink it downwards. A `Breadcrumb` above the search leads back; Backspace in the empty search goes back one page. With `onAsk`, every query adds \'Ask the agent about "…"\' as the last row; it calls `onAsk(query)` and shows the question over `answer` (StreamingText) and `answering` (AgentLoading until the first words). Without `answer` and `answering` the menu closes after `onAsk`. `controlRef` gets `{ push, back, ask, search, close }`. Part: `CommandPagesAnswer`. Every `CommandMenu` prop works as there.',
-    props: [
-      { name: 'groups', type: ['CommandPageGroup[]'] },
-      { name: 'item.page', type: ['CommandPage'] },
-      { name: 'item.onSelect', type: ['(menu: CommandPagesControl) => void | Promise<unknown>'] },
-      { name: 'item.success', type: ['ReactNode'] },
-      { name: 'group.icon', type: ['ReactNode'] },
-      { name: 'rootTitle', type: ['string'], default: '"Commands"' },
-      { name: 'onAsk', type: ['(query: string) => void'] },
-      { name: 'answer', type: ['string'] },
-      { name: 'answering', type: ['boolean'] },
-      { name: 'controlRef', type: ['Ref<CommandPagesControl>'] },
-      { name: 'open', type: ['boolean'] },
-      { name: 'defaultOpen', type: ['boolean'], default: 'false' },
-      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
-      { name: 'hotkey', type: ['boolean'], default: 'true' },
-      { name: 'hints', type: ['boolean'], default: 'true' },
-    ],
-  },
   'time-picker': {
     description: '`TimePicker` is a text field with the Input skin that reads a typed time ("930", "9:30pm", "1430") or opens a list of times under it; its value is `{ hours, minutes }`, `null` when cleared or typed wrong. `DateTimePicker` is the Date picker field opening the Calendar with a column of times beside it; its value is a `Date`. `TimeList` and `DateTimePickerPanel` are the list and the panel on their own. Times are written in the `dateLocale` label, 12- or 24-hour as that locale writes them; with `name`, a hidden input submits `HH:mm` or `YYYY-MM-DDTHH:mm`.',
     props: [
@@ -1325,6 +1289,27 @@ export const api: Record<string, Api> = {
       { name: 'open', type: ['boolean'] },
       { name: 'defaultOpen', type: ['boolean'], default: 'status === "error"' },
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+    ],
+  },
+  'command-pages': {
+    description:
+      'The `CommandPages` component (Satin Pro, `@uisatin/pro/command-pages`) is a `CommandMenu` with sub-pages. An item with `page: { groups, title, placeholder }` opens it in place of the list; an item\'s `onSelect(menu)` can `menu.push(page)` instead, and the menu closes after any other item. A group\'s `icon` is the kind of record it lists (a person, a job, a company) and shows on every row without its own. An item\'s `success` shows as a success toast once it has run, after the promise `onSelect` returns, if any (the app needs a `Toaster`). The panel keeps the top edge it opened with, so pages of other lengths grow or shrink it downwards. A `Breadcrumb` above the search leads back; Backspace in the empty search goes back one page. With `onAsk`, every query adds \'Ask the agent about "…"\' as the last row; it calls `onAsk(query)` and shows the question over `answer` (StreamingText) and `answering` (AgentLoading until the first words). Without `answer` and `answering` the menu closes after `onAsk`. `controlRef` gets `{ push, back, ask, search, close }`. Part: `CommandPagesAnswer`. Every `CommandMenu` prop works as there.',
+    props: [
+      { name: 'groups', type: ['CommandPageGroup[]'] },
+      { name: 'item.page', type: ['CommandPage'] },
+      { name: 'item.onSelect', type: ['(menu: CommandPagesControl) => void | Promise<unknown>'] },
+      { name: 'item.success', type: ['ReactNode'] },
+      { name: 'group.icon', type: ['ReactNode'] },
+      { name: 'rootTitle', type: ['string'], default: '"Commands"' },
+      { name: 'onAsk', type: ['(query: string) => void'] },
+      { name: 'answer', type: ['string'] },
+      { name: 'answering', type: ['boolean'] },
+      { name: 'controlRef', type: ['Ref<CommandPagesControl>'] },
+      { name: 'open', type: ['boolean'] },
+      { name: 'defaultOpen', type: ['boolean'], default: 'false' },
+      { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+      { name: 'hotkey', type: ['boolean'], default: 'true' },
+      { name: 'hints', type: ['boolean'], default: 'true' },
     ],
   },
   'agent-permissions': {
@@ -1401,22 +1386,6 @@ export const api: Record<string, Api> = {
       { name: 'id', type: ['string'] },
     ],
   },
-  'activity-timeline': {
-    description:
-      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
-    props: [
-      { name: 'items', type: ['ActivityItem[]'] },
-      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
-      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
-      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'expanded', type: ['string[]'] },
-      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
-      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
-      { name: 'loading', type: ['boolean'], default: 'false' },
-      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
-    ],
-  },
   'filter-bar': {
     description:
       'The `FilterBar` component (Satin Pro, `@uisatin/pro/filter-bar`) is a `role="group"` of filter chips, `+ Filter` and, with `search`, a search field. `fields` are `{ key, label, type, options, operators, icon, me, min, max, step, format, placeholder }`, `type` one of `enum`, `multi`, `text`, `number`, `date`, `person`. `value` is `Filter[]` (`{ field, operator, value }`, plain JSON, dates as `YYYY-MM-DD`); `applyFilters(rows, value, fields, { getValue, today })` returns the rows they let through, for a List, Table or DataGrid, and `isFilterValid` says whether one applies. Parts: `FilterBarRoot`, `FilterBarSearch`, `FilterBarChips`, `FilterBarAdd`, `FilterBarCount`, `FilterBarViews`. Its words (`filterOperator`, `filterResults`, `filterDays`…) are translated with SatinLabels.',
@@ -1455,6 +1424,22 @@ export const api: Record<string, Api> = {
       { name: 'title', type: ['ReactNode'], default: '"Plan"' },
       { name: 'indicator', type: ['"tetris"', '"flappy"'], default: '"tetris"' },
       { name: 'glimmer', type: ['"color"', '"neutral"'], default: '"color"' },
+    ],
+  },
+  'activity-timeline': {
+    description:
+      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
+    props: [
+      { name: 'items', type: ['ActivityItem[]'] },
+      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
+      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
+      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'expanded', type: ['string[]'] },
+      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
+      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
+      { name: 'loading', type: ['boolean'], default: 'false' },
+      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
     ],
   },
   'review-queue': {
@@ -1511,14 +1496,16 @@ export const api: Record<string, Api> = {
   },
   'agent-changes-review': {
     description:
-      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) takes the `changes` AgentSuggestionChanges takes and draws each as a card: the field\'s name on top, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line). At the card\'s bottom right sit Dismiss (X) and Accept (a green check and "Accept"), both bordered xs buttons (or a Checkbox before the name, `control="checkbox"`); then Accept all and Apply. Dismiss slides the card out of the list and the cards under it move up into its place; the UI has no way back, but a controlled `value` can set it to `"pending"` again. With checkboxes a cleared card stays and fades. Put it in an AgentSuggestion as its body. `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. `label` names a change for its buttons when `field` isn\'t a string. Parts: `ReviewableChangesRoot` (around the whole card, so Apply can sit in its `actions`), `ReviewableChangesList`, `ReviewableChangesAcceptAll`, `ReviewableChangesApply`. For a new set of changes, give it a new `key`.',
+      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) takes the `changes` AgentSuggestionChanges takes and draws each as a card: the field\'s name on top, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line); quote the line that justifies that change, short and specific to it, not a summary. At the card\'s bottom right sit Dismiss (X) and Accept (a green check and "Accept"), both bordered xs buttons (or a Checkbox before the name, `control="checkbox"`); then Accept all and Apply. Dismiss slides the card out of the list and the cards under it move up into its place; the UI has no way back, but a controlled `value` can set it to `"pending"` again. With checkboxes a cleared card stays and fades. Put it in an AgentSuggestion as its body. `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. Once applied, the AgentSuggestion it sits in fades out and rises 4px (`--duration-base`; at once under reduced motion), then `onApplied(accepted, value)` fires: remove it there, as you would after an `onDismiss`. If focus was inside, it goes to `returnFocus()` or, without one, to the page, and "2 changes applied" is read out from a live region on the body. `label` names a change for its buttons when `field` isn\'t a string. Parts: `ReviewableChangesRoot` (around the whole card, so Apply can sit in its `actions`), `ReviewableChangesList`, `ReviewableChangesAcceptAll`, `ReviewableChangesApply`. For a new set of changes, give it a new `key`.',
     props: [
       { name: 'changes', type: ['{ id?, field, label?, from?, to, source? }[]'] },
       { name: 'value', type: ['ReviewableChangesValue'] },
       { name: 'defaultValue', type: ['ReviewableChangesValue'], default: '{}' },
       { name: 'onValueChange', type: ['(value) => void'] },
       { name: 'onApply', type: ['(accepted, value) => unknown'] },
-      { name: 'status', type: ['"review"', '"applying"', '"applied"'] },
+      { name: 'onApplied', type: ['(accepted, value) => void'] },
+      { name: 'returnFocus', type: ['() => HTMLElement | null | undefined'] },
+      { name: 'status', type: ['"review"', '"applying"'] },
       { name: 'control', type: ['"buttons"', '"checkbox"'], default: '"buttons"' },
     ],
   },

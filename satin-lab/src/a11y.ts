@@ -504,14 +504,6 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A `section`, labelled by `title` when there is one, so it is a region landmark. In `AgentSuggestionDiff` the old text is a `del` and the new an `ins`, read as "Remove:" and "Add:". `AgentSuggestionChanges` is a description list with the arrows hidden, and `AgentSuggestionMetric`’s bar is a Progress named by `unit`. The actions are your own buttons; name them by what they do ("Send email").',
   },
-  'agent-changes-review': {
-    summary:
-      'Each card is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` (its visible text "Accept" starts its name) and Dismiss a plain button, both named after the change ("Accept Stage change", "Dismiss Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the card\'s Checkbox carries the Accept name. Dismiss takes the card out: focus moves first to the next card\'s Accept, or to Accept all or Apply when no card is left below, the leaving card is `inert`, and "Value change dismissed" (`fieldChangeRejected`) is read out. Under reduced motion the card goes without the slide. Accepted is `aria-pressed` and the pressed fill, never colour alone. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all and "Applying changes…" are also read out from a polite `status` region. While applying, Apply is `aria-busy` (it keeps focus) and the cards are disabled. Once applied, the suggestion leaves: focus goes to `returnFocus()`, or to the page\'s body when the app gives none, the suggestion turns `inert`, and "2 changes applied" is read out from a polite `status` region on the body, which outlives it. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through each card\'s Dismiss and Accept (or its Checkbox), then Accept all and Apply.' },
-      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the card pending again when pressed. On Dismiss: takes the card out and moves focus on. On a Checkbox, Space accepts or rejects.' },
-    ],
-  },
   'decision-card': {
     summary:
       'A `role="group"` labelled by the title. The answers follow `type`: `radio` is a Radix radio group, `checkbox` a list of Checkboxes, `chips` buttons with `aria-pressed`, `ranking` an ordered list of focusable rows announced as "sortable item" with the hint "Alt and arrow keys to move", and `draft` the text that Rewrite (`aria-pressed`) turns into a textarea named "Draft". After a move, a polite live region reads the row’s new place ("Budget, position 2 of 4"). The step buttons are named "Previous question" and "Next question" and the step count is a polite live region. In `summary`, Change is named "Change <title>".',
@@ -629,17 +621,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
     ],
   },
-  'command-pages': {
-    summary:
-      'Everything CommandMenu has (a Radix dialog, the search as a `combobox` pointing at the highlighted `option`), plus: on a sub-page a `Breadcrumb` (a `nav` named "Breadcrumb", the current page `aria-current="page"`, earlier pages as buttons) sits above the search, and a polite `status` region reads out each page\'s name with "Backspace goes back" (`commandPageOpened` in SatinLabels) as it opens, and the page\'s name on the way back. The ask row is an option named \'Ask the agent about "…"\' (`commandAskAbout`) under an "Agent" heading. On the agent\'s page the search stops pointing at a list (`aria-expanded="false"`); the answer is a focusable `region` named after the question, AgentLoading says "Thinking…", and the same status region reads the whole answer once it is complete. The key hints, ⌫ Back included, are hidden from screen readers, which hear the hint with each page instead. A row\'s kind icon (a person, a company) is decorative: its label and the group\'s heading say what it is. A completed command\'s `success` toast is read out by the Toaster\'s polite region after the menu closes and focus is back where it was.',
-    keyboard: [
-      { keys: ['↑', '↓'], action: 'Moves the highlight, wrapping at the ends.' },
-      { keys: ['Enter'], action: 'Runs the highlighted row: opens its page, runs it and closes the menu, or asks the agent. On the agent\'s page, asks the follow-up in the search.' },
-      { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
-      { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
-      { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
-    ],
-  },
   'time-picker': {
     summary:
       'TimePicker\'s field is a `combobox` named by its label and described by a format hint ("Type a time like 2:30 PM", `timeHint` in SatinLabels) and by the hint or error. Focus stays in it while the `listbox` of times is open; `aria-activedescendant` follows the highlighted time. Each time is an `option`: the picked one `aria-selected`, unavailable ones `aria-disabled`. Typed text that isn\'t an available time sets `aria-invalid` and says why under the field (`timeInvalid`, `timeUnavailable`). The chevron, "Show times", is out of the tab order. DateTimePicker\'s field is a `button` that opens the Calendar (as on Date picker) with the times as a `listbox` named "Time"; picking a day with no time yet moves focus to the times.',
@@ -661,6 +642,17 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'On the header: opens or folds the card.' },
       { keys: ['Tab'], action: 'Open, moves through each section’s Copy and code, Show all, and Retry.' },
       { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
+    ],
+  },
+  'command-pages': {
+    summary:
+      'Everything CommandMenu has (a Radix dialog, the search as a `combobox` pointing at the highlighted `option`), plus: on a sub-page a `Breadcrumb` (a `nav` named "Breadcrumb", the current page `aria-current="page"`, earlier pages as buttons) sits above the search, and a polite `status` region reads out each page\'s name with "Backspace goes back" (`commandPageOpened` in SatinLabels) as it opens, and the page\'s name on the way back. The ask row is an option named \'Ask the agent about "…"\' (`commandAskAbout`) under an "Agent" heading. On the agent\'s page the search stops pointing at a list (`aria-expanded="false"`); the answer is a focusable `region` named after the question, AgentLoading says "Thinking…", and the same status region reads the whole answer once it is complete. The key hints, ⌫ Back included, are hidden from screen readers, which hear the hint with each page instead. A row\'s kind icon (a person, a company) is decorative: its label and the group\'s heading say what it is. A completed command\'s `success` toast is read out by the Toaster\'s polite region after the menu closes and focus is back where it was.',
+    keyboard: [
+      { keys: ['↑', '↓'], action: 'Moves the highlight, wrapping at the ends.' },
+      { keys: ['Enter'], action: 'Runs the highlighted row: opens its page, runs it and closes the menu, or asks the agent. On the agent\'s page, asks the follow-up in the search.' },
+      { keys: ['Backspace'], action: 'In the empty search, goes back one page and puts back the search you had there. Held down, it goes back only once.' },
+      { keys: ['Tab', 'Shift+Tab'], action: 'Move between the breadcrumb\'s buttons, the search and the answer; focus stays in the menu while it is modal.' },
+      { keys: ['Esc'], action: 'Closes the menu from any page and returns focus to where it was; it opens again on the first page.' },
     ],
   },
   'agent-permissions': {
@@ -710,15 +702,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['F8'], action: 'Moves focus to the toasts.' },
     ],
   },
-  'activity-timeline': {
-    summary:
-      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
-      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
-      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
-    ],
-  },
   'filter-bar': {
     summary:
       'A `group` named "Filters" (`filterBar` in SatinLabels). Each chip is a button named in words, "Value greater than €20,000" (`filterOperatorName` reads symbols out), that opens its editor: a Popover dialog named after the field, whose operator control is named after the field ("Stage") and value control after both ("Stage is"). A chip that can\'t apply is described by why ("Check the range"). Its remove button is named "Remove Stage is Interview". A polite `status` region reads the result count once it settles and which chip was removed; the rolling digits are hidden from screen readers.',
@@ -741,6 +724,15 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
       { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to the label (an empty name keeps the old one).' },
       { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to the label.' },
+    ],
+  },
+  'activity-timeline': {
+    summary:
+      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
+      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
+      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
     ],
   },
   'review-queue': {
@@ -768,7 +760,7 @@ export const a11y: Record<string, A11y> = {
   },
   'agent-changes-review': {
     summary:
-      'Each card is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` (its visible text "Accept" starts its name) and Dismiss a plain button, both named after the change ("Accept Stage change", "Dismiss Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the card\'s Checkbox carries the Accept name. Dismiss takes the card out: focus moves first to the next card\'s Accept, or to Accept all or Apply when no card is left below, the leaving card is `inert`, and "Value change dismissed" (`fieldChangeRejected`) is read out. Under reduced motion the card goes without the slide. Accepted is `aria-pressed` and the pressed fill, never colour alone. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are also read out from a polite `status` region. While applying, Apply is `aria-busy` and the cards are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each card says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
+      'Each card is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` (its visible text "Accept" starts its name) and Dismiss a plain button, both named after the change ("Accept Stage change", "Dismiss Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the card\'s Checkbox carries the Accept name. Dismiss takes the card out: focus moves first to the next card\'s Accept, or to Accept all or Apply when no card is left below, the leaving card is `inert`, and "Value change dismissed" (`fieldChangeRejected`) is read out. Under reduced motion the card goes without the slide. Accepted is `aria-pressed` and the pressed fill, never colour alone. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all and "Applying changes…" are also read out from a polite `status` region. While applying, Apply is `aria-busy` (it keeps focus) and the cards are disabled. Once applied, the suggestion leaves: focus goes to `returnFocus()`, or to the page\'s body when the app gives none, the suggestion turns `inert`, and "2 changes applied" is read out from a polite `status` region on the body, which outlives it. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
     keyboard: [
       { keys: ['Tab'], action: 'Moves through each card\'s Dismiss and Accept (or its Checkbox), then Accept all and Apply.' },
       { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the card pending again when pressed. On Dismiss: takes the card out and moves focus on. On a Checkbox, Space accepts or rejects.' },
