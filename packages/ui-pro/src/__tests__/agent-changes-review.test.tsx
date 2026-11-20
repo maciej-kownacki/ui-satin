@@ -191,6 +191,9 @@ describe('ReviewableChanges', () => {
     // The button pressed spins and keeps focus; the other is disabled.
     expect(button('Accept Close date change').getAttribute('aria-busy')).toBe('true')
     expect((button('Skip Close date change') as HTMLButtonElement).disabled).toBe(true)
+    // The last decision goes straight to applying: no "Accepted" tick, the change as it was.
+    expect(change().querySelector('[data-slot="reviewable-change-decision"]')).toBeNull()
+    expect(change().getAttribute('data-state')).toBe('pending')
     await act(async () => first.reject(new Error('offline')))
     expect(card().getAttribute('data-status')).toBe('review')
     expect((button('Skip Close date change') as HTMLButtonElement).disabled).toBe(false)

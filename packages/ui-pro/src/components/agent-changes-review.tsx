@@ -209,6 +209,9 @@ export function ReviewableChanges({
   const decision = value[key] ?? 'pending'
   const name = change ? (change.label ?? (typeof change.field === 'string' ? change.field : String(at + 1))) : ''
   const locked = status !== 'review'
+  // What the body shows: a decided change says so when you come back to it, but the last one,
+  // decided on the way out, doesn't stop to say it: applying, the card shows it as it was.
+  const showing = locked ? 'pending' : decision
   const number = (n: number) => new Intl.NumberFormat(labels.dateLocale).format(n)
 
   // The latest of everything, for callbacks that outlive a render.
@@ -362,7 +365,7 @@ export function ReviewableChanges({
           role={title ? 'group' : undefined}
           aria-labelledby={title ? fieldId : undefined}
           data-slot="reviewable-change"
-          data-state={decision}
+          data-state={showing}
           className="satin-changes-review-row flex flex-col gap-2 px-3 pb-1 text-base"
         >
           {title && (
@@ -372,16 +375,16 @@ export function ReviewableChanges({
           )}
           <AgentSuggestionChangeValue from={change.from} to={change.to} className="flex-wrap gap-y-1" />
           {change.source && <SourcePreview source={change.source} />}
-          {decision !== 'pending' && (
+          {showing !== 'pending' && (
             <span data-slot="reviewable-change-decision" className="flex items-center gap-1.5 text-sm text-text-muted">
-              {decision === 'accepted' ? (
+              {showing === 'accepted' ? (
                 <span className="flex text-status-green-fg">
                   <CheckGlyph />
                 </span>
               ) : (
                 <XGlyph />
               )}
-              {decision === 'accepted' ? labels.fieldChangeAccepted : labels.fieldChangeSkipped}
+              {showing === 'accepted' ? labels.fieldChangeAccepted : labels.fieldChangeSkipped}
             </span>
           )}
         </div>
