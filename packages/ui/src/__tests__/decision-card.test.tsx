@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import { DecisionCard, type DecisionValue } from '../components/decision-card'
 
@@ -65,18 +65,18 @@ describe('DecisionCard', () => {
     const { user } = renderWithSatin(<Flow onDone={() => {}} />)
     await user.click(screen.getByRole('button', { name: 'Next question' }))
     expect(count()).toBe('2/3')
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Next question' }))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Next question' })))
     await user.click(screen.getByRole('button', { name: 'Previous question' }))
     expect(count()).toBe('1/3')
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Previous question' }))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Previous question' })))
 
     // Tab to Continue (past Skip) and press Enter: on to the next question.
     screen.getByRole('button', { name: 'Skip' }).focus()
     await user.tab()
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Continue' }))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Continue' })))
     await user.keyboard('{Enter}')
     expect(screen.getByRole('group', { name: questions[1].title })).toBeTruthy()
-    expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'One' }))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'One' })))
   })
 
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
