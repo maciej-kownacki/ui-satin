@@ -675,17 +675,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['↑', '↓'], action: 'Moves in the menu; Enter picks, Esc closes it and returns to the arrow.' },
     ],
   },
-  'agent-plan': {
-    summary:
-      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step’s label is a button named by the label and described as "Press to rename. Alt and arrow keys to move"; pressing it turns the label into a field named "Step 2". Its × is named "Remove <step>"; after a removal focus goes to the next step’s × and the live region says "<step> removed". The step’s number is hidden, since the list already gives the position, and dragging it is pointer-only: a pointer that can’t drag has no other way to reorder (see Known gaps). Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through each step’s label and ×, then Run plan.' },
-      { keys: ['Enter', 'Space'], action: 'On a label: renames the step. On ×: removes it.' },
-      { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
-      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to the label (an empty name keeps the old one).' },
-      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to the label.' },
-    ],
-  },
   'prompt-mentions': {
     summary:
       'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list. The menu lives only while focus is in the field: the + button, the model menu, dictation or Send take focus and close it, and @ or / typed in the + panel’s search is that search’s text. Escape closes the menu alone, not a dialog the bar sits in.',
@@ -733,6 +722,17 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'In an editor\'s text or number field: keeps the value and closes the editor. A pick from a single-choice list or a calendar closes it too.' },
       { keys: ['Esc'], action: 'Closes the editor as it is, focus back on its chip. A new chip still without a value goes, focus back on `+ Filter`.' },
       { keys: ['F'], action: 'Opens `+ Filter` while focus is in the bar or the list it filters (not while typing). Set with `shortcut`, or `false` for none.' },
+    ],
+  },
+  'agent-plan': {
+    summary:
+      'A `role="group"` named by the title, around an ordered list named "Plan" (`agentPlan` in SatinLabels). In a draft each step’s label is a button named by the label and described as "Press to rename. Alt and arrow keys to move"; pressing it turns the label into a field named "Step 2". Its × is named "Remove <step>"; after a removal focus goes to the next step’s × and the live region says "<step> removed". The step’s number is hidden, since the list already gives the position, and dragging it is pointer-only: a pointer that can’t drag has no other way to reorder (see Known gaps). Once it runs, each step says where it is to screen readers ("Done", "In progress", "Not started", "Failed", "Skipped") beside its hidden icon, and the current one has `aria-current="step"`; the AgentLoading in it keeps quiet. One polite live region reads out a step finishing ("Find open slots, done"), a failure, the end ("3 steps done") and a step’s new place after a move. Retry is described by the error. When the focused button goes away (Run, Retry, Skip, Stop), focus moves to the list.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through each step’s label and ×, then Run plan.' },
+      { keys: ['Enter', 'Space'], action: 'On a label: renames the step. On ×: removes it.' },
+      { keys: ['Alt+↑', 'Alt+↓'], action: 'With focus anywhere in a step: moves it up or down and reads out its new place.' },
+      { keys: ['Enter'], action: 'In the rename field: keeps the new name and returns to the label (an empty name keeps the old one).' },
+      { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to the label.' },
     ],
   },
   'review-queue': {
