@@ -156,8 +156,10 @@ function Preview({ v }: { v: Record<string, string> }) {
   return (
     <div className="relative w-[480px] max-w-full pb-16">
       {/* The record underneath, its history on a lighter card inside: canvas and card in Light, card and popover in Dark.
-          Both edges are border-subtle, softened in Dark as the docs panel around them is, so the containers stay quiet. */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-bg-canvas p-3 dark:bg-bg-card dark:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))]">
+          Both sit on the kit's shadow-sm. The record's edge is border-subtle, softened in Dark as the docs panel around
+          it is. The history's edge is border-subtle in Light and border-default in Dark, where border-subtle barely
+          differs from the popover fill; border-default is also the diff row's edge inside it. */}
+      <div className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-bg-canvas p-3 [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)] dark:bg-bg-card dark:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))]">
         {/* No inset of its own: the avatar starts on the card's left edge and the badge ends on its right edge. */}
         <div className="flex items-center gap-3">
           <Avatar initials="TM" tone="fuchsia" size={40} />
@@ -169,7 +171,7 @@ function Preview({ v }: { v: Record<string, string> }) {
           </div>
           {stage('Interview', 'sky')}
         </div>
-        <div className="rounded-xl border border-border-subtle bg-bg-card p-5 dark:bg-bg-popover dark:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))] [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]">
+        <div className="rounded-xl border border-border-subtle bg-bg-card p-5 [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)] dark:bg-bg-popover dark:border-border-default">
           {/* Right under the record: the timeline names itself "Activity" for screen readers. */}
           <ActivityTimeline
             items={v.state === 'entries' ? (items ?? []) : []}
