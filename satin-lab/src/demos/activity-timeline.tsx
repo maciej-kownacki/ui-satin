@@ -155,9 +155,9 @@ function Preview({ v }: { v: Record<string, string> }) {
 
   return (
     <div className="relative w-[480px] max-w-full pb-16">
-      {/* The record on the canvas, its history on a card inside: darker underneath, lighter on top, in both themes.
+      {/* The record underneath, its history on a lighter card inside: canvas and card in Light, card and popover in Dark.
           Both edges are border-subtle, softened in Dark as the docs panel around them is, so the containers stay quiet. */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-bg-canvas p-3 dark:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))]">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-bg-canvas p-3 dark:bg-bg-card dark:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))]">
         {/* No inset of its own: the avatar starts on the card's left edge and the badge ends on its right edge. */}
         <div className="flex items-center gap-3">
           <Avatar initials="TM" tone="fuchsia" size={40} />
@@ -169,7 +169,7 @@ function Preview({ v }: { v: Record<string, string> }) {
           </div>
           {stage('Interview', 'sky')}
         </div>
-        <div className="rounded-xl border border-border-subtle bg-bg-card p-5 dark:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))] [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]">
+        <div className="rounded-xl border border-border-subtle bg-bg-card p-5 dark:bg-bg-popover dark:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))] [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]">
           {/* Right under the record: the timeline names itself "Activity" for screen readers. */}
           <ActivityTimeline
             items={v.state === 'entries' ? (items ?? []) : []}
