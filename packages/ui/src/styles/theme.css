@@ -288,7 +288,6 @@
   --component-switch-on: var(--color-green-soft-700);
   --component-switch-on-hover: var(--color-green-soft-600);
   --component-kbd-bg: var(--bg-card);
-  --component-changes-review-card-bg: var(--bg-canvas);
   --component-changes-review-source-bg: var(--bg-card);
   --component-notification-badge-bg: var(--status-neutral-bg);
   --component-table-pro-total-bg: var(--color-zinc-50);
@@ -410,7 +409,6 @@
   --component-switch-on: var(--color-green-soft-600);
   --component-switch-on-hover: var(--color-green-soft-500);
   --component-kbd-bg: var(--bg-muted);
-  --component-changes-review-card-bg: var(--bg-popover);
   --component-changes-review-source-bg: var(--bg-muted);
   --component-notification-badge-bg: var(--color-secondary-pressed-dark);
   --component-table-pro-total-bg: var(--color-popover-dark);
@@ -525,7 +523,6 @@
     --component-switch-on: var(--color-green-soft-600);
     --component-switch-on-hover: var(--color-green-soft-500);
     --component-kbd-bg: var(--bg-muted);
-    --component-changes-review-card-bg: var(--bg-popover);
     --component-changes-review-source-bg: var(--bg-muted);
     --component-notification-badge-bg: var(--color-secondary-pressed-dark);
     --component-table-pro-total-bg: var(--color-popover-dark);
@@ -745,7 +742,6 @@
   --color-component-switch-on: var(--component-switch-on);
   --color-component-switch-on-hover: var(--component-switch-on-hover);
   --color-component-kbd-bg: var(--component-kbd-bg);
-  --color-component-changes-review-card-bg: var(--component-changes-review-card-bg);
   --color-component-changes-review-source-bg: var(--component-changes-review-source-bg);
   --color-component-notification-badge-bg: var(--component-notification-badge-bg);
   --color-component-table-pro-total-bg: var(--component-table-pro-total-bg);

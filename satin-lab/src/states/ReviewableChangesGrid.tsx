@@ -1,42 +1,56 @@
-import { AgentSuggestion } from '@uisatin/ui/agent-suggestion'
 import { Badge } from '@uisatin/ui/badge'
-import { ReviewableChanges, type ReviewableChange, type ReviewableChangesStatus } from '@uisatin/pro/agent-changes-review'
+import {
+  ReviewableChanges,
+  type ReviewableChange,
+  type ReviewableChangesStatus,
+  type ReviewableChangesValue,
+} from '@uisatin/pro/agent-changes-review'
 
 /**
- * Every ReviewableChanges state: cards pending, accepted and rejected, the whole set in review and
- * applying, with buttons and with checkboxes. Applying is held with `status`. Once applied the
- * suggestion leaves, so there is no applied state to show.
+ * Every ReviewableChanges state: a change pending, accepted and dismissed, the set applying, with a
+ * title and without one (each field is the title then). Applying is held with `status`. Once
+ * applied the card leaves, so there is no applied state to show.
  */
 const changes: ReviewableChange[] = [
   {
     id: 'stage',
     field: 'Stage',
+    label: 'Stage',
     from: 'Proposal',
     to: <Badge size="sm" tone="brand">Negotiation</Badge>,
     source: { label: 'Transcription', quote: 'We’re ready to talk terms. Send the contract over.' },
   },
   { id: 'value', field: 'Value', from: '$18,000', to: '$22,000', source: { label: 'Transcription', quote: 'We can go to $22k if onboarding is included.' } },
-  { id: 'close', field: 'Close date', from: '30 Nov', to: '15 Dec', source: { label: 'Transcription', quote: 'Let’s aim to sign by mid-December.' } },
   { id: 'owner', field: 'Owner', to: 'Tara Mendes', source: { label: 'Transcription', quote: 'Tara will take it from here.' } },
 ]
-const decisions = { stage: 'accepted', value: 'rejected', close: 'accepted' } as const
-const statuses: ReviewableChangesStatus[] = ['review', 'applying']
-const controls = ['buttons', 'checkbox'] as const
+
+const columns: { name: string; value: ReviewableChangesValue; status?: ReviewableChangesStatus }[] = [
+  { name: 'pending', value: {} },
+  { name: 'accepted', value: { stage: 'accepted' } },
+  { name: 'dismissed', value: { stage: 'rejected', value: 'accepted' } },
+  { name: 'applying', value: { stage: 'accepted', value: 'accepted' }, status: 'applying' },
+]
+const rows = ['title', 'no title'] as const
 
 export function ReviewableChangesGrid() {
   return (
-    <div className="inline-grid grid-cols-[80px_repeat(2,400px)] items-start gap-x-8 gap-y-8 p-8 text-xs text-text-muted">
+    <div className="inline-grid grid-cols-[80px_repeat(4,364px)] items-start gap-x-8 gap-y-8 p-8 text-xs text-text-muted">
       <span />
-      {statuses.map((s) => (
-        <span key={s} className="text-text-default">{s}</span>
+      {columns.map((c) => (
+        <span key={c.name} className="text-text-default">{c.name}</span>
       ))}
-      {controls.map((control) => (
-        <div key={control} className="contents">
-          <span className="text-sm text-text-default">{control}</span>
-          {statuses.map((status) => (
-            <AgentSuggestion key={status} kind="CRM update" title="Update the Quanta deal">
-              <ReviewableChanges changes={changes} control={control} defaultValue={decisions} status={status} />
-            </AgentSuggestion>
+      {rows.map((row) => (
+        <div key={row} className="contents">
+          <span className="text-sm text-text-default">{row}</span>
+          {columns.map((c) => (
+            <ReviewableChanges
+              key={c.name}
+              title={row === 'title' ? 'Update the Quanta deal' : undefined}
+              description={row === 'title' ? "Based on today's call" : undefined}
+              changes={changes}
+              defaultValue={c.value}
+              status={c.status}
+            />
           ))}
         </div>
       ))}

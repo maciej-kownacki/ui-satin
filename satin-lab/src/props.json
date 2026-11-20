@@ -301,11 +301,11 @@
     }
   },
   "agent-changes-review": {
-    "ReviewableChangesRoot": {
-      "description": "The state and the words for the parts inside; renders a `div`. Other props, `ref` included, go to it.",
-      "type": "ReviewableChangesRootProps",
+    "ReviewableChanges": {
+      "description": "One change per step of a DecisionCard; see above. Other props, `ref` included, go to the card's `div`.",
+      "type": "ReviewableChangesProps",
       "extends": [
-        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'>"
+        "Omit<React.ComponentProps<'div'>, 'title' | 'defaultValue' | 'onChange' | 'children'>"
       ],
       "props": [
         {
@@ -313,6 +313,18 @@
           "type": "ReviewableChange[]",
           "required": true,
           "description": "The fields the agent wants to change, as AgentSuggestionChanges takes them; add an `id` to each to key `value` by it."
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "The suggestion, in the header: \"Update the Quanta deal\". Without it, each change's field is the title."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "description": "A muted line under the title: \"Based on today's call\"."
         },
         {
           "name": "value",
@@ -333,6 +345,13 @@
           "description": "Called with every decision whenever one changes."
         },
         {
+          "name": "defaultStep",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The change to open on, by its place in `changes`. Defaults to the first."
+        },
+        {
           "name": "onApply",
           "type": "(accepted: ReviewableChange[], value: ReviewableChangesValue) => unknown",
           "required": false,
@@ -342,60 +361,21 @@
           "name": "onApplied",
           "type": "(accepted: ReviewableChange[], value: ReviewableChangesValue) => void",
           "required": false,
-          "description": "Called once the accepted changes are applied and the suggestion has left: remove it here (it stays faded out until you do). Gets what `onApply` got."
+          "description": "Called once the accepted changes are applied and the card has left: remove it here (it stays faded out until you do). Gets what `onApply` got."
         },
         {
           "name": "returnFocus",
           "type": "() => HTMLElement | null | undefined",
           "required": false,
-          "description": "Where focus goes when the suggestion leaves with focus inside it: the record it updated, the next suggestion. Without it, or when it gives nothing, focus goes to the page's body."
+          "description": "Where focus goes when the card leaves with focus inside it: the record it updated, the next suggestion. Without it, or when it gives nothing, focus goes to the page's body."
         },
         {
           "name": "status",
           "type": "ReviewableChangesStatus",
           "required": false,
           "description": "Holds the stage yourself; without it, it follows `onApply`."
-        },
-        {
-          "name": "control",
-          "type": "'buttons' | 'checkbox'",
-          "required": false,
-          "default": "'buttons'",
-          "description": "`buttons`: Accept and Dismiss on each card. `checkbox`: a Checkbox before each card's name, checked to accept."
         }
       ]
-    },
-    "ReviewableChangesList": {
-      "description": "The cards, one `role=\"group\"` per change. Other props, `ref` included, go to its `div`.",
-      "type": "ReviewableChangesListProps",
-      "extends": [
-        "React.ComponentProps<'div'>"
-      ],
-      "props": []
-    },
-    "ReviewableChangesAcceptAll": {
-      "description": "Accepts every change. Its text is `acceptAll` from SatinLabels unless you pass children. Other props, `ref` included, go to the Button.",
-      "type": "ReviewableChangesAcceptAllProps",
-      "extends": [
-        "Omit<ButtonProps, 'asChild' | 'loading'>"
-      ],
-      "props": []
-    },
-    "ReviewableChangesApply": {
-      "description": "Applies the accepted changes: \"Apply 2 changes\", or your children. Disabled while none is accepted, busy (and still focusable) while `applying` and while the suggestion leaves after. Other props, `ref` included, go to the Button.",
-      "type": "ReviewableChangesApplyProps",
-      "extends": [
-        "Omit<ButtonProps, 'asChild' | 'loading'>"
-      ],
-      "props": []
-    },
-    "ReviewableChanges": {
-      "description": "The cards, then Accept all and Apply on the right, 4px further down as in AgentSuggestion's actions row. Other props, `ref` included, go to the root `div`.",
-      "type": "ReviewableChangesProps",
-      "extends": [
-        "Omit<ReviewableChangesRootProps, 'children'>"
-      ],
-      "props": []
     }
   },
   "agent-loading": {
@@ -3798,6 +3778,30 @@
           "type": "string",
           "required": false,
           "description": "Defaults to the `skip` label."
+        },
+        {
+          "name": "previousStepLabel",
+          "type": "string",
+          "required": false,
+          "description": "The step navigator's previous button. Defaults to the `previousQuestion` label."
+        },
+        {
+          "name": "nextStepLabel",
+          "type": "string",
+          "required": false,
+          "description": "The step navigator's next button. Defaults to the `nextQuestion` label."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A body of your own, in place of the type's answers; it moves with the step."
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Actions of your own, in place of Skip and Continue, in the footer row (not on a draft)."
         }
       ]
     },

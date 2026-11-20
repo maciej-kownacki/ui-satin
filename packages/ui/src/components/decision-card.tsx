@@ -29,7 +29,12 @@ import { useSatinLabels } from './labels'
  * the side of the step (from the right going forward), the old ones slide the other way and fade
  * out a little faster, and the card eases to its new height, all 300 ms on the kit ease-out. The
  * step navigator and the footer stay put. Stepping again mid-slide carries on from where things
- * are. Under reduced motion the parts only cross-fade (150 ms) and the height snaps.
+ * are. A part that reads the same on both steps (a title shared by every step) stays still.
+ * Under reduced motion the parts only cross-fade (150 ms) and the height snaps.
+ *
+ * For a step none of the types covers, pass `children`: they take the answers' place and move
+ * with the step. `footer` takes Skip and Continue's place, in the same row. Other props, `ref`
+ * included, go to the card's `div`.
  */
 
 export type DecisionOption = {
@@ -73,6 +78,14 @@ export interface DecisionCardProps
   continueLabel?: string
   /** Defaults to the `skip` label. */
   skipLabel?: string
+  /** The step navigator's previous button. Defaults to the `previousQuestion` label. */
+  previousStepLabel?: string
+  /** The step navigator's next button. Defaults to the `nextQuestion` label. */
+  nextStepLabel?: string
+  /** A body of your own, in place of the type's answers; it moves with the step. */
+  children?: React.ReactNode
+  /** Actions of your own, in place of Skip and Continue, in the footer row (not on a draft). */
+  footer?: React.ReactNode
 }
 
 export function DecisionCard({
@@ -95,6 +108,11 @@ export function DecisionCard({
   onRewrite,
   continueLabel,
   skipLabel: skipLabelProp,
+  previousStepLabel,
+  nextStepLabel,
+  children,
+  footer,
+  ref,
   ...props
 }: DecisionCardProps) {
   const labels = useSatinLabels()
@@ -130,7 +148,7 @@ export function DecisionCard({
     const values = asArray(value)
     const picked = values.map((v) => options.find((o) => o.value === v)?.label ?? v)
     return (
-      <div data-slot="decision-card" data-type="summary" className={card} {...props}>
+      <div ref={ref} data-slot="decision-card" data-type="summary" className={card} {...props}>
         <div className="flex items-center gap-2.5 py-2.5 ps-3 pe-2.5">
           <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-action-primary-bg text-action-primary-fg">
             <Check aria-hidden className="size-icon-size-sm [stroke-width:1.875]" />
@@ -149,12 +167,17 @@ export function DecisionCard({
     )
   }
 
+  const own = children != null
   const empty =
     type === 'radio' ? !value : type === 'checkbox' || type === 'chips' ? asArray(value).length === 0 : false
 
   return (
     <div
-      ref={cardRef}
+      ref={(node: HTMLDivElement | null) => {
+        cardRef.current = node
+        if (typeof ref === 'function') ref(node)
+        else if (ref) ref.current = node
+      }}
       role="group"
       aria-labelledby={titleId}
       data-slot="decision-card"
@@ -170,11 +193,14 @@ export function DecisionCard({
         hint={hint}
         onPreviousStep={onPreviousStep}
         onNextStep={onNextStep}
+        previousStepLabel={previousStepLabel}
+        nextStepLabel={nextStepLabel}
       />
       <div className="relative">
         <div ref={bodyRef}>
+      {own && children}
 
-      {type === 'radio' && (
+      {!own && type === 'radio' && (
         <RadioGroup.Root
           aria-labelledby={titleId}
           value={typeof value === 'string' ? value : ''}
@@ -189,7 +215,7 @@ export function DecisionCard({
         </RadioGroup.Root>
       )}
 
-      {type === 'checkbox' && (
+      {!own && type === 'checkbox' && (
         <div className="flex flex-col gap-0.5 px-2">
           {options.map((option) => {
             const checked = asArray(value).includes(option.value)
@@ -206,7 +232,7 @@ export function DecisionCard({
         </div>
       )}
 
-      {type === 'chips' && (
+      {!own && type === 'chips' && (
         <div className="flex flex-wrap gap-1.5 px-3 pb-1">
           {options.map((option) => {
             const chosen = asArray(value)
@@ -225,11 +251,11 @@ export function DecisionCard({
         </div>
       )}
 
-      {type === 'ranking' && (
+      {!own && type === 'ranking' && (
         <Ranking key={question} options={options} value={asArray(value)} onValueChange={set} labelledBy={titleId} />
       )}
 
-      {type === 'draft' && (
+      {!own && type === 'draft' && (
         <Draft
           key={question}
           title={draftTitle}
@@ -246,7 +272,10 @@ export function DecisionCard({
         </div>
       </div>
 
-      {type !== 'draft' && (
+      {type !== 'draft' && footer !== undefined && (
+        <div className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">{footer}</div>
+      )}
+      {type !== 'draft' && footer === undefined && (
         <div className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">
           {onSkip && (
             <Button variant="tertiary" onClick={onSkip} className="text-text-muted">
@@ -270,6 +299,8 @@ function Header({
   hint,
   onPreviousStep,
   onNextStep,
+  previousStepLabel,
+  nextStepLabel,
 }: {
   titleRef: React.Ref<HTMLDivElement>
   titleId: string
@@ -278,6 +309,8 @@ function Header({
   hint?: string
   onPreviousStep?: () => void
   onNextStep?: () => void
+  previousStepLabel?: string
+  nextStepLabel?: string
 }) {
   const labels = useSatinLabels()
   return (
@@ -298,7 +331,7 @@ function Header({
             size="xs"
             shape="rounded"
             iconOnly
-            aria-label={labels.previousQuestion}
+            aria-label={previousStepLabel ?? labels.previousQuestion}
             disabled={!onPreviousStep}
             onClick={onPreviousStep}
           >
@@ -311,7 +344,7 @@ function Header({
             size="xs"
             shape="rounded"
             iconOnly
-            aria-label={labels.nextQuestion}
+            aria-label={nextStepLabel ?? labels.nextQuestion}
             disabled={!onNextStep}
             onClick={onNextStep}
           >
@@ -358,6 +391,8 @@ function useStepSlide(
         const el = ref.current
         const copy = prev.copies[i] as HTMLElement | null
         if (!el) return
+        // The same on both steps (a title every step shares): it stays still.
+        if (copy && el.getAnimations().length === 0 && copy.isEqualNode(el)) return
         // Stepping again mid-slide: the copy leaves from where the part was, not from rest.
         const midway = el.getAnimations().length > 0
         const from = midway ? getComputedStyle(el) : null
