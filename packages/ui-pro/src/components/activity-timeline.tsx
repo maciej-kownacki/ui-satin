@@ -17,7 +17,7 @@ import { toast } from '@uisatin/ui/toast'
  * - Each entry is the actor's avatar on a rail (an agent's is the tetris mark at rest, in a
  *   bg/muted circle with a 0.75px border/strong edge, the rail's colour, so it reads on card and
  *   popover alike), the sentence (**actor** verb **target**) and its time. Today's times are
- *   relative ("5 min. ago") and move on by themselves: one shared clock ticks every 30 s, and
+ *   relative ("5 min ago") and move on by themselves: one shared clock ticks every 30 s, and
  *   only a time whose text changes renders again. Older days show the clock time. Screen readers
  *   hear the full date.
  * - `changes` (`AgentSuggestionChange[]`) are drawn as AgentSuggestion draws them: the field, the
@@ -183,15 +183,27 @@ function daysBetween(a: Date, b: Date) {
   return Math.round((start(b) - start(a)) / 86_400_000)
 }
 
-/** Today's times relative ("5 min. ago"), older ones as the clock time, with the date when `withDate`. */
+/*
+ * English short units end in a dot ("5 min. ago", "1 hr. ago"); Satin writes them without, as en-GB
+ * does. Only English: elsewhere the dot can be the language's own spelling ("1 godz. temu",
+ * "vor 1 Std."). The narrow style isn't the fix: in English it says "5m ago".
+ */
+const isEnglish = (locale: string) => /^en(?:-|$)/i.test(locale)
+const undot = (text: string) => text.replace(/\.(?=\s|$)/g, '')
+
+/** Today's times relative ("5 min ago"), older ones as the clock time, with the date when `withDate`. */
 function shortTime(at: Date, now: number, locale: string, withDate: boolean) {
   const nowDate = new Date(now)
   if (daysBetween(at, nowDate) === 0) {
     const rtf = relativeFormat(locale, { style: 'short', numeric: 'auto' })
     const minutes = Math.floor(Math.max(0, now - at.getTime()) / 60_000)
-    if (minutes < 1) return rtf.format(0, 'second')
-    if (minutes < 60) return rtf.format(-minutes, 'minute')
-    return rtf.format(-Math.floor(minutes / 60), 'hour')
+    const text =
+      minutes < 1
+        ? rtf.format(0, 'second')
+        : minutes < 60
+          ? rtf.format(-minutes, 'minute')
+          : rtf.format(-Math.floor(minutes / 60), 'hour')
+    return isEnglish(locale) ? undot(text) : text
   }
   const sameYear = at.getFullYear() === nowDate.getFullYear()
   return dateFormat(locale, {
@@ -226,7 +238,7 @@ export interface ActivityTimelineTimeProps extends Omit<React.ComponentProps<'ti
 }
 
 /**
- * A `<time>`: relative today ("5 min. ago"), the clock time before that, kept current by the
+ * A `<time>`: relative today ("5 min ago"), the clock time before that, kept current by the
  * shared clock. Screen readers hear the full date and time instead. Other props, `ref` included,
  * go to the `time` element.
  */

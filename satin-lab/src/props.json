@@ -93,7 +93,7 @@
   },
   "activity-timeline": {
     "ActivityTimelineTime": {
-      "description": "A `<time>`: relative today (\"5 min. ago\"), the clock time before that, kept current by the shared clock. Screen readers hear the full date and time instead. Other props, `ref` included, go to the `time` element.",
+      "description": "A `<time>`: relative today (\"5 min ago\"), the clock time before that, kept current by the shared clock. Screen readers hear the full date and time instead. Other props, `ref` included, go to the `time` element.",
       "type": "ActivityTimelineTimeProps",
       "extends": [
         "Omit<React.ComponentProps<'time'>, 'children' | 'dateTime'>"

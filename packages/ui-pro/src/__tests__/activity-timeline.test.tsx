@@ -88,9 +88,25 @@ describe('ActivityTimeline', () => {
     renderWithSatin(<ActivityTimeline items={history(now).slice(0, 1)} />)
     const time = entry(/salary range/).querySelector('time')!
     expect(time.getAttribute('dateTime')).toBe(new Date(now - 2 * MIN).toISOString())
-    expect(time.querySelector('[aria-hidden]')!.textContent).toBe('2 min. ago')
+    expect(time.querySelector('[aria-hidden]')!.textContent).toBe('2 min ago')
     const full = new Intl.DateTimeFormat('en-US', { dateStyle: 'full', timeStyle: 'short' }).format(now - 2 * MIN)
     expect(time.querySelector('.sr-only')!.textContent).toBe(full)
+  })
+
+  it.each([
+    ['en-US', '3 min ago', '2 hr ago'],
+    ['en-GB', '3 min ago', '2 hr ago'],
+    ['de-DE', 'vor 3 Min.', 'vor 2 Std.'],
+    ['pl-PL', '3 min temu', '2 godz. temu'],
+  ])('writes English units without the dot, other languages as they spell them (%s)', (dateLocale, minutes, hours) => {
+    const now = Date.now()
+    const items: ActivityItem[] = [
+      { id: 'm', actor: agent, verb: 'changed', target: 'salary range', at: new Date(now - 3 * MIN) },
+      { id: 'h', actor: { name: 'Jon Park', kind: 'person' }, verb: 'edited', target: 'notes', at: new Date(now - 125 * MIN) },
+    ]
+    const { container } = renderWithSatin(<ActivityTimeline items={items} />, { labels: { dateLocale } })
+    const times = [...container.querySelectorAll('time [aria-hidden]')].map((el) => el.textContent)
+    expect(times).toEqual([minutes, hours])
   })
 
   it('draws an agent’s changes as AgentSuggestion does', () => {
@@ -313,7 +329,7 @@ describe('ActivityTimeline times', () => {
 
     // Past the next tick it reads a minute, and that's all that rendered.
     act(() => void vi.advanceTimersByTime(40_000))
-    expect(text()).toBe('1 min. ago')
+    expect(text()).toBe('1 min ago')
     expect(commits).toBe(before + 1)
 
     view.unmount()
