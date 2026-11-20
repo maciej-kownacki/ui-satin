@@ -891,13 +891,6 @@
           "required": false,
           "default": "'color'",
           "description": "The light across the tetris mark and the label, as on AgentLoading."
-        },
-        {
-          "name": "layout",
-          "type": "AgentPlanLayout",
-          "required": false,
-          "default": "'inline'",
-          "description": "Where a draft step's controls go: beside it (`inline`), on hover (`hover`), under the step you open (`select`), or behind Edit plan (`edit`)."
         }
       ]
     },
@@ -925,7 +918,7 @@
       "props": []
     },
     "AgentPlanActions": {
-      "description": "Run plan in a draft (disabled while no step is left in), Stop while it runs or waits at a failed step (with `onStop`). In the `edit` layout, Edit plan sits on the left, as far from Run plan as the footer goes, and Run plan reads Done while the plan is open. Children go before the button. Nothing shows once it's done, unless you pass children. Other props, `ref` included, go to its `div`.",
+      "description": "Run plan in a draft (disabled while no step is left in), Stop while it runs or waits at a failed step (with `onStop`). Children go before the button. Nothing shows once it's done, unless you pass children. Other props, `ref` included, go to its `div`.",
       "type": "AgentPlanActionsProps",
       "extends": [
         "React.ComponentProps<'div'>"
