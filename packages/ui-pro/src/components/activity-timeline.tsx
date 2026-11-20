@@ -28,8 +28,9 @@ import { toast } from '@uisatin/ui/toast'
  *   "Reverted by you", focus moves to it, and a toast says so with Undo (`onUndoRevert`). A
  *   rejected promise puts the button back; tell people why with a toast of your own. The toast
  *   needs the app's `<Toaster />`.
- * - New entries fade in at the top (200 ms, from 4px above), and so do a run's entries when it
- *   opens; nothing animates height. Reduced motion turns it off.
+ * - A run opening or closing, and "Reverted by you" coming or going, change height over 300 ms:
+ *   the rows below glide, the content fades in once the move starts, the chevron turns with it.
+ *   New entries fade in at the top (200 ms, from 4px above). Reduced motion makes it all instant.
  * - `loading` shows three skeleton rows, `empty` (or "No activity yet") when there are no items.
  *
  * Parts, for a timeline of your own: `ActivityTimelineRoot` (revert and motion for the parts
@@ -417,10 +418,80 @@ function Marker({ actor }: { actor: ActivityActor }) {
   )
 }
 
-/** Entries that mount after the first render with content fade in (new ones, a run's on opening). */
+/**
+ * Entries that mount after the first render with content fade in (new ones at the top, one joining
+ * an open run). Those mounting with a fold as it opens don't: the fold fades them in itself.
+ */
 function useEnter(context: TimelineContextValue | null) {
-  const [enter] = React.useState(() => context?.ready.current ?? false)
+  const opening = React.useContext(FoldContext)
+  const [enter] = React.useState(() => (context?.ready.current ?? false) && !opening?.current)
   return enter
+}
+
+/* ---------- a fold: height that opens and closes by itself ---------- */
+
+/** True while the fold's first render runs, so the entries mounting with it leave the fade to it. */
+const FoldContext = React.createContext<React.RefObject<boolean> | null>(null)
+
+/** How long the fold waits for its transition before it gives up on `transitionend`. */
+const FOLD_FALLBACK_MS = 400
+
+/**
+ * Content that opens and closes in height: a run's entries, "Reverted by you". The rows below
+ * glide (grid rows 0fr ↔ 1fr, activity-timeline.css) and the content fades in once the move has
+ * started. It stays mounted while it closes, inert, and unmounts when the move ends. It clips
+ * only while it moves, so focus rings inside it show once it settles.
+ */
+function Fold({ open, children }: { open: boolean; children: React.ReactNode }) {
+  const [present, setPresent] = React.useState(open)
+  const [shown, setShown] = React.useState(open)
+  const [settled, setSettled] = React.useState(open)
+  if (open && !present) setPresent(true)
+  if (!open && shown) setShown(false)
+  if (!open && settled) setSettled(false)
+
+  const ref = React.useRef<HTMLDivElement>(null)
+
+  // Opening: the content is in the page at 0fr; lay that out, then go to 1fr, so the rows move.
+  React.useLayoutEffect(() => {
+    if (!open || shown) return
+    ref.current?.getBoundingClientRect()
+    setShown(true)
+  }, [open, shown])
+
+  // The move's end: settle open, or unmount closed. The timer covers a transition that never runs.
+  React.useEffect(() => {
+    const el = ref.current
+    if (!el || (open ? !shown || settled : !present)) return
+    const finish = () => (open ? setSettled(true) : setPresent(false))
+    const onEnd = (e: TransitionEvent) => {
+      if (e.target === el && e.propertyName === 'grid-template-rows') finish()
+    }
+    el.addEventListener('transitionend', onEnd)
+    const timer = window.setTimeout(finish, FOLD_FALLBACK_MS)
+    return () => {
+      el.removeEventListener('transitionend', onEnd)
+      window.clearTimeout(timer)
+    }
+  }, [open, shown, settled, present])
+
+  if (!present) return null
+  return (
+    <div ref={ref} data-slot="activity-timeline-fold" data-state={shown ? 'open' : 'closed'} data-settled={settled || undefined} inert={!open}>
+      <div>
+        <FoldOpening>{children}</FoldOpening>
+      </div>
+    </div>
+  )
+}
+
+/** Mounts with the fold's content each time it opens: `opening` holds for that first render. */
+function FoldOpening({ children }: { children: React.ReactNode }) {
+  const opening = React.useRef(true)
+  React.useEffect(() => {
+    opening.current = false
+  }, [])
+  return <FoldContext.Provider value={opening}>{children}</FoldContext.Provider>
 }
 
 const rowClass = 'relative flex gap-3 pb-5 last:pb-0'
@@ -537,12 +608,13 @@ export function ActivityTimelineEntry({ item, withDate = false, className, ref, 
             {canRevert && revertButton}
           </div>
         )}
-        {reverted && (
-          <p data-slot="activity-timeline-reverted" className="m-0 mt-1.5 flex items-center gap-1 text-sm leading-5 text-text-muted">
+        {/* Opens under the entry when it's reverted and closes on Undo; the rows below glide. */}
+        <Fold open={reverted}>
+          <p data-slot="activity-timeline-reverted" className="m-0 flex items-center gap-1 pt-1.5 text-sm leading-5 text-text-muted">
             <UndoGlyph />
             {revertedBy}
           </p>
-        )}
+        </Fold>
       </div>
     </li>
   )
@@ -581,7 +653,7 @@ export interface ActivityTimelineRunProps extends Omit<React.ComponentProps<'li'
 
 /**
  * Several entries by one actor folded into one row: "Agent made 6 changes", a button that opens
- * onto them (their own list, fading in). Other props, `ref` included, go to the `li`.
+ * onto them (their own list, opening in height). Other props, `ref` included, go to the `li`.
  */
 export function ActivityTimelineRun({
   actor,
@@ -632,11 +704,13 @@ export function ActivityTimelineRun({
               )}
             >
               <span>{summary ?? labels.activityRun(<span className="font-medium text-text-default">{actor.name}</span>, count)}</span>
+              {/* Turns with the fold, on its duration and curve (activity-timeline.css). */}
               <svg
                 aria-hidden
+                data-slot="activity-timeline-run-chevron"
                 viewBox="0 0 24 24"
                 fill="none"
-                className="size-icon-size-sm shrink-0 transition-transform duration-(--duration-fast) ease-(--ease-out) group-aria-expanded/run:rotate-180"
+                className="size-icon-size-sm shrink-0 group-aria-expanded/run:rotate-180"
               >
                 <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" style={{ strokeWidth: 1.875 }} />
               </svg>
@@ -644,11 +718,12 @@ export function ActivityTimelineRun({
           </p>
           <ActivityTimelineTime at={at} withDate={withDate} className="py-0.5" />
         </div>
-        {open && (
-          <ActivityTimelineList id={listId} className="mt-3">
+        {/* The gap above the entries is inside the fold, so it opens and closes with them. */}
+        <Fold open={open}>
+          <ActivityTimelineList id={listId} className="pt-3">
             {children}
           </ActivityTimelineList>
-        )}
+        </Fold>
       </div>
     </li>
   )
