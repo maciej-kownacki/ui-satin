@@ -55,7 +55,7 @@
   overflow: hidden;
   border-radius: 6px;
   background-color: var(--status-brand-bg);
-  box-shadow: inset 0 0 0 1px var(--status-brand-border);
+  box-shadow: inset 0 0 0 var(--border-width-strong) var(--status-brand-border);
   color: var(--status-brand-fg);
   padding: 2px 6px;
   font-size: 12px;
@@ -66,7 +66,7 @@
 /* Still being drawn (pointer down, or Shift and arrows): a dashed edge until it's picked. */
 .satin-scheduler-selection[data-draft] {
   box-shadow: none;
-  border: 1px dashed var(--status-brand-fg);
+  border: var(--border-width-strong) dashed var(--status-brand-fg);
 }
 
 /* ---------- events ---------- */
@@ -99,7 +99,7 @@
   touch-action: auto;
   border-inline-start-width: 0;
   padding-inline-start: 8px;
-  box-shadow: inset 0 0 0 1px var(--tone-border), 0 0 0 1px var(--bg-card);
+  box-shadow: inset 0 0 0 var(--border-width-default) var(--tone-border), 0 0 0 1px var(--bg-card);
 }
 @media (hover: hover) {
   .satin-scheduler-event:hover {
@@ -232,7 +232,7 @@
 }
 .satin-scheduler-day[aria-selected='true'] {
   background-color: var(--status-brand-bg);
-  box-shadow: inset 0 0 0 1px var(--status-brand-border);
+  box-shadow: inset 0 0 0 var(--border-width-strong) var(--status-brand-border);
 }
 .satin-scheduler-day:focus-visible::after,
 .satin-scheduler-day[data-drop]::after {
@@ -283,7 +283,7 @@
   touch-action: auto;
 }
 .satin-scheduler-item[data-allday][data-readonly] {
-  box-shadow: inset 0 0 0 1px var(--tone-border);
+  box-shadow: inset 0 0 0 var(--border-width-default) var(--tone-border);
 }
 @media (hover: hover) {
   .satin-scheduler-item:not([data-allday]):hover {

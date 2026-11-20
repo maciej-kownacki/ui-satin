@@ -451,20 +451,6 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A native `textarea`. `label` points at it; the hint, or the error in its place, and the counter are linked with `aria-describedby`, and an error sets `aria-invalid`. The counter reads as "Characters used: 34/120". `maxLength` is not set on the element, so typing past it is allowed and only the counter says so; the grip is hidden.',
   },
-  'time-picker': {
-    summary:
-      'TimePicker\'s field is a `combobox` named by its label and described by a format hint ("Type a time like 2:30 PM", `timeHint` in SatinLabels) and by the hint or error. Focus stays in it while the `listbox` of times is open; `aria-activedescendant` follows the highlighted time. Each time is an `option`: the picked one `aria-selected`, unavailable ones `aria-disabled`. Typed text that isn\'t an available time sets `aria-invalid` and says why under the field (`timeInvalid`, `timeUnavailable`). The chevron, "Show times", is out of the tab order. DateTimePicker\'s field is a `button` that opens the Calendar (as on Date picker) with the times as a `listbox` named "Time"; picking a day with no time yet moves focus to the times. A pick there sets the value and leaves the panel open, and the focus where it was, so the change is heard as the time becoming selected.',
-    keyboard: [
-      { keys: ['↓', '↑'], action: 'On the field: opens the list on the picked time, then moves to the next or previous available time.' },
-      { keys: ['Alt+↓', 'Alt+↑'], action: 'Opens or closes the list without moving the highlight.' },
-      { keys: ['Page Down', 'Page Up'], action: 'Moves an hour on or back.' },
-      { keys: ['Home', 'End'], action: 'In TimeList and the date-and-time panel: the first or last available time. In the field they move the caret.' },
-      { keys: ['0–9', 'A', 'P'], action: 'Type-ahead: the list jumps to the time typed so far ("14", "2p"). In a TimeList a second\'s pause starts over.' },
-      { keys: ['Enter'], action: 'Picks the highlighted time once the arrows or the pointer moved there and closes the list; otherwise reads what was typed ("930", "9:30pm"). In a TimeList, Space picks too. In the date-and-time panel a pick leaves it open; Enter on the time already picked closes it and returns focus to the field.' },
-      { keys: ['Esc'], action: 'Closes the list and leaves focus in the field (the date-and-time panel returns it to the field). With the list closed, puts back the time the field showed.' },
-      { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
-    ],
-  },
   notification: {
     summary:
       'An `article` named by its title and described by its description; the media and the cards stacked behind are hidden from screen readers unless the media names itself (an Avatar with `name`). It is not a live region: announce a new notification from the app, or use Toast. The close button is a 24px `button` named "Dismiss" (`dismiss` in SatinLabels); it shows on hover and whenever focus is inside the card, and on touch screens always.',
@@ -588,23 +574,6 @@ export const a11y: Record<string, A11y> = {
     summary:
       'The edge and the label are hidden from screen readers; what they show is read out from a polite `status` region instead: "Hiring assistant is updating Tara Mendes" as the agent starts on a target or moves to the next, "Hiring assistant updated Lena Fischer" when it\'s done, and "Jon Park is editing Omar Haddad; Hiring assistant is waiting" in a conflict (`agentPresenceWorking`, `agentPresenceDone`, `agentPresenceConflict` in SatinLabels). `label` names the target in those sentences, so give it the row\'s or card\'s name. Each state has its own words on the label, so colour is never the only cue, and a conflict\'s edge is dashed. It takes no focus and no pointer, and never changes the target, so nothing moves under it. Under reduced motion it neither fades nor glides and the mark stands still.',
   },
-  'data-grid': {
-    summary:
-      'A `grid` (APG Grid pattern) named by `label`, with `aria-rowcount` and `aria-colcount` and each row and cell numbered, so the count stays right while only the rows on screen exist. One cell at a time is in the tab order; a sortable header holds a `button` and sets `aria-sort`. With `selectable` the grid is `aria-multiselectable` and rows set `aria-selected`; the checkboxes are named "Select <name>" after the first column or `rowLabel`. Each resize handle is a focusable `separator` named "Resize <column>" with its width as `aria-valuenow`. An editor is named after its column. A saving cell is `aria-busy`; a failed one is `aria-invalid` and described by its error. Sorting, saves and views are read out from a polite `status` region. The Columns menu is a menu of `menuitemcheckbox` rows; the view menu says "View: <name>, unsaved changes" when the grid has moved from the view.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves into the grid, onto the cell last focused. From a header, moves on to its resize handle; Tab again leaves the grid.' },
-      { keys: ['←', '→', '↑', '↓'], action: 'Moves one cell; ← and → are mirrored right to left. The header row is part of the grid.' },
-      { keys: ['Home', 'End'], action: 'Moves to the first or last cell of the row; with ⌃ or ⌘, of the grid.' },
-      { keys: ['Page Up', 'Page Down'], action: 'Moves up or down by a screen of rows.' },
-      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all. On a checkbox (Space): selects the row, or every row.' },
-      { keys: ['⇧ Space'], action: 'Selects or clears the focused cell’s row.' },
-      { keys: ['Enter', 'F2'], action: 'On an editable cell: opens its editor (double click does too). On a cell whose save failed: edits the value that failed.' },
-      { keys: ['Enter', 'Tab'], action: 'In an editor: saves. Tab then moves to the next cell, ⇧ Tab to the previous one.' },
-      { keys: ['Esc'], action: 'In an editor: cancels. On a cell whose save failed: drops the change.' },
-      { keys: ['←', '→'], action: 'On a resize handle: narrows or widens the column by 8px (40px with ⇧); Home and End go to its narrowest and widest. Enter or Esc goes back to the header.' },
-      { keys: ['⌥ ↑', '⌥ ↓'], action: 'In the Columns menu: moves the highlighted column up or down.' },
-    ],
-  },
   'search-scoped': {
     summary:
       'The input is a `combobox` (named "Search" through `searchField`, or your `aria-label`) that controls a `listbox` named "Search results"; the highlighted row is its `aria-activedescendant`, so focus stays in the query. Rows sit in a `group` per section, named by its heading with the count read as words ("Candidates, 6 results"). The chips are described to the input (`aria-describedby`), so the filters are heard without leaving the query; each chip has a remove button ("Remove Stage: Interview"). A polite `status` says "Filter added: …" or "Filter removed: …", and the result count once typing settles. The footer of key hints is hidden from screen readers. Every word is in SatinLabels (`scopedSearch*`).',
@@ -635,18 +604,21 @@ export const a11y: Record<string, A11y> = {
       { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
     ],
   },
-  'time-picker': {
+  'data-grid': {
     summary:
-      'TimePicker\'s field is a `combobox` named by its label and described by a format hint ("Type a time like 2:30 PM", `timeHint` in SatinLabels) and by the hint or error. Focus stays in it while the `listbox` of times is open; `aria-activedescendant` follows the highlighted time. Each time is an `option`: the picked one `aria-selected`, unavailable ones `aria-disabled`. Typed text that isn\'t an available time sets `aria-invalid` and says why under the field (`timeInvalid`, `timeUnavailable`). The chevron, "Show times", is out of the tab order. DateTimePicker\'s field is a `button` that opens the Calendar (as on Date picker) with the times as a `listbox` named "Time"; picking a day with no time yet moves focus to the times.',
+      'A `grid` (APG Grid pattern) named by `label`, with `aria-rowcount` and `aria-colcount` and each row and cell numbered, so the count stays right while only the rows on screen exist. One cell at a time is in the tab order; a sortable header holds a `button` and sets `aria-sort`. With `selectable` the grid is `aria-multiselectable` and rows set `aria-selected`; the checkboxes are named "Select <name>" after the first column or `rowLabel`. Each resize handle is a focusable `separator` named "Resize <column>" with its width as `aria-valuenow`. An editor is named after its column. A saving cell is `aria-busy`; a failed one is `aria-invalid` and described by its error. Sorting, saves and views are read out from a polite `status` region. The Columns menu is a menu of `menuitemcheckbox` rows; the view menu says "View: <name>, unsaved changes" when the grid has moved from the view.',
     keyboard: [
-      { keys: ['↓', '↑'], action: 'On the field: opens the list on the picked time, then moves to the next or previous available time.' },
-      { keys: ['Alt+↓', 'Alt+↑'], action: 'Opens or closes the list without moving the highlight.' },
-      { keys: ['Page Down', 'Page Up'], action: 'Moves an hour on or back.' },
-      { keys: ['Home', 'End'], action: 'In TimeList and the date-and-time panel: the first or last available time. In the field they move the caret.' },
-      { keys: ['0–9', 'A', 'P'], action: 'Type-ahead: the list jumps to the time typed so far ("14", "2p"). In a TimeList a second\'s pause starts over.' },
-      { keys: ['Enter'], action: 'Picks the highlighted time once the arrows or the pointer moved there; otherwise reads what was typed ("930", "9:30pm"). In a TimeList, Space picks too.' },
-      { keys: ['Esc'], action: 'Closes the list and leaves focus in the field. With the list closed, puts back the time the field showed.' },
-      { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
+      { keys: ['Tab'], action: 'Moves into the grid, onto the cell last focused. From a header, moves on to its resize handle; Tab again leaves the grid.' },
+      { keys: ['←', '→', '↑', '↓'], action: 'Moves one cell; ← and → are mirrored right to left. The header row is part of the grid.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or last cell of the row; with ⌃ or ⌘, of the grid.' },
+      { keys: ['Page Up', 'Page Down'], action: 'Moves up or down by a screen of rows.' },
+      { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all. On a checkbox (Space): selects the row, or every row.' },
+      { keys: ['⇧ Space'], action: 'Selects or clears the focused cell’s row.' },
+      { keys: ['Enter', 'F2'], action: 'On an editable cell: opens its editor (double click does too). On a cell whose save failed: edits the value that failed.' },
+      { keys: ['Enter', 'Tab'], action: 'In an editor: saves. Tab then moves to the next cell, ⇧ Tab to the previous one.' },
+      { keys: ['Esc'], action: 'In an editor: cancels. On a cell whose save failed: drops the change.' },
+      { keys: ['←', '→'], action: 'On a resize handle: narrows or widens the column by 8px (40px with ⇧); Home and End go to its narrowest and widest. Enter or Esc goes back to the header.' },
+      { keys: ['⌥ ↑', '⌥ ↓'], action: 'In the Columns menu: moves the highlighted column up or down.' },
     ],
   },
   'tool-call': {
@@ -704,6 +676,20 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'Opens or closes the row or group.' },
       { keys: ['Space'], action: 'With `selectable`, picks or drops the row, or every row of a group.' },
       { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all, inside each group.' },
+    ],
+  },
+  'time-picker': {
+    summary:
+      'TimePicker\'s field is a `combobox` named by its label and described by a format hint ("Type a time like 2:30 PM", `timeHint` in SatinLabels) and by the hint or error. Focus stays in it while the `listbox` of times is open; `aria-activedescendant` follows the highlighted time. Each time is an `option`: the picked one `aria-selected`, unavailable ones `aria-disabled`. Typed text that isn\'t an available time sets `aria-invalid` and says why under the field (`timeInvalid`, `timeUnavailable`). The chevron, "Show times", is out of the tab order. DateTimePicker\'s field is a `button` that opens the Calendar (as on Date picker) with the times as a `listbox` named "Time"; picking a day with no time yet moves focus to the times. A pick there sets the value and leaves the panel open, and the focus where it was, so the change is heard as the time becoming selected.',
+    keyboard: [
+      { keys: ['↓', '↑'], action: 'On the field: opens the list on the picked time, then moves to the next or previous available time.' },
+      { keys: ['Alt+↓', 'Alt+↑'], action: 'Opens or closes the list without moving the highlight.' },
+      { keys: ['Page Down', 'Page Up'], action: 'Moves an hour on or back.' },
+      { keys: ['Home', 'End'], action: 'In TimeList and the date-and-time panel: the first or last available time. In the field they move the caret.' },
+      { keys: ['0–9', 'A', 'P'], action: 'Type-ahead: the list jumps to the time typed so far ("14", "2p"). In a TimeList a second\'s pause starts over.' },
+      { keys: ['Enter'], action: 'Picks the highlighted time once the arrows or the pointer moved there and closes the list; otherwise reads what was typed ("930", "9:30pm"). In a TimeList, Space picks too. In the date-and-time panel a pick leaves it open; Enter on the time already picked closes it and returns focus to the field.' },
+      { keys: ['Esc'], action: 'Closes the list and leaves focus in the field (the date-and-time panel returns it to the field). With the list closed, puts back the time the field showed.' },
+      { keys: ['Tab'], action: 'Reads what was typed, closes the list and moves on.' },
     ],
   },
   'toast-batch': {

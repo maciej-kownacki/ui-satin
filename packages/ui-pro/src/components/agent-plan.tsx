@@ -564,7 +564,7 @@ function DraftStep({
       data-skipped={step.skipped || undefined}
       onKeyDownCapture={onKeyDown}
       className={cn(
-        'flex items-start gap-2 rounded-md border border-transparent p-1',
+        'flex items-start gap-2 rounded-md border border-strong border-transparent p-1',
         'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
         'satin-hover:bg-action-secondary-bg',
         'data-dragging:border-border-strong data-dragging:bg-bg-popover',

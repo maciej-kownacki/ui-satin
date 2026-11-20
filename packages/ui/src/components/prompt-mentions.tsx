@@ -246,7 +246,7 @@ const BLEED = 4
 // The fills reach 3px past the text on each side (margin pulls the box out, padding puts the text
 // back), so the text sits exactly where the textarea draws it.
 const tokenClass = '-mx-[3px] rounded-sm px-[3px] py-px box-decoration-clone'
-const mentionTokenClass = 'bg-status-brand-bg [box-shadow:inset_0_0_0_1px_var(--status-brand-border)]'
+const mentionTokenClass = 'bg-status-brand-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--status-brand-border)]'
 const commandTokenClass = 'bg-action-secondary-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-default)]'
 
 export interface UsePromptMentionsOptions {
