@@ -17,9 +17,13 @@ import { useSatinLabels } from './labels'
  * readers work as in any field, and a token reads as what it says ("@Tara Mendes"). The tokens'
  * fills are drawn in a layer under the textarea that copies its type and wrapping: a mention on
  * status/brand-bg with a status/brand-border edge, a command on action/secondary-bg with a
- * border/default edge, radius-sm, 3px past the text on each side. A token is one unit: the caret
- * steps over it, Backspace at its end and Delete at its start remove all of it, and an edit that
- * cuts into it takes the whole token.
+ * border/default edge, radius-sm, 3px past the text on each side. A token's text is medium, like
+ * the menu's labels: Geist at medium (510) is about 3% wider than the field's 420, which would put
+ * the caret and every later fill off the textarea's glyphs, so the layer instead strokes the
+ * token's text, 0.029em in text/default (the field's colour), under the textarea's own glyph.
+ * That adds the ink medium adds (0.4px at 14px) and leaves every width as the textarea has it.
+ * A token is one unit: the caret steps over it, Backspace at its end and Delete at its start
+ * remove all of it, and an edit that cuts into it takes the whole token.
  *
  * The menu is the + menu's: the menu surface across the full width of the bar, 8px above it, with
  * Popover motion (it fades and settles in). A 24px group header names it (Mentions or Commands),
@@ -244,8 +248,13 @@ const MIRRORED = [
 const BLEED = 4
 
 // The fills reach 3px past the text on each side (margin pulls the box out, padding puts the text
-// back), so the text sits exactly where the textarea draws it.
-const tokenClass = '-mx-[3px] rounded-sm px-[3px] py-px box-decoration-clone'
+// back), so the text sits exactly where the textarea draws it. The stroke, in the field's colour
+// under its glyphs, makes the token's text medium without moving it (see the top of the file); it
+// reads the token, not a colour copied from the field, so it follows a theme change at once.
+const tokenClass = cn(
+  '-mx-[3px] rounded-sm px-[3px] py-px box-decoration-clone',
+  'text-text-default [-webkit-text-stroke:0.029em_currentColor]',
+)
 const mentionTokenClass = 'bg-status-brand-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--status-brand-border)]'
 const commandTokenClass = 'bg-action-secondary-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-default)]'
 
@@ -567,7 +576,7 @@ export function usePromptMentions({
 
   if (!on) return { textareaProps, overlay: null, menu: null, open: false }
 
-  // The text in the textarea's type, transparent, with each token's fill.
+  // The text in the textarea's type, unfilled, with each token's fill and stroke.
   let at = 0
   const parts: React.ReactNode[] = []
   for (const t of tokens) {
@@ -587,7 +596,7 @@ export function usePromptMentions({
       ref={mirrorRef}
       aria-hidden
       data-slot="prompt-tokens"
-      className="pointer-events-none absolute inset-0 overflow-hidden break-words whitespace-pre-wrap text-transparent select-none"
+      className="pointer-events-none absolute inset-0 overflow-hidden break-words whitespace-pre-wrap [-webkit-text-fill-color:transparent] select-none"
     >
       {parts}
     </div>
