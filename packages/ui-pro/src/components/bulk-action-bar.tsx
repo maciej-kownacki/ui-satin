@@ -277,7 +277,11 @@ export function BulkActionBarCount({ className, ...props }: BulkActionBarCountPr
       <span className="flex items-center gap-1.5 text-sm leading-5 font-medium whitespace-nowrap text-text-default">
         {labels.bulkSelected(
           count,
-          <Badge size="sm" shape="rounded" className="min-w-5 justify-center bg-component-bulk-action-bar-count-bg">
+          // The line is Geist's own text box at 13px (17px: ascent 13, descent 4), so there's no half
+          // pixel of leading to round: the baseline sits on a whole pixel (15px down) on every screen,
+          // and the digits' middle within 0.2px of the circle's. With the Badge's 16px line it sat at
+          // 14.5, which some screens draw at 14, 0.6px high. 2px above and below make it 21px round.
+          <Badge size="sm" shape="rounded" className="min-w-[21px] justify-center leading-[17px] bg-component-bulk-action-bar-count-bg">
             <RollingNumber text={formatted} value={count} data-slot="bulk-action-bar-number" />
             <span className="sr-only">{formatted}</span>
           </Badge>,
