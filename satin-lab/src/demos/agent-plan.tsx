@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AgentPlan, type AgentPlanStatus, type AgentPlanStep } from '@uisatin/pro/agent-plan'
+import { AgentPlan, type AgentPlanLayout, type AgentPlanStatus, type AgentPlanStep } from '@uisatin/pro/agent-plan'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import googleCalendar from './assets/app-google-calendar.png'
 import gmail from './assets/app-gmail.png'
@@ -29,6 +29,17 @@ const finished = (steps: AgentPlanStep[], ids: string[]) => steps.map((s) => (id
 
 export const controls: ShowcaseControl[] = [
   {
+    // Where a draft step's controls go; the four are here to compare.
+    id: 'layout',
+    label: 'Layout',
+    items: [
+      { value: 'inline', label: 'Inline' },
+      { value: 'hover', label: 'Hover' },
+      { value: 'select', label: 'Select' },
+      { value: 'edit', label: 'Edit mode' },
+    ],
+  },
+  {
     id: 'state',
     label: 'State',
     items: [
@@ -40,9 +51,9 @@ export const controls: ShowcaseControl[] = [
   },
 ]
 
-const labelOf = (value: string) => {
-  const c = controls[0]
-  return 'items' in c ? c.items.find((i) => i.value === value)?.label : value
+const labelOf = (id: string, value: string) => {
+  const c = controls.find((c) => c.id === id)
+  return c && 'items' in c ? (c.items.find((i) => i.value === value)?.label ?? value) : value
 }
 
 /** The props that say where the run is, as the app passes them from its agent. */
@@ -54,7 +65,7 @@ const RUN_PROPS: Record<string, string[]> = {
 }
 
 function code(v: Record<string, string>) {
-  const run = RUN_PROPS[v.state].map((p) => `      ${p}\n`).join('')
+  const run = [...(v.layout === 'inline' ? [] : [`layout="${v.layout}"`]), ...RUN_PROPS[v.state]].map((p) => `      ${p}\n`).join('')
   return `import { AgentPlan, type AgentPlanStep } from '@uisatin/pro/agent-plan'
 
 // The logos of the apps the agent is connected to, as your app already has them. An img is drawn at 16px.
@@ -86,7 +97,7 @@ ${run}      onRun={(toRun) => agent.run(toRun)}
 
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   id: comboId(controls, v),
-  label: labelOf(v.state) ?? v.state,
+  label: [labelOf('layout', v.layout), labelOf('state', v.state)].join(' · '),
   code: code(v),
 }))
 
@@ -154,6 +165,7 @@ function Preview({ v, set }: { v: Record<string, string>; set: (id: string, valu
         title={TITLE}
         steps={steps}
         onStepsChange={setSteps}
+        layout={v.layout as AgentPlanLayout}
         status={run.status}
         currentStep={run.current}
         error={run.error}
