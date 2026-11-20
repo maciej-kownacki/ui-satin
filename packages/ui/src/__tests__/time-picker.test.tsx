@@ -262,7 +262,7 @@ describe('TimeList', () => {
 describe('DateTimePicker', () => {
   const TODAY = new Date(2026, 10, 19)
 
-  it('picks a day, then a time, and closes on the time', async () => {
+  it('picks a day, then a time, and stays open until Enter on the picked time', async () => {
     const onValueChange = vi.fn()
     const { user } = renderWithSatin(
       <DateTimePicker label="Demo" defaultValue={new Date(2026, 10, 26, 14, 30)} step={30} minTime={NINE} today={TODAY} onValueChange={onValueChange} name="when" />,
@@ -278,9 +278,30 @@ describe('DateTimePicker', () => {
     expect(screen.getByRole('dialog')).toBeTruthy()
     await user.click(screen.getByRole('option', { name: /^3:00 PM/ }))
     expect(onValueChange).toHaveBeenLastCalledWith(new Date(2026, 10, 27, 15, 0))
-    expect(screen.queryByRole('dialog')).toBeNull()
+    // The panel stays, so the day can still change; the list keeps the focus.
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(document.activeElement).toBe(screen.getByRole('listbox', { name: 'Time' }))
     expect(plain(trigger.textContent)).toContain('Fri, Nov 27, 2026, 3:00 PM')
-    expect((document.querySelector('input[name="when"]') as HTMLInputElement).value).toBe('2026-11-27T15:00')
+    // Enter on a time not yet picked picks it; Enter on the picked time closes.
+    await user.keyboard('{ArrowDown}{Enter}')
+    expect(onValueChange).toHaveBeenLastCalledWith(new Date(2026, 10, 27, 15, 30))
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    await user.keyboard('{Enter}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.activeElement).toBe(trigger)
+    expect(plain(trigger.textContent)).toContain('Fri, Nov 27, 2026, 3:30 PM')
+    expect((document.querySelector('input[name="when"]') as HTMLInputElement).value).toBe('2026-11-27T15:30')
+  })
+
+  it('closes with Escape and gives focus back to the field', async () => {
+    const { user } = renderWithSatin(<DateTimePicker label="Demo" defaultValue={new Date(2026, 10, 26, 14, 30)} step={30} today={TODAY} />)
+    const trigger = screen.getByRole('button', { name: /Demo/ })
+    await user.click(trigger)
+    await user.click(screen.getByRole('option', { name: /^4:00 PM/ }))
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.activeElement).toBe(trigger)
+    expect(plain(trigger.textContent)).toContain('4:00 PM')
   })
 
   it('moves to the times after a day is picked with nothing picked yet', async () => {

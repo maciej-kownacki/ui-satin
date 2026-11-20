@@ -386,7 +386,9 @@ export function Calendar({
               onValueChange={(y) => setMonth(new Date(Number(y), m.getMonth(), 1))}
               options={yearOptions(m.getFullYear(), today.getFullYear(), min, max)}
               wrapperClassName="w-auto shrink-0"
-              className="w-[92px]"
+              // On the panel's own fill, not a field's: it's part of the header. Important, as the
+              // field skin (input.css) is unlayered and would win over a utility.
+              className="w-[92px] bg-transparent!"
             />
           </div>
         ) : (
