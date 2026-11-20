@@ -9,7 +9,7 @@
 
 .satin-scheduler-cell {
   position: relative;
-  border-inline-start: 1px solid var(--border-subtle);
+  border-inline-start: var(--border-width-default) solid var(--border-subtle);
   outline: none;
   /* Keyboard focus scrolls a slot into view below the sticky day headers. */
   scroll-margin-block: 104px 8px;
@@ -18,7 +18,7 @@
 /* A line on the hour; the slots inside an hour stay open, so the grid reads in hours. Drawn as
    a shadow, so every slot keeps the same box and the events line up with the hours. */
 .satin-scheduler-cell[data-hour] {
-  box-shadow: inset 0 1px 0 0 var(--border-subtle);
+  box-shadow: inset 0 var(--border-width-default) 0 0 var(--border-subtle);
 }
 /* Outside working hours and on the weekend. */
 .satin-scheduler-cell[data-off] {
@@ -205,8 +205,8 @@
   min-height: 0;
   flex-direction: column;
   gap: 2px;
-  border-inline-start: 1px solid var(--border-subtle);
-  border-top: 1px solid var(--border-subtle);
+  border-inline-start: var(--border-width-default) solid var(--border-subtle);
+  border-top: var(--border-width-default) solid var(--border-subtle);
   padding: 4px;
   outline: none;
   scroll-margin-block: 40px 8px;

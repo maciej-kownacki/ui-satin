@@ -533,7 +533,7 @@ export function Combobox({
               })}
               {/* A titled group draws its own rule under it; other rows get this one. */}
               {toCreate != null && shown.length > 0 && !shownGroups[shownGroups.length - 1].label && (
-                <div aria-hidden className="-mx-1 my-0.5 h-px shrink-0 bg-bg-muted" />
+                <div aria-hidden className="-mx-1 my-0.5 h-(--border-width-default) shrink-0 bg-bg-muted" />
               )}
               {toCreate != null && (
                 <div

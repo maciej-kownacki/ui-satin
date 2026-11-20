@@ -38,7 +38,7 @@
   display: grid;
   grid-template-columns: var(--satin-data-grid-columns);
   height: var(--satin-data-grid-row);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: var(--border-width-default) solid var(--border-subtle);
   background-color: var(--bg-card);
   transition: background-color var(--duration-fast) var(--ease-out);
 }
