@@ -103,10 +103,10 @@ const actionsIn = (labels: SatinLabelSet): PromptBarAction[] => [
  */
 export const defaultActions: PromptBarAction[] = actionsIn(defaultLabels)
 
-/** Menu card: bg/popover, border/subtle, radius 12, shadow/sm. */
+/** Menu card: bg/popover, border/subtle, radius 12, the menu shadow (tight in Light, wide and soft in Dark). */
 const menuCard = [
   'overflow-clip rounded-xl border border-border-subtle bg-bg-popover',
-  '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+  '[box-shadow:0_1px_3px_0_var(--effect-shadow-float-contact),0_1px_2px_-1px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
   'origin-(--radix-popper-transform-origin) data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
   'focus-visible:outline-none',
 ]

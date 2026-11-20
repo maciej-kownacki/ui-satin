@@ -35,7 +35,7 @@ these, never primitives. One value has one name (the shadcn `*-foreground` copie
 | `border/` | `default`, `subtle`, `strong`, `input`, `focus` |
 | `action/` | `primary/{bg,bg-hover,bg-pressed,border,glow,shadow}`, `secondary/{bg,bg-hover,bg-pressed}`, `destructive/{bg,bg-hover,bg-pressed}`, `inverse/{bg,bg-hover,bg-pressed,border,glow}`, `focus-ring` |
 | `status/` | `{neutral,brand,sky,green,amber,red,fuchsia,plum}/{bg,border,fg}` |
-| `effect/` | `shadow-ambient`, `shadow-xs|sm|md|lg`, `highlight-top` |
+| `effect/` | `shadow-ambient`, `shadow-xs|sm|md|lg`, `shadow-float-contact`, `shadow-float`, `highlight-top` |
 | `chart/` | `1`–`5` |
 | `component/` | `table/{zebra,header}`, `segmented/{selected,pressed}`, `rail/{center,edge}`, `highlight/{hover,surface}-{from,to}` |
 
@@ -57,9 +57,9 @@ Dark white-a3 → white-a10 (white-a6 vanishes on a 1px line). In CSS: `linear-g
 Secondary button: `action/secondary/bg-hover|bg-pressed` (Light zinc-100 / zinc-200, Dark #2B2B2D / #343436,
 white-a8 / a12 flattened onto card). In Dark each state is lighter than the last and pressed keeps its border-strong outline.
 Toggle `state=selected` uses `action/secondary/bg-pressed`, one step darker than its hover (`bg/muted`).
-Surfaces, darkest to lightest (Dark, even OKLCH L steps of ~0.035): `bg/canvas` zinc-950 #09090B (whole view, sidebar) → `bg/card` #121215
-(content wrapper, cards) → `bg/field` #1A1A1D (inputs: input, select trigger, checkbox, radio, prompt bar) → `bg/popover` #222225
-(secondary button, chip, toggle, dropdown menu, dialog, attachment file, banners). Hover fills (`bg/muted`/`bg/hover` #27272A, secondary bg-hover #2B2B2D,
+Surfaces, darkest to lightest (Dark, even OKLCH L steps of ~0.035, near-neutral: OKLCH chroma ~0.002): `bg/canvas` #09090A (whole view, sidebar) → `bg/card` #121213
+(content wrapper, cards) → `bg/field` #1A1A1B (inputs: input, select trigger, checkbox, radio, prompt bar) → `bg/popover` #222223
+(secondary button, chip, toggle, dropdown menu, dialog, attachment file, banners). Hover fills (`bg/muted`/`bg/hover` #272728, secondary bg-hover #2B2B2D,
 bg-pressed #343436) all sit above popover. Light: zinc-50 → white for the other three; shadows carry the elevation there.
 Selected: `bg/selected` (zinc-200 / #343436) for the active dropdown item, the active pill tab and the selected segment
 (`component/segmented/selected` aliases it); `component/segmented/pressed` is black-a5 / white-a6.

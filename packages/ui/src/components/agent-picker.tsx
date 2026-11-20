@@ -145,7 +145,7 @@ function AgentMenu({
       sideOffset={8}
       className={cn(
         'z-50 flex w-[255px] max-w-[520px] flex-col gap-1 rounded-xl border border-border-subtle bg-bg-popover p-1 outline-none',
-        '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+        '[box-shadow:0_1px_3px_0_var(--effect-shadow-float-contact),0_1px_2px_-1px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
         'data-[state=open]:[animation:satin-enter_var(--duration-fast)_var(--ease-out)]',
       )}
     >

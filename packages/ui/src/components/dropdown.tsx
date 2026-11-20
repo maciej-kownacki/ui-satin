@@ -37,11 +37,11 @@ trackPointerModality()
  *
  * Other props on DropdownMenu, `ref` included, go to the menu's panel (the Radix Content).
  */
-/** The popover surface menus share: radius-xl, border/subtle, bg/popover, the shadcn `sm` shadow. */
+/** The popover surface menus share: radius-xl, border/subtle, bg/popover, and a shadow that is tight in Light and wide and soft in Dark (effect/shadow-float-contact, effect/shadow-float). */
 /** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const menuSurfaceClass = cn(
   'rounded-xl border border-border-subtle bg-bg-popover',
-  '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
+  '[box-shadow:0_1px_3px_0_var(--effect-shadow-float-contact),0_1px_2px_-1px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
 )
 /** A group of rows, with a 1px bg/muted rule under every group but the last. */
 /** @internal Shared by Satin's own components; not part of the public API and may change in any release. */

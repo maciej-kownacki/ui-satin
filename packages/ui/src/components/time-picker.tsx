@@ -907,7 +907,7 @@ export function TimePicker({
 /** Popover's surface, as DatePickerPanel draws it. */
 const surfaceClass = cn(
   'rounded-xl border border-border-subtle bg-bg-popover',
-  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-float-contact),0_10px_15px_-3px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
 )
 
 const later = (a?: TimeValue, b?: TimeValue) => (!a ? b : !b ? a : minutesOf(a) >= minutesOf(b) ? a : b)

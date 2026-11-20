@@ -630,7 +630,7 @@ function PresetList({ items, active, onPick }: { items: PresetItem[]; active: nu
 /** The panels' surface: Popover's bg, border, radius and lg shadow. */
 const surfaceClass = cn(
   'rounded-xl border border-border-subtle bg-bg-popover',
-  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-float-contact),0_10px_15px_-3px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
 )
 /**
  * A panel with presets wraps (see PresetList). In a popover it is held to the room Radix

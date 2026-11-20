@@ -71,6 +71,6 @@ export function HoverCard({
 /** The hover card's surface, for previews you place yourself. */
 export const hoverCardClass = cn(
   'z-50 flex w-80 max-w-[calc(100vw-16px)] flex-col gap-3 rounded-xl border border-border-subtle bg-bg-popover p-4 outline-none',
-  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-float-contact),0_10px_15px_-3px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
   'origin-(--radix-hover-card-content-transform-origin) data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
 )

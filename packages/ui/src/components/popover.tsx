@@ -47,7 +47,7 @@ export interface PopoverProps
 const panelClass = cn(
   'relative flex w-[320px] max-w-[calc(100vw-16px)] flex-col overflow-clip pb-2.5',
   'rounded-xl border border-border-subtle bg-bg-popover',
-  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-float-contact),0_10px_15px_-3px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
 )
 const closeClass = cn(
   'absolute end-2.5 top-2.5 grid size-4 place-items-center rounded-sm text-text-muted',

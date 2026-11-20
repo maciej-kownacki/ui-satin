@@ -221,7 +221,7 @@ export function BulkActionBarRoot({
           inert={!open || undefined}
           className={cn(
             'satin-bulk-action-bar pointer-events-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-border-subtle bg-bg-popover p-1.5',
-            '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+            '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-float-contact),0_10px_15px_-3px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
             className,
           )}
           onFocusCapture={(e: React.FocusEvent<HTMLDivElement>) => {

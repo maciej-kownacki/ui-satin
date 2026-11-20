@@ -209,7 +209,7 @@ const card = (intent: ToastIntent) =>
     'relative flex w-full items-center gap-2.5 overflow-clip ps-2.5 pe-2',
     intent === 'neutral' ? 'py-2.5' : 'pt-2.5 pb-3',
     'rounded-xl border border-border-subtle bg-bg-popover',
-    '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+    '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-float-contact),0_10px_15px_-3px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
   )
 
 /** `details` under the row: in from the start by the icon tile and its gap, so it lines up with the title. */

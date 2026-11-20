@@ -60,6 +60,27 @@ One rule: **interactive → strong, surfaces → default.** When something is bo
 - Not stroke widths, so untouched: focus rings (the 2px `action/focus-ring`, the field's 1px `border/focus` ring that doubles the edge to 2px), error and success edges on fields, shadow offsets (`0 1px 2px`), the 1px top highlight on tooltips and the OTP suggestion, carets, the Thinking rail, the dash between OTP groups.
 - In code use the token, never a raw width: `border` or `border-strong`, `var(--border-width-default)` or `var(--border-width-strong)`. `cn()` knows `border-strong` is a width, so it survives next to a border colour.
 
+### Dark surfaces and the menu shadow (21 November 2026)
+
+Dark surfaces keep their lightness steps (OKLCH L) and lose their blue cast, matching reference dark UIs: fills at OKLCH chroma ~0.002, lines and states at ~0.0035 (they were ~0.0055). Light is unchanged.
+
+| Dark token | primitive | before | after |
+|---|---|---|---|
+| `bg/canvas` | zinc-950 → `canvas-dark` | #09090B | #09090A |
+| `bg/card`, table header | `card-dark` | #121215 | #121213 |
+| `bg/field`, table zebra | `surface-dark` | #1A1A1D | #1A1A1B |
+| `bg/popover` | `popover-dark` | #222225 | #222223 |
+| `bg/muted`, `bg/hover`, `action/secondary/bg`, `status/neutral/bg` (Kbd, message bubble) | zinc-800 → `muted-dark` | #27272A | #272728 |
+| `bg/selected` | `selected-dark` | #2F2F32 | #2F2F31 |
+| `border/default` | `border-dark` | #2F2F32 | #2F2F31 |
+| `border/subtle` | `border-subtle-dark` | #262629 | #262628 |
+| picked segment, file icon tile | `segmented-selected-dark` | #3A3A3D | #3A3A3C |
+| `border/strong`, `bg/pressed`, `border/input`; secondary hover and pressed | unchanged | #3D3D3F, #2B2B2D, #343436 | already at chroma ~0.0035 |
+
+Zinc itself stays Tailwind's zinc: Light uses zinc-800/900/950 for text and the inverse button.
+
+Menus (Dropdown, Context menu, Select, Combobox, Agent picker, Prompt bar menus, mentions, Time picker list), popovers (Popover, Hover card, Attachment preview, Date picker, Time picker, Command menu) and the surfaces that float over content without a scrim (Toast, Bulk action bar) draw `effect/shadow-float-contact` in their tight layers and `effect/shadow-float` in a wide one (0 2px 20px). Light: contact black 8%, float none, so it looks as before. Dark: contact none (it drew a hard band), float black 40%, which darkens the surface behind by about a fifth at the menu's edge and fades out over about 20px, as in the references. Cards in the flow (Card, Notification, Agent suggestion, Review queue) keep their shadows, and so do Dialog and Sheet, which sit on a scrim. In Dark, menus and popovers now share one shadow (no sm/lg step). A panel placed inline (PopoverPanel, DatePickerPanel) within ~20px of a clipping parent shows its halo cut in Dark.
+
 ### action — przyciski, toggle, kontrolki (`bg`, `bg-hover`, `bg-pressed`, `border`, `fg`, `glow`, `shadow`)
 | nowa | dziś |
 |---|---|

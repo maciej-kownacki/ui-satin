@@ -143,13 +143,15 @@
   --color-pink-soft-400: #D38497;
   --color-border-subtle-light: #F0F0F2;
   --color-border-subtle-light-a25: #F0F0F240;
-  --color-border-subtle-dark: #262629;
-  --color-border-dark: #2F2F32;
+  --color-border-subtle-dark: #262628;
+  --color-border-dark: #2F2F31;
   --color-border-strong-dark: #3D3D3F;
-  --color-card-dark: #121215;
-  --color-surface-dark: #1A1A1D;
-  --color-popover-dark: #222225;
-  --color-card-dark-a0: #12121500;
+  --color-card-dark: #121213;
+  --color-canvas-dark: #09090A;
+  --color-surface-dark: #1A1A1B;
+  --color-popover-dark: #222223;
+  --color-muted-dark: #272728;
+  --color-card-dark-a0: #12121300;
   --color-secondary-hover-dark: #2B2B2D;
   --color-secondary-pressed-dark: #343436;
   --color-primary-border-light: #9085E7;
@@ -190,8 +192,8 @@
   --color-teal-500-a55: #14B8A68C;
   --color-text-muted-light: #68686F;
   --color-selected-light: #EDEDEF;
-  --color-selected-dark: #2F2F32;
-  --color-segmented-selected-dark: #3A3A3D;
+  --color-selected-dark: #2F2F31;
+  --color-segmented-selected-dark: #3A3A3C;
   --spacing: 4px;
 }
 
@@ -269,6 +271,8 @@
   --effect-shadow-sm: var(--color-black-a8);
   --effect-shadow-md: var(--color-black-a14);
   --effect-shadow-lg: var(--color-black-a18);
+  --effect-shadow-float-contact: var(--color-black-a8);
+  --effect-shadow-float: var(--color-transparent);
   --effect-highlight-top: var(--color-transparent);
   --chart-1: var(--color-teal-600);
   --chart-2: var(--color-cyan-500);
@@ -318,12 +322,12 @@
 }
 
 .dark, [data-theme="dark"] {
-  --bg-canvas: var(--color-zinc-950);
+  --bg-canvas: var(--color-canvas-dark);
   --bg-card: var(--color-card-dark);
   --bg-field: var(--color-surface-dark);
   --bg-popover: var(--color-popover-dark);
-  --bg-muted: var(--color-zinc-800);
-  --bg-hover: var(--color-zinc-800);
+  --bg-muted: var(--color-muted-dark);
+  --bg-hover: var(--color-muted-dark);
   --bg-selected: var(--color-selected-dark);
   --bg-pressed: var(--color-border-strong-dark);
   --bg-card-fade: var(--color-card-dark-a0);
@@ -346,7 +350,7 @@
   --action-primary-border: var(--color-primary-border-dark);
   --action-primary-glow: var(--color-white-a24);
   --action-primary-shadow: var(--color-black-a40);
-  --action-secondary-bg: var(--color-zinc-800);
+  --action-secondary-bg: var(--color-muted-dark);
   --action-secondary-bg-hover: var(--color-secondary-hover-dark);
   --action-secondary-bg-pressed: var(--color-secondary-pressed-dark);
   --action-destructive-bg: var(--color-red-600);
@@ -361,7 +365,7 @@
   --action-inverse-glow: var(--color-white-a24);
   --action-inverse-bg: var(--text-default);
   --action-focus-ring: var(--color-primary-focus-dark);
-  --status-neutral-bg: var(--color-zinc-800);
+  --status-neutral-bg: var(--color-muted-dark);
   --status-neutral-border: var(--color-border-dark);
   --status-neutral-fg: var(--color-zinc-400);
   --status-brand-bg: var(--color-blue-soft-950);
@@ -390,6 +394,8 @@
   --effect-shadow-sm: var(--color-black-a16);
   --effect-shadow-md: var(--color-black-a28);
   --effect-shadow-lg: var(--color-black-a36);
+  --effect-shadow-float-contact: var(--color-transparent);
+  --effect-shadow-float: var(--color-black-a40);
   --effect-highlight-top: var(--color-white-a6);
   --chart-1: var(--color-teal-400);
   --chart-2: var(--color-cyan-400);
@@ -432,12 +438,12 @@
 
 @media (prefers-color-scheme: dark) {
   [data-theme="system"] {
-    --bg-canvas: var(--color-zinc-950);
+    --bg-canvas: var(--color-canvas-dark);
     --bg-card: var(--color-card-dark);
     --bg-field: var(--color-surface-dark);
     --bg-popover: var(--color-popover-dark);
-    --bg-muted: var(--color-zinc-800);
-    --bg-hover: var(--color-zinc-800);
+    --bg-muted: var(--color-muted-dark);
+    --bg-hover: var(--color-muted-dark);
     --bg-selected: var(--color-selected-dark);
     --bg-pressed: var(--color-border-strong-dark);
     --bg-card-fade: var(--color-card-dark-a0);
@@ -460,7 +466,7 @@
     --action-primary-border: var(--color-primary-border-dark);
     --action-primary-glow: var(--color-white-a24);
     --action-primary-shadow: var(--color-black-a40);
-    --action-secondary-bg: var(--color-zinc-800);
+    --action-secondary-bg: var(--color-muted-dark);
     --action-secondary-bg-hover: var(--color-secondary-hover-dark);
     --action-secondary-bg-pressed: var(--color-secondary-pressed-dark);
     --action-destructive-bg: var(--color-red-600);
@@ -475,7 +481,7 @@
     --action-inverse-glow: var(--color-white-a24);
     --action-inverse-bg: var(--text-default);
     --action-focus-ring: var(--color-primary-focus-dark);
-    --status-neutral-bg: var(--color-zinc-800);
+    --status-neutral-bg: var(--color-muted-dark);
     --status-neutral-border: var(--color-border-dark);
     --status-neutral-fg: var(--color-zinc-400);
     --status-brand-bg: var(--color-blue-soft-950);
@@ -504,6 +510,8 @@
     --effect-shadow-sm: var(--color-black-a16);
     --effect-shadow-md: var(--color-black-a28);
     --effect-shadow-lg: var(--color-black-a36);
+    --effect-shadow-float-contact: var(--color-transparent);
+    --effect-shadow-float: var(--color-black-a40);
     --effect-highlight-top: var(--color-white-a6);
     --chart-1: var(--color-teal-400);
     --chart-2: var(--color-cyan-400);

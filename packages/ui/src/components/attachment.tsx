@@ -197,7 +197,7 @@ export function AttachmentPreview({
       data-slot="attachment-preview"
       className={cn(
         'flex w-[296px] flex-col overflow-clip rounded-xl border border-border-subtle bg-bg-popover',
-        '[box-shadow:0_4px_6px_-1px_var(--effect-shadow-sm),0_2px_4px_-2px_var(--effect-shadow-sm)]',
+        '[box-shadow:0_4px_6px_-1px_var(--effect-shadow-float-contact),0_2px_4px_-2px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
         className,
       )}
       {...props}

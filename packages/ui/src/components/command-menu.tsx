@@ -271,7 +271,7 @@ export function CommandMenu({
             className={cn(
               'pointer-events-auto flex h-fit max-h-[min(480px,76vh)] w-[520px] max-w-full flex-col overflow-hidden',
               'rounded-2xl border border-border-subtle bg-bg-popover',
-              '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]',
+              '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-float-contact),0_10px_15px_-3px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]',
               'outline-none data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
               className,
             )}
