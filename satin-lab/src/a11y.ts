@@ -570,15 +570,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Puts a picked-up card back where it was, also during a pointer drag.' },
     ],
   },
-  'agent-undo-log': {
-    summary:
-      'A `section` named "Agent actions" (`actionLog` in SatinLabels, or your `aria-label`), so it is a region landmark, around a list of runs. Each run\'s header is a `button` with `aria-expanded` and `aria-controls`, read as its name, how many actions and when; a closed run\'s actions leave the accessibility tree. Every Revert is an icon button named after its action and target ("Revert Edited src/routes/auth.ts"), with a tooltip, and stays the one focused button through the revert: busy (`aria-busy`) while it runs, then Restore, or Reverted with `aria-disabled`, or Try again after a failure, whose reason is shown as text. An action that can\'t be reverted has no button (its lock is hidden); its reason is read with "Can\'t be reverted:" before it. The glyphs and the rail are hidden. Failures and restores are read from a polite `status` region; a revert is read out by its toast, whose Undo screen readers hear as "Restore it from the action log", since the row\'s Restore does the same. The button of the run ⌘Z would revert carries `aria-keyshortcuts` and shows the keys as Kbd. Reverted rows are struck through and muted, and say so in their button.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the run headers, the Revert run buttons and the open runs\' Revert buttons.' },
-      { keys: ['Enter', 'Space'], action: 'On a run header: opens or closes its actions. On a button: reverts, restores or tries again.' },
-      { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
-    ],
-  },
   'agent-presence': {
     summary:
       'The edge and the label are hidden from screen readers; what they show is read out from a polite `status` region instead: "Hiring assistant is updating Tara Mendes" as the agent starts on a target or moves to the next, "Hiring assistant updated Lena Fischer" when it\'s done, and "Jon Park is editing Omar Haddad; Hiring assistant is waiting" in a conflict (`agentPresenceWorking`, `agentPresenceDone`, `agentPresenceConflict` in SatinLabels). `label` names the target in those sentences, so give it the row\'s or card\'s name. Each state has its own words on the label, so colour is never the only cue, and a conflict\'s edge is dashed. It takes no focus and no pointer, and never changes the target, so nothing moves under it. Under reduced motion it neither fades nor glides and the mark stands still.',
@@ -621,13 +612,13 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'With `linear={false}`: makes the focused step current.' },
     ],
   },
-  'activity-timeline': {
+  'agent-undo-log': {
     summary:
-      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
+      'A `section` named "Agent actions" (`actionLog` in SatinLabels, or your `aria-label`), so it is a region landmark, around a list of runs. Each run\'s header is a `button` with `aria-expanded` and `aria-controls`, read as its name, how many actions and when; a closed run\'s actions leave the accessibility tree. Every Revert is an icon button named after its action and target ("Revert Edited src/routes/auth.ts"), with a tooltip, and stays the one focused button through the revert: busy (`aria-busy`) while it runs, then Restore, or Reverted with `aria-disabled`, or Try again after a failure, whose reason is shown as text. An action that can\'t be reverted has no button (its lock is hidden); its reason is read with "Can\'t be reverted:" before it. The glyphs and the rail are hidden. Failures and restores are read from a polite `status` region; a revert is read out by its toast, whose Undo screen readers hear as "Restore it from the action log", since the row\'s Restore does the same. The button of the run ⌘Z would revert carries `aria-keyshortcuts` and shows the keys as Kbd. Reverted rows are struck through and muted, and say so in their button.',
     keyboard: [
-      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
-      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
-      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
+      { keys: ['Tab'], action: 'Moves through the run headers, the Revert run buttons and the open runs\' Revert buttons.' },
+      { keys: ['Enter', 'Space'], action: 'On a run header: opens or closes its actions. On a button: reverts, restores or tries again.' },
+      { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
     ],
   },
   'command-pages': {
@@ -662,6 +653,15 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'On the header: opens or folds the card.' },
       { keys: ['Tab'], action: 'Open, moves through each section’s Copy and code, Show all, and Retry.' },
       { keys: ['←', '→'], action: 'Scrolls long lines while a section’s code has focus.' },
+    ],
+  },
+  'activity-timeline': {
+    summary:
+      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
+      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
+      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
     ],
   },
   'agent-permissions': {

@@ -1145,24 +1145,6 @@ export const api: Record<string, Api> = {
       { name: 'columnWidth', type: ['number'], default: '272' },
     ],
   },
-  'agent-undo-log': {
-    description:
-      'The `AgentActionLog` component (Satin Pro, `@uisatin/pro/agent-undo-log`) is a `section` that lists what an agent did, run by run, with a Revert on every action it can undo. Made for coding agents first: an action is `{ id, label, target?, added?, removed?, icon?, description?, changes?, at?, revertible?, reason? }`, one line like a Thinking tool step ("Edited" `src/routes/auth.ts` +6 −2) with a quiet Revert icon button; `changes` adds AgentSuggestionChanges rows for other agents, and `revertible: false` with a `reason` shows a lock and says why. A run is `{ id, label, at, actions, icon? }`, its actions in the order they happened. `onRevert` may return a promise: the button shows a Spinner until it settles, and a rejection marks the line "Couldn\'t revert" (with the Error\'s message) and Try again. Each revert ends with a toast (it needs the app\'s `<Toaster />`) whose Undo calls `onRestore`. Revert run and ⌘Z (Ctrl+Z off Apple) revert what is left of the newest run, newest action first, through `onRevertRun` when given. Parts: `AgentActionLogRoot`, `AgentActionLogRun`, `AgentActionLogAction` (its `state` sets a line yourself).',
-    props: [
-      { name: 'runs', type: ['AgentRun[]'] },
-      { name: 'onRevert', type: ['(action, run) => unknown'] },
-      { name: 'onRevertRun', type: ['(run, actions) => unknown'] },
-      { name: 'onRestore', type: ['(actions, run) => unknown'] },
-      { name: 'reverted', type: ['string[]'] },
-      { name: 'defaultReverted', type: ['string[]'], default: '[]' },
-      { name: 'onRevertedChange', type: ['(reverted: string[]) => void'] },
-      { name: 'expanded', type: ['string[]'] },
-      { name: 'defaultExpanded', type: ['string[]'], default: 'the first run' },
-      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
-      { name: 'shortcut', type: ['"document"', '"log"', '"off"'], default: '"document"' },
-      { name: 'formatTime', type: ['(at: Date) => ReactNode'], default: 'time of day, date when not today' },
-    ],
-  },
   'agent-presence': {
     description:
       'The `AgentPresence` component (Satin Pro, `@uisatin/pro/agent-presence`) lays an edge in the agent\'s tone and a small label over `target` (a ref, an element or a selector) without touching it; render it inside the same `position: relative` box as the targets. `label` names the target for screen readers ("Hiring assistant is updating Tara Mendes"). For a list, `useAgentPresence()` returns `item(id)` to spread on each row or card, `start(id, label)`, `done()`, `conflict(person)`, `clear()` and the `props` to spread on AgentPresence; it takes `value`, `defaultValue` and `onValueChange`. Parts: `AgentPresenceRoot`, `AgentPresenceOutline`, `AgentPresenceLabel`.',
@@ -1250,20 +1232,22 @@ export const api: Record<string, Api> = {
       { name: 'aria-label', type: ['string'] },
     ],
   },
-  'activity-timeline': {
+  'agent-undo-log': {
     description:
-      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
+      'The `AgentActionLog` component (Satin Pro, `@uisatin/pro/agent-undo-log`) is a `section` that lists what an agent did, run by run, with a Revert on every action it can undo. Made for coding agents first: an action is `{ id, label, target?, added?, removed?, icon?, description?, changes?, at?, revertible?, reason? }`, one line like a Thinking tool step ("Edited" `src/routes/auth.ts` +6 −2) with a quiet Revert icon button; `changes` adds AgentSuggestionChanges rows for other agents, and `revertible: false` with a `reason` shows a lock and says why. A run is `{ id, label, at, actions, icon? }`, its actions in the order they happened. `onRevert` may return a promise: the button shows a Spinner until it settles, and a rejection marks the line "Couldn\'t revert" (with the Error\'s message) and Try again. Each revert ends with a toast (it needs the app\'s `<Toaster />`) whose Undo calls `onRestore`. Revert run and ⌘Z (Ctrl+Z off Apple) revert what is left of the newest run, newest action first, through `onRevertRun` when given. Parts: `AgentActionLogRoot`, `AgentActionLogRun`, `AgentActionLogAction` (its `state` sets a line yourself).',
     props: [
-      { name: 'items', type: ['ActivityItem[]'] },
-      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
-      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
-      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'runs', type: ['AgentRun[]'] },
+      { name: 'onRevert', type: ['(action, run) => unknown'] },
+      { name: 'onRevertRun', type: ['(run, actions) => unknown'] },
+      { name: 'onRestore', type: ['(actions, run) => unknown'] },
+      { name: 'reverted', type: ['string[]'] },
+      { name: 'defaultReverted', type: ['string[]'], default: '[]' },
+      { name: 'onRevertedChange', type: ['(reverted: string[]) => void'] },
       { name: 'expanded', type: ['string[]'] },
-      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
+      { name: 'defaultExpanded', type: ['string[]'], default: 'the first run' },
       { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
-      { name: 'loading', type: ['boolean'], default: 'false' },
-      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
+      { name: 'shortcut', type: ['"document"', '"log"', '"off"'], default: '"document"' },
+      { name: 'formatTime', type: ['(at: Date) => ReactNode'], default: 'time of day, date when not today' },
     ],
   },
   'command-pages': {
@@ -1326,6 +1310,22 @@ export const api: Record<string, Api> = {
       { name: 'open', type: ['boolean'] },
       { name: 'defaultOpen', type: ['boolean'], default: 'status === "error"' },
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+    ],
+  },
+  'activity-timeline': {
+    description:
+      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
+    props: [
+      { name: 'items', type: ['ActivityItem[]'] },
+      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
+      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
+      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'expanded', type: ['string[]'] },
+      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
+      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
+      { name: 'loading', type: ['boolean'], default: 'false' },
+      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
     ],
   },
   'agent-permissions': {
