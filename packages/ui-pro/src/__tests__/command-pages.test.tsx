@@ -58,6 +58,8 @@ function WithAgent(props: Partial<CommandPagesProps> & { onAskSpy?: (q: string) 
 const field = () => screen.getByRole('combobox') as HTMLInputElement
 const options = () => screen.getAllByRole('option').map((o) => o.textContent)
 const highlighted = () => screen.getAllByRole('option').find((o) => o.getAttribute('aria-selected') === 'true')?.textContent
+/** The breadcrumb's pages, the current one last. */
+const path = () => [...screen.getByRole('navigation', { name: 'Breadcrumb' }).querySelectorAll('li:not([role="presentation"])')].map((li) => li.textContent)
 const status = () => screen.getAllByRole('status').find((s) => !s.hasAttribute('data-slot'))!
 
 afterEach(async () => {
@@ -72,7 +74,9 @@ describe('CommandPages', () => {
   it('opens a page from an item, with a breadcrumb, and runs a row there, closing the menu', async () => {
     const onMove = vi.fn()
     const { user } = renderWithSatin(<CommandPages defaultOpen hotkey={false} rootTitle="Acme Corp" groups={groupsFor(onMove)} />)
-    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
+    // There from the first page, so the search under it never moves.
+    expect(path()).toEqual(['Acme Corp'])
+    expect(screen.getByText('Acme Corp', { selector: '[aria-current="page"]' })).toBeTruthy()
     await user.type(field(), 'move')
     await user.keyboard('{Enter}')
 
@@ -105,7 +109,7 @@ describe('CommandPages', () => {
     await user.keyboard('{Backspace>3/}')
     expect(field().value).toBe('move')
     expect(options()).toEqual(['Move deal to…'])
-    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
+    expect(path()).toEqual(['Commands'])
     expect(status().textContent).toBe('Commands')
   })
 
@@ -114,7 +118,7 @@ describe('CommandPages', () => {
     await user.keyboard('{ArrowDown}{ArrowDown}{Enter}')
     expect(field().placeholder).toBe('Owners')
     await user.click(screen.getByRole('button', { name: 'Commands' }))
-    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
+    expect(path()).toEqual(['Commands'])
     expect(document.activeElement).toBe(field())
     expect(options()).toEqual(['Log a call', 'Move deal to…', 'Assign owner…'])
   })
@@ -201,20 +205,25 @@ describe('CommandPages', () => {
     expect(screen.getByRole('region', { name: 'what did Acme say last call' })).toBeTruthy()
   })
 
-  it('slides a new page in 8px from where it leads, and not under reduced motion', async () => {
+  it('slides a new page in 8px from where it leads, in whole pixels, fading in, and not under reduced motion', async () => {
     const animate = vi.fn()
     HTMLElement.prototype.animate = animate as unknown as HTMLElement['animate']
     const { user } = renderWithSatin(<CommandPages defaultOpen hotkey={false} groups={groupsFor()} />)
     await user.type(field(), 'move{Enter}')
-    expect(animate).toHaveBeenCalledTimes(1)
-    expect(animate.mock.calls[0][0][0]).toEqual({ transform: 'translateX(8px)', opacity: 0 })
+    expect(animate).toHaveBeenCalledTimes(2)
+    const [slide, fade] = animate.mock.calls.map((c) => c[0] as Keyframe[])
+    // Held at each whole pixel (steps), from 8px to none, so nothing sits between pixels.
+    expect(slide[0]).toEqual({ offset: 0, transform: 'translateX(8px)', easing: 'steps(1, end)' })
+    expect(slide.at(-1)).toEqual({ offset: 1, transform: 'none' })
+    for (const k of slide) expect(k.transform).toMatch(/^(none|translateX\(-?\d+px\))$/)
+    expect(fade).toEqual([{ opacity: 0 }, { opacity: 1 }])
     await user.keyboard('{Backspace}')
-    expect(animate.mock.calls[1][0][0]).toEqual({ transform: 'translateX(-8px)', opacity: 0 })
+    expect((animate.mock.calls[2][0] as Keyframe[])[0].transform).toBe('translateX(-8px)')
 
     setReducedMotion(true)
     await user.clear(field())
     await user.type(field(), 'move{Enter}')
-    expect(animate).toHaveBeenCalledTimes(2)
+    expect(animate).toHaveBeenCalledTimes(4)
   })
 
   it('shows a group’s icon, the kind of record it lists, on each row without its own', async () => {

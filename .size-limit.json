@@ -115,7 +115,7 @@
       "@uisatin/ui"
     ],
     "gzip": true,
-    "limit": "3 kB"
+    "limit": "3.5 kB"
   },
   {
     "name": "Data grid (Satin Pro, with Radix DropdownMenu; @uisatin/ui left out, it is the peer)",
