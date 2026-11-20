@@ -1,8 +1,11 @@
 import * as React from 'react'
+import { Avatar, type AvatarTone } from '@uisatin/ui/avatar'
 import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
 import { Card } from '@uisatin/ui/card'
+import { cn } from '@uisatin/ui/lib/utils'
 import { Separator } from '@uisatin/ui/separator'
+import { Skeleton } from '@uisatin/ui/skeleton'
 import { StreamingText } from '@uisatin/ui/streaming-text'
 import { Table, type Column } from '@uisatin/ui/table'
 import { AgentPresence, useAgentPresence, type AgentPresenceList } from '@uisatin/pro/agent-presence'
@@ -17,6 +20,8 @@ type Candidate = {
   name: string
   role: string
   email: string
+  /** The candidate's avatar tone, the same in the table, on the card and in the email. */
+  tone: AvatarTone
   interviewer: string
   slot?: Slot
   invite: Invite
@@ -30,14 +35,15 @@ const INVITE: Record<Invite, { label: string; tone: BadgeTone }> = {
 }
 
 const CANDIDATES: Candidate[] = [
-  { id: 'tara', name: 'Tara Mendes', role: 'Product designer', email: 'tara.mendes@example.com', interviewer: 'Ada Novak', invite: 'none' },
-  { id: 'omar', name: 'Omar Haddad', role: 'Frontend engineer', email: 'omar.haddad@example.com', interviewer: 'Ada Novak', invite: 'none' },
-  { id: 'lena', name: 'Lena Fischer', role: 'Data analyst', email: 'lena.fischer@example.com', interviewer: 'Jon Park', invite: 'none' },
+  { id: 'tara', name: 'Tara Mendes', role: 'Product designer', email: 'tara.mendes@example.com', tone: 'fuchsia', interviewer: 'Ada Novak', invite: 'none' },
+  { id: 'omar', name: 'Omar Haddad', role: 'Frontend engineer', email: 'omar.haddad@example.com', tone: 'plum', interviewer: 'Ada Novak', invite: 'none' },
+  { id: 'lena', name: 'Lena Fischer', role: 'Data analyst', email: 'lena.fischer@example.com', tone: 'green', interviewer: 'Jon Park', invite: 'none' },
   {
     id: 'priya',
     name: 'Priya Nair',
     role: 'Product manager',
     email: 'priya.nair@example.com',
+    tone: 'amber',
     interviewer: 'Jon Park',
     slot: { short: 'Mon 14:00', date: 'Mon 13 Jan, 14:00', long: 'Monday 13 January at 14:00' },
     invite: 'accepted',
@@ -47,6 +53,7 @@ const CANDIDATES: Candidate[] = [
     name: 'Diego Alvarez',
     role: 'Support lead',
     email: 'diego.alvarez@example.com',
+    tone: 'neutral',
     interviewer: 'Ada Novak',
     slot: { short: 'Wed 11:00', date: 'Wed 15 Jan, 11:00', long: 'Wednesday 15 January at 11:00' },
     invite: 'accepted',
@@ -66,14 +73,36 @@ const STEP = { slot: 'Picking a slot…', draft: 'Drafting invite…', send: 'Se
 const AGENT = { name: 'Hiring assistant', tone: 'brand' } as const
 const PERSON = { name: 'Jon Park', initials: 'JP', tone: 'sky' } as const
 
+/** The candidate's avatar: the same one in the table, on the card and in the email's To. */
+function CandidateAvatar({ c }: { c: Candidate }) {
+  const initials = c.name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+  return <Avatar size={20} initials={initials} tone={c.tone} />
+}
+
+/** The avatar and the name, on one line; the name truncates. */
+function Person({ c, children }: { c: Candidate; children?: React.ReactNode }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <CandidateAvatar c={c} />
+      <span className="truncate">
+        {c.name}
+        {children}
+      </span>
+    </span>
+  )
+}
+
 const subjectOf = (c: Candidate, slot: Slot) => `Interview for ${c.role}: ${slot.date}`
 const bodyOf = (c: Candidate, slot: Slot) =>
   `Hi ${c.name.split(' ')[0]}, thanks for applying for the ${c.role} role. ${c.interviewer} would like to meet you for a 45-minute video interview on ${slot.long}. If that time doesn't suit you, reply with one that does.`
 
 const columns: Column<Candidate>[] = [
-  { key: 'name', header: 'Candidate', width: 1.3 },
+  { key: 'name', header: 'Candidate', width: 1.3, cell: (c) => <Person c={c} /> },
   { key: 'role', header: 'Role', width: 1.4 },
-  { key: 'slot', header: 'Interview', width: 1.2, cell: (c) => <span className="tabular-nums">{c.slot?.date}</span> },
+  { key: 'slot', header: 'Interview', width: 1.2, cell: (c) => <span className="truncate tabular-nums">{c.slot?.date}</span> },
   {
     key: 'invite',
     header: 'Invite',
@@ -208,45 +237,124 @@ function Board({
       getItemLabel={(c) => c.name}
       onMove={(id, column, index) => setCandidates((all) => fromBoard(moveKanbanItem(byInvite(all), (c) => c.id, id, column, index)))}
       undoToast={false}
-      renderCard={(c) => <KanbanCard title={c.name} meta={c.role} {...item(c.id)} />}
+      renderCard={(c) => <KanbanCard title={<Person c={c} />} meta={c.role} {...item(c.id)} />}
     />
   )
 }
 
-/** The email the agent is writing: empty until it drafts the first one, then the latest. */
-function Draft({ candidate, sent }: { candidate: Candidate | null; sent: boolean }) {
-  const slot = candidate?.slot
+/** Where the email is: waiting for its content, being written, or sent. */
+type DraftPhase = 'loading' | 'writing' | 'sent'
+
+/** Fades its content in as it mounts, on --duration-slow and --ease-out; at once under reduced motion. */
+function FadeIn({ children }: { children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  React.useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const css = getComputedStyle(el)
+    el.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: parseFloat(css.getPropertyValue('--duration-slow')) || 250,
+      easing: css.getPropertyValue('--ease-out').trim() || 'ease-out',
+    })
+  }, [])
   return (
-    <Card size="sm" className="w-full">
+    <div ref={ref} className="min-w-0">
+      {children}
+    </div>
+  )
+}
+
+/**
+ * A placeholder and what replaces it, in one grid cell: the cell is as tall as the taller of the
+ * two, so nothing jumps. The placeholder fades out as the content fades in over it; new content
+ * (`revealKey`, the next email) fades in again.
+ */
+function Reveal({
+  ready,
+  revealKey,
+  placeholder,
+  children,
+  className,
+}: {
+  ready: boolean
+  revealKey?: string
+  placeholder: React.ReactNode
+  children?: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className={cn('grid *:[grid-area:1/1]', className)}>
+      <div aria-hidden className={cn(ready && 'opacity-0 transition-opacity duration-(--duration-slow) ease-(--ease-out) motion-reduce:transition-none')}>
+        {placeholder}
+      </div>
+      {ready && <FadeIn key={revealKey}>{children}</FadeIn>}
+    </div>
+  )
+}
+
+/** One line of Skeleton, as tall as a line of body text. */
+function Line({ width, circle }: { width: number | string; circle?: boolean }) {
+  return (
+    <div className="flex h-[1lh] items-center gap-2">
+      {circle && <Skeleton shape="circle" animated className="size-5" />}
+      <Skeleton animated width={width} />
+    </div>
+  )
+}
+
+/**
+ * The email the agent is writing. Until its content is there, Skeleton lines hold its shape (the
+ * recipient as soon as the agent picks one, the subject and the text once it writes them), and
+ * the content fades in over them.
+ */
+function Draft({ candidate, phase }: { candidate: Candidate | null; phase: DraftPhase }) {
+  const slot = candidate?.slot
+  const written = candidate != null && slot != null && phase !== 'loading'
+  return (
+    <Card size="sm" className="w-full" aria-busy={!written || undefined}>
       <div className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
-          <dl className="grid min-w-0 grid-cols-[52px_minmax(0,1fr)] gap-x-2 gap-y-1 text-body">
+          <dl className="grid min-w-0 flex-1 grid-cols-[52px_minmax(0,1fr)] gap-x-2 gap-y-1 text-body">
             <dt className="text-text-muted">To</dt>
-            <dd className="truncate text-text-default">
-              {candidate && (
-                <>
-                  {candidate.name} <span className="text-text-muted">{candidate.email}</span>
-                </>
-              )}
+            <dd className="min-w-0 text-text-default">
+              <Reveal ready={candidate != null} revealKey={candidate?.id} placeholder={<Line width={220} circle />}>
+                {candidate && (
+                  <Person c={candidate}>
+                    {' '}
+                    <span className="text-text-muted">{candidate.email}</span>
+                  </Person>
+                )}
+              </Reveal>
             </dd>
             <dt className="text-text-muted">Subject</dt>
-            <dd className="truncate text-text-default">{candidate && slot && subjectOf(candidate, slot)}</dd>
+            <dd className="min-w-0 text-text-default">
+              <Reveal ready={written} revealKey={candidate?.id} placeholder={<Line width={280} />}>
+                <span className="block truncate">{candidate && slot && subjectOf(candidate, slot)}</span>
+              </Reveal>
+            </dd>
           </dl>
-          {candidate && (
-            <Badge size="sm" tone={sent ? 'green' : 'neutral'}>
-              {sent ? 'Sent' : 'Draft'}
+          {written && (
+            <Badge size="sm" tone={phase === 'sent' ? 'green' : 'neutral'}>
+              {phase === 'sent' ? 'Sent' : 'Draft'}
             </Badge>
           )}
         </div>
         <Separator />
-        {/* Three lines held, so the card keeps its height from one email to the next. */}
-        <div className="min-h-[3lh] text-body">
-          {candidate && slot ? (
-            <StreamingText key={candidate.id} text={bodyOf(candidate, slot)} />
-          ) : (
-            <p className="text-text-muted">The assistant writes each invite here before it sends it.</p>
-          )}
-        </div>
+        {/* Three lines either way, so the card keeps its height from the placeholder to the text and from one email to the next. */}
+        <Reveal
+          ready={written}
+          revealKey={candidate?.id}
+          className="min-h-[3lh] text-body"
+          placeholder={
+            <>
+              <Line width="100%" />
+              <Line width="94%" />
+              <Line width="58%" />
+            </>
+          }
+        >
+          {candidate && slot && <StreamingText key={candidate.id} text={bodyOf(candidate, slot)} reveal="fade" />}
+        </Reveal>
       </div>
     </Card>
   )
@@ -260,7 +368,7 @@ function Draft({ candidate, sent }: { candidate: Candidate | null; sent: boolean
  */
 function Preview({ v }: { v: Record<string, string> }) {
   const [candidates, setCandidates] = React.useState(CANDIDATES)
-  const [draft, setDraft] = React.useState<{ id: string; sent: boolean } | null>(null)
+  const [draft, setDraft] = React.useState<{ id: string; phase: DraftPhase } | null>(null)
   const [running, setRunning] = React.useState(false)
   const presence = useAgentPresence()
   const { start, conflict, done, clear } = presence
@@ -285,15 +393,17 @@ function Preview({ v }: { v: Record<string, string> }) {
           await wait(2400)
         }
         start(c.id, c.name, STEP.slot)
+        // A new email: the recipient shows, the rest waits in Skeleton lines.
+        setDraft({ id: c.id, phase: 'loading' })
         await wait(1000)
         update(c.id, { slot })
         await wait(300)
         start(c.id, c.name, STEP.draft)
-        setDraft({ id: c.id, sent: false })
+        setDraft({ id: c.id, phase: 'writing' })
         await wait(1700)
         start(c.id, c.name, STEP.send)
         await wait(800)
-        setDraft({ id: c.id, sent: true })
+        setDraft({ id: c.id, phase: 'sent' })
         update(c.id, { invite: 'sent' })
         done()
         await wait(1000)
@@ -342,7 +452,7 @@ function Preview({ v }: { v: Record<string, string> }) {
         )}
         <AgentPresence {...presence.props} agent={AGENT} />
       </div>
-      <Draft candidate={drafted} sent={draft?.sent ?? false} />
+      <Draft candidate={drafted} phase={draft?.phase ?? 'loading'} />
     </div>
   )
 }
