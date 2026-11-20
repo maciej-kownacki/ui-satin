@@ -22,6 +22,8 @@ describe('AgentPermissionRequest', () => {
     renderWithSatin(<AgentPermissionRequest agent="Recruiting agent" scopes={scopes} description="To screen this week's applicants." />)
     expect(screen.getByRole('group', { name: 'Recruiting agent wants to:' })).toBeTruthy()
     expect(card().getAttribute('aria-describedby')).toBeTruthy()
+    // The aura is decoration only.
+    expect(card().querySelector('[data-slot="agent-permissions-aura"]')?.getAttribute('aria-hidden')).toBe('true')
     const list = screen.getByRole('list')
     expect(within(list).getAllByRole('listitem')).toHaveLength(3)
     expect(box('Read candidates').getAttribute('aria-checked')).toBe('true')
