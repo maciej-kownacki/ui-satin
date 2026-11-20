@@ -24,7 +24,8 @@ import { Spinner } from './spinner'
  * It has no corners of its own (the card clips it) and its focus ring goes round the whole card,
  * so nothing on it changes shape while the body opens or folds.
  * The body opens with Thinking's motion (satin-expand): it grows down from under the header and,
- * folded, stays mounted but leaves tab order and screen readers. A call that ends while the card
+ * folded, stays mounted but leaves tab order and screen readers. Its sections fade in and out on
+ * their own (their size never changes), so nothing in them stretches or blurs while it moves. A call that ends while the card
  * is on screen is announced politely ("Find slots Failed").
  *
  * Open state: uncontrolled, it starts as `defaultOpen` says, else open only on `error`. It opens
@@ -348,8 +349,23 @@ export function ToolCallContent({ className, children, ...props }: React.Compone
       // --ease-out a tall body dropped most of its height in two frames, then crept the rest.
       style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
     >
-      <div>
-        <div className={cn('flex flex-col divide-y divide-border-subtle border-t border-border-subtle', className)} {...props}>
+      <div
+        // The clip that grows and shrinks takes no fade (satin-expand gives it one): a layer that
+        // changes size every frame is rastered again every frame, and on the GPU the icons and
+        // text in it smeared while the card moved. The sections fade instead; their size never
+        // changes, so their layer is rastered once.
+        style={{ opacity: 1, transition: 'none' }}
+      >
+        <div
+          className={cn(
+            'flex flex-col divide-y divide-border-subtle border-t border-border-subtle transition-opacity ease-(--ease-out)',
+            // In over the whole opening; out quicker than the fold, so the edge that folds the
+            // body never cuts through an icon that can still be seen.
+            open ? 'opacity-100 duration-(--duration-slow)' : 'opacity-0 duration-(--duration-fast)',
+            className,
+          )}
+          {...props}
+        >
           {children}
         </div>
       </div>

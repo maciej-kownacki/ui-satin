@@ -29,7 +29,10 @@ The tokens live in `src/styles/motion.css`.
    never from `scale(0)`. Collapsible content fades and settles in; its height is not animated, with two exceptions.
    A body that folds inside a bordered card (Tool call) grows its height on the sliding pill's
    gentler curve, in Accordion's times: the card's edge moves with it, and on `--ease-out` it
-   dropped most of the way in two frames and then crept, which read as a cut. In the Activity
+   dropped most of the way in two frames and then crept, which read as a cut. Its content fades
+   right out (in over 250 ms, out in 150 ms, so the folding edge never cuts a visible icon), and
+   the fade sits on the content, whose size never changes, not on the clip that grows: a layer
+   that changes size every frame is rastered again every frame, and on the GPU its icons smeared. In the Activity
    timeline (Satin Pro) a run's entries and "Reverted by you" open and close in height, so the rows
    below glide instead of jumping: grid rows go 0fr ↔ 1fr over 300 ms on the sliding pill's curve,
    and the content fades in once the move has started.
