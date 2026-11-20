@@ -382,6 +382,8 @@ export function Calendar({
               aria-label={labels.year}
               onOpenChange={measureYearMenu}
               menuMaxHeight={yearMenuHeight}
+              // The list lines up with the field's right edge, the panel's edge, never past it.
+              menuAlign="end"
               value={String(m.getFullYear())}
               onValueChange={(y) => setMonth(new Date(Number(y), m.getMonth(), 1))}
               options={yearOptions(m.getFullYear(), today.getFullYear(), min, max)}

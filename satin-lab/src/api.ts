@@ -783,6 +783,7 @@ export const api: Record<string, Api> = {
       { name: 'open', type: ['boolean'] },
       { name: 'defaultOpen', type: ['boolean'], default: 'false' },
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
+      { name: 'menuAlign', type: ['"start"', '"end"'], default: '"start"' },
     ],
   },
   sheet: {

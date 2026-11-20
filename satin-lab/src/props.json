@@ -7334,6 +7334,13 @@
           "description": "Caps the menu's height in px; past it the list scrolls. Left out, the menu takes the room the window has."
         },
         {
+          "name": "menuAlign",
+          "type": "'start' | 'end'",
+          "required": false,
+          "default": "'start'",
+          "description": "Which edge of the field the menu lines up with. Defaults to `\"start\"`; `\"end\"` for a field at the end of a row."
+        },
+        {
           "name": "aria-label",
           "type": "string",
           "required": false
