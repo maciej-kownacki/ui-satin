@@ -15,7 +15,8 @@ import { toast } from '@uisatin/ui/toast'
  *
  * - An item with a `page` opens it in place of the list ("Move deal to…" › the stages); an item's
  *   `onSelect` gets `push` to open one built on the spot. A Breadcrumb above the search shows the
- *   way back, its earlier pages as buttons. The search empties on every new page and comes back
+ *   way back, its earlier pages as buttons; it is there on the first page too (its title alone), so
+ *   the search and its icon stay put from page to page. The search empties on every new page and comes back
  *   as it was when you return.
  * - Backspace in the empty search goes back one page; held down, it never skips several or eats
  *   the search it puts back, and a hold that starts on text stops when the text is gone. The
@@ -178,15 +179,48 @@ const reduced = () => typeof window !== 'undefined' && !!window.matchMedia?.('(p
 const ms = (value: string) => (value.trim().endsWith('ms') ? parseFloat(value) : parseFloat(value) * 1000)
 
 /** The new page's content comes 8px from where it leads and fades in. */
+/** A CSS `cubic-bezier()` as progress over time, 0 to 1; plain ease-out when it isn't one. */
+function curve(easing: string) {
+  const [x1, y1, x2, y2] = easing.match(/cubic-bezier\(([^)]+)\)/)?.[1].split(',').map(Number) ?? [0, 0, 0.58, 1]
+  const at = (a: number, b: number, s: number) => 3 * a * s * (1 - s) ** 2 + 3 * b * s * s * (1 - s) + s ** 3
+  return (t: number) => {
+    let lo = 0
+    let hi = 1
+    for (let i = 0; i < 24; i++) {
+      const mid = (lo + hi) / 2
+      if (at(x1, x2, mid) < t) lo = mid
+      else hi = mid
+    }
+    return at(y1, y2, (lo + hi) / 2)
+  }
+}
+
+/**
+ * The new page's content comes 8px from where it leads and fades in. The slide moves in whole
+ * pixels, each held until the eased curve reaches the next, so its icons and text never sit
+ * between pixels (where they blur); the fade runs smoothly on the same curve.
+ */
 function slide(el: HTMLElement, dir: 1 | -1) {
   if (typeof el.animate !== 'function' || reduced()) return
   const style = getComputedStyle(el)
-  const x = 8 * dir * (style.direction === 'rtl' ? -1 : 1)
+  const sign = dir * (style.direction === 'rtl' ? -1 : 1)
+  const easing = style.getPropertyValue('--ease-out').trim() || 'ease-out'
+  const duration = ms(style.getPropertyValue('--duration-base')) || 200
+  const progress = curve(easing)
+  const at = (px: number) => (px ? `translateX(${sign * px}px)` : 'none')
+  const steps: Keyframe[] = [{ offset: 0, transform: at(8), easing: 'steps(1, end)' }]
+  let px = 8
+  for (let i = 1; i < 100 && px > 0; i++) {
+    const next = Math.round(8 * (1 - progress(i / 100)))
+    if (next < px) {
+      px = next
+      steps.push({ offset: i / 100, transform: at(px), easing: 'steps(1, end)' })
+    }
+  }
+  steps.push({ offset: 1, transform: 'none' })
   el.getAnimations?.().forEach((a) => a.cancel())
-  el.animate([{ transform: `translateX(${x}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], {
-    duration: ms(style.getPropertyValue('--duration-base')) || 200,
-    easing: style.getPropertyValue('--ease-out').trim() || 'ease-out',
-  })
+  el.animate(steps, { duration })
+  el.animate([{ opacity: 0 }, { opacity: 1 }], { duration, easing })
 }
 
 export function CommandPages({
@@ -460,11 +494,10 @@ export function CommandPages({
       }}
       header={
         <>
-          {current && (
-            <div data-slot="command-pages-breadcrumb" className="flex shrink-0 px-3 pt-2.5">
-              <Breadcrumb items={crumbs} maxItems={3} />
-            </div>
-          )}
+          {/* On every page, the first included, so the search under it never moves. */}
+          <div data-slot="command-pages-breadcrumb" className="flex shrink-0 px-3 pt-2.5">
+            <Breadcrumb items={crumbs} maxItems={3} />
+          </div>
           <div role="status" className="sr-only">
             <span key={said.n}>{said.text}</span>
           </div>
