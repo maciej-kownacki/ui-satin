@@ -572,15 +572,16 @@ export const a11y: Record<string, A11y> = {
   },
   'search-scoped': {
     summary:
-      'The input is a `combobox` (named "Search" through `searchField`, or your `aria-label`) that controls a `listbox` named "Search results"; the highlighted row is its `aria-activedescendant`, so focus stays in the query. Rows sit in a `group` per section, named by its heading with the count read as words ("Candidates, 6 results"). The chips are described to the input (`aria-describedby`), so the filters are heard without leaving the query; each chip has a remove button ("Remove Stage: Interview"). A polite `status` says "Filter added: …" or "Filter removed: …", and the result count once typing settles. The footer of key hints is hidden from screen readers. Every word is in SatinLabels (`scopedSearch*`).',
+      'The input is a `combobox` (named "Search" through `searchField`, or your `aria-label`) that controls a `listbox` named "Search results"; the highlighted row is its `aria-activedescendant`, so focus stays in the query. The scope chip is a button named "Search in: Candidates" with `aria-haspopup="listbox"`: pressing it keeps focus in the query and lists the scopes there, the current one marked "(selected)", each with its result count read as words. The scope and the filter chips describe the input (`aria-describedby`), so where it looks is heard without leaving the query; each filter chip has a remove button ("Remove Stage: Interview"). Rows sit in a `group` per section, named by its heading with the count as words ("Candidates, 6 results"). A polite `status` says "Searching in Jobs", "Filter added: …" or "Filter removed: …", and the result count once typing settles. The footer of key hints is hidden from screen readers. Every word is in SatinLabels (`scopedSearch*`).',
     keyboard: [
       { keys: ['⌘K', 'Ctrl+K'], action: 'Focuses the query and opens the list, from anywhere on the page, unless `hotkey` is off.' },
       { keys: ['↑', '↓'], action: 'Moves the highlight through the list, wrapping at the ends; ↓ opens a closed list. No motion.' },
-      { keys: ['Enter'], action: 'Runs the highlighted row: a recent search fills the query, a scope types `key:`, a value makes its chip, a result calls `onSelect` and closes the list.' },
-      { keys: ['Space'], action: 'After a `key:value`, turns it into a chip.' },
-      { keys: ['Backspace'], action: 'At the start of the query, removes the last chip.' },
+      { keys: ['Enter'], action: 'Runs the highlighted row: a scope becomes the scope, a recent search fills the query, a filter types `key:`, a value makes its chip, a result calls `onSelect` and closes the list.' },
+      { keys: ['Space'], action: 'After `in:scope` or a `key:value`, turns it into the scope or a chip.' },
+      { keys: ['Backspace'], action: 'At the start of the query, removes the last filter chip; with none left, puts the scope back to the default.' },
       { keys: ['Esc'], action: 'Closes the list and keeps the query; with the list closed, clears the words.' },
-      { keys: ['Shift+Tab'], action: 'From the query, to the chips’ remove buttons.' },
+      { keys: ['Shift+Tab'], action: 'From the query back through the chips’ buttons: each filter’s remove button, then the scope.' },
+      { keys: ['Enter', 'Space'], action: 'On the scope chip: lists the scopes and puts focus back in the query.' },
     ],
   },
   stepper: {

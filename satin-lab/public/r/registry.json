@@ -2729,8 +2729,9 @@
       "name": "search-scoped",
       "type": "registry:ui",
       "title": "Scoped search",
-      "description": "Search across candidates, jobs and notes with stage: and owner: chips typed into the query, recent searches and results grouped with counts.",
+      "description": "One search box over several kinds of record or places, with a scope chip (Everywhere, Candidates, This project) that says where it looks; use it instead of a Search bar when one list of hits would bury the one wanted.",
       "dependencies": [
+        "iconoir-react@^7.12.2",
         "radix-ui@^1.8.1"
       ],
       "registryDependencies": [

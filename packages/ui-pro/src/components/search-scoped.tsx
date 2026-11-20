@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { Popover as PopoverPrimitive } from 'radix-ui'
+import { Clock, Filter, NavArrowDown } from 'iconoir-react'
 import { Badge } from '@uisatin/ui/badge'
 import { Chip } from '@uisatin/ui/chip'
 import { MenuItemContent, menuGroupLabelClass, menuItemClass, menuSurfaceClass } from '@uisatin/ui/dropdown'
@@ -12,31 +13,34 @@ import { SearchBar, type SearchBarProps } from '@uisatin/ui/search-bar'
 import { Spinner } from '@uisatin/ui/spinner'
 
 /**
- * ScopedSearch: search across several kinds of record (candidates, jobs, notes) with filters
- * typed into the query. `stage:interview react` becomes a "Stage: Interview" chip in the field
- * and the word "react"; the results come back grouped, each group with its count.
+ * ScopedSearch: one search box for a product with several kinds of record, where people say
+ * where to look. The scope sits in the field as a chip, "Everywhere ▾", "Candidates ▾", "This
+ * project ▾": click it (or type `in:`) to pick another, and the results follow. Use it when a
+ * search spans kinds or places and a single list of hits would bury the one wanted. A plain
+ * SearchBar filters one list; the Command menu runs actions and jumps between pages.
  *
- * The field is SearchBar's (⌘K or Ctrl+K focuses it from anywhere, unless `hotkey` is off), the
- * chips sit in it before the query. Under it a menu surface opens with:
- *
- * - nothing typed: `recent` searches, then the `scopes` to filter by;
- * - a word that starts a scope (`st`): that scope, to pick; after `stage:`, its `values`;
- * - otherwise the `groups`, filtered here by the chips and the words (or as given, with
- *   `filter={false}` when your server searches), each under its label and count; or "No results
- *   for …".
- *
- * A typed `key:value` turns into a chip when a space follows it, or when its value is picked
- * from the list. With `values`, only those values make a chip; without, any word does. Quote a
- * value with spaces: `owner:"Ada Novak"`. Chips of one scope match any of their values; chips
- * of different scopes must all match.
+ * - `scopes` are data: a kind of record (`groups: ['candidates']`), a place (`fields: {
+ *   project: 'atlas' }`), or both. The first is the default, usually Everywhere. A scope can
+ *   bring its own placeholder ("Search candidates…").
+ * - `filters` narrow inside the scope: `stage:interview` typed into the query turns into a
+ *   "Stage: Interview" chip when a space follows it, or when its value is picked from the list.
+ *   With `values`, only those make a chip; without, any word does. Quote values with spaces:
+ *   `owner:"Ada Novak"`. Chips of one filter match any of their values; different filters must
+ *   all match.
+ * - The list: nothing typed shows `recent` searches and what can be typed (`in:`, the
+ *   filters); `in:` or the scope chip lists the scopes, each with how many results it holds for
+ *   the query; otherwise the `groups` with their counts. A scope that finds nothing offers the
+ *   scopes that do.
  *
  * Keys: the arrows move the highlight (no motion), Enter runs it, Backspace at the start of
- * the query removes the last chip, Escape closes the list (and, closed, clears the words). The
- * groups fade in as they appear.
+ * the query removes the last chip (the scope last, back to the default), Escape closes the
+ * list (and, closed, clears the words), ⌘K or Ctrl+K focuses the field from anywhere unless
+ * `hotkey` is off. Groups fade in as they appear.
  *
- * Helpers for a server search: `parseScopedQuery(text, scopes)` reads a query string,
- * `formatScopedQuery(query)` writes one (for recent searches), `filterScopedGroups(groups,
- * query, scopes)` is the filter used here.
+ * Results are filtered here (by scope, chips and words) unless `filter` is off: then the app
+ * searches on its side with the query from `onValueChange` and passes `groups` as they come.
+ * `parseScopedQuery`, `formatScopedQuery` and `filterScopedGroups` read, write and filter a
+ * query (for recent searches, a URL, a server).
  *
  * Other props, `ref` included, go to the input; `wrapperClassName` styles the field around it.
  */
@@ -47,17 +51,25 @@ export const scopedSearchLabels = {
   scopedSearchResults: 'Search results',
   /** The heading over recent searches. */
   scopedSearchRecent: 'Recent searches',
-  /** The heading over the scopes a search can be narrowed by. */
+  /** The heading over the scopes. */
+  scopedSearchScopes: 'Search in',
+  /** The heading over what can be typed (`in:`, the filters). */
   scopedSearchFilters: 'Filters',
-  /** A chip: the scope's label and the value's ("Stage: Interview"). */
-  scopedSearchToken: (scope: string, value: string) => `${scope}: ${value}`,
+  /** The scope chip's name, and how the field describes its scope: "Search in: Candidates". */
+  scopedSearchScope: (scope: string) => `Search in: ${scope}`,
+  /** Read out when the scope changes. */
+  scopedSearchScopeChanged: (scope: string) => `Searching in ${scope}`,
+  /** A filter chip: the filter's label and the value's ("Stage: Interview"). */
+  scopedSearchToken: (filter: string, value: string) => `${filter}: ${value}`,
   /** A group's heading for screen readers: "Candidates, 6 results". */
   scopedSearchGroup: (group: string, count: number) => `${group}, ${count === 1 ? '1 result' : `${count} results`}`,
-  /** Read out as the results change, and shown in the footer. */
+  /** Read out as the results change, shown in the footer and beside each scope. */
   scopedSearchResultCount: (count: number) => (count === 0 ? 'No results' : count === 1 ? '1 result' : `${count} results`),
-  /** Read out when a chip is added. */
+  /** When a narrow scope finds nothing. */
+  scopedSearchNoResultsIn: (query: string, scope: string) => `No results for “${query}” in ${scope}`,
+  /** Read out when a filter chip is added. */
   scopedSearchFilterAdded: (filter: string) => `Filter added: ${filter}`,
-  /** Read out when a chip is removed. */
+  /** Read out when a filter chip is removed. */
   scopedSearchFilterRemoved: (filter: string) => `Filter removed: ${filter}`,
   /** The Backspace hint in the footer. */
   scopedSearchRemoveFilter: 'Remove filter',
@@ -77,7 +89,25 @@ const useLabels = () => {
 
 /* ---------- the query ---------- */
 
-/** A value a scope suggests after `key:`. */
+/** Where the search looks: a kind of record, a place, or everything. */
+export interface ScopedSearchScope {
+  /** Typed after `in:` (`in:candidates`) and kept in the query. */
+  value: string
+  /** "Everywhere", "Candidates", "This project". */
+  label: string
+  /** 16px, before the label in the chip and the list. */
+  icon?: React.ReactNode
+  /** After the label in the list: what it holds. */
+  description?: string
+  /** The field's placeholder while this scope is on: "Search candidates…". */
+  placeholder?: string
+  /** The ids of the groups it searches. All of them when left out. */
+  groups?: string[]
+  /** What a row's `fields` must hold to be in it: `{ project: 'atlas' }`. */
+  fields?: Record<string, string>
+}
+
+/** A value a filter suggests after `key:`. */
 export interface ScopedSearchValue {
   /** What the chip holds and the query string says. */
   value: string
@@ -85,8 +115,8 @@ export interface ScopedSearchValue {
   label?: string
 }
 
-/** Something to narrow the search by, typed as `key:value`. */
-export interface ScopedSearchScope {
+/** Something to narrow by inside the scope, typed as `key:value`. */
+export interface ScopedSearchFilter {
   /** Typed before the colon: `stage` in `stage:interview`. Matched without case. */
   key: string
   /** Shown in the chip and the list: "Stage". */
@@ -95,16 +125,25 @@ export interface ScopedSearchScope {
   values?: (string | ScopedSearchValue)[]
 }
 
-/** One chip: a scope's `key` and one of its values. */
+/** One filter chip: a filter's `key` and one of its values. */
 export interface ScopedSearchToken {
   key: string
   value: string
 }
 
-/** What is searched for: the chips, then the words typed after them. */
+/** What is searched for: where (the scope's `value`; the first scope when left out), the filter chips, then the words. */
 export interface ScopedSearchQuery {
+  scope?: string
   tokens: ScopedSearchToken[]
   text: string
+}
+
+/** What a query is read and filtered against. */
+export interface ScopedSearchOptions {
+  scopes?: ScopedSearchScope[]
+  filters?: ScopedSearchFilter[]
+  /** The word before a typed scope: `in` in `in:candidates`. */
+  scopeKey?: string
 }
 
 /** One result row. */
@@ -119,7 +158,7 @@ export interface ScopedSearchItem {
   icon?: React.ReactNode
   /** At the end of the row: a Badge, a date. */
   meta?: React.ReactNode
-  /** What the chips match, by scope key: `{ stage: 'interview', owner: ['ada', 'jon'] }`. */
+  /** What scopes and filters match, by key: `{ stage: 'interview', owner: ['ada', 'jon'] }`. */
   fields?: Record<string, string | string[]>
   /** More words the query matches. */
   keywords?: string[]
@@ -139,19 +178,25 @@ export interface ScopedSearchGroup {
 }
 
 const lower = (s: string) => s.toLocaleLowerCase()
+const unquote = (raw: string) => raw.replace(/^"|"$/g, '').trim()
+const quote = (value: string) => (/\s/.test(value) ? `"${value}"` : value)
 
-const valuesOf = (scope: ScopedSearchScope) =>
-  (scope.values ?? []).map((v) => (typeof v === 'string' ? { value: v, label: v } : { value: v.value, label: v.label ?? v.value }))
+const valuesOf = (filter: ScopedSearchFilter) =>
+  (filter.values ?? []).map((v) => (typeof v === 'string' ? { value: v, label: v } : { value: v.value, label: v.label ?? v.value }))
 
-const scopeOf = (scopes: ScopedSearchScope[], key: string) => scopes.find((s) => lower(s.key) === lower(key))
+const filterOf = (filters: ScopedSearchFilter[], key: string) => filters.find((f) => lower(f.key) === lower(key))
+const scopeNamed = (scopes: ScopedSearchScope[], raw: string) => {
+  const v = lower(unquote(raw))
+  return v ? scopes.find((s) => lower(s.value) === v || lower(s.label) === v) : undefined
+}
 
-function resolveToken(scopes: ScopedSearchScope[], key: string, raw: string): ScopedSearchToken | null {
-  const scope = scopeOf(scopes, key)
-  const value = raw.replace(/^"|"$/g, '').trim()
-  if (!scope || !value) return null
-  if (!scope.values) return { key: scope.key, value }
-  const hit = valuesOf(scope).find((v) => lower(v.value) === lower(value) || lower(v.label) === lower(value))
-  return hit ? { key: scope.key, value: hit.value } : null
+function resolveToken(filters: ScopedSearchFilter[], key: string, raw: string): ScopedSearchToken | null {
+  const filter = filterOf(filters, key)
+  const value = unquote(raw)
+  if (!filter || !value) return null
+  if (!filter.values) return { key: filter.key, value }
+  const hit = valuesOf(filter).find((v) => lower(v.value) === lower(value) || lower(v.label) === lower(value))
+  return hit ? { key: filter.key, value: hit.value } : null
 }
 
 const sameToken = (a: ScopedSearchToken, b: ScopedSearchToken) => a.key === b.key && a.value === b.value
@@ -160,26 +205,34 @@ const sameToken = (a: ScopedSearchToken, b: ScopedSearchToken) => a.key === b.ke
 const TOKEN = /(^|\s)([^\s:"]+):("[^"]*"|[^\s"]+)(?=\s|$)/g
 
 /**
- * Reads a query string: each `key:value` of a known scope becomes a token, the rest stays as
- * text. With `partial` (while typing), a token still needs a space after it, so the word being
- * typed isn't taken early, and the text keeps its trailing space.
+ * Reads a query string: `in:<scope>` sets the scope, each `key:value` of a known filter
+ * becomes a token, the rest stays as text. With `partial` (while typing), a token still needs
+ * a space after it, so the word being typed isn't taken early, and the text keeps its trailing
+ * space.
  */
-export function parseScopedQuery(input: string, scopes: ScopedSearchScope[], { partial = false }: { partial?: boolean } = {}): ScopedSearchQuery {
+export function parseScopedQuery(input: string, { scopes = [], filters = [], scopeKey = 'in' }: ScopedSearchOptions = {}, { partial = false }: { partial?: boolean } = {}): ScopedSearchQuery {
+  let scope: string | undefined
   const tokens: ScopedSearchToken[] = []
   const text = input.replace(TOKEN, (match: string, lead: string, key: string, raw: string, offset: number) => {
     if (partial && offset + match.length === input.length) return match
-    const token = resolveToken(scopes, key, raw)
+    if (lower(key) === lower(scopeKey)) {
+      const found = scopeNamed(scopes, raw)
+      if (!found) return match
+      scope = found.value
+      return lead
+    }
+    const token = resolveToken(filters, key, raw)
     if (!token) return match
     if (!tokens.some((t) => sameToken(t, token))) tokens.push(token)
     return lead
   })
   const tidy = text.replace(/\s+/g, ' ').replace(/^ /, '')
-  return { tokens, text: partial ? tidy : tidy.trim() }
+  return { ...(scope ? { scope } : {}), tokens, text: partial ? tidy : tidy.trim() }
 }
 
-/** Writes a query back as a string, `stage:interview react`: for recent searches, a URL. */
-export function formatScopedQuery({ tokens, text }: ScopedSearchQuery) {
-  const words = tokens.map((t) => `${t.key}:${/\s/.test(t.value) ? `"${t.value}"` : t.value}`)
+/** Writes a query back as a string, `in:candidates stage:interview react`: for recent searches, a URL. */
+export function formatScopedQuery({ scope, tokens, text }: ScopedSearchQuery, { scopeKey = 'in' }: Pick<ScopedSearchOptions, 'scopeKey'> = {}) {
+  const words = [...(scope ? [`${scopeKey}:${quote(scope)}`] : []), ...tokens.map((t) => `${t.key}:${quote(t.value)}`)]
   return [...words, text.trim()].filter(Boolean).join(' ')
 }
 
@@ -189,19 +242,26 @@ const fieldValues = (item: ScopedSearchItem, key: string) => {
 }
 
 /**
- * The groups with only the rows that match: every chip's scope (one value of each scope is
- * enough), then every word in the label, description, keywords or fields. A `key:value` still
- * in the text counts as a chip; a scope still being typed (`stage:int`) narrows nothing yet.
- * Empty groups go; each group's `count` becomes its rows.
+ * The groups with only the rows that match: the scope (its groups, its fields), every filter
+ * chip (one value of each filter is enough), then every word in the label, description,
+ * keywords or fields. A `key:value` still in the text counts as a chip; one still being typed
+ * (`stage:int`) narrows nothing yet. Empty groups go; each group's `count` becomes its rows.
  */
-export function filterScopedGroups(groups: ScopedSearchGroup[], query: ScopedSearchQuery, scopes: ScopedSearchScope[] = []): ScopedSearchGroup[] {
-  const typed = parseScopedQuery(query.text, scopes)
+export function filterScopedGroups(groups: ScopedSearchGroup[], query: ScopedSearchQuery, options: ScopedSearchOptions = {}): ScopedSearchGroup[] {
+  const { scopes = [], filters = [], scopeKey = 'in' } = options
+  const typed = parseScopedQuery(query.text, options)
+  const scope = scopes.find((s) => s.value === (typed.scope ?? query.scope ?? scopes[0]?.value))
   const byKey = new Map<string, string[]>()
   for (const t of [...query.tokens, ...typed.tokens]) byKey.set(t.key, [...(byKey.get(t.key) ?? []), lower(t.value)])
   const words = lower(typed.text)
     .split(/\s+/)
-    .filter((w) => w && !(w.includes(':') && scopeOf(scopes, w.slice(0, w.indexOf(':')))))
+    .filter((w) => {
+      if (!w) return false
+      const colon = w.indexOf(':')
+      return !(colon > 0 && (filterOf(filters, w.slice(0, colon)) || w.slice(0, colon) === lower(scopeKey)))
+    })
   const matches = (item: ScopedSearchItem) => {
+    for (const [key, value] of Object.entries(scope?.fields ?? {})) if (!fieldValues(item, key).includes(lower(value))) return false
     for (const [key, values] of byKey) {
       const have = fieldValues(item, key)
       if (!values.some((v) => have.includes(v))) return false
@@ -211,6 +271,7 @@ export function filterScopedGroups(groups: ScopedSearchGroup[], query: ScopedSea
     return words.every((w) => hay.some((h) => h.includes(w)))
   }
   return groups
+    .filter((g) => !scope?.groups || scope.groups.includes(g.id))
     .map((g) => {
       const items = g.items.filter(matches)
       return { ...g, items, count: items.length }
@@ -218,45 +279,35 @@ export function filterScopedGroups(groups: ScopedSearchGroup[], query: ScopedSea
     .filter((g) => g.items.length > 0)
 }
 
-/* ---------- glyphs (iconoir's Clock and Filter, 16px) ---------- */
-
-const glyph = { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const
-
-const ClockGlyph = () => (
-  <svg {...glyph}>
-    <path d="M12 6L12 12L18 12" />
-    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" />
-  </svg>
-)
-const FilterGlyph = () => (
-  <svg {...glyph}>
-    <path d="M3.99961 3H19.9997C20.552 3 20.9997 3.44764 20.9997 3.99987L20.9999 5.58569C21 5.85097 20.8946 6.10538 20.707 6.29295L14.2925 12.7071C14.105 12.8946 13.9996 13.149 13.9996 13.4142L13.9996 19.7192C13.9996 20.3698 13.3882 20.8472 12.7571 20.6894L10.7571 20.1894C10.3119 20.0781 9.99961 19.6781 9.99961 19.2192L9.99961 13.4142C9.99961 13.149 9.89425 12.8946 9.70672 12.7071L3.2925 6.29289C3.10496 6.10536 2.99961 5.851 2.99961 5.58579V4C2.99961 3.44772 3.44732 3 3.99961 3Z" />
-  </svg>
-)
+const totalOf = (groups: ScopedSearchGroup[]) => groups.reduce((n, g) => n + (g.count ?? g.items.length), 0)
 
 /* ---------- the component ---------- */
 
 export interface ScopedSearchProps
   extends Omit<SearchBarProps, 'value' | 'defaultValue' | 'onChange' | 'onSelect' | 'leading' | 'variant' | 'groups' | 'idleText' | 'emptyText' | 'meta' | 'hints'> {
-  /** What the query can be narrowed by, typed as `key:value`. */
-  scopes: ScopedSearchScope[]
+  /** Where the search can look; the first is the default. Shown as a chip in the field. Without, it searches everything. */
+  scopes?: ScopedSearchScope[]
+  /** What narrows the search inside the scope, typed as `key:value`. */
+  filters?: ScopedSearchFilter[]
   /** The results, one group per kind of record. Filtered here unless `filter` is off. */
   groups: ScopedSearchGroup[]
   /** Earlier queries as strings (`formatScopedQuery`), newest first; shown before anything is typed. */
   recent?: string[]
-  /** The chips and the words, controlled. */
+  /** The scope, the chips and the words, controlled. */
   value?: ScopedSearchQuery
-  /** The chips and the words to start with. */
+  /** The scope, the chips and the words to start with. */
   defaultValue?: ScopedSearchQuery
-  /** Every change: a chip added or removed, a word typed. */
+  /** Every change: a scope picked, a chip added or removed, a word typed. */
   onValueChange?: (query: ScopedSearchQuery) => void
   /** A result picked (Enter or a click): the row, and the query that found it. The list closes. */
   onSelect?: (item: ScopedSearchItem, query: ScopedSearchQuery) => void
-  /** Filter `groups` here by the chips and the words. Off when your server does it: then they show as given. */
+  /** The word before a typed scope: `in` in `in:candidates`. */
+  scopeKey?: string
+  /** Filter `groups` here by scope, chips and words. Off when your server does it: then they show as given. */
   filter?: boolean
   /** The results are on their way: a Spinner and "Searching…" under what is shown. */
   loading?: boolean
-  /** Shown when nothing matches; gets the query as a string. Defaults to the `noResultsFor` label. */
+  /** Shown when nothing matches; gets the query as a string. Defaults to the `noResultsFor` label (`scopedSearchNoResultsIn` in a narrow scope). */
   emptyText?: (query: string) => React.ReactNode
   /** Key hints and the result count under the list. */
   hints?: boolean
@@ -271,9 +322,10 @@ export interface ScopedSearchProps
 }
 
 type Option =
-  | { kind: 'recent'; key: string; query: ScopedSearchQuery; text: string }
-  | { kind: 'scope'; key: string; scope: ScopedSearchScope }
-  | { kind: 'value'; key: string; scope: ScopedSearchScope; value: { value: string; label: string } }
+  | { kind: 'recent'; key: string; query: ScopedSearchQuery }
+  | { kind: 'key'; key: string; word: string; label: string }
+  | { kind: 'scope'; key: string; scope: ScopedSearchScope; count?: number; typed: boolean }
+  | { kind: 'value'; key: string; filter: ScopedSearchFilter; value: { value: string; label: string } }
   | { kind: 'result'; key: string; item: ScopedSearchItem }
 
 type Section = { key: string; heading: string; count?: number; options: Option[] }
@@ -281,15 +333,18 @@ type Section = { key: string; heading: string; count?: number; options: Option[]
 // The word being typed: the last one, unless a space already follows it.
 const currentWord = (text: string) => /(?:^|\s)(\S+)$/.exec(text)?.[1] ?? ''
 const replaceWord = (text: string, word: string) => (/\S$/.test(text) ? text.replace(/\S+$/, word) : text + word)
+const dropWord = (text: string) => text.replace(/\S+$/, '')
 
 export function ScopedSearch({
-  scopes,
+  scopes = [],
+  filters = [],
   groups,
   recent = [],
   value: valueProp,
   defaultValue,
   onValueChange,
   onSelect,
+  scopeKey = 'in',
   filter = true,
   loading = false,
   emptyText,
@@ -302,6 +357,7 @@ export function ScopedSearch({
   onKeyDown,
   onFocus,
   onClick,
+  placeholder,
   'aria-describedby': describedBy,
   ref: forwarded,
   ...props
@@ -310,7 +366,9 @@ export function ScopedSearch({
   const input = React.useRef<HTMLInputElement>(null)
   React.useImperativeHandle(forwarded, () => input.current as HTMLInputElement)
   const anchor = React.useRef<HTMLDivElement>(null)
+  const listRef = React.useRef<HTMLDivElement>(null)
   const listId = React.useId()
+  const options: ScopedSearchOptions = { scopes, filters, scopeKey }
 
   const [ownQuery, setOwnQuery] = React.useState<ScopedSearchQuery>(defaultValue ?? { tokens: [], text: '' })
   const query = valueProp ?? ownQuery
@@ -322,81 +380,104 @@ export function ScopedSearch({
   const [ownOpen, setOwnOpen] = React.useState(defaultOpen)
   const open = openProp ?? ownOpen
   const setOpen = (next: boolean) => {
+    if (!next) setChoosing(false)
     if (next === open) return
     if (openProp == null) setOwnOpen(next)
     onOpenChange?.(next)
   }
 
+  // The scope chip was pressed: the list shows the scopes until one is picked.
+  const [choosing, setChoosing] = React.useState(false)
   const [active, setActive] = React.useState(0)
   // The highlight shows the focus ring only when the arrows put it there (see menuItemClass).
   const [viaKeys, setViaKeys] = React.useState(false)
   const [message, setMessage] = React.useState('')
 
-  const scopeLabel = (key: string) => scopeOf(scopes, key)?.label ?? key
-  const valueLabel = (t: ScopedSearchToken) => valuesOf(scopeOf(scopes, t.key) ?? { key: t.key, label: t.key }).find((v) => v.value === t.value)?.label ?? t.value
-  const tokenName = (t: ScopedSearchToken) => labels.scopedSearchToken(scopeLabel(t.key), valueLabel(t))
+  const defaultScope = scopes[0]
+  const scope = scopes.find((s) => s.value === query.scope) ?? defaultScope
+  const narrowed = !!scope && scope !== defaultScope
+  const filterLabel = (key: string) => filterOf(filters, key)?.label ?? key
+  const valueLabel = (t: ScopedSearchToken) => valuesOf(filterOf(filters, t.key) ?? { key: t.key, label: t.key }).find((v) => v.value === t.value)?.label ?? t.value
+  const tokenName = (t: ScopedSearchToken) => labels.scopedSearchToken(filterLabel(t.key), valueLabel(t))
+  const filtered = (q: ScopedSearchQuery) => (filter ? filterScopedGroups(groups, q, options) : groups.filter((g) => g.items.length > 0))
+  const countIn = (s: ScopedSearchScope) => (filter ? totalOf(filterScopedGroups(groups, { ...query, scope: s.value }, options)) : undefined)
 
   /* What the list shows. */
   const idle = query.tokens.length === 0 && !query.text.trim()
   const word = currentWord(query.text)
   const colon = word.indexOf(':')
-  const typingScope = colon > 0 ? scopeOf(scopes, word.slice(0, colon)) : undefined
+  const typedKey = colon > 0 ? word.slice(0, colon) : ''
+  const typedValue = lower(unquote(word.slice(colon + 1)))
+  const typingScope = colon > 0 && scopes.length > 0 && lower(typedKey) === lower(scopeKey)
+  const typingFilter = colon > 0 ? filterOf(filters, typedKey) : undefined
+  const scopeOption = (s: ScopedSearchScope, typed: boolean, withCount: boolean): Option => ({ kind: 'scope', key: `scope:${s.value}`, scope: s, typed, count: withCount ? countIn(s) : undefined })
+  const keyOptions = (prefix: string): Option[] => [
+    ...(scopes.length && lower(scopeKey).startsWith(prefix) ? [{ kind: 'key' as const, key: `key:${scopeKey}`, word: `${scopeKey}:`, label: labels.scopedSearchScopes }] : []),
+    ...filters.filter((f) => lower(f.key).startsWith(prefix) || lower(f.label).startsWith(prefix)).map((f) => ({ kind: 'key' as const, key: `key:${f.key}`, word: `${f.key}:`, label: f.label })),
+  ]
 
   const sections: Section[] = []
   let results: ScopedSearchGroup[] = []
-  // Picking a value after `stage:`: the list is its values only, until one is picked or typed out.
+  // Picking a scope or a value: the list is those only, until one is picked or typed out.
   let picking = false
-  if (idle) {
+  if (choosing) {
+    picking = true
+    sections.push({ key: 'scopes', heading: labels.scopedSearchScopes, options: scopes.map((s) => scopeOption(s, false, !idle)) })
+  } else if (idle) {
     if (recent.length) {
-      sections.push({
-        key: 'recent',
-        heading: labels.scopedSearchRecent,
-        options: recent.map((r) => ({ kind: 'recent', key: `recent:${r}`, query: parseScopedQuery(r, scopes), text: r })),
-      })
+      sections.push({ key: 'recent', heading: labels.scopedSearchRecent, options: recent.map((r) => ({ kind: 'recent', key: `recent:${r}`, query: parseScopedQuery(r, options) })) })
     }
-    if (scopes.length) {
-      sections.push({ key: 'scopes', heading: labels.scopedSearchFilters, options: scopes.map((s) => ({ kind: 'scope', key: `scope:${s.key}`, scope: s })) })
-    }
+    const keys = keyOptions('')
+    if (keys.length) sections.push({ key: 'keys', heading: labels.scopedSearchFilters, options: keys })
   } else {
-    if (typingScope?.values) {
-      const typed = lower(word.slice(colon + 1).replace(/^"/, ''))
-      const values = valuesOf(typingScope).filter(
-        (v) => (!typed || lower(v.label).includes(typed) || lower(v.value).includes(typed)) && !query.tokens.some((t) => sameToken(t, { key: typingScope.key, value: v.value })),
+    if (typingScope) {
+      const matching = scopes.filter((s) => !typedValue || lower(s.value).startsWith(typedValue) || lower(s.label).includes(typedValue))
+      if (matching.length) {
+        picking = true
+        sections.push({ key: 'scopes', heading: labels.scopedSearchScopes, options: matching.map((s) => scopeOption(s, true, false)) })
+      }
+    } else if (typingFilter?.values) {
+      const values = valuesOf(typingFilter).filter(
+        (v) => (!typedValue || lower(v.label).includes(typedValue) || lower(v.value).includes(typedValue)) && !query.tokens.some((t) => sameToken(t, { key: typingFilter.key, value: v.value })),
       )
       if (values.length) {
         picking = true
-        sections.push({
-          key: `values:${typingScope.key}`,
-          heading: typingScope.label,
-          options: values.map((v) => ({ kind: 'value', key: `value:${v.value}`, scope: typingScope, value: v })),
-        })
+        sections.push({ key: `values:${typingFilter.key}`, heading: typingFilter.label, options: values.map((v) => ({ kind: 'value', key: `value:${v.value}`, filter: typingFilter, value: v })) })
       }
     } else if (word && colon < 0) {
-      const w = lower(word)
-      const matching = scopes.filter((s) => lower(s.key).startsWith(w) || lower(s.label).startsWith(w))
-      if (matching.length) sections.push({ key: 'scopes', heading: labels.scopedSearchFilters, options: matching.map((s) => ({ kind: 'scope', key: `scope:${s.key}`, scope: s })) })
+      const keys = keyOptions(lower(word))
+      if (keys.length) sections.push({ key: 'keys', heading: labels.scopedSearchFilters, options: keys })
     }
-    if (!picking) results = filter ? filterScopedGroups(groups, query, scopes) : groups.filter((g) => g.items.length > 0)
-    for (const g of results) {
-      sections.push({
-        key: `group:${g.id}`,
-        heading: g.label,
-        count: g.count ?? g.items.length,
-        options: g.items.map((item) => ({ kind: 'result', key: `item:${g.id}:${item.id}`, item })),
-      })
+    if (!picking) {
+      results = filtered(query)
+      for (const g of results) {
+        sections.push({
+          key: `group:${g.id}`,
+          heading: g.label,
+          count: g.count ?? g.items.length,
+          options: g.items.map((item) => ({ kind: 'result', key: `item:${g.id}:${item.id}`, item })),
+        })
+      }
+      // A narrow scope that finds nothing points at the scopes that do.
+      if (!results.length && narrowed && !loading) {
+        const elsewhere = scopes.filter((s) => s !== scope).map((s) => scopeOption(s, false, true)).filter((o) => o.kind === 'scope' && (o.count == null ? o.scope === defaultScope : o.count > 0))
+        if (elsewhere.length) sections.push({ key: 'elsewhere', heading: labels.scopedSearchScopes, options: elsewhere })
+      }
     }
   }
   const flat = sections.flatMap((s) => s.options)
-  const total = results.reduce((n, g) => n + (g.count ?? g.items.length), 0)
+  const total = totalOf(results)
   const shown = open && (sections.length > 0 || !idle)
   const current = flat.length ? Math.min(active, flat.length - 1) : -1
-  const queryString = formatScopedQuery(query)
+  const queryString = formatScopedQuery({ ...query, scope: undefined })
+  const searching = !idle && !picking
 
-  // A new query starts from its first row.
-  React.useEffect(() => setActive(0), [queryString])
+  // A new query, or the scope list opening, starts from its first row (the current scope there).
+  React.useEffect(() => {
+    setActive(choosing ? Math.max(0, scopes.indexOf(scope!)) : 0)
+  }, [queryString, query.scope, choosing])
   // Keep the highlighted row in view as the arrows move it: the list scrolls, never the page
   // (scrollIntoView would, and the list isn't placed yet on its first frame).
-  const listRef = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
     const list = listRef.current
     const row = list?.querySelector(`[id="${listId}-${current}"]`)
@@ -407,17 +488,21 @@ export function ScopedSearch({
     else if (r.bottom > l.bottom) list.scrollTop += r.bottom - l.bottom
   }, [current, viaKeys, listId])
   // The count is read out once typing settles, not on every key.
-  const searching = !idle && !picking
   const summary = shown && searching && !loading ? labels.scopedSearchResultCount(total) : ''
   React.useEffect(() => {
     if (!summary) return
     const timer = setTimeout(() => setMessage(summary), 600)
     return () => clearTimeout(timer)
-  }, [summary, queryString])
+  }, [summary, queryString, query.scope])
 
+  const pickScope = (next: ScopedSearchScope, text = query.text) => {
+    setChoosing(false)
+    setQuery({ ...query, scope: next.value, text })
+    if (next !== scope) setMessage(labels.scopedSearchScopeChanged(next.label))
+  }
   const addToken = (token: ScopedSearchToken, text: string) => {
     if (query.tokens.some((t) => sameToken(t, token))) return setQuery({ ...query, text })
-    setQuery({ tokens: [...query.tokens, token], text })
+    setQuery({ ...query, tokens: [...query.tokens, token], text })
     setMessage(labels.scopedSearchFilterAdded(tokenName(token)))
   }
   const removeToken = (index: number) => {
@@ -431,8 +516,9 @@ export function ScopedSearch({
   const run = (option: Option | undefined) => {
     if (!option) return
     if (option.kind === 'recent') setQuery(option.query)
-    else if (option.kind === 'scope') setQuery({ ...query, text: replaceWord(query.text, `${option.scope.key}:`) })
-    else if (option.kind === 'value') addToken({ key: option.scope.key, value: option.value.value }, query.text.replace(/\S+$/, ''))
+    else if (option.kind === 'key') setQuery({ ...query, text: replaceWord(query.text, option.word) })
+    else if (option.kind === 'scope') pickScope(option.scope, option.typed ? dropWord(query.text) : query.text)
+    else if (option.kind === 'value') addToken({ key: option.filter.key, value: option.value.value }, dropWord(query.text))
     else if (!option.item.disabled) {
       option.item.onSelect?.()
       onSelect?.(option.item, query)
@@ -441,10 +527,16 @@ export function ScopedSearch({
   }
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const parsed = parseScopedQuery(e.target.value, scopes, { partial: true })
+    const parsed = parseScopedQuery(e.target.value, options, { partial: true })
     const added = parsed.tokens.filter((t) => !query.tokens.some((q) => sameToken(q, t)))
-    setQuery({ tokens: [...query.tokens, ...added], text: parsed.text })
-    if (added.length) setMessage(added.map((t) => labels.scopedSearchFilterAdded(tokenName(t))).join('. '))
+    const typedScope = parsed.scope ? scopes.find((s) => s.value === parsed.scope) : undefined
+    setChoosing(false)
+    setQuery({ ...query, ...(typedScope ? { scope: typedScope.value } : {}), tokens: [...query.tokens, ...added], text: parsed.text })
+    const said = [
+      ...(typedScope && typedScope !== scope ? [labels.scopedSearchScopeChanged(typedScope.label)] : []),
+      ...added.map((t) => labels.scopedSearchFilterAdded(tokenName(t))),
+    ]
+    if (said.length) setMessage(said.join('. '))
     // Typing opens the list; Escape clearing a closed field doesn't.
     if (e.target.value) setOpen(true)
   }
@@ -461,10 +553,22 @@ export function ScopedSearch({
     } else if (e.key === 'Enter' && shown && current >= 0) {
       e.preventDefault()
       run(flat[current])
-    } else if (e.key === 'Backspace' && query.tokens.length && e.currentTarget.selectionStart === 0 && e.currentTarget.selectionEnd === 0) {
-      e.preventDefault()
-      removeToken(query.tokens.length - 1)
+    } else if (e.key === 'Backspace' && e.currentTarget.selectionStart === 0 && e.currentTarget.selectionEnd === 0) {
+      // The filter chips go first, then the scope, back to the default.
+      if (query.tokens.length) {
+        e.preventDefault()
+        removeToken(query.tokens.length - 1)
+      } else if (narrowed && defaultScope) {
+        e.preventDefault()
+        pickScope(defaultScope)
+      }
     }
+  }
+
+  const toggleScopes = () => {
+    setChoosing(!(choosing && shown))
+    setOpen(true)
+    input.current?.focus()
   }
 
   let index = -1
@@ -493,10 +597,13 @@ export function ScopedSearch({
       >
         {option.kind === 'recent' ? (
           <MenuItemContent
-            icon={<ClockGlyph />}
+            icon={<Clock />}
             layout="inline"
             label={
               <span className="flex items-center gap-1.5">
+                {option.query.scope && (
+                  <Badge size="sm">{scopes.find((s) => s.value === option.query.scope)?.label ?? option.query.scope}</Badge>
+                )}
                 {option.query.tokens.map((t) => (
                   <Badge key={`${t.key}:${t.value}`} size="sm" variant="outline">
                     {tokenName(t)}
@@ -506,10 +613,28 @@ export function ScopedSearch({
               </span>
             }
           />
+        ) : option.kind === 'key' ? (
+          <MenuItemContent icon={<Filter />} layout="inline" label={option.word} description={option.label} />
         ) : option.kind === 'scope' ? (
-          <MenuItemContent icon={<FilterGlyph />} layout="inline" label={`${option.scope.key}:`} description={option.scope.label} />
+          <>
+            <MenuItemContent icon={option.scope.icon} layout="inline" label={option.scope.label} description={option.scope.description} />
+            {option.count != null && (
+              <span className="ms-auto shrink-0 text-sm text-text-muted tabular-nums">
+                <span aria-hidden>{option.count}</span>
+                <span className="sr-only">{labels.scopedSearchResultCount(option.count)}</span>
+              </span>
+            )}
+            {option.scope === scope && (
+              <>
+                <span className="sr-only">({labels.selected})</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className={cn('shrink-0 text-status-green-fg', option.count == null && 'ms-auto')}>
+                  <path d="M3.33333 8.66667L6 11.3333L12.6667 4.66667" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </>
+            )}
+          </>
         ) : option.kind === 'value' ? (
-          <MenuItemContent icon={<FilterGlyph />} layout="inline" label={option.value.label} />
+          <MenuItemContent icon={<Filter />} layout="inline" label={option.value.label} />
         ) : (
           <>
             {option.item.media ? (
@@ -525,6 +650,8 @@ export function ScopedSearch({
     )
   }
 
+  const described = [scope ? labels.scopedSearchScope(scope.label) : '', ...query.tokens.map(tokenName)].filter(Boolean).join(', ')
+
   return (
     <PopoverPrimitive.Root open={shown} onOpenChange={setOpen}>
       <PopoverPrimitive.Anchor asChild>
@@ -532,13 +659,14 @@ export function ScopedSearch({
           <SearchBar
             ref={input}
             {...props}
+            placeholder={placeholder ?? scope?.placeholder}
             role="combobox"
             aria-expanded={shown}
             aria-controls={shown ? listId : undefined}
             aria-autocomplete="list"
             aria-activedescendant={shown && current >= 0 ? `${listId}-${current}` : undefined}
-            // The chips describe the query, so the filters are heard without leaving it.
-            aria-describedby={[describedBy, query.tokens.length ? `${listId}-filters` : ''].filter(Boolean).join(' ') || undefined}
+            // The scope and the chips describe the query, so they are heard without leaving it.
+            aria-describedby={[describedBy, described ? `${listId}-query` : ''].filter(Boolean).join(' ') || undefined}
             autoComplete="off"
             value={query.text}
             onChange={onInputChange}
@@ -549,17 +677,38 @@ export function ScopedSearch({
             }}
             onClick={(e) => {
               onClick?.(e)
+              setChoosing(false)
               setOpen(true)
             }}
             // Always set (an empty list too), so the query never moves and keeps focus as chips come and go.
-            leading={query.tokens.map((t, i) => (
-              <Chip key={`${t.key}:${t.value}`} size="sm" variant="outline" removeLabel={labels.removeItem(tokenName(t))} onRemove={() => removeToken(i)}>
-                {tokenName(t)}
-              </Chip>
-            ))}
+            leading={[
+              scope && (
+                <Chip
+                  key="scope"
+                  size="sm"
+                  aria-label={labels.scopedSearchScope(scope.label)}
+                  aria-haspopup="listbox"
+                  aria-expanded={choosing && shown}
+                  aria-controls={choosing && shown ? listId : undefined}
+                  // Focus stays in the query, which then lists the scopes.
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={toggleScopes}
+                  className="[&_[data-slot=chip-label]]:gap-1 [&_[data-slot=chip-label]]:pe-1.5"
+                >
+                  {scope.icon && <span className="grid size-3.5 place-items-center text-text-muted [&_svg]:size-3.5 [&_svg]:[stroke-width:1.875]">{scope.icon}</span>}
+                  {scope.label}
+                  <NavArrowDown aria-hidden className="size-3.5 text-text-muted [stroke-width:1.875]" />
+                </Chip>
+              ),
+              ...query.tokens.map((t, i) => (
+                <Chip key={`${t.key}:${t.value}`} size="sm" variant="outline" removeLabel={labels.removeItem(tokenName(t))} onRemove={() => removeToken(i)}>
+                  {tokenName(t)}
+                </Chip>
+              )),
+            ]}
           />
-          <span id={`${listId}-filters`} hidden>
-            {query.tokens.map(tokenName).join(', ')}
+          <span id={`${listId}-query`} hidden>
+            {described}
           </span>
           <span role="status" className="sr-only">
             {message}
@@ -595,6 +744,12 @@ export function ScopedSearch({
             'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
           )}
         >
+          {/* Nothing found says so first; a narrow scope then offers the scopes that hold results. */}
+          {searching && !loading && results.length === 0 && (
+            <p className={cn('px-3 text-center text-sm text-text-muted animate-[satin-fade-in_var(--duration-base)_var(--ease-out)]', sections.length ? 'pt-6 pb-2' : 'py-8')}>
+              {emptyText ? emptyText(queryString) : narrowed && scope ? labels.scopedSearchNoResultsIn(queryString, scope.label) : labels.noResultsFor(queryString)}
+            </p>
+          )}
           <div
             ref={listRef}
             id={listId}
@@ -626,18 +781,11 @@ export function ScopedSearch({
             })}
           </div>
 
-          {loading ? (
+          {loading && (
             <p className="flex items-center justify-center gap-2 px-3 py-6 text-sm text-text-muted">
               <Spinner size="sm" label={null} />
               {labels.scopedSearchSearching}
             </p>
-          ) : (
-            searching &&
-            results.length === 0 && (
-              <p className="px-3 py-8 text-center text-sm text-text-muted animate-[satin-fade-in_var(--duration-base)_var(--ease-out)]">
-                {(emptyText ?? labels.noResultsFor)(queryString)}
-              </p>
-            )
           )}
 
           {hints && (
@@ -645,7 +793,9 @@ export function ScopedSearch({
               <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
               <KbdHint keys={[<KbdReturn key="return" />]} label={labels.openItem} />
               {query.tokens.length > 0 && <KbdHint keys={['⌫']} label={labels.scopedSearchRemoveFilter} />}
-              {searching && !loading && <span className="ms-auto text-xs leading-4 tracking-normal whitespace-nowrap text-text-muted tabular-nums">{labels.scopedSearchResultCount(total)}</span>}
+              {searching && !loading && (
+                <span className="ms-auto text-xs leading-4 tracking-normal whitespace-nowrap text-text-muted tabular-nums">{labels.scopedSearchResultCount(total)}</span>
+              )}
             </div>
           )}
         </PopoverPrimitive.Content>

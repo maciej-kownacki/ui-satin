@@ -6968,8 +6968,16 @@
         {
           "name": "scopes",
           "type": "ScopedSearchScope[]",
-          "required": true,
-          "description": "What the query can be narrowed by, typed as `key:value`."
+          "required": false,
+          "default": "[]",
+          "description": "Where the search can look; the first is the default. Shown as a chip in the field. Without, it searches everything."
+        },
+        {
+          "name": "filters",
+          "type": "ScopedSearchFilter[]",
+          "required": false,
+          "default": "[]",
+          "description": "What narrows the search inside the scope, typed as `key:value`."
         },
         {
           "name": "groups",
@@ -6988,19 +6996,19 @@
           "name": "value",
           "type": "ScopedSearchQuery",
           "required": false,
-          "description": "The chips and the words, controlled."
+          "description": "The scope, the chips and the words, controlled."
         },
         {
           "name": "defaultValue",
           "type": "ScopedSearchQuery",
           "required": false,
-          "description": "The chips and the words to start with."
+          "description": "The scope, the chips and the words to start with."
         },
         {
           "name": "onValueChange",
           "type": "(query: ScopedSearchQuery) => void",
           "required": false,
-          "description": "Every change: a chip added or removed, a word typed."
+          "description": "Every change: a scope picked, a chip added or removed, a word typed."
         },
         {
           "name": "onSelect",
@@ -7009,11 +7017,18 @@
           "description": "A result picked (Enter or a click): the row, and the query that found it. The list closes."
         },
         {
+          "name": "scopeKey",
+          "type": "string",
+          "required": false,
+          "default": "'in'",
+          "description": "The word before a typed scope: `in` in `in:candidates`."
+        },
+        {
           "name": "filter",
           "type": "boolean",
           "required": false,
           "default": "true",
-          "description": "Filter `groups` here by the chips and the words. Off when your server does it: then they show as given."
+          "description": "Filter `groups` here by scope, chips and words. Off when your server does it: then they show as given."
         },
         {
           "name": "loading",
@@ -7026,7 +7041,7 @@
           "name": "emptyText",
           "type": "(query: string) => React.ReactNode",
           "required": false,
-          "description": "Shown when nothing matches; gets the query as a string. Defaults to the `noResultsFor` label."
+          "description": "Shown when nothing matches; gets the query as a string. Defaults to the `noResultsFor` label (`scopedSearchNoResultsIn` in a narrow scope)."
         },
         {
           "name": "hints",

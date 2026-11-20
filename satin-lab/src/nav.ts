@@ -296,7 +296,7 @@ export const nav: NavGroup[] = [
         id: 'search-scoped',
         title: 'Scoped search',
         href: '/components/search-scoped',
-        description: 'Search across candidates, jobs and notes with stage: and owner: chips typed into the query, recent searches and results grouped with counts.',
+        description: 'One search box over several kinds of record or places, with a scope chip (Everywhere, Candidates, This project) that says where it looks; use it instead of a Search bar when one list of hits would bury the one wanted.',
         edition: 'pro',
       },
       { id: 'segmented-control', title: 'Segmented control', href: '/components/segmented-control', description: 'Switches between two to five views or filters in place.' },
