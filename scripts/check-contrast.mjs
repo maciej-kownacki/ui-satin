@@ -88,7 +88,7 @@ const pairs = [
   ...FIELD_SURFACES.map((bg) => ['edge', 'action-destructive-bg', bg]),
   // Agent presence's edge (Satin Pro) in each tone, over the rows and cards it outlines.
   ...TONES.flatMap((tone) => ['bg-canvas', 'bg-card', 'bg-popover', 'bg-hover'].map((bg) => ['edge', `status-${tone}-fg`, bg])),
-  // Reviewable changes (Pro): the source preview inside a step, and Accept's green check on the card.
+  // Reviewable changes (Pro): the source preview inside a step, and the Accepted note's green check on the card.
   ['text', 'text-default', 'component-changes-review-source-bg'],
   ['text', 'text-muted', 'component-changes-review-source-bg'],
   ['focus', 'action-focus-ring', 'component-changes-review-source-bg'],

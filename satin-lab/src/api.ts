@@ -990,6 +990,23 @@ export const api: Record<string, Api> = {
       { name: 'AgentSuggestionChangeValue', type: ['{ from?, to }'] },
     ],
   },
+  'agent-changes-review': {
+    description:
+      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) is a DecisionCard that takes the `changes` AgentSuggestionChanges takes and shows one per step: the same card, header, "‹ 1/3 ›" navigator, footer and step slide. The header is `title` (the suggestion: "Update the Quanta deal") and `description`; without a `title`, each change\'s field is the title. The body is the field\'s name, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line); quote the line that justifies that change, short and specific to it, not a summary. The footer is DecisionCard\'s: Skip and Accept, in Skip and Continue\'s places. Accept accepts the change, Skip leaves it unapplied (`"rejected"`); either slides in the next change still pending, and deciding the last one finishes the review. Go back with the navigator to decide a change again; a decided one says "Accepted" or "Skipped" under it. `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `defaultStep` opens on another change. On finishing, `onApply(accepted, value)` gets the accepted changes only (it isn\'t called when none is); return a promise to hold the `applying` stage, and if it rejects, review starts again. Then the card fades out and rises 4px (`--duration-base`; at once under reduced motion) and `onApplied(accepted, value)` fires: remove it there, as you would after an `onDismiss`. If focus was inside, it goes to `returnFocus()` or, without one, to the page, and "2 changes applied" is read out from a live region on the body. `label` names a change for its buttons and the title when `field` isn\'t a string. For a new set of changes, give it a new `key`.',
+    props: [
+      { name: 'changes', type: ['{ id?, field, label?, from?, to, source? }[]'] },
+      { name: 'title', type: ['string'] },
+      { name: 'description', type: ['string'] },
+      { name: 'value', type: ['ReviewableChangesValue'] },
+      { name: 'defaultValue', type: ['ReviewableChangesValue'], default: '{}' },
+      { name: 'onValueChange', type: ['(value) => void'] },
+      { name: 'defaultStep', type: ['number'], default: '0' },
+      { name: 'onApply', type: ['(accepted, value) => unknown'] },
+      { name: 'onApplied', type: ['(accepted, value) => void'] },
+      { name: 'returnFocus', type: ['() => HTMLElement | null | undefined'] },
+      { name: 'status', type: ['"review"', '"applying"'] },
+    ],
+  },
   attachment: {
     description: 'The `Attachment` component is a wrapper around the `button` that shows a file name, type and size.',
     props: [

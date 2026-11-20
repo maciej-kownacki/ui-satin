@@ -16,49 +16,48 @@ import { cn } from '@uisatin/ui/lib/utils'
  *   "‹ 1/3 ›" to move between the changes. Without a `title`, each change's field is the title.
  * - Body: the field's name (under a `title`), the old value struck through, an arrow and the new
  *   one, then (with a `source`) where it comes from: a logo, "Transcription" and the line that
- *   justifies it. Under them, Dismiss (X) and Accept (a green check and "Accept").
- * - Footer, where DecisionCard has Skip and Continue: Accept all, and Apply, which counts what it
- *   will apply ("Apply 2 changes").
+ *   justifies it. A change already decided says so under it, quietly: "Accepted" or "Skipped".
+ * - Footer, DecisionCard's own: Skip and Accept, in Skip and Continue's places.
  *
- * Accept and Dismiss are toggles (`aria-pressed`). Deciding a change moves to the next one still
- * pending (it slides in as DecisionCard's next question does); once none is pending, focus goes
- * to Apply. Pressing a pressed one makes its change pending again, and stays. A dismissed change's
- * new value fades to text/muted (a Badge loses its colour). The navigator goes back to any change.
+ * Accept accepts the change and Skip leaves it unapplied; either moves on to the next change still
+ * pending (it slides in as DecisionCard's next question does), and focus stays on the button
+ * pressed. Deciding the last pending change finishes the review: the accepted changes are applied
+ * and the card leaves. The navigator goes back to any change, to decide it again.
  *
- * Apply calls `onApply` with the accepted changes only, in order. Return a promise and the
- * decisions lock and Apply shows a Spinner until it settles (`applying`); if it rejects, they
- * unlock for another try and the error is yours to show. Once applied, the card fades and rises
- * 4px over --duration-base, then `onApplied` fires and the app removes it, as with an
- * `onDismiss`; until then it stays faded out. Under reduced motion it goes at once. Focus, if it
- * was inside, goes to `returnFocus()`, or to the page's body when that gives nothing; "2 changes
- * applied" is read out from a live region on the body, so it's heard after the card is gone.
- * `status` holds the stage yourself.
+ * Finishing calls `onApply` with the accepted changes only, in order (not at all when none is).
+ * Return a promise and the buttons lock and the one pressed shows a Spinner until it settles
+ * (`applying`); if it rejects, they unlock for another try and the error is yours to show. Once
+ * applied, the card fades and rises 4px over --duration-base, then `onApplied` fires and the app
+ * removes it, as with an `onDismiss`; until then it stays faded out. Under reduced motion it goes
+ * at once. Focus, if it was inside, goes to `returnFocus()`, or to the page's body when that gives
+ * nothing; "2 changes applied" is read out from a live region on the body, so it's heard after the
+ * card is gone. `status` holds the stage yourself.
  *
- * The value is `{ [id]: 'pending' | 'accepted' | 'rejected' }`, by each change's `id` (or its
- * place, "0", "1", … when it has none); controlled with `value` and `onValueChange`, or not, with
- * `defaultValue`. For a new set of changes, give the component a new `key`. Other props, `ref`
- * included, go to the card's `div`.
+ * The value is `{ [id]: 'pending' | 'accepted' | 'rejected' }` (rejected: skipped), by each
+ * change's `id` (or its place, "0", "1", … when it has none); controlled with `value` and
+ * `onValueChange`, or not, with `defaultValue`. For a new set of changes, give the component a new
+ * `key`. Other props, `ref` included, go to the card's `div`.
  */
 
 /** The words field-level review says on its own. They join SatinLabels, so the app translates them there. */
 export const agentChangesReviewLabels = {
-  /** A change's Accept button: "Accept Stage change". `field` is the change's `label`, or its `field` when that's a string. */
+  /** Accept's name: "Accept Stage change". `field` is the change's `label`, or its `field` when that's a string. */
   acceptFieldChange: (field: string) => `Accept ${field} change`,
-  /** The visible text on Accept; its name stays `acceptFieldChange`'s. */
+  /** Accept's visible text; its name stays `acceptFieldChange`'s. */
   acceptFieldChangeText: 'Accept',
-  /** A change's Dismiss (X) button: "Dismiss Stage change". */
-  rejectFieldChange: (field: string) => `Dismiss ${field} change`,
+  /** Skip's name: "Skip Stage change". Its visible text is `skip`. */
+  skipFieldChange: (field: string) => `Skip ${field} change`,
   /** The step navigator's buttons. */
   previousFieldChange: 'Previous change',
   nextFieldChange: 'Next change',
-  /** The Apply button: "Apply 2 changes". `count` picks the plural; `number` is it, formatted. */
-  applyFieldChanges: (count: number, number: string) => (count === 0 ? 'Apply changes' : count === 1 ? 'Apply 1 change' : `Apply ${number} changes`),
-  /** Read out while Apply runs. */
+  /** Under a change already decided. */
+  fieldChangeAccepted: 'Accepted',
+  fieldChangeSkipped: 'Skipped',
+  /** Read out while the accepted changes are applied. */
   applyingFieldChanges: 'Applying changes…',
-  /** Read out as the card leaves once they're applied: "2 changes applied". */
-  fieldChangesApplied: (count: number, number: string) => (count === 1 ? '1 change applied' : `${number} changes applied`),
-  /** Read out after Accept all. */
-  allFieldChangesAccepted: 'All changes accepted',
+  /** Read out as the card leaves: "2 changes applied". `count` picks the plural; `number` is it, formatted. */
+  fieldChangesApplied: (count: number, number: string) =>
+    count === 0 ? 'No changes applied' : count === 1 ? '1 change applied' : `${number} changes applied`,
 }
 
 type AgentChangesReviewLabels = typeof agentChangesReviewLabels
@@ -113,13 +112,14 @@ export interface ReviewableChangesProps extends Omit<React.ComponentProps<'div'>
   /** The change to open on, by its place in `changes`. Defaults to the first. */
   defaultStep?: number
   /**
-   * Apply: gets the accepted changes only, in their order, and every decision. Return a promise to
-   * hold the `applying` stage until it settles; if it rejects, review starts again.
+   * The review is done: gets the accepted changes only, in their order, and every decision. Not
+   * called when none is accepted. Return a promise to hold the `applying` stage until it settles;
+   * if it rejects, review starts again.
    */
   onApply?: (accepted: ReviewableChange[], value: ReviewableChangesValue) => unknown
   /**
-   * Called once the accepted changes are applied and the card has left: remove it here (it stays
-   * faded out until you do). Gets what `onApply` got.
+   * Called once the accepted changes are applied (or none was) and the card has left: remove it
+   * here (it stays faded out until you do). Gets what `onApply` got.
    */
   onApplied?: (accepted: ReviewableChange[], value: ReviewableChangesValue) => void
   /**
@@ -197,12 +197,12 @@ export function ReviewableChanges({
   const status: ReviewableChangesStatus = statusProp ?? (phase === 'closing' ? 'applying' : phase)
   const [message, setMessage] = React.useState('')
   const [step, setStep] = React.useState(defaultStep)
-  // Where focus goes once the next render is on screen: the new step's Accept, or Apply.
-  const focusNext = React.useRef<'accept' | 'apply' | null>(null)
+  // The button pressed: focus goes back to it once the next step is on screen, and it spins while applying.
+  const [pressed, setPressed] = React.useState<'accept' | 'reject'>('accept')
+  const focusNext = React.useRef(false)
   const fieldId = React.useId()
 
   const keys = changes.map((c, i) => c.id ?? String(i))
-  const accepted = changes.filter((_, i) => value[keys[i]] === 'accepted')
   const at = Math.min(Math.max(step, 0), changes.length - 1)
   const change = changes[at]
   const key = keys[at]
@@ -212,8 +212,8 @@ export function ReviewableChanges({
   const number = (n: number) => new Intl.NumberFormat(labels.dateLocale).format(n)
 
   // The latest of everything, for callbacks that outlive a render.
-  const latest = React.useRef({ accepted, value, onApplied, returnFocus, labels })
-  latest.current = { accepted, value, onApplied, returnFocus, labels }
+  const latest = React.useRef({ onApplied, returnFocus, labels })
+  latest.current = { onApplied, returnFocus, labels }
 
   React.useEffect(() => {
     alive.current = true
@@ -222,15 +222,11 @@ export function ReviewableChanges({
     }
   }, [])
 
+  // The buttons are new on each step, so focus on them reads their new names.
   React.useEffect(() => {
-    const target = focusNext.current
-    focusNext.current = null
-    const root = rootRef.current
-    if (!target || !root) return
-    const el = root.querySelector<HTMLElement>(
-      target === 'accept' ? '[data-decision="accept"]' : '[data-slot="reviewable-changes-apply"]:not(:disabled)',
-    )
-    el?.focus()
+    if (!focusNext.current) return
+    focusNext.current = false
+    rootRef.current?.querySelector<HTMLElement>(`[data-decision="${pressed}"]`)?.focus()
   })
 
   // Read out each stage as it starts, whether onApply or `status` moved it.
@@ -246,23 +242,16 @@ export function ReviewableChanges({
     onValueChange?.(next)
   }
 
-  const decide = (next: ReviewDecision) => {
+  const decide = (next: 'accepted' | 'rejected') => {
     if (locked) return
     const all = { ...value, [key]: next }
     setValue(all)
-    // Pressing a pressed toggle makes the change pending again, and stays.
-    if (next === 'pending') return
-    // On to the next change still pending, wrapping round; with none left, to Apply.
+    setPressed(next === 'accepted' ? 'accept' : 'reject')
+    // On to the next change still pending, wrapping round; with none left, the review is done.
     const pending = [...keys.slice(at + 1), ...keys.slice(0, at)].find((k) => (all[k] ?? 'pending') === 'pending')
-    if (pending) setStep(keys.indexOf(pending))
-    focusNext.current = pending ? 'accept' : 'apply'
-  }
-
-  const acceptAll = () => {
-    if (locked) return
-    setValue(Object.fromEntries(keys.map((k) => [k, 'accepted' as const])))
-    setMessage(labels.allFieldChangesAccepted)
-    focusNext.current = 'apply'
+    if (!pending) return void finish(changes.filter((_, i) => all[keys[i]] === 'accepted'), all)
+    setStep(keys.indexOf(pending))
+    focusNext.current = true
   }
 
   // Applied: focus moves on, "2 changes applied" goes to the body's live region, the card fades
@@ -274,7 +263,7 @@ export function ReviewableChanges({
     announce(words.fieldChangesApplied(picked.length, number(picked.length)))
     if (!target) return
     let done = false
-    const finish = () => {
+    const leave = () => {
       if (done || !alive.current) return
       done = true
       if (target.contains(document.activeElement)) {
@@ -286,21 +275,20 @@ export function ReviewableChanges({
       latest.current.onApplied?.(picked, decisions)
     }
     target.classList.add('satin-changes-review-exit')
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return finish()
-    const timer = setTimeout(finish, EXIT_MS)
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return leave()
+    const timer = setTimeout(leave, EXIT_MS)
     target.addEventListener('transitionend', function onEnd(e) {
       if (e.target !== target || e.propertyName !== 'opacity') return
       target.removeEventListener('transitionend', onEnd)
       clearTimeout(timer)
-      finish()
+      leave()
     })
   }
 
-  const apply = async () => {
-    const { accepted: picked, value: decisions } = latest.current
-    if (locked || busy.current || picked.length === 0) return
+  const finish = async (picked: ReviewableChange[], decisions: ReviewableChangesValue) => {
+    if (busy.current) return
     busy.current = true
-    const result = onApply?.(picked, decisions)
+    const result = picked.length ? onApply?.(picked, decisions) : undefined
     if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
       setPhase('applying')
       // The promise is the app's own, so it sees the error there; here the decisions only unlock.
@@ -339,16 +327,27 @@ export function ReviewableChanges({
       {...props}
       footer={
         <>
-          <Button variant="tertiary" data-slot="reviewable-changes-accept-all" className="text-text-muted" disabled={locked} onClick={acceptAll}>
-            {labels.acceptAll}
+          <Button
+            key={`skip-${key}`}
+            variant="tertiary"
+            data-decision="reject"
+            aria-label={labels.skipFieldChange(name)}
+            className="text-text-muted"
+            disabled={locked && !(status === 'applying' && pressed === 'reject')}
+            loading={status === 'applying' && pressed === 'reject'}
+            onClick={() => decide('rejected')}
+          >
+            {labels.skip}
           </Button>
           <Button
-            data-slot="reviewable-changes-apply"
-            loading={status === 'applying'}
-            disabled={status === 'review' && accepted.length === 0}
-            onClick={() => void apply()}
+            key={`accept-${key}`}
+            data-decision="accept"
+            aria-label={labels.acceptFieldChange(name)}
+            disabled={locked && !(status === 'applying' && pressed === 'accept')}
+            loading={status === 'applying' && pressed === 'accept'}
+            onClick={() => decide('accepted')}
           >
-            {labels.applyFieldChanges(accepted.length, number(accepted.length))}
+            {labels.acceptFieldChangeText}
           </Button>
           <span role="status" className="sr-only">
             {message}
@@ -373,34 +372,18 @@ export function ReviewableChanges({
           )}
           <AgentSuggestionChangeValue from={change.from} to={change.to} className="flex-wrap gap-y-1" />
           {change.source && <SourcePreview source={change.source} />}
-          <div className="flex items-center justify-end gap-1">
-            <Button
-              variant="secondary"
-              size="xs"
-              iconOnly
-              data-decision="reject"
-              aria-pressed={decision === 'rejected'}
-              aria-label={labels.rejectFieldChange(name)}
-              disabled={locked}
-              className="satin-changes-review-toggle"
-              onClick={() => decide(decision === 'rejected' ? 'pending' : 'rejected')}
-            >
-              <XGlyph />
-            </Button>
-            <Button
-              variant="secondary"
-              size="xs"
-              data-decision="accept"
-              aria-pressed={decision === 'accepted'}
-              aria-label={labels.acceptFieldChange(name)}
-              disabled={locked}
-              className="satin-changes-review-toggle"
-              onClick={() => decide(decision === 'accepted' ? 'pending' : 'accepted')}
-            >
-              <CheckGlyph />
-              {labels.acceptFieldChangeText}
-            </Button>
-          </div>
+          {decision !== 'pending' && (
+            <span data-slot="reviewable-change-decision" className="flex items-center gap-1.5 text-sm text-text-muted">
+              {decision === 'accepted' ? (
+                <span className="flex text-status-green-fg">
+                  <CheckGlyph />
+                </span>
+              ) : (
+                <XGlyph />
+              )}
+              {decision === 'accepted' ? labels.fieldChangeAccepted : labels.fieldChangeSkipped}
+            </span>
+          )}
         </div>
       )}
     </DecisionCard>

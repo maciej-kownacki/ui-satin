@@ -355,13 +355,13 @@
           "name": "onApply",
           "type": "(accepted: ReviewableChange[], value: ReviewableChangesValue) => unknown",
           "required": false,
-          "description": "Apply: gets the accepted changes only, in their order, and every decision. Return a promise to hold the `applying` stage until it settles; if it rejects, review starts again."
+          "description": "The review is done: gets the accepted changes only, in their order, and every decision. Not called when none is accepted. Return a promise to hold the `applying` stage until it settles; if it rejects, review starts again."
         },
         {
           "name": "onApplied",
           "type": "(accepted: ReviewableChange[], value: ReviewableChangesValue) => void",
           "required": false,
-          "description": "Called once the accepted changes are applied and the card has left: remove it here (it stays faded out until you do). Gets what `onApply` got."
+          "description": "Called once the accepted changes are applied (or none was) and the card has left: remove it here (it stays faded out until you do). Gets what `onApply` got."
         },
         {
           "name": "returnFocus",

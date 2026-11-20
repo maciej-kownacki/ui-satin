@@ -761,8 +761,7 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/checkbox.json",
-        "https://uisatin.dev/r/labels.json",
-        "https://uisatin.dev/r/sliding-indicator.json"
+        "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Decision card docs: https://uisatin.dev/ai-patterns/decision-card",
       "meta": {
