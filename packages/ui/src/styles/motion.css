@@ -161,15 +161,25 @@
   padding: 2px;
   margin: -2px;
   pointer-events: none;
-  opacity: 0.92;
-  transition: opacity var(--duration-base) var(--ease-out);
 }
 .satin-expand > * > * {
   pointer-events: auto;
 }
-.satin-expand[data-state='open'] > * {
-  opacity: 1;
-  transition-duration: var(--duration-slow);
+/* The fade sits on the content, whose size never changes, not on the clip that grows: a layer
+   that changes size every frame is rastered again every frame, and on the GPU its icons and
+   text smeared while it moved. In the base layer, so a component's own fade utilities win, and
+   scoped to Satin's elements, as base rules are. */
+@layer base {
+  :where([data-slot]) .satin-expand > * > *,
+  .satin-expand[data-slot] > * > * {
+    opacity: 0.92;
+    transition: opacity var(--duration-base) var(--ease-out);
+  }
+  :where([data-slot]) .satin-expand[data-state='open'] > * > *,
+  .satin-expand[data-slot][data-state='open'] > * > * {
+    opacity: 1;
+    transition-duration: var(--duration-slow);
+  }
 }
 
 /* Progress (components/progress.tsx) without a value: a third of the track slides across,
