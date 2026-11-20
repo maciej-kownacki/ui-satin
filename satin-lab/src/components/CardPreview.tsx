@@ -13,27 +13,71 @@ const STAGE_WIDTH = 640
 /** What a demo can open that Radix closes on a scroll, a click or Escape elsewhere on the page. */
 const OVERLAYS = '[data-radix-popper-content-wrapper], [role=dialog], [role=alertdialog], [role=menu], [role=tooltip], [data-slot=hover-card]'
 
-/** Everything in `root` that paints (text, fills, edges, shadows, images), as one box on screen. */
+/**
+ * Everything in `root` that paints (text, fills, edges, shadows, images), as one box on screen.
+ * A list that scrolls counts as tall as it shows, not as all its rows (how many have loaded by
+ * the time it is measured would change the fit).
+ */
 function drawnBox(root: Element) {
   let [l, t, r, b] = [Infinity, Infinity, -Infinity, -Infinity]
-  for (const el of root.querySelectorAll('*')) {
-    const cs = getComputedStyle(el)
-    if (cs.visibility === 'hidden' || cs.display === 'none') continue
-    const paints =
-      !/rgba\(0, 0, 0, 0\)|transparent/.test(cs.backgroundColor) ||
-      parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth) > 0 ||
-      cs.boxShadow !== 'none' ||
-      /^(svg|img|canvas|video|input|textarea)$/i.test(el.tagName) ||
-      [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim())
-    if (!paints) continue
-    const q = el.getBoundingClientRect()
-    if (q.width < 1 || q.height < 1) continue
-    l = Math.min(l, q.left)
-    t = Math.min(t, q.top)
-    r = Math.max(r, q.right)
-    b = Math.max(b, q.bottom)
+  const walk = (parent: Element, top: number, bottom: number) => {
+    for (const el of parent.children) {
+      const cs = getComputedStyle(el)
+      if (cs.display === 'none') continue
+      const q = el.getBoundingClientRect()
+      const paints =
+        cs.visibility !== 'hidden' &&
+        (!/rgba\(0, 0, 0, 0\)|transparent/.test(cs.backgroundColor) ||
+          parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth) > 0 ||
+          cs.boxShadow !== 'none' ||
+          /^(svg|img|canvas|video|input|textarea)$/i.test(el.tagName) ||
+          [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim()) ||
+          // Room kept for content still to come (text that streams in), so the fit doesn't change as it fills.
+          parseFloat(cs.minHeight) > 0)
+      const qt = Math.max(top, q.top)
+      const qb = Math.min(bottom, q.bottom)
+      if (paints && q.width >= 1 && qb - qt >= 1) {
+        l = Math.min(l, q.left)
+        t = Math.min(t, qt)
+        r = Math.max(r, q.right)
+        b = Math.max(b, qb)
+      }
+      const scrolls = /auto|scroll/.test(cs.overflowY)
+      walk(el, scrolls ? Math.max(top, q.top) : top, scrolls ? Math.min(bottom, q.bottom) : bottom)
+    }
   }
+  walk(root, -Infinity, Infinity)
   return isFinite(l) ? { l, t, r, b } : null
+}
+
+/** Animations that end (a menu or dialog opening, a sheet sliding in), not loops like a spinner. */
+function endingAnimations(root: Element) {
+  return root.getAnimations({ subtree: true }).filter((a) => {
+    const n = a.effect?.getComputedTiming().iterations
+    return n !== undefined && Number.isFinite(n) && a.playState === 'running'
+  })
+}
+
+type Box = { x: number; y: number; w: number; h: number }
+
+/**
+ * Where the demo goes in a frame of this size: what it draws fits inside the card with room
+ * around it. A demo taller than the card (a whole form, a combobox with its list) shows from the
+ * top; a very tall one fits its width instead of its height. Never scaled up. Whole device
+ * pixels, so its edges and text stay crisp and don't shimmer as the page scrolls.
+ */
+function fitIn(box: Box, FW: number, FH: number) {
+  const byWidth = Math.min(1, (FW - 40) / box.w)
+  const whole = Math.min(byWidth, (FH - 32) / box.h)
+  const tall = whole < 0.5
+  const k = +(tall ? byWidth : whole).toFixed(3)
+  const fromTop = tall || box.h * k > FH - 32
+  const px = (n: number) => Math.round(n * devicePixelRatio) / devicePixelRatio
+  return {
+    scale: k,
+    x: px(FW / 2 - (box.x + box.w / 2) * k),
+    y: px(fromTop ? 20 - box.y * k : FH / 2 - (box.y + box.h / 2) * k),
+  }
 }
 
 /**
@@ -44,9 +88,13 @@ function drawnBox(root: Element) {
  *
  * The demo first mounts in an invisible holder pinned near the window's top-left corner, where
  * its menus and tooltips have the whole window to open into and nothing that scrolls closes
- * them. Once it has settled, the holder moves into the card and the demo carries on there,
- * live; a demo that opened a menu, tooltip or dialog is copied into the card instead (still
- * real elements), since Radix would close those on the next scroll, click or Escape.
+ * them. It stays there until it has settled: its menus placed, its opening animations done and
+ * what it draws the same size for a few frames. Only then is it measured, once, and placed in
+ * the card at its final scale and position, so it appears where it stays and never moves or
+ * rescales after (a later fit only follows the card itself changing size). In the card the
+ * demo carries on, live; one that opened a menu, tooltip or dialog is copied into the card
+ * instead (still real elements), since Radix would close those on the next scroll, click or
+ * Escape. Either way, opening animations that would play again in the card are finished at once.
  *
  * In the card, the frame crops with clip-path (an overflow would make Radix squeeze menus
  * inside it), and one layer moves and scales the demo with a transform; that layer is also the
@@ -58,9 +106,9 @@ export function CardPreview({ id }: { id: string }) {
   const layer = React.useRef<HTMLDivElement>(null)
   const [holder] = React.useState(() => (typeof document === 'undefined' ? null : document.createElement('div')))
   const [phase, setPhase] = React.useState<'staging' | 'live' | 'copied'>('staging')
+  // What the demo draws, in the layer's own (unscaled) pixels, measured once when it has settled.
+  const [box, setBox] = React.useState<Box | null>(null)
   const [view, setView] = React.useState({ scale: 0, x: 0, y: 0 })
-  const current = React.useRef(view)
-  current.current = view
   // The skeleton shows until the demo is placed, then fades out and goes (its band would keep
   // running under an invisible layer otherwise).
   const [skeleton, setSkeleton] = React.useState(true)
@@ -78,8 +126,8 @@ export function CardPreview({ id }: { id: string }) {
     }
   }, [id])
 
-  // Staging: the holder sits invisible at the window's corner while the demo mounts and places
-  // its menus; a few frames later it goes into the card, as itself or as a copy.
+  // Staging: the holder sits invisible at the window's corner while the demo mounts, places its
+  // menus and finishes opening; then it is measured and goes into the card, as itself or as a copy.
   React.useLayoutEffect(() => {
     if (!holder || !Demo) return
     // 200px in from the corner, so a tooltip has room above; a transform makes the holder the
@@ -89,15 +137,32 @@ export function CardPreview({ id }: { id: string }) {
     holder.setAttribute('aria-hidden', 'true')
     holder.className = 'flex justify-center'
     document.body.appendChild(holder)
+    const start = performance.now()
     let raf = 0
     let frames = 0
+    let last = ''
+    let same = 0
     const settle = () => {
       raf = requestAnimationFrame(() => {
+        frames++
         // Radix parks a popper at -200% until Floating UI has placed it.
         const unplaced = [...holder.querySelectorAll<HTMLElement>('[data-radix-popper-content-wrapper]')].some((w) => w.style.transform.includes('-200%'))
-        if (frames++ < 4 || (unplaced && frames < 40)) return settle()
+        const opening = endingAnimations(holder).length > 0
+        const h = holder.getBoundingClientRect()
+        const d = drawnBox(holder)
+        const key = d ? [d.l - h.left, d.t - h.top, d.r - h.left, d.b - h.top].map((n) => n.toFixed(1)).join() : ''
+        same = key === last ? same + 1 : 0
+        last = key
+        // What it draws the same for six frames; a loop (a spinner turning) never is, so 40 frames do.
+        const settled = frames >= 4 && !unplaced && !opening && d && (same >= 6 || frames >= 40)
+        // Two seconds at most, whatever happens.
+        if (!settled && performance.now() - start < 2000) return settle()
         const target = layer.current
-        if (!target) return
+        const f = frame.current
+        if (!target || !f || !d) return
+        const measured = { x: d.l - h.left, y: d.t - h.top, w: d.r - d.l, h: d.b - d.t }
+        setBox(measured)
+        setView(fitIn(measured, f.clientWidth, f.clientHeight))
         if (holder.querySelector(OVERLAYS)) {
           target.replaceChildren(...[...holder.childNodes].map((n) => n.cloneNode(true)))
           setPhase('copied')
@@ -109,6 +174,8 @@ export function CardPreview({ id }: { id: string }) {
           target.appendChild(holder)
           setPhase('live')
         }
+        // Moved or copied, an element plays its opening animation again; show it as it ended instead.
+        for (const a of endingAnimations(target)) a.finish()
       })
     }
     settle()
@@ -121,49 +188,18 @@ export function CardPreview({ id }: { id: string }) {
   }, [phase, holder])
   React.useEffect(() => () => holder?.remove(), [holder])
 
-  // Fit what the demo draws inside the card, with room around it. A demo taller than the card
-  // (a whole form, a combobox with its list) shows from the top; a very tall one fits its width
-  // instead of its height. Never scaled up.
-  React.useLayoutEffect(() => {
+  // The card itself can change size (the window resizing, the grid's columns changing); fit the
+  // same measured box to it again. The demo's own changes after it was placed never move it.
+  React.useEffect(() => {
     const f = frame.current
-    const s = layer.current
-    if (!f || !s || phase === 'staging') return
-    const fit = () => {
-      const box = drawnBox(s)
-      if (!box) return
-      const v = current.current
-      const k0 = v.scale || 1
-      const lr = s.getBoundingClientRect()
-      // The drawn box in the layer's own (unscaled) pixels.
-      const bx = (box.l - lr.left) / k0
-      const by = (box.t - lr.top) / k0
-      const bw = (box.r - box.l) / k0
-      const bh = (box.b - box.t) / k0
-      const FW = f.clientWidth
-      const FH = f.clientHeight
-      const byWidth = Math.min(1, (FW - 40) / bw)
-      const whole = Math.min(byWidth, (FH - 32) / bh)
-      const tall = whole < 0.5
-      const k = +(tall ? byWidth : whole).toFixed(3)
-      const fromTop = tall || bh * k > FH - 32
-      const x = FW / 2 - (bx + bw / 2) * k
-      const y = fromTop ? 20 - by * k : FH / 2 - (by + bh / 2) * k
-      if (Math.abs(v.scale - k) < 0.002 && Math.abs(v.x - x) < 0.5 && Math.abs(v.y - y) < 0.5) return
-      current.current = { scale: k, x, y }
-      setView({ scale: k, x, y })
-    }
-    fit()
-    const ro = new ResizeObserver(fit)
+    if (!f || !box) return
+    const ro = new ResizeObserver(() => {
+      const next = fitIn(box, f.clientWidth, f.clientHeight)
+      setView((v) => (v.scale === next.scale && v.x === next.x && v.y === next.y ? v : next))
+    })
     ro.observe(f)
-    ro.observe(s)
-    // Some live demos settle later (a stack measuring its cards, a chart its data, text that
-    // streams in).
-    const late = [150, 400, 900, 1600, 2500, 4000].map((ms) => window.setTimeout(fit, ms))
-    return () => {
-      ro.disconnect()
-      late.forEach(window.clearTimeout)
-    }
-  }, [phase])
+    return () => ro.disconnect()
+  }, [box])
 
   return (
     <div ref={frame} inert aria-hidden className="absolute inset-0 [clip-path:inset(0)]">
