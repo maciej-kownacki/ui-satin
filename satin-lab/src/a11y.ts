@@ -504,14 +504,6 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A `section`, labelled by `title` when there is one, so it is a region landmark. In `AgentSuggestionDiff` the old text is a `del` and the new an `ins`, read as "Remove:" and "Add:". `AgentSuggestionChanges` is a description list with the arrows hidden, and `AgentSuggestionMetric`’s bar is a Progress named by `unit`. The actions are your own buttons; name them by what they do ("Send email").',
   },
-  'agent-changes-review': {
-    summary:
-      'A DecisionCard: a `role="group"` labelled by the title, with the step count ("2/3") a polite live region and the step buttons named "Previous change" and "Next change" (`previousFieldChange`, `nextFieldChange`). Under a `title`, the change is its own `role="group"` named by its field. Skip and Accept are named after the change ("Skip Stage change", "Accept Stage change", `skipFieldChange` and `acceptFieldChange` in SatinLabels; their visible text "Skip" and "Accept" starts the names; a change whose `field` isn\'t a string needs a `label`). Both are new buttons on each step and focus stays on the one pressed, so the next change\'s name is read. A decided change says so in text ("Accepted", "Skipped"), never colour alone; a skipped value turns text/muted, a Badge grey, so its text keeps its contrast. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. "Applying changes…" is read out from a polite `status` region; while applying, the button pressed is `aria-busy` (it keeps focus) and the other is disabled. Once applied, the card leaves: focus goes to `returnFocus()`, or to the page\'s body when the app gives none, the card turns `inert`, and "2 changes applied" is read out from a polite `status` region on the body, which outlives it. Under reduced motion the step just changes, with no slide or rolling count, and the card goes at once.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the step buttons, then Skip and Accept.' },
-      { keys: ['Enter', 'Space'], action: 'On Accept or Skip: decides the change and moves to the next pending one; on the last, finishes the review. On a step button: shows the previous or next change.' },
-    ],
-  },
   'decision-card': {
     summary:
       'A `role="group"` labelled by the title. The answers follow `type`: `radio` is a Radix radio group, `checkbox` a list of Checkboxes, `chips` buttons with `aria-pressed`, `ranking` an ordered list of focusable rows announced as "sortable item" with the hint "Alt and arrow keys to move", and `draft` the text that Rewrite (`aria-pressed`) turns into a textarea named "Draft". After a move, a polite live region reads the row’s new place ("Budget, position 2 of 4"). The step buttons are named "Previous question" and "Next question" (or `previousStepLabel` and `nextStepLabel`) and the step count is a polite live region; its rolling digits are hidden from screen readers, which read the plain count. The step that leaves is `inert` and `aria-hidden` while it slides out, and under reduced motion steps change without moving. In `summary`, Change is named "Change <title>".',
@@ -778,14 +770,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the open tooltip; in AvailabilityDatePicker, a second Esc closes the calendar and returns focus to the field.' },
     ],
   },
-  'agent-changes-review': {
-    summary:
-      'A DecisionCard: a `role="group"` labelled by the title, with the step count ("2/3") a polite live region and the step buttons named "Previous change" and "Next change" (`previousFieldChange`, `nextFieldChange`). Under a `title`, the change is its own `role="group"` named by its field. Dismiss and Accept are toggle buttons with `aria-pressed`, named after the change ("Dismiss Stage change", "Accept Stage change", `rejectFieldChange` and `acceptFieldChange` in SatinLabels; Accept\'s visible text "Accept" starts its name; a change whose `field` isn\'t a string needs a `label`). Deciding a change moves focus to the next pending change\'s Accept, a new button, so its name is read; with none pending, focus goes to Apply. A decision is `aria-pressed` and the pressed fill, never colour alone; a dismissed value turns text/muted, a Badge grey, so its text keeps its contrast. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all and "Applying changes…" are read out from a polite `status` region. While applying, Apply is `aria-busy` (it keeps focus) and the decisions are disabled. Once applied, the card leaves: focus goes to `returnFocus()`, or to the page\'s body when the app gives none, the card turns `inert`, and "2 changes applied" is read out from a polite `status` region on the body, which outlives it. Under reduced motion the steps cross-fade (DecisionCard\'s 150 ms, no movement) and the card goes at once.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the step buttons, the change\'s Dismiss and Accept, then Accept all and Apply.' },
-      { keys: ['Enter', 'Space'], action: 'On Accept or Dismiss: decides the change and moves to the next pending one, or makes it pending again when pressed. On a step button: shows the previous or next change.' },
-    ],
-  },
   scheduler: {
     summary:
       'Day and Week are a `grid` named after the period and the time zone ("November 15 – 21, 2026, Central European Standard Time"): a column header per day (today with `aria-current="date"`), a row header per slot, and a `gridcell` per slot named with its day and time, "busy" or "free", and the events in it; picked slots are `aria-selected`. The time column\'s header gives the zone\'s long name. Month is a `grid` of day cells named with the date and how many events. Events are `button`s named with their title and full time, described by their attendees and how to move them; they sit in their slot, reached from the grid with Enter. Moves, resizes, picks and period changes are read out from a polite `status` region. Dragging works from the keyboard too (Alt and the arrows), so no move needs a pointer.',
@@ -802,6 +786,14 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Alt+Shift+↑', 'Alt+Shift+↓'], action: 'Event: ends it a slot earlier or later, never shorter than one slot.' },
       { keys: ['↑', '↓'], action: 'Event: the previous or next event that day (Month: and "3 more").' },
       { keys: ['Esc'], action: 'Event: back to its slot in the grid. Grid: clears the pick. While dragging: puts the event back.' },
+    ],
+  },
+  'agent-changes-review': {
+    summary:
+      'A DecisionCard: a `role="group"` labelled by the title, with the step count ("2/3") a polite live region and the step buttons named "Previous change" and "Next change" (`previousFieldChange`, `nextFieldChange`). Under a `title`, the change is its own `role="group"` named by its field. Skip and Accept are named after the change ("Skip Stage change", "Accept Stage change", `skipFieldChange` and `acceptFieldChange` in SatinLabels; their visible text "Skip" and "Accept" starts the names; a change whose `field` isn\'t a string needs a `label`). Both are new buttons on each step and focus stays on the one pressed, so the next change\'s name is read. A decided change says so in text ("Accepted", "Skipped"), never colour alone; a skipped value turns text/muted, a Badge grey, so its text keeps its contrast. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. "Applying changes…" is read out from a polite `status` region; while applying, the button pressed is `aria-busy` (it keeps focus) and the other is disabled. Once applied, the card leaves: focus goes to `returnFocus()`, or to the page\'s body when the app gives none, the card turns `inert`, and "2 changes applied" is read out from a polite `status` region on the body, which outlives it. Under reduced motion the step just changes, with no slide or rolling count, and the card goes at once.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the step buttons, then Skip and Accept.' },
+      { keys: ['Enter', 'Space'], action: 'On Accept or Skip: decides the change and moves to the next pending one; on the last, finishes the review. On a step button: shows the previous or next change.' },
     ],
   },
 }
