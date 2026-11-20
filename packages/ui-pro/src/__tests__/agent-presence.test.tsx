@@ -85,6 +85,27 @@ describe('AgentPresence', () => {
     expect(status().textContent).toBe('Satin is updating Omar Haddad')
   })
 
+  it('says the step it is on in place of its name, and stays put as the steps change', async () => {
+    renderWithSatin(<Candidates />)
+    act(() => list.start('tara', 'Tara Mendes', 'Drafting invite…'))
+    await waitFor(() => expect(shown()).toBe(true))
+    expect(screen.getByText('Drafting invite…')).toBeTruthy()
+    expect(screen.queryByText('Satin')).toBeNull()
+    await waitFor(() => expect(status().textContent).toBe('Satin, Tara Mendes: Drafting invite…'))
+
+    act(() => list.start('tara', 'Tara Mendes', 'Sending…'))
+    expect(screen.getByText('Sending…')).toBeTruthy()
+    await waitFor(() => expect(status().textContent).toBe('Satin, Tara Mendes: Sending…'))
+    // The same row: no glide, only the words change.
+    expect(layer().style.transform).toBe('translate(0px, 40px)')
+    expect(layer().hasAttribute('data-glide')).toBe(false)
+
+    // Done and waiting have words of their own; the step goes with the work.
+    act(() => list.done())
+    expect(list.value?.activity).toBeUndefined()
+    expect(screen.getByText('Done')).toBeTruthy()
+  })
+
   it('never touches its target, so nothing moves', async () => {
     renderWithSatin(<Candidates />)
     const row = screen.getByRole('row', { name: /Tara Mendes/ })
@@ -143,6 +164,7 @@ describe('AgentPresence', () => {
     renderWithSatin(<Candidates doneDuration={Infinity} />, {
       labels: {
         agentPresenceWorking: (agent, target) => `${agent} aktualizuje: ${target}`,
+        agentPresenceActivity: (agent, target, activity) => `${agent} (${target}): ${activity}`,
         agentPresenceDone: (agent, target) => `${agent} zaktualizował: ${target}`,
         agentPresenceConflict: (agent, target, person) => `${person} edytuje: ${target}. ${agent} czeka`,
         agentPresenceEditing: (person) => `${person} edytuje`,
@@ -151,6 +173,8 @@ describe('AgentPresence', () => {
     })
     act(() => list.start('tara', 'Tara Mendes'))
     await waitFor(() => expect(status().textContent).toBe('Satin aktualizuje: Tara Mendes'))
+    act(() => list.start('tara', 'Tara Mendes', 'Wysyłanie…'))
+    await waitFor(() => expect(status().textContent).toBe('Satin (Tara Mendes): Wysyłanie…'))
     act(() => list.conflict('Jon Park'))
     expect(screen.getByText('Jon Park edytuje')).toBeTruthy()
     await waitFor(() => expect(status().textContent).toBe('Jon Park edytuje: Tara Mendes. Satin czeka'))

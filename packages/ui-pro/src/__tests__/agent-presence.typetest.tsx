@@ -23,6 +23,11 @@ export const conflict = (
   <AgentPresence target={rowRef} agent="Satin" label="Tara Mendes" state="conflict" person={{ name: 'Jon Park', initials: 'JP', tone: 'sky' }} />
 )
 export const hidden = <AgentPresence target={null} agent="Satin" label="" />
+// The step it's on, said on the label in place of the name.
+export const step = <AgentPresence target={rowRef} agent="Satin" label="Tara Mendes" activity="Drafting invite…" />
+
+// @ts-expect-error: a step is words, read out too
+export const wrongActivity = <AgentPresence target={rowRef} agent="Satin" label="Tara" activity={<b>Sending</b>} />
 
 // @ts-expect-error: no such state
 export const wrongState = <AgentPresence target={rowRef} agent="Satin" label="Tara" state="busy" />
@@ -44,12 +49,14 @@ export const parts = (
 export function Uncontrolled() {
   const presence = useAgentPresence()
   presence.start('tara', 'Tara Mendes')
+  presence.start('tara', 'Tara Mendes', 'Sending…')
+  const activity: string | undefined = presence.props.activity
   presence.conflict('Jon Park')
   presence.done()
   presence.clear()
   const attrs: { 'data-agent-presence': string } = presence.item('tara')
   return (
-    <div className="relative">
+    <div className="relative" title={activity}>
       <div {...attrs} />
       <AgentPresence {...presence.props} agent="Satin" />
     </div>
@@ -67,6 +74,7 @@ export const translated = (
   <SatinLabels
     labels={{
       agentPresenceWorking: (agent, target) => `${agent} aktualizuje: ${target}`,
+      agentPresenceActivity: (agent, target, activity) => `${agent} (${target}): ${activity}`,
       agentPresenceEditing: (person) => `${person} edytuje`,
     }}
   >
