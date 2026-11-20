@@ -59,6 +59,9 @@ export const parts = (
 // @ts-expect-error: onRun gets the steps to run
 export const wrongRun = <AgentPlan steps={steps} onRun={(count: number) => count} />
 
+// @ts-expect-error: AgentPlan has no layout prop
+export const noLayout = <AgentPlan steps={steps} layout="select" />
+
 // Pro's words join SatinLabels: one provider for both packages, typed.
 export const translated = (
   <SatinLabels

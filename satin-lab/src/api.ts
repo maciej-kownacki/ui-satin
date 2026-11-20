@@ -1378,7 +1378,7 @@ export const api: Record<string, Api> = {
   },
   'agent-plan': {
     description:
-      'The `AgentPlan` component (Satin Pro, `@uisatin/pro/agent-plan`) is a `role="group"` card named by its title, around an ordered list of steps. Each step is `{ id, label, detail, tool, toolIcon, editable, skipped }`. In a `draft` each step shows its number, its tool as a plain Badge with the app’s logo (`toolIcon`: an `img`, drawn at 16px, or an iconoir icon), and an × that removes it; the person renames a step by pressing its label and reorders by dragging the number or with Alt+↑/↓ (`onStepsChange`). Run plan, disabled while the plan is empty, calls `onRun` with the steps to run. `layout` moves a step’s controls off its right edge: `hover` puts the tool under the label and shows the × only on hover or focus; `select` opens Rename and Remove under the step you press; `edit` keeps steps still until Edit plan, then gives each a checkbox and a name field. The app then drives `status` and `currentStep`: steps before it are done, the current one shows AgentLoading, and a `failed` one shows `error` with Retry and Skip. Parts: `AgentPlanRoot`, `AgentPlanHeader`, `AgentPlanSteps`, `AgentPlanActions`.',
+      'The `AgentPlan` component (Satin Pro, `@uisatin/pro/agent-plan`) is a `role="group"` card named by its title, around an ordered list of steps. Each step is `{ id, label, detail, tool, toolIcon, editable, skipped }`. In a `draft` each step shows its number, its label, and under the label one muted line with its tool (the app’s logo from `toolIcon`, an `img` drawn at 16px or an iconoir icon, then the name) and detail. The number shows a grip on hover or keyboard focus: drag it, or press Alt+↑/↓, to reorder (`onStepsChange`); a dragged step lifts and the others make room. Pressing a step opens Rename and Remove under it, one step at a time; Rename turns the label into a field. Run plan, disabled while the plan is empty, calls `onRun` with the steps to run. The app then drives `status` and `currentStep`: steps before it are done, the current one shows AgentLoading, and a `failed` one shows `error` with Retry and Skip. Parts: `AgentPlanRoot`, `AgentPlanHeader`, `AgentPlanSteps`, `AgentPlanActions`.',
     props: [
       { name: 'steps', type: ['AgentPlanStep[]'] },
       { name: 'defaultSteps', type: ['AgentPlanStep[]'], default: '[]' },
@@ -1393,7 +1393,6 @@ export const api: Record<string, Api> = {
       { name: 'title', type: ['ReactNode'], default: '"Plan"' },
       { name: 'indicator', type: ['"tetris"', '"flappy"'], default: '"tetris"' },
       { name: 'glimmer', type: ['"color"', '"neutral"'], default: '"color"' },
-      { name: 'layout', type: ['"inline"', '"hover"', '"select"', '"edit"'], default: '"inline"' },
     ],
   },
   'review-queue': {

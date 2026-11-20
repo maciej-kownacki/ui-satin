@@ -4,7 +4,6 @@ import * as React from 'react'
 import { AgentLoading, type AgentLoadingIndicator, type Glimmer } from '@uisatin/ui/agent-loading'
 import { Badge } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
-import { Checkbox } from '@uisatin/ui/checkbox'
 import { Input } from '@uisatin/ui/input'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
@@ -16,19 +15,12 @@ import { cn } from '@uisatin/ui/lib/utils'
  * A card on the DecisionCard's surface (bg/popover, border/default, radius-2xl, shadow-xs):
  * the title, the steps, then Run.
  *
- * - `draft`: each step is a row with its number in a Badge, its label, its tool (the app's logo
- *   and name) and detail. Drag the number, or press Alt+↑ / Alt+↓ anywhere in the row, to move
- *   it; its new place is read out. Run plan is disabled while the plan is empty. `layout` says
- *   where the step's controls go:
- *   - `inline`: the tool as a plain Badge on the label's line, and an × on the right. Pressing
- *     the label renames the step in place.
- *   - `hover`: the tool and detail in one muted line under the label; the × is the only thing
- *     on the right, and shows on hover or focus (always, on a touch screen).
- *   - `select`: nothing on the right. The step is a button that opens Rename and Remove in a
- *     row under it, one step at a time; Esc closes it.
- *   - `edit`: steps have no controls until Edit plan, on the left of the footer. Then each step
- *     gets a checkbox (unchecked leaves it out of the run) and a field for its name, and the
- *     footer's Run plan becomes Done.
+ * - `draft`: each step is its number in a Badge, its label, and its tool (the app's logo and
+ *   name) and detail in one muted line under the label. Nothing sits on the right. Drag the
+ *   number, or press Alt+↑ / Alt+↓ anywhere in the step, to move it; its new place is read out.
+ *   The number shows a grip on hover or keyboard focus, and a dragged step lifts while the others
+ *   make room. Pressing a step opens Rename and Remove under it, one step at a time; Esc closes
+ *   them. Rename turns the label into a field. Run plan is disabled while the plan is empty.
  * - `running`, `failed`, `done`: read-only, drawn like Thinking's open steps: a rail, then each
  *   step 8px apart with a 14px icon, the label in text/default and the tool and detail muted.
  *   The current step is an AgentLoading: the mark playing and its label shimmering. A finished
@@ -39,7 +31,7 @@ import { cn } from '@uisatin/ui/lib/utils'
  *   `onStepsChange`, then calls `onSkip` so the app moves on.
  * - One polite live region reads out each step as it finishes ("Find open slots, done"), a
  *   failure, and the end ("3 steps done"). When a button that had focus goes away (Run, Retry,
- *   Skip, Stop, a removed step's ×), focus moves to the next step's × or the list instead of
+ *   Skip, Stop, a removed step's Remove), focus moves to the next step or the list instead of
  *   the page.
  *
  * Steps are controlled (`steps` + `onStepsChange`) or not (`defaultSteps`).
@@ -55,15 +47,11 @@ export const agentPlanLabels = {
   agentPlan: 'Plan',
   runPlan: 'Run plan',
   retryStep: 'Retry',
-  /** Describes a step's label in a draft, which is a button. */
-  stepHint: 'Press to rename. Alt and arrow keys to move',
-  /** In the `select` layout, under the step that's open. Remove is the `remove` label. */
+  /** Under the open step, beside Remove (the `remove` label). */
   renameStep: 'Rename',
-  /** In the `edit` layout: the footer button that opens every step for editing. Done ends it. */
-  editPlan: 'Edit plan',
   /** The field that renames a step: "Step 2". */
   stepName: (position: number) => `Step ${position}`,
-  /** Read out when a step is removed from a draft. Its × is named by `removeItem` ("Remove Draft invites"). */
+  /** Read out when a step is removed from a draft. Its Remove is named by `removeItem` ("Remove Draft invites"). */
   stepRemoved: (step: string) => `${step} removed`,
   /** Read out once every step has run. */
   planDone: (count: number) => (count === 1 ? '1 step done' : `${count} steps done`),
@@ -93,9 +81,13 @@ export interface AgentPlanStep {
   id: string
   /** What the step does, in a few words. The person can rename it while the plan is a draft. */
   label: string
-  /** More on the step: a line under the label in a draft, muted beside it once the plan runs (what the step found, say). */
+  /**
+   * More on the step. In a draft it shares the muted line under the label with the tool, inside
+   * the step's button, so keep it to text (no links or buttons). Once the plan runs it sits muted
+   * beside the label (what the step found, say).
+   */
   detail?: React.ReactNode
-  /** The tool or app the step uses: a plain Badge in a draft, muted before the detail once the plan runs. */
+  /** The tool or app the step uses, muted before the detail: under the label in a draft, beside it once the plan runs. */
   tool?: string
   /** The tool's logo or icon, before its name: the app's logo as an `img` (drawn at 16px; give it `alt=""`, the name follows), or an iconoir icon (14px, like a Badge's). */
   toolIcon?: React.ReactNode
@@ -107,9 +99,6 @@ export interface AgentPlanStep {
 
 /** Where the plan is: being edited, running, stopped at a failed step, or finished. */
 export type AgentPlanStatus = 'draft' | 'running' | 'failed' | 'done'
-
-/** Where a draft step's controls go: see AgentPlan. */
-export type AgentPlanLayout = 'inline' | 'hover' | 'select' | 'edit'
 
 /** Where one step is, worked out from `status` and `currentStep`. */
 export type AgentPlanStepState = 'draft' | 'pending' | 'running' | 'done' | 'failed' | 'skipped'
@@ -141,10 +130,6 @@ interface PlanContextValue {
   listRef: React.RefObject<HTMLOListElement | null>
   /** The element focus left of its own accord: no need to bring it back. */
   forgetFocus: () => void
-  layout: AgentPlanLayout
-  /** In the `edit` layout: every step is open for editing. */
-  planEditing: boolean
-  editPlan: (on: boolean) => void
 }
 
 const PlanContext = React.createContext<PlanContextValue | null>(null)
@@ -182,8 +167,6 @@ export interface AgentPlanRootProps extends Omit<React.ComponentProps<'div'>, 't
   indicator?: AgentLoadingIndicator
   /** The light across the tetris mark and the label, as on AgentLoading. */
   glimmer?: Glimmer
-  /** Where a draft step's controls go: beside it (`inline`), on hover (`hover`), under the step you open (`select`), or behind Edit plan (`edit`). */
-  layout?: AgentPlanLayout
 }
 
 /** The card and its state; the parts go inside. Other props, `ref` included, go to the card's `div`. */
@@ -200,7 +183,6 @@ export function AgentPlanRoot({
   error,
   indicator = 'tetris',
   glimmer = 'color',
-  layout = 'inline',
   className,
   children,
   onFocusCapture,
@@ -280,20 +262,6 @@ export function AgentPlanRoot({
     }
   })
 
-  // The `edit` layout's mode. Opening it from the footer puts focus on the first step's control.
-  const [editingPlan, setEditingPlan] = React.useState(false)
-  const planEditing = editingPlan && layout === 'edit' && status === 'draft'
-  const focusFirst = React.useRef(false)
-  const editPlan = React.useCallback((on: boolean) => {
-    focusFirst.current = on
-    setEditingPlan(on)
-  }, [])
-  React.useLayoutEffect(() => {
-    if (!planEditing || !focusFirst.current) return
-    focusFirst.current = false
-    listRef.current?.querySelector<HTMLElement>('button:not(:disabled), input')?.focus()
-  }, [planEditing])
-
   const onRunRef = React.useRef(onRun)
   onRunRef.current = onRun
   const run = React.useCallback(() => {
@@ -328,11 +296,8 @@ export function AgentPlanRoot({
       mounted,
       listRef,
       forgetFocus,
-      layout,
-      planEditing,
-      editPlan,
     }),
-    [steps, setSteps, status, currentStep, included, stateOf, run, onStop, onRetry, onSkip, error, indicator, glimmer, labels, titleId, errorId, forgetFocus, layout, planEditing, editPlan],
+    [steps, setSteps, status, currentStep, included, stateOf, run, onStop, onRetry, onSkip, error, indicator, glimmer, labels, titleId, errorId, forgetFocus],
   )
 
   return (
@@ -343,7 +308,6 @@ export function AgentPlanRoot({
         aria-label={ariaLabel ?? (hasHeader || ariaLabelledBy ? undefined : labels.agentPlan)}
         data-slot="agent-plan"
         data-status={status}
-        data-layout={layout}
         className={cn(
           'flex w-full max-w-full flex-col rounded-2xl border border-border-default bg-bg-popover pb-3',
           '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
@@ -419,16 +383,23 @@ export interface AgentPlanStepsProps extends React.ComponentProps<'div'> {}
  */
 export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
   const plan = usePlan('AgentPlanSteps')
-  const { steps, setSteps, status, stateOf, labels, listRef, announce, layout, planEditing } = plan
+  const { steps, setSteps, status, stateOf, labels, listRef, announce } = plan
   const draft = status === 'draft'
 
   // The latest order, so a drag that moves twice before React renders moves from the right place.
   const order = React.useRef(steps)
   order.current = steps
   const [editing, setEditing] = React.useState<string | null>(null)
-  // In the `select` layout: the step whose Rename and Remove show.
+  // The step whose Rename and Remove show.
   const [open, setOpen] = React.useState<string | null>(null)
-  // After a keyboard move, focus goes back to the control it was on (the row was re-placed).
+  // This part stays mounted while the plan runs: a plan stopped back into a draft starts closed,
+  // and a rename cut short doesn't come back as a field that takes focus.
+  if (!draft && (open !== null || editing !== null)) {
+    setOpen(null)
+    setEditing(null)
+  }
+  // The control focus goes to once the rows are re-placed: the one it was on after a keyboard
+  // move, the next step's button after a removal.
   const refocus = React.useRef<{ id: string; part: string } | null>(null)
 
   const rowOf = (id: string) =>
@@ -471,10 +442,10 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
     setSteps(next)
     announce(labels.stepRemoved(list[at].label))
     setOpen(null)
-    // Focus goes to the step that took its place, or the one before: its ×, or in the `select`
-    // layout the step itself. With none left, the root moves focus to the list.
+    // Focus goes to the step that took its place, or the one before. With none left, the root
+    // moves focus to the list.
     const to = [...next.slice(at), ...next.slice(0, at).reverse()].find((s) => s.editable !== false)
-    if (to) refocus.current = { id: to.id, part: layout === 'select' ? 'label' : 'remove' }
+    if (to) refocus.current = { id: to.id, part: 'label' }
   }
 
   const onRowKeyDown = (e: React.KeyboardEvent<HTMLLIElement>, step: AgentPlanStep) => {
@@ -487,7 +458,6 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
     }
     if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return
     if (e.target instanceof HTMLInputElement || step.editable === false) return
-    if (layout === 'edit' && !planEditing) return
     e.preventDefault()
     const part = (e.target as HTMLElement).closest<HTMLElement>('[data-part]')?.dataset.part
     moveBy(step.id, e.key === 'ArrowUp' ? -1 : 1, part)
@@ -688,7 +658,7 @@ function DraftStep({
   moving: boolean
   style?: React.CSSProperties
   editing: boolean
-  /** In the `select` layout: the step's Rename and Remove show under it. */
+  /** The step's Rename and Remove show under it. */
   open: boolean
   onEdit: (on: boolean) => void
   onOpen: (on: boolean) => void
@@ -696,17 +666,18 @@ function DraftStep({
   onKeyDown: (e: React.KeyboardEvent<HTMLLIElement>) => void
   grip: Pick<React.ComponentProps<'span'>, 'onPointerDown'>
 }) {
-  const { steps, setSteps, labels, forgetFocus, layout, planEditing } = usePlan('AgentPlanSteps')
+  const { steps, setSteps, labels, forgetFocus } = usePlan('AgentPlanSteps')
   const editable = step.editable !== false
-  // In the `edit` layout the steps hold still until Edit plan opens them.
-  const live = layout !== 'edit' || planEditing
-  const canMove = editable && live
+  const canMove = editable
   const rowRef = React.useRef<HTMLLIElement>(null)
   const inputRef = React.useRef<HTMLInputElement>(null)
   const done = React.useRef(false)
-  // Enter or Escape in the field sends focus back to the label it stood in for.
+  // Enter or Escape in the field sends focus back to the step it stood in for.
   const backToLabel = React.useRef(false)
   const actionsId = React.useId()
+  // The step's name is its label then its tool line, read with a space between them.
+  const nameId = `${actionsId}-name`
+  const metaId = `${actionsId}-meta`
 
   React.useLayoutEffect(() => {
     if (editing) {
@@ -744,7 +715,7 @@ function DraftStep({
         canMove && 'cursor-grab touch-none select-none',
         dragging && 'cursor-grabbing',
         // Centred on the 28px field that renames an open step.
-        editing && layout === 'select' && 'mt-1',
+        editing && 'mt-1',
       )}
       {...(canMove ? grip : {})}
     >
@@ -763,8 +734,8 @@ function DraftStep({
       size="sm"
       aria-label={labels.stepName(index + 1)}
       defaultValue={step.label}
-      // In the label's line; in an open `select` step it takes its full height, inside the 8px.
-      wrapperClassName={cn('self-stretch', layout !== 'select' && '-my-1')}
+      // In the label's place, at its full height inside the open step's 8px.
+      wrapperClassName="self-stretch"
       onKeyDown={(e) => {
         if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
           e.preventDefault()
@@ -778,144 +749,6 @@ function DraftStep({
       onBlur={() => finish(true, false)}
     />
   )
-
-  const label = editable ? (
-    // The label renames the step when pressed; its ring sits 4px out from the text.
-    <button
-      type="button"
-      data-part="label"
-      aria-description={labels.stepHint}
-      onClick={() => onEdit(true)}
-      className={cn(labelClass, '-mx-1 cursor-text rounded-xs px-1 text-start', RING)}
-    >
-      {step.label}
-    </button>
-  ) : (
-    <span data-part="label" className={labelClass}>
-      {step.label}
-    </span>
-  )
-
-  const remove = (className?: string) =>
-    editable ? (
-      <Button variant="tertiary" size="xs" iconOnly data-part="remove" aria-label={labels.removeItem(step.label)} className={cn('-my-0.5 shrink-0', className)} onClick={onRemove}>
-        {/* iconoir Xmark */}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M6.75827 17.2426L12.0009 12M17.2435 6.75736L12.0009 12M12.0009 12L6.75827 6.75736M12.0009 12L17.2435 17.2426" />
-        </svg>
-      </Button>
-    ) : (
-      <span aria-hidden className="size-6 shrink-0" />
-    )
-
-  let content: React.ReactNode
-  if (layout === 'hover') {
-    content = (
-      <>
-        {number}
-        <div className="flex min-w-0 flex-1 flex-col items-start">
-          {editing ? field : label}
-          <DraftMeta step={step} className={cn(editing && 'mt-1')} />
-        </div>
-        {/* The only control on the right, and only while the pointer or focus is on the step. */}
-        {remove(
-          'opacity-0 transition-opacity duration-(--duration-fast) ease-(--ease-out) group-hover/step:opacity-100 group-focus-within/step:opacity-100 [@media(hover:none)]:opacity-100',
-        )}
-      </>
-    )
-  } else if (layout === 'select') {
-    content = (
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-start gap-2">
-          {number}
-          {editable && !editing ? (
-            // The whole step, label and tool, is one target that opens its actions.
-            <button
-              type="button"
-              data-part="label"
-              aria-expanded={open}
-              aria-controls={open ? actionsId : undefined}
-              aria-description={labels.sortableHint}
-              onClick={() => onOpen(!open)}
-              className={cn('-m-1 flex min-w-0 flex-1 flex-col items-start rounded-sm p-1 text-start', RING)}
-            >
-              <span className={labelClass}>{step.label}</span>
-              <DraftMeta step={step} />
-            </button>
-          ) : (
-            <div className="flex min-w-0 flex-1 flex-col items-start">
-              {editing ? field : label}
-              <DraftMeta step={step} className={cn(editing && 'mt-1')} />
-            </div>
-          )}
-        </div>
-        {/* Under the label, 12px apart so Remove is hard to hit by mistake: nothing sits on the right edge. */}
-        {open && !editing && (
-          <div id={actionsId} className="flex items-center gap-3 ps-7 pt-2">
-            <Button variant="secondary" size="xs" data-part="rename" onClick={() => onEdit(true)}>
-              {labels.renameStep}
-            </Button>
-            <Button variant="secondary" size="xs" data-part="remove" aria-label={labels.removeItem(step.label)} onClick={onRemove}>
-              {labels.remove}
-            </Button>
-          </div>
-        )}
-      </div>
-    )
-  } else if (layout === 'edit') {
-    content = (
-      <>
-        {planEditing && (
-          <span className="flex h-5 shrink-0 items-center">
-            <Checkbox
-              data-part="include"
-              checked={!step.skipped}
-              disabled={!editable}
-              aria-label={step.label}
-              aria-description={editable ? labels.sortableHint : undefined}
-              onCheckedChange={(on) => setSteps(steps.map((s) => (s.id === step.id ? { ...s, skipped: on !== true } : s)))}
-            />
-          </span>
-        )}
-        {number}
-        <div className="flex min-w-0 flex-1 flex-col items-start">
-          {planEditing && editable ? (
-            <PlanField step={step} index={index} />
-          ) : (
-            <span data-part="label" className={labelClass}>
-              {step.label}
-            </span>
-          )}
-          <DraftMeta step={step} className={cn(planEditing && editable && 'mt-1')} />
-        </div>
-      </>
-    )
-  } else {
-    content = (
-      <>
-        {number}
-        {/* The tool sits on the label's line, so the detail runs on under it to the ×. Where the
-            label would get under 96px, the tool drops to a line of its own, still on the right. */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex flex-wrap items-start gap-x-2">
-            <div className="flex min-w-0 grow basis-24 flex-col items-start">{editing ? field : label}</div>
-            {step.tool && (
-              <Badge size="sm" variant="plain" className="ms-auto [&_img]:size-4 [&_img]:shrink-0">
-                {step.toolIcon != null && (
-                  <span aria-hidden className="inline-flex">
-                    {step.toolIcon}
-                  </span>
-                )}
-                {step.tool}
-              </Badge>
-            )}
-          </div>
-          {step.detail != null && <span className={cn('text-sm text-text-muted', editing && 'mt-1')}>{step.detail}</span>}
-        </div>
-        {remove()}
-      </>
-    )
-  }
 
   return (
     <li
@@ -934,7 +767,8 @@ function DraftStep({
         // Making room for a dragged step, and landing one, take the calmer base duration.
         moving && 'duration-(--duration-base)',
         'data-dragging:duration-(--duration-base)',
-        live && !open && !moving && 'satin-hover:bg-action-secondary-bg',
+        // Only a step that opens on a press fills on hover.
+        editable && !open && !moving && 'satin-hover:bg-action-secondary-bg',
         // The open step keeps the card's surface, so its buttons don't sit darker on a lighter fill.
         // 8px above and below its content, grown outwards so the content doesn't move as it opens.
         'data-open:relative data-open:z-[1] data-open:-my-1 data-open:py-2 data-open:border-border-default',
@@ -943,16 +777,60 @@ function DraftStep({
         'data-dragging:[box-shadow:0_4px_6px_-1px_var(--effect-shadow-sm),0_2px_4px_-2px_var(--effect-shadow-sm)]',
       )}
     >
-      {content}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-start gap-2">
+          {number}
+          {editable && !editing ? (
+            // The whole step, label and tool, is one target that opens its actions.
+            <button
+              type="button"
+              data-part="label"
+              aria-labelledby={step.tool || step.detail != null ? `${nameId} ${metaId}` : nameId}
+              aria-expanded={open}
+              aria-controls={open ? actionsId : undefined}
+              aria-description={labels.sortableHint}
+              onClick={() => onOpen(!open)}
+              className={cn('-m-1 flex min-w-0 flex-1 flex-col items-start rounded-sm p-1 text-start', RING)}
+            >
+              <span id={nameId} className={labelClass}>
+                {step.label}
+              </span>
+              <DraftMeta id={metaId} step={step} />
+            </button>
+          ) : (
+            <div className="flex min-w-0 flex-1 flex-col items-start">
+              {editing ? (
+                field
+              ) : (
+                <span data-part="label" className={labelClass}>
+                  {step.label}
+                </span>
+              )}
+              <DraftMeta step={step} className={cn(editing && 'mt-1')} />
+            </div>
+          )}
+        </div>
+        {/* Under the label, 12px apart so Remove is hard to hit by mistake: nothing sits on the right edge. */}
+        {open && !editing && (
+          <div id={actionsId} className="flex items-center gap-3 ps-7 pt-2">
+            <Button variant="secondary" size="xs" data-part="rename" onClick={() => onEdit(true)}>
+              {labels.renameStep}
+            </Button>
+            <Button variant="secondary" size="xs" data-part="remove" aria-label={labels.removeItem(step.label)} onClick={onRemove}>
+              {labels.remove}
+            </Button>
+          </div>
+        )}
+      </div>
     </li>
   )
 }
 
-/** A draft step's tool and detail as one muted line under its label, in every layout but `inline`. */
-function DraftMeta({ step, className }: { step: AgentPlanStep; className?: string }) {
+/** A draft step's tool and detail as one muted line under its label. */
+function DraftMeta({ step, id, className }: { step: AgentPlanStep; id?: string; className?: string }) {
   if (!step.tool && step.detail == null) return null
   return (
-    <span className={cn('text-sm text-text-muted', className)}>
+    <span id={id} className={cn('text-sm text-text-muted', className)}>
       {step.tool && (
         <>
           <ToolIcon step={step} />
@@ -962,35 +840,6 @@ function DraftMeta({ step, className }: { step: AgentPlanStep; className?: strin
       {step.tool && step.detail != null && ' · '}
       {step.detail}
     </span>
-  )
-}
-
-/** In the `edit` layout, while the plan is open: the step's name as a field. It saves on Enter and on leaving it; Esc puts the saved name back. */
-function PlanField({ step, index }: { step: AgentPlanStep; index: number }) {
-  const { steps, setSteps, labels } = usePlan('AgentPlanSteps')
-  const save = (el: HTMLInputElement) => {
-    const label = el.value.trim()
-    if (!label) el.value = step.label
-    else if (label !== step.label) setSteps(steps.map((s) => (s.id === step.id ? { ...s, label } : s)))
-  }
-  return (
-    <Input
-      size="sm"
-      data-part="field"
-      aria-label={labels.stepName(index + 1)}
-      defaultValue={step.label}
-      wrapperClassName="-my-1 self-stretch"
-      onBlur={(e) => save(e.currentTarget)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-          e.preventDefault()
-          save(e.currentTarget)
-        } else if (e.key === 'Escape') {
-          e.preventDefault()
-          e.currentTarget.value = step.label
-        }
-      }}
-    />
   )
 }
 
@@ -1078,7 +927,7 @@ function Grip() {
   )
 }
 
-/** The tool's logo or icon before its name in a read-only step's muted line, centred on the line. */
+/** The tool's logo or icon before its name in a step's muted line, centred on the line. */
 function ToolIcon({ step }: { step: AgentPlanStep }) {
   if (step.toolIcon == null) return null
   return (
@@ -1141,30 +990,19 @@ export interface AgentPlanActionsProps extends React.ComponentProps<'div'> {}
 
 /**
  * Run plan in a draft (disabled while no step is left in), Stop while it runs or waits at a
- * failed step (with `onStop`). In the `edit` layout, Edit plan sits on the left, as far from
- * Run plan as the footer goes, and Run plan reads Done while the plan is open. Children go
- * before the button. Nothing shows once it's done, unless you pass children. Other props, `ref`
- * included, go to its `div`.
+ * failed step (with `onStop`). Children go before the button. Nothing shows once it's done,
+ * unless you pass children. Other props, `ref` included, go to its `div`.
  */
 export function AgentPlanActions({ className, children, ...props }: AgentPlanActionsProps) {
-  const { status, included, run, stop, labels, layout, planEditing, editPlan } = usePlan('AgentPlanActions')
+  const { status, included, run, stop, labels } = usePlan('AgentPlanActions')
   const draft = status === 'draft'
   const canStop = !!stop && (status === 'running' || status === 'failed')
   if (!draft && !canStop && children == null) return null
   return (
     <div data-slot="agent-plan-actions" className={cn('flex items-center justify-end gap-2 px-3 pt-4', className)} {...props}>
-      {draft && layout === 'edit' && !planEditing && (
-        <Button variant="secondary" className="me-auto" onClick={() => editPlan(true)}>
-          {labels.editPlan}
-        </Button>
-      )}
       {children}
-      {/* One button that changes: pressing Run leaves focus on Stop, and Done on Run plan. */}
-      {draft && planEditing ? (
-        <Button key="main" onClick={() => editPlan(false)}>
-          {labels.done}
-        </Button>
-      ) : draft ? (
+      {/* One button that changes: pressing Run leaves focus on Stop. */}
+      {draft ? (
         <Button key="main" onClick={run} disabled={included.length === 0}>
           {labels.runPlan}
         </Button>
