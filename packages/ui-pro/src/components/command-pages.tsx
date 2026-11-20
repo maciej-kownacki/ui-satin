@@ -7,6 +7,7 @@ import { CommandMenu, type CommandGroup, type CommandItem, type CommandMenuProps
 import { KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from '@uisatin/ui/kbd'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
+import { useStepSlide } from '@uisatin/ui/step-slide'
 import { StreamingText } from '@uisatin/ui/streaming-text'
 import { toast } from '@uisatin/ui/toast'
 
@@ -35,8 +36,11 @@ import { toast } from '@uisatin/ui/toast'
  * - The panel opens where CommandMenu puts it, then keeps its top edge there: a page of another
  *   length, or a shorter list as you type, grows or shrinks it downwards and the search never
  *   moves.
- * - A new page slides in 8px from where it leads (from the end going in, from the start coming
- *   back) and fades in over --duration-base; not under reduced motion.
+ * - Page to page, the list moves as DecisionCard's questions do (Satin's step slide): the new
+ *   page comes in a whole menu's width from the end side going in (from the start side coming
+ *   back) and fades in, the old one goes out the other way and fades, and the list's box eases to
+ *   the new height, 360 ms on cubic-bezier(0.22, 1, 0.36, 1). The breadcrumb, the search and the
+ *   key hints stay put. Not under reduced motion.
  *
  * `controlRef` gets the same `{ push, back, ask, search, close }` the items do, for a button or
  * a shortcut outside the menu: open it straight on a page, or on the agent's answer.
@@ -175,54 +179,6 @@ type Step =
   | { kind: 'page'; page: CommandPage; title: string; below: string }
   | { kind: 'ask'; question: string; title: string; below: string }
 
-const reduced = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-const ms = (value: string) => (value.trim().endsWith('ms') ? parseFloat(value) : parseFloat(value) * 1000)
-
-/** The new page's content comes 8px from where it leads and fades in. */
-/** A CSS `cubic-bezier()` as progress over time, 0 to 1; plain ease-out when it isn't one. */
-function curve(easing: string) {
-  const [x1, y1, x2, y2] = easing.match(/cubic-bezier\(([^)]+)\)/)?.[1].split(',').map(Number) ?? [0, 0, 0.58, 1]
-  const at = (a: number, b: number, s: number) => 3 * a * s * (1 - s) ** 2 + 3 * b * s * s * (1 - s) + s ** 3
-  return (t: number) => {
-    let lo = 0
-    let hi = 1
-    for (let i = 0; i < 24; i++) {
-      const mid = (lo + hi) / 2
-      if (at(x1, x2, mid) < t) lo = mid
-      else hi = mid
-    }
-    return at(y1, y2, (lo + hi) / 2)
-  }
-}
-
-/**
- * The new page's content comes 8px from where it leads and fades in. The slide moves in whole
- * pixels, each held until the eased curve reaches the next, so its icons and text never sit
- * between pixels (where they blur); the fade runs smoothly on the same curve.
- */
-function slide(el: HTMLElement, dir: 1 | -1) {
-  if (typeof el.animate !== 'function' || reduced()) return
-  const style = getComputedStyle(el)
-  const sign = dir * (style.direction === 'rtl' ? -1 : 1)
-  const easing = style.getPropertyValue('--ease-out').trim() || 'ease-out'
-  const duration = ms(style.getPropertyValue('--duration-base')) || 200
-  const progress = curve(easing)
-  const at = (px: number) => (px ? `translateX(${sign * px}px)` : 'none')
-  const steps: Keyframe[] = [{ offset: 0, transform: at(8), easing: 'steps(1, end)' }]
-  let px = 8
-  for (let i = 1; i < 100 && px > 0; i++) {
-    const next = Math.round(8 * (1 - progress(i / 100)))
-    if (next < px) {
-      px = next
-      steps.push({ offset: i / 100, transform: at(px), easing: 'steps(1, end)' })
-    }
-  }
-  steps.push({ offset: 1, transform: 'none' })
-  el.getAnimations?.().forEach((a) => a.cancel())
-  el.animate(steps, { duration })
-  el.animate([{ opacity: 0 }, { opacity: 1 }], { duration, easing })
-}
-
 export function CommandPages({
   groups,
   rootTitle,
@@ -274,7 +230,6 @@ export function CommandPages({
   const [trail, setTrail] = React.useState<Step[]>([])
   const trailRef = React.useRef(trail)
   trailRef.current = trail
-  const [turn, setTurn] = React.useState<{ n: number; dir: 1 | -1 }>({ n: 0, dir: 1 })
   // Backspace went back and is still down: its repeats neither go back again nor delete.
   const heldBack = React.useRef(false)
 
@@ -300,9 +255,11 @@ export function CommandPages({
   const current = trail.at(-1)
   const answersHere = answer !== undefined || answering !== undefined
 
-  const go = (next: Step[], dir: 1 | -1, nextQuery: string) => {
+  const go = (next: Step[], nextQuery: string) => {
+    // The list leaves as it looks now: its highlight and scroll live in CommandMenu, which
+    // re-renders on its own as the arrows move.
+    capture()
     setTrail(next)
-    setTurn((t) => ({ n: t.n + 1, dir }))
     setQuery(nextQuery)
     if (!openRef.current) setOpen(true)
     const top = next.at(-1)
@@ -311,12 +268,12 @@ export function CommandPages({
 
   const push = (page: CommandPage, fallbackTitle = '') => {
     const title = page.title ?? fallbackTitle
-    go([...trailRef.current, { kind: 'page', page, title, below: queryRef.current }], 1, '')
+    go([...trailRef.current, { kind: 'page', page, title, below: queryRef.current }], '')
   }
   const goTo = (depth: number) => {
     const t = trailRef.current
     if (depth >= t.length) return
-    go(t.slice(0, depth), -1, t[depth].below)
+    go(t.slice(0, depth), t[depth].below)
   }
   const back = () => goTo(trailRef.current.length - 1)
   const close = () => setOpen(false)
@@ -331,7 +288,7 @@ export function CommandPages({
     if (last?.kind === 'ask') {
       setTrail([...t.slice(0, -1), { ...last, question: q }])
       setQuery('')
-    } else go([...t, { kind: 'ask', question: q, title: labels.commandAskAgent, below: queryRef.current }], 1, '')
+    } else go([...t, { kind: 'ask', question: q, title: labels.commandAskAgent, below: queryRef.current }], '')
   }
   const search = (next: string) => {
     setQuery(next)
@@ -419,11 +376,20 @@ export function CommandPages({
       : // CommandMenu's own cap on its height, and never past the frame's bottom.
         { alignSelf: 'flex-start', marginTop: top, maxHeight: `min(480px, 76vh, calc(100% - ${top}px))` }
 
+  // Page to page, the list moves as DecisionCard's questions do (step-slide): the new page in from
+  // the end side going in, from the start side coming back, the old one out the other way, and
+  // CommandMenu's list box easing to the new height. The page's place in the trail orders them.
+  // Closing keeps the last page's key, so the list doesn't slide back as the menu goes.
+  const listOf = () => panel.current?.querySelector<HTMLElement>('[data-slot="command-menu-body"] > :not([data-step-copy])') ?? null
+  const pathKey = `${trail.length}\u0000${trail.map((step) => (step.kind === 'ask' ? '\u0000ask' : step.title)).join('\u0000')}`
+  const openKey = React.useRef(pathKey)
+  if (open) openKey.current = pathKey
+  // A new page starts at the top of its list, not where the last one was scrolled to.
   React.useLayoutEffect(() => {
-    if (!turn.n) return
-    const el = panel.current?.querySelector<HTMLElement>('[role="listbox"], [data-slot="command-pages-answer"]')
-    if (el) slide(el, turn.dir)
-  }, [turn])
+    const list = listOf()
+    if (list) list.scrollTop = 0
+  }, [openKey.current])
+  const capture = useStepSlide(openKey.current, trail.length, panel, () => [listOf()])
 
   const crumbs: BreadcrumbItem[] = [
     { label: root, onSelect: () => goTo(0) },
@@ -440,22 +406,18 @@ export function CommandPages({
     }
   })
 
-  const backHint = <KbdHint keys={['⌫']} label={labels.commandBack} />
-  const closeHint = <KbdHint className="ms-auto" keys={['Esc']} label={labels.close} />
-  const footer = !current ? undefined : onAgentPage ? (
-    <>
-      <KbdHint keys={[<KbdReturn key="return" />]} label={labels.send} />
-      {backHint}
-      {closeHint}
-    </>
-  ) : (
-    <>
-      <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
-      <KbdHint keys={[<KbdReturn key="return" />]} label={labels.openItem} />
-      {backHint}
-      {closeHint}
-    </>
-  )
+  // CommandMenu's hints plus ⌫ Back, keyed, so a hint keeps its element from page to page (Esc
+  // stays Esc) and only Back comes and goes.
+  const hint = {
+    navigate: <KbdHint key="navigate" keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />,
+    open: <KbdHint key="open" keys={[<KbdReturn key="return" />]} label={labels.openItem} />,
+    send: <KbdHint key="send" keys={[<KbdReturn key="return" />]} label={labels.send} />,
+    back: <KbdHint key="back" keys={['⌫']} label={labels.commandBack} />,
+    close: <KbdHint key="close" className="ms-auto" keys={['Esc']} label={labels.close} />,
+  }
+  const footer = onAgentPage
+    ? [hint.send, hint.back, hint.close]
+    : [hint.navigate, hint.open, ...(current ? [hint.back] : []), hint.close]
 
   return (
     <CommandMenu

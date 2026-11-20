@@ -27,6 +27,7 @@ const INTERNAL = {
   labels: 'SatinLabels, documented in the README and on Installation',
   'selectable-card': 'what Selectable radio and Selectable checkbox share',
   'sliding-indicator': 'the sliding pill of Tabs, Pagination and Segmented control',
+  'step-slide': 'the step slide of Decision card, shared with Command pages (Satin Pro)',
   'pointer-modality': 'how Tabs and the menus tell a mouse press from a key, for the focus ring',
   'rolling-number': 'the rolling count of Bulk action bar (Satin Pro)',
   'rolling-number': 'the rolling digits of the Satin Pro counts (Bulk action bar, Filter bar)',

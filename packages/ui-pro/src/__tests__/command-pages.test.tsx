@@ -66,6 +66,8 @@ afterEach(async () => {
   setReducedMotion(false)
   // @ts-expect-error: put jsdom back as it was
   delete HTMLElement.prototype.animate
+  // @ts-expect-error: put jsdom back as it was
+  delete HTMLElement.prototype.getAnimations
   act(() => toast.dismiss())
   await act(() => new Promise((resolve) => setTimeout(resolve, 600)))
 })
@@ -205,25 +207,58 @@ describe('CommandPages', () => {
     expect(screen.getByRole('region', { name: 'what did Acme say last call' })).toBeTruthy()
   })
 
-  it('slides a new page in 8px from where it leads, in whole pixels, fading in, and not under reduced motion', async () => {
-    const animate = vi.fn()
-    HTMLElement.prototype.animate = animate as unknown as HTMLElement['animate']
+  it('moves page to page as DecisionCard steps do, and not under reduced motion', async () => {
+    const calls: Keyframe[][] = []
+    HTMLElement.prototype.animate = vi.fn((keyframes: Keyframe[]) => {
+      calls.push(keyframes)
+      return { finished: Promise.resolve(), cancel: () => {} }
+    }) as unknown as HTMLElement['animate']
+    HTMLElement.prototype.getAnimations = () => []
     const { user } = renderWithSatin(<CommandPages defaultOpen hotkey={false} groups={groupsFor()} />)
     await user.type(field(), 'move{Enter}')
-    expect(animate).toHaveBeenCalledTimes(2)
-    const [slide, fade] = animate.mock.calls.map((c) => c[0] as Keyframe[])
-    // Held at each whole pixel (steps), from 8px to none, so nothing sits between pixels.
-    expect(slide[0]).toEqual({ offset: 0, transform: 'translateX(8px)', easing: 'steps(1, end)' })
-    expect(slide.at(-1)).toEqual({ offset: 1, transform: 'none' })
-    for (const k of slide) expect(k.transform).toMatch(/^(none|translateX\(-?\d+px\))$/)
-    expect(fade).toEqual([{ opacity: 0 }, { opacity: 1 }])
+    // One track, the menu's width plus 24px (jsdom has no width): the new page in from the end
+    // side and fading in, a copy of the old one out the other way and fading out.
+    expect(calls[0]).toEqual([
+      { transform: 'translate3d(24px, 0, 0)', opacity: 0 },
+      { transform: 'translate3d(0, 0, 0)', opacity: 1 },
+    ])
+    expect(calls[1]).toEqual([
+      { transform: 'translate3d(0, 0, 0)', opacity: 1 },
+      { transform: 'translate3d(-24px, 0, 0)', opacity: 0 },
+    ])
     await user.keyboard('{Backspace}')
-    expect((animate.mock.calls[2][0] as Keyframe[])[0].transform).toBe('translateX(-8px)')
+    expect(calls[2][0]).toEqual({ transform: 'translate3d(-24px, 0, 0)', opacity: 0 })
+    expect(calls[3][1]).toEqual({ transform: 'translate3d(24px, 0, 0)', opacity: 0 })
 
     setReducedMotion(true)
     await user.clear(field())
     await user.type(field(), 'move{Enter}')
-    expect(animate).toHaveBeenCalledTimes(4)
+    expect(calls).toHaveLength(4)
+  })
+
+  it('slides out the old page as it looked at the key press: its highlight, and a page pushed without a title too', async () => {
+    const calls: Keyframe[][] = []
+    // Slides that never finish, so the outgoing copy stays to be looked at.
+    HTMLElement.prototype.animate = vi.fn((keyframes: Keyframe[]) => {
+      calls.push(keyframes)
+      return { finished: new Promise(() => {}), cancel: () => {} }
+    }) as unknown as HTMLElement['animate']
+    HTMLElement.prototype.getAnimations = () => []
+    const menu = React.createRef<CommandPagesControl>()
+    const { user } = renderWithSatin(<CommandPages defaultOpen hotkey={false} groups={groupsFor()} controlRef={menu} />)
+    // The arrows move CommandMenu's highlight without CommandPages rendering.
+    await user.keyboard('{ArrowDown}{ArrowDown}{Enter}')
+    const copy = document.querySelector('[data-step-copy]')!
+    expect(copy.getAttribute('aria-hidden')).toBe('true')
+    expect(copy.hasAttribute('id')).toBe(false)
+    expect(copy.querySelector('[aria-selected="true"]')?.textContent).toBe('Assign owner…')
+    expect(calls).toHaveLength(2)
+
+    // From the first page, a page with no title still counts as another page.
+    await user.click(screen.getByRole('button', { name: 'Commands' }))
+    const before = calls.length
+    act(() => menu.current!.push({ groups: [{ label: 'Stages', items: [{ id: 'won', label: 'Won' }] }] }))
+    expect(calls.length).toBeGreaterThan(before)
   })
 
   it('shows a group’s icon, the kind of record it lists, on each row without its own', async () => {
