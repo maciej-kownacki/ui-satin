@@ -6,7 +6,6 @@ import { Check, EditPencil, NavArrowLeft, NavArrowRight } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { Checkbox } from './checkbox'
-import { SLIDE_MS } from './sliding-indicator'
 import { useSatinLabels } from './labels'
 
 /**
@@ -25,12 +24,14 @@ import { useSatinLabels } from './labels'
  * - `draft`: the agent's text in a bubble (radius-2xl, 4px top-left); Rewrite makes it editable.
  * - `summary`: what the card collapses to once answered, with a Change action.
  *
- * Stepping between questions moves like Pagination: the new title and answers slide in 24px from
- * the side of the step (from the right going forward), the old ones slide the other way and fade
- * out a little faster, and the card eases to its new height, all 300 ms on the kit ease-out. The
- * step navigator and the footer stay put. Stepping again mid-slide carries on from where things
- * are. A part that reads the same on both steps (a title shared by every step) stays still.
- * Under reduced motion the parts only cross-fade (150 ms) and the height snaps.
+ * Stepping between questions slides like a track: the old title and answers and the new ones sit
+ * side by side, 24px apart, and move a whole card's width to the side (the new ones in from the
+ * right going forward), the one leaving fading out; each part's box eases to the new height as
+ * they go, clipped while it moves. All of it is 360 ms on cubic-bezier(0.22, 1, 0.36, 1). The
+ * "1/3" count rolls its changed digit like an odometer (up going forward, down going back, 350
+ * ms). The navigator and the footer stay put. Stepping again mid-slide carries on from where
+ * things are. A part that reads the same on both steps (a title every step shares) stays still.
+ * Under reduced motion nothing moves: the step just changes.
  *
  * For a step none of the types covers, pass `children`: they take the answers' place and move
  * with the step. `footer` takes Skip and Continue's place, in the same row. Other props, `ref`
@@ -338,7 +339,7 @@ function Header({
             {/* Mirrored right to left, where the previous question is to the right. */}
             <NavArrowLeft aria-hidden className="rtl:-scale-x-100" />
           </Button>
-          <span aria-live="polite" className="text-sm whitespace-nowrap text-text-muted tabular-nums">{step}</span>
+          <StepCount step={step} />
           <Button
             variant="tertiary"
             size="xs"
@@ -356,14 +357,18 @@ function Header({
   )
 }
 
-const SLIDE_PX = 24
-const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
+const STEP_MS = 360
+const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
+const GAP = 24
+const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+const stepIndex = (step?: string) => (step ? parseInt(step, 10) || 0 : 0)
 
 /**
- * Slides the parts in `refs` when `key` changes, the way Pagination moves its pages: each part
- * comes in SLIDE_PX from the side of the step while a copy of how it looked slides out the other
- * way and fades, and the card eases between its old and new height. The direction comes from the
- * "2/3" step; without one it moves forward.
+ * Slides the parts in `refs` when `key` changes, as one horizontal track: a copy of how each part
+ * looked and the part itself sit side by side, GAP apart, and move a card's width plus GAP to the
+ * side together, the copy fading out and the part fading in, while the part's box (its parent)
+ * eases from the old height to the new one and clips them. The direction comes from the "2/3"
+ * step; without one it moves forward. A part that reads the same on both steps stays still.
  */
 function useStepSlide(
   key: string,
@@ -371,66 +376,125 @@ function useStepSlide(
   cardRef: React.RefObject<HTMLDivElement | null>,
   refs: React.RefObject<HTMLDivElement | null>[],
 ) {
-  const last = React.useRef<{ key: string; index: number; height: number; copies: (Node | null)[] } | null>(null)
-  const index = step ? parseInt(step, 10) || 0 : 0
+  const last = React.useRef<{ key: string; index: number; heights: number[]; copies: (Node | null)[] } | null>(null)
+  const index = stepIndex(step)
 
   React.useLayoutEffect(() => {
     const card = cardRef.current
     const prev = last.current
-    // The card's own height, not a frame of a running resize.
-    let height = card && card.getAnimations().length > 0 && prev ? prev.height : (card?.getBoundingClientRect().height ?? 0)
-    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-    if (card && prev && prev.key !== key) {
+    if (card && prev && prev.key !== key && !reducedMotion()) {
       // The next question comes in from the end side: the right, or the left in right-to-left.
       const sign = (index < prev.index ? -1 : 1) * (getComputedStyle(card).direction === 'rtl' ? -1 : 1)
-      // Under reduced motion the parts only cross-fade, quicker, and the card snaps to its height.
-      const dx = reduce ? 0 : SLIDE_PX
-      const timing: KeyframeAnimationOptions = { duration: reduce ? 150 : SLIDE_MS, easing: EASE }
+      const distance = card.clientWidth + GAP
+      const timing: KeyframeAnimationOptions = { duration: STEP_MS, easing: EASE }
       refs.forEach((ref, i) => {
         const el = ref.current
+        const host = el?.parentElement
         const copy = prev.copies[i] as HTMLElement | null
-        if (!el) return
+        if (!el || !host) return
         // The same on both steps (a title every step shares): it stays still.
-        if (copy && el.getAnimations().length === 0 && copy.isEqualNode(el)) return
-        // Stepping again mid-slide: the copy leaves from where the part was, not from rest.
+        if (copy?.isEqualNode(el)) return
+        // Stepping again mid-slide: everything goes on from where it is now, not from rest.
         const midway = el.getAnimations().length > 0
-        const from = midway ? getComputedStyle(el) : null
-        const start: Keyframe = { transform: from?.transform && from.transform !== 'none' ? from.transform : 'none', opacity: from ? Number(from.opacity) : 1 }
-        el.getAnimations().forEach((a) => a.cancel())
-        el.parentElement?.querySelectorAll(':scope > [data-step-copy]').forEach((n) => n.remove())
-        el.animate([{ transform: `translateX(${sign * dx}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], timing)
-        const host = el.parentElement
-        if (!copy || !host) return
-        copy.setAttribute('data-step-copy', '')
-        copy.setAttribute('aria-hidden', 'true')
-        copy.setAttribute('inert', '')
-        copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'))
-        copy.style.cssText += ';position:absolute;top:0;left:0;right:0;pointer-events:none'
-        host.appendChild(copy)
-        copy
-          .animate([start, { transform: `translateX(${-sign * dx}px)`, opacity: 0 }], {
-            ...timing,
-            duration: (timing.duration as number) * 0.6,
-          })
-          .finished.then(
-            () => copy.remove(),
-            () => copy.remove(),
-          )
+        const now = midway ? getComputedStyle(el) : null
+        const start: Keyframe = {
+          transform: now && now.transform !== 'none' ? now.transform : 'translate3d(0, 0, 0)',
+          opacity: now ? Number(now.opacity) : 1,
+        }
+        const fromHeight = host.getAnimations().length > 0 ? host.getBoundingClientRect().height : prev.heights[i]
+        for (const n of [el, host]) n.getAnimations().forEach((a) => a.cancel())
+        host.querySelectorAll(':scope > [data-step-copy]').forEach((n) => n.remove())
+        const toHeight = el.offsetHeight
+
+        host.style.overflow = 'clip'
+        const slide = el.animate(
+          [{ transform: `translate3d(${sign * distance}px, 0, 0)`, opacity: 0 }, { transform: 'translate3d(0, 0, 0)', opacity: 1 }],
+          timing,
+        )
+        if (Math.abs(fromHeight - toHeight) > 0.5) host.animate([{ height: `${fromHeight}px` }, { height: `${toHeight}px` }], timing)
+        if (copy) {
+          copy.setAttribute('data-step-copy', '')
+          copy.setAttribute('aria-hidden', 'true')
+          copy.setAttribute('inert', '')
+          copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'))
+          copy.style.cssText += ';position:absolute;top:0;left:0;right:0;pointer-events:none'
+          host.appendChild(copy)
+          copy.animate([start, { transform: `translate3d(${-sign * distance}px, 0, 0)`, opacity: 0 }], timing)
+        }
+        // Done: the copy goes and the box stops clipping. Cut short by another step: that one takes over.
+        slide.finished.then(
+          () => {
+            copy?.remove()
+            host.style.overflow = ''
+          },
+          () => {},
+        )
       })
-      // Mid-resize, the card goes on from the height it shows now.
-      const running = card.getAnimations().length > 0
-      const fromHeight = running ? card.getBoundingClientRect().height : prev.height
-      card.getAnimations().forEach((a) => a.cancel())
-      const toHeight = card.getBoundingClientRect().height
-      height = toHeight
-      if (!reduce && Math.abs(fromHeight - toHeight) > 0.5) {
-        card.animate([{ height: `${fromHeight}px` }, { height: `${toHeight}px` }], timing)
-      }
     }
 
-    last.current = { key, index, height, copies: refs.map((r) => r.current?.cloneNode(true) ?? null) }
+    // Each part's own height, which no running animation changes.
+    last.current = { key, index, heights: refs.map((r) => r.current?.offsetHeight ?? 0), copies: refs.map((r) => r.current?.cloneNode(true) ?? null) }
   })
+}
+
+const ROLL_MS = 350
+const ROLL_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)'
+
+/**
+ * The "1/3" count. Its changed digits roll like an odometer, in a box one line high: up going
+ * forward, down going back. Screen readers get the plain count from a polite live region.
+ */
+function StepCount({ step }: { step: string }) {
+  const last = React.useRef(step)
+  const round = React.useRef(0)
+  const [roll, setRoll] = React.useState<{ from: string; up: boolean; key: number } | null>(null)
+  React.useLayoutEffect(() => {
+    const from = last.current
+    if (from === step) return
+    last.current = step
+    setRoll(reducedMotion() ? null : { from, up: stepIndex(step) >= stepIndex(from), key: ++round.current })
+  }, [step])
+
+  // Right-aligned, so units stay over units when a digit is gained or lost.
+  const width = Math.max(step.length, roll?.from.length ?? 0)
+  const to = step.padStart(width, ' ')
+  const from = (roll?.from ?? step).padStart(width, ' ')
+  const cell = (ch: string) => (ch === ' ' ? '' : ch)
+  return (
+    <span className="text-sm whitespace-nowrap text-text-muted tabular-nums">
+      <span aria-live="polite" className="sr-only">
+        {step}
+      </span>
+      <span aria-hidden className="inline-flex">
+        {[...to].map((ch, i) =>
+          roll && from[i] !== ch ? (
+            <span key={`${roll.key}-${i}`} className="inline-flex h-lh flex-col overflow-hidden">
+              <span
+                className="flex flex-col"
+                ref={(column) => {
+                  if (!column || column.dataset.rolled) return
+                  column.dataset.rolled = ''
+                  const end = roll.up ? 'translateY(-50%)' : 'translateY(0)'
+                  column
+                    .animate([{ transform: roll.up ? 'translateY(0)' : 'translateY(-50%)' }, { transform: end }], { duration: ROLL_MS, easing: ROLL_EASE })
+                    .finished.then(
+                      () => setRoll((r) => (r?.key === roll.key ? null : r)),
+                      () => {},
+                    )
+                }}
+              >
+                <span className="h-lh">{cell(roll.up ? from[i] : ch)}</span>
+                <span className="h-lh">{cell(roll.up ? ch : from[i])}</span>
+              </span>
+            </span>
+          ) : ch === ' ' ? null : (
+            <span key={i}>{ch}</span>
+          ),
+        )}
+      </span>
+    </span>
+  )
 }
 
 /** `decisionItem` (3092:61608): 4px padding, radius-md, action/secondary fill on hover. */
