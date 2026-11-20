@@ -173,7 +173,7 @@ export function Notification({
           className={cn(
             // 24px, centred on the corner: half above the top edge, half past the end edge.
             'absolute end-0 top-0 grid size-6 -translate-y-1/2 translate-x-1/2 cursor-pointer place-items-center rounded-full rtl:-translate-x-1/2',
-            'border border-border-subtle bg-bg-popover text-text-muted [box-shadow:0_1px_3px_0_var(--effect-shadow-sm)]',
+            'border border-strong border-border-subtle bg-bg-popover text-text-muted [box-shadow:0_1px_3px_0_var(--effect-shadow-sm)]',
             'transition-[opacity,color,background-color] duration-(--duration-fast) ease-(--ease-out)',
             'hover:bg-bg-hover hover:text-text-default active:bg-bg-selected',
             'satin-focus:outline-2 satin-focus:outline-solid satin-focus:outline-offset-2 satin-focus:outline-action-focus-ring',

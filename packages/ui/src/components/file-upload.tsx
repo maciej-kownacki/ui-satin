@@ -191,7 +191,7 @@ export function FileUpload({
           take(e.dataTransfer.files)
         }}
         className={cn(
-          'flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border-default px-6 py-8 text-center',
+          'flex flex-col items-center gap-4 rounded-2xl border border-strong border-dashed border-border-default px-6 py-8 text-center',
           'transition-[background-color,border-color] duration-(--duration-fast) ease-(--ease-out)',
           'data-[dragging]:border-status-brand-border data-[dragging]:bg-bg-hover',
           'data-[disabled]:opacity-50',

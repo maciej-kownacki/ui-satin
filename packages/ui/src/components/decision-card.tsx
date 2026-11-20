@@ -472,7 +472,7 @@ function DecisionChip({
       disabled={disabled}
       onClick={() => onPressedChange(!selected)}
       className={cn(
-        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-pill border ps-2 pe-2.5 text-base font-medium outline-none select-none',
+        'inline-flex h-control-height shrink-0 items-center gap-1.5 rounded-pill border border-strong ps-2 pe-2.5 text-base font-medium outline-none select-none',
         'transition-[background-color,border-color,color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out) active:scale-[0.97]',
         '[&_svg]:size-icon-size-sm [&_svg]:shrink-0 [&_svg]:[stroke-width:1.875]',
         'focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
@@ -573,7 +573,7 @@ function Ranking({
               onPointerCancel={onPointerUp}
               onKeyDown={(e) => onKeyDown(e, i)}
               className={cn(
-                'group/rank flex cursor-grab touch-none items-center gap-2 rounded-lg border border-border-default bg-bg-popover py-2 ps-2 pe-2.5 outline-none select-none',
+                'group/rank flex cursor-grab touch-none items-center gap-2 rounded-lg border border-strong border-border-default bg-bg-popover py-2 ps-2 pe-2.5 outline-none select-none',
                 'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
                 'hover:border-border-strong focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
                 'data-dragging:cursor-grabbing data-dragging:border-border-strong',
