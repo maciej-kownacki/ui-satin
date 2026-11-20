@@ -26,8 +26,8 @@ const badgeVariants = cva(
       variant: {
         soft: 'bg-tone-bg',
         plain: 'bg-transparent',
-        // White (bg/card) inside a 1px border/default edge, drawn inset so the size stays put.
-        outline: 'bg-bg-card [box-shadow:inset_0_0_0_1px_var(--border-default)]',
+        // White (bg/card) inside a border/default edge, drawn inset so the size stays put.
+        outline: 'bg-bg-card [box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-default)]',
       },
       shape: {
         default: 'rounded-sm',

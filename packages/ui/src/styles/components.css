@@ -13,7 +13,7 @@
   width: 16px;
   height: 16px;
   padding: 0;
-  border: 1px solid var(--border-default);
+  border: var(--border-width-strong) solid var(--border-default);
   border-radius: var(--radius-sm);
   background: var(--bg-field);
   color: var(--action-primary-fg);
@@ -155,7 +155,7 @@
   margin: 0;
   /* Even on every side: the icon tile sits as far from the side edge as from the top and bottom. */
   padding: 12px;
-  border: 1px solid var(--border-default);
+  border: var(--border-width-strong) solid var(--border-default);
   border-radius: var(--radius-xl);
   background: var(--bg-card);
   box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);

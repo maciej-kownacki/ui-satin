@@ -216,7 +216,7 @@ export function Slider({
             keyTimer.current = setTimeout(() => setKeying(false), 1000)
           }}
           className={cn(
-            'relative block size-4 cursor-grab rounded-full border border-border-strong bg-bg-popover outline-none active:cursor-grabbing',
+            'relative block size-4 cursor-grab rounded-full border border-strong border-border-strong bg-bg-popover outline-none active:cursor-grabbing',
             '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm)]',
             'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
             'hover:border-text-subtle focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',

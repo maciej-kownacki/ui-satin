@@ -418,7 +418,7 @@ function RadioRow({ option }: { option: DecisionOption }) {
         id={id}
         value={option.value}
         className={cn(
-          'flex size-4 shrink-0 items-center justify-center rounded-full border border-border-strong bg-bg-field outline-none',
+          'flex size-4 shrink-0 items-center justify-center rounded-full border border-strong border-border-strong bg-bg-field outline-none',
           '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
           'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
           'data-[state=checked]:border-action-primary-bg data-[state=checked]:bg-action-primary-bg data-[state=checked]:[box-shadow:none]',
@@ -656,7 +656,7 @@ function Draft({
       <div className="px-3 pb-1">
         <div
           className={cn(
-            'flex flex-col gap-2 rounded-2xl rounded-ss-[4px] border border-border-default bg-bg-popover px-3 py-2.5 text-base text-text-default',
+            'flex flex-col gap-2 rounded-2xl rounded-ss-[4px] border border-strong border-border-default bg-bg-popover px-3 py-2.5 text-base text-text-default',
             '[box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
             'transition-[box-shadow,border-color] duration-(--duration-fast) ease-(--ease-out)',
             'has-[textarea:focus-visible]:border-border-focus has-[textarea:focus-visible]:[box-shadow:0_0_0_1px_var(--border-focus)]',

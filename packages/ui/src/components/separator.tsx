@@ -4,7 +4,7 @@ import * as React from 'react'
 import { cn } from '../lib/utils'
 
 /**
- * Separator: a 1px rule in border/default between blocks of content, across (horizontal) or
+ * Separator: a hairline rule (border-width/default) in border/default between blocks of content, across (horizontal) or
  * down (vertical, as tall as its row).
  *
  * With a `label` it becomes a rule with a word in the middle ("or" between sign-in options,
@@ -34,9 +34,9 @@ export function Separator({ orientation = 'horizontal', decorative = true, label
         className={cn('flex w-full items-center gap-3 text-sm text-text-muted', className)}
         {...props}
       >
-        <span className="h-px flex-1 bg-border-default" />
+        <span className="h-(--border-width-default) flex-1 bg-border-default" />
         <span className="shrink-0">{label}</span>
-        <span className="h-px flex-1 bg-border-default" />
+        <span className="h-(--border-width-default) flex-1 bg-border-default" />
       </div>
     )
 
@@ -47,7 +47,7 @@ export function Separator({ orientation = 'horizontal', decorative = true, label
       {...semantics}
       className={cn(
         'shrink-0 bg-border-default',
-        orientation === 'horizontal' ? 'h-px w-full' : 'w-px self-stretch',
+        orientation === 'horizontal' ? 'h-(--border-width-default) w-full' : 'w-(--border-width-default) self-stretch',
         className,
       )}
       {...props}

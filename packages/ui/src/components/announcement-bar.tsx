@@ -58,7 +58,7 @@ export function AnnouncementBar({
   const toneClass = {
     primary: 'bg-action-primary-bg text-action-primary-fg',
     inverse: 'bg-action-inverse-bg text-text-on-inverse',
-    default: 'bg-bg-card text-text-default [box-shadow:inset_0_1px_0_var(--border-subtle),inset_0_-1px_0_var(--border-subtle)]',
+    default: 'bg-bg-card text-text-default [box-shadow:inset_0_var(--border-width-default)_0_var(--border-subtle),inset_0_calc(var(--border-width-default)*-1)_0_var(--border-subtle)]',
   }[tone]
   const closeClass = {
     primary: 'text-action-primary-fg opacity-70 hover:bg-action-primary-bg-hover hover:opacity-100',

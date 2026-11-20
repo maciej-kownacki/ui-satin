@@ -30,7 +30,7 @@ export interface MessageActionsProps extends React.ComponentProps<'div'> {
   onShare?: () => void
 }
 
-const divider = <span aria-hidden className="h-3 w-px shrink-0 rounded-full bg-border-default" />
+const divider = <span aria-hidden className="h-3 w-(--border-width-default) shrink-0 rounded-full bg-border-default" />
 
 export function MessageActions({
   timestamp,

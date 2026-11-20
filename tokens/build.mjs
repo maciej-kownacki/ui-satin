@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const tokens = JSON.parse(readFileSync(join(here, 'tokens.json'), 'utf8'));
-const COLLECTIONS = ['primitives', 'theme', 'tone', 'radius', 'spacing', 'typography'];
+const COLLECTIONS = ['primitives', 'theme', 'tone', 'radius', 'border-width', 'spacing', 'typography'];
 const modesOf = (c) => tokens[c].$extensions?.['com.satin']?.modes ?? (c === 'theme' ? ['Light', 'Dark'] : ['Value']);
 
 const flat = new Map();
@@ -164,7 +164,20 @@ function css() {
       L.push(`  ${cssVar(t)}--letter-spacing: ${tracking.value}${tracking.unit};`);
     }
   }
+  // Stroke widths: Tailwind's border-*, border-x… and divide-* read --default-border-width, and
+  // border-strong is border-width/strong. A width under 1px is written as what browsers draw for
+  // a border of that width (whole device pixels, rounded down, at least one), screen by screen,
+  // so a box-shadow stroke, which browsers don't snap, is as crisp as a border: 0.75 is 1px on
+  // 1x screens, 0.5px on 2x, 0.667px on 3x.
+  const snap = (v, dpr) => Math.round((Math.max(1, Math.floor(v * dpr + 1e-9)) / dpr) * 1000) / 1000;
+  const widths = of('border-width');
+  for (const t of widths) L.push(`  ${cssVar(t)}: ${snap(dim(t.$value), 1)}px;`);
+  L.push('  --default-border-width: var(--border-width-default);');
   L.push('}', '');
+  for (const dpr of [2, 3]) {
+    const lines = widths.filter((t) => snap(dim(t.$value), dpr) !== snap(dim(t.$value), 1)).map((t) => `    ${cssVar(t)}: ${snap(dim(t.$value), dpr)}px;`);
+    if (lines.length) L.push(`@media (min-resolution: ${dpr}dppx) {`, '  :root {', ...lines, '  }', '}', '');
+  }
 
   L.push('@theme inline {');
   for (const t of [...theme, ...of('tone')].filter((t) => !cssVar(t).startsWith('--effect-'))) {

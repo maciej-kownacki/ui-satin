@@ -8,7 +8,7 @@ import { useSatinLabels } from './labels'
 
 /**
  * CodeBlock, 1:1 with the uiKit `CodeBlock` set (3179:20414) and its `CodeLine` rows
- * (3124:20131): a card-surface block, 1px border-default, radius-2xl, 12px bottom padding.
+ * (3124:20131): a card-surface block, a border-default edge, radius-2xl, 12px bottom padding.
  * The header holds the file icon, the filename (medium 13/18), diff stats in a diff, and a
  * tertiary xs Copy button that reads "Copied" with a check for 1.5 s. Lines are Geist Mono
  * 13/19.5, 24 high, 16px side padding, a 20px right-aligned number column 16px from the

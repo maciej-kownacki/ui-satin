@@ -136,7 +136,7 @@ export function SearchBar({
         data-slot="search-bar"
         data-variant="panel"
         className={cn(
-          'flex w-full flex-col overflow-clip rounded-2xl border border-border-subtle bg-bg-muted',
+          'flex w-full flex-col overflow-clip rounded-2xl border border-strong border-border-subtle bg-bg-muted',
           // Keycaps take the sheet's colour: on bg/muted their own bg/muted would vanish.
           '[--component-kbd-bg:var(--bg-card)]',
           'transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
@@ -180,7 +180,7 @@ export function SearchBar({
     <label
       data-slot="search-bar"
       className={cn(
-        'flex h-control-height-lg w-full cursor-text items-center gap-2 rounded-lg border border-border-default bg-bg-card px-2',
+        'flex h-control-height-lg w-full cursor-text items-center gap-2 rounded-lg border border-strong border-border-default bg-bg-card px-2',
         '[box-shadow:0_1px_1px_0_var(--effect-shadow-xs)] transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
         'hover:border-border-strong',
         // Focus: a 2px border/focus edge, as on every field.
