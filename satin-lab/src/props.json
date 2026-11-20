@@ -186,7 +186,7 @@
       ]
     },
     "ActivityTimelineRun": {
-      "description": "Several entries by one actor folded into one row: \"Agent made 6 changes\", a button that opens onto them (their own list, fading in). Other props, `ref` included, go to the `li`.",
+      "description": "Several entries by one actor folded into one row: \"Agent made 6 changes\", a button that opens onto them (their own list, opening in height). Other props, `ref` included, go to the `li`.",
       "type": "ActivityTimelineRunProps",
       "extends": [
         "Omit<React.ComponentProps<'li'>, 'children'>"

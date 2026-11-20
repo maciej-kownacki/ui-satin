@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import { Toaster, toast } from '@uisatin/ui/toast'
 import { ActivityTimeline, type ActivityActor, type ActivityItem } from '../components/activity-timeline'
@@ -110,10 +110,16 @@ describe('ActivityTimeline', () => {
     expect(run.getAttribute('aria-expanded')).toBe('true')
     const list = document.getElementById(run.getAttribute('aria-controls')!)!
     expect(within(list).getAllByRole('listitem')).toHaveLength(3)
-    // Its entries mount after the first render, so they fade in.
-    expect(list.querySelector('li')!.hasAttribute('data-enter')).toBe(true)
+    // The fold opens in height and fades its entries in itself, so they don't fade on their own.
+    const fold = list.closest('[data-slot=activity-timeline-fold]')!
+    expect(fold.getAttribute('data-state')).toBe('open')
+    expect(list.querySelector('li')!.hasAttribute('data-enter')).toBe(false)
     await user.keyboard(' ')
     expect(run.getAttribute('aria-expanded')).toBe('false')
+    // Closing, the entries stay (inert) until the fold has moved, then go.
+    expect(fold.getAttribute('data-state')).toBe('closed')
+    expect(fold.hasAttribute('inert')).toBe(true)
+    await waitFor(() => expect(querySentence('Agent tagged Senior')).toBeNull())
     // Two agent entries today stay unfolded: a run needs three.
     expect(sentence('Agent drafted offer email')).toBeTruthy()
   })
@@ -134,6 +140,8 @@ describe('ActivityTimeline', () => {
     const joined: ActivityItem = { id: 'notes', actor: agent, verb: 'added', target: 'notes', at: yesterday(Date.now(), 17) }
     rerender(<ActivityTimeline items={[joined, ...items]} expanded={['tag']} />)
     expect(screen.getByRole('button', { name: 'Agent made 4 changes' }).getAttribute('aria-expanded')).toBe('true')
+    // It joins an open run, so it fades in on its own.
+    expect(entry(/added notes/).hasAttribute('data-enter')).toBe(true)
   })
 
   it('reverts: the button spins, the entry says so and takes focus, a toast offers Undo', async () => {
@@ -158,6 +166,7 @@ describe('ActivityTimeline', () => {
     expect(li.getAttribute('data-state')).toBe('reverted')
     expect(li.querySelector('s')!.textContent).toBe('Agent changed salary range')
     expect(within(li).getByText('Reverted by you')).toBeTruthy()
+    expect(within(li).getByText('Reverted by you').closest('[data-slot=activity-timeline-fold]')!.getAttribute('data-state')).toBe('open')
     expect(screen.queryByRole('button', { name: 'Revert salary range change' })).toBeNull()
     expect(document.activeElement).toBe(li)
     expect(screen.getByText('Reverted salary range change')).toBeTruthy()
@@ -165,6 +174,8 @@ describe('ActivityTimeline', () => {
     await user.click(screen.getByRole('button', { name: 'Undo' }))
     expect(onUndoRevert).toHaveBeenCalledWith(expect.objectContaining({ id: 'salary' }))
     expect(screen.getByRole('button', { name: 'Revert salary range change' })).toBeTruthy()
+    // "Reverted by you" closes in height, then goes.
+    await waitFor(() => expect(within(li).queryByText('Reverted by you')).toBeNull())
   })
 
   it('puts the button back when the revert fails, without a toast', async () => {
