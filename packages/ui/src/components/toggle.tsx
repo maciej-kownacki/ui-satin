@@ -21,7 +21,7 @@ import { cn } from '../lib/utils'
  */
 const toggleVariants = cva(
   [
-    'inline-flex shrink-0 items-center justify-center gap-2 border font-medium whitespace-nowrap select-none text-text-muted',
+    'inline-flex shrink-0 items-center justify-center gap-2 border border-strong font-medium whitespace-nowrap select-none text-text-muted',
     'transition-[background-color,border-color,color,box-shadow,border-radius] duration-(--duration-fast) ease-(--ease-out)',
     'focus-visible:outline-none disabled:pointer-events-none disabled:text-text-subtle',
     'satin-hover:text-text-default satin-focus:text-text-default data-[state=on]:text-text-default',

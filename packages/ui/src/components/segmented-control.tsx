@@ -42,7 +42,7 @@ export interface SegmentedControlProps extends Omit<React.ComponentProps<'div'>,
   onValueChange?: (value: string) => void
   size?: Size
   shape?: Shape
-  /** A 1px border-subtle outline around the track. */
+  /** A border-subtle outline around the track (border-width/strong: the track is a control). */
   border?: boolean
   fullWidth?: boolean
   /** Required when the segments have no visible text of their own. */
@@ -53,7 +53,7 @@ export interface SegmentedControlProps extends Omit<React.ComponentProps<'div'>,
 const track = cva('relative isolate inline-flex items-center gap-0.5 bg-bg-muted p-1', {
   variants: {
     shape: { default: 'rounded-lg', rounded: 'rounded-pill' },
-    border: { true: 'border border-border-subtle', false: '' },
+    border: { true: 'border border-strong border-border-subtle', false: '' },
     fullWidth: { true: 'flex w-full', false: '' },
   },
 })

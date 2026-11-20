@@ -7120,7 +7120,7 @@
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "A 1px border-subtle outline around the track."
+          "description": "A border-subtle outline around the track (border-width/strong: the track is a control)."
         },
         {
           "name": "fullWidth",

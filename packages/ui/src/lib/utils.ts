@@ -7,6 +7,9 @@ import { extendTailwindMerge } from 'tailwind-merge'
  * and never saw that `rounded-lg` replaces `rounded-pill` or `h-8` replaces `h-control-height`.
  * These are the names theme.css adds to Tailwind's text, radius, spacing and shadow scales.
  */
+const STROKES = ['default', 'strong']
+const SIDES = ['x', 'y', 's', 'e', 't', 'r', 'b', 'l']
+
 const twMerge = extendTailwindMerge({
   extend: {
     theme: {
@@ -23,6 +26,13 @@ const twMerge = extendTailwindMerge({
         'toast-height',
       ],
       shadow: ['primary', 'primary-focus', 'destructive', 'destructive-focus', 'border-focus', 'xs-focus'],
+    },
+    // Satin's stroke widths (border-width/default and /strong): without these, the strong width
+    // class reads as a border colour and is dropped next to a real one. The side groups are built
+    // from their letters, so the build doesn't take their names for class lists.
+    classGroups: {
+      'border-w': [{ border: STROKES }],
+      ...Object.fromEntries(SIDES.map((side) => [`border-w-${side}`, [{ [`border-${side}`]: STROKES }]])),
     },
   },
 })

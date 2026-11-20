@@ -60,7 +60,7 @@ export function Attachment({
     <div
       data-slot="attachment"
       className={cn(
-        'group/attachment relative inline-flex max-w-full shrink-0 items-center border border-border-default bg-bg-popover',
+        'group/attachment relative inline-flex max-w-full shrink-0 items-center border border-strong border-border-default bg-bg-popover',
         '[box-shadow:0_1px_1px_0_var(--effect-shadow-xs)]',
         'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
         lg ? 'gap-2.5 px-2' : 'h-control-height gap-1.5 ps-2',

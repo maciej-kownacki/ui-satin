@@ -38,7 +38,7 @@ const chipVariants = cva(
   {
     variants: {
       variant: {
-        outline: 'border',
+        outline: 'border border-strong',
         subtle: '',
       },
       size: {
@@ -79,7 +79,7 @@ const chipVariants = cva(
           'satin-hover:bg-bg-pressed',
           'satin-focus:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
           'has-[button:focus-visible]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
-          'satin-pressed:bg-bg-pressed satin-pressed:[box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-strong)]',
+          'satin-pressed:bg-bg-pressed satin-pressed:[box-shadow:inset_0_0_0_var(--border-width-strong)_var(--border-strong)]',
         ],
       },
       {

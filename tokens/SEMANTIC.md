@@ -47,14 +47,18 @@ Stan dziś: kolekcja `theme` (102 zmienne, Light/Dark) to mieszanka nazw shadcn 
 | `border/focus` | color/ring — obrys focusu w inputach i tabach (24 użycia), obok glow `action/focus-ring` |
 
 ### border-width — stroke widths (added 20 November 2026)
+
+One rule: **interactive → strong, surfaces → default.** When something is both (a clickable card), interactive wins.
+
 | token | value | where |
 |---|---|---|
-| `border-width/default` | 0.75px | Every edge: cards, menus, popovers, buttons (their outline and ring), chips, outline badges, rules and separators, table lines, the bulk action bar. Tailwind's `border`, `border-t`…, `divide-*` read it (`--default-border-width`); a box-shadow stroke writes `var(--border-width-default)`. |
-| `border-width/strong` | 1px | The boundary of a form control: Input, Textarea, Select, Combobox, Date picker and Number input fields, Input group parts, OTP cells, Search bar, Prompt bar, Decision card's answer field and radios, Checkbox, Radio, Selectable cards, the Slider thumb, the outline Dot. Tailwind: `border-strong`. |
+| `border-width/strong` | 1px | Anything you click, press, type into, toggle or drag that draws its own edge: Button in every variant (border and the outer ring, at rest, hover and pressed; ActionButton, SplitButton and ButtonGroup seams through it), Chip, Toggle, SegmentedControl's track, the Sources pill and citation markers, attachment chips (Attachment, Prompt bar), Notification's dismiss button, Decision card's answer chips, rank rows, answer field and radios, the OTP suggestion, File upload's drop zone, every field (Input, Textarea, Select, Combobox, Date picker, Number input, Input group parts, OTP cells, Search bar, Prompt bar), Checkbox, Radio, Selectable cards, the Slider thumb, the outline Dot. Tailwind: `border-strong`, `border-t-strong`…; in a box-shadow, `var(--border-width-strong)`. |
+| `border-width/default` | 0.75px | Surfaces and decoration: Card, Popover, Hover card, DropdownMenu, Context menu, Combobox, Select, Date picker and Command menu panels, Dialog, Sheet, Toast, Table frame and lines (the hover outline of a row too), Separator, ButtonGroup's loose separator, menu rules, Badge, Kbd, CodeBlock, Alert, Banner, AnnouncementBar, Agent suggestion, Decision card's panel, List, Notification's card, Empty state, File upload's file rows, the tabs underline, the Bulk action bar's surface. Tailwind's plain `border`, `border-t`…, `divide-*` (`--default-border-width`); in a box-shadow, `var(--border-width-default)`. |
 
+- Both at once, interactive wins: File upload's drop zone (a surface you drop onto), attachment chips (a file card you press), Notification's dismiss button on the card's corner. A Table row lifts on hover but the table is a surface whether its rows open anything or not, so its outline stays default.
 - In CSS, `default` is written as what browsers draw for a 0.75px border: whole device pixels, rounded down, at least one. 1px on 1x screens, 0.5px on 2x, 0.667px on 3x (`@media (min-resolution: …)` in theme.css). Borders would snap that way anyway; writing it out makes box-shadow strokes, which browsers don't snap, as crisp as borders instead of a soft 1.5-pixel smear.
-- Field and control edges keep `strong`: their edge is what marks them (WCAG 1.4.11), and border/default and border/input on bg/field are already under 3:1 (known issues on /accessibility); thinner would be fainter still.
 - Not stroke widths, so untouched: focus rings (the 2px `action/focus-ring`, the field's 1px `border/focus` ring that doubles the edge to 2px), error and success edges on fields, shadow offsets (`0 1px 2px`), the 1px top highlight on tooltips and the OTP suggestion, carets, the Thinking rail, the dash between OTP groups.
+- In code use the token, never a raw width: `border` or `border-strong`, `var(--border-width-default)` or `var(--border-width-strong)`. `cn()` knows `border-strong` is a width, so it survives next to a border colour.
 
 ### action — przyciski, toggle, kontrolki (`bg`, `bg-hover`, `bg-pressed`, `border`, `fg`, `glow`, `shadow`)
 | nowa | dziś |

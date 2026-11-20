@@ -646,7 +646,7 @@ function AttachmentChip({
     <span
       data-slot="attachment"
       className={cn(
-        'flex h-control-height items-center gap-1.5 border border-border-default bg-bg-popover ps-2 pe-0.5',
+        'flex h-control-height items-center gap-1.5 border border-strong border-border-default bg-bg-popover ps-2 pe-0.5',
         '[filter:drop-shadow(0_1px_1px_var(--effect-shadow-xs))]',
         'transition-[background-color,border-color] duration-(--duration-fast) ease-(--ease-out)',
         'hover:border-border-strong hover:bg-bg-canvas active:border-border-strong active:bg-bg-muted',
