@@ -6,6 +6,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { hideProSource, isReleased } from '../nav'
 
 const demos = import.meta.glob<{ options?: { code: string }[] }>('../demos/*.tsx')
 
@@ -15,10 +16,20 @@ export const ALIASES: Record<string, string> = { 'area-chart': 'line-chart' }
 /** The registry folder, from the site's own folder or the repo's. */
 export const registryDir = [join(process.cwd(), 'public/r'), join(process.cwd(), 'satin-lab/public/r')].find((d) => existsSync(d))
 
-export function registryItem(name: string): { name: string; dependencies?: string[]; registryDependencies?: string[]; meta?: { props?: Record<string, unknown> } } | undefined {
+export function registryItem(
+  name: string,
+): { name: string; dependencies?: string[]; registryDependencies?: string[]; meta?: { edition?: string; props?: Record<string, unknown> } } | undefined {
   const file = registryDir && join(registryDir, `${name}.json`)
   return file && existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : undefined
 }
+
+/**
+ * Whether this build publishes a registry item (public/r/<name>.json): all of them in dev and
+ * previews; in the public build none for an unreleased page and none of Satin Pro, whose source
+ * stays private. integrations/release.mjs removes the same items from dist/r.
+ */
+export const isPublished = (name: string) =>
+  isReleased(name) && !(hideProSource && (name === 'satin-pro-styles' || registryItem(name)?.meta?.edition === 'pro'))
 
 /** Names of the components with a docs demo. */
 export const demoNames = Object.keys(demos).map((p) => p.replace('../demos/', '').replace(/\.tsx$/, ''))

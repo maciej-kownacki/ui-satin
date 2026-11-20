@@ -1,6 +1,6 @@
 import type { APIRoute, GetStaticPaths } from 'astro'
 import { nav, pagesOf } from '../../nav'
-import { ALIASES, asAppFile, demoNames, importsOf, registryItem, shortestExample } from '../../lib/examples'
+import { ALIASES, asAppFile, demoNames, importsOf, isPublished, registryItem, shortestExample } from '../../lib/examples'
 
 /**
  * /r/<name>-demo.json: a registry:example item per component with a docs demo, the shortest use
@@ -10,7 +10,7 @@ import { ALIASES, asAppFile, demoNames, importsOf, registryItem, shortestExample
 const pages = Object.fromEntries(nav.flatMap((g) => pagesOf(g.items)).map((p) => [p.id, p]))
 
 export const getStaticPaths: GetStaticPaths = () =>
-  demoNames.filter((name) => pages[name] && registryItem(name)).map((name) => ({ params: { name } }))
+  demoNames.filter((name) => pages[name] && registryItem(name) && isPublished(ALIASES[name] ?? name)).map((name) => ({ params: { name } }))
 
 export const GET: APIRoute = async ({ params }) => {
   const name = params.name!

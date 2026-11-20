@@ -18,7 +18,8 @@ export type NavItem = {
 }
 export type NavGroup = { id: string; title: string; items: NavItem[] }
 
-export const nav: NavGroup[] = [
+/** Every page, finished or not: the dev server and preview builds show all of it. */
+export const allNav: NavGroup[] = [
   {
     id: 'docs',
     title: 'Docs',
@@ -337,17 +338,59 @@ export const nav: NavGroup[] = [
 ]
 
 /**
+ * Pages that aren't finished. The public build (see `publicBuild`) leaves them out entirely: no
+ * page, no sidebar row, card, sitemap or llms.txt entry, no registry item. The dev server and
+ * preview builds show them. The one list to edit when a page is done.
+ */
+export const unreleased = new Set<string>([
+  'activity-timeline', 'command-pages', 'data-grid', 'filter-bar', 'search-scoped', 'kanban-board',
+  'scheduler', 'stepper', 'review-queue', 'agent-permissions',
+])
+
+/**
+ * True in the build that goes public (uisatin.dev). The satin-release integration
+ * (satin-lab/integrations/release.mjs) sets SATIN_PUBLIC=1 for `astro build`, unless
+ * SATIN_PREVIEW=1 or VERCEL_ENV=preview asks for a preview build with everything in it.
+ * `SATIN_PUBLIC=1 npm run dev` shows the public site on the dev server. Read on the server
+ * only: in the browser `process` doesn't exist and this is false, so islands take what they
+ * need as props.
+ */
+export const publicBuild = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.SATIN_PUBLIC === '1'
+
+/** Whether a page is in this build: every page in dev and previews, the finished ones in public. */
+export const isReleased = (id: string) => !publicBuild || !unreleased.has(id)
+
+/**
+ * Satin Pro is docs-only in public: its pages keep the demo, the description, the API and the
+ * accessibility notes, but no code (no Code tab, no example, no registry item with the source).
+ */
+export const hideProSource = publicBuild
+
+const released = (items: NavItem[]): NavItem[] =>
+  items.flatMap((i) => {
+    if (!isReleased(i.id)) return []
+    if (!i.children) return [i]
+    const children = released(i.children)
+    return children.length ? [{ ...i, children, href: children.some((c) => c.href === i.href) ? i.href : children[0].href }] : []
+  })
+
+/** The sidebar as this build shows it: `allNav` without the unreleased pages in public. */
+export const nav: NavGroup[] = allNav.map((g) => ({ ...g, items: released(g.items) })).filter((g) => g.items.length)
+
+/**
  * Pages built or changed in the P1 batch, marked New in the sidebar so they are easy to find
  * while they are reviewed (preview only). The last four existed before and gained a feature:
  * Combobox (creatable), Dropdown (submenus), Date picker (presets), Toast (Undo countdown).
  */
-export const newPages = new Set<string>([
-  'agent-presence', 'agent-changes-review', 'agent-plan', 'agent-undo-log', 'agent-permissions', 'review-queue',
-  'prompt-mentions', 'tool-call',
-  'activity-timeline', 'bulk-action-bar', 'people-picker', 'command-pages', 'data-grid', 'filter-bar',
-  'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'search-scoped', 'stepper', 'table-pro',
-  'combobox', 'dropdown', 'date-picker', 'toast',
-])
+export const newPages = new Set<string>(
+  [
+    'agent-presence', 'agent-changes-review', 'agent-plan', 'agent-undo-log', 'agent-permissions', 'review-queue',
+    'prompt-mentions', 'tool-call',
+    'activity-timeline', 'bulk-action-bar', 'people-picker', 'command-pages', 'data-grid', 'filter-bar',
+    'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'search-scoped', 'stepper', 'table-pro',
+    'combobox', 'dropdown', 'date-picker', 'toast',
+  ].filter(isReleased),
+)
 
 /** The package a page's component comes from. */
 export const packageOf = (item: Pick<NavItem, 'edition'>) => (item.edition === 'pro' ? '@uisatin/pro' : '@uisatin/ui')
@@ -356,10 +399,10 @@ export const packageOf = (item: Pick<NavItem, 'edition'>) => (item.edition === '
 export const pagesOf = (items: NavItem[]): NavItem[] => items.flatMap((i) => (i.children ? pagesOf(i.children) : [i]))
 
 /** The group a page sits in, for the breadcrumbs above its title. */
-export const groupOf = (id: string) => nav.find((g) => pagesOf(g.items).some((i) => i.id === id))!
+export const groupOf = (id: string) => allNav.find((g) => pagesOf(g.items).some((i) => i.id === id))!
 
 /** The parent row a page sits under (Chart for Bar chart), if any. */
-export const parentOf = (id: string) => nav.flatMap((g) => g.items).find((i) => i.children?.some((c) => c.id === id))
+export const parentOf = (id: string) => allNav.flatMap((g) => g.items).find((i) => i.children?.some((c) => c.id === id))
 
 /** Every component and AI pattern page, the ones the All components page shows as cards. */
 export const componentPages = () => nav.filter((g) => g.id === 'ai-patterns' || g.id === 'components').flatMap((g) => pagesOf(g.items))
@@ -372,9 +415,10 @@ export const allComponents: NavItem = {
   description: 'Every component and AI pattern in Satin, with a preview of each.',
 }
 
+/** A page by id, released or not (an unreleased page's own file still asks for it in dev). */
 export const page = (id: string) => {
   if (id === allComponents.id) return allComponents
-  const item = pagesOf(nav.flatMap((g) => g.items)).find((i) => i.id === id)
+  const item = pagesOf(allNav.flatMap((g) => g.items)).find((i) => i.id === id)
   if (!item) throw new Error(`No nav item "${id}"`)
   return item
 }

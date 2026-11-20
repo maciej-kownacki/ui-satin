@@ -20,7 +20,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { nav, pagesOf } from '../satin-lab/src/nav.ts'
+import { allNav as nav, pagesOf } from '../satin-lab/src/nav.ts'
 import { declaredThemeVars, prefixSource, prefixThemeVars } from '../packages/ui/build/prefix.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')

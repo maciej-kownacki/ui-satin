@@ -7,6 +7,7 @@
  * - every component and AI-pattern page has its .astro file, a registry item and a component file
  *   (or an alias to the file it lives in);
  * - every registry item is a component file, an alias, or one of the shared items;
+ * - every id in nav.ts's `unreleased` (left out of the public build) is a page;
  * - a page says it's Pro (`edition: 'pro'` in nav.ts) exactly when its file is in Satin Pro
  *   (packages/ui-pro), and its registry item says the same edition.
  *
@@ -15,7 +16,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { nav, pagesOf } from '../satin-lab/src/nav.ts'
+import { allNav as nav, pagesOf, unreleased } from '../satin-lab/src/nav.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 // Entries (Free's or Pro's) that are parts of other components, documented on their pages.
@@ -64,6 +65,7 @@ for (const p of pages) {
   const edition = existsSync(item) ? JSON.parse(readFileSync(item, 'utf8')).meta?.edition : undefined
   if (edition && edition !== (isPro ? 'pro' : 'free')) problems.push(`r/${p.id}.json: meta.edition is ${edition}, the file is in Satin ${isPro ? 'Pro' : 'Free'}`)
 }
+for (const id of unreleased) if (!pageIds.has(id)) problems.push(`nav.ts unreleased lists ${id}, which is no component or AI-pattern page`)
 for (const i of items) if (!files.includes(i) && !ALIASES[i] && !SHARED_ITEMS.includes(i)) problems.push(`r/${i}.json matches no component file`)
 
 if (problems.length) {

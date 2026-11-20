@@ -8,8 +8,8 @@
 import Docs from '../layouts/Docs.astro'
 import PageHeader from '../components/PageHeader.astro'
 import Chip from '../components/Chip.astro'
-import { page } from '../nav'
-import { knownIssues } from '../accessibility'
+import { isReleased, page } from '../nav'
+import { knownIssues as allIssues } from '../accessibility'
 import { contrastRows } from '../../../scripts/check-contrast.mjs'
 
 const REVIEWED = '15 November 2026'
@@ -29,6 +29,11 @@ const summary = [
   { label: 'Control borders (a known issue, below)', need: '3:1', test: (r) => r.ok === null },
 ] satisfies { label: string; need: string; test: (r: (typeof rows)[number]) => boolean }[]
 const checked = rows.filter((r) => r.ok !== null).length
+
+// An issue of unreleased pages only isn't listed in the public build; a mixed one lists the released pages.
+const knownIssues = allIssues
+  .map((i) => ({ ...i, components: i.components.filter(isReleased) }))
+  .filter((i) => i.components.length)
 
 const pages = Object.fromEntries(
   knownIssues.flatMap((i) => i.components).map((id) => {

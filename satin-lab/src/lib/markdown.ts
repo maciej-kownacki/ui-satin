@@ -7,7 +7,7 @@
  */
 import { api } from '../api'
 import { a11y } from '../a11y'
-import { nav, packageOf, pagesOf, type NavItem } from '../nav'
+import { hideProSource, nav, packageOf, pagesOf, type NavItem } from '../nav'
 import props from '../props.json'
 import sizes from '../sizes.json'
 import { ALIASES, shortestExample } from './examples'
@@ -73,6 +73,8 @@ export async function componentMarkdown(page: NavItem) {
   const size = allSizes[file]
   const pro = page.edition === 'pro'
   const pkg = packageOf(page)
+  // The public build publishes no Satin Pro source: no registry item, no example (nav.ts).
+  const docsOnly = pro && hideProSource
 
   const out: string[] = [
     `# ${page.title}`,
@@ -80,7 +82,7 @@ export async function componentMarkdown(page: NavItem) {
     `> ${page.description}`,
     '',
     ...(pro ? ['Edition: Pro. Satin Pro is the licensed edition, the package `@uisatin/pro` on top of `@uisatin/ui`; it is not on npm yet.', ''] : []),
-    `Docs: ${SITE}${page.href} · Registry item (full source): ${SITE}/r/${page.id}.json`,
+    docsOnly ? `Docs: ${SITE}${page.href}` : `Docs: ${SITE}${page.href} · Registry item (full source): ${SITE}/r/${page.id}.json`,
     '',
     '## Install',
     '',
@@ -88,13 +90,15 @@ export async function componentMarkdown(page: NavItem) {
     pro ? 'npm i @uisatin/ui @uisatin/pro' : 'npm i @uisatin/ui',
     '```',
     '',
-    pro
+    docsOnly
+      ? `Import \`@uisatin/ui/styles.css\` and then \`@uisatin/pro/styles.css\` once at the root of the app, then the component from \`${pkg}/${file}\`.`
+      : pro
       ? `Import \`@uisatin/ui/styles.css\` and then \`@uisatin/pro/styles.css\` once at the root of the app, then the component from \`${pkg}/${file}\`. Or copy its source: \`npx shadcn@latest add ${SITE}/r/${page.id}.json\`.`
       : `Import \`@uisatin/ui/styles.css\` once at the root of the app, then the component from \`@uisatin/ui/${file}\`. Or copy its source: \`npx shadcn@latest add ${SITE}/r/${page.id}.json\`.`,
   ]
   if (size && pro) out.push('', `Size: about ${(size / 1000).toFixed(1)} kB of JavaScript, minified and gzipped, on top of the @uisatin/ui components it uses (React aside). The stylesheets are shared by every component.`)
   else if (size) out.push('', `Size: about ${(size / 1000).toFixed(1)} kB of JavaScript, minified and gzipped, with its dependencies (React aside). The stylesheet is shared by every component.`)
-  if (example) out.push('', '## Example', '', '```tsx', example.trim(), '```')
+  if (example && !docsOnly) out.push('', '## Example', '', '```tsx', example.trim(), '```')
   out.push('', '## API')
   if (doc?.description) out.push('', doc.description)
   for (const name of ordered) {

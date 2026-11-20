@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Badge, Button, SearchBar, cn } from '@uisatin/ui'
 import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
-import { allComponents, componentPages, newPages, pagesOf, type NavGroup, type NavItem } from '../nav'
+import type { NavGroup, NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
 import { AiPatternsIcon, AllComponentsIcon, ChartsIcon, ChevronDown, ChevronRight, ComponentsIcon, GuidesIcon, IntroIcon, RecipesIcon } from './icons'
 
@@ -21,7 +21,26 @@ const groupIcons: Record<string, typeof IntroIcon> = {
   recipes: RecipesIcon,
 }
 
-export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; current: string }) {
+/** Every page in a list of items: parents give their children instead of themselves (as nav.ts's). */
+const pagesOf = (items: NavItem[]): NavItem[] => items.flatMap((i) => (i.children ? pagesOf(i.children) : [i]))
+
+/**
+ * `nav`, `allComponents` and `fresh` (the ids marked New) come as props from the server, where
+ * nav.ts knows which pages this build shows. The island imports only nav.ts's types, so the
+ * pages a build leaves out (nav.ts `unreleased`) never reach the browser's JavaScript.
+ */
+export function Sidebar({
+  nav,
+  allComponents,
+  current: currentProp,
+  fresh,
+}: {
+  nav: NavGroup[]
+  allComponents: NavItem
+  current: string
+  fresh: string[]
+}) {
+  const newPages = React.useMemo(() => new Set(fresh), [fresh])
   // The clicked item becomes current at once, before the next page arrives; otherwise it
   // would go pressed → hover → current while the page loads, which reads as a flicker.
   const [current, setCurrent] = React.useState(currentProp)
@@ -307,7 +326,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                     <span className="min-w-0 flex-1 truncate text-[13px] leading-4 font-medium text-text-default">{allComponents.title}</span>
                     <Count>
                       <span className="sr-only">, </span>
-                      {componentPages().length}
+                      {nav.filter((g) => g.id === 'ai-patterns' || g.id === 'components').flatMap((g) => pagesOf(g.items)).length}
                       <span className="sr-only"> pages</span>
                     </Count>
                   </a>
@@ -368,6 +387,7 @@ export function Sidebar({ nav, current: currentProp }: { nav: NavGroup[]; curren
                             current={current}
                             renderLink={(child) => link(child, true)}
                             query={q}
+                            fresh={item.children!.some((c) => newPages.has(c.id))}
                           />
                         ) : (
                           link(item, false)
@@ -403,6 +423,7 @@ function NavParent({
   current,
   renderLink,
   query = '',
+  fresh,
 }: {
   item: NavItem
   open: boolean
@@ -411,6 +432,8 @@ function NavParent({
   renderLink: (child: NavItem) => React.ReactNode
   /** The search, lower-cased, to mark in the title. */
   query?: string
+  /** One of its pages is marked New. */
+  fresh: boolean
 }) {
   const listId = `nav-${item.id}`
   const holdsCurrent = item.children!.some((c) => c.id === current)
@@ -435,7 +458,7 @@ function NavParent({
         <span className="min-w-0 flex-1 truncate">
           <Highlight text={item.title} query={query} />
         </span>
-        {item.children!.some((c) => newPages.has(c.id)) && <NewMark />}
+        {fresh && <NewMark />}
         <Count>
           <span className="sr-only">, </span>
           {item.children!.length}
