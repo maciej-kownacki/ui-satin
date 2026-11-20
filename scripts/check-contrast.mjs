@@ -78,6 +78,13 @@ const pairs = [
   ['text', 'text-destructive', 'status-red-bg'],
   ...['action-focus-ring', 'border-focus'].flatMap((fg) => SURFACES.map((bg) => ['focus', fg, bg])),
   ...FIELD_SURFACES.map((bg) => ['edge', 'action-destructive-bg', bg]),
+  // Reviewable changes (Pro): its change card and the source preview inside it.
+  ...['component-changes-review-card-bg', 'component-changes-review-source-bg'].flatMap((bg) => [
+    ['text', 'text-default', bg],
+    ['text', 'text-muted', bg],
+    ['focus', 'action-focus-ring', bg],
+  ]),
+  ['text', 'status-green-fg', 'component-changes-review-card-bg'],
 ]
 const MIN = { text: 4.5, focus: 3, edge: 3 }
 

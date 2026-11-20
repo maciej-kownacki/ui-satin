@@ -288,6 +288,8 @@
   --component-switch-on: var(--color-green-soft-700);
   --component-switch-on-hover: var(--color-green-soft-600);
   --component-kbd-bg: var(--bg-card);
+  --component-changes-review-card-bg: var(--bg-canvas);
+  --component-changes-review-source-bg: var(--bg-card);
   --component-notification-badge-bg: var(--status-neutral-bg);
   --component-decision-chip-selected-bg: var(--status-brand-bg);
   --component-decision-chip-selected-border: var(--status-brand-fg);
@@ -406,6 +408,8 @@
   --component-switch-on: var(--color-green-soft-600);
   --component-switch-on-hover: var(--color-green-soft-500);
   --component-kbd-bg: var(--bg-muted);
+  --component-changes-review-card-bg: var(--bg-popover);
+  --component-changes-review-source-bg: var(--bg-muted);
   --component-notification-badge-bg: var(--color-secondary-pressed-dark);
   --component-decision-chip-selected-bg: var(--color-blue-500-a20);
   --component-decision-chip-selected-border: var(--color-primary-focus-dark);
@@ -517,6 +521,8 @@
     --component-switch-on: var(--color-green-soft-600);
     --component-switch-on-hover: var(--color-green-soft-500);
     --component-kbd-bg: var(--bg-muted);
+    --component-changes-review-card-bg: var(--bg-popover);
+    --component-changes-review-source-bg: var(--bg-muted);
     --component-notification-badge-bg: var(--color-secondary-pressed-dark);
     --component-decision-chip-selected-bg: var(--color-blue-500-a20);
     --component-decision-chip-selected-border: var(--color-primary-focus-dark);
@@ -718,6 +724,8 @@
   --color-component-switch-on: var(--component-switch-on);
   --color-component-switch-on-hover: var(--component-switch-on-hover);
   --color-component-kbd-bg: var(--component-kbd-bg);
+  --color-component-changes-review-card-bg: var(--component-changes-review-card-bg);
+  --color-component-changes-review-source-bg: var(--component-changes-review-source-bg);
   --color-component-notification-badge-bg: var(--component-notification-badge-bg);
   --color-component-decision-chip-selected-bg: var(--component-decision-chip-selected-bg);
   --color-component-decision-chip-selected-border: var(--component-decision-chip-selected-border);
@@ -726,9 +734,9 @@
   --color-component-input-otp-success-border: var(--component-input-otp-success-border);
   --color-component-input-otp-suggestion-bg: var(--component-input-otp-suggestion-bg);
   --color-component-input-otp-suggestion-bg-hover: var(--component-input-otp-suggestion-bg-hover);
+  --color-component-input-otp-suggestion-bg-pressed: var(--component-input-otp-suggestion-bg-pressed);
   --color-component-input-otp-suggestion-fg: var(--component-input-otp-suggestion-fg);
   --color-component-input-otp-suggestion-border: var(--component-input-otp-suggestion-border);
-  --color-component-input-otp-suggestion-bg-pressed: var(--component-input-otp-suggestion-bg-pressed);
   --color-component-input-otp-suggestion-icon: var(--component-input-otp-suggestion-icon);
   --color-component-input-otp-suggestion-icon-back: var(--component-input-otp-suggestion-icon-back);
   --color-component-message-bubble-bg: var(--component-message-bubble-bg);
