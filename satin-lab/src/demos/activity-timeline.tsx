@@ -155,10 +155,10 @@ function Preview({ v }: { v: Record<string, string> }) {
 
   return (
     <div className="relative w-[480px] max-w-full pb-16">
-      {/* The record on a muted card (grey in Light, lighter than the card in Dark), its history in a card inside it. */}
-      <div className="flex flex-col rounded-xl border border-border-default bg-bg-muted p-1">
-        {/* 21px: the inner card's 20px padding and 1px border, so the avatar and the badge line up with the timeline's avatars and times. */}
-        <div className="flex items-center gap-3 px-[21px] py-4">
+      {/* The record on the canvas, its history on a card inside: darker underneath, lighter on top, in both themes. */}
+      <div className="flex flex-col gap-3 rounded-2xl border border-border-default bg-bg-canvas p-3">
+        {/* No inset of its own: the avatar starts on the card's left edge and the badge ends on its right edge. */}
+        <div className="flex items-center gap-3">
           <Avatar initials="TM" tone="fuchsia" size={40} />
           <div className="min-w-0 flex-1">
             <div className="text-base leading-5 font-medium text-text-default">Tara Mendes</div>
@@ -168,7 +168,7 @@ function Preview({ v }: { v: Record<string, string> }) {
           </div>
           {stage('Interview', 'sky')}
         </div>
-        <div className="rounded-md border border-border-default bg-bg-card p-5 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]">
+        <div className="rounded-xl border border-border-default bg-bg-card p-5 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]">
           {/* Right under the record: the timeline names itself "Activity" for screen readers. */}
           <ActivityTimeline
             items={v.state === 'entries' ? (items ?? []) : []}
