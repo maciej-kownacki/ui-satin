@@ -20,8 +20,10 @@ import { useSatinLabels } from './labels'
  * border/default edge, radius-sm, 3px past the text on each side. A token's text is medium, like
  * the menu's labels: Geist at medium (510) is about 3% wider than the field's 420, which would put
  * the caret and every later fill off the textarea's glyphs, so the layer instead strokes the
- * token's text, 0.029em in text/default (the field's colour), under the textarea's own glyph.
- * That adds the ink medium adds (0.4px at 14px) and leaves every width as the textarea has it.
+ * token's text, 0.0107em (0.15px at 14px) in text/default (the field's colour), under the
+ * textarea's own glyph, and leaves every width as the textarea has it. The width is measured, not
+ * worked out: on Chrome screenshots at DPR 1 and 2, Light and Dark, the field's 420 over this stroke
+ * has the ink per pixel of width that 510 has, within 1%. A wider stroke reads as semibold.
  * A token is one unit: the caret steps over it, Backspace at its end and Delete at its start
  * remove all of it, and an edit that cuts into it takes the whole token.
  *
@@ -253,7 +255,7 @@ const BLEED = 4
 // reads the token, not a colour copied from the field, so it follows a theme change at once.
 const tokenClass = cn(
   '-mx-[3px] rounded-sm px-[3px] py-px box-decoration-clone',
-  'text-text-default [-webkit-text-stroke:0.029em_currentColor]',
+  'text-text-default [-webkit-text-stroke:0.0107em_currentColor]',
 )
 const mentionTokenClass = 'bg-status-brand-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--status-brand-border)]'
 const commandTokenClass = 'bg-action-secondary-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-default)]'
