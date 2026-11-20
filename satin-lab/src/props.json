@@ -5833,7 +5833,7 @@
       ]
     },
     "DateTimePicker": {
-      "description": "A date and time field: DatePicker's field, with a clock's worth of times beside the calendar. Pick a day, then a time; the time closes it. Other props, `ref` included, go to the trigger button.",
+      "description": "A date and time field: DatePicker's field, with a clock's worth of times beside the calendar. Pick a day and a time; each pick sets the value and the panel stays open until Escape, a press outside, or Enter on the picked time. Other props, `ref` included, go to the trigger button.",
       "type": "DateTimePickerProps",
       "extends": [
         "DateTimeOptions",

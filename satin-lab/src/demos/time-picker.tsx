@@ -51,7 +51,8 @@ import { DateTimePicker } from '@uisatin/ui/time-picker'
 
 const [when, setWhen] = React.useState<Date | null>(new Date(2026, 10, 26, 14, 30))
 
-// Pick a day, then a time; the time closes it. Submits "2026-11-26T14:30" as "when".
+// Each pick sets the value and the panel stays open; Esc, a press outside or Enter on the
+// picked time closes it. Submits "2026-11-26T14:30" as "when".
 ${wrap(`<Form onSubmitValues={book}${error}>
   <FormField label="Date and time" name="when" description="30-minute slots from 9:00.">
     <DateTimePicker value={when} onValueChange={setWhen} step={30} minTime={{ hours: 9, minutes: 0 }} />

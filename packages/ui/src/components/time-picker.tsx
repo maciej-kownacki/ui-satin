@@ -6,7 +6,7 @@ import { Popover as PopoverPrimitive } from 'radix-ui'
 import { Calendar as CalendarIcon, Clock, NavArrowDown } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Calendar } from './date-picker'
-import { MenuItemContent, menuItemClass, menuSurfaceClass } from './dropdown'
+import { menuSurfaceClass } from './dropdown'
 import { FieldSizeContext, useFormField } from './form-field'
 import { useSatinLabels } from './labels'
 import { FieldChrome, useFieldChrome } from './select'
@@ -15,8 +15,9 @@ import { FieldChrome, useFieldChrome } from './select'
  * TimePicker, TimeList, DateTimePicker and DateTimePickerPanel: a time of day, alone or with a day.
  *
  * TimePicker is a text field with Input's skin, a clock before the value and a chevron after it,
- * that opens a list of times under it (Select's list: the menu surface, inline rows, the picked
- * time on bg/selected with the check). It follows the APG combobox pattern: focus stays in the
+ * that opens a column of times under it. Each time is a pill: quiet, bg/hover under the pointer,
+ * the focus ring when the keys put it there, and the picked one filled with the brand, as the
+ * Calendar fills its picked day, so a day and a time read as one choice. It follows the APG combobox pattern: focus stays in the
  * field, the arrows move through the list, Enter picks. What you type is read when you press
  * Enter or leave the field: `930`, `9:30`, `9.30`, `9h30`, `1430`, `9:30pm`, `9 p.m.`, and the
  * locale's own AM and PM words. While you type, the list jumps to the nearest time (type-ahead).
@@ -30,8 +31,10 @@ import { FieldChrome, useFieldChrome } from './select'
  *
  * TimeList is the list on its own: a focusable `listbox` (arrows, Home/End, Page Up/Down by an
  * hour, type-ahead), for a popover or panel of your own. DateTimePicker is DatePicker's field
- * opening the Calendar with a column of times beside it: a day and a time pick a date, and the
- * popover closes on the time. DateTimePickerPanel is that panel in place.
+ * opening the Calendar with a column of times beside it: a day and a time pick a date. Picking
+ * either sets the value and leaves the panel open, so the other can still change; Escape, a press
+ * outside, or Enter on the picked time close it. TimePicker closes on a pick, as Select does:
+ * there's nothing else to choose. DateTimePickerPanel is the panel in place.
  *
  * The list opens like Popover (it fades and settles 4px). The picked time is in view as the
  * list opens, with no scroll to watch; a type-ahead jump scrolls smoothly, and at once under
@@ -258,7 +261,20 @@ function scrollToOption(list: HTMLElement | null, index: number, how: 'center' |
   else list.scrollTop = Math.max(0, top)
 }
 
-/** The rows of a time list: Select's rows, the times in tabular figures so they line up. */
+/**
+ * A time as a pill, in the Calendar's language: 32px, 13px medium in tabular figures so the times
+ * line up, radius-full. Quiet until the pointer is over it (bg/hover) or the keys reach it (the
+ * focus ring, flush as on the Calendar's days); the picked one takes the brand fill of the
+ * Calendar's picked day. Disabled times fade to 40%, as disabled days do.
+ */
+const pillClass = cn(
+  'flex h-8 w-full shrink-0 cursor-pointer items-center justify-center rounded-full px-3 text-sm leading-5 font-medium tabular-nums select-none',
+  'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)',
+  'data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
+  'data-[keyboard]:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+)
+
+/** The times of a list, as pills. */
 function TimeRows({
   slots,
   listId,
@@ -289,9 +305,12 @@ function TimeRows({
       data-disabled={s.disabled ? '' : undefined}
       onPointerMove={() => i !== active && onHover(i)}
       onClick={() => !s.disabled && onPick(s, i)}
-      className={cn(menuItemClass, 'shrink-0 tabular-nums', s.key === selected && 'bg-bg-selected')}
+      className={cn(
+        pillClass,
+        s.key === selected ? 'bg-action-primary-bg text-text-on-solid' : cn('text-text-default', i === active && !ring && 'bg-bg-hover'),
+      )}
     >
-      <MenuItemContent label={s.label} layout="inline" selected={s.key === selected} />
+      {s.label}
     </div>
   ))
 }
@@ -450,7 +469,7 @@ export function TimeList({
         setFocused(false)
         onBlur?.(e)
       }}
-      className={cn('relative flex flex-col gap-0.5 overflow-y-auto p-1 outline-none focus-visible:ring-0', className)}
+      className={cn('relative flex flex-col gap-1 overflow-y-auto p-1 outline-none focus-visible:ring-0', className)}
     >
       <TimeRows
         slots={slots}
@@ -471,7 +490,8 @@ export function TimeList({
 /* ---------- TimePicker ---------- */
 
 const listClass = cn(
-  'pointer-events-auto z-50 w-(--radix-popover-trigger-width) min-w-40 max-w-[320px] overflow-hidden',
+  // A column of times reads at its own width (192px), not the field's.
+  'pointer-events-auto z-50 w-48 max-w-(--radix-popover-content-available-width) overflow-hidden',
   menuSurfaceClass,
   'origin-(--radix-popover-content-transform-origin) outline-none',
   'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
@@ -858,7 +878,7 @@ export function TimePicker({
               {...listLabelling}
               // A press in the list keeps the focus in the field.
               onMouseDown={(e) => e.preventDefault()}
-              className="relative flex max-h-60 flex-col gap-0.5 overflow-y-auto p-1"
+              className="relative flex max-h-60 flex-col gap-1 overflow-y-auto p-1"
             >
               <TimeRows
                 slots={slots}
@@ -916,7 +936,7 @@ interface DateTimeOptions {
 function DateTimeBody({
   value,
   onValueChange,
-  onTimePicked,
+  onDone,
   min,
   max,
   minTime,
@@ -925,7 +945,7 @@ function DateTimeBody({
   format,
   isTimeDisabled,
   today,
-}: DateTimeOptions & { value?: Date | null; onValueChange?: (value: Date) => void; onTimePicked?: () => void }) {
+}: DateTimeOptions & { value?: Date | null; onValueChange?: (value: Date) => void; onDone?: () => void }) {
   const labels = useSatinLabels()
   const headId = React.useId()
   const listRef = React.useRef<HTMLDivElement>(null)
@@ -986,9 +1006,15 @@ function DateTimeBody({
           {...bounds}
           onValueChange={(t) => {
             setTime(t)
-            if (day) {
-              emit(day, t)
-              onTimePicked?.()
+            if (day) emit(day, t)
+          }}
+          // A pick leaves the panel open; Enter on the time already picked is "done".
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter' || !onDone || !day) return
+            const id = e.currentTarget.getAttribute('aria-activedescendant')
+            if (id && document.getElementById(id)?.getAttribute('aria-selected') === 'true') {
+              e.preventDefault()
+              onDone()
             }
           }}
           className="absolute inset-x-0 top-13 bottom-0 pt-0"
@@ -1064,7 +1090,8 @@ export interface DateTimePickerProps extends DateTimeOptions, DateTimeTriggerAtt
 
 /**
  * A date and time field: DatePicker's field, with a clock's worth of times beside the calendar.
- * Pick a day, then a time; the time closes it. Other props, `ref` included, go to the trigger
+ * Pick a day and a time; each pick sets the value and the panel stays open until Escape, a press
+ * outside, or Enter on the picked time. Other props, `ref` included, go to the trigger
  * button.
  */
 export function DateTimePicker({
@@ -1170,7 +1197,7 @@ export function DateTimePicker({
                   if (valueProp === undefined) setInner(d)
                   onValueChange?.(d)
                 }}
-                onTimePicked={() => setOpen(false)}
+                onDone={() => setOpen(false)}
               />
             </div>
           </PopoverPrimitive.Content>
