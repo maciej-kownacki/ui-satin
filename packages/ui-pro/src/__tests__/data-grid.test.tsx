@@ -277,6 +277,21 @@ describe('DataGrid', () => {
     expect(screen.getByRole('columnheader', { name: 'Stage' })).toBeTruthy()
   })
 
+  it('draws the Columns menu boxes with the glyph cell Checkbox uses', async () => {
+    // jsdom has no layout, so this pins the structure: the check sits in Checkbox's own 16px cell
+    // (pulled out by -1px over the border), not straight in the bordered box, where it lands 1px off.
+    const { user } = renderWithSatin(<Grid selectable selection={['ada']} toolbar={<DataGridColumnsMenu />} />)
+    const rowGlyph = screen.getByRole('checkbox', { name: 'Select Ada Okafor' }).querySelector('svg')!
+    await user.click(screen.getByRole('button', { name: 'Columns' }))
+    const boxes = document.querySelectorAll('[data-slot="data-grid-columns-box"]')
+    expect(boxes).toHaveLength(3)
+    for (const box of boxes) {
+      const glyph = box.querySelector('svg')!
+      expect(glyph.parentElement).not.toBe(box)
+      expect(glyph.parentElement!.className).toBe(rowGlyph.parentElement!.className)
+    }
+  })
+
   it('takes controlled visibility and order', () => {
     renderWithSatin(<Grid columnVisibility={{ score: false }} columnOrder={['stage', 'name']} />)
     // Name is pinned to the start, so it stays first whatever the order.
