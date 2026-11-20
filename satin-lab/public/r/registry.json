@@ -2335,6 +2335,7 @@
         "https://uisatin.dev/r/agent-loading.json",
         "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
         "https://uisatin.dev/r/input.json",
         "https://uisatin.dev/r/labels.json"
       ],

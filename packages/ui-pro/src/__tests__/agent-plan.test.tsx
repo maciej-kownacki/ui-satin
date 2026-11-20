@@ -319,3 +319,90 @@ describe('AgentPlan, words and accessibility', () => {
     await expectNoAxeViolations()
   })
 })
+
+describe('AgentPlan, layouts', () => {
+  const STEPS: AgentPlanStep[] = [{ ...PLAN[0], toolIcon: logo }, ...PLAN.slice(1)]
+
+  it('hover: tool and detail in one muted line under the label, and an × shown on hover or focus', async () => {
+    const { user } = renderWithSatin(<Plan initial={STEPS} layout="hover" />)
+    expect(screen.getByText('Calendar · Tue–Thu, 45 min', { exact: false }).closest('[data-slot="badge"]')).toBeNull()
+    expect(within(rows()[0]).getByTestId('calendar-logo')).toBeTruthy()
+    const remove = screen.getByRole('button', { name: 'Remove Draft invites' })
+    expect(remove.className).toContain('group-focus-within/step:opacity-100')
+    expect(remove.className).toContain('[@media(hover:none)]:opacity-100')
+    await user.click(remove)
+    expect(labelsInOrder()).toEqual(['Find open slots', 'Send invites'])
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Remove Send invites' }))
+  })
+
+  it('select: nothing on the right; the step opens Rename and Remove under it, and Esc closes them', async () => {
+    const { user } = renderWithSatin(<Plan layout="select" />)
+    expect(screen.queryByRole('button', { name: /^Remove / })).toBeNull()
+    const step = screen.getByRole('button', { name: /^Draft invites/ })
+    expect(step.getAttribute('aria-expanded')).toBe('false')
+    expect(step.getAttribute('aria-description')).toBe('Alt and arrow keys to move')
+    await user.click(step)
+    expect(step.getAttribute('aria-expanded')).toBe('true')
+    const actions = document.getElementById(step.getAttribute('aria-controls')!)!
+    expect(within(actions).getAllByRole('button').map((b) => b.textContent)).toEqual(['Rename', 'Remove'])
+
+    await user.click(within(actions).getByRole('button', { name: 'Rename' }))
+    const field = await screen.findByRole('textbox', { name: 'Step 2' })
+    await vi.waitFor(() => expect(document.activeElement).toBe(field))
+    await user.clear(field)
+    await user.type(field, 'Draft the invites{Enter}')
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Draft the invites/ }))
+
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('button', { name: /^Draft the invites/ }).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByRole('button', { name: 'Rename' })).toBeNull()
+
+    await user.keyboard('{Enter}')
+    await user.click(screen.getByRole('button', { name: 'Remove Draft the invites' }))
+    // The step button holds the label and the tool's line; the label comes first.
+    expect(rows().map((row) => row.querySelector('[data-part="label"]')?.firstChild?.textContent)).toEqual(['Find open slots', 'Send invites'])
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Send invites/ }))
+    expect(status().textContent).toBe('Draft the invites removed')
+  })
+
+  it('edit: no step controls until Edit plan; then a checkbox and a field per step, and Done', async () => {
+    const onRun = vi.fn()
+    const { user } = renderWithSatin(<Plan layout="edit" onRun={onRun} />)
+    expect(within(list()).queryAllByRole('button')).toHaveLength(0)
+    expect(within(list()).queryAllByRole('checkbox')).toHaveLength(0)
+
+    await user.click(screen.getByRole('button', { name: 'Edit plan' }))
+    expect(screen.queryByRole('button', { name: 'Edit plan' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Run plan' })).toBeNull()
+    // Focus goes to the first step, not the page.
+    expect(document.activeElement).toBe(screen.getByRole('checkbox', { name: 'Find open slots' }))
+
+    await user.click(screen.getByRole('checkbox', { name: 'Draft invites' }))
+    const field = screen.getByRole('textbox', { name: 'Step 3' })
+    await user.clear(field)
+    await user.type(field, 'Send the invites{Enter}')
+    await user.keyboard('{Alt>}{ArrowUp}{/Alt}') // in a field: doesn't move
+    screen.getByRole('checkbox', { name: 'Find open slots' }).focus()
+    await user.keyboard('{Alt>}{ArrowDown}{/Alt}')
+
+    const done = screen.getByRole('button', { name: 'Done' })
+    await user.click(done)
+    // The same button: focus stays on it as it turns back into Run plan.
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Run plan' }))
+    expect(rows().map((row) => row.querySelector('[data-part="label"]')?.textContent)).toEqual(['Draft invites', 'Find open slots', 'Send the invites'])
+    await user.click(screen.getByRole('button', { name: 'Run plan' }))
+    expect(onRun.mock.calls[0][0].map((s: AgentPlanStep) => s.id)).toEqual(['slots', 'send'])
+  })
+
+  it.each(['light', 'dark'] as const)('has no axe violations in any layout, in %s', async (theme) => {
+    const { user, rerender } = renderWithSatin(<Plan initial={STEPS} layout="hover" onRun={() => {}} />, { theme })
+    await expectNoAxeViolations()
+    rerender(<Plan initial={STEPS} layout="select" onRun={() => {}} />)
+    await user.click(screen.getByRole('button', { name: /^Find open slots/ }))
+    await expectNoAxeViolations()
+    rerender(<Plan initial={STEPS} layout="edit" onRun={() => {}} />)
+    await expectNoAxeViolations()
+    await user.click(screen.getByRole('button', { name: 'Edit plan' }))
+    await expectNoAxeViolations()
+  })
+})
