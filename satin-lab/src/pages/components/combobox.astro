@@ -1,16 +1,28 @@
 ---
 import Docs from '../../layouts/Docs.astro'
+import Chip from '../../components/Chip.astro'
 import DocSection from '../../components/DocSection.astro'
-import ComboboxDemo, { options } from '../../demos/combobox'
+import ComboboxDemo, { ComboboxCreatableDemo, creatableOptions, options } from '../../demos/combobox'
 import { api } from '../../api'
 import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
+const creatableHtml = await highlight(creatableOptions)
 ---
 
 <Docs current="combobox">
   <DocSection item={page('combobox')} api={api['combobox']}>
     <ComboboxDemo client:load codeHtml={codeHtml} />
+    <section aria-labelledby="creatable-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="creatable-title" class="text-lg font-medium text-text-default">Creatable</h2>
+      <p class="text-base leading-6 text-text-muted">
+        With <Chip>creatable</Chip>, a query that no option is exactly ends the list with a Create row. <Chip>onCreate</Chip> makes the
+        option, at once or with a promise: the row shows a spinner while it waits and says so if it fails. The new option is picked like any
+        other, as a chip with <Chip>multiple</Chip>, waiting for Apply with <Chip>footer</Chip>. Here a recruiter adds Framer Motion, which the
+        skills list doesn’t have.
+      </p>
+      <ComboboxCreatableDemo client:load codeHtml={creatableHtml} />
+    </section>
   </DocSection>
 </Docs>

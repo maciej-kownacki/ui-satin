@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import TableProDemo, { options } from '../../demos/table-pro'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="table-pro">
+  <DocSection item={page('table-pro')} api={api['table-pro']}>
+    <TableProDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

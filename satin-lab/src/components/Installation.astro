@@ -7,6 +7,7 @@
  *   installs `@uisatin/pro` too, imports from it and says Pro isn't on npm yet.
  * - shadcn CLI: the command for this component's registry item (public/r/<id>.json, built by
  *   `npm run registry`) plus any Satin components the example needs, and the files it adds.
+ *   Not on a Satin Pro page in the public build, which publishes no Pro source (nav.ts).
  *
  * Project setup (styles, fonts, dark mode, components.json) lives once, on the Installation page,
  * linked under the switch. The usage example is the Showcase's Code tab, so it isn't repeated.
@@ -17,8 +18,8 @@ import Chip from './Chip.astro'
 import CodeFrame from './CodeFrame.astro'
 import InstallSwitch from './InstallSwitch'
 import sizes from '../sizes.json'
-import { ALIASES } from '../lib/examples'
-import { packageOf, page } from '../nav'
+import { ALIASES, isPublished } from '../lib/examples'
+import { hideProSource, packageOf, page } from '../nav'
 
 interface Props {
   id: string
@@ -27,6 +28,8 @@ interface Props {
 const { id, title } = Astro.props
 const pro = page(id).edition === 'pro'
 const pkg = packageOf(page(id))
+// Satin Pro is docs-only in the public build: no registry item, so no shadcn CLI command.
+const shadcn = !(pro && hideProSource)
 
 type RegistryItem = { name: string; dependencies?: string[]; registryDependencies?: string[] }
 const dir = [join(process.cwd(), 'public/r'), join(process.cwd(), 'satin-lab/public/r')].find((d) => existsSync(d))
@@ -60,7 +63,7 @@ const example = shortest
 // Satin components the example imports beyond this one's own dependencies (Command menu's demo
 // opens from a SearchBar): install them in the same command, so the example compiles as shown.
 const extra = [...new Set([...(example ?? '').matchAll(/from '@\/components\/ui\/([\w-]+)'/g)].map((m) => m[1]))].filter(
-  (n) => n !== id && !used.has(n) && read(n),
+  (n) => n !== id && !used.has(n) && read(n) && isPublished(n),
 )
 for (const n of extra) {
   used.add(n)
@@ -110,16 +113,20 @@ const list = (names: string[]) => names.map((n, i) => ({ n, sep: i === 0 ? '' : 
         )
       }
     </div>
-    <div slot="shadcn" class="flex flex-col gap-3">
-      <CodeFrame code={command} label="Terminal" lang="bash" copyLabel="Copy command" />
-      <p class="text-base leading-6 text-text-muted">
-        Adds {list(files).map(({ n, sep }) => (<>{sep}<Chip>{n}</Chip></>))} to <Chip>components/ui</Chip>{
-          packages.length > 0 && (
-            <> and installs {list(packages).map(({ n, sep }) => (<>{sep}<Chip>{n}</Chip></>))}</>
-          )
-        }.
-      </p>
-    </div>
+    {
+      shadcn && (
+        <div slot="shadcn" class="flex flex-col gap-3">
+          <CodeFrame code={command} label="Terminal" lang="bash" copyLabel="Copy command" />
+          <p class="text-base leading-6 text-text-muted">
+            Adds {list(files).map(({ n, sep }) => (<>{sep}<Chip>{n}</Chip></>))} to <Chip>components/ui</Chip>{
+              packages.length > 0 && (
+                <> and installs {list(packages).map(({ n, sep }) => (<>{sep}<Chip>{n}</Chip></>))}</>
+              )
+            }.
+          </p>
+        </div>
+      )
+    }
   </InstallSwitch>
   <p class="text-base leading-6 text-text-muted">
     First time with Satin? Set it up once, styles and fonts included, with the <a

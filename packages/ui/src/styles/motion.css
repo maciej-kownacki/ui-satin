@@ -161,15 +161,25 @@
   padding: 2px;
   margin: -2px;
   pointer-events: none;
-  opacity: 0.92;
-  transition: opacity var(--duration-base) var(--ease-out);
 }
 .satin-expand > * > * {
   pointer-events: auto;
 }
-.satin-expand[data-state='open'] > * {
-  opacity: 1;
-  transition-duration: var(--duration-slow);
+/* The fade sits on the content, whose size never changes, not on the clip that grows: a layer
+   that changes size every frame is rastered again every frame, and on the GPU its icons and
+   text smeared while it moved. In the base layer, so a component's own fade utilities win, and
+   scoped to Satin's elements, as base rules are. */
+@layer base {
+  :where([data-slot]) .satin-expand > * > *,
+  .satin-expand[data-slot] > * > * {
+    opacity: 0.92;
+    transition: opacity var(--duration-base) var(--ease-out);
+  }
+  :where([data-slot]) .satin-expand[data-state='open'] > * > *,
+  .satin-expand[data-slot][data-state='open'] > * > * {
+    opacity: 1;
+    transition-duration: var(--duration-slow);
+  }
 }
 
 /* Progress (components/progress.tsx) without a value: a third of the track slides across,
@@ -181,6 +191,14 @@
 @keyframes satin-progress-indeterminate-rtl {
   from { transform: translateX(100%); }
   to { transform: translateX(-300%); }
+}
+
+/* Toast countdown (components/toast.tsx, `countdown`): the bar along the card's bottom drains to
+   nothing, linear, over the toast's duration (set inline); the toast stops it in place with
+   animation-play-state. It's hidden under reduced motion, so the reset's near-zero duration never shows. */
+@keyframes satin-toast-countdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
 }
 
 /* Pagination (components/pagination.tsx): a page number changing in place.

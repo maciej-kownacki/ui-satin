@@ -11,7 +11,6 @@ import {
   BulkActionBarSeparator,
   type BulkAction,
 } from '../components/bulk-action-bar'
-import { toastBatch } from '../components/toast-batch'
 
 const actions: BulkAction[] = [
   { label: 'Move', onSelect: async () => {} },
@@ -48,13 +47,12 @@ export const missing = <BulkActionBar actions={actions} />
 
 // Pro's words join SatinLabels: one provider for both packages, typed.
 export const translated = (
-  <SatinLabels labels={{ close: 'Zamknij', clearSelection: 'Wyczyść', selectAll: 'Zaznacz wszystko', bulkSelected: (n, number) => <>{number} zaznaczone</>, undoItem: (item) => `Cofnij ${item}` }}>
+  <SatinLabels labels={{ close: 'Zamknij', clearSelection: 'Wyczyść', selectAll: 'Zaznacz wszystko', bulkSelected: (n, number) => <>{number} zaznaczone</> }}>
     {props}
   </SatinLabels>
 )
 
 // @ts-expect-error: a label that carries data is a function
-export const wrongLabel = <SatinLabels labels={{ undoItem: 'Cofnij' }}>{props}</SatinLabels>
+export const wrongLabel = <SatinLabels labels={{ bulkSelected: 'zaznaczone' }}>{props}</SatinLabels>
 
-export const id: string = toastBatch({ title: (n) => `${n} moved`, items: [{ id: '1', label: 'Acme', undo: () => {} }], undoAll: (items) => items.length })
 export { wrongTone, withShortcut }

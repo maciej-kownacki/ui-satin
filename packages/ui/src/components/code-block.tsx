@@ -21,6 +21,10 @@ import { useSatinLabels } from './labels'
  * unified diff. Highlighting is a small JS/TS tokenizer: keyword, string, function, parameter
  * and variable, in the `code/*` colours.
  *
+ * The code scrolls sideways in a focusable region named "<filename> code" (`codeRegion`).
+ * `aria-label` and `aria-labelledby` name that region instead, where they mean something: give
+ * each block its own name when a page shows several with the same file name.
+ *
  * The `code/*` variables exist only in Figma so far, not in theme.css, so each colour is
  * `var(--code-…, <Figma light value>)` with the Figma dark value under `dark:`. Once the
  * theme defines them, the variables take over.
@@ -156,6 +160,8 @@ export function CodeBlock({
   highlightLines = [],
   highlight = true,
   className,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
   ...props
 }: CodeBlockProps) {
   const labels = useSatinLabels()
@@ -221,7 +227,8 @@ export function CodeBlock({
         dir="ltr"
         tabIndex={0}
         role="region"
-        aria-label={labels.codeRegion(filename)}
+        aria-label={ariaLabelledBy ? undefined : (ariaLabel ?? labels.codeRegion(filename))}
+        aria-labelledby={ariaLabelledBy}
         className={cn(
           'outline-none focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
           'overflow-x-auto font-mono text-sm leading-(--text-sm--line-height) font-normal tracking-normal',

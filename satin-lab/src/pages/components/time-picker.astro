@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import Demo, { options } from '../../demos/time-picker'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="time-picker">
+  <DocSection item={page('time-picker')} api={api['time-picker']}>
+    <Demo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

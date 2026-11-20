@@ -270,7 +270,9 @@ export function BulkActionBarCount({ className, ...props }: BulkActionBarCountPr
             checked={all ? true : 'indeterminate'}
             // One click selects all; when all are selected, it clears them.
             onCheckedChange={() => (all ? clear() : selectAll())}
-            className="me-0.5"
+            // The row is the count badge's 21px, so a centred 16px box sat 2.5px down and its
+            // indeterminate dash fell between pixels. 1px on top puts the box 3px down, on whole pixels.
+            className="me-0.5 mt-px"
           />
         </ToolbarPrimitive.Button>
       )}

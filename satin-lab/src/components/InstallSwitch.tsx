@@ -28,6 +28,8 @@ export default function InstallSwitch({ npm, shadcn }: { npm?: React.ReactNode; 
       // Not remembered, still switched.
     }
   }
+  // A Satin Pro page in the public build has no registry item, so only npm, and no switch.
+  if (!shadcn) return <div className="flex flex-col gap-3">{npm}</div>
   return (
     <div className="flex flex-col gap-3">
       <SegmentedControl

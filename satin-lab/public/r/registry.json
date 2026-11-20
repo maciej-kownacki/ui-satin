@@ -624,7 +624,8 @@
         "https://uisatin.dev/r/chip.json",
         "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/labels.json",
-        "https://uisatin.dev/r/select.json"
+        "https://uisatin.dev/r/select.json",
+        "https://uisatin.dev/r/spinner.json"
       ],
       "docs": "Combobox docs: https://uisatin.dev/components/combobox",
       "meta": {
@@ -730,6 +731,7 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/select.json"
       ],
@@ -760,7 +762,7 @@
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/checkbox.json",
         "https://uisatin.dev/r/labels.json",
-        "https://uisatin.dev/r/sliding-indicator.json"
+        "https://uisatin.dev/r/step-slide.json"
       ],
       "docs": "Decision card docs: https://uisatin.dev/ai-patterns/decision-card",
       "meta": {
@@ -855,6 +857,7 @@
       "title": "Dropdown",
       "description": "Opens a short list of actions or values from a button.",
       "dependencies": [
+        "iconoir-react@^7.12.2",
         "radix-ui@^1.8.1"
       ],
       "registryDependencies": [
@@ -1270,7 +1273,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/labels.json"
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/tooltip.json"
       ],
       "docs": "Message actions docs: https://uisatin.dev/ai-patterns/message-actions",
       "meta": {
@@ -1470,7 +1474,8 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/kbd.json",
-        "https://uisatin.dev/r/labels.json"
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/prompt-mentions.json"
       ],
       "docs": "Prompt bar docs: https://uisatin.dev/ai-patterns/prompt-bar",
       "meta": {
@@ -1480,6 +1485,34 @@
       "files": [
         {
           "path": "registry/satin/ui/prompt-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "prompt-mentions",
+      "type": "registry:ui",
+      "title": "Mentions and commands",
+      "description": "Reference people and records with @ and run actions with / from the prompt bar.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Mentions and commands docs: https://uisatin.dev/ai-patterns/prompt-mentions",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/prompt-mentions.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1852,6 +1885,53 @@
       ]
     },
     {
+      "name": "step-slide",
+      "type": "registry:ui",
+      "title": "Step slide",
+      "description": "The Satin Step slide component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/step-slide.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "stepper",
+      "type": "registry:ui",
+      "title": "Stepper",
+      "description": "Shows where a multi-step flow is: the steps done, the current one and the ones ahead.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/progress.json"
+      ],
+      "docs": "Stepper docs: https://uisatin.dev/components/stepper",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/stepper.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "streaming-text",
       "type": "registry:ui",
       "title": "Streaming text",
@@ -1999,6 +2079,36 @@
       ]
     },
     {
+      "name": "time-picker",
+      "type": "registry:ui",
+      "title": "Time picker",
+      "description": "Takes a typed time or one from a list, alone or with a day.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/form-field.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "Time picker docs: https://uisatin.dev/components/time-picker",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/time-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast",
       "type": "registry:ui",
       "title": "Toast",
@@ -2045,6 +2155,34 @@
       "files": [
         {
           "path": "registry/satin/ui/toggle.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tool-call",
+      "type": "registry:ui",
+      "title": "Tool call",
+      "description": "One call an agent made to a tool: what it sent, what came back, how it went, and Retry when it failed.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/code-block.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/spinner.json"
+      ],
+      "docs": "Tool call docs: https://uisatin.dev/ai-patterns/tool-call",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/tool-call.tsx",
           "type": "registry:ui"
         }
       ]
@@ -2120,6 +2258,179 @@
       ]
     },
     {
+      "name": "activity-timeline",
+      "type": "registry:ui",
+      "title": "Activity timeline",
+      "description": "A record’s history: who changed what and when, agent changes with Revert, runs folded into one row.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/agent-suggestion.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/skeleton.json",
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "docs": "Activity timeline docs: https://uisatin.dev/components/activity-timeline",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/activity-timeline.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "agent-changes-review",
+      "type": "registry:ui",
+      "title": "Reviewable changes",
+      "description": "The fields an agent wants to change, each accepted or rejected before any is applied.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-suggestion.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/decision-card.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Reviewable changes docs: https://uisatin.dev/ai-patterns/agent-changes-review",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-changes-review.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "agent-permissions",
+      "type": "registry:ui",
+      "title": "Permission request",
+      "description": "What an agent will touch before it first runs: each resource and action in plain verbs, once or always.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-picker.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/card.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/list.json",
+        "https://uisatin.dev/r/split-button.json"
+      ],
+      "docs": "Permission request docs: https://uisatin.dev/ai-patterns/agent-permissions",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-permissions.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "agent-plan",
+      "type": "registry:ui",
+      "title": "Agent plan",
+      "description": "The steps an agent proposes before it acts: rename, reorder or remove some, then Run, and watch them tick off.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Agent plan docs: https://uisatin.dev/ai-patterns/agent-plan",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-plan.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "agent-presence",
+      "type": "registry:ui",
+      "title": "Agent presence",
+      "description": "Shows which row or card an agent is editing right now: an edge in its colour and a small label, read out politely.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/agent-picker.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Agent presence docs: https://uisatin.dev/ai-patterns/agent-presence",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-presence.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "agent-undo-log",
+      "type": "registry:ui",
+      "title": "Agent action log",
+      "description": "What a coding agent changed, run by run: files with their diff counts, a Revert on each, ⌘Z for the last run.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-suggestion.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/toast.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Agent action log docs: https://uisatin.dev/ai-patterns/agent-undo-log",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/agent-undo-log.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "bulk-action-bar",
       "type": "registry:ui",
       "title": "Bulk action bar",
@@ -2153,6 +2464,232 @@
       ]
     },
     {
+      "name": "command-pages",
+      "type": "registry:ui",
+      "title": "Command pages",
+      "description": "The ⌘K palette with sub-pages (Move deal to… › Negotiation), and what no command matches handed to an agent.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/breadcrumb.json",
+        "https://uisatin.dev/r/command-menu.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/step-slide.json",
+        "https://uisatin.dev/r/streaming-text.json",
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "docs": "Command pages docs: https://uisatin.dev/components/command-pages",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/command-pages.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "data-grid",
+      "type": "registry:ui",
+      "title": "Data grid",
+      "description": "The table people work in: sort, resize, pin and hide columns, edit cells in place, and save views.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/alert.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/dialog.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/pagination.json",
+        "https://uisatin.dev/r/select.json",
+        "https://uisatin.dev/r/skeleton.json",
+        "https://uisatin.dev/r/spinner.json",
+        "https://uisatin.dev/r/table.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Data grid docs: https://uisatin.dev/components/data-grid",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/data-grid.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "date-availability",
+      "type": "registry:ui",
+      "title": "Availability calendar",
+      "description": "A calendar for booking: which days have free slots and how many, full days off with the reason.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Availability calendar docs: https://uisatin.dev/components/date-availability",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/date-availability.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "filter-bar",
+      "type": "registry:ui",
+      "title": "Filter bar",
+      "description": "Filters as chips that read as sentences, each with its own editor, and the result count live as they change.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/chip.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/number-input.json",
+        "https://uisatin.dev/r/popover.json",
+        "https://uisatin.dev/r/rolling-number.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "Filter bar docs: https://uisatin.dev/components/filter-bar",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/filter-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "kanban-board",
+      "type": "registry:ui",
+      "title": "Kanban board",
+      "description": "Columns of cards moved between stages by drag, touch or keyboard, with counts, limits and Undo.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/card.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/skeleton.json",
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "docs": "Kanban board docs: https://uisatin.dev/components/kanban-board",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/kanban-board.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "people-picker",
+      "type": "registry:ui",
+      "title": "People picker",
+      "description": "Picks people by name, with their faces and roles, the ones picked lately first, and search as you type.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/chip.json",
+        "https://uisatin.dev/r/combobox.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/select.json"
+      ],
+      "docs": "People picker docs: https://uisatin.dev/components/people-picker",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/people-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "review-queue",
+      "type": "registry:ui",
+      "title": "Review queue",
+      "description": "Agent drafts gone through one at a time, Approve, Edit or Skip with the keyboard, and a summary at the end.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/form.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/list.json",
+        "https://uisatin.dev/r/progress.json",
+        "https://uisatin.dev/r/segmented-control.json",
+        "https://uisatin.dev/r/sheet.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Review queue docs: https://uisatin.dev/ai-patterns/review-queue",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/review-queue.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "rolling-number",
       "type": "registry:ui",
       "title": "Rolling number",
@@ -2175,26 +2712,97 @@
       ]
     },
     {
-      "name": "toast-batch",
+      "name": "scheduler",
       "type": "registry:ui",
-      "title": "Toast batch",
-      "description": "The Satin Pro Toast batch component.",
-      "dependencies": [],
+      "title": "Scheduler",
+      "description": "A day, week or month of events over time slots: drag to move or resize, pick free slots to book.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/satin-pro-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/date-picker.json",
+        "https://uisatin.dev/r/dot.json",
+        "https://uisatin.dev/r/hover-card.json",
         "https://uisatin.dev/r/labels.json",
-        "https://uisatin.dev/r/toast.json"
+        "https://uisatin.dev/r/popover.json",
+        "https://uisatin.dev/r/segmented-control.json",
+        "https://uisatin.dev/r/tooltip.json"
       ],
+      "docs": "Scheduler docs: https://uisatin.dev/components/scheduler",
       "meta": {
         "version": "0.7.1",
         "edition": "pro"
       },
       "files": [
         {
-          "path": "registry/satin/ui/toast-batch.tsx",
+          "path": "registry/satin/ui/scheduler.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "search-scoped",
+      "type": "registry:ui",
+      "title": "Scoped search",
+      "description": "One search box over several kinds of record or places, with a scope chip (Everywhere, Candidates, This project) that says where it looks; use it instead of a Search bar when one list of hits would bury the one wanted.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/chip.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/search-bar.json",
+        "https://uisatin.dev/r/spinner.json"
+      ],
+      "docs": "Scoped search docs: https://uisatin.dev/components/search-scoped",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/search-scoped.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "table-pro",
+      "type": "registry:ui",
+      "title": "Grouped table",
+      "description": "A Table whose rows open onto sub-rows and gather into groups with subtotals, with a pinned first column, a totals row and a compact density.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/table.json"
+      ],
+      "docs": "Grouped table docs: https://uisatin.dev/components/table-pro",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/table-pro.tsx",
           "type": "registry:ui"
         }
       ]
@@ -2995,6 +3603,21 @@
       ]
     },
     {
+      "name": "prompt-mentions-demo",
+      "type": "registry:example",
+      "title": "Mentions and commands example",
+      "description": "The shortest use of Mentions and commands, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/prompt-mentions.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/prompt-mentions-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "radio-demo",
       "type": "registry:example",
       "title": "Radio example",
@@ -3190,6 +3813,21 @@
       ]
     },
     {
+      "name": "stepper-demo",
+      "type": "registry:example",
+      "title": "Stepper example",
+      "description": "The shortest use of Stepper, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/stepper.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/stepper-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "streaming-text-demo",
       "type": "registry:example",
       "title": "Streaming text example",
@@ -3280,6 +3918,21 @@
       ]
     },
     {
+      "name": "time-picker-demo",
+      "type": "registry:example",
+      "title": "Time picker example",
+      "description": "The shortest use of Time picker, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/time-picker.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/time-picker-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "toast-demo",
       "type": "registry:example",
       "title": "Toast example",
@@ -3310,6 +3963,21 @@
       ]
     },
     {
+      "name": "tool-call-demo",
+      "type": "registry:example",
+      "title": "Tool call example",
+      "description": "The shortest use of Tool call, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/tool-call.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/tool-call-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "tooltip-demo",
       "type": "registry:example",
       "title": "Tooltip example",
@@ -3325,6 +3993,96 @@
       ]
     },
     {
+      "name": "activity-timeline-demo",
+      "type": "registry:example",
+      "title": "Activity timeline example",
+      "description": "The shortest use of Activity timeline, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/activity-timeline.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/activity-timeline-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-changes-review-demo",
+      "type": "registry:example",
+      "title": "Reviewable changes example",
+      "description": "The shortest use of Reviewable changes, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-changes-review.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-changes-review-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-permissions-demo",
+      "type": "registry:example",
+      "title": "Permission request example",
+      "description": "The shortest use of Permission request, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-permissions.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-permissions-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-plan-demo",
+      "type": "registry:example",
+      "title": "Agent plan example",
+      "description": "The shortest use of Agent plan, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-plan.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-plan-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-presence-demo",
+      "type": "registry:example",
+      "title": "Agent presence example",
+      "description": "The shortest use of Agent presence, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-presence.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-presence-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "agent-undo-log-demo",
+      "type": "registry:example",
+      "title": "Agent action log example",
+      "description": "The shortest use of Agent action log, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/agent-undo-log.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/agent-undo-log-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "bulk-action-bar-demo",
       "type": "registry:example",
       "title": "Bulk action bar example",
@@ -3335,6 +4093,156 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "command-pages-demo",
+      "type": "registry:example",
+      "title": "Command pages example",
+      "description": "The shortest use of Command pages, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/command-pages.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/command-pages-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "data-grid-demo",
+      "type": "registry:example",
+      "title": "Data grid example",
+      "description": "The shortest use of Data grid, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/data-grid.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/data-grid-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "date-availability-demo",
+      "type": "registry:example",
+      "title": "Availability calendar example",
+      "description": "The shortest use of Availability calendar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/date-availability.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/date-availability-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "filter-bar-demo",
+      "type": "registry:example",
+      "title": "Filter bar example",
+      "description": "The shortest use of Filter bar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/filter-bar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/filter-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "kanban-board-demo",
+      "type": "registry:example",
+      "title": "Kanban board example",
+      "description": "The shortest use of Kanban board, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/kanban-board.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/kanban-board-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "people-picker-demo",
+      "type": "registry:example",
+      "title": "People picker example",
+      "description": "The shortest use of People picker, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/people-picker.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/people-picker-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "review-queue-demo",
+      "type": "registry:example",
+      "title": "Review queue example",
+      "description": "The shortest use of Review queue, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/review-queue.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/review-queue-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "scheduler-demo",
+      "type": "registry:example",
+      "title": "Scheduler example",
+      "description": "The shortest use of Scheduler, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/scheduler.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/scheduler-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "search-scoped-demo",
+      "type": "registry:example",
+      "title": "Scoped search example",
+      "description": "The shortest use of Scoped search, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/search-scoped.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/search-scoped-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "table-pro-demo",
+      "type": "registry:example",
+      "title": "Grouped table example",
+      "description": "The shortest use of Grouped table, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/table-pro.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/table-pro-demo.tsx",
           "type": "registry:example"
         }
       ]

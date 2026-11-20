@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every Time picker state. Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { TimePickerGrid } from '../../states/TimePickerGrid'
+---
+
+<Layout title="Time picker states · Satin" description="Every Time picker state, for comparing with Figma.">
+  <main class="min-h-dvh bg-bg-card">
+    <TimePickerGrid client:load />
+  </main>
+</Layout>

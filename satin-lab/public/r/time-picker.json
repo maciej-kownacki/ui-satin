@@ -1,0 +1,358 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "time-picker",
+  "type": "registry:ui",
+  "title": "Time picker",
+  "description": "Takes a typed time or one from a list, alone or with a day.",
+  "dependencies": [
+    "iconoir-react@^7.12.2",
+    "radix-ui@^1.8.1"
+  ],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/date-picker.json",
+    "https://uisatin.dev/r/dropdown.json",
+    "https://uisatin.dev/r/form-field.json",
+    "https://uisatin.dev/r/labels.json",
+    "https://uisatin.dev/r/select.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/time-picker.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { flushSync } from 'react-dom'\nimport { Popover as PopoverPrimitive } from 'radix-ui'\nimport { Calendar as CalendarIcon, Clock, NavArrowDown } from 'iconoir-react'\nimport { cn } from '@/lib/utils'\nimport { Calendar } from '@/registry/satin/ui/date-picker'\nimport { menuSurfaceClass } from '@/registry/satin/ui/dropdown'\nimport { FieldSizeContext, useFormField } from '@/registry/satin/ui/form-field'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\nimport { FieldChrome, useFieldChrome } from '@/registry/satin/ui/select'\n\n/**\n * TimePicker, TimeList, DateTimePicker and DateTimePickerPanel: a time of day, alone or with a day.\n *\n * TimePicker is a text field with Input's skin, a clock before the value and a chevron after it,\n * that opens a column of times under it. Each time is a pill: quiet, bg/hover under the pointer,\n * the focus ring when the keys put it there, and the picked one filled with the brand, as the\n * Calendar fills its picked day, so a day and a time read as one choice. It follows the APG combobox pattern: focus stays in the\n * field, the arrows move through the list, Enter picks. What you type is read when you press\n * Enter or leave the field: `930`, `9:30`, `9.30`, `9h30`, `1430`, `9:30pm`, `9 p.m.`, and the\n * locale's own AM and PM words. While you type, the list jumps to the nearest time (type-ahead).\n * Text that isn't a time, or a time outside `min`/`max` or `isTimeDisabled`, marks the field\n * invalid and says why under it; the value becomes `null`, as a native time field's does.\n *\n * Times are listed every `step` minutes from midnight; those outside `min`/`max` or for which\n * `isTimeDisabled` returns true stay in the list, dimmed and skipped by the arrows. Times are\n * written by Intl in the `dateLocale` label, 12- or 24-hour as that locale writes them unless\n * `format` says otherwise.\n *\n * TimeList is the list on its own: a focusable `listbox` (arrows, Home/End, Page Up/Down by an\n * hour, type-ahead), for a popover or panel of your own. DateTimePicker is DatePicker's field\n * opening the Calendar with a column of times beside it: a day and a time pick a date. Picking\n * either sets the value and leaves the panel open, so the other can still change; Escape, a press\n * outside, or Enter on the picked time close it. TimePicker closes on a pick, as Select does:\n * there's nothing else to choose. DateTimePickerPanel is the panel in place.\n *\n * The list opens like Popover (it fades and settles 4px). The picked time is in view as the\n * list opens, with no scroll to watch; a type-ahead jump scrolls smoothly, and at once under\n * reduced motion. Arrow keys never animate.\n *\n * With `name`, a hidden input submits the value as a native field would: `HH:mm` for a time,\n * `YYYY-MM-DDTHH:mm` for a date and time, empty while there's none. Inside a FormField, leave\n * out `label`, `hint` and `error`: the field supplies them, and a Form's `errors[name]`.\n *\n * Other props, `ref` included, go to: TimePicker's text input, TimeList's listbox,\n * DateTimePicker's trigger button (`className` styles the field in both pickers) and the\n * panel's surface.\n */\n\n/** A time of day: `hours` 0–23, `minutes` 0–59. */\nexport type TimeValue = { hours: number; minutes: number }\nexport type TimeFormat = '12h' | '24h'\n\nconst minutesOf = (t: TimeValue) => t.hours * 60 + t.minutes\nconst timeAt = (m: number): TimeValue => ({ hours: Math.floor(m / 60) % 24, minutes: m % 60 })\nconst keyOf = (t?: TimeValue | null) => (t ? minutesOf(t) : null)\nconst timeOfDate = (d: Date): TimeValue => ({ hours: d.getHours(), minutes: d.getMinutes() })\nconst startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())\nconst sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()\nconst atTime = (day: Date, t: TimeValue) => new Date(day.getFullYear(), day.getMonth(), day.getDate(), t.hours, t.minutes)\nconst pad = (n: number) => String(n).padStart(2, '0')\n/** As `<input type=\"time\">` submits it. */\nconst isoTime = (t: TimeValue) => `${pad(t.hours)}:${pad(t.minutes)}`\n/** As `<input type=\"datetime-local\">` submits it. */\nconst isoDateTime = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${isoTime(timeOfDate(d))}`\n\n/* ---------- reading and writing times ---------- */\n\nconst memo = <T,>(make: (key: string) => T) => {\n  const cache = new Map<string, T>()\n  return (key: string) => {\n    let v = cache.get(key)\n    if (v === undefined) cache.set(key, (v = make(key)))\n    return v\n  }\n}\n\nconst hourCycleOf = memo((locale) => (new Intl.DateTimeFormat(locale, { hour: 'numeric' }).resolvedOptions().hour12 ? '12h' : '24h') as TimeFormat)\n\n/** 12 or 24 hours, as `locale` writes times. */\nexport function localeTimeFormat(locale: string): TimeFormat {\n  return hourCycleOf(locale)\n}\n\nconst timeFormatter = memo((key) => {\n  const [locale, format] = key.split('|')\n  return new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit', hourCycle: format === '12h' ? 'h12' : 'h23' })\n})\n\n/** `time` written in `locale` (en-US: \"2:30 PM\"; pl-PL: \"14:30\"), 12- or 24-hour as the locale writes it unless `format` says. */\nexport function formatTime(time: TimeValue, locale = 'en-US', format: TimeFormat = localeTimeFormat(locale)) {\n  return timeFormatter(`${locale}|${format}`).format(new Date(2024, 0, 1, time.hours, time.minutes))\n}\n\nconst dateTimeFormatter = memo((key) => {\n  const [locale, format] = key.split('|')\n  return new Intl.DateTimeFormat(locale, {\n    weekday: 'short',\n    month: 'short',\n    day: 'numeric',\n    year: 'numeric',\n    hour: 'numeric',\n    minute: '2-digit',\n    hourCycle: format === '12h' ? 'h12' : 'h23',\n  })\n})\n\n/** Lower case without dots and spaces: \"P.M.\" and \"pm\" read the same. */\nconst squash = (s: string) => s.toLowerCase().replace(/[.\\s\\u00a0\\u202f]/g, '')\n\n/** The words for before and after noon: a/am, p/pm, and the locale's own (pl \"AM\", ko \"오전\", zh \"上午\"). */\nconst periodWords = memo((locale) => {\n  const f = new Intl.DateTimeFormat(locale, { hour: 'numeric', hourCycle: 'h12' })\n  const word = (h: number) => squash(f.formatToParts(new Date(2024, 0, 1, h)).find((p) => p.type === 'dayPeriod')?.value ?? '')\n  return { am: new Set(['a', 'am', word(9)].filter(Boolean)), pm: new Set(['p', 'pm', word(21)].filter(Boolean)) }\n})\n\ntype Reading = { hours: number; minutes: number; period?: 'am' | 'pm' }\n\n/** What the text says: hours and minutes, and AM or PM if it names one. */\nfunction readTime(text: string, locale: string): Reading | null {\n  const t = text.toLowerCase().replace(/[\\u00a0\\u202f]/g, ' ').trim()\n  // Words before (zh, ko) or after the digits; the digits run with : . h or spaces between them.\n  const m = /^(\\D*?)(\\d(?:[\\d\\s:.h]*\\d)?)(\\D*)$/.exec(t)\n  if (!m) return null\n  const words = periodWords(locale)\n  let period: Reading['period']\n  // \"9:\" and \"9h\" are 9 o'clock: a trailing separator is no period.\n  for (const w of [squash(m[1]), squash(m[3]).replace(/^[:h]+/, '')]) {\n    if (!w) continue\n    if (period) return null\n    if (words.am.has(w)) period = 'am'\n    else if (words.pm.has(w)) period = 'pm'\n    else return null\n  }\n  const parts = m[2].split(/[\\s:.h]+/)\n  let hours: number\n  let minutes: number\n  if (parts.length === 1) {\n    // 9 or 14: hours. 930 and 0930: hours and minutes.\n    const d = parts[0]\n    if (d.length > 4) return null\n    hours = Number(d.length <= 2 ? d : d.slice(0, -2))\n    minutes = d.length <= 2 ? 0 : Number(d.slice(-2))\n  } else if (parts.length <= 3 && parts.every((p) => p.length <= 2)) {\n    // Seconds, if any, are dropped.\n    hours = Number(parts[0])\n    minutes = Number(parts[1])\n  } else return null\n  if (minutes > 59) return null\n  if (period) return hours > 12 || (hours === 0 && period === 'pm') ? null : { hours, minutes, period }\n  return hours > 23 ? null : { hours, minutes }\n}\n\nconst toTime = (r: Reading): TimeValue => (r.period ? { hours: (r.hours % 12) + (r.period === 'pm' ? 12 : 0), minutes: r.minutes } : { hours: r.hours, minutes: r.minutes })\n\n/**\n * The time `text` names, or null: \"930\", \"9:30\", \"9.30\", \"9h30\", \"1430\", \"9:30pm\", \"9 p.m.\",\n * and the AM and PM words of `locale`. Without AM or PM it reads the hours as 24-hour.\n */\nexport function parseTime(text: string, locale = 'en-US'): TimeValue | null {\n  const r = readTime(text, locale)\n  return r ? toTime(r) : null\n}\n\n/**\n * The times a reading may mean. On a 12-hour clock \"2\" without AM or PM is 2:00 AM or 2:00 PM,\n * and \"12\" noon before midnight; the pickers take the first that's available.\n */\nfunction meanings(r: Reading, format: TimeFormat): TimeValue[] {\n  if (r.period || format === '24h' || r.hours === 0 || r.hours > 12) return [toTime(r)]\n  const h = r.hours % 12\n  return r.hours === 12 ? [{ hours: 12, minutes: r.minutes }, { hours: 0, minutes: r.minutes }] : [{ hours: h, minutes: r.minutes }, { hours: h + 12, minutes: r.minutes }]\n}\n\n/* ---------- the list ---------- */\n\ninterface Bounds {\n  min?: TimeValue\n  max?: TimeValue\n  isTimeDisabled?: (time: TimeValue) => boolean\n}\n\nconst unavailable = (t: TimeValue, { min, max, isTimeDisabled }: Bounds) =>\n  (min ? minutesOf(t) < minutesOf(min) : false) || (max ? minutesOf(t) > minutesOf(max) : false) || !!isTimeDisabled?.(t)\n\n/** The first meaning that's available, or the first meaning. */\nconst choose = (options: TimeValue[], bounds: Bounds) => options.find((t) => !unavailable(t, bounds)) ?? options[0]\n\ntype Slot = { time: TimeValue; key: number; label: string; disabled: boolean }\n\n/** Every `step` minutes from midnight, each written in the locale and marked if it can't be picked. */\nconst clampStep = (step: number) => Math.min(720, Math.max(1, Math.round(step) || 15))\n\nfunction makeSlots(step: number, bounds: Bounds, locale: string, format: TimeFormat): Slot[] {\n  const s = clampStep(step)\n  return Array.from({ length: Math.ceil(1440 / s) }, (_, i) => {\n    const time = timeAt(i * s)\n    return { time, key: i * s, label: formatTime(time, locale, format), disabled: unavailable(time, bounds) }\n  })\n}\n\n/** The available slot nearest to `minute`, or -1 when none is. */\nfunction nearest(slots: Slot[], minute: number) {\n  let best = -1\n  let gap = Infinity\n  slots.forEach((s, i) => {\n    const d = Math.abs(s.key - minute)\n    if (!s.disabled && d < gap) {\n      best = i\n      gap = d\n    }\n  })\n  return best\n}\n\n/** Where the highlight starts: the picked time, else the time now. */\nfunction startIndex(slots: Slot[], key: number | null) {\n  if (key != null) return nearest(slots, key)\n  const now = new Date()\n  return nearest(slots, now.getHours() * 60 + now.getMinutes())\n}\n\n/** The next available slot after `from` in `dir`, staying put at either end. */\nfunction stepFrom(slots: Slot[], from: number, dir: 1 | -1) {\n  for (let i = from + dir; i >= 0 && i < slots.length; i += dir) if (!slots[i].disabled) return i\n  return from\n}\n\n/** An hour on (Page Down) or back, then the nearest available slot that way, or back the other way. */\nfunction pageFrom(slots: Slot[], from: number, dir: 1 | -1, step: number) {\n  const target = Math.min(slots.length - 1, Math.max(0, from + dir * Math.max(1, Math.round(60 / step))))\n  if (!slots[target].disabled) return target\n  const on = stepFrom(slots, target, dir)\n  if (on !== target) return on\n  const back = stepFrom(slots, target, dir === 1 ? -1 : 1)\n  return back === target ? from : back\n}\n\nconst edge = (slots: Slot[], dir: 1 | -1) => stepFrom(slots, dir === 1 ? -1 : slots.length, dir)\n\n/**\n * Brings option `index` into the list's view: to the middle (as the list opens, or a type-ahead\n * jump), or just inside the nearest edge (the arrows). Only a type-ahead jump scrolls smoothly,\n * and not under reduced motion. Sets the list's own scroll, so the page never moves.\n */\nfunction scrollToOption(list: HTMLElement | null, index: number, how: 'center' | 'nearest', smooth = false) {\n  const el = list?.querySelectorAll<HTMLElement>('[role=\"option\"]')[index]\n  if (!list || !el) return\n  const inset = 4\n  let top: number\n  if (how === 'center') top = el.offsetTop - (list.clientHeight - el.offsetHeight) / 2\n  else if (el.offsetTop - inset < list.scrollTop) top = el.offsetTop - inset\n  else if (el.offsetTop + el.offsetHeight + inset > list.scrollTop + list.clientHeight) top = el.offsetTop + el.offsetHeight + inset - list.clientHeight\n  else return\n  const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches\n  const behavior: ScrollBehavior = smooth && !reduce ? 'smooth' : 'auto'\n  if (typeof list.scrollTo === 'function') list.scrollTo({ top: Math.max(0, top), behavior })\n  else list.scrollTop = Math.max(0, top)\n}\n\n/**\n * A time as a pill, in the Calendar's language: 32px, 13px medium in tabular figures so the times\n * line up, radius-full. Quiet until the pointer is over it (bg/hover) or the keys reach it (the\n * focus ring, flush as on the Calendar's days); the picked one takes the brand fill of the\n * Calendar's picked day. Disabled times fade to 40%, as disabled days do.\n */\nconst pillClass = cn(\n  'sa:flex sa:h-8 sa:w-full sa:shrink-0 sa:cursor-pointer sa:items-center sa:justify-center sa:rounded-full sa:px-3 sa:text-sm sa:leading-5 sa:font-medium sa:tabular-nums sa:select-none',\n  'sa:transition-[background-color,color] sa:duration-(--sa-duration-fast) sa:ease-(--sa-ease-out)',\n  'sa:data-[disabled]:pointer-events-none sa:data-[disabled]:opacity-40',\n  'sa:data-[keyboard]:[box-shadow:0_0_0_2px_var(--sa-action-focus-ring)]',\n)\n\n/** The times of a list, as pills. */\nfunction TimeRows({\n  slots,\n  listId,\n  selected,\n  active,\n  ring,\n  onHover,\n  onPick,\n}: {\n  slots: Slot[]\n  listId: string\n  selected: number | null\n  active: number\n  /** The highlight came from the keys: it shows the focus ring. */\n  ring: boolean\n  onHover: (index: number) => void\n  onPick: (slot: Slot, index: number) => void\n}) {\n  return slots.map((s, i) => (\n    <div\n      key={s.key}\n      id={`${listId}-${s.key}`}\n      role=\"option\"\n      aria-selected={s.key === selected}\n      aria-disabled={s.disabled || undefined}\n      data-highlighted={i === active ? '' : undefined}\n      data-keyboard={i === active && ring ? '' : undefined}\n      data-disabled={s.disabled ? '' : undefined}\n      onPointerMove={() => i !== active && onHover(i)}\n      onClick={() => !s.disabled && onPick(s, i)}\n      className={cn(\n        pillClass,\n        s.key === selected ? 'sa:bg-action-primary-bg sa:text-text-on-solid' : cn('sa:text-text-default', i === active && !ring && 'sa:bg-bg-hover'),\n      )}\n    >\n      {s.label}\n    </div>\n  ))\n}\n\nexport interface TimeListProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange' | 'children'> {\n  /** The picked time. */\n  value?: TimeValue | null\n  defaultValue?: TimeValue | null\n  /** Called when a time is picked (click, Enter or Space). */\n  onValueChange?: (value: TimeValue) => void\n  /** Minutes between the listed times, from midnight. */\n  step?: number\n  /** Times before this are dimmed and can't be picked. */\n  min?: TimeValue\n  /** Times after this are dimmed and can't be picked. */\n  max?: TimeValue\n  /** Dims a time and keeps it from being picked: a booked slot, a lunch break. */\n  isTimeDisabled?: (time: TimeValue) => boolean\n  /** 12- or 24-hour. Defaults to how the `dateLocale` label's locale writes times. */\n  format?: TimeFormat\n  className?: string\n}\n\n/**\n * The list of times on its own: a focusable `listbox`, named \"Time\" (the `time` label) unless you\n * name it. Arrows move the highlight, Home and End go to the first and last time, Page Up and\n * Down an hour, typing jumps to the time typed, Enter or Space picks. Give it a height (or a\n * flex parent) and it scrolls. Other props, `ref` included, go to the listbox.\n */\nexport function TimeList({\n  value: valueProp,\n  defaultValue = null,\n  onValueChange,\n  step = 15,\n  min,\n  max,\n  isTimeDisabled,\n  format: formatProp,\n  className,\n  ref,\n  id,\n  onKeyDown,\n  onFocus,\n  onBlur,\n  onPointerDown,\n  ...props\n}: TimeListProps) {\n  const labels = useSatinLabels()\n  const locale = labels.dateLocale\n  const format = formatProp ?? localeTimeFormat(locale)\n  const bounds = { min, max, isTimeDisabled }\n  const slots = makeSlots(step, bounds, locale, format)\n  const [inner, setInner] = React.useState<TimeValue | null>(defaultValue)\n  const value = valueProp !== undefined ? valueProp : inner\n  const selected = keyOf(value)\n  const [active, setActive] = React.useState(() => startIndex(slots, selected))\n  const [focused, setFocused] = React.useState(false)\n  const [viaKeys, setViaKeys] = React.useState(true)\n  const pressed = React.useRef(false)\n  const typed = React.useRef({ text: '', at: 0 })\n  const autoId = React.useId()\n  const listId = id ?? autoId\n  const listRef = React.useRef<HTMLDivElement | null>(null)\n\n  // The app's ref and ours; the picked time sits in the middle as the list appears.\n  const activeRef = React.useRef(active)\n  activeRef.current = active\n  const setRoot = React.useCallback(\n    (node: HTMLDivElement | null) => {\n      listRef.current = node\n      if (node) scrollToOption(node, activeRef.current, 'center')\n      if (typeof ref === 'function') ref(node)\n      else if (ref) ref.current = node\n    },\n    [ref],\n  )\n\n  // A time picked from outside (another field, a reset) takes the highlight along.\n  const shown = React.useRef(selected)\n  React.useEffect(() => {\n    if (shown.current === selected) return\n    shown.current = selected\n    if (selected == null) return\n    const i = nearest(slots, selected)\n    setActive(i)\n    scrollToOption(listRef.current, i, 'nearest')\n  })\n\n  const move = (i: number, how: 'center' | 'nearest' = 'nearest', smooth = false) => {\n    if (i < 0) return\n    setActive(i)\n    setViaKeys(true)\n    scrollToOption(listRef.current, i, how, smooth)\n  }\n\n  const pick = (s: Slot, i: number) => {\n    if (s.disabled) return\n    setActive(i)\n    if (valueProp === undefined) setInner(s.time)\n    onValueChange?.(s.time)\n  }\n\n  const onKey = (e: React.KeyboardEvent<HTMLDivElement>) => {\n    onKeyDown?.(e)\n    if (e.defaultPrevented) return\n    const from = active < 0 ? edge(slots, 1) : active\n    const keys: Record<string, () => number> = {\n      ArrowDown: () => (active < 0 ? from : stepFrom(slots, from, 1)),\n      ArrowUp: () => (active < 0 ? from : stepFrom(slots, from, -1)),\n      Home: () => edge(slots, 1),\n      End: () => edge(slots, -1),\n      PageDown: () => pageFrom(slots, from, 1, clampStep(step)),\n      PageUp: () => pageFrom(slots, from, -1, clampStep(step)),\n    }\n    const now = Date.now()\n    const buffer = now - typed.current.at > 1000 ? '' : typed.current.text\n    if (keys[e.key]) {\n      e.preventDefault()\n      typed.current.text = ''\n      move(keys[e.key]())\n    } else if (e.key === 'Enter' || (e.key === ' ' && !buffer)) {\n      e.preventDefault()\n      if (slots[active]) pick(slots[active], active)\n    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {\n      // Type-ahead: \"2\" then \"3\" then \"0\" reads as 2:30; a second's pause starts over.\n      e.preventDefault()\n      typed.current = { text: buffer + e.key, at: now }\n      const r = readTime(typed.current.text, locale)\n      if (r) move(nearest(slots, minutesOf(choose(meanings(r, format), bounds))), 'center', true)\n    }\n  }\n\n  return (\n    <div\n      {...props}\n      ref={setRoot}\n      id={listId}\n      role=\"listbox\"\n      tabIndex={0}\n      aria-label={props['aria-labelledby'] ? props['aria-label'] : (props['aria-label'] ?? labels.time)}\n      aria-activedescendant={slots[active] ? `${listId}-${slots[active].key}` : undefined}\n      data-slot=\"time-list\"\n      onKeyDown={onKey}\n      onPointerDown={(e) => {\n        pressed.current = true\n        onPointerDown?.(e)\n      }}\n      onFocus={(e) => {\n        // From Tab the highlight shows the ring at once; from a click it waits for a key.\n        setFocused(true)\n        setViaKeys(!pressed.current)\n        pressed.current = false\n        onFocus?.(e)\n      }}\n      onBlur={(e) => {\n        setFocused(false)\n        onBlur?.(e)\n      }}\n      className={cn('sa:relative sa:flex sa:flex-col sa:gap-1 sa:overflow-y-auto sa:p-1 sa:outline-none sa:focus-visible:ring-0', className)}\n    >\n      <TimeRows\n        slots={slots}\n        listId={listId}\n        selected={selected}\n        active={active}\n        ring={focused && viaKeys}\n        onHover={(i) => {\n          setViaKeys(false)\n          setActive(i)\n        }}\n        onPick={pick}\n      />\n    </div>\n  )\n}\n\n/* ---------- TimePicker ---------- */\n\nconst listClass = cn(\n  // A column of times reads at its own width (192px), not the field's.\n  'sa:pointer-events-auto sa:z-50 sa:w-48 sa:max-w-(--radix-popover-content-available-width) sa:overflow-hidden',\n  menuSurfaceClass,\n  'sa:origin-(--radix-popover-content-transform-origin) sa:outline-none',\n  'sa:data-[state=open]:animate-[satin-enter_var(--sa-duration-base)_var(--sa-ease-out)]',\n)\n\n/** The format example in the placeholder, the hint and the error: half past two in the afternoon. */\nconst EXAMPLE: TimeValue = { hours: 14, minutes: 30 }\n\ntype Problem = { kind: 'invalid' } | { kind: 'unavailable'; time: string }\n\nexport interface TimePickerProps\n  extends Omit<React.ComponentProps<'input'>, 'value' | 'defaultValue' | 'size' | 'type' | 'min' | 'max' | 'step' | 'children'> {\n  value?: TimeValue | null\n  defaultValue?: TimeValue | null\n  /** A picked or typed time; `null` when the field is cleared or what was typed can't be picked. */\n  onValueChange?: (value: TimeValue | null) => void\n  /** Minutes between the listed times, from midnight. Typed times needn't fall on a step. */\n  step?: number\n  /** Times before this are dimmed in the list, and typing one marks the field invalid. */\n  min?: TimeValue\n  /** Times after this are dimmed in the list, and typing one marks the field invalid. */\n  max?: TimeValue\n  /** Dims a time and keeps it from being picked or typed: a booked slot, a lunch break. */\n  isTimeDisabled?: (time: TimeValue) => boolean\n  /** 12- or 24-hour. Defaults to how the `dateLocale` label's locale writes times. */\n  format?: TimeFormat\n  /** The list of times. */\n  open?: boolean\n  defaultOpen?: boolean\n  onOpenChange?: (open: boolean) => void\n  label?: React.ReactNode\n  hint?: React.ReactNode\n  /** An error message (replaces the hint), or `true` to mark the field invalid without one. */\n  error?: React.ReactNode | boolean\n  size?: 'sm' | 'md' | 'lg'\n  /** Portal target. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  /** A press outside the field and the list; `preventDefault()` keeps the list open. */\n  onInteractOutside?: (event: Event) => void\n  /** Classes for the outer wrapper (label + field + hint). `className` styles the field. */\n  wrapperClassName?: string\n  /** Show a state without interacting, for state sheets. */\n  'data-force'?: 'hover' | 'focus'\n}\n\n/**\n * A time field: type a time or pick one from the list under it. Other props, `ref` included,\n * go to the text input; `className` styles the field around it.\n */\nexport function TimePicker({\n  value: valueProp,\n  defaultValue = null,\n  onValueChange,\n  step = 15,\n  min,\n  max,\n  isTimeDisabled,\n  format: formatProp,\n  open: openProp,\n  defaultOpen = false,\n  onOpenChange,\n  label,\n  hint,\n  error,\n  size: ownSize,\n  container,\n  onInteractOutside,\n  wrapperClassName,\n  className,\n  id,\n  name,\n  disabled,\n  required,\n  placeholder,\n  onChange,\n  onKeyDown,\n  onBlur,\n  ref,\n  'aria-describedby': describedBy,\n  'aria-label': ariaLabel,\n  'data-force': force,\n  ...props\n}: TimePickerProps) {\n  const labels = useSatinLabels()\n  const field = useFormField()\n  const locale = labels.dateLocale\n  const format = formatProp ?? localeTimeFormat(locale)\n  const groupSize = React.useContext(FieldSizeContext)\n  const size = ownSize ?? groupSize ?? 'md'\n  const bounds = { min, max, isTimeDisabled }\n  const slots = makeSlots(step, bounds, locale, format)\n  const example = formatTime(EXAMPLE, locale, format)\n\n  const [inner, setInner] = React.useState<TimeValue | null>(defaultValue)\n  const value = valueProp !== undefined ? valueProp : inner\n  const valueKey = keyOf(value)\n  const written = value ? formatTime(value, locale, format) : ''\n  const [text, setText] = React.useState(written)\n  const [problem, setProblem] = React.useState<Problem | null>(null)\n\n  // The value this field last set. Anything else arriving from outside rewrites the text.\n  const committed = React.useRef(valueKey)\n  React.useEffect(() => {\n    if (committed.current === valueKey) return\n    committed.current = valueKey\n    setText(written)\n    setProblem(null)\n  }, [valueKey, written])\n  // A new locale or format rewrites the time it shows.\n  const lastWritten = React.useRef(written)\n  React.useEffect(() => {\n    if (lastWritten.current !== written && text === lastWritten.current) setText(written)\n    lastWritten.current = written\n  }, [written, text])\n\n  const emit = (next: TimeValue | null) => {\n    const k = keyOf(next)\n    if (k === committed.current) return\n    committed.current = k\n    if (valueProp === undefined) setInner(next)\n    onValueChange?.(next)\n  }\n\n  /** Reads what was typed: a time, nothing, or a problem to show. */\n  const commitText = (raw: string) => {\n    const t = raw.trim()\n    if (!t) {\n      setText('')\n      setProblem(null)\n      return emit(null)\n    }\n    const r = readTime(t, locale)\n    if (!r) {\n      setProblem({ kind: 'invalid' })\n      return emit(null)\n    }\n    const time = choose(meanings(r, format), bounds)\n    if (unavailable(time, bounds)) {\n      setProblem({ kind: 'unavailable', time: formatTime(time, locale, format) })\n      return emit(null)\n    }\n    setText(formatTime(time, locale, format))\n    setProblem(null)\n    emit(time)\n  }\n\n  // The list.\n  const [innerOpen, setInnerOpen] = React.useState(defaultOpen)\n  const open = openProp ?? innerOpen\n  // Blur and the popover may both close it in one go; the app hears it once.\n  const openRef = React.useRef(open)\n  openRef.current = open\n  const setOpen = (next: boolean) => {\n    if (next === openRef.current) return\n    openRef.current = next\n    if (openProp === undefined) setInnerOpen(next)\n    onOpenChange?.(next)\n  }\n  const [active, setActive] = React.useState(() => startIndex(slots, valueKey))\n  // The highlight moved by the arrows or the pointer since the last keystroke: Enter picks it.\n  const [navigated, setNavigated] = React.useState(false)\n  const [viaKeys, setViaKeys] = React.useState(false)\n  const openedHere = React.useRef(false)\n  const openList = (at?: number) => {\n    openedHere.current = true\n    setActive(at ?? startIndex(slots, valueKey))\n    setNavigated(false)\n    setViaKeys(false)\n    setOpen(true)\n  }\n  // Opened from outside (`open`): start on the picked time.\n  React.useEffect(() => {\n    if (open && !openedHere.current) setActive(startIndex(slots, valueKey))\n    openedHere.current = false\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [open])\n\n  const autoListId = React.useId()\n  const listId = `${autoListId}-times`\n  const fieldRef = React.useRef<HTMLDivElement>(null)\n  const inputRef = React.useRef<HTMLInputElement | null>(null)\n  const listRef = React.useRef<HTMLDivElement | null>(null)\n  const activeRef = React.useRef(active)\n  activeRef.current = active\n  const setList = React.useCallback((node: HTMLDivElement | null) => {\n    listRef.current = node\n    if (node) scrollToOption(node, activeRef.current, 'center')\n  }, [])\n  const setInput = React.useCallback(\n    (node: HTMLInputElement | null) => {\n      inputRef.current = node\n      if (typeof ref === 'function') ref(node)\n      else if (ref) ref.current = node\n    },\n    [ref],\n  )\n\n  const pickSlot = (s: Slot) => {\n    if (s.disabled) return\n    setText(s.label)\n    setProblem(null)\n    emit(s.time)\n    setOpen(false)\n  }\n\n  const move = (i: number) => {\n    if (i < 0) return\n    setActive(i)\n    setNavigated(true)\n    setViaKeys(true)\n    scrollToOption(listRef.current, i, 'nearest')\n  }\n\n  const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {\n    onKeyDown?.(e)\n    if (e.defaultPrevented) return\n    const from = active < 0 ? edge(slots, 1) : active\n    switch (e.key) {\n      case 'ArrowDown':\n      case 'ArrowUp': {\n        e.preventDefault()\n        if (!open) return openList()\n        if (e.altKey) return e.key === 'ArrowUp' ? setOpen(false) : undefined\n        return move(active < 0 ? from : stepFrom(slots, from, e.key === 'ArrowDown' ? 1 : -1))\n      }\n      case 'PageDown':\n      case 'PageUp': {\n        if (!open) return\n        e.preventDefault()\n        return move(pageFrom(slots, from, e.key === 'PageDown' ? 1 : -1, step))\n      }\n      case 'Enter': {\n        if (open && navigated && slots[active] && !slots[active].disabled) {\n          e.preventDefault()\n          return pickSlot(slots[active])\n        }\n        if (open) {\n          e.preventDefault()\n          setOpen(false)\n        }\n        // At once, so a form submitted by this Enter reads the new value.\n        return flushSync(() => commitText(text))\n      }\n      case 'Escape': {\n        // An open list is closed by the popover; a closed one puts back what the field showed.\n        if (open || (text === written && !problem)) return\n        e.preventDefault()\n        e.stopPropagation()\n        setText(written)\n        setProblem(null)\n        return\n      }\n    }\n  }\n\n  // What the field says when the typed text can't be picked, unless the app says something.\n  const own = problem && !error && !field?.invalid ? (problem.kind === 'invalid' ? labels.timeInvalid(example) : labels.timeUnavailable(problem.time)) : undefined\n  const chrome = useFieldChrome({ id, disabled, error: error ?? own ?? (problem ? true : undefined), hint })\n  const formatId = `${chrome.controlId}-format`\n  const fieldName = name ?? chrome.name\n  // The list is named after the field: its label (ours or a FormField's), or its aria-label.\n  const listName = () => ariaLabel ?? (label ? undefined : inputRef.current?.labels?.[0]?.textContent?.trim()) ?? labels.time\n  const listLabelling = label ? { 'aria-labelledby': `${chrome.controlId}-label` } : { 'aria-label': open ? listName() : labels.time }\n  const activeSlot = open ? slots[active] : undefined\n\n  return (\n    <FieldChrome label={label} chrome={chrome} className={wrapperClassName}>\n      <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>\n        <PopoverPrimitive.Anchor asChild>\n          <div\n            ref={fieldRef}\n            data-slot=\"time-picker-field\"\n            data-size={size}\n            data-filled={text ? true : undefined}\n            data-invalid={chrome.invalid || undefined}\n            data-disabled={chrome.disabled || undefined}\n            data-state={open ? 'open' : 'closed'}\n            data-force={force}\n            className={cn('satin-field', className)}\n            // As in Input: a press on the padding or the clock focuses the text; any press but the chevron's opens the list.\n            onMouseDown={(e) => {\n              const target = e.target as HTMLElement\n              if (target !== inputRef.current && !chrome.disabled && !target.closest('button')) {\n                e.preventDefault()\n                inputRef.current?.focus()\n              }\n            }}\n            onClick={(e) => {\n              if (!chrome.disabled && !open && !(e.target as HTMLElement).closest('button')) openList()\n            }}\n          >\n            <span className=\"satin-field-icon\" aria-hidden>\n              <Clock />\n            </span>\n            <input\n              {...props}\n              ref={setInput}\n              id={chrome.controlId}\n              type=\"text\"\n              role=\"combobox\"\n              autoComplete=\"off\"\n              spellCheck={false}\n              data-slot=\"time-picker-input\"\n              aria-label={ariaLabel}\n              aria-haspopup=\"listbox\"\n              aria-expanded={open}\n              aria-controls={open ? listId : undefined}\n              aria-activedescendant={activeSlot ? `${listId}-${activeSlot.key}` : undefined}\n              aria-invalid={chrome.invalid || undefined}\n              aria-required={(required ?? chrome.required) || undefined}\n              aria-describedby={[describedBy, formatId, chrome.describedBy].filter(Boolean).join(' ')}\n              disabled={chrome.disabled}\n              placeholder={placeholder ?? example}\n              value={text}\n              onChange={(e) => {\n                onChange?.(e)\n                const t = e.target.value\n                setText(t)\n                setProblem(null)\n                // Type-ahead: the list opens on the nearest time to what's typed so far.\n                const r = readTime(t, locale)\n                const at = r ? nearest(slots, minutesOf(choose(meanings(r, format), bounds))) : -1\n                if (!open) openList(at >= 0 ? at : undefined)\n                else {\n                  setNavigated(false)\n                  setViaKeys(false)\n                  if (at >= 0) {\n                    setActive(at)\n                    scrollToOption(listRef.current, at, 'center', true)\n                  }\n                }\n              }}\n              onKeyDown={onKey}\n              onBlur={(e) => {\n                onBlur?.(e)\n                if (text !== written || problem) commitText(text)\n                setOpen(false)\n              }}\n              className=\"satin-field-input sa:tabular-nums\"\n            />\n            <span id={formatId} hidden>\n              {labels.timeHint(example)}\n            </span>\n            {/* Out of the tab order, as in the APG combobox: the arrows open the list from the field. */}\n            <button\n              type=\"button\"\n              tabIndex={-1}\n              disabled={chrome.disabled}\n              aria-label={labels.showTimes}\n              aria-expanded={open}\n              aria-controls={open ? listId : undefined}\n              onMouseDown={(e) => {\n                e.preventDefault()\n                inputRef.current?.focus()\n              }}\n              onClick={() => (open ? setOpen(false) : openList())}\n              className=\"sa:-me-1 sa:grid sa:size-6 sa:shrink-0 sa:cursor-pointer sa:place-items-center sa:rounded-md sa:disabled:cursor-not-allowed sa:[&_svg]:size-4 sa:[&_svg]:[stroke-width:1.875]\"\n            >\n              <NavArrowDown aria-hidden className={cn('sa:transition-transform sa:duration-(--sa-duration-fast) sa:ease-(--sa-ease-out)', open && 'sa:rotate-180')} />\n            </button>\n          </div>\n        </PopoverPrimitive.Anchor>\n        <PopoverPrimitive.Portal container={container}>\n          <PopoverPrimitive.Content\n            data-slot=\"time-picker\"\n            side=\"bottom\"\n            align=\"start\"\n            sideOffset={4}\n            collisionPadding={8}\n            {...listLabelling}\n            // Focus stays in the field; the list follows it with aria-activedescendant.\n            onOpenAutoFocus={(e) => e.preventDefault()}\n            onCloseAutoFocus={(e) => e.preventDefault()}\n            onInteractOutside={(e) => {\n              if (fieldRef.current?.contains(e.target as Node)) e.preventDefault()\n              onInteractOutside?.(e)\n            }}\n            className={listClass}\n          >\n            <div\n              ref={setList}\n              id={listId}\n              role=\"listbox\"\n              {...listLabelling}\n              // A press in the list keeps the focus in the field.\n              onMouseDown={(e) => e.preventDefault()}\n              className=\"sa:relative sa:flex sa:max-h-60 sa:flex-col sa:gap-1 sa:overflow-y-auto sa:p-1\"\n            >\n              <TimeRows\n                slots={slots}\n                listId={listId}\n                selected={valueKey}\n                active={active}\n                ring={viaKeys}\n                onHover={(i) => {\n                  setActive(i)\n                  setNavigated(true)\n                  setViaKeys(false)\n                }}\n                onPick={pickSlot}\n              />\n            </div>\n          </PopoverPrimitive.Content>\n        </PopoverPrimitive.Portal>\n      </PopoverPrimitive.Root>\n      {fieldName && <input type=\"hidden\" name={fieldName} value={value ? isoTime(value) : ''} disabled={chrome.disabled} />}\n    </FieldChrome>\n  )\n}\n\n/* ---------- DateTimePicker ---------- */\n\n/** Popover's surface, as DatePickerPanel draws it. */\nconst surfaceClass = cn(\n  'sa:rounded-xl sa:border sa:border-border-subtle sa:bg-bg-popover',\n  'sa:[box-shadow:0_4px_6px_-4px_var(--sa-effect-shadow-sm),0_10px_15px_-3px_var(--sa-effect-shadow-sm)]',\n)\n\nconst later = (a?: TimeValue, b?: TimeValue) => (!a ? b : !b ? a : minutesOf(a) >= minutesOf(b) ? a : b)\nconst earlier = (a?: TimeValue, b?: TimeValue) => (!a ? b : !b ? a : minutesOf(a) <= minutesOf(b) ? a : b)\n\ninterface DateTimeOptions {\n  /** The first moment that can be picked: days before it are disabled, and times before it on its day. */\n  min?: Date\n  /** The last moment that can be picked. */\n  max?: Date\n  /** The earliest time on any day (opening hours). */\n  minTime?: TimeValue\n  /** The latest time on any day. */\n  maxTime?: TimeValue\n  /** Minutes between the listed times, from midnight. */\n  step?: number\n  /** 12- or 24-hour. Defaults to how the `dateLocale` label's locale writes times. */\n  format?: TimeFormat\n  /** Dims a time on a day (`null` before a day is picked): a booked slot. */\n  isTimeDisabled?: (time: TimeValue, day: Date | null) => boolean\n  /** Today, for the calendar's dash. Defaults to now. */\n  today?: Date\n}\n\n/** The calendar and the column of times, side by side; under each other on a narrow screen. */\nfunction DateTimeBody({\n  value,\n  onValueChange,\n  onDone,\n  min,\n  max,\n  minTime,\n  maxTime,\n  step = 15,\n  format,\n  isTimeDisabled,\n  today,\n}: DateTimeOptions & { value?: Date | null; onValueChange?: (value: Date) => void; onDone?: () => void }) {\n  const labels = useSatinLabels()\n  const headId = React.useId()\n  const listRef = React.useRef<HTMLDivElement>(null)\n  // The day and the time picked so far; a date is picked once both are.\n  const [day, setDay] = React.useState<Date | null>(() => (value ? startOfDay(value) : null))\n  const [time, setTime] = React.useState<TimeValue | null>(() => (value ? timeOfDate(value) : null))\n  const stamp = value?.getTime() ?? null\n  const shown = React.useRef(stamp)\n  React.useEffect(() => {\n    if (shown.current === stamp) return\n    shown.current = stamp\n    setDay(value ? startOfDay(value) : null)\n    setTime(value ? timeOfDate(value) : null)\n  })\n\n  const boundsOn = (d: Date | null): Bounds => ({\n    min: d && min && sameDay(d, min) ? later(minTime, timeOfDate(min)) : minTime,\n    max: d && max && sameDay(d, max) ? earlier(maxTime, timeOfDate(max)) : maxTime,\n    isTimeDisabled: isTimeDisabled ? (t) => isTimeDisabled(t, d) : undefined,\n  })\n  const bounds = boundsOn(day)\n\n  const emit = (d: Date, t: TimeValue) => {\n    const next = atTime(d, t)\n    shown.current = next.getTime()\n    onValueChange?.(next)\n  }\n\n  return (\n    <div className=\"sa:flex sa:max-[480px]:flex-col\">\n      <div className=\"sa:p-3\">\n        <Calendar\n          header=\"picker\"\n          value={day}\n          min={min}\n          max={max}\n          today={today}\n          onValueChange={(d) => {\n            setDay(d)\n            // The time stays if the new day has it; otherwise the times are next.\n            if (time && !unavailable(time, boundsOn(d))) return emit(d, time)\n            setTime(null)\n            requestAnimationFrame(() => listRef.current?.focus())\n          }}\n        />\n      </div>\n      {/* The column is as tall as the calendar: the list fills it and scrolls, instead of making it grow. */}\n      <div className=\"sa:relative sa:w-34 sa:shrink-0 sa:border-s sa:border-border-subtle sa:max-[480px]:h-56 sa:max-[480px]:w-auto sa:max-[480px]:border-s-0 sa:max-[480px]:border-t\">\n        <p id={headId} className=\"sa:mx-3 sa:mt-3 sa:flex sa:h-8 sa:items-center sa:text-sm sa:leading-5 sa:font-medium sa:text-text-default\">\n          {labels.time}\n        </p>\n        <TimeList\n          ref={listRef}\n          aria-labelledby={headId}\n          value={time}\n          step={step}\n          format={format}\n          {...bounds}\n          onValueChange={(t) => {\n            setTime(t)\n            if (day) emit(day, t)\n          }}\n          // A pick leaves the panel open; Enter on the time already picked is \"done\".\n          onKeyDown={(e) => {\n            if (e.key !== 'Enter' || !onDone || !day) return\n            const id = e.currentTarget.getAttribute('aria-activedescendant')\n            if (id && document.getElementById(id)?.getAttribute('aria-selected') === 'true') {\n              e.preventDefault()\n              onDone()\n            }\n          }}\n          className=\"sa:absolute sa:inset-x-0 sa:top-13 sa:bottom-0 sa:pt-0\"\n        />\n      </div>\n    </div>\n  )\n}\n\nexport interface DateTimePickerPanelProps extends DateTimeOptions, Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children' | 'onChange'> {\n  /** The picked date and time. */\n  value?: Date | null\n  /** Called once a day and a time are both picked, and on every change after. */\n  onValueChange?: (value: Date) => void\n  className?: string\n}\n\n/**\n * The date-and-time panel on its own, in place: DatePickerPanel's calendar with a column of\n * times beside it. Picking a day moves focus to the times. Other props, `ref` included, go to\n * the surface.\n */\nexport function DateTimePickerPanel({ value, onValueChange, min, max, minTime, maxTime, step, format, isTimeDisabled, today, className, ...props }: DateTimePickerPanelProps) {\n  return (\n    <div {...props} data-slot=\"date-time-picker-panel\" className={cn(surfaceClass, 'sa:w-fit sa:overflow-hidden', className)}>\n      <DateTimeBody\n        value={value}\n        onValueChange={onValueChange}\n        min={min}\n        max={max}\n        minTime={minTime}\n        maxTime={maxTime}\n        step={step}\n        format={format}\n        isTimeDisabled={isTimeDisabled}\n        today={today}\n      />\n    </div>\n  )\n}\n\ntype DateTimeTriggerAttributes = Omit<React.ComponentProps<'button'>, 'value' | 'defaultValue' | 'type' | 'children' | 'disabled' | 'id' | 'className'>\n\nexport interface DateTimePickerProps extends DateTimeOptions, DateTimeTriggerAttributes {\n  value?: Date | null\n  defaultValue?: Date | null\n  /** Called once a day and a time are both picked, and on every change after. */\n  onValueChange?: (value: Date) => void\n  open?: boolean\n  defaultOpen?: boolean\n  onOpenChange?: (open: boolean) => void\n  label?: React.ReactNode\n  hint?: React.ReactNode\n  /** An error message (replaces the hint), or `true` to mark the field invalid without one. */\n  error?: React.ReactNode | boolean\n  /** Shown while nothing is picked. Defaults to the `pickDateTime` label. */\n  placeholder?: string\n  /** Submits `YYYY-MM-DDTHH:mm` with a form, as `<input type=\"datetime-local\">` does. */\n  name?: string\n  disabled?: boolean\n  id?: string\n  size?: 'sm' | 'md' | 'lg'\n  /** Portal target. Defaults to `document.body`. */\n  container?: HTMLElement | null\n  /** Called as the panel opens and takes focus; `preventDefault()` leaves focus where it was. */\n  onOpenAutoFocus?: (event: Event) => void\n  /** A press outside the panel; `preventDefault()` keeps it open. */\n  onInteractOutside?: (event: Event) => void\n  /** Classes for the outer wrapper (label + field + hint). `className` styles the field. */\n  wrapperClassName?: string\n  className?: string\n}\n\n/**\n * A date and time field: DatePicker's field, with a clock's worth of times beside the calendar.\n * Pick a day and a time; each pick sets the value and the panel stays open until Escape, a press\n * outside, or Enter on the picked time. Other props, `ref` included, go to the trigger\n * button.\n */\nexport function DateTimePicker({\n  value: valueProp,\n  defaultValue = null,\n  onValueChange,\n  open: openProp,\n  defaultOpen = false,\n  onOpenChange,\n  min,\n  max,\n  minTime,\n  maxTime,\n  step,\n  format: formatProp,\n  isTimeDisabled,\n  today,\n  label,\n  hint,\n  error,\n  placeholder,\n  name,\n  disabled,\n  id,\n  size: ownSize,\n  container,\n  onOpenAutoFocus,\n  onInteractOutside,\n  wrapperClassName,\n  className,\n  'aria-describedby': describedBy,\n  ...props\n}: DateTimePickerProps) {\n  const chrome = useFieldChrome({ id, disabled, error, hint })\n  const labels = useSatinLabels()\n  const groupSize = React.useContext(FieldSizeContext)\n  const size = ownSize ?? groupSize ?? 'md'\n  const format = formatProp ?? localeTimeFormat(labels.dateLocale)\n  const [inner, setInner] = React.useState<Date | null>(defaultValue)\n  const value = valueProp !== undefined ? valueProp : inner\n  const [innerOpen, setInnerOpen] = React.useState(defaultOpen)\n  const open = openProp ?? innerOpen\n  const setOpen = (next: boolean) => {\n    if (openProp === undefined) setInnerOpen(next)\n    onOpenChange?.(next)\n  }\n  const text = value ? dateTimeFormatter(`${labels.dateLocale}|${format}`).format(value) : ''\n  const fieldName = name ?? chrome.name\n  return (\n    <FieldChrome label={label} chrome={chrome} className={wrapperClassName}>\n      <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>\n        <PopoverPrimitive.Trigger asChild {...props}>\n          <button\n            type=\"button\"\n            id={chrome.controlId}\n            data-slot=\"date-time-picker-trigger\"\n            data-size={size}\n            data-filled={text ? true : undefined}\n            data-invalid={chrome.invalid || undefined}\n            data-disabled={chrome.disabled || undefined}\n            data-state={open ? 'open' : 'closed'}\n            disabled={chrome.disabled}\n            aria-invalid={chrome.invalid || undefined}\n            aria-describedby={[describedBy, chrome.describedBy].filter(Boolean).join(' ') || undefined}\n            className={cn('satin-field sa:cursor-pointer sa:text-start', className)}\n          >\n            <span className=\"satin-field-icon\" aria-hidden>\n              <CalendarIcon />\n            </span>\n            <span className={cn('sa:min-w-0 sa:flex-1 sa:truncate', text ? 'sa:text-text-default' : 'sa:text-text-muted')}>{text || (placeholder ?? labels.pickDateTime)}</span>\n            <span className=\"satin-field-icon\" aria-hidden>\n              <NavArrowDown className={cn('sa:transition-transform sa:duration-(--sa-duration-fast) sa:ease-(--sa-ease-out)', open && 'sa:rotate-180')} />\n            </span>\n          </button>\n        </PopoverPrimitive.Trigger>\n        <PopoverPrimitive.Portal container={container}>\n          <PopoverPrimitive.Content\n            data-slot=\"date-time-picker\"\n            align=\"start\"\n            sideOffset={4}\n            collisionPadding={8}\n            aria-labelledby={label ? `${chrome.controlId}-label` : undefined}\n            aria-label={label ? undefined : (props['aria-label'] ?? labels.pickDateTime)}\n            onOpenAutoFocus={onOpenAutoFocus}\n            onInteractOutside={onInteractOutside}\n            className={cn(\n              'sa:z-50 sa:outline-none',\n              'sa:origin-(--radix-popover-content-transform-origin) sa:data-[state=open]:animate-[satin-enter_var(--sa-duration-base)_var(--sa-ease-out)]',\n            )}\n          >\n            <div data-slot=\"date-time-picker-panel\" className={cn(surfaceClass, 'sa:w-fit sa:overflow-hidden')}>\n              <DateTimeBody\n                value={value}\n                min={min}\n                max={max}\n                minTime={minTime}\n                maxTime={maxTime}\n                step={step}\n                format={format}\n                isTimeDisabled={isTimeDisabled}\n                today={today}\n                onValueChange={(d) => {\n                  if (valueProp === undefined) setInner(d)\n                  onValueChange?.(d)\n                }}\n                onDone={() => setOpen(false)}\n              />\n            </div>\n          </PopoverPrimitive.Content>\n        </PopoverPrimitive.Portal>\n      </PopoverPrimitive.Root>\n      {fieldName && <input type=\"hidden\" name={fieldName} value={value ? isoDateTime(value) : ''} disabled={chrome.disabled} />}\n    </FieldChrome>\n  )\n}\n"
+    }
+  ],
+  "docs": "Time picker docs: https://uisatin.dev/components/time-picker",
+  "meta": {
+    "version": "0.7.1",
+    "edition": "free",
+    "props": {
+      "TimeList": {
+        "description": "The list of times on its own: a focusable `listbox`, named \"Time\" (the `time` label) unless you name it. Arrows move the highlight, Home and End go to the first and last time, Page Up and Down an hour, typing jumps to the time typed, Enter or Space picks. Give it a height (or a flex parent) and it scrolls. Other props, `ref` included, go to the listbox.",
+        "type": "TimeListProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange' | 'children'>"
+        ],
+        "props": [
+          {
+            "name": "value",
+            "type": "TimeValue | null",
+            "required": false,
+            "description": "The picked time."
+          },
+          {
+            "name": "defaultValue",
+            "type": "TimeValue | null",
+            "required": false,
+            "default": "null"
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: TimeValue) => void",
+            "required": false,
+            "description": "Called when a time is picked (click, Enter or Space)."
+          },
+          {
+            "name": "step",
+            "type": "number",
+            "required": false,
+            "default": "15",
+            "description": "Minutes between the listed times, from midnight."
+          },
+          {
+            "name": "min",
+            "type": "TimeValue",
+            "required": false,
+            "description": "Times before this are dimmed and can't be picked."
+          },
+          {
+            "name": "max",
+            "type": "TimeValue",
+            "required": false,
+            "description": "Times after this are dimmed and can't be picked."
+          },
+          {
+            "name": "isTimeDisabled",
+            "type": "(time: TimeValue) => boolean",
+            "required": false,
+            "description": "Dims a time and keeps it from being picked: a booked slot, a lunch break."
+          },
+          {
+            "name": "format",
+            "type": "TimeFormat",
+            "required": false,
+            "description": "12- or 24-hour. Defaults to how the `dateLocale` label's locale writes times."
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "TimePicker": {
+        "description": "A time field: type a time or pick one from the list under it. Other props, `ref` included, go to the text input; `className` styles the field around it.",
+        "type": "TimePickerProps",
+        "extends": [
+          "Omit<React.ComponentProps<'input'>, 'value' | 'defaultValue' | 'size' | 'type' | 'min' | 'max' | 'step' | 'children'>"
+        ],
+        "props": [
+          {
+            "name": "value",
+            "type": "TimeValue | null",
+            "required": false
+          },
+          {
+            "name": "defaultValue",
+            "type": "TimeValue | null",
+            "required": false,
+            "default": "null"
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: TimeValue | null) => void",
+            "required": false,
+            "description": "A picked or typed time; `null` when the field is cleared or what was typed can't be picked."
+          },
+          {
+            "name": "step",
+            "type": "number",
+            "required": false,
+            "default": "15",
+            "description": "Minutes between the listed times, from midnight. Typed times needn't fall on a step."
+          },
+          {
+            "name": "min",
+            "type": "TimeValue",
+            "required": false,
+            "description": "Times before this are dimmed in the list, and typing one marks the field invalid."
+          },
+          {
+            "name": "max",
+            "type": "TimeValue",
+            "required": false,
+            "description": "Times after this are dimmed in the list, and typing one marks the field invalid."
+          },
+          {
+            "name": "isTimeDisabled",
+            "type": "(time: TimeValue) => boolean",
+            "required": false,
+            "description": "Dims a time and keeps it from being picked or typed: a booked slot, a lunch break."
+          },
+          {
+            "name": "format",
+            "type": "TimeFormat",
+            "required": false,
+            "description": "12- or 24-hour. Defaults to how the `dateLocale` label's locale writes times."
+          },
+          {
+            "name": "open",
+            "type": "boolean",
+            "required": false,
+            "description": "The list of times."
+          },
+          {
+            "name": "defaultOpen",
+            "type": "boolean",
+            "required": false,
+            "default": "false"
+          },
+          {
+            "name": "onOpenChange",
+            "type": "(open: boolean) => void",
+            "required": false
+          },
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "hint",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "error",
+            "type": "React.ReactNode | boolean",
+            "required": false,
+            "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "container",
+            "type": "HTMLElement | null",
+            "required": false,
+            "description": "Portal target. Defaults to `document.body`."
+          },
+          {
+            "name": "onInteractOutside",
+            "type": "(event: Event) => void",
+            "required": false,
+            "description": "A press outside the field and the list; `preventDefault()` keeps the list open."
+          },
+          {
+            "name": "wrapperClassName",
+            "type": "string",
+            "required": false,
+            "description": "Classes for the outer wrapper (label + field + hint). `className` styles the field."
+          },
+          {
+            "name": "data-force",
+            "type": "'hover' | 'focus'",
+            "required": false,
+            "description": "Show a state without interacting, for state sheets."
+          }
+        ]
+      },
+      "DateTimePickerPanel": {
+        "description": "The date-and-time panel on its own, in place: DatePickerPanel's calendar with a column of times beside it. Picking a day moves focus to the times. Other props, `ref` included, go to the surface.",
+        "type": "DateTimePickerPanelProps",
+        "extends": [
+          "DateTimeOptions",
+          "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'children' | 'onChange'>"
+        ],
+        "props": [
+          {
+            "name": "value",
+            "type": "Date | null",
+            "required": false,
+            "description": "The picked date and time."
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: Date) => void",
+            "required": false,
+            "description": "Called once a day and a time are both picked, and on every change after."
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "DateTimePicker": {
+        "description": "A date and time field: DatePicker's field, with a clock's worth of times beside the calendar. Pick a day and a time; each pick sets the value and the panel stays open until Escape, a press outside, or Enter on the picked time. Other props, `ref` included, go to the trigger button.",
+        "type": "DateTimePickerProps",
+        "extends": [
+          "DateTimeOptions",
+          "DateTimeTriggerAttributes"
+        ],
+        "props": [
+          {
+            "name": "value",
+            "type": "Date | null",
+            "required": false
+          },
+          {
+            "name": "defaultValue",
+            "type": "Date | null",
+            "required": false,
+            "default": "null"
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: Date) => void",
+            "required": false,
+            "description": "Called once a day and a time are both picked, and on every change after."
+          },
+          {
+            "name": "open",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "defaultOpen",
+            "type": "boolean",
+            "required": false,
+            "default": "false"
+          },
+          {
+            "name": "onOpenChange",
+            "type": "(open: boolean) => void",
+            "required": false
+          },
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "hint",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "error",
+            "type": "React.ReactNode | boolean",
+            "required": false,
+            "description": "An error message (replaces the hint), or `true` to mark the field invalid without one."
+          },
+          {
+            "name": "placeholder",
+            "type": "string",
+            "required": false,
+            "description": "Shown while nothing is picked. Defaults to the `pickDateTime` label."
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "Submits `YYYY-MM-DDTHH:mm` with a form, as `<input type=\"datetime-local\">` does."
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "container",
+            "type": "HTMLElement | null",
+            "required": false,
+            "description": "Portal target. Defaults to `document.body`."
+          },
+          {
+            "name": "onOpenAutoFocus",
+            "type": "(event: Event) => void",
+            "required": false,
+            "description": "Called as the panel opens and takes focus; `preventDefault()` leaves focus where it was."
+          },
+          {
+            "name": "onInteractOutside",
+            "type": "(event: Event) => void",
+            "required": false,
+            "description": "A press outside the panel; `preventDefault()` keeps it open."
+          },
+          {
+            "name": "wrapperClassName",
+            "type": "string",
+            "required": false,
+            "description": "Classes for the outer wrapper (label + field + hint). `className` styles the field."
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      }
+    }
+  }
+}

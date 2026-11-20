@@ -26,6 +26,9 @@ import { useSatinLabels } from './labels'
  *
  * The row edge is drawn with inset shadows on the cells, since table rows can't take a
  * border radius. `data-force="hover"` on a `<tr>` shows the hover state.
+ *
+ * `footer` puts rows of your own in a `<tfoot>` (a totals row), and `tableProps` reaches the
+ * `<table>` itself (a `role`, `aria-*`). Other props, `ref` included, go to the frame.
  */
 
 export type Sort = { key: string; direction: 'asc' | 'desc' } | null
@@ -86,6 +89,16 @@ export interface TableProps<R extends Row = Row> extends Omit<React.ComponentPro
    * `renderRow={({ row, rowProps, children }) => <tr {...rowProps} onClick={() => open(row)}>{children}</tr>}`.
    */
   renderRow?: (row: { row: R; index: number; selected: boolean; rowProps: React.ComponentProps<'tr'>; children: React.ReactNode }) => React.ReactNode
+  /**
+   * Rows for a `<tfoot>` under the body, such as a totals row: give `<tr>`s with one cell per
+   * column, plus one first for the checkbox column when `selectable`.
+   */
+  footer?: React.ReactNode
+  /**
+   * Props for the `<table>` element itself (the rest go to the frame around it): a `role` such as
+   * `"treegrid"` when rows expand, `aria-*`, handlers. `className` and `style` add to the table's own.
+   */
+  tableProps?: Omit<React.ComponentProps<'table'>, 'children'>
 }
 
 /** The Figma sort arrow, 14 at 1.09. Pointing down for descending. */
@@ -160,6 +173,8 @@ export function Table<R extends Row = Row>({
   rowLabel,
   renderCell,
   renderRow,
+  footer,
+  tableProps,
   className,
   ...props
 }: TableProps<R>) {
@@ -227,12 +242,16 @@ export function Table<R extends Row = Row>({
 
   const table = (
     <table
-      aria-label={label}
+      {...tableProps}
+      aria-label={label ?? tableProps?.['aria-label']}
       // Not text-start: a <th> centres its text unless the table sets an alignment, so it's
       // explicit, and right to left it's the right.
-      className="w-full table-fixed border-separate border-spacing-0 text-left rtl:text-right"
+      className={cn('w-full table-fixed border-separate border-spacing-0 text-left rtl:text-right', tableProps?.className)}
       // With overflow="fit" the columns keep at least 120px each, so a phone scrolls instead of crushing them.
-      style={tableWidth ? { width: tableWidth, minWidth: '100%' } : { minWidth: columns.length * 120 + (selectable ? 24 : 0) }}
+      style={{
+        ...(tableWidth ? { width: tableWidth, minWidth: '100%' } : { minWidth: columns.length * 120 + (selectable ? 24 : 0) }),
+        ...tableProps?.style,
+      }}
     >
       <colgroup>
         {selectable && <col style={{ width: 24 }} />}
@@ -346,6 +365,7 @@ export function Table<R extends Row = Row>({
           )
         })}
       </tbody>
+      {footer != null && <tfoot>{footer}</tfoot>}
     </table>
   )
 

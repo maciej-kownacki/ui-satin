@@ -1,0 +1,32 @@
+/*
+ * Review queue (components/review-queue.tsx). The next item slides 8px in from the side it comes
+ * from (the end going forward, the start going back, mirrored right to left) and fades in over
+ * --duration-base; the summary arrives the same way. Satin's reduced-motion rule (motion.css)
+ * cuts it.
+ */
+@keyframes satin-review-queue-in-next {
+  from { opacity: 0; transform: translateX(8px); }
+}
+@keyframes satin-review-queue-in-prev {
+  from { opacity: 0; transform: translateX(-8px); }
+}
+.satin-review-queue-enter[data-enter='next'] {
+  animation: satin-review-queue-in-next var(--duration-base) var(--ease-out);
+}
+.satin-review-queue-enter[data-enter='prev'] {
+  animation: satin-review-queue-in-prev var(--duration-base) var(--ease-out);
+}
+.satin-review-queue-enter[data-enter='next']:dir(rtl) {
+  animation-name: satin-review-queue-in-prev;
+}
+.satin-review-queue-enter[data-enter='prev']:dir(rtl) {
+  animation-name: satin-review-queue-in-next;
+}
+
+/* The key on Approve takes the primary button's own colours (its pressed fill and its edge), so
+   it reads on the fill instead of sitting on it as a white chip. */
+[data-slot='review-queue-actions'] [data-variant='primary'] [data-slot='kbd'] {
+  border-color: var(--action-primary-border);
+  background-color: var(--action-primary-bg-pressed);
+  color: var(--action-primary-fg);
+}

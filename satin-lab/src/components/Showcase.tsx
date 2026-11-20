@@ -47,7 +47,7 @@ export interface ShowcaseProps {
   /** Used in accessible names: "Button preview", "Button options". */
   name: string
   options: ShowcaseOption[]
-  /** Shiki HTML per option id, rendered at build time. */
+  /** Shiki HTML per option id, rendered at build time. Empty (a Satin Pro page in the public build): no Code tab. */
   codeHtml: Record<string, string>
   /** Props the reader can set, most structural first. Replaces the option bar. */
   controls?: ShowcaseControl[]
@@ -90,6 +90,7 @@ function ShowcaseFull({ name, options, codeHtml, controls, render, align = 'cent
   const [picked, setOption] = React.useState(options[0].id)
   const option = controls ? comboId(controls, values) : picked
   const [tab, setTab] = React.useState<Tab>('preview')
+  const hasCode = Object.keys(codeHtml).length > 0
   const [fullscreen, setFullscreen] = React.useState(false)
   const [copied, setCopied] = React.useState(false)
   const fullscreenRef = React.useRef<HTMLButtonElement>(null)
@@ -169,7 +170,7 @@ function ShowcaseFull({ name, options, codeHtml, controls, render, align = 'cent
 
   // Tabs follow the WAI-ARIA pattern: arrow keys move between them.
   const onTabKey = (e: React.KeyboardEvent) => {
-    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+    if (!hasCode || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return
     const next: Tab = tab === 'preview' ? 'code' : 'preview'
     setTab(next)
     document.getElementById(`${ids}-tab-${next}`)?.focus()
@@ -177,7 +178,7 @@ function ShowcaseFull({ name, options, codeHtml, controls, render, align = 'cent
 
   const tabs: { id: Tab; label: string; Icon: typeof PreviewIcon }[] = [
     { id: 'preview', label: 'Preview', Icon: PreviewIcon },
-    { id: 'code', label: 'Code', Icon: CodeIcon },
+    ...(hasCode ? [{ id: 'code' as const, label: 'Code', Icon: CodeIcon }] : []),
   ]
 
   // One prop per row, label left and control right. From md the rows split into two columns,

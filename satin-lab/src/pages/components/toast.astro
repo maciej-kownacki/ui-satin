@@ -1,16 +1,28 @@
 ---
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
-import ToastDemo, { options } from '../../demos/toast'
+import Chip from '../../components/Chip.astro'
+import ToastDemo, { options, countdownOptions, ToastCountdownDemo } from '../../demos/toast'
 import { api } from '../../api'
 import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
+const countdownHtml = await highlight(countdownOptions)
 ---
 
 <Docs current="toast">
   <DocSection item={page('toast')} api={api['toast']}>
     <ToastDemo client:load codeHtml={codeHtml} />
+
+    <section aria-labelledby="undo-countdown-title" class="flex flex-col gap-4 pt-8">
+      <h2 id="undo-countdown-title" class="text-lg font-medium text-text-default">Undo countdown</h2>
+      <p class="text-base leading-6 text-text-muted">
+        When the action only lasts as long as the toast, like Undo, set <Chip>countdown</Chip>: a thin bar along the bottom drains over
+        <Chip>duration</Chip> and stops with the timer while the toasts are hovered or focused. It's hidden from screen readers and under
+        reduced motion, so the action's <Chip>altText</Chip> still says how to undo without the toast.
+      </p>
+      <ToastCountdownDemo client:load codeHtml={countdownHtml} />
+    </section>
   </DocSection>
 </Docs>

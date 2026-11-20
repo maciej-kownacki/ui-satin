@@ -9,7 +9,7 @@ import { Sidebar } from '../components/Sidebar'
 import { Customizer } from '../components/Customizer'
 import { GithubLink } from '../components/GithubLink'
 import Feedback from '../components/Feedback.astro'
-import { nav, page } from '../nav'
+import { allComponents, nav, newPages, page } from '../nav'
 
 interface Props {
   /** The nav item this page shows. */
@@ -47,7 +47,7 @@ const description = home ? page('introduction').description : item.description
     data-docs-shell
     class="relative mt-14 flex min-h-[calc(100dvh-56px)] w-full overflow-clip bg-bg-card lg:fixed lg:inset-x-5 lg:top-14 lg:bottom-0 lg:z-30 lg:mt-0 lg:min-h-0 lg:w-auto lg:rounded-t-2xl lg:border lg:border-b-0 lg:border-border-subtle dark:lg:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))] lg:shadow-[0_4px_6px_-4px_var(--effect-shadow-sm),0_10px_15px_-3px_var(--effect-shadow-sm)]"
   >
-    <Sidebar client:load nav={nav} current={current} transition:persist="sidebar" />
+    <Sidebar client:load nav={nav} allComponents={allComponents} current={current} fresh={[...newPages]} transition:persist="sidebar" />
 
     <main id="main" tabindex="-1" class="flex min-w-0 flex-1 flex-col items-center p-4 outline-none lg:overflow-y-auto lg:overscroll-contain">
       <div class:list={['flex w-full flex-col gap-4 pb-24', wide ? 'max-w-[1120px]' : 'max-w-[720px]']}>

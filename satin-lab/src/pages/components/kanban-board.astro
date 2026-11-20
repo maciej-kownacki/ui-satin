@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import KanbanBoardDemo, { options } from '../../demos/kanban-board'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="kanban-board">
+  <DocSection item={page('kanban-board')} api={api['kanban-board']}>
+    <KanbanBoardDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

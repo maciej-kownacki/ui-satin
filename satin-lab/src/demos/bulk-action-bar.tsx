@@ -4,7 +4,6 @@ import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { Table, type Column } from '@uisatin/ui/table'
 import { Toaster, toast } from '@uisatin/ui/toast'
 import { BulkActionBar, type BulkAction } from '@uisatin/pro/bulk-action-bar'
-import { toastBatch } from '@uisatin/pro/toast-batch'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 type Stage = 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Won'
@@ -59,7 +58,7 @@ function code(v: Record<string, string>) {
       : ''
   return `import { Table } from '@uisatin/ui/table'
 import { BulkActionBar } from '@uisatin/pro/bulk-action-bar'
-import { toastBatch } from '@uisatin/pro/toast-batch'
+import { toast } from '@uisatin/ui/toast'
 
 export function Deals({ deals }: { deals: Deal[] }) {
   const [selected, setSelected] = React.useState<string[]>([])
@@ -79,9 +78,9 @@ export function Deals({ deals }: { deals: Deal[] }) {
             onSelect: async () => {
               await moveDeals(picked, 'Negotiation')
               setSelected([])
-              toastBatch({
-                title: (count) => \`\${count} \${count === 1 ? 'deal' : 'deals'} moved\`,
-                items: picked.map((d) => ({ id: d.id, label: d.company, undo: () => moveDeals([d], d.stage) })),
+              toast(\`\${picked.length} \${picked.length === 1 ? 'deal' : 'deals'} moved\`, {
+                action: { label: 'Undo', onClick: () => picked.forEach((d) => moveDeals([d], d.stage)) },
+                countdown: true,
               })
             },
           },
@@ -124,10 +123,10 @@ function Preview({ v }: { v: Record<string, string> }) {
           () => 'Negotiation',
         )
         setSelected([])
-        toastBatch({
-          title: (count) => `${count} ${count === 1 ? 'deal' : 'deals'} moved`,
+        toast(`${moved.length} ${moved.length === 1 ? 'deal' : 'deals'} moved`, {
+          action: { label: 'Undo', onClick: () => moved.forEach((d) => setStage([d.id], () => d.stage)) },
+          countdown: true,
           duration: 12000,
-          items: moved.map((d) => ({ id: d.id, label: d.company, undo: () => setStage([d.id], () => d.stage) })),
         })
       },
     },

@@ -68,6 +68,8 @@ export interface SelectProps
   container?: HTMLElement | null
   /** Caps the menu's height in px; past it the list scrolls. Left out, the menu takes the room the window has. */
   menuMaxHeight?: number
+  /** Which edge of the field the menu lines up with. Defaults to `"start"`; `"end"` for a field at the end of a row. */
+  menuAlign?: 'start' | 'end'
   'aria-label'?: string
   /** Classes for the outer wrapper (label + field + hint). `className` styles the trigger. */
   wrapperClassName?: string
@@ -181,6 +183,7 @@ export function Select({
   onOpenChange,
   container,
   menuMaxHeight,
+  menuAlign = 'start',
   wrapperClassName,
   className,
   'data-force': force,
@@ -244,7 +247,7 @@ export function Select({
             data-slot="select-menu"
             position="popper"
             side="bottom"
-            align="start"
+            align={menuAlign}
             sideOffset={4}
             collisionPadding={8}
             className={cn(

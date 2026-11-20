@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every Agent presence state on a table row and a card, held still. Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { AgentPresenceGrid } from '../../states/AgentPresenceGrid'
+---
+
+<Layout title="Agent presence states · Satin" description="Every Agent presence state, for review.">
+  <main class="min-h-dvh bg-bg-card">
+    <AgentPresenceGrid client:load />
+  </main>
+</Layout>

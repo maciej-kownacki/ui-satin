@@ -6,7 +6,7 @@ import { cn } from '@uisatin/ui/lib/utils'
 /**
  * RollingNumber: a count whose changed digits roll, the old one sliding out as the new one
  * slides in (150 ms): up when it grows, down when it shrinks. Under reduced motion it just
- * changes. The Bulk action bar's "3 selected" and toastBatch's "3 candidates moved" use it.
+ * changes. The Bulk action bar's "3 selected" uses it.
  *
  * It's hidden from screen readers (digits mid-roll read as noise): put the number as text next
  * to it, in an `sr-only` span, or announce it some other way. Other props, `ref` included, go

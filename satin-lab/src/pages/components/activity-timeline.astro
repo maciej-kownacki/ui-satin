@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import ActivityTimelineDemo, { options } from '../../demos/activity-timeline'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="activity-timeline">
+  <DocSection item={page('activity-timeline')} api={api['activity-timeline']}>
+    <ActivityTimelineDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

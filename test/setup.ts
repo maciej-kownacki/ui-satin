@@ -27,6 +27,13 @@ Element.prototype.hasPointerCapture ??= () => false
 Element.prototype.setPointerCapture ??= () => {}
 Element.prototype.releasePointerCapture ??= () => {}
 
+// The sliding pill (Segmented control, Tabs) and DecisionCard's step slide run on the Web Animations
+// API, which jsdom lacks: nothing animates.
+Element.prototype.getAnimations ??= () => []
+Element.prototype.animate ??= function animate() {
+  return { finished: Promise.resolve(), cancel() {}, finish() {}, addEventListener() {}, onfinish: null } as unknown as Animation
+}
+
 afterEach(() => {
   cleanup()
   resetMedia()

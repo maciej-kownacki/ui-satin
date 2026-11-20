@@ -1,0 +1,49 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import Chip from '../../components/Chip.astro'
+import DocSection from '../../components/DocSection.astro'
+import SearchScopedDemo, { SearchScopedPlacesDemo, options, placeOptions } from '../../demos/search-scoped'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+const placesHtml = await highlight(placeOptions)
+---
+
+<Docs current="search-scoped">
+  <DocSection item={page('search-scoped')} api={api['search-scoped']}>
+    <SearchScopedDemo client:load codeHtml={codeHtml} />
+
+    <section aria-labelledby="when-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="when-title" class="text-lg font-medium text-text-default">When to use it</h2>
+      <p class="text-base leading-6 text-text-muted">
+        When one search box covers several kinds of record or several places, and a single list of hits would bury the one wanted. The
+        scope chip says where the search looks and lets people change it without leaving the field: click it, or type
+        <Chip>in:</Chip> and a scope. Each scope in its list shows how many results it holds for the query, and a scope that finds
+        nothing offers the ones that do. For one list (a sidebar, a table) a plain Search bar is enough; to run actions or jump between
+        pages, use the Command menu.
+      </p>
+    </section>
+
+    <section aria-labelledby="places-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="places-title" class="text-lg font-medium text-text-default">Scopes are places too</h2>
+      <p class="text-base leading-6 text-text-muted">
+        A scope is data: <Chip>groups</Chip> keeps some kinds of record, <Chip>fields</Chip> keeps the rows of one place, and the first
+        scope is the default. In a project tool the same search looks in This project, My team or Everywhere: “onboarding” finds 3, 4
+        or 7.
+      </p>
+      <SearchScopedPlacesDemo client:visible codeHtml={placesHtml} />
+    </section>
+
+    <section aria-labelledby="filters-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="filters-title" class="text-lg font-medium text-text-default">Filters inside the scope</h2>
+      <p class="text-base leading-6 text-text-muted">
+        <Chip>filters</Chip> narrow further, typed as <Chip>key:value</Chip>: <Chip>stage:interview</Chip> becomes a “Stage: Interview”
+        chip once a space follows it, or when its value is picked from the list. In the first demo, turn on stage:interview: everywhere,
+        “react” then finds 6 candidates and 2 notes, and Jobs, which have no stage, offers the scopes that hold results. Backspace at the
+        start of the query removes the chips, the scope last.
+      </p>
+    </section>
+  </DocSection>
+</Docs>

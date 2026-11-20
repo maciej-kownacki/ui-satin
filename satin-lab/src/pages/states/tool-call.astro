@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every Tool call status, folded and open. Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { ToolCallGrid } from '../../states/ToolCallGrid'
+---
+
+<Layout title="Tool call states · Satin" description="Every Tool call status, folded and open.">
+  <main class="min-h-dvh bg-bg-card">
+    <ToolCallGrid client:load />
+  </main>
+</Layout>

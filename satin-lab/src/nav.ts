@@ -18,7 +18,8 @@ export type NavItem = {
 }
 export type NavGroup = { id: string; title: string; items: NavItem[] }
 
-export const nav: NavGroup[] = [
+/** Every page, finished or not: the dev server and preview builds show all of it. */
+export const allNav: NavGroup[] = [
   {
     id: 'docs',
     title: 'Docs',
@@ -59,10 +60,38 @@ export const nav: NavGroup[] = [
     title: 'AI patterns',
     items: [
       { id: 'agent-picker', title: 'Agent picker', href: '/ai-patterns/agent-picker', description: 'Switches which agent answers: avatar, name and one line on what it does.' },
+      {
+        id: 'agent-presence',
+        title: 'Agent presence',
+        href: '/ai-patterns/agent-presence',
+        description: 'Shows which row or card an agent is editing right now: an edge in its colour and a small label, read out politely.',
+        edition: 'pro',
+      },
       { id: 'attachment', title: 'Attachment', href: '/ai-patterns/attachment', description: 'A file attached to a prompt or a message, with its type, size and a preview.' },
       { id: 'agent-suggestion', title: 'Agent suggestion', href: '/ai-patterns/agent-suggestion', description: 'Something the agent prepared, an email, a meeting or a CRM update, for the user to approve.' },
+      {
+        id: 'agent-changes-review',
+        title: 'Reviewable changes',
+        href: '/ai-patterns/agent-changes-review',
+        description: 'The fields an agent wants to change, each accepted or rejected before any is applied.',
+        edition: 'pro',
+      },
       { id: 'decision-card', title: 'Decision card', href: '/ai-patterns/decision-card', description: 'One question from the agent, with answers to pick, rank or rewrite, and Skip or Continue.' },
+      {
+        id: 'agent-plan',
+        title: 'Agent plan',
+        href: '/ai-patterns/agent-plan',
+        description: 'The steps an agent proposes before it acts: rename, reorder or remove some, then Run, and watch them tick off.',
+        edition: 'pro',
+      },
       { id: 'agent-loading', title: 'Loading', href: '/ai-patterns/agent-loading', description: 'What shows while an agent works: a live mark, a shimmering label and the time so far.' },
+      {
+        id: 'agent-undo-log',
+        title: 'Agent action log',
+        href: '/ai-patterns/agent-undo-log',
+        description: 'What a coding agent changed, run by run: files with their diff counts, a Revert on each, ⌘Z for the last run.',
+        edition: 'pro',
+      },
       {
         id: 'message-group',
         title: 'Message',
@@ -73,9 +102,25 @@ export const nav: NavGroup[] = [
           { id: 'citations', title: 'Citations', href: '/ai-patterns/citations', description: 'Numbered sources in an answer, with a preview on hover and the list under it.' },
         ],
       },      { id: 'message-actions', title: 'Message actions', href: '/ai-patterns/message-actions', description: 'Status, feedback, copy and share under an assistant reply.' },
+      {
+        id: 'agent-permissions',
+        title: 'Permission request',
+        href: '/ai-patterns/agent-permissions',
+        description: 'What an agent will touch before it first runs: each resource and action in plain verbs, once or always.',
+        edition: 'pro',
+      },
       { id: 'prompt-bar', title: 'Prompt bar', href: '/ai-patterns/prompt-bar', description: 'Where people write to an agent: attachments, model, voice and send.' },
+      {
+        id: 'review-queue',
+        title: 'Review queue',
+        href: '/ai-patterns/review-queue',
+        description: 'Agent drafts gone through one at a time, Approve, Edit or Skip with the keyboard, and a summary at the end.',
+        edition: 'pro',
+      },
+      { id: 'prompt-mentions', title: 'Mentions and commands', href: '/ai-patterns/prompt-mentions', description: 'Reference people and records with @ and run actions with / from the prompt bar.' },
       { id: 'streaming-text', title: 'Streaming text', href: '/ai-patterns/streaming-text', description: 'An answer writing itself out as it arrives, at an even pace with a caret.' },
       { id: 'thinking', title: 'Thinking', href: '/ai-patterns/thinking', description: 'What an agent did, folded into a summary that opens onto its steps.' },
+      { id: 'tool-call', title: 'Tool call', href: '/ai-patterns/tool-call', description: 'One call an agent made to a tool: what it sent, what came back, how it went, and Retry when it failed.' },
     ],
   },
   {
@@ -83,6 +128,13 @@ export const nav: NavGroup[] = [
     title: 'Components',
     items: [
       { id: 'accordion', title: 'Accordion', href: '/components/accordion', description: 'Folds sections of content under their titles, one or many open at a time.' },
+      {
+        id: 'activity-timeline',
+        title: 'Activity timeline',
+        href: '/components/activity-timeline',
+        description: 'A record’s history: who changed what and when, agent changes with Revert, runs folded into one row.',
+        edition: 'pro',
+      },
       { id: 'alert', title: 'Alert', href: '/components/alert', description: 'A message that stays on the page until it is dealt with: info, success, warning or error.' },
       {
         id: 'announcements',
@@ -134,8 +186,29 @@ export const nav: NavGroup[] = [
       { id: 'chip', title: 'Chip', href: '/components/chip', description: 'A compact, removable tag for filters, suggestions and people.' },
       { id: 'code-block', title: 'Code block', href: '/components/code-block', description: 'Shows code or a diff with a filename, line numbers and a copy button.' },
       { id: 'combobox', title: 'Combobox', href: '/components/combobox', description: 'Picks one or more values from a long list by typing to filter it, then Apply.' },
+      {
+        id: 'people-picker',
+        title: 'People picker',
+        href: '/components/people-picker',
+        description: 'Picks people by name, with their faces and roles, the ones picked lately first, and search as you type.',
+        edition: 'pro',
+      },
       { id: 'command-menu', title: 'Command menu', href: '/components/command-menu', description: 'The ⌘K palette: search every action and page, then run one with Enter.' },
+      {
+        id: 'command-pages',
+        title: 'Command pages',
+        href: '/components/command-pages',
+        description: 'The ⌘K palette with sub-pages (Move deal to… › Negotiation), and what no command matches handed to an agent.',
+        edition: 'pro',
+      },
       { id: 'cookie-consent', title: 'Cookie consent', href: '/components/cookie-consent', description: 'Asks once what the site may store: Customize, Reject all or Accept all.' },
+      {
+        id: 'data-grid',
+        title: 'Data grid',
+        href: '/components/data-grid',
+        description: 'The table people work in: sort, resize, pin and hide columns, edit cells in place, and save views.',
+        edition: 'pro',
+      },
       { id: 'dialog', title: 'Dialog', href: '/components/dialog', description: 'Asks for a decision or a short input before the user moves on.' },
       { id: 'dot', title: 'Dot', href: '/components/dot', description: 'A small status dot that marks state or category next to a label.' },
       {
@@ -149,6 +222,13 @@ export const nav: NavGroup[] = [
         ],
       },      { id: 'empty-state', title: 'Empty state', href: '/components/empty-state', description: 'Fills a space with no content yet: says why it is empty and offers the first step.' },
       { id: 'file-upload', title: 'File upload', href: '/components/file-upload', description: 'Takes files by drop or browse, shows each upload and what failed, then the attached files.' },
+      {
+        id: 'filter-bar',
+        title: 'Filter bar',
+        href: '/components/filter-bar',
+        description: 'Filters as chips that read as sentences, each with its own editor, and the result count live as they change.',
+        edition: 'pro',
+      },
       {
         id: 'form-family',
         title: 'Form',
@@ -170,10 +250,26 @@ export const nav: NavGroup[] = [
           { id: 'input-group', title: 'Input group', href: '/components/input-group', description: 'A field joined with an addon, a select or a button in one block.' },
           { id: 'password-input', title: 'Password input', href: '/components/password-input', description: 'A password field with a show and hide button.' },
           { id: 'date-picker', title: 'Date picker', href: '/components/date-picker', description: 'Picks a day or a range from a calendar, with a quick year.' },
+          { id: 'time-picker', title: 'Time picker', href: '/components/time-picker', description: 'Takes a typed time or one from a list, alone or with a day.' },
+          {
+            id: 'date-availability',
+            title: 'Availability calendar',
+            href: '/components/date-availability',
+            description: 'A calendar for booking: which days have free slots and how many, full days off with the reason.',
+            edition: 'pro',
+          },
           { id: 'input-otp', title: 'Input OTP', href: '/components/input-otp', description: 'A one-time code in separate cells, with paste and SMS autofill.' },
           { id: 'number-input', title: 'Number input', href: '/components/number-input', description: 'A number with − and + and the arrow keys, kept between a min and a max.' },
         ],
-      },      { id: 'kbd', title: 'Kbd', href: '/components/kbd', description: 'A keyboard key, alone or as the keys of one shortcut.' },
+      },
+      {
+        id: 'kanban-board',
+        title: 'Kanban board',
+        href: '/components/kanban-board',
+        description: 'Columns of cards moved between stages by drag, touch or keyboard, with counts, limits and Undo.',
+        edition: 'pro',
+      },
+      { id: 'kbd', title: 'Kbd', href: '/components/kbd', description: 'A keyboard key, alone or as the keys of one shortcut.' },
       { id: 'link', title: 'Link', href: '/components/link', description: 'Text that goes somewhere, calm in a paragraph, marked when it leaves the site.' },
       { id: 'list', title: 'List', href: '/components/list', description: 'Rows of people, files or settings, each with a title, meta and actions.' },
       { id: 'notification', title: 'Notification', href: '/components/notification', description: 'A card for something the app did or heard about, with a picture, a badge and a close on its corner.' },
@@ -189,7 +285,21 @@ export const nav: NavGroup[] = [
         ],
       },      { id: 'progress', title: 'Progress', href: '/components/progress', description: 'Shows how far a task has got, or that it is still running.' },
       { id: 'radio', title: 'Radio', href: '/components/radio', description: 'Lets people pick exactly one option from a short list.' },
+      {
+        id: 'scheduler',
+        title: 'Scheduler',
+        href: '/components/scheduler',
+        description: 'A day, week or month of events over time slots: drag to move or resize, pick free slots to book.',
+        edition: 'pro',
+      },
       { id: 'search-bar', title: 'Search bar', href: '/components/search-bar', description: 'A search field for the sidebar or a toolbar, with ⌘K to focus it from anywhere.' },
+      {
+        id: 'search-scoped',
+        title: 'Scoped search',
+        href: '/components/search-scoped',
+        description: 'One search box over several kinds of record or places, with a scope chip (Everywhere, Candidates, This project) that says where it looks; use it instead of a Search bar when one list of hits would bury the one wanted.',
+        edition: 'pro',
+      },
       { id: 'segmented-control', title: 'Segmented control', href: '/components/segmented-control', description: 'Switches between two to five views or filters in place.' },
       { id: 'select', title: 'Select', href: '/components/select', description: 'Picks one value from a list, with a label, a hint and an error like any field.' },
       {
@@ -208,8 +318,16 @@ export const nav: NavGroup[] = [
       { id: 'skeleton', title: 'Skeleton', href: '/components/skeleton', description: 'Holds the place of content that is still loading.' },
       { id: 'slider', title: 'Slider', href: '/components/slider', description: 'Picks a number or a range by dragging, with the value to read or type.' },
       { id: 'spinner', title: 'Spinner', href: '/components/spinner', description: 'Says something is loading when there is no telling how long it takes.' },
+      { id: 'stepper', title: 'Stepper', href: '/components/stepper', description: 'Shows where a multi-step flow is: the steps done, the current one and the ones ahead.' },
       { id: 'switch', title: 'Switch', href: '/components/switch', description: 'Turns a setting on or off, with immediate effect.' },
       { id: 'table', title: 'Table', href: '/components/table', description: 'Rows of records with sortable columns, selection and sideways scroll.' },
+      {
+        id: 'table-pro',
+        title: 'Grouped table',
+        href: '/components/table-pro',
+        description: 'A Table whose rows open onto sub-rows and gather into groups with subtotals, with a pinned first column, a totals row and a compact density.',
+        edition: 'pro',
+      },
       { id: 'tabs', title: 'Tabs', href: '/components/tabs', description: 'Switches between two to six views of the same page or panel.' },
       { id: 'textarea', title: 'Textarea', href: '/components/textarea', description: 'Multi-line text input for notes, requests and longer answers.' },
       { id: 'toast', title: 'Toast', href: '/components/toast', description: 'A short, passing message about something that just happened.' },
@@ -219,6 +337,64 @@ export const nav: NavGroup[] = [
   },
 ]
 
+/**
+ * Pages that aren't finished. The public build (see `publicBuild`) leaves them out entirely: no
+ * page, no sidebar row, card, sitemap or llms.txt entry, no registry item. The dev server and
+ * preview builds show them. The one list to edit when a page is done.
+ */
+export const unreleased = new Set<string>([
+  'activity-timeline', 'command-pages', 'data-grid', 'filter-bar', 'search-scoped', 'kanban-board',
+  'scheduler', 'stepper', 'review-queue', 'agent-permissions',
+])
+
+/**
+ * True in the build that goes public (uisatin.dev). The satin-release integration
+ * (satin-lab/integrations/release.mjs) sets SATIN_PUBLIC=1 for `astro build`, unless
+ * SATIN_PREVIEW=1 or VERCEL_ENV=preview asks for a preview build with everything in it.
+ * `SATIN_PUBLIC=1 npm run dev` shows the public site on the dev server. Read on the server
+ * only: in the browser `process` doesn't exist and this is false, so islands take what they
+ * need as props.
+ */
+export const publicBuild = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.SATIN_PUBLIC === '1'
+
+/** Whether a page is in this build: every page in dev and previews, the finished ones in public. */
+export const isReleased = (id: string) => !publicBuild || !unreleased.has(id)
+
+/**
+ * Satin Pro is docs-only in public: its pages keep the demo, the description, the API and the
+ * accessibility notes, but no code (no Code tab, no example, no registry item with the source).
+ */
+export const hideProSource = publicBuild
+
+const released = (items: NavItem[]): NavItem[] =>
+  items.flatMap((i) => {
+    if (!isReleased(i.id)) return []
+    if (!i.children) return [i]
+    const children = released(i.children)
+    return children.length ? [{ ...i, children, href: children.some((c) => c.href === i.href) ? i.href : children[0].href }] : []
+  })
+
+/** The sidebar as this build shows it: `allNav` without the unreleased pages in public. */
+export const nav: NavGroup[] = allNav.map((g) => ({ ...g, items: released(g.items) })).filter((g) => g.items.length)
+
+/**
+ * Pages built or changed in the P1 batch, marked New in the sidebar so they are easy to find
+ * while they are reviewed (preview only: the public build shows no New marks). The last four
+ * existed before and gained a feature: Combobox (creatable), Dropdown (submenus), Date picker
+ * (presets), Toast (Undo countdown).
+ */
+export const newPages = new Set<string>(
+  publicBuild
+    ? []
+    : [
+    'agent-presence', 'agent-changes-review', 'agent-plan', 'agent-undo-log', 'agent-permissions', 'review-queue',
+    'prompt-mentions', 'tool-call',
+    'activity-timeline', 'bulk-action-bar', 'people-picker', 'command-pages', 'data-grid', 'filter-bar',
+    'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'search-scoped', 'stepper', 'table-pro',
+    'combobox', 'dropdown', 'date-picker', 'toast',
+  ],
+)
+
 /** The package a page's component comes from. */
 export const packageOf = (item: Pick<NavItem, 'edition'>) => (item.edition === 'pro' ? '@uisatin/pro' : '@uisatin/ui')
 
@@ -226,10 +402,10 @@ export const packageOf = (item: Pick<NavItem, 'edition'>) => (item.edition === '
 export const pagesOf = (items: NavItem[]): NavItem[] => items.flatMap((i) => (i.children ? pagesOf(i.children) : [i]))
 
 /** The group a page sits in, for the breadcrumbs above its title. */
-export const groupOf = (id: string) => nav.find((g) => pagesOf(g.items).some((i) => i.id === id))!
+export const groupOf = (id: string) => allNav.find((g) => pagesOf(g.items).some((i) => i.id === id))!
 
 /** The parent row a page sits under (Chart for Bar chart), if any. */
-export const parentOf = (id: string) => nav.flatMap((g) => g.items).find((i) => i.children?.some((c) => c.id === id))
+export const parentOf = (id: string) => allNav.flatMap((g) => g.items).find((i) => i.children?.some((c) => c.id === id))
 
 /** Every component and AI pattern page, the ones the All components page shows as cards. */
 export const componentPages = () => nav.filter((g) => g.id === 'ai-patterns' || g.id === 'components').flatMap((g) => pagesOf(g.items))
@@ -242,9 +418,10 @@ export const allComponents: NavItem = {
   description: 'Every component and AI pattern in Satin, with a preview of each.',
 }
 
+/** A page by id, released or not (an unreleased page's own file still asks for it in dev). */
 export const page = (id: string) => {
   if (id === allComponents.id) return allComponents
-  const item = pagesOf(nav.flatMap((g) => g.items)).find((i) => i.id === id)
+  const item = pagesOf(allNav.flatMap((g) => g.items)).find((i) => i.id === id)
   if (!item) throw new Error(`No nav item "${id}"`)
   return item
 }

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro'
 import { existsSync } from 'node:fs'
-import { nav, pagesOf, type NavItem } from '../nav'
+import { hideProSource, nav, pagesOf, type NavItem } from '../nav'
+import { isPublished } from '../lib/examples'
 import pkg from '../../../packages/ui/package.json'
 
 /**
@@ -17,7 +18,7 @@ export function llmsText(site: URL | undefined) {
   const markdown = (href: string) => (/^\/(components|ai-patterns)\//.test(href) ? ` ([markdown](${url(`${href}.md`)}))` : '')
   const registry = (href: string) => {
     const name = href.split('/').pop()
-    return name && existsSync(`public/r/${name}.json`) ? ` ([source](${url(`/r/${name}.json`)}))` : ''
+    return name && isPublished(name) && existsSync(`public/r/${name}.json`) ? ` ([source](${url(`/r/${name}.json`)}))` : ''
   }
   const groups = nav.map((g) => {
     const pages = [...new Map(pagesOf(g.items).map((p) => [p.href, p])).values()]
@@ -39,7 +40,7 @@ import '${pkg.name}/styles.css' // once, at the root of the app
 import { Button } from '${pkg.name}/button'
 \`\`\`
 
-Entries marked (Pro) are Satin Pro, the licensed edition: the package \`@uisatin/pro\` on top of ${pkg.name} at the same version, its stylesheet \`@uisatin/pro/styles.css\` imported after ${pkg.name}'s, each component from \`@uisatin/pro/<name>\`. Satin Pro isn't on npm yet; its registry items carry \`meta.edition: "pro"\`.
+Entries marked (Pro) are Satin Pro, the licensed edition: the package \`@uisatin/pro\` on top of ${pkg.name} at the same version, its stylesheet \`@uisatin/pro/styles.css\` imported after ${pkg.name}'s, each component from \`@uisatin/pro/<name>\`. Satin Pro isn't on npm yet; ${hideProSource ? 'its pages document it, and its source is not in the registry' : 'its registry items carry \`meta.edition: "pro"\`'}.
 
 Or copy a component's source with the shadcn CLI: \`npx shadcn@latest add ${url('/r/button.json')}\`, or \`npx shadcn@latest add @satin/button\` with \`"registries": { "@satin": "https://uisatin.dev/r/{name}.json" }\` in components.json.
 

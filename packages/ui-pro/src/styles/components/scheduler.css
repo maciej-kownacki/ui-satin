@@ -1,0 +1,317 @@
+/*
+ * Scheduler (components/scheduler.tsx): the slot grid's states, the events, the now line, dragging
+ * and the view crossfade. Everything reads Satin Free's semantic variables; an event's colours come
+ * from its tone (`data-tone` repoints --tone-bg / --tone-fg / --tone-border). Satin's reduced-motion
+ * rule (motion.css) cuts every transition and animation here.
+ */
+
+/* ---------- slots ---------- */
+
+.satin-scheduler-cell {
+  position: relative;
+  border-inline-start: var(--border-width-default) solid var(--border-subtle);
+  outline: none;
+  /* Keyboard focus scrolls a slot into view below the sticky day headers. */
+  scroll-margin-block: 104px 8px;
+  scroll-margin-inline: 64px 8px;
+}
+/* A line on the hour; the slots inside an hour stay open, so the grid reads in hours. Drawn as
+   a shadow, so every slot keeps the same box and the events line up with the hours. */
+.satin-scheduler-cell[data-hour] {
+  box-shadow: inset 0 var(--border-width-default) 0 0 var(--border-subtle);
+}
+/* Outside working hours and on the weekend. */
+.satin-scheduler-cell[data-off] {
+  background-color: var(--bg-canvas);
+}
+.satin-scheduler-cell[data-availability='free'] {
+  background-color: var(--status-green-bg);
+}
+/* Busy: grey, with a fine hatch so it doesn't read as one more event. */
+.satin-scheduler-cell[data-availability='busy'] {
+  background-color: var(--bg-muted);
+  background-image: repeating-linear-gradient(-45deg, transparent 0 5px, var(--border-default) 5px 6px);
+}
+@media (hover: hover) {
+  .satin-scheduler-grid:not([data-dragging]) .satin-scheduler-cell:not([data-availability='busy']):hover {
+    background-color: var(--bg-hover);
+  }
+}
+/* The ring is drawn above the events, which may cover the slot. */
+.satin-scheduler-cell:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 2px var(--action-focus-ring);
+  pointer-events: none;
+}
+
+/* The picked slot (or slots), waiting for an event. */
+.satin-scheduler-selection {
+  position: absolute;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: var(--status-brand-bg);
+  box-shadow: inset 0 0 0 var(--border-width-strong) var(--status-brand-border);
+  color: var(--status-brand-fg);
+  padding: 2px 6px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  pointer-events: none;
+}
+/* Still being drawn (pointer down, or Shift and arrows): a dashed edge until it's picked. */
+.satin-scheduler-selection[data-draft] {
+  box-shadow: none;
+  border: var(--border-width-strong) dashed var(--status-brand-fg);
+}
+
+/* ---------- events ---------- */
+
+.satin-scheduler-event {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  border-inline-start: 3px solid var(--tone-fg);
+  background-color: var(--tone-bg);
+  color: var(--tone-fg);
+  /* A hairline in the card colour keeps neighbours apart when they touch. */
+  box-shadow: 0 0 0 1px var(--bg-card);
+  padding: 2px 6px;
+  text-align: start;
+  font-size: 12px;
+  line-height: 16px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+.satin-scheduler-event[data-readonly] {
+  cursor: pointer;
+  touch-action: auto;
+  border-inline-start-width: 0;
+  padding-inline-start: 8px;
+  box-shadow: inset 0 0 0 var(--border-width-default) var(--tone-border), 0 0 0 1px var(--bg-card);
+}
+@media (hover: hover) {
+  .satin-scheduler-event:hover {
+    box-shadow: 0 0 0 1px var(--bg-card), 0 1px 3px 0 var(--effect-shadow-sm), 0 1px 2px -1px var(--effect-shadow-sm);
+  }
+}
+.satin-scheduler-event:focus-visible {
+  z-index: 3;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--action-focus-ring);
+}
+.satin-scheduler-event[data-dragging] {
+  z-index: 10;
+  cursor: grabbing;
+  box-shadow: 0 0 0 1px var(--bg-card), 0 8px 12px 0 var(--effect-shadow-md), 0 1px 1.5px 0 var(--effect-shadow-ambient);
+}
+/* While something is dragged, the pointer goes to the grid underneath. */
+.satin-scheduler-grid[data-dragging] .satin-scheduler-event,
+.satin-scheduler-grid[data-dragging] .satin-scheduler-item {
+  pointer-events: none;
+}
+.satin-scheduler-grid[data-dragging],
+.satin-scheduler-grid[data-dragging] * {
+  cursor: grabbing;
+}
+.satin-scheduler-grid[data-resizing],
+.satin-scheduler-grid[data-resizing] * {
+  cursor: ns-resize;
+}
+
+/* The bottom edge of a timed event: drag it to change the end. A short grip shows on hover. */
+.satin-scheduler-resize {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 8px;
+  cursor: ns-resize;
+}
+.satin-scheduler-resize::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  width: 16px;
+  height: 2px;
+  margin-left: -8px;
+  border-radius: 1px;
+  background-color: var(--tone-fg);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+@media (hover: hover) {
+  .satin-scheduler-event:hover .satin-scheduler-resize::after {
+    opacity: 0.6;
+  }
+}
+
+/* Where a dragged event will land: its slot, outlined, with the new time. */
+.satin-scheduler-drop {
+  position: absolute;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1.5px dashed var(--tone-fg);
+  background-color: var(--tone-bg);
+  color: var(--tone-fg);
+  padding: 2px 6px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+/* ---------- now ---------- */
+
+/* Moves with the clock, a minute at a time, never animated. */
+.satin-scheduler-now {
+  position: absolute;
+  inset-inline: -1px 0;
+  z-index: 5;
+  height: 2px;
+  margin-top: -1px;
+  background-color: var(--action-primary-bg);
+  pointer-events: none;
+}
+.satin-scheduler-now::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  inset-inline-start: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background-color: var(--action-primary-bg);
+}
+
+/* ---------- month ---------- */
+
+.satin-scheduler-day {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: 2px;
+  border-inline-start: var(--border-width-default) solid var(--border-subtle);
+  border-top: var(--border-width-default) solid var(--border-subtle);
+  padding: 4px;
+  outline: none;
+  scroll-margin-block: 40px 8px;
+  container-type: inline-size;
+}
+/* A narrow day keeps the title and drops the start time (the event's name still says it). */
+@container (max-width: 140px) {
+  .satin-scheduler-item [data-time] {
+    display: none;
+  }
+}
+/* Days of the months before and after. */
+.satin-scheduler-day[data-outside] {
+  background-color: var(--bg-canvas);
+}
+.satin-scheduler-day[data-off]:not([data-outside]) {
+  background-color: var(--bg-canvas);
+}
+@media (hover: hover) {
+  .satin-scheduler-grid:not([data-dragging]) .satin-scheduler-day:hover {
+    background-color: var(--bg-hover);
+  }
+}
+.satin-scheduler-day[aria-selected='true'] {
+  background-color: var(--status-brand-bg);
+  box-shadow: inset 0 0 0 var(--border-width-strong) var(--status-brand-border);
+}
+.satin-scheduler-day:focus-visible::after,
+.satin-scheduler-day[data-drop]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 2px var(--action-focus-ring);
+  pointer-events: none;
+}
+.satin-scheduler-day[data-drop]::after {
+  inset: 2px;
+  border-radius: 6px;
+  box-shadow: none;
+  border: 1.5px dashed var(--action-primary-bg);
+}
+
+/* One event in a month cell (and an all-day event in the week's all-day row). */
+.satin-scheduler-item {
+  position: relative;
+  display: flex;
+  height: 20px;
+  min-width: 0;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  padding-inline: 4px;
+  color: var(--text-default);
+  font-size: 12px;
+  line-height: 16px;
+  text-align: start;
+  white-space: nowrap;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.satin-scheduler-item[data-allday] {
+  background-color: var(--tone-bg);
+  color: var(--tone-fg);
+  font-weight: 500;
+}
+.satin-scheduler-item[data-readonly] {
+  cursor: pointer;
+  touch-action: auto;
+}
+.satin-scheduler-item[data-allday][data-readonly] {
+  box-shadow: inset 0 0 0 var(--border-width-default) var(--tone-border);
+}
+@media (hover: hover) {
+  .satin-scheduler-item:not([data-allday]):hover {
+    background-color: var(--bg-hover);
+  }
+}
+.satin-scheduler-item:focus-visible {
+  z-index: 3;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--action-focus-ring);
+}
+.satin-scheduler-item[data-dragging] {
+  z-index: 10;
+  cursor: grabbing;
+  background-color: var(--bg-popover);
+  box-shadow: 0 8px 12px 0 var(--effect-shadow-md), 0 1px 1.5px 0 var(--effect-shadow-ambient);
+}
+.satin-scheduler-item[data-allday][data-dragging] {
+  background-color: var(--tone-bg);
+}
+
+/* ---------- views ---------- */
+
+/* A new view fades in over the old one fading out, both at --duration-base. */
+.satin-scheduler-view[data-entering] {
+  animation: satin-fade-in var(--duration-base) var(--ease-out);
+}
+.satin-scheduler-view[data-leaving] {
+  animation: satin-fade-out var(--duration-base) var(--ease-out) forwards;
+  pointer-events: none;
+}

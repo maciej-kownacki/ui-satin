@@ -1,0 +1,69 @@
+/*
+ * Agent presence (components/agent-presence.tsx). A layer the size of the target, laid over it
+ * from the top left of its positioned parent: the component writes its transform, width and
+ * height every frame, and --agent-presence-radius from the target's own corner. It takes no
+ * pointer and never touches the target, so nothing under it moves.
+ *
+ * It fades in over --duration-fast and out the same way (data-shown). Moving to another target
+ * (data-glide) it glides there on --ease-in-out over --duration-slow; width and height glide with
+ * the transform, as the sliding pill's width does, because an edge can't be scaled without
+ * stretching its line and corners. Satin's reduced-motion rule (motion.css) cuts all of it.
+ */
+.satin-agent-presence {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    visibility 0s linear var(--duration-fast);
+}
+.satin-agent-presence[data-shown] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    visibility 0s;
+}
+.satin-agent-presence[data-shown][data-glide] {
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    visibility 0s,
+    transform var(--duration-slow) var(--ease-in-out),
+    width var(--duration-slow) var(--ease-in-out),
+    height var(--duration-slow) var(--ease-in-out);
+}
+
+/* The edge: 1.5px of the state's tone (tone/fg, 3:1 on every surface), on the target's own
+   border, so a card's edge changes colour and a row gets the outline of its hover. Dashed in a
+   conflict, so the state doesn't rest on colour alone. */
+.satin-agent-presence-outline {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--tone-fg);
+  border-radius: var(--agent-presence-radius, var(--radius-xl));
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+.satin-agent-presence-outline[data-state='conflict'] {
+  border-style: dashed;
+}
+
+/* The label sits on the edge's top line, 8px in from the end corner (mirrored right to left),
+   half above it, so it covers the padding of the rows around the line rather than their text. */
+.satin-agent-presence-label {
+  position: absolute;
+  top: 0;
+  inset-inline-end: 8px;
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  transform: translateY(-50%);
+  box-shadow: 0 0 0 var(--border-width-default) var(--tone-border);
+}
+/* The tetris mark plays in the label's tone: its pieces in tone/fg, its empty grid in tone/border. */
+.satin-agent-presence-label .satin-tetris {
+  --satin-tetris-on: var(--tone-fg);
+  --satin-tetris-off: var(--tone-border);
+}

@@ -46,7 +46,7 @@ export {
 } from './components/dialog'
 export * from './components/dot'
 export { Floating, type FloatingProps, type FloatingSide } from './components/floating'
-export { DropdownMenu, DropdownMenuGroup, DropdownMenuItem, MenuItemContent, menuItemClass, menuSurfaceClass, menuGroupClass, menuGroupLabelClass, type DropdownMenuProps, type DropdownMenuGroupProps, type DropdownMenuItemProps, type MenuItemContentProps } from './components/dropdown'
+export { DropdownMenu, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, MenuItemContent, menuItemClass, menuSurfaceClass, menuGroupClass, menuGroupLabelClass, type DropdownMenuProps, type DropdownMenuGroupProps, type DropdownMenuItemProps, type DropdownMenuSubProps, type DropdownMenuSubTriggerProps, type DropdownMenuSubContentProps, type DropdownMenuCheckboxItemProps, type DropdownMenuRadioGroupProps, type DropdownMenuRadioItemProps, type MenuItemContentProps } from './components/dropdown'
 export { FormField, useFormField, useFormContext, FormContext, FieldSizeContext, FieldError, FieldDescription, RequiredMark, type FormFieldProps, type FormFieldContextValue, type FormContextValue } from './components/form-field'
 export { Form, FormSection, FormActions, formValues, type FormProps, type FormSectionProps, type FormActionsProps, type FormValues } from './components/form'
 export { FieldGroup, type FieldGroupProps } from './components/field-group'
@@ -72,6 +72,7 @@ export * from './components/sidebar'
 export { Skeleton, type SkeletonProps } from './components/skeleton'
 export { Slider, type SliderProps } from './components/slider'
 export { Spinner, type SpinnerProps } from './components/spinner'
+export { Stepper, StepperItem, type StepperProps, type StepperItemProps, type StepperStep, type StepperStepState } from './components/stepper'
 export { Switch, type SwitchProps } from './components/switch'
 export { Table, type TableProps, type Column, type Row, type Sort } from './components/table'
 export { Tabs, TabsContent, type TabsProps, type TabItem } from './components/tabs'
@@ -88,8 +89,24 @@ export * from './components/empty-state'
 export { Message, type MessageProps, type MessageSource } from './components/message'
 export { MessageActions, type MessageActionsProps, type MessageFeedback } from './components/message-actions'
 export { PromptBar, defaultActions as promptBarDefaultActions, type PromptBarProps, type PromptBarModel, type PromptBarAction } from './components/prompt-bar'
+export { usePromptMentions, promptValue, type PromptMention, type PromptMentions, type PromptCommand, type PromptCommandInput, type PromptValue, type PromptMentionToken, type PromptCommandToken, type UsePromptMentionsOptions, type PromptMentionsHandle } from './components/prompt-mentions'
 export { StreamingText, type StreamingTextProps } from './components/streaming-text'
 export { Thinking, type ThinkingProps, type ThinkingStep, type ThinkingState, type ThinkingIndicator } from './components/thinking'
+export {
+  ToolCall,
+  ToolCallRoot,
+  ToolCallHeader,
+  ToolCallContent,
+  ToolCallSection,
+  ToolCallError,
+  type ToolCallProps,
+  type ToolCallRootProps,
+  type ToolCallHeaderProps,
+  type ToolCallSectionProps,
+  type ToolCallErrorProps,
+  type ToolCallStatus,
+  type ToolCallValue,
+} from './components/tool-call'
 export { AgentLoading, type AgentLoadingProps, type AgentLoadingIndicator, TetrisMark, TetrisLabel, TetrisStill, FlappySprite, ShimmerLabel, type Glimmer } from './components/agent-loading'
 export { FileUpload, FileUploadItem, fileIconFor, formatBytes, type FileUploadProps, type FileUploadFile, type FileUploadRejection, type FileUploadStatus } from './components/file-upload'
 export { InputOTP, type InputOTPProps } from './components/input-otp'
@@ -97,7 +114,8 @@ export { NumberInput, type NumberInputProps } from './components/number-input'
 export { ContextMenu, ContextMenuItem, ContextMenuSub, ContextMenuSeparator, type ContextMenuProps, type ContextMenuItemProps, type ContextMenuSubProps } from './components/context-menu'
 export { HoverCard, hoverCardClass, type HoverCardProps } from './components/hover-card'
 export { Citation, Sources, type CitationProps, type CitationSource, type SourcesProps } from './components/citations'
-export { Calendar, DatePicker, DatePickerPanel, DateRangePicker, DateRangePickerPanel, formatDate, formatRange, type CalendarProps, type DatePickerProps, type DatePickerPanelProps, type DateRangePickerPanelProps, type DateRangePickerProps, type DateRange } from './components/date-picker'
+export { TimePicker, TimeList, DateTimePicker, DateTimePickerPanel, parseTime, formatTime, localeTimeFormat, type TimePickerProps, type TimeListProps, type DateTimePickerProps, type DateTimePickerPanelProps, type TimeValue, type TimeFormat } from './components/time-picker'
+export { Calendar, CalendarDay, DatePicker, DatePickerPanel, DateRangePicker, DateRangePickerPanel, datePresets, formatDate, formatRange, type CalendarDayProps, type CalendarDayState, type CalendarProps, type DatePickerProps, type DatePickerPanelProps, type DatePreset, type DatePresetContext, type DateRangePickerPanelProps, type DateRangePickerProps, type DateRange, type WeekDay } from './components/date-picker'
 export { AgentSuggestion, AgentSuggestionQuote, AgentSuggestionMetric, AgentSuggestionDiff, AgentSuggestionChanges, type AgentSuggestionProps, type AgentSuggestionChange } from './components/agent-suggestion'
 export { CookieConsent, type CookieConsentProps } from './components/cookie-consent'
 export { AnnouncementBar, type AnnouncementBarProps } from './components/announcement-bar'

@@ -1,0 +1,30 @@
+/*
+ * Field-level review of agent changes (components/agent-changes-review.tsx), one change per step
+ * of a DecisionCard.
+ *
+ * A skipped change's new value fades to text/muted over --duration-base, and a rich value (a
+ * Badge) loses its colour, which keeps its text's contrast; nothing moves. Satin's reduced-motion
+ * rule (motion.css) cuts the fade.
+ */
+.satin-changes-review-row [data-slot='agent-suggestion-change-value'] > :last-child {
+  transition:
+    color var(--duration-base) var(--ease-out),
+    filter var(--duration-base) var(--ease-out);
+}
+.satin-changes-review-row[data-state='rejected'] [data-slot='agent-suggestion-change-value'] > :last-child {
+  color: var(--text-muted);
+  filter: grayscale(1);
+}
+
+/*
+ * Applied: the card fades out and rises 4px over --duration-base; then onApplied hands it to the
+ * app to remove. Under reduced motion the component doesn't wait for it, and motion.css cuts it.
+ */
+.satin-changes-review-exit {
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}

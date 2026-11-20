@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import CommandPagesDemo, { options } from '../../demos/command-pages'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="command-pages">
+  <DocSection item={page('command-pages')} api={api['command-pages']}>
+    <CommandPagesDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

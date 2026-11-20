@@ -1,0 +1,49 @@
+/*
+ * Activity timeline (components/activity-timeline.tsx).
+ *
+ * An entry or a run that arrives after the timeline first showed its content (a new one at the
+ * top, one joining an open run) fades in from 4px above, with Satin's satin-enter keyframes
+ * (motion.css), over --duration-base.
+ */
+[data-slot='activity-timeline-entry'][data-enter],
+[data-slot='activity-timeline-run'][data-enter] {
+  animation: satin-enter var(--duration-base) var(--ease-out);
+}
+
+/*
+ * The fold: a run's entries and "Reverted by you" open and close in height, so the rows below
+ * glide instead of jumping (the exception to MOTION.md, rule 5). Grid rows go 0fr ↔ 1fr over
+ * 300 ms on the sliding pill's curve (rule 1): its first frame covers 14% of the way where
+ * --ease-out covers 23% (29px rather than 49px on the docs' four-entry run). The content
+ * fades in once the move has started and out at once; it clips only while it moves. The chevron
+ * turns on the same duration and curve. Satin's reduced-motion rule makes all of it instant.
+ */
+[data-slot='activity-timeline-fold'] {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-slower) cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-slot='activity-timeline-fold'][data-state='open'] {
+  grid-template-rows: 1fr;
+}
+[data-slot='activity-timeline-fold'] > * {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+[data-slot='activity-timeline-fold'][data-state='open'] > * {
+  opacity: 1;
+  transition: opacity var(--duration-base) var(--ease-out) 60ms;
+}
+[data-slot='activity-timeline-fold'][data-settled] > * {
+  overflow: visible;
+}
+[data-slot='activity-timeline-run-chevron'] {
+  transition: rotate var(--duration-slower) cubic-bezier(0.32, 0.72, 0, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='activity-timeline-fold'][data-state='open'] > * {
+    transition-delay: 0s;
+  }
+}

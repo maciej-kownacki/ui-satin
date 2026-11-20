@@ -288,7 +288,9 @@
   --component-switch-on: var(--color-green-soft-700);
   --component-switch-on-hover: var(--color-green-soft-600);
   --component-kbd-bg: var(--bg-card);
+  --component-changes-review-source-bg: var(--bg-card);
   --component-notification-badge-bg: var(--status-neutral-bg);
+  --component-table-pro-total-bg: var(--color-zinc-50);
   --component-bulk-action-bar-count-bg: var(--status-neutral-bg);
   --component-decision-chip-selected-bg: var(--status-brand-bg);
   --component-decision-chip-selected-border: var(--status-brand-fg);
@@ -407,7 +409,9 @@
   --component-switch-on: var(--color-green-soft-600);
   --component-switch-on-hover: var(--color-green-soft-500);
   --component-kbd-bg: var(--bg-muted);
+  --component-changes-review-source-bg: var(--bg-muted);
   --component-notification-badge-bg: var(--color-secondary-pressed-dark);
+  --component-table-pro-total-bg: var(--color-popover-dark);
   --component-bulk-action-bar-count-bg: var(--color-secondary-pressed-dark);
   --component-decision-chip-selected-bg: var(--color-blue-500-a20);
   --component-decision-chip-selected-border: var(--color-primary-focus-dark);
@@ -519,7 +523,9 @@
     --component-switch-on: var(--color-green-soft-600);
     --component-switch-on-hover: var(--color-green-soft-500);
     --component-kbd-bg: var(--bg-muted);
+    --component-changes-review-source-bg: var(--bg-muted);
     --component-notification-badge-bg: var(--color-secondary-pressed-dark);
+    --component-table-pro-total-bg: var(--color-popover-dark);
     --component-bulk-action-bar-count-bg: var(--color-secondary-pressed-dark);
     --component-decision-chip-selected-bg: var(--color-blue-500-a20);
     --component-decision-chip-selected-border: var(--color-primary-focus-dark);
@@ -736,7 +742,9 @@
   --color-component-switch-on: var(--component-switch-on);
   --color-component-switch-on-hover: var(--component-switch-on-hover);
   --color-component-kbd-bg: var(--component-kbd-bg);
+  --color-component-changes-review-source-bg: var(--component-changes-review-source-bg);
   --color-component-notification-badge-bg: var(--component-notification-badge-bg);
+  --color-component-table-pro-total-bg: var(--component-table-pro-total-bg);
   --color-component-bulk-action-bar-count-bg: var(--component-bulk-action-bar-count-bg);
   --color-component-decision-chip-selected-bg: var(--component-decision-chip-selected-bg);
   --color-component-decision-chip-selected-border: var(--component-decision-chip-selected-border);
