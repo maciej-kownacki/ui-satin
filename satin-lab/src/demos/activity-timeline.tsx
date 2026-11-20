@@ -160,10 +160,9 @@ function Preview({ v }: { v: Record<string, string> }) {
           it is. The history's edge is border-subtle in Light and border-default in Dark, where border-subtle barely
           differs from the popover fill; border-default is also the diff row's edge inside it. */}
       <div className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-bg-canvas p-3 [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)] dark:bg-bg-card dark:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))]">
-        {/* On the history card's content grid: the record's left edge is where the day labels start (the card's
-            1px edge and 20px padding), the badge ends where the times end. A 20px avatar sits right beside the name;
+        {/* 8px in from the record card's content edges on both sides. A 20px avatar sits right beside the name;
             the line under it starts where the avatar does. */}
-        <div className="flex items-start gap-3 ps-[21px] pe-[21px]">
+        <div className="flex items-start gap-3 px-2">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <Avatar initials="TM" tone="fuchsia" size={20} />
