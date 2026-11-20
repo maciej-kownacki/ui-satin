@@ -87,6 +87,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Scoped search': [548, 548],
   'Agent presence': [424, 424],
   'Activity timeline': [768, 768],
+  'Activity timeline': [764, 764],
   'Pagination': [280, 280],
   'Progress': [280, 280],
   'Slider': [320, 320],
