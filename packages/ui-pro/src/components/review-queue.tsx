@@ -795,8 +795,9 @@ export function ReviewQueueSummary({ actions, className, ...props }: ReviewQueue
       data-slot="review-queue-summary"
       data-enter={q.enter ?? undefined}
       aria-labelledby={headingId}
+      // AgentSuggestion's card (bg/card, border/default, shadow-sm): it takes the items' place, so the fill stays the same.
       className={cn(
-        'satin-review-queue-enter flex flex-col gap-4 rounded-xl border border-border-default bg-bg-popover p-3 text-text-default',
+        'satin-review-queue-enter flex flex-col gap-4 rounded-xl border border-border-default bg-bg-card p-3 text-text-default',
         '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
         className,
       )}
