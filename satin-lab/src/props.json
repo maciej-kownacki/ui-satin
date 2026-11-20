@@ -574,7 +574,7 @@
       ]
     },
     "AgentPermissionHeader": {
-      "description": "The agent's avatar and \"<agent> wants to:\", with why it asks under them. Other props, `ref` included, go to its `div`.",
+      "description": "The agent's avatar in a tile of its tone, over an aura of the same tone, and \"<agent> wants to:\" centred under it, with why it asks. Other props, `ref` included, go to its `div`.",
       "type": "AgentPermissionHeaderProps",
       "extends": [
         "React.ComponentProps<'div'>"

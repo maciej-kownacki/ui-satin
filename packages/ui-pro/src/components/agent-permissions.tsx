@@ -18,8 +18,11 @@ import { SplitButton } from '@uisatin/ui/split-button'
  * once, or Always allow from its menu.
  *
  * - It sits in the flow like Dialog content: Card's frame (bg/popover, border/default,
- *   radius-2xl, 405 wide) with Agent suggestion's small shadow, a Dialog's header, body and
- *   footer, and Dialog's entrance (rise and fade), quicker: --duration-slow. Nothing pulses.
+ *   radius-2xl, 405 wide) with Agent suggestion's small shadow, and Dialog's entrance (rise and
+ *   fade), quicker: --duration-slow. Nothing pulses.
+ * - The header follows the Flappy warning dialogs: the agent's avatar in a tile of its tone, a
+ *   soft aura of that tone from the top edge, and the title and reason centred under them. The
+ *   scopes and the answers below stay aligned to the start.
  * - Scopes that `send` reach other people as you, so they stand apart: the icon tile turns amber
  *   and the title goes on in muted text, "Send emails · Sends as you". Reads and writes stay neutral.
  * - Every scope starts ticked. Unticking one makes the request partial: its title turns muted
@@ -370,7 +373,9 @@ export function AgentPermissionRoot({
         data-status={status}
         data-partial={(asking && selected.length < scopes.length) || undefined}
         className={cn(
+          // isolate: the header's aura sits under the content (-z-1) but over the card's own fill.
           cardVariants(),
+          'isolate',
           '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action-focus-ring focus-visible:outline-solid',
           'data-[status=request]:animate-[satin-dialog-in_var(--duration-slow)_var(--ease-out)]',
@@ -400,7 +405,10 @@ export interface AgentPermissionHeaderProps extends React.ComponentProps<'div'> 
   description?: React.ReactNode
 }
 
-/** The agent's avatar and "<agent> wants to:", with why it asks under them. Other props, `ref` included, go to its `div`. */
+/**
+ * The agent's avatar in a tile of its tone, over an aura of the same tone, and "<agent> wants
+ * to:" centred under it, with why it asks. Other props, `ref` included, go to its `div`.
+ */
 export function AgentPermissionHeader({ description, className, ...props }: AgentPermissionHeaderProps) {
   const { agent, titleId, descriptionId, setHeader, labels } = usePermission('AgentPermissionHeader')
   const hasDescription = description != null
@@ -409,18 +417,34 @@ export function AgentPermissionHeader({ description, className, ...props }: Agen
     return () => setHeader(null)
   }, [hasDescription, setHeader])
   return (
-    <div data-slot="agent-permissions-header" className={cn('flex flex-col gap-1 px-4 pt-4 pb-1', className)} {...props}>
-      <div className="flex items-center gap-2">
+    <div
+      data-slot="agent-permissions-header"
+      data-tone={agent.tone ?? 'brand'}
+      className={cn('flex flex-col items-center px-4 pt-6 pb-1 text-center', className)}
+      {...props}
+    >
+      {/* The aura: the agent's tone glowing down from the middle of the card's top edge, an
+          ellipse 290 × 200 at 20%. It fills the card (the Root is its positioned parent), under
+          everything in it, and comes and goes with the request. */}
+      <span
+        aria-hidden
+        data-slot="agent-permissions-aura"
+        className="pointer-events-none absolute inset-0 -z-1 bg-[radial-gradient(ellipse_290px_200px_at_50%_16px,color-mix(in_oklab,var(--tone-fg)_20%,transparent),transparent)]"
+      />
+      {/* The agent in its own tile: 36px, radius 12, a ring and a 2px halo in its tone. */}
+      <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-tone-fg/60 bg-tone-bg ring-2 ring-tone-fg/20">
         <AgentAvatar agent={agent} size={20} />
-        <p id={titleId} className="min-w-0 text-base leading-5 font-medium tracking-normal text-text-default">
+      </span>
+      <div className="mt-3 flex flex-col gap-1">
+        <p id={titleId} className="text-base leading-5 font-medium tracking-normal text-balance text-text-default">
           {labels.agentPermissionsTitle(agent.name)}
         </p>
+        {hasDescription && (
+          <p id={descriptionId} className="text-body text-balance text-text-muted">
+            {description}
+          </p>
+        )}
       </div>
-      {hasDescription && (
-        <p id={descriptionId} className="text-body text-text-muted">
-          {description}
-        </p>
-      )}
     </div>
   )
 }
