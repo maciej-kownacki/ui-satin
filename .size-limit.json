@@ -245,7 +245,7 @@
       "@uisatin/ui"
     ],
     "gzip": true,
-    "limit": "6 kB"
+    "limit": "7 kB"
   },
   {
     "name": "PromptBar with mentions and commands (Radix Popover, DropdownMenu, Avatar's Tooltip; 51 kB before mentions)",

@@ -114,16 +114,44 @@ describe('AgentPlan, draft', () => {
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Remove Send invites' }))
   })
 
-  it('moves a step dragged down by its number, and ends the drag even though its row moved', () => {
+  it('lifts a step dragged by its number: it follows the pointer, the others make room, and it lands on release', () => {
     renderWithSatin(<Plan />)
-    fireEvent.pointerDown(rows()[0].querySelector('[data-part="number"]')!, { button: 0 })
-    expect(rows()[0].hasAttribute('data-dragging')).toBe(true)
-    // jsdom lays nothing out: every row's middle is at 0, so any point below it is past them all.
-    fireEvent.pointerMove(window, { clientY: 10 })
-    expect(labelsInOrder()).toEqual(['Draft invites', 'Send invites', 'Find open slots'])
+    // jsdom lays nothing out: rows 36px high, 40px apart.
+    rows().forEach((row, i) => {
+      row.getBoundingClientRect = () => ({ top: i * 40, bottom: i * 40 + 36, height: 36, left: 0, right: 300, width: 300, x: 0, y: i * 40, toJSON: () => ({}) }) as DOMRect
+    })
+    const [first, second, third] = rows()
+    fireEvent.pointerDown(first.querySelector('[data-part="number"]')!, { button: 0, clientY: 10 })
+    expect(first.hasAttribute('data-dragging')).toBe(true)
+
+    // Past the middle of the second row: the first follows the pointer, the second makes room.
+    fireEvent.pointerMove(window, { clientY: 55 })
+    expect(first.style.transform).toBe('translateY(45px)')
+    expect(second.style.transform).toBe('translateY(-36px)')
+    expect(third.style.transform).toBe('translateY(0px)')
+    expect(labelsInOrder()).toEqual(['Find open slots', 'Draft invites', 'Send invites'])
+    // The numbers follow where the steps would land.
+    expect(numbers()).toEqual(['2', '1', '3'])
+
+    // Far below the list: it stops at the last row, and lands last.
+    fireEvent.pointerMove(window, { clientY: 400 })
+    expect(first.style.transform).toBe('translateY(80px)')
     fireEvent.pointerUp(window)
+    expect(labelsInOrder()).toEqual(['Draft invites', 'Send invites', 'Find open slots'])
     expect(list().querySelector('[data-dragging]')).toBeNull()
+    expect(rows().every((row) => !row.style.transform || row.style.transform === 'none')).toBe(true)
     expect(status().textContent).toBe('Find open slots, position 3 of 3')
+  })
+
+  it('swaps the number for the grip on hover, keyboard focus or a drag, in the same box', () => {
+    renderWithSatin(<Plan initial={[{ id: 'read', label: 'Read the shortlist', editable: false }, ...PLAN]} />)
+    const [locked, movable] = rows().map((row) => row.querySelector('[data-part="number"]')!)
+    expect(movable.querySelector('svg')).toBeTruthy()
+    expect(movable.firstElementChild?.className).toContain('group-hover/step:invisible')
+    expect(movable.firstElementChild?.className).toContain('group-has-[:focus-visible]/step:invisible')
+    expect(movable.lastElementChild?.className).toContain('absolute')
+    // A step that can't move keeps its digit.
+    expect(locked.querySelector('svg')).toBeNull()
   })
 
   it('renames a step by pressing its label, and returns focus to it', async () => {
@@ -343,6 +371,9 @@ describe('AgentPlan, layouts', () => {
     expect(step.getAttribute('aria-description')).toBe('Alt and arrow keys to move')
     await user.click(step)
     expect(step.getAttribute('aria-expanded')).toBe('true')
+    // The open step's card: 8px above and below, grown outwards so its content stays put.
+    expect(step.closest('li')!.className).toContain('data-open:py-2')
+    expect(step.closest('li')!.className).toContain('data-open:-my-1')
     const actions = document.getElementById(step.getAttribute('aria-controls')!)!
     expect(within(actions).getAllByRole('button').map((b) => b.textContent)).toEqual(['Rename', 'Remove'])
 

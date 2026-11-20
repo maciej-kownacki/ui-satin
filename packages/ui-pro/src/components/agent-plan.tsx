@@ -395,6 +395,22 @@ export function AgentPlanHeader({ title, className, ...props }: AgentPlanHeaderP
 
 /* ---------- steps ---------- */
 
+/** A drag on the way: the step, where it started and would land, how far it moved, and the rows as they stood. */
+interface Drag {
+  id: string
+  from: number
+  to: number
+  dy: number
+  startY: number
+  mids: number[]
+  min: number
+  max: number
+  slot: number
+}
+
+/** A row's transitions without transform: the step under the pointer, or every row the moment a drag lands. */
+const STILL: React.CSSProperties = { transitionProperty: 'background-color, border-color, box-shadow' }
+
 export interface AgentPlanStepsProps extends React.ComponentProps<'div'> {}
 
 /**
@@ -409,7 +425,6 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
   // The latest order, so a drag that moves twice before React renders moves from the right place.
   const order = React.useRef(steps)
   order.current = steps
-  const [dragging, setDragging] = React.useState<string | null>(null)
   const [editing, setEditing] = React.useState<string | null>(null)
   // In the `select` layout: the step whose Rename and Remove show.
   const [open, setOpen] = React.useState<string | null>(null)
@@ -478,43 +493,132 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
     moveBy(step.id, e.key === 'ArrowUp' ? -1 : 1, part)
   }
 
+  // A drag lifts the step: it follows the pointer (inside the list), the steps it passes slide
+  // out of its way, and on release it settles into its slot. The rows are measured once, as they
+  // stood when the drag began; the order changes on release, not on the way.
+  const [drag, setDrag] = React.useState<Drag | null>(null)
+  const dragRef = React.useRef(drag)
+  dragRef.current = drag
+  // Where the released step was on screen, so it can settle from there into its new place.
+  const [drop, setDrop] = React.useState<{ id: string; top: number } | null>(null)
+
   const onGripDown = (e: React.PointerEvent<HTMLElement>, id: string) => {
-    if (e.button !== 0) return
+    const list = listRef.current
+    const from = order.current.findIndex((s) => s.id === id)
+    if (e.button !== 0 || !list || from < 0) return
     e.preventDefault()
-    setDragging(id)
+    const rows = Array.from(list.children) as HTMLElement[]
+    const boxes = rows.map((row) => row.getBoundingClientRect())
+    const box = boxes[from]
+    if (!box) return
+    const px = (value: string) => parseFloat(value) || 0
+    const own = getComputedStyle(rows[from])
+    setDrag({
+      id,
+      from,
+      to: from,
+      dy: 0,
+      startY: e.clientY,
+      mids: boxes.map((b) => b.top + b.height / 2),
+      min: boxes[0].top - box.top,
+      max: boxes[boxes.length - 1].bottom - box.bottom,
+      // What the others slide by: the step's height with its margins and the list's gap.
+      slot: box.height + px(own.marginTop) + px(own.marginBottom) + px(getComputedStyle(list).rowGap),
+    })
   }
-  // The drag listens on the window, not through pointer capture: moving a step down moves its
-  // row in the DOM, and a moved element loses its capture, so the drag would never end.
-  const drag = React.useRef({ move, sayPosition })
-  drag.current = { move, sayPosition }
+
+  // The drag listens on the window, not through pointer capture, so it ends wherever the pointer goes.
+  const act = React.useRef({ move, sayPosition })
+  act.current = { move, sayPosition }
+  const dragId = drag?.id
   React.useEffect(() => {
-    if (!dragging) return
+    if (!dragId) return
     const onMove = (e: PointerEvent) => {
-      if (!listRef.current) return
-      const rows = Array.from(listRef.current.children) as HTMLElement[]
-      const from = order.current.findIndex((s) => s.id === dragging)
-      let to = from
-      rows.forEach((row, i) => {
-        const box = row.getBoundingClientRect()
-        const mid = box.top + box.height / 2
-        if (i < from && e.clientY < mid) to = Math.min(to, i)
-        if (i > from && e.clientY > mid) to = Math.max(to, i)
-      })
-      if (to !== from) drag.current.move(from, to)
+      const d = dragRef.current
+      if (!d) return
+      const dy = Math.min(d.max, Math.max(d.min, e.clientY - d.startY))
+      const center = d.mids[d.from] + dy
+      let to = d.from
+      for (let i = 0; i < d.from; i++)
+        if (center <= d.mids[i]) {
+          to = i
+          break
+        }
+      for (let i = d.mids.length - 1; i > d.from; i--)
+        if (center >= d.mids[i]) {
+          to = i
+          break
+        }
+      setDrag({ ...d, dy, to })
     }
     const onUp = () => {
-      drag.current.sayPosition(dragging)
-      setDragging(null)
+      const d = dragRef.current
+      if (!d) return
+      setDrop({ id: d.id, top: rowOf(d.id)?.getBoundingClientRect().top ?? 0 })
+      setDrag(null)
+      act.current.move(d.from, d.to)
+      act.current.sayPosition(d.id)
     }
+    const cursor = document.body.style.cursor
+    document.body.style.cursor = 'grabbing'
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointercancel', onUp)
     return () => {
+      document.body.style.cursor = cursor
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
-  }, [dragging, listRef])
+  }, [dragId, listRef])
+
+  // The release, FLIP: the rows stand still in their new order, and the step slides from where it
+  // was let go into its slot, still lifted until it lands.
+  React.useLayoutEffect(() => {
+    if (!drop) return
+    const row = rowOf(drop.id)
+    // Lay out the new order with no transform moving, before the rows get their transitions back.
+    listRef.current?.getBoundingClientRect()
+    if (row) {
+      const offset = drop.top - row.getBoundingClientRect().top
+      // It stays lifted (data-dragging) until it lands.
+      const land = () => {
+        delete row.dataset.dragging
+        row.removeEventListener('transitionend', land)
+      }
+      if (Math.abs(offset) >= 0.5) {
+        row.style.transform = `translateY(${offset}px)`
+        row.getBoundingClientRect()
+        row.dataset.dragging = ''
+        row.style.transitionProperty = ''
+        row.style.transform = ''
+        row.addEventListener('transitionend', land)
+        setTimeout(land, 500)
+      }
+    }
+    setDrop(null)
+  }, [drop])
+
+  // Where a row would land if the drag ended now: the numbers follow it, so the step that made
+  // room already shows its new number.
+  const placeOf = (i: number) => {
+    if (!drag) return i
+    const { from, to } = drag
+    if (i === from) return to
+    if (from < to && i > from && i <= to) return i - 1
+    if (to < from && i >= to && i < from) return i + 1
+    return i
+  }
+
+  // Each row's place while a drag is on or just ended.
+  const motionOf = (step: AgentPlanStep, i: number): React.CSSProperties | undefined => {
+    if (drop) return STILL
+    if (!drag) return undefined
+    if (step.id === drag.id) return { ...STILL, transform: `translateY(${drag.dy}px)` }
+    const { from, to, slot } = drag
+    const by = from < to && i > from && i <= to ? -slot : to < from && i >= to && i < from ? slot : 0
+    return { transform: `translateY(${by}px)` }
+  }
 
   return (
     <div data-slot="agent-plan-steps" data-mode={draft ? 'draft' : 'run'} className={cn(draft ? 'px-2' : 'flex gap-3 px-3 pt-1', className)} {...props}>
@@ -538,8 +642,10 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
             <DraftStep
               key={step.id}
               step={step}
-              index={i}
-              dragging={dragging === step.id}
+              index={placeOf(i)}
+              dragging={drag?.id === step.id}
+              moving={!!drag && drag.id !== step.id}
+              style={motionOf(step, i)}
               editing={editing === step.id}
               open={open === step.id}
               onEdit={(on) => setEditing(on ? step.id : null)}
@@ -565,6 +671,8 @@ function DraftStep({
   step,
   index,
   dragging,
+  moving,
+  style,
   editing,
   open,
   onEdit,
@@ -576,6 +684,9 @@ function DraftStep({
   step: AgentPlanStep
   index: number
   dragging: boolean
+  /** Another step is being dragged: this one slides out of its way. */
+  moving: boolean
+  style?: React.CSSProperties
   editing: boolean
   /** In the `select` layout: the step's Rename and Remove show under it. */
   open: boolean
@@ -621,16 +732,28 @@ function DraftStep({
   const labelClass = cn('text-sm leading-5 break-words', step.skipped ? 'text-text-muted' : 'text-text-default')
 
   // The step's number, which the list already says to screen readers. The pointer drags it to
-  // move the step; the keyboard has Alt+↑/↓.
+  // move the step; the keyboard has Alt+↑/↓. On hover, keyboard focus or a drag, the digit gives
+  // way to the grip in the same box, so nothing moves.
   const number = (
     <Badge
       size="sm"
       aria-hidden
       data-part="number"
-      className={cn('min-w-5 justify-center tabular-nums', canMove && 'cursor-grab touch-none select-none', dragging && 'cursor-grabbing')}
+      className={cn(
+        'relative min-w-5 justify-center tabular-nums',
+        canMove && 'cursor-grab touch-none select-none',
+        dragging && 'cursor-grabbing',
+        // Centred on the 28px field that renames an open step.
+        editing && layout === 'select' && 'mt-1',
+      )}
       {...(canMove ? grip : {})}
     >
-      {index + 1}
+      <span className={cn(canMove && 'group-hover/step:invisible group-has-[:focus-visible]/step:invisible group-data-dragging/step:invisible')}>{index + 1}</span>
+      {canMove && (
+        <span className="invisible absolute inset-0 flex items-center justify-center group-hover/step:visible group-has-[:focus-visible]/step:visible group-data-dragging/step:visible">
+          <Grip />
+        </span>
+      )}
     </Badge>
   )
 
@@ -640,7 +763,8 @@ function DraftStep({
       size="sm"
       aria-label={labels.stepName(index + 1)}
       defaultValue={step.label}
-      wrapperClassName="-my-1 self-stretch"
+      // In the label's line; in an open `select` step it takes its full height, inside the 8px.
+      wrapperClassName={cn('self-stretch', layout !== 'select' && '-my-1')}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
           e.preventDefault()
@@ -727,7 +851,7 @@ function DraftStep({
         </div>
         {/* Under the label, 12px apart so Remove is hard to hit by mistake: nothing sits on the right edge. */}
         {open && !editing && (
-          <div id={actionsId} className="flex items-center gap-3 ps-7 pt-2 pb-0.5">
+          <div id={actionsId} className="flex items-center gap-3 ps-7 pt-2">
             <Button variant="secondary" size="xs" data-part="rename" onClick={() => onEdit(true)}>
               {labels.renameStep}
             </Button>
@@ -803,13 +927,19 @@ function DraftStep({
       data-skipped={step.skipped || undefined}
       data-open={open || undefined}
       onKeyDownCapture={onKeyDown}
+      style={style}
       className={cn(
         'group/step flex items-start gap-2 rounded-md border border-strong border-transparent p-1',
-        'transition-[background-color,border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
-        live && !open && 'satin-hover:bg-action-secondary-bg',
+        'transition-[background-color,border-color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out)',
+        // Making room for a dragged step, and landing one, take the calmer base duration.
+        moving && 'duration-(--duration-base)',
+        'data-dragging:duration-(--duration-base)',
+        live && !open && !moving && 'satin-hover:bg-action-secondary-bg',
         // The open step keeps the card's surface, so its buttons don't sit darker on a lighter fill.
-        'data-open:border-border-default',
-        'data-dragging:border-border-strong data-dragging:bg-bg-popover',
+        // 8px above and below its content, grown outwards so the content doesn't move as it opens.
+        'data-open:relative data-open:z-[1] data-open:-my-1 data-open:py-2 data-open:border-border-default',
+        // Lifted while dragged and until it lands: above the others, on the card's surface, a soft shadow.
+        'data-dragging:relative data-dragging:z-10 data-dragging:border-border-strong data-dragging:bg-bg-popover',
         'data-dragging:[box-shadow:0_4px_6px_-1px_var(--effect-shadow-sm),0_2px_4px_-2px_var(--effect-shadow-sm)]',
       )}
     >
@@ -933,6 +1063,20 @@ function RunStep({ step, state }: { step: AgentPlanStep; state: AgentPlanStepSta
 }
 
 const ICON = 'size-icon-size-sm shrink-0 [stroke-width:1.875]'
+
+/** Satin's reorder grip (DecisionCard's ranking, from Figma): six dots, 8 × 14, in the number's colour. */
+function Grip() {
+  return (
+    <svg viewBox="0 0 8 14" aria-hidden className="shrink-0 fill-current">
+      {[1.25, 6.75, 12.25].map((cy) => (
+        <React.Fragment key={cy}>
+          <circle cx="1.25" cy={cy} r="1.25" />
+          <circle cx="6.25" cy={cy} r="1.25" />
+        </React.Fragment>
+      ))}
+    </svg>
+  )
+}
 
 /** The tool's logo or icon before its name in a read-only step's muted line, centred on the line. */
 function ToolIcon({ step }: { step: AgentPlanStep }) {
