@@ -1374,9 +1374,15 @@ export function DataGridColumnsMenu({ children, className, ...props }: DataGridC
                 move(c.key, e.key === 'ArrowUp' ? -1 : 1)
               }}
             >
-              {/* Satin's checkbox, drawn: the item itself is the menuitemcheckbox. */}
-              <span aria-hidden className="satin-checkbox" data-state={checked ? 'checked' : 'unchecked'}>
-                {checked && <CheckIcon />}
+              {/* Satin's checkbox, drawn: the item itself is the menuitemcheckbox. The glyph sits in
+                  a 16px cell pulled out by -1px, as in Checkbox, so it lands on the box and not
+                  1px inside its border. */}
+              <span aria-hidden data-slot="data-grid-columns-box" className="satin-checkbox" data-state={checked ? 'checked' : 'unchecked'}>
+                {checked && (
+                  <span className="-m-px grid size-4 place-items-center">
+                    <CheckIcon />
+                  </span>
+                )}
               </span>
               <MenuItemContent label={nameOf(c)} layout="inline" />
             </DropdownPrimitive.CheckboxItem>
