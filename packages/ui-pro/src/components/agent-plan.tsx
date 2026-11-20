@@ -366,6 +366,9 @@ interface Drag {
   to: number
   dy: number
   startY: number
+  /** The dragged step's edges, and every row's middle, when the drag began. */
+  top: number
+  bottom: number
   mids: number[]
   min: number
   max: number
@@ -489,6 +492,8 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
       to: from,
       dy: 0,
       startY: e.clientY,
+      top: box.top,
+      bottom: box.bottom,
       mids: boxes.map((b) => b.top + b.height / 2),
       min: boxes[0].top - box.top,
       max: boxes[boxes.length - 1].bottom - box.bottom,
@@ -507,15 +512,17 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
       const d = dragRef.current
       if (!d) return
       const dy = Math.min(d.max, Math.max(d.min, e.clientY - d.startY))
-      const center = d.mids[d.from] + dy
+      // The step takes a row's place once its leading edge passes that row's middle: half a row
+      // either way, whatever the heights. (By its centre, a middle step could only swap at the
+      // list's edge, and never past a shorter neighbour.)
       let to = d.from
       for (let i = 0; i < d.from; i++)
-        if (center <= d.mids[i]) {
+        if (d.top + dy < d.mids[i]) {
           to = i
           break
         }
       for (let i = d.mids.length - 1; i > d.from; i--)
-        if (center >= d.mids[i]) {
+        if (d.bottom + dy > d.mids[i]) {
           to = i
           break
         }

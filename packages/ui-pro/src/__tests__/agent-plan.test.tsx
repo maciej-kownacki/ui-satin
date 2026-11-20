@@ -202,6 +202,78 @@ describe('AgentPlan, draft', () => {
     expect(status().textContent).toBe('Find open slots, position 3 of 3')
   })
 
+  /** Lays the rows out as they stand now, `heights` tall, 4px apart (jsdom lays nothing out). */
+  const layOut = (heights: number[]) => {
+    let top = 0
+    rows().forEach((row, i) => {
+      const at = top
+      const height = heights[i] ?? 36
+      top += height + 4
+      row.getBoundingClientRect = () => ({ top: at, bottom: at + height, height, left: 0, right: 300, width: 300, x: 0, y: at, toJSON: () => ({}) }) as DOMRect
+    })
+  }
+  /** Drags a step by its number `dy` px and lets go. */
+  const dragBy = (label: string, dy: number) => {
+    const number = rows()
+      .find((row) => labelOf(row) === label)!
+      .querySelector('[data-part="number"]')!
+    fireEvent.pointerDown(number, { button: 0, clientY: 100 })
+    fireEvent.pointerMove(window, { clientY: 100 + dy })
+    fireEvent.pointerUp(window)
+  }
+
+  it('swaps the middle step with the one above or below once it passes half of it, even as the taller row', () => {
+    renderWithSatin(<Plan />)
+    // The middle step wraps to a second line: 56px against its neighbours' 36px.
+    layOut([36, 56, 36])
+    const middle = rows()[1]
+    fireEvent.pointerDown(middle.querySelector('[data-part="number"]')!, { button: 0, clientY: 100 })
+    // Not yet past the middle of the row above: nothing moves.
+    fireEvent.pointerMove(window, { clientY: 80 })
+    expect(rows()[0].style.transform).toBe('translateY(0px)')
+    expect(numbers()).toEqual(['1', '2', '3'])
+    // Its top edge past that middle: the row above slides down under it.
+    fireEvent.pointerMove(window, { clientY: 76 })
+    expect(rows()[0].style.transform).toBe('translateY(56px)')
+    expect(numbers()).toEqual(['2', '1', '3'])
+    fireEvent.pointerUp(window)
+    expect(labelsInOrder()).toEqual(['Draft invites', 'Find open slots', 'Send invites'])
+    expect(status().textContent).toBe('Draft invites, position 1 of 3')
+
+    // Back in the middle, then down past half of the row below.
+    layOut([56, 36, 36])
+    dragBy('Draft invites', 41)
+    layOut([36, 56, 36])
+    dragBy('Draft invites', 20)
+    expect(labelsInOrder()).toEqual(['Find open slots', 'Draft invites', 'Send invites'])
+    dragBy('Draft invites', 24)
+    expect(labelsInOrder()).toEqual(['Find open slots', 'Send invites', 'Draft invites'])
+    expect(status().textContent).toBe('Draft invites, position 3 of 3')
+  })
+
+  it('moves any step one place up or down by just over half a row, in a longer plan', () => {
+    const FIVE: AgentPlanStep[] = ['A', 'B', 'C', 'D', 'E'].map((label) => ({ id: label, label }))
+    renderWithSatin(<Plan initial={FIVE} />)
+    const order = () => labelsInOrder().join('')
+    for (const [label, dy, after] of [
+      ['B', -24, 'BACDE'],
+      ['B', 24, 'ABCDE'],
+      ['C', -24, 'ACBDE'],
+      ['C', 24, 'ABCDE'],
+      ['D', 24, 'ABCED'],
+      ['D', -24, 'ABCDE'],
+      ['E', -24, 'ABCED'],
+      ['A', 24, 'BACED'],
+      // Two rows down, then the full list up.
+      ['A', 64, 'BCEAD'],
+      ['D', -400, 'DBCEA'],
+    ] as const) {
+      layOut([36, 36, 36, 36, 36])
+      dragBy(label, dy)
+      expect(order()).toBe(after)
+    }
+  })
+
   it('swaps the number for the grip on hover, keyboard focus or a drag, in the same box', () => {
     renderWithSatin(<Plan initial={[{ id: 'read', label: 'Read the shortlist', editable: false }, ...PLAN]} />)
     const [locked, movable] = rows().map((row) => row.querySelector('[data-part="number"]')!)
