@@ -504,14 +504,6 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A `section`, labelled by `title` when there is one, so it is a region landmark. In `AgentSuggestionDiff` the old text is a `del` and the new an `ins`, read as "Remove:" and "Add:". `AgentSuggestionChanges` is a description list with the arrows hidden, and `AgentSuggestionMetric`’s bar is a Progress named by `unit`. The actions are your own buttons; name them by what they do ("Send email").',
   },
-  'agent-changes-review': {
-    summary:
-      'A DecisionCard: a `role="group"` labelled by the title, with the step count ("2/3") a polite live region and the step buttons named "Previous change" and "Next change" (`previousFieldChange`, `nextFieldChange`). Under a `title`, the change is its own `role="group"` named by its field. Dismiss and Accept are toggle buttons with `aria-pressed`, named after the change ("Dismiss Stage change", "Accept Stage change", `rejectFieldChange` and `acceptFieldChange` in SatinLabels; Accept\'s visible text "Accept" starts its name; a change whose `field` isn\'t a string needs a `label`). Deciding a change moves focus to the next pending change\'s Accept, a new button, so its name is read; with none pending, focus goes to Apply. A decision is `aria-pressed` and the pressed fill, never colour alone; a dismissed value turns text/muted, a Badge grey, so its text keeps its contrast. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all and "Applying changes…" are read out from a polite `status` region. While applying, Apply is `aria-busy` (it keeps focus) and the decisions are disabled. Once applied, the card leaves: focus goes to `returnFocus()`, or to the page\'s body when the app gives none, the card turns `inert`, and "2 changes applied" is read out from a polite `status` region on the body, which outlives it. Under reduced motion the steps cross-fade (DecisionCard\'s 150 ms, no movement) and the card goes at once.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the step buttons, the change\'s Dismiss and Accept, then Accept all and Apply.' },
-      { keys: ['Enter', 'Space'], action: 'On Accept or Dismiss: decides the change and moves to the next pending one, or makes it pending again when pressed. On a step button: shows the previous or next change.' },
-    ],
-  },
   'decision-card': {
     summary:
       'A `role="group"` labelled by the title. The answers follow `type`: `radio` is a Radix radio group, `checkbox` a list of Checkboxes, `chips` buttons with `aria-pressed`, `ranking` an ordered list of focusable rows announced as "sortable item" with the hint "Alt and arrow keys to move", and `draft` the text that Rewrite (`aria-pressed`) turns into a textarea named "Draft". After a move, a polite live region reads the row’s new place ("Budget, position 2 of 4"). The step buttons are named "Previous question" and "Next question" (or `previousStepLabel` and `nextStepLabel`) and the step count is a polite live region. In `summary`, Change is named "Change <title>".',
@@ -578,10 +570,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Puts a picked-up card back where it was, also during a pointer drag.' },
     ],
   },
-  'agent-presence': {
-    summary:
-      'The edge and the label are hidden from screen readers; what they show is read out from a polite `status` region instead: "Hiring assistant is updating Tara Mendes" as the agent starts on a target or moves to the next, "Hiring assistant updated Lena Fischer" when it\'s done, and "Jon Park is editing Omar Haddad; Hiring assistant is waiting" in a conflict (`agentPresenceWorking`, `agentPresenceDone`, `agentPresenceConflict` in SatinLabels). `label` names the target in those sentences, so give it the row\'s or card\'s name. Each state has its own words on the label, so colour is never the only cue, and a conflict\'s edge is dashed. It takes no focus and no pointer, and never changes the target, so nothing moves under it. Under reduced motion it neither fades nor glides and the mark stands still.',
-  },
   'search-scoped': {
     summary:
       'The input is a `combobox` (named "Search" through `searchField`, or your `aria-label`) that controls a `listbox` named "Search results"; the highlighted row is its `aria-activedescendant`, so focus stays in the query. Rows sit in a `group` per section, named by its heading with the count read as words ("Candidates, 6 results"). The chips are described to the input (`aria-describedby`), so the filters are heard without leaving the query; each chip has a remove button ("Remove Stage: Interview"). A polite `status` says "Filter added: …" or "Filter removed: …", and the result count once typing settles. The footer of key hints is hidden from screen readers. Every word is in SatinLabels (`scopedSearch*`).',
@@ -611,6 +599,10 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'On a run header: opens or closes its actions. On a button: reverts, restores or tries again.' },
       { keys: ['⌘Z', 'Ctrl+Z'], action: 'Reverts what is left of the newest run and opens it: ⌘Z on Apple, Ctrl+Z elsewhere. Anywhere on the page by default (`shortcut="log"`: only while focus is in the log). Left alone while typing in a field, and when there is nothing left to revert.' },
     ],
+  },
+  'agent-presence': {
+    summary:
+      'The edge and the label are hidden from screen readers; what they show is read out from a polite `status` region instead: "Hiring assistant is updating Tara Mendes" as the agent starts on a target or moves to the next, "Hiring assistant updated Lena Fischer" when it\'s done, and "Jon Park is editing Omar Haddad; Hiring assistant is waiting" in a conflict (`agentPresenceWorking`, `agentPresenceDone`, `agentPresenceConflict` in SatinLabels). `label` names the target in those sentences, so give it the row\'s or card\'s name. Each state has its own words on the label, so colour is never the only cue, and a conflict\'s edge is dashed. It takes no focus and no pointer, and never changes the target, so nothing moves under it. Under reduced motion it neither fades nor glides and the mark stands still.',
   },
   'data-grid': {
     summary:
@@ -721,15 +713,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'In the rename field: keeps the old name and returns to the label.' },
     ],
   },
-  'activity-timeline': {
-    summary:
-      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
-      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
-      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
-    ],
-  },
   'review-queue': {
     summary:
       'A `section` named after its `title` ("Review queue" without one). The item on show is a `group` named after it and its place ("Anna Kowalska, 4 of 12"); when it changes, a polite `status` region reads the new name and place, with the decision before it ("Approved. Jonas Weber, 5 of 12"). If focus was on the item, it moves to the new one, which reads itself instead. The bar is a `progressbar` named "Reviewed" with the value "3 of 12 reviewed". Skip, Edit and Approve name their keys with `aria-keyshortcuts`; the Kbd on them is hidden. On an approved item, or while Approve runs, the actions are `aria-disabled` and keep focus. Edit opens a Sheet (a dialog named "Edit", or `editTitle`, with the item as its description); closing it puts focus back where it was. When all are decided, focus that was in the queue moves to the summary\'s heading, and the summary is a region named "All reviewed". Over its list, a SegmentedControl (radios "Approved 9" and "Skipped 3"; arrow keys move between them, Enter or Space picks) picks what the list shows; the list is named after it ("Approved"), and `itemMedia` beside each name is hidden, since the name says who.',
@@ -754,6 +737,15 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter', 'Space'], action: 'On a sortable header: sorts ascending, then descending, then not at all, inside each group.' },
     ],
   },
+  'activity-timeline': {
+    summary:
+      'The timeline is a `group` named "Activity" (`activity` in SatinLabels), since it has no visible heading; pass `aria-labelledby` when a heading of yours names it. Each day is an ordered list named after the day ("Today"); without days it is one list. Times are `<time>` elements whose text for screen readers is the full date and time, not "5 min. ago". A folded run is a `button` with `aria-expanded` and `aria-controls`, named by its summary ("Agent made 4 changes"). Revert is named after the change ("Revert salary range change", from the entry\'s `label`), or after the entry\'s sentence without one; while it runs the entry is `aria-busy`. Once reverted, focus moves to the entry, which says "Reverted by you", and the toast with Undo is read out like any toast. Avatars and the rail are hidden from screen readers: the sentence names the actor. New entries are not announced; when they arrive live, say so from your own status region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
+      { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
+      { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
+    ],
+  },
   'people-picker': {
     summary:
       'Combobox\'s roles, with people in them: each option is named by the person and their role, "Marta Nowak, Hiring manager" (a hidden comma joins them; the avatar is hidden). Recent and every titled group are `group`s named by their headers. While a search runs the last results stay, narrowed by the query; one that takes longer than 300 ms marks the list `aria-busy`. "Searching…", "No one matches" or a failed search are read out from a `status` region. A disabled person is `aria-disabled`. Each chip has a "Remove <name>" button; after a removal focus moves to the chip that takes its place, or to the field. The "+N" chip is a button named "Show N more"; it shows the rest and moves focus to the first of them.',
@@ -766,14 +758,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Tab'], action: 'Out of the field, through the chips\' remove buttons and the "+N" chip.' },
     ],
   },
-  'agent-changes-review': {
-    summary:
-      'Each card is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` (its visible text "Accept" starts its name) and Dismiss a plain button, both named after the change ("Accept Stage change", "Dismiss Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the card\'s Checkbox carries the Accept name. Dismiss takes the card out: focus moves first to the next card\'s Accept, or to Accept all or Apply when no card is left below, the leaving card is `inert`, and "Value change dismissed" (`fieldChangeRejected`) is read out. Under reduced motion the card goes without the slide. Accepted is `aria-pressed` and the pressed fill, never colour alone. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all and "Applying changes…" are also read out from a polite `status` region. While applying, Apply is `aria-busy` (it keeps focus) and the cards are disabled. Once applied, the suggestion leaves: focus goes to `returnFocus()`, or to the page\'s body when the app gives none, the suggestion turns `inert`, and "2 changes applied" is read out from a polite `status` region on the body, which outlives it. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through each card\'s Dismiss and Accept (or its Checkbox), then Accept all and Apply.' },
-      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the card pending again when pressed. On Dismiss: takes the card out and moves focus on. On a Checkbox, Space accepts or rejects.' },
-    ],
-  },
   'date-availability': {
     summary:
       'Calendar\'s grid, one tab stop, with each day a `button` named by its full date and what it offers: "Thursday, November 26, 2026, 3 free slots", or why it can\'t be picked ("…, Fully booked", or the app\'s `reason`). A full day has `aria-disabled` instead of `disabled`, so the arrow keys reach it and its tooltip opens there; Enter and clicks do nothing. The dots are hidden from screen readers, and the tooltip isn\'t added as a description, since the name already says it. Few slots read as a ring, not only a colour. Translate the words with `availabilitySlots`, `availabilityFreeSlots`, `availabilityFull` and `availabilityDay` in SatinLabels.',
@@ -784,6 +768,14 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Home', 'End'], action: 'Moves to the first or the last day of the week (from the locale, or `weekStartsOn`).' },
       { keys: ['Enter', 'Space'], action: 'Picks the focused day if it has free slots.' },
       { keys: ['Esc'], action: 'Closes the open tooltip; in AvailabilityDatePicker, a second Esc closes the calendar and returns focus to the field.' },
+    ],
+  },
+  'agent-changes-review': {
+    summary:
+      'A DecisionCard: a `role="group"` labelled by the title, with the step count ("2/3") a polite live region and the step buttons named "Previous change" and "Next change" (`previousFieldChange`, `nextFieldChange`). Under a `title`, the change is its own `role="group"` named by its field. Dismiss and Accept are toggle buttons with `aria-pressed`, named after the change ("Dismiss Stage change", "Accept Stage change", `rejectFieldChange` and `acceptFieldChange` in SatinLabels; Accept\'s visible text "Accept" starts its name; a change whose `field` isn\'t a string needs a `label`). Deciding a change moves focus to the next pending change\'s Accept, a new button, so its name is read; with none pending, focus goes to Apply. A decision is `aria-pressed` and the pressed fill, never colour alone; a dismissed value turns text/muted, a Badge grey, so its text keeps its contrast. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all and "Applying changes…" are read out from a polite `status` region. While applying, Apply is `aria-busy` (it keeps focus) and the decisions are disabled. Once applied, the card leaves: focus goes to `returnFocus()`, or to the page\'s body when the app gives none, the card turns `inert`, and "2 changes applied" is read out from a polite `status` region on the body, which outlives it. Under reduced motion the steps cross-fade (DecisionCard\'s 150 ms, no movement) and the card goes at once.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the step buttons, the change\'s Dismiss and Accept, then Accept all and Apply.' },
+      { keys: ['Enter', 'Space'], action: 'On Accept or Dismiss: decides the change and moves to the next pending one, or makes it pending again when pressed. On a step button: shows the previous or next change.' },
     ],
   },
   scheduler: {

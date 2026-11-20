@@ -990,23 +990,6 @@ export const api: Record<string, Api> = {
       { name: 'AgentSuggestionChangeValue', type: ['{ from?, to }'] },
     ],
   },
-  'agent-changes-review': {
-    description:
-      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) is a DecisionCard that takes the `changes` AgentSuggestionChanges takes and shows one per step: the same card, header, "‹ 1/3 ›" navigator, footer and step slide. The header is `title` (the suggestion: "Update the Quanta deal") and `description`; without a `title`, each change\'s field is the title. The body is the field\'s name, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line); quote the line that justifies that change, short and specific to it, not a summary. Under it sit Dismiss (X) and Accept (a green check and "Accept"), both toggles: deciding a change slides in the next one still pending, and once none is, focus goes to Apply; pressing a pressed one makes the change pending again. The footer, where DecisionCard has Skip and Continue, holds Accept all and Apply ("Apply 2 changes"). `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `defaultStep` opens on another change. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. Once applied, the card fades out and rises 4px (`--duration-base`; at once under reduced motion), then `onApplied(accepted, value)` fires: remove it there, as you would after an `onDismiss`. If focus was inside, it goes to `returnFocus()` or, without one, to the page, and "2 changes applied" is read out from a live region on the body. `label` names a change for its buttons and the title when `field` isn\'t a string. For a new set of changes, give it a new `key`.',
-    props: [
-      { name: 'changes', type: ['{ id?, field, label?, from?, to, source? }[]'] },
-      { name: 'title', type: ['string'] },
-      { name: 'description', type: ['string'] },
-      { name: 'value', type: ['ReviewableChangesValue'] },
-      { name: 'defaultValue', type: ['ReviewableChangesValue'], default: '{}' },
-      { name: 'onValueChange', type: ['(value) => void'] },
-      { name: 'defaultStep', type: ['number'], default: '0' },
-      { name: 'onApply', type: ['(accepted, value) => unknown'] },
-      { name: 'onApplied', type: ['(accepted, value) => void'] },
-      { name: 'returnFocus', type: ['() => HTMLElement | null | undefined'] },
-      { name: 'status', type: ['"review"', '"applying"'] },
-    ],
-  },
   attachment: {
     description: 'The `Attachment` component is a wrapper around the `button` that shows a file name, type and size.',
     props: [
@@ -1166,18 +1149,6 @@ export const api: Record<string, Api> = {
       { name: 'columnWidth', type: ['number'], default: '272' },
     ],
   },
-  'agent-presence': {
-    description:
-      'The `AgentPresence` component (Satin Pro, `@uisatin/pro/agent-presence`) lays an edge in the agent\'s tone and a small label over `target` (a ref, an element or a selector) without touching it; render it inside the same `position: relative` box as the targets. `label` names the target for screen readers ("Hiring assistant is updating Tara Mendes"). For a list, `useAgentPresence()` returns `item(id)` to spread on each row or card, `start(id, label)`, `done()`, `conflict(person)`, `clear()` and the `props` to spread on AgentPresence; it takes `value`, `defaultValue` and `onValueChange`. Parts: `AgentPresenceRoot`, `AgentPresenceOutline`, `AgentPresenceLabel`.',
-    props: [
-      { name: 'target', type: ['RefObject<Element>', 'Element', 'string', 'null'] },
-      { name: 'agent', type: ['string', 'Agent'] },
-      { name: 'label', type: ['string'] },
-      { name: 'state', type: ['"working"', '"done"', '"conflict"'], default: '"working"' },
-      { name: 'person', type: ['string', '{ name, initials?, tone? }'] },
-      { name: 'doneDuration', type: ['number'], default: '1500' },
-    ],
-  },
   'search-scoped': {
     description:
       'The `ScopedSearch` component (Satin Pro, `@uisatin/pro/search-scoped`) is a SearchBar whose input is a `combobox` over a grouped `listbox`. Typed `key:value` words of known `scopes` turn into chips in the field once a space follows them (or a value is picked); the list shows `recent` searches and the scopes before anything is typed, a scope\'s `values` after `key:`, then `groups` filtered by the chips (`fields`) and the words (label, description, `keywords`), each with its count. Chips of one scope match any of their values, chips of different scopes all of them. `filter={false}` shows `groups` as given, for a server search, with `count` for the total. Helpers: `parseScopedQuery(text, scopes, { partial })`, `formatScopedQuery(query)`, `filterScopedGroups(groups, query, scopes)`. The query is `{ tokens: [{ key, value }], text }`.',
@@ -1235,6 +1206,18 @@ export const api: Record<string, Api> = {
       { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
       { name: 'shortcut', type: ['"document"', '"log"', '"off"'], default: '"document"' },
       { name: 'formatTime', type: ['(at: Date) => ReactNode'], default: 'time of day, date when not today' },
+    ],
+  },
+  'agent-presence': {
+    description:
+      'The `AgentPresence` component (Satin Pro, `@uisatin/pro/agent-presence`) lays an edge in the agent\'s tone and a small label over `target` (a ref, an element or a selector) without touching it; render it inside the same `position: relative` box as the targets. `label` names the target for screen readers ("Hiring assistant is updating Tara Mendes"). For a list, `useAgentPresence()` returns `item(id)` to spread on each row or card, `start(id, label)`, `done()`, `conflict(person)`, `clear()` and the `props` to spread on AgentPresence; it takes `value`, `defaultValue` and `onValueChange`. Parts: `AgentPresenceRoot`, `AgentPresenceOutline`, `AgentPresenceLabel`.',
+    props: [
+      { name: 'target', type: ['RefObject<Element>', 'Element', 'string', 'null'] },
+      { name: 'agent', type: ['string', 'Agent'] },
+      { name: 'label', type: ['string'] },
+      { name: 'state', type: ['"working"', '"done"', '"conflict"'], default: '"working"' },
+      { name: 'person', type: ['string', '{ name, initials?, tone? }'] },
+      { name: 'doneDuration', type: ['number'], default: '1500' },
     ],
   },
   'data-grid': {
@@ -1422,22 +1405,6 @@ export const api: Record<string, Api> = {
       { name: 'glimmer', type: ['"color"', '"neutral"'], default: '"color"' },
     ],
   },
-  'activity-timeline': {
-    description:
-      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
-    props: [
-      { name: 'items', type: ['ActivityItem[]'] },
-      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
-      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
-      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
-      { name: 'expanded', type: ['string[]'] },
-      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
-      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
-      { name: 'loading', type: ['boolean'], default: 'false' },
-      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
-    ],
-  },
   'review-queue': {
     description:
       'The `ReviewQueue` component (Satin Pro, `@uisatin/pro/review-queue`) is a `section` that shows one of `items` at a time through `renderItem` (usually an AgentSuggestion), its place ("4 of 12") over a Progress bar of how many are decided, and Skip, Edit and Approve under it. `onApprove` and `onSkip` get the item, and the queue moves on to the next undecided one; an `onApprove` that returns a promise shows a Spinner until it settles. `renderEditor` returns the fields, each with a `name`, for a Sheet that Edit opens; Save calls `onEdit(item, values)` and brings you back to the same item. Without `renderEditor`, Edit calls `onEdit(item)`. When every item is decided, a summary lists them one under another by `itemLabel`, with `itemMedia` (an Avatar) beside each, and a SegmentedControl over the list switches it between Approved and Skipped, each with its count. `index`, `decisions` and `editing` can each be controlled. Parts: `ReviewQueueRoot`, `ReviewQueueHeader`, `ReviewQueueItem`, `ReviewQueueActions`, `ReviewQueueSummary`, and `useReviewQueue()` for parts of your own.',
@@ -1492,6 +1459,22 @@ export const api: Record<string, Api> = {
       { name: 'column.aggregate', type: ['"sum"', '"avg"', '"min"', '"max"', '"count"', '(rows) => number'] },
     ],
   },
+  'activity-timeline': {
+    description:
+      'The `ActivityTimeline` component (Satin Pro, `@uisatin/pro/activity-timeline`) is a `div` with an ordered list under each day\'s name ("Today", "Yesterday", a date), newest first; screen readers know it as a group named "Activity". Each item is `{ id, actor: { name, kind, avatar }, verb, target, changes, at, revertible, label, reverted }`; `changes` takes `AgentSuggestionChange[]` and draws them as `AgentSuggestion` does. Runs of `collapseRuns` entries by one actor fold into one row ("Agent made 4 changes"); `expanded` holds the open runs by any entry id. `onRevert` may return a promise: the button spins until it settles, then the entry shows "Reverted by you" and a toast offers Undo (`onUndoRevert`), so the app needs a `<Toaster />`. Parts: `ActivityTimelineRoot`, `ActivityTimelineDay`, `ActivityTimelineList`, `ActivityTimelineEntry`, `ActivityTimelineRun`, `ActivityTimelineTime`.',
+    props: [
+      { name: 'items', type: ['ActivityItem[]'] },
+      { name: 'groupBy', type: ['"day"', '"none"'], default: '"day"' },
+      { name: 'collapseRuns', type: ['number', 'false'], default: '3' },
+      { name: 'onRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'onUndoRevert', type: ['(item: ActivityItem) => unknown'] },
+      { name: 'expanded', type: ['string[]'] },
+      { name: 'defaultExpanded', type: ['string[]'], default: '[]' },
+      { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
+      { name: 'loading', type: ['boolean'], default: 'false' },
+      { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
+    ],
+  },
   'people-picker': {
     description:
       'The `PeoplePicker` component (Satin Pro, `@uisatin/pro/people-picker`) is a Combobox for people: rows show an avatar, the name and the role (or email), picks show as chips with avatars. Each person is `{ id, name, role, email, avatar, tone, disabled }`; `avatar` is an image URL, and without one the initials show on the `tone`. People come from `people`, titled `groups` (`{ label, people }[]`), or `search(query, { signal })`, called `searchDelay` ms after the last keystroke and at once with \'\' on open; a newer query aborts the older one, and meanwhile the last results stay, narrowed by the query. `people` and `groups` filter as you type, with no delay. `recent` is listed first while the query is empty. `value` holds the people, not their ids. Every other Combobox prop (label, hint, error, footer, size, open state) works as there.',
@@ -1515,21 +1498,6 @@ export const api: Record<string, Api> = {
       { name: 'wrapperClassName', type: ['string'] },
     ],
   },
-  'agent-changes-review': {
-    description:
-      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) takes the `changes` AgentSuggestionChanges takes and draws each as a card: the field\'s name on top, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line); quote the line that justifies that change, short and specific to it, not a summary. At the card\'s bottom right sit Dismiss (X) and Accept (a green check and "Accept"), both bordered xs buttons (or a Checkbox before the name, `control="checkbox"`); then Accept all and Apply. Dismiss slides the card out of the list and the cards under it move up into its place; the UI has no way back, but a controlled `value` can set it to `"pending"` again. With checkboxes a cleared card stays and fades. Put it in an AgentSuggestion as its body. `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. Once applied, the AgentSuggestion it sits in fades out and rises 4px (`--duration-base`; at once under reduced motion), then `onApplied(accepted, value)` fires: remove it there, as you would after an `onDismiss`. If focus was inside, it goes to `returnFocus()` or, without one, to the page, and "2 changes applied" is read out from a live region on the body. `label` names a change for its buttons when `field` isn\'t a string. Parts: `ReviewableChangesRoot` (around the whole card, so Apply can sit in its `actions`), `ReviewableChangesList`, `ReviewableChangesAcceptAll`, `ReviewableChangesApply`. For a new set of changes, give it a new `key`.',
-    props: [
-      { name: 'changes', type: ['{ id?, field, label?, from?, to, source? }[]'] },
-      { name: 'value', type: ['ReviewableChangesValue'] },
-      { name: 'defaultValue', type: ['ReviewableChangesValue'], default: '{}' },
-      { name: 'onValueChange', type: ['(value) => void'] },
-      { name: 'onApply', type: ['(accepted, value) => unknown'] },
-      { name: 'onApplied', type: ['(accepted, value) => void'] },
-      { name: 'returnFocus', type: ['() => HTMLElement | null | undefined'] },
-      { name: 'status', type: ['"review"', '"applying"'] },
-      { name: 'control', type: ['"buttons"', '"checkbox"'], default: '"buttons"' },
-    ],
-  },
   'date-availability': {
     description:
       'The `AvailabilityCalendar` component (Satin Pro, `@uisatin/pro/date-availability`) is a `Calendar` whose days show their free slots: a green dot (a ring at `fewSlots` or fewer) and a Tooltip ("3 slots"), said in the day\'s name too. A day listed with 0 is fully booked: faded, not pickable, still reachable with the arrow keys, its reason in the tooltip and the name. A day left out has no slots. `availability` is keyed by ISO date; `isoDate(date)` makes the key. `AvailabilityDatePicker` is the same in a DatePicker field, and `useAvailability({ availability })` returns the `isDisabled` and `renderDay` to give any Calendar or picker. Every other Calendar prop (`month`, `min`, `max`, `today`, `header`, `weekStartsOn`) passes through, and AvailabilityDatePicker takes `presets`: one on a day without free slots is off.',
@@ -1542,6 +1510,23 @@ export const api: Record<string, Api> = {
       { name: 'defaultValue', type: ['Date', 'null'], default: 'null' },
       { name: 'onValueChange', type: ['(value: Date) => void'] },
       { name: 'today', type: ['Date'] },
+    ],
+  },
+  'agent-changes-review': {
+    description:
+      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) is a DecisionCard that takes the `changes` AgentSuggestionChanges takes and shows one per step: the same card, header, "‹ 1/3 ›" navigator, footer and step slide. The header is `title` (the suggestion: "Update the Quanta deal") and `description`; without a `title`, each change\'s field is the title. The body is the field\'s name, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line); quote the line that justifies that change, short and specific to it, not a summary. Under it sit Dismiss (X) and Accept (a green check and "Accept"), both toggles: deciding a change slides in the next one still pending, and once none is, focus goes to Apply; pressing a pressed one makes the change pending again. The footer, where DecisionCard has Skip and Continue, holds Accept all and Apply ("Apply 2 changes"). `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `defaultStep` opens on another change. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. Once applied, the card fades out and rises 4px (`--duration-base`; at once under reduced motion), then `onApplied(accepted, value)` fires: remove it there, as you would after an `onDismiss`. If focus was inside, it goes to `returnFocus()` or, without one, to the page, and "2 changes applied" is read out from a live region on the body. `label` names a change for its buttons and the title when `field` isn\'t a string. For a new set of changes, give it a new `key`.',
+    props: [
+      { name: 'changes', type: ['{ id?, field, label?, from?, to, source? }[]'] },
+      { name: 'title', type: ['string'] },
+      { name: 'description', type: ['string'] },
+      { name: 'value', type: ['ReviewableChangesValue'] },
+      { name: 'defaultValue', type: ['ReviewableChangesValue'], default: '{}' },
+      { name: 'onValueChange', type: ['(value) => void'] },
+      { name: 'defaultStep', type: ['number'], default: '0' },
+      { name: 'onApply', type: ['(accepted, value) => unknown'] },
+      { name: 'onApplied', type: ['(accepted, value) => void'] },
+      { name: 'returnFocus', type: ['() => HTMLElement | null | undefined'] },
+      { name: 'status', type: ['"review"', '"applying"'] },
     ],
   },
   scheduler: {
