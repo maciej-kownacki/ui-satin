@@ -85,7 +85,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Data grid': [508, 508],
   'Scheduler': [648, 648],
   'Scoped search': [548, 548],
-  'Agent presence': [424, 424],
+  'Agent presence': [544, 581],
   'Activity timeline': [764, 764],
   'Pagination': [280, 280],
   'Progress': [280, 280],

@@ -1210,11 +1210,12 @@ export const api: Record<string, Api> = {
   },
   'agent-presence': {
     description:
-      'The `AgentPresence` component (Satin Pro, `@uisatin/pro/agent-presence`) lays an edge in the agent\'s tone and a small label over `target` (a ref, an element or a selector) without touching it; render it inside the same `position: relative` box as the targets. `label` names the target for screen readers ("Hiring assistant is updating Tara Mendes"). For a list, `useAgentPresence()` returns `item(id)` to spread on each row or card, `start(id, label)`, `done()`, `conflict(person)`, `clear()` and the `props` to spread on AgentPresence; it takes `value`, `defaultValue` and `onValueChange`. Parts: `AgentPresenceRoot`, `AgentPresenceOutline`, `AgentPresenceLabel`.',
+      'The `AgentPresence` component (Satin Pro, `@uisatin/pro/agent-presence`) lays an edge in the agent\'s tone and a small label over `target` (a ref, an element or a selector) without touching it; render it inside the same `position: relative` box as the targets. `label` names the target for screen readers ("Hiring assistant is updating Tara Mendes"); `activity` is the step the agent is on ("Drafting invite…"), said on the label in place of its name. For a list, `useAgentPresence()` returns `item(id)` to spread on each row or card, `start(id, label, activity?)`, `done()`, `conflict(person)`, `clear()` and the `props` to spread on AgentPresence; it takes `value`, `defaultValue` and `onValueChange`. Parts: `AgentPresenceRoot`, `AgentPresenceOutline`, `AgentPresenceLabel`.',
     props: [
       { name: 'target', type: ['RefObject<Element>', 'Element', 'string', 'null'] },
       { name: 'agent', type: ['string', 'Agent'] },
       { name: 'label', type: ['string'] },
+      { name: 'activity', type: ['string'] },
       { name: 'state', type: ['"working"', '"done"', '"conflict"'], default: '"working"' },
       { name: 'person', type: ['string', '{ name, initials?, tone? }'] },
       { name: 'doneDuration', type: ['number'], default: '1500' },

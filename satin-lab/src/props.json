@@ -1007,7 +1007,7 @@
       "props": []
     },
     "AgentPresence": {
-      "description": "The outline and the label from props: the agent's mark and name while it works, a check and Done, or the person's avatar and \"Jon Park is editing\" in a conflict. Other props, `ref` included, go to the layer.",
+      "description": "The outline and the label from props: the agent's mark and name (or its `activity`) while it works, a check and Done, or the person's avatar and \"Jon Park is editing\" in a conflict. Other props, `ref` included, go to the layer.",
       "type": "AgentPresenceProps",
       "extends": [
         "Omit<AgentPresenceRootProps, 'children' | 'announcement' | 'tone'>"
@@ -1024,6 +1024,12 @@
           "type": "string",
           "required": true,
           "description": "The target's name, for screen readers: \"Tara Mendes\" makes \"Satin is updating Tara Mendes\"."
+        },
+        {
+          "name": "activity",
+          "type": "string",
+          "required": false,
+          "description": "The step the agent is on while it works, in a few words: \"Drafting invite…\". The label says it in place of the agent's name; screen readers hear \"Satin, Tara Mendes: Drafting invite…\"."
         },
         {
           "name": "person",

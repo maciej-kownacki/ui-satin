@@ -16,6 +16,10 @@ import { cn } from '@uisatin/ui/lib/utils'
  *
  * - `target` is the element: a ref, the element itself, or a selector. For a list, let
  *   `useAgentPresence()` hand each item a data attribute and keep where the agent is.
+ * - `activity` is the step the agent is on ("Drafting invite…", "Sending…"). The label says it in
+ *   place of the agent's name, so it fits a narrow card (the tone and the mark still say whose it
+ *   is); screen readers hear both ("Satin, Tara Mendes: Drafting invite…"). Change it as the agent
+ *   moves through its steps: the presence stays put, only the words change.
  * - It never touches the target, so nothing moves: the presence is an absolutely positioned layer
  *   in the nearest positioned ancestor of where you render it. Render it inside the same
  *   `position: relative` container as the targets (a `div` around the Table or the board), and it
@@ -38,6 +42,8 @@ import { cn } from '@uisatin/ui/lib/utils'
 export const agentPresenceLabels = {
   /** Read out when the agent starts on a target, or moves to the next one. */
   agentPresenceWorking: (agent: string, target: string) => `${agent} is updating ${target}`,
+  /** Read out instead when the agent says the step it's on (`activity`), and again at each new step. */
+  agentPresenceActivity: (agent: string, target: string, activity: string) => `${agent}, ${target}: ${activity}`,
   /** Read out when the agent is done with the target. */
   agentPresenceDone: (agent: string, target: string) => `${agent} updated ${target}`,
   /** Read out when a person edits the same target. */
@@ -335,16 +341,21 @@ export interface AgentPresenceProps extends Omit<AgentPresenceRootProps, 'childr
   agent: AgentPresenceAgent
   /** The target's name, for screen readers: "Tara Mendes" makes "Satin is updating Tara Mendes". */
   label: string
+  /**
+   * The step the agent is on while it works, in a few words: "Drafting invite…". The label says
+   * it in place of the agent's name; screen readers hear "Satin, Tara Mendes: Drafting invite…".
+   */
+  activity?: string
   /** For `conflict`: the person editing the same target. */
   person?: AgentPresencePerson
 }
 
 /**
- * The outline and the label from props: the agent's mark and name while it works, a check and
- * Done, or the person's avatar and "Jon Park is editing" in a conflict. Other props, `ref`
- * included, go to the layer.
+ * The outline and the label from props: the agent's mark and name (or its `activity`) while it
+ * works, a check and Done, or the person's avatar and "Jon Park is editing" in a conflict. Other
+ * props, `ref` included, go to the layer.
  */
-export function AgentPresence({ agent, label, person, state = 'working', ...props }: AgentPresenceProps) {
+export function AgentPresence({ agent, label, activity, person, state = 'working', ...props }: AgentPresenceProps) {
   const labels = useLabels()
   const agentName = nameOf(agent)
   const personName = person ? nameOf(person) : ''
@@ -357,7 +368,9 @@ export function AgentPresence({ agent, label, person, state = 'working', ...prop
       ? labels.agentPresenceDone(agentName, label)
       : conflict
         ? labels.agentPresenceConflict(agentName, label, personName)
-        : labels.agentPresenceWorking(agentName, label)
+        : activity
+          ? labels.agentPresenceActivity(agentName, label, activity)
+          : labels.agentPresenceWorking(agentName, label)
 
   return (
     <AgentPresenceRoot state={state} tone={tone} announcement={announcement} {...props}>
@@ -380,7 +393,7 @@ export function AgentPresence({ agent, label, person, state = 'working', ...prop
         ) : (
           <>
             {flappy ? <FlappySprite size={16} run={state === 'working'} /> : <TetrisMark glimmer="neutral" />}
-            {agentName}
+            {activity || agentName}
           </>
         )}
       </AgentPresenceLabel>
@@ -396,6 +409,8 @@ export interface AgentPresenceValue {
   /** The item's name, for screen readers ("Tara Mendes"). */
   label: string
   state: AgentPresenceState
+  /** The step the agent is on, while it works ("Drafting invite…"). */
+  activity?: string
   person?: AgentPresencePerson
 }
 
@@ -416,16 +431,19 @@ export interface AgentPresenceList {
    * Table's row, `renderRow={({ row, rowProps, children }) => <tr {...rowProps} {...presence.item(row.id)}>{children}</tr>}`.
    */
   item: (id: string) => { 'data-agent-presence': string }
-  /** Puts the agent on an item (working), or moves it there. Call it again after a conflict to carry on. */
-  start: (id: string, label: string) => void
+  /**
+   * Puts the agent on an item (working), or moves it there, with the step it's on if you give one.
+   * Call it again with the next step, or after a conflict to carry on.
+   */
+  start: (id: string, label: string, activity?: string) => void
   /** The agent is done with the item it's on: green with a check, then it fades out. */
   done: () => void
   /** A person is editing the item the agent is on. */
   conflict: (person: AgentPresencePerson) => void
   /** Takes the presence away (it fades out). */
   clear: () => void
-  /** For `<AgentPresence {...presence.props} agent="Satin" />`: `target`, `label`, `state` and `person`. */
-  props: Pick<AgentPresenceProps, 'target' | 'label' | 'state' | 'person'>
+  /** For `<AgentPresence {...presence.props} agent="Satin" />`: `target`, `label`, `state`, `activity` and `person`. */
+  props: Pick<AgentPresenceProps, 'target' | 'label' | 'state' | 'activity' | 'person'>
 }
 
 /** A CSS string: the id in quotes, escaped, for an attribute selector. */
@@ -456,13 +474,17 @@ export function useAgentPresence({ value: valueProp, defaultValue = null, onValu
   )
 
   const item = React.useCallback((id: string) => ({ 'data-agent-presence': `${scope}/${id}` }), [scope])
-  const start = React.useCallback((id: string, label: string) => set({ id, label, state: 'working' }), [set])
+  const start = React.useCallback(
+    (id: string, label: string, activity?: string) => set({ id, label, state: 'working', activity }),
+    [set],
+  )
+  // A step belongs to the work: done or waiting, there is none.
   const done = React.useCallback(() => {
-    if (latest.current) set({ ...latest.current, state: 'done', person: undefined })
+    if (latest.current) set({ ...latest.current, state: 'done', activity: undefined, person: undefined })
   }, [set])
   const conflict = React.useCallback(
     (person: AgentPresencePerson) => {
-      if (latest.current) set({ ...latest.current, state: 'conflict', person })
+      if (latest.current) set({ ...latest.current, state: 'conflict', activity: undefined, person })
     },
     [set],
   )
@@ -473,6 +495,7 @@ export function useAgentPresence({ value: valueProp, defaultValue = null, onValu
       target: value ? `[data-agent-presence=${cssString(`${scope}/${value.id}`)}]` : null,
       label: value?.label ?? '',
       state: value?.state ?? 'working',
+      activity: value?.activity,
       person: value?.person,
     }),
     [value, scope],
