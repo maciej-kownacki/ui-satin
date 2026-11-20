@@ -746,14 +746,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Tab'], action: 'Moves through ‹ ›, the item\'s own controls, then Skip, Edit and Approve.' },
     ],
   },
-  'agent-changes-review': {
-    summary:
-      'Each card is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` (its visible text "Accept" starts its name) and Dismiss a plain button, both named after the change ("Accept Stage change", "Dismiss Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the card\'s Checkbox carries the Accept name. Dismiss takes the card out: focus moves first to the next card\'s Accept, or to Accept all or Apply when no card is left below, the leaving card is `inert`, and "Value change dismissed" (`fieldChangeRejected`) is read out. Under reduced motion the card goes without the slide. Accepted is `aria-pressed` and the pressed fill, never colour alone. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are also read out from a polite `status` region. While applying, Apply is `aria-busy` and the cards are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each card says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
-    keyboard: [
-      { keys: ['Tab'], action: 'Moves through each card\'s Dismiss and Accept (or its Checkbox), then Accept all and Apply.' },
-      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the card pending again when pressed. On Dismiss: takes the card out and moves focus on. On a Checkbox, Space accepts or rejects.' },
-    ],
-  },
   'people-picker': {
     summary:
       'Combobox\'s roles, with people in them: each option is named by the person and their role, "Marta Nowak, Hiring manager" (a hidden comma joins them; the avatar is hidden). Recent and every titled group are `group`s named by their headers. While a search runs the last results stay, narrowed by the query; one that takes longer than 300 ms marks the list `aria-busy`. "Searching…", "No one matches" or a failed search are read out from a `status` region. A disabled person is `aria-disabled`. Each chip has a "Remove <name>" button; after a removal focus moves to the chip that takes its place, or to the field. The "+N" chip is a button named "Show N more"; it shows the rest and moves focus to the first of them.',
@@ -764,6 +756,14 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'Picks the highlighted person and, with `multiple`, drops one already picked; a single pick closes the list.' },
       { keys: ['Esc'], action: 'Closes the list and returns focus to the field.' },
       { keys: ['Tab'], action: 'Out of the field, through the chips\' remove buttons and the "+N" chip.' },
+    ],
+  },
+  'agent-changes-review': {
+    summary:
+      'Each card is a `role="group"` named by its field. Accept is a toggle button with `aria-pressed` (its visible text "Accept" starts its name) and Dismiss a plain button, both named after the change ("Accept Stage change", "Dismiss Stage change", `acceptFieldChange` and `rejectFieldChange` in SatinLabels; a change whose `field` isn\'t a string needs a `label`); with `control="checkbox"` the card\'s Checkbox carries the Accept name. Dismiss takes the card out: focus moves first to the next card\'s Accept, or to Accept all or Apply when no card is left below, the leaving card is `inert`, and "Value change dismissed" (`fieldChangeRejected`) is read out. Under reduced motion the card goes without the slide. Accepted is `aria-pressed` and the pressed fill, never colour alone. A change\'s source is a `q`, so its quotation marks follow the page\'s language; the logo is decorative. The old value is a `del`, the arrow hidden. Accept all, "Applying changes…" and "2 changes applied" are also read out from a polite `status` region. While applying, Apply is `aria-busy` and the cards are disabled; once applied, Apply keeps focus as an `aria-disabled` "Applied" and each card says "Applied" or "Not applied" to screen readers. A rejected value turns text/muted, a Badge grey, so its text keeps its contrast.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through each card\'s Dismiss and Accept (or its Checkbox), then Accept all and Apply.' },
+      { keys: ['Enter', 'Space'], action: 'On Accept: accepts, or makes the card pending again when pressed. On Dismiss: takes the card out and moves focus on. On a Checkbox, Space accepts or rejects.' },
     ],
   },
   'date-availability': {

@@ -1471,19 +1471,6 @@ export const api: Record<string, Api> = {
       { name: 'summaryActions', type: ['ReactNode'] },
     ],
   },
-  'agent-changes-review': {
-    description:
-      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) takes the `changes` AgentSuggestionChanges takes and draws each as a card: the field\'s name on top, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line). At the card\'s bottom right sit Dismiss (X) and Accept (a green check and "Accept"), both bordered xs buttons (or a Checkbox before the name, `control="checkbox"`); then Accept all and Apply. Dismiss slides the card out of the list and the cards under it move up into its place; the UI has no way back, but a controlled `value` can set it to `"pending"` again. With checkboxes a cleared card stays and fades. Put it in an AgentSuggestion as its body. `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. `label` names a change for its buttons when `field` isn\'t a string. Parts: `ReviewableChangesRoot` (around the whole card, so Apply can sit in its `actions`), `ReviewableChangesList`, `ReviewableChangesAcceptAll`, `ReviewableChangesApply`. For a new set of changes, give it a new `key`.',
-    props: [
-      { name: 'changes', type: ['{ id?, field, label?, from?, to, source? }[]'] },
-      { name: 'value', type: ['ReviewableChangesValue'] },
-      { name: 'defaultValue', type: ['ReviewableChangesValue'], default: '{}' },
-      { name: 'onValueChange', type: ['(value) => void'] },
-      { name: 'onApply', type: ['(accepted, value) => unknown'] },
-      { name: 'status', type: ['"review"', '"applying"', '"applied"'] },
-      { name: 'control', type: ['"buttons"', '"checkbox"'], default: '"buttons"' },
-    ],
-  },
   'people-picker': {
     description:
       'The `PeoplePicker` component (Satin Pro, `@uisatin/pro/people-picker`) is a Combobox for people: rows show an avatar, the name and the role (or email), picks show as chips with avatars. Each person is `{ id, name, role, email, avatar, tone, disabled }`; `avatar` is an image URL, and without one the initials show on the `tone`. People come from `people`, titled `groups` (`{ label, people }[]`), or `search(query, { signal })`, called `searchDelay` ms after the last keystroke and at once with \'\' on open; a newer query aborts the older one, and meanwhile the last results stay, narrowed by the query. `people` and `groups` filter as you type, with no delay. `recent` is listed first while the query is empty. `value` holds the people, not their ids. Every other Combobox prop (label, hint, error, footer, size, open state) works as there.',
@@ -1505,6 +1492,19 @@ export const api: Record<string, Api> = {
       { name: 'emptyText', type: ['ReactNode'] },
       { name: 'disabled', type: ['boolean'], default: 'false' },
       { name: 'wrapperClassName', type: ['string'] },
+    ],
+  },
+  'agent-changes-review': {
+    description:
+      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) takes the `changes` AgentSuggestionChanges takes and draws each as a card: the field\'s name on top, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line). At the card\'s bottom right sit Dismiss (X) and Accept (a green check and "Accept"), both bordered xs buttons (or a Checkbox before the name, `control="checkbox"`); then Accept all and Apply. Dismiss slides the card out of the list and the cards under it move up into its place; the UI has no way back, but a controlled `value` can set it to `"pending"` again. With checkboxes a cleared card stays and fades. Put it in an AgentSuggestion as its body. `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. `label` names a change for its buttons when `field` isn\'t a string. Parts: `ReviewableChangesRoot` (around the whole card, so Apply can sit in its `actions`), `ReviewableChangesList`, `ReviewableChangesAcceptAll`, `ReviewableChangesApply`. For a new set of changes, give it a new `key`.',
+    props: [
+      { name: 'changes', type: ['{ id?, field, label?, from?, to, source? }[]'] },
+      { name: 'value', type: ['ReviewableChangesValue'] },
+      { name: 'defaultValue', type: ['ReviewableChangesValue'], default: '{}' },
+      { name: 'onValueChange', type: ['(value) => void'] },
+      { name: 'onApply', type: ['(accepted, value) => unknown'] },
+      { name: 'status', type: ['"review"', '"applying"', '"applied"'] },
+      { name: 'control', type: ['"buttons"', '"checkbox"'], default: '"buttons"' },
     ],
   },
   'date-availability': {
