@@ -151,12 +151,12 @@ function code(v: Record<string, string>) {
           v.step === 'on' && 'onPreviousStep={index > 0 ? () => setIndex(index - 1) : undefined}',
           v.step === 'on' && 'onNextStep={index < questions.length - 1 ? () => setIndex(index + 1) : undefined}',
           ...examples[v.type].code,
-          examples[v.type].onContinue,
+          v.step === 'on' ? examples[v.type].onContinue.replace(/=> (\w+)\((\w+)\)\}$/, '=> {\n    $1($2)\n    setIndex(index + 1)\n  }}') : examples[v.type].onContinue,
           v.skip === 'on' && (v.step === 'on' ? 'onSkip={() => setIndex(index + 1)}' : 'onSkip={skip}'),
         ].filter(Boolean)
   const flow =
     v.type !== 'summary' && v.step === 'on'
-      ? `\n// One question of several: the arrows move between them, Skip goes to the next.\nconst [index, setIndex] = React.useState(0)\n`
+      ? `\n// One question of several: Continue and Skip go to the next, the arrows move between them.\nconst [index, setIndex] = React.useState(0)\n`
       : ''
   return `${flow ? "import * as React from 'react'\n" : ''}import { DecisionCard } from '@uisatin/ui/decision-card'
 ${flow}
@@ -179,16 +179,19 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
 const order = Object.keys(examples)
 
 /**
- * With Step on, the stage runs the question types as one flow: the arrows move between them and
- * Skip goes to the next one; the counter and the Type picker follow. Answering
- * collapses a card to its summary; Change brings the question back. The card hangs from the top
- * of the stage, so a taller or shorter question never moves its title.
+ * With Step on, the stage runs the question types as one flow: Continue and Skip go to the next
+ * one and the arrows move between them; the counter and the Type picker follow, and a question
+ * you come back to keeps its answer. Continue on the last question (or on the only one, with Step
+ * off) collapses the card to its summary; Change brings the question back. The card hangs from
+ * the top of the stage, so a taller or shorter question never moves its title.
  */
 function Demo({ v, set }: { v: Record<string, string>; set: (id: string, value: string) => void }) {
   // The active question is the Type prop itself, so the picker (and the code) follow the arrows.
   const index = Math.max(0, order.indexOf(v.type))
   const setIndex = (i: number) => set('type', order[i])
   const [answers, setAnswers] = React.useState<Record<string, DecisionValue>>({})
+  // What was picked on a question before moving on, so coming back shows it.
+  const [picks, setPicks] = React.useState<Record<string, DecisionValue>>({})
   if (v.type === 'summary') return <DecisionCard type="summary" title={summary.title} value={summary.value} onEdit={() => {}} />
 
   const stepped = v.step === 'on'
@@ -218,13 +221,19 @@ function Demo({ v, set }: { v: Record<string, string>; set: (id: string, value: 
   return (
     <DecisionCard
       {...example.props}
+      defaultValue={picks[type] ?? example.props.defaultValue}
       type={type as 'radio' | 'checkbox' | 'chips' | 'ranking' | 'draft'}
       title={example.title}
       hint={v.hint === 'on' ? example.hint : undefined}
       step={stepped ? `${index + 1}/${order.length}` : undefined}
       onPreviousStep={stepped && index > 0 ? () => setIndex(index - 1) : undefined}
       onNextStep={stepped && !last ? () => setIndex(index + 1) : undefined}
-      onContinue={(value) => answerWith(type === 'ranking' ? (value as string[]).slice(0, 2) : value)}
+      onContinue={(value) => {
+        if (stepped && !last) {
+          setPicks((p) => ({ ...p, [type]: value }))
+          setIndex(index + 1)
+        } else answerWith(type === 'ranking' ? (value as string[]).slice(0, 2) : value)
+      }}
       onSkip={v.skip === 'on' ? () => (stepped && !last ? setIndex(index + 1) : answerWith(['Skipped'])) : undefined}
     />
   )

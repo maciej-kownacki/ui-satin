@@ -31,7 +31,10 @@ import { useSatinLabels } from './labels'
  * "1/3" count rolls its changed digit like an odometer (up going forward, down going back, 350
  * ms). The navigator and the footer stay put. Stepping again mid-slide carries on from where
  * things are. A part that reads the same on both steps (a title every step shares) stays still.
- * Under reduced motion nothing moves: the step just changes.
+ * Under reduced motion nothing moves: the step just changes. Moving on with Continue or Skip
+ * puts focus into the new question (its picked answer, or its first control); the step buttons
+ * keep it. The card doesn't step by itself: move `step`, `title` and the answers from
+ * `onContinue` and `onSkip`.
  *
  * For a step none of the types covers, pass `children`: they take the answers' place and move
  * with the step. `footer` takes Skip and Continue's place, in the same row. Other props, `ref`
@@ -137,7 +140,51 @@ export function DecisionCard({
   const cardRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef<HTMLDivElement>(null)
   const bodyRef = React.useRef<HTMLDivElement>(null)
+  const footerRef = React.useRef<HTMLDivElement>(null)
   useStepSlide(question, step, cardRef, [titleRef, bodyRef])
+
+  // Continue or Skip took the user to another question: focus goes into it (its picked answer,
+  // or the first control), so the new question is read out and answered from there. From the
+  // step buttons, focus stays on them. `inStep` remembers focus in the answers or the footer, for
+  // when the step takes that control away (a draft's footer is its own) and focus falls to the page.
+  const inStep = React.useRef(false)
+  React.useEffect(() => {
+    const card = cardRef.current
+    if (!card) return
+    const onFocusIn = (e: FocusEvent) => {
+      inStep.current = !!(footerRef.current?.contains(e.target as Node) || bodyRef.current?.contains(e.target as Node))
+    }
+    // Leaving the card clears it, but not a control the step took away: browsers send focusout
+    // for that too, so it waits until after the step's layout effects and checks the control is
+    // still on the page.
+    const onFocusOut = (e: FocusEvent) => {
+      if (card.contains(e.relatedTarget as Node | null)) return
+      const from = e.target as Node
+      queueMicrotask(() => {
+        if (from.isConnected) inStep.current = false
+      })
+    }
+    card.addEventListener('focusin', onFocusIn)
+    card.addEventListener('focusout', onFocusOut)
+    return () => {
+      card.removeEventListener('focusin', onFocusIn)
+      card.removeEventListener('focusout', onFocusOut)
+    }
+  }, [])
+  const shown = React.useRef(question)
+  React.useLayoutEffect(() => {
+    if (shown.current === question) return
+    shown.current = question
+    const active = document.activeElement
+    const lost = !active || active === document.body
+    if (!footerRef.current?.contains(active) && !(lost && inStep.current)) return
+    const body = bodyRef.current
+    const target =
+      body?.querySelector<HTMLElement>('[role="radio"][aria-checked="true"]') ??
+      [...(body?.querySelectorAll<HTMLElement>(TABBABLE) ?? [])].find((n) => n.getAttribute('role') !== 'radiogroup') ??
+      body?.querySelector<HTMLElement>('[role="radio"]:not(:disabled)')
+    target?.focus({ preventScroll: true })
+  }, [question])
 
   const card = cn(
     'flex w-[364px] max-w-full flex-col overflow-clip rounded-2xl border border-border-default bg-bg-popover',
@@ -274,10 +321,12 @@ export function DecisionCard({
       </div>
 
       {type !== 'draft' && footer !== undefined && (
-        <div className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">{footer}</div>
+        <div ref={footerRef} className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">
+          {footer}
+        </div>
       )}
       {type !== 'draft' && footer === undefined && (
-        <div className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">
+        <div ref={footerRef} className="flex items-center justify-end gap-2 px-3 pt-4 pb-3">
           {onSkip && (
             <Button variant="tertiary" onClick={onSkip} className="text-text-muted">
               {skipLabel}
@@ -356,6 +405,10 @@ function Header({
     </div>
   )
 }
+
+// The controls a question's answers can take focus at. A radio group's root is left out: it only
+// hands focus on to its items, which it hasn't registered yet when the question is new.
+const TABBABLE = 'button:not(:disabled):not([tabindex="-1"]), input:not(:disabled):not([tabindex="-1"]), textarea:not(:disabled), [tabindex="0"]'
 
 const STEP_MS = 360
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
