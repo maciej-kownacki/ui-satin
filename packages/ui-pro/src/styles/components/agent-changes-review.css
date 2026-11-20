@@ -1,7 +1,7 @@
 /*
  * Field-level review of agent changes (components/agent-changes-review.tsx).
  *
- * Each change is a card (border/default). With checkboxes, a rejected card's new value fades to text/muted over --duration-base, and a
+ * Each change is a card on component/changes-review/card-bg. With checkboxes, a rejected card's new value fades to text/muted over --duration-base, and a
  * rich value (a Badge) loses its colour, which keeps its text's contrast; nothing moves. Once the set is
  * applied, every row that wasn't applied looks the same. Satin's reduced-motion rule
  * (motion.css) cuts the fade.
@@ -19,8 +19,7 @@
 
 /*
  * Accept's check is green whatever its state; the button stays the bordered secondary one.
- * Pressed (accepted), it keeps the secondary button's pressed fill and ring, and the card's
- * border turns green, so an accepted card reads apart from a pending one.
+ * Pressed (accepted), it keeps the secondary button's pressed fill and ring.
  */
 .satin-changes-review-toggle[data-decision='accept'] svg {
   color: var(--status-green-fg);
@@ -28,12 +27,6 @@
 .satin-changes-review-toggle[aria-pressed='true'][data-decision='accept'] {
   background-color: var(--action-secondary-bg-pressed);
   box-shadow: 0 0 0 1px var(--border-strong);
-}
-.satin-changes-review-row {
-  transition: border-color var(--duration-base) var(--ease-out);
-}
-.satin-changes-review-row[data-state='accepted'] {
-  border-color: var(--status-green-border);
 }
 
 /* Applied: Apply's check is green, like each applied row's. */

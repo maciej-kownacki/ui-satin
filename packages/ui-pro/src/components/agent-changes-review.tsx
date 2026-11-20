@@ -11,17 +11,19 @@ import { cn } from '@uisatin/ui/lib/utils'
 /**
  * ReviewableChanges: the fields an agent wants to change, each accepted or rejected on its own
  * before any of them is applied. It takes the same `changes` as AgentSuggestionChanges. Each
- * change is a bordered card: the field's name on top in medium weight, then the old value struck
- * through, an arrow and the new one, with Accept (a green check) and Dismiss (X) as bordered
- * icon buttons at the end of that row, or a Checkbox before the name (`control="checkbox"`).
+ * change is a bordered card: the field's name on top, then the old value struck through, an
+ * arrow and the new one, then (when the change has a `source`) a preview of where it comes from:
+ * a logo, "Transcription" and the line it rests on. At the card's bottom right, Dismiss (X) and
+ * Accept (a green check and "Accept"), both bordered xs buttons; or a Checkbox before the name
+ * (`control="checkbox"`).
  * Under the cards: Accept all, and Apply, which counts what it will apply ("Apply 2 changes").
  * Put it in an AgentSuggestion as its body, without the card's own `actions`.
  *
  * - A card is pending until it's decided. Accept is a toggle button (`aria-pressed`): pressed, it
- *   takes its pressed fill and the card's border turns green; pressing it again makes the card
- *   pending. Dismiss (X) rejects the change and takes the card out: it slides 32px to the start
- *   and fades over --duration-slow, then the cards under it move up into its place with a
- *   transform over --duration-base (the panel's edge follows at the end; no height animates).
+ *   takes its pressed fill; pressing it again makes the card pending. Dismiss (X) rejects the
+ *   change and takes the card out: it slides 32px to the start and fades over --duration-slow,
+ *   then the cards under it move up into its place with a transform over --duration-base (the
+ *   panel's edge follows at the end; no height animates).
  *   Under reduced motion the card simply goes. Focus moves to the next card's Accept, or to the
  *   footer when no card is left below. The UI has no way back for a dismissed card; the app can
  *   bring it back by setting its decision to `pending` in a controlled `value`.
@@ -49,6 +51,8 @@ import { cn } from '@uisatin/ui/lib/utils'
 export const agentChangesReviewLabels = {
   /** A card's Accept button, or its checkbox: "Accept Stage change". `field` is the change's `label`, or its `field` when that's a string. */
   acceptFieldChange: (field: string) => `Accept ${field} change`,
+  /** The visible text on a card's Accept button; its name stays `acceptFieldChange`'s. */
+  acceptFieldChangeText: 'Accept',
   /** A card's Dismiss (X) button: "Dismiss Stage change". */
   rejectFieldChange: (field: string) => `Dismiss ${field} change`,
   /** The Apply button: "Apply 2 changes". `count` picks the plural; `number` is it, formatted. */
@@ -85,6 +89,18 @@ export interface ReviewableChange extends AgentSuggestionChange {
   id?: string
   /** The field's name as plain text, for the buttons' names, when `field` isn't a string. */
   label?: string
+  /** Where the change comes from, drawn as a preview under it: "Transcription" and the line it rests on. */
+  source?: ReviewableChangeSource
+}
+
+/** A change's source: a 16px logo, what it is, and the passage the agent read, shown as a quote. */
+export interface ReviewableChangeSource {
+  /** A 16px logo: the app the source lives in. */
+  icon?: React.ReactNode
+  /** What the source is: "Transcription", "Email from Tara". */
+  label: React.ReactNode
+  /** The passage, without quotation marks; it's set in a `q`, which adds them. */
+  quote?: React.ReactNode
 }
 
 /** Where a row stands: not decided yet, accepted or rejected. */
@@ -243,7 +259,8 @@ export function ReviewableChangesRoot({
       // Focus first, while the X still has it: the next row's Accept, else the footer, else the row above.
       const rows = [...(rootRef.current?.querySelectorAll<HTMLElement>(`${ROW}:not([data-leaving])`) ?? [])]
       const at = row ? rows.indexOf(row) : -1
-      const control = (r?: HTMLElement) => r?.querySelector<HTMLElement>('button:not(:disabled)')
+      const control = (r?: HTMLElement) =>
+        r?.querySelector<HTMLElement>('[data-decision="accept"]:not(:disabled)') ?? r?.querySelector<HTMLElement>('button:not(:disabled)')
       const next = control(rows.slice(at + 1).find((r) => control(r))) ?? rootRef.current?.querySelector<HTMLElement>(FOOTER) ?? control(rows.slice(0, Math.max(at, 0)).reverse().find((r) => control(r)))
       next?.focus()
       setValue({ ...latest.current.value, [key]: 'rejected' })
@@ -415,7 +432,7 @@ function ReviewableChangeRow({ change, id, index }: { change: ReviewableChange; 
       data-state={decision}
       data-leaving={isLeaving ? '' : undefined}
       inert={isLeaving || undefined}
-      className="satin-changes-review-row flex flex-col gap-2 rounded-lg border border-border-default bg-bg-popover p-3"
+      className="satin-changes-review-row flex flex-col gap-2 rounded-lg border border-border-default bg-component-changes-review-card-bg p-3"
       onTransitionEnd={(e) => {
         if (isLeaving && e.target === e.currentTarget && e.propertyName === 'opacity') handOff()
       }}
@@ -429,53 +446,67 @@ function ReviewableChangeRow({ change, id, index }: { change: ReviewableChange; 
             onCheckedChange={(on) => decide(id, on === true ? 'accepted' : 'rejected')}
           />
         )}
-        <span id={fieldId} className="min-w-0 text-base font-medium text-text-default">
+        <span id={fieldId} className="min-w-0 text-sm leading-4 font-medium tracking-normal text-text-default">
           {change.field}
         </span>
       </div>
-      <div className="flex min-h-6 items-center gap-2">
-        <AgentSuggestionChangeValue from={change.from} to={change.to} className="min-w-0 flex-1 flex-wrap gap-y-1" />
-        {applied && <span className="sr-only">{decision === 'accepted' ? labels.fieldChangeApplied : labels.fieldChangeNotApplied}</span>}
-        {control === 'buttons' && (
-          <div className="ms-auto flex h-6 shrink-0 items-center gap-2">
-            {applied ? (
-              decision === 'accepted' && (
-                <span className="grid size-6 place-items-center text-status-green-fg">
-                  <CheckGlyph className="size-icon-size-sm" />
-                </span>
-              )
-            ) : (
-              <>
-                <Button
-                  variant="secondary"
-                  size="xs"
-                  iconOnly
-                  data-decision="accept"
-                  aria-pressed={decision === 'accepted'}
-                  aria-label={labels.acceptFieldChange(name)}
-                  disabled={locked}
-                  className="satin-changes-review-toggle"
-                  onClick={() => decide(id, decision === 'accepted' ? 'pending' : 'accepted')}
-                >
-                  <CheckGlyph />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="xs"
-                  iconOnly
-                  data-decision="reject"
-                  aria-label={labels.rejectFieldChange(name)}
-                  disabled={locked}
-                  className="satin-changes-review-toggle"
-                  onClick={() => reject(id, name, rowRef.current)}
-                >
-                  <XGlyph />
-                </Button>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+      <AgentSuggestionChangeValue from={change.from} to={change.to} className="flex-wrap gap-y-1" />
+      {change.source && <ReviewableChangeSourcePreview source={change.source} />}
+      {applied && <span className="sr-only">{decision === 'accepted' ? labels.fieldChangeApplied : labels.fieldChangeNotApplied}</span>}
+      {/* Once applied, only an applied card keeps the row, for its check. */}
+      {control === 'buttons' && !(applied && decision !== 'accepted') && (
+        <div className="flex min-h-6 items-center justify-end gap-1">
+          {applied ? (
+            <span className="grid size-6 place-items-center text-status-green-fg">
+              <CheckGlyph className="size-icon-size-sm" />
+            </span>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                size="xs"
+                iconOnly
+                data-decision="reject"
+                aria-label={labels.rejectFieldChange(name)}
+                disabled={locked}
+                className="satin-changes-review-toggle"
+                onClick={() => reject(id, name, rowRef.current)}
+              >
+                <XGlyph />
+              </Button>
+              <Button
+                variant="secondary"
+                size="xs"
+                data-decision="accept"
+                aria-pressed={decision === 'accepted'}
+                aria-label={labels.acceptFieldChange(name)}
+                disabled={locked}
+                className="satin-changes-review-toggle"
+                onClick={() => decide(id, decision === 'accepted' ? 'pending' : 'accepted')}
+              >
+                <CheckGlyph />
+                {labels.acceptFieldChangeText}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Where a change comes from: the app's logo, what it is ("Transcription") and the passage, as a quote. */
+function ReviewableChangeSourcePreview({ source }: { source: ReviewableChangeSource }) {
+  return (
+    <div
+      data-slot="reviewable-change-source"
+      className="flex flex-col gap-2 rounded-xl border border-border-default bg-component-changes-review-source-bg p-3 [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]"
+    >
+      <span className="flex min-w-0 items-center gap-2">
+        {source.icon && <span className="grid size-4 shrink-0 place-items-center overflow-clip rounded-xs [&>*]:size-4">{source.icon}</span>}
+        <span className="truncate text-sm leading-4 font-medium tracking-normal text-text-default">{source.label}</span>
+      </span>
+      {source.quote != null && <q className="text-sm text-text-muted">{source.quote}</q>}
     </div>
   )
 }

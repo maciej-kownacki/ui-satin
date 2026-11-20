@@ -32,7 +32,14 @@ export function DealUpdate({ deal }: { deal: Deal }) {
     >
       <ReviewableChanges${control === 'checkbox' ? '\n        control="checkbox"' : ''}
         changes={[
-          { id: 'stage', field: 'Stage', from: 'Proposal', to: <Badge size="sm" tone="brand">Negotiation</Badge> },
+          {
+            id: 'stage',
+            field: 'Stage',
+            from: 'Proposal',
+            to: 'Negotiation',
+            // Where it comes from, shown under the change.
+            source: { icon: <MeetLogo />, label: 'Transcription', quote: 'Orders over €500 need a manager’s approval.' },
+          },
           { id: 'value', field: 'Value', from: '$18,000', to: '$22,000' },
           { id: 'closeDate', field: 'Close date', from: '30 Nov', to: '15 Dec' },
         ]}
@@ -53,16 +60,16 @@ type Deal = { stage: string; value: string; closeDate: string }
 const DEAL: Deal = { stage: 'Proposal', value: '$18,000', closeDate: '30 Nov' }
 const PROPOSAL: Deal = { stage: 'Negotiation', value: '$22,000', closeDate: '15 Dec' }
 
+// Real favicon for the demo; in an app pass the logo you already have.
+const MeetLogo = () => <img alt="" src="https://www.google.com/s2/favicons?domain=meet.google.com&sz=32" />
+
 const changes: ReviewableChange[] = [
   {
     id: 'stage',
     field: 'Stage',
     from: DEAL.stage,
-    to: (
-      <Badge size="sm" tone="brand">
-        {PROPOSAL.stage}
-      </Badge>
-    ),
+    to: PROPOSAL.stage,
+    source: { icon: <MeetLogo />, label: 'Transcription', quote: 'Orders over €500 need a manager’s approval.' },
   },
   { id: 'value', field: 'Value', from: DEAL.value, to: PROPOSAL.value },
   { id: 'closeDate', field: 'Close date', from: DEAL.closeDate, to: PROPOSAL.closeDate },

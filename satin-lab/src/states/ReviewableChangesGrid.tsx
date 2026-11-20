@@ -7,7 +7,13 @@ import { ReviewableChanges, type ReviewableChange, type ReviewableChangesStatus 
  * applying and applied, with buttons and with checkboxes. Applying is held with `status`.
  */
 const changes: ReviewableChange[] = [
-  { id: 'stage', field: 'Stage', from: 'Proposal', to: <Badge size="sm" tone="brand">Negotiation</Badge> },
+  {
+    id: 'stage',
+    field: 'Stage',
+    from: 'Proposal',
+    to: <Badge size="sm" tone="brand">Negotiation</Badge>,
+    source: { label: 'Transcription', quote: 'Orders over €500 need a manager’s approval.' },
+  },
   { id: 'value', field: 'Value', from: '$18,000', to: '$22,000' },
   { id: 'close', field: 'Close date', from: '30 Nov', to: '15 Dec' },
   { id: 'owner', field: 'Owner', to: 'Tara Mendes' },

@@ -71,8 +71,13 @@ describe('ReviewableChanges', () => {
 
   it('accepts field by field with the keyboard, and toggles Accept back to pending', async () => {
     const { user } = renderWithSatin(<ReviewableChanges changes={changes} />)
+    // Dismiss comes first, then Accept, as they sit at the card's bottom right.
+    await user.tab()
+    expect(document.activeElement).toBe(button('Dismiss Stage change'))
     await user.tab()
     expect(document.activeElement).toBe(button('Accept Stage change'))
+    // The visible text is "Accept"; the name says which change.
+    expect(button('Accept Stage change').textContent).toBe('Accept')
     await user.keyboard('{Enter}')
     expect(row('Stage').getAttribute('data-state')).toBe('accepted')
     expect(button('Accept Stage change').getAttribute('aria-pressed')).toBe('true')
@@ -81,6 +86,18 @@ describe('ReviewableChanges', () => {
     await user.keyboard(' ')
     await user.click(button('Accept Value change'))
     expect(button('Apply 2 changes')).toBeTruthy()
+  })
+
+  it('draws a change\'s source under it, as a quote', () => {
+    renderWithSatin(
+      <ReviewableChanges
+        changes={[{ id: 'stage', field: 'Stage', from: 'Proposal', to: 'Negotiation', source: { icon: <svg />, label: 'Transcription', quote: 'Orders over €500 need a manager’s approval.' } }, ...changes.slice(1)]}
+      />,
+    )
+    const source = row('Stage').querySelector('[data-slot="reviewable-change-source"]')!
+    expect(source.textContent).toContain('Transcription')
+    expect(source.querySelector('q')!.textContent).toBe('Orders over €500 need a manager’s approval.')
+    expect(row('Value').querySelector('[data-slot="reviewable-change-source"]')).toBeNull()
   })
 
   it('X takes the row out, says so, keeps the counts, and moves focus to the next row', async () => {

@@ -15,7 +15,13 @@ import {
 
 // AgentSuggestionChanges' entries go in as they are.
 const plain: AgentSuggestionChange[] = [{ field: 'Stage', from: 'Proposal', to: 'Negotiation' }]
-const changes: ReviewableChange[] = [...plain, { id: 'value', field: <b>Value</b>, label: 'Value', from: '$18,000', to: '$22,000' }]
+const changes: ReviewableChange[] = [
+  ...plain,
+  { id: 'value', field: <b>Value</b>, label: 'Value', from: '$18,000', to: '$22,000', source: { icon: <svg />, label: 'Transcription', quote: 'We can do 22k.' } },
+]
+
+// @ts-expect-error: a source needs its label
+export const noSourceLabel: ReviewableChange = { field: 'Stage', to: 'Negotiation', source: { quote: 'Sure.' } }
 
 // @ts-expect-error: no such decision
 const wrong: ReviewableChangesValue = { stage: 'maybe' }
@@ -75,6 +81,7 @@ export const labels = (
   <SatinLabels
     labels={{
       acceptFieldChange: (field) => `Zaakceptuj zmianę: ${field}`,
+      acceptFieldChangeText: 'Akceptuj',
       rejectFieldChange: (field) => `Odrzuć zmianę: ${field}`,
       applyFieldChanges: (count, number) => `Zastosuj (${number})`,
       fieldChangesApplied: (count, number) => `Zastosowano: ${number}`,
