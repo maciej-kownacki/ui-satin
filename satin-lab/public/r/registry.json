@@ -2175,6 +2175,34 @@
       ]
     },
     {
+      "name": "table-pro",
+      "type": "registry:ui",
+      "title": "Grouped table",
+      "description": "A Table whose rows open onto sub-rows and gather into groups with subtotals, with a pinned first column, a totals row and a compact density.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/table.json"
+      ],
+      "docs": "Grouped table docs: https://uisatin.dev/components/table-pro",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/table-pro.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "toast-batch",
       "type": "registry:ui",
       "title": "Toast batch",
@@ -3335,6 +3363,21 @@
       "files": [
         {
           "path": "registry/satin/examples/bulk-action-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "table-pro-demo",
+      "type": "registry:example",
+      "title": "Grouped table example",
+      "description": "The shortest use of Grouped table, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/table-pro.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/table-pro-demo.tsx",
           "type": "registry:example"
         }
       ]

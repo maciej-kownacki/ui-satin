@@ -447,7 +447,7 @@ export function TableGrouped<R extends Row = Row>({
     const some = !all && group.rows.some((r) => picked.has(r.id))
     // A line between groups (the first sits right under the header's own), drawn inside the
     // cells so a group row is as high as any other.
-    const edge = item.pos > 1 && '[box-shadow:inset_0_1px_0_var(--border-subtle)]'
+    const edge = item.pos > 1 && '[box-shadow:inset_0_var(--border-width-default)_0_var(--border-subtle)]'
     return (
       <tr
         data-group=""
@@ -495,8 +495,9 @@ export function TableGrouped<R extends Row = Row>({
     )
   }
 
+  // The totals row sits a quiet step off the rows: darker in Light, lighter in Dark.
   const totalsRow = footer ? (
-    <tr className="bg-component-table-header">
+    <tr className="bg-component-table-pro-total-bg">
       {selectable && <td className={cn(checkBox[density], 'border-t border-border-subtle')} />}
       {columns.map((c, i) =>
         i === 0 ? (
