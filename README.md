@@ -1,7 +1,7 @@
 # Satin
 
 [![npm](https://img.shields.io/npm/v/@uisatin/ui)](https://www.npmjs.com/package/@uisatin/ui)
-[![CI](https://github.com/maciej-kownacki/ui-satin/actions/workflows/ci.yml/badge.svg)](https://github.com/maciej-kownacki/ui-satin/actions/workflows/ci.yml)
+[![CI](https://github.com/maciej-kownacki/ui-satin/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/maciej-kownacki/ui-satin/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 Satin, a design system for calm, AI-native product interfaces. Docs live at [uisatin.dev](https://uisatin.dev).
