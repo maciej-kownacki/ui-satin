@@ -85,7 +85,7 @@ describe('FilterBar', () => {
   it('shows just + Filter when empty, and each filter as a chip button', () => {
     const { unmount } = renderWithSatin(<FilterBar fields={fields} />)
     const bar = screen.getByRole('group', { name: 'Filters' })
-    expect(within(bar).getAllByRole('button').map((b) => b.textContent)).toEqual(['FilterF'])
+    expect(within(bar).getAllByRole('button').map((b) => b.textContent)).toEqual(['Filter'])
     unmount()
     renderWithSatin(
       <FilterBar
@@ -131,9 +131,10 @@ describe('FilterBar', () => {
     expect(rows()).toHaveLength(4)
     await user.click(screen.getByRole('button', { name: 'Filter' }))
     await user.click(screen.getByRole('menuitem', { name: 'Stage' }))
-    // The editor opens with the value list open (which hides the rest from screen readers meanwhile).
-    expect(screen.getByRole('dialog', { name: 'Stage', hidden: true })).toBeTruthy()
-    await user.click(await screen.findByRole('option', { name: 'Interview' }))
+    // The editor lists the choices on its own surface: nothing opens over it.
+    const editor = screen.getByRole('dialog', { name: 'Stage' })
+    expect(document.activeElement).toBe(within(editor).getByRole('listbox', { name: 'Stage is' }))
+    await user.click(within(editor).getByRole('option', { name: 'Interview' }))
     expect(onChange).toHaveBeenLastCalledWith([{ field: 'stage', operator: 'is', value: 'interview' }])
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     expect(rows()).toEqual(['Acme Corp', 'Initech'])
@@ -177,9 +178,13 @@ describe('FilterBar', () => {
     expect(onChange).toHaveBeenLastCalledWith([{ field: 'value', operator: 'gt', value: 20000 }])
     expect(rows()).toEqual(['Acme Corp', 'Initech'])
     await user.click(chip('Value greater than €20,000'))
-    await user.click(screen.getByRole('combobox', { name: 'Value' }))
-    await user.click(await screen.findByRole('option', { name: /between/ }))
+    // The operator opens its list in place of the value, in the same panel.
+    await user.click(screen.getByRole('button', { name: 'Value >' }))
+    const editor = screen.getByRole('dialog', { name: 'Value' })
+    expect(within(editor).queryByRole('spinbutton')).toBeNull()
+    await user.click(within(editor).getByRole('option', { name: /between/ }))
     expect(onChange).toHaveBeenLastCalledWith([{ field: 'value', operator: 'between', value: [20000, 20000] }])
+    expect(within(editor).getAllByRole('spinbutton')).toHaveLength(2)
   })
 
   it('sets a date period, and its list opens by itself', async () => {
@@ -217,9 +222,9 @@ describe('FilterBar', () => {
     chip('Stage is Interview').focus()
     await user.keyboard('{Enter}')
     expect(screen.getByRole('dialog', { name: 'Stage' })).toBeTruthy()
-    // The operator and the value are labelled: "Stage", "Stage is".
-    expect(screen.getByRole('combobox', { name: 'Stage' })).toBeTruthy()
-    expect(document.activeElement).toBe(screen.getByRole('combobox', { name: 'Stage is' }))
+    // The operator and the value are labelled: "Stage is" (the field and the operator).
+    expect(screen.getByRole('button', { name: 'Stage is' }).getAttribute('aria-expanded')).toBe('false')
+    expect(document.activeElement).toBe(screen.getByRole('listbox', { name: 'Stage is' }))
     await user.keyboard('{Escape}')
     await waitFor(() => expect(document.activeElement).toBe(chip('Stage is Interview')))
     await user.keyboard('{Backspace}')
@@ -297,15 +302,35 @@ describe('FilterBar', () => {
     expect(onSaveView).toHaveBeenCalledWith('Won', [{ field: 'stage', operator: 'is', value: 'won' }])
   })
 
-  it('opens + Filter with F, but not while typing', async () => {
+  it('picks from the list with the keys, and Escape leaves the operator list before the editor', async () => {
+    const onChange = vi.fn()
+    const { user } = renderWithSatin(<Deals onChange={onChange} />)
+    await user.click(screen.getByRole('button', { name: 'Filter' }))
+    await user.click(screen.getByRole('menuitem', { name: 'Stage' }))
+    await user.keyboard('{ArrowDown}{Enter}')
+    expect(onChange).toHaveBeenLastCalledWith([{ field: 'stage', operator: 'is', value: 'interview' }])
+    await waitFor(() => expect(document.activeElement).toBe(chip('Stage is Interview')))
+    await user.keyboard('{Enter}')
+    const operator = screen.getByRole('button', { name: 'Stage is' })
+    act(() => operator.focus())
+    await user.keyboard('{ArrowDown}')
+    expect(operator.getAttribute('aria-expanded')).toBe('true')
+    expect(document.activeElement).toBe(screen.getByRole('listbox', { name: 'Stage' }))
+    await user.keyboard('{Escape}')
+    // Back to the value; the editor stays open.
+    expect(screen.getByRole('dialog', { name: 'Stage' })).toBeTruthy()
+    expect(document.activeElement).toBe(operator)
+    expect(screen.getByRole('listbox', { name: 'Stage is' })).toBeTruthy()
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  })
+
+  it('has no keyboard shortcut of its own', async () => {
     const { user } = renderWithSatin(<Deals />)
-    await user.click(screen.getByRole('textbox', { name: 'Search' }))
-    await user.keyboard('f')
-    expect(screen.queryByRole('menu')).toBeNull()
     act(() => screen.getByRole('button', { name: 'Filter' }).focus())
     await user.keyboard('f')
-    // The menu takes its trigger's name.
-    expect(screen.getByRole('menu', { name: 'Filter' })).toBeTruthy()
+    expect(screen.queryByRole('menu')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Filter' }).hasAttribute('aria-keyshortcuts')).toBe(false)
   })
 
   it('speaks the words SatinLabels gives it', () => {

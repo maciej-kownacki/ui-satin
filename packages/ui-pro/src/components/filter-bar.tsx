@@ -3,25 +3,25 @@
 import * as React from 'react'
 import { Button } from '@uisatin/ui/button'
 import { Chip, chipVariants } from '@uisatin/ui/chip'
-import { Combobox } from '@uisatin/ui/combobox'
 import { Calendar, formatDate, formatRange } from '@uisatin/ui/date-picker'
-import { DropdownMenu, DropdownMenuItem } from '@uisatin/ui/dropdown'
+import { DropdownMenu, DropdownMenuItem, MenuItemContent, menuItemClass } from '@uisatin/ui/dropdown'
 import { Input, type InputProps } from '@uisatin/ui/input'
-import { KbdGroup } from '@uisatin/ui/kbd'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
 import { NumberInput } from '@uisatin/ui/number-input'
 import { Popover } from '@uisatin/ui/popover'
-import { Select, type SelectOption } from '@uisatin/ui/select'
+import { SelectChevron, type SelectOption } from '@uisatin/ui/select'
 import { RollingNumber } from './rolling-number'
 
 /**
  * FilterBar: filters as chips that read as sentences ("Stage is Interview", "Value > 20,000",
  * "Close date this quarter"), for any list or grid. `+ Filter` opens the fields; picking one adds
  * a chip with its editor open. Each chip is a button that opens its editor in a Popover: the
- * operator (a Select) over the value, whose control fits the field's type (Select, Combobox,
- * Input, NumberInput, Calendar). Changes apply as they are made, so the result count (shown
- * live, its digits rolling) follows every chip.
+ * operator over the value, whose control fits the field's type (a list of choices, Input,
+ * NumberInput, Calendar; md, the kit's default size). The editor is one surface: choices are
+ * listed in it and the operator opens its list in place of the value, so no menu opens over
+ * it. Changes apply as they are made, so the result count (shown live, its digits rolling)
+ * follows every chip.
  *
  * - `value` is plain JSON (`{ field, operator, value }[]`, dates as `YYYY-MM-DD`): keep it in a
  *   URL, save it as a view, send it to the server. `applyFilters(rows, value, fields)` filters
@@ -34,9 +34,9 @@ import { RollingNumber } from './rolling-number'
  * - Past `maxVisible` chips the rest fold into "+3 more"; pressing it shows them all.
  * - `views` (a menu that sets the filters) and `onSaveView` (Save view, which asks for a name).
  * - Keys: Enter or Space on a chip opens its editor, Backspace or Delete removes it; in the
- *   editor, Enter in a field or a single pick closes it and Escape closes it as it is. Backspace
- *   in the empty search removes the last chip. `shortcut` (F) opens `+ Filter` while focus is in
- *   the bar's parent and not in a field.
+ *   editor, the arrows move through a list, Enter in a field or a single pick closes it, and
+ *   Escape closes it as it is (from the operator list, back to the value first). Backspace in the
+ *   empty search removes the last chip.
  *
  * Parts, for a bar of your own: `FilterBarRoot` › `FilterBarSearch`, `FilterBarChips`,
  * `FilterBarAdd`, `FilterBarCount`, `FilterBarViews`. Other props on FilterBar and
@@ -529,8 +529,6 @@ const problemText = (problem: Problem, labels: Labels) =>
 const sameFilters = (a: readonly Filter[], b: readonly Filter[]) =>
   JSON.stringify(a.map((f) => [f.field, f.operator, f.value])) === JSON.stringify(b.map((f) => [f.field, f.operator, f.value]))
 
-const isEditable = (target: EventTarget | null) =>
-  target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
 
 /* ---------- glyphs (16px, 1.25 strokes as in Figma) ---------- */
 
@@ -599,8 +597,6 @@ interface BarContextValue {
   resultLabel: (count: number, number: React.ReactNode) => React.ReactNode
   views?: FilterView[]
   onSaveView?: (name: string, value: Filter[]) => void
-  shortcut?: string
-  registerAdd: (open: () => void) => () => void
   container?: HTMLElement | null
   today?: Date
   /** Set once the bar has rendered: chips added after it fade in. */
@@ -653,8 +649,6 @@ export interface FilterBarRootProps extends Omit<React.ComponentProps<'div'>, 'd
   onQueryChange?: (query: string) => void
   /** Chips shown before the rest fold into "+3 more". */
   maxVisible?: number
-  /** One key that opens `+ Filter` while focus is in the bar's parent and not in a field; shown as Kbd. `false` for none. */
-  shortcut?: string | false
   /** Portal target of the editors and menus. Defaults to `document.body`. */
   container?: HTMLElement | null
   /** Today, for the editors' calendars. Defaults to now. */
@@ -675,7 +669,6 @@ export function FilterBarRoot({
   defaultQuery = '',
   onQueryChange,
   maxVisible = 6,
-  shortcut = 'F',
   container,
   today,
   className,
@@ -763,28 +756,6 @@ export function FilterBarRoot({
     focusNow(plan)
   })
 
-  const addOpener = React.useRef<(() => void) | null>(null)
-  const registerAdd = React.useCallback((open: () => void) => {
-    addOpener.current = open
-    return () => {
-      if (addOpener.current === open) addOpener.current = null
-    }
-  }, [])
-
-  // The shortcut, anywhere in the parent (the bar and the list it filters), except while typing.
-  React.useEffect(() => {
-    const parent = rootRef.current?.parentElement
-    if (!parent || !shortcut) return
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || e.isComposing || e.repeat || e.metaKey || e.ctrlKey || e.altKey || isEditable(e.target)) return
-      if (e.key.toLowerCase() !== shortcut.toLowerCase() || !addOpener.current) return
-      e.preventDefault()
-      addOpener.current()
-    }
-    parent.addEventListener('keydown', onKeyDown)
-    return () => parent.removeEventListener('keydown', onKeyDown)
-  }, [shortcut])
-
   const bar: BarContextValue = {
     labels,
     fields,
@@ -838,8 +809,6 @@ export function FilterBarRoot({
     resultLabel: countWords,
     views,
     onSaveView,
-    shortcut: shortcut || undefined,
-    registerAdd,
     container,
     today,
     mounted,
@@ -960,6 +929,7 @@ function FilterChip({ item }: { item: ChipItem }) {
   }
 
   const outside = React.useRef(false)
+  const escapeRef = React.useRef<(() => boolean) | null>(null)
 
   return (
     <span
@@ -984,17 +954,20 @@ function FilterChip({ item }: { item: ChipItem }) {
         container={bar.container}
         onOpenAutoFocus={(e) => {
           e.preventDefault()
-          // A new pick list opens by itself and takes focus; otherwise the value control gets it.
+          // The value control takes focus: a field, the list of choices, the calendar's day.
           const content = e.currentTarget as HTMLElement | null
           const target = content?.querySelector<HTMLElement>('[data-filter-value]')
-          if (isNew && target?.matches('button')) return
-          const focusable = target?.matches('button, input') ? target : target?.querySelector<HTMLElement>('button[tabindex="0"], input, button')
-          ;(focusable ?? content)?.focus()
+          const focusable = target?.matches('button, input, [tabindex]') ? target : target?.querySelector<HTMLElement>('button[tabindex="0"], input, button')
+          ;(focusable ?? content)?.focus({ preventScroll: true })
           // Typing replaces what a number field starts with.
           if (focusable instanceof HTMLInputElement) focusable.select()
         }}
         onInteractOutside={() => {
           outside.current = true
+        }}
+        onEscapeKeyDown={(e: KeyboardEvent) => {
+          // Escape in the operator list goes back to the value first.
+          if (escapeRef.current?.()) e.preventDefault()
         }}
         onCloseAutoFocus={(e) => {
           e.preventDefault()
@@ -1004,7 +977,7 @@ function FilterChip({ item }: { item: ChipItem }) {
         }}
         body={
           field ? (
-            <FilterEditor field={field} filter={draft} onChange={change} onDone={finish} isNew={isNew} labels={labels} container={bar.container} today={bar.today} />
+            <FilterEditor field={field} filter={draft} onChange={change} onDone={finish} isNew={isNew} labels={labels} today={bar.today} escapeRef={escapeRef} />
           ) : (
             <p className="text-sm text-text-destructive">{labels.filterValueUnknown}</p>
           )
@@ -1142,6 +1115,143 @@ export function FilterBarChips({ className, ...props }: FilterBarChipsProps) {
 
 /* ---------- the editor ---------- */
 
+const pointerLast = () => typeof document !== 'undefined' && document.documentElement.hasAttribute('data-satin-pointer')
+
+interface OptionListProps {
+  options: SelectOption[]
+  /** What is picked. */
+  value: string[]
+  multiple?: boolean
+  onPick: (value: string) => void
+  /** The list's name. */
+  label: string
+  /** A search field over the list, which keeps focus while the arrows move through it. */
+  search?: boolean
+  labels: Labels
+  /** Takes focus as the editor opens. */
+  focusTarget?: boolean
+  describedBy?: string
+  listRef?: React.Ref<HTMLDivElement>
+}
+
+/**
+ * Choices listed in the editor itself, with no second layer over it: the Dropdown's rows, the
+ * check on what's picked. Without `search` the list takes focus; with it the field over the
+ * list does, as in Combobox. Arrows move, Home and End jump (on the list), Enter picks, and so
+ * does Space on the list.
+ */
+function OptionList({ options, value, multiple = false, onPick, label, search = false, labels, focusTarget, describedBy, listRef }: OptionListProps) {
+  const listId = React.useId()
+  const [query, setQuery] = React.useState('')
+  const q = query.trim().toLowerCase()
+  const shown = q ? options.filter((o) => o.label.toLowerCase().includes(q) || (typeof o.description === 'string' && o.description.toLowerCase().includes(q))) : options
+  const [active, setActive] = React.useState(() => Math.max(0, options.findIndex((o) => value.includes(o.value))))
+  const at = Math.min(active, shown.length - 1)
+  const [focused, setFocused] = React.useState(false)
+  const [hovered, setHovered] = React.useState(false)
+  // The row gets the focus ring only when keys put focus there (see menuItemClass).
+  const [viaKeys, setViaKeys] = React.useState(false)
+  const activeId = shown[at] ? `${listId}-${at}` : undefined
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const move = (to: number) => {
+      e.preventDefault()
+      setViaKeys(true)
+      if (shown.length) setActive((to + shown.length) % shown.length)
+    }
+    if (e.key === 'ArrowDown') move(at + 1)
+    else if (e.key === 'ArrowUp') move(at - 1)
+    else if (e.key === 'Home' && !search) move(0)
+    else if (e.key === 'End' && !search) move(shown.length - 1)
+    else if ((e.key === 'Enter' || (e.key === ' ' && !search)) && shown[at]) {
+      e.preventDefault()
+      e.stopPropagation()
+      if (!shown[at].disabled) onPick(shown[at].value)
+    }
+  }
+  const focusProps = {
+    onFocus: () => {
+      setFocused(true)
+      setViaKeys(!pointerLast())
+    },
+    onBlur: () => setFocused(false),
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      {search && (
+        <Input
+          role="combobox"
+          aria-expanded
+          aria-controls={listId}
+          aria-autocomplete="list"
+          aria-activedescendant={activeId}
+          aria-label={label}
+          placeholder={labels.search}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setActive(0)
+          }}
+          onKeyDown={onKeyDown}
+          leadingIcon={<SearchGlyph />}
+          autoComplete="off"
+          data-filter-value={focusTarget ? '' : undefined}
+          {...focusProps}
+        />
+      )}
+      <div
+        ref={listRef}
+        id={listId}
+        role="listbox"
+        aria-label={label}
+        aria-multiselectable={multiple || undefined}
+        aria-describedby={describedBy}
+        aria-activedescendant={search ? undefined : activeId}
+        tabIndex={search ? -1 : 0}
+        data-slot="filter-option-list"
+        data-filter-value={!search && focusTarget ? '' : undefined}
+        onKeyDown={search ? undefined : onKeyDown}
+        onPointerLeave={() => setHovered(false)}
+        className="-mx-1 flex max-h-60 flex-col gap-0.5 overflow-y-auto p-1 outline-none"
+        {...(search ? {} : focusProps)}
+      >
+        {shown.map((o, i) => {
+          const picked = value.includes(o.value)
+          const lit = i === at && (focused || hovered)
+          return (
+            <div
+              key={o.value}
+              id={`${listId}-${i}`}
+              role="option"
+              aria-selected={picked}
+              aria-disabled={o.disabled || undefined}
+              data-highlighted={lit ? '' : undefined}
+              data-keyboard={lit && focused && viaKeys ? '' : undefined}
+              data-disabled={o.disabled ? '' : undefined}
+              onPointerMove={() => {
+                setHovered(true)
+                setViaKeys(false)
+                setActive(i)
+              }}
+              // Focus stays where it is (the list, or the search over it).
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => !o.disabled && onPick(o.value)}
+              className={cn(menuItemClass, picked && 'bg-bg-selected')}
+            >
+              <MenuItemContent label={o.label} description={o.description} icon={o.icon} layout="inline" selected={picked} />
+            </div>
+          )
+        })}
+        {shown.length === 0 && <p className="px-3 py-4 text-center text-sm text-text-muted">{labels.noResults}</p>}
+      </div>
+    </div>
+  )
+}
+
+/** More choices than this get a search field over them. */
+const SEARCH_FROM = 8
+
 interface FilterEditorProps {
   field: FilterField
   filter: Filter
@@ -1150,12 +1260,17 @@ interface FilterEditorProps {
   onDone: () => void
   isNew: boolean
   labels: Labels
-  container?: HTMLElement | null
   today?: Date
+  /** Set by the editor: Escape closes its operator list first, not the popover. */
+  escapeRef: React.RefObject<(() => boolean) | null>
 }
 
-/** The operator over the value, its control picked by the field's type and the operator. */
-function FilterEditor({ field, filter, onChange, onDone, isNew, labels, container, today }: FilterEditorProps) {
+/**
+ * The operator over the value. Everything stays on the popover's one surface: the operator opens
+ * its list in place of the value, and choices are listed in place, so no menu ever opens over
+ * the editor.
+ */
+function FilterEditor({ field, filter, onChange, onDone, isNew, labels, today, escapeRef }: FilterEditorProps) {
   const operators = operatorsOf(field)
   const op = operators.includes(filter.operator) ? filter.operator : operators[0]
   const shape = shapeOf(field.type, op)
@@ -1171,6 +1286,31 @@ function FilterEditor({ field, filter, onChange, onDone, isNew, labels, containe
   const setOperator = (next: FilterOperator) =>
     onChange({ field: field.key, operator: next, value: convertValue(v, shape, shapeOf(field.type, next), field) })
 
+  // The operator's list, shown in place of the value while it is open.
+  const [choosing, setChoosing] = React.useState(false)
+  const operatorButton = React.useRef<HTMLButtonElement>(null)
+  const operatorList = React.useRef<HTMLDivElement>(null)
+  const fieldId = React.useId()
+  const operatorId = React.useId()
+  const operatorListId = React.useId()
+  const closeOperators = () => {
+    setChoosing(false)
+    operatorButton.current?.focus({ preventScroll: true })
+  }
+  React.useEffect(() => {
+    if (choosing) operatorList.current?.focus({ preventScroll: true })
+  }, [choosing])
+  React.useEffect(() => {
+    escapeRef.current = () => {
+      if (!choosing) return false
+      closeOperators()
+      return true
+    }
+    return () => {
+      escapeRef.current = null
+    }
+  })
+
   // People: the person using the app first, as "Me".
   const options = React.useMemo(() => {
     const all = field.options ?? []
@@ -1180,66 +1320,45 @@ function FilterEditor({ field, filter, onChange, onDone, isNew, labels, containe
 
   // The field shows the number plainly (no grouping), so it reads back the way it was typed.
   const plain = React.useMemo(() => new Intl.NumberFormat(locale, { useGrouping: false, maximumFractionDigits: 10 }), [locale])
-  const numberProps = { size: 'sm' as const, min: field.min, max: field.max, step: field.step, formatValue: (n: number) => plain.format(n) }
+  const numberProps = { min: field.min, max: field.max, step: field.step, formatValue: (n: number) => plain.format(n) }
   const pair = (Array.isArray(v) ? v : []) as unknown[]
+  const listProps = { labels, label: valueName, focusTarget: true, describedBy: message ? messageId : undefined }
 
   let control: React.ReactNode
   let ownMessage = false
   switch (shape) {
     case 'option':
-      control =
-        field.type === 'person' ? (
-          <Combobox
-            size="sm"
-            options={options}
-            value={typeof v === 'string' && v ? [v] : []}
-            onValueChange={(next) => {
-              set(next[0] ?? '')
-              if (next[0]) onDone()
-            }}
-            aria-label={valueName}
-            error={message}
-            defaultOpen={isNew}
-            container={container}
-            data-filter-value=""
-          />
-        ) : (
-          <Select
-            size="sm"
-            options={options}
-            value={typeof v === 'string' ? v : ''}
-            onValueChange={(x) => {
-              set(x)
-              onDone()
-            }}
-            aria-label={valueName}
-            error={message}
-            defaultOpen={isNew}
-            container={container}
-            data-filter-value=""
-          />
-        )
-      break
-    case 'options':
+      ownMessage = true
       control = (
-        <Combobox
-          multiple
-          size="sm"
+        <OptionList
+          {...listProps}
           options={options}
-          value={Array.isArray(v) ? v.map(String) : []}
-          onValueChange={set}
-          aria-label={valueName}
-          error={message}
-          defaultOpen={isNew}
-          container={container}
-          data-filter-value=""
+          value={typeof v === 'string' && v ? [v] : []}
+          search={options.length >= SEARCH_FROM}
+          onPick={(x) => {
+            set(x)
+            onDone()
+          }}
         />
       )
       break
-    case 'text':
+    case 'options': {
+      ownMessage = true
+      const picked = Array.isArray(v) ? v.map(String) : []
       control = (
-        <Input size="sm" value={typeof v === 'string' ? v : ''} onChange={(e) => set(e.target.value)} aria-label={valueName} placeholder={field.placeholder} error={message} autoComplete="off" data-filter-value="" />
+        <OptionList
+          {...listProps}
+          multiple
+          options={options}
+          value={picked}
+          search={options.length >= SEARCH_FROM}
+          onPick={(x) => set(picked.includes(x) ? picked.filter((p) => p !== x) : [...picked, x])}
+        />
       )
+      break
+    }
+    case 'text':
+      control = <Input value={typeof v === 'string' ? v : ''} onChange={(e) => set(e.target.value)} aria-label={valueName} placeholder={field.placeholder} error={message} autoComplete="off" data-filter-value="" />
       break
     case 'number':
       control = <NumberInput {...numberProps} value={typeof v === 'number' ? v : undefined} onValueChange={set} aria-label={valueName} error={message} data-filter-value="" />
@@ -1269,25 +1388,19 @@ function FilterEditor({ field, filter, onChange, onDone, isNew, labels, containe
       )
       break
     case 'days':
-      control = (
-        <NumberInput size="sm" min={1} step={1} value={typeof v === 'number' ? v : undefined} onValueChange={set} formatValue={labels.filterDays} aria-label={valueName} error={message} data-filter-value="" />
-      )
+      control = <NumberInput min={1} step={1} value={typeof v === 'number' ? v : undefined} onValueChange={set} formatValue={labels.filterDays} aria-label={valueName} error={message} data-filter-value="" />
       break
     case 'period':
+      ownMessage = true
       control = (
-        <Select
-          size="sm"
+        <OptionList
+          {...listProps}
           options={PERIODS.map((p) => ({ value: p, label: labels.filterPeriod(p) }))}
-          value={typeof v === 'string' ? v : ''}
-          onValueChange={(p) => {
+          value={typeof v === 'string' && v ? [v] : []}
+          onPick={(p) => {
             set(p)
             onDone()
           }}
-          aria-label={valueName}
-          error={message}
-          defaultOpen={isNew}
-          container={container}
-          data-filter-value=""
         />
       )
       break
@@ -1340,24 +1453,64 @@ function FilterEditor({ field, filter, onChange, onDone, isNew, labels, containe
       }}
     >
       {operators.length > 1 && (
-        <Select
-          size="sm"
-          aria-label={field.label}
-          value={op}
-          onValueChange={(o) => setOperator(o as FilterOperator)}
-          options={operators.map((o) => {
-            const name = operatorWords(o, labels)
-            const text = labels.filterOperator(o)
-            return { value: o, label: text, description: name !== text ? name : undefined }
-          })}
-          container={container}
-        />
+        <>
+          <span id={fieldId} hidden>
+            {field.label}
+          </span>
+          {/* Select's field, opening the operators below it on this same surface. */}
+          <button
+            ref={operatorButton}
+            type="button"
+            data-slot="filter-editor-operator"
+            data-size="md"
+            data-filled
+            data-state={choosing ? 'open' : 'closed'}
+            aria-labelledby={`${fieldId} ${operatorId}`}
+            aria-expanded={choosing}
+            aria-controls={choosing ? operatorListId : undefined}
+            onClick={() => setChoosing((c) => !c)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown' && !choosing) {
+                e.preventDefault()
+                setChoosing(true)
+              }
+            }}
+            className="satin-field satin-select cursor-pointer"
+          >
+            <span id={operatorId} className="min-w-0 flex-1 truncate text-text-default">
+              {labels.filterOperator(op)}
+            </span>
+            <SelectChevron className={cn('transition-transform duration-(--duration-fast) ease-(--ease-out)', choosing && 'rotate-180')} />
+          </button>
+        </>
       )}
-      {control}
-      {ownMessage && message && (
-        <p id={messageId} className="text-sm text-text-destructive">
-          {message}
-        </p>
+      {choosing ? (
+        <div id={operatorListId}>
+          <OptionList
+            listRef={operatorList}
+            labels={labels}
+            label={field.label}
+            options={operators.map((o) => {
+              const name = operatorWords(o, labels)
+              const text = labels.filterOperator(o)
+              return { value: o, label: text, description: name !== text ? name : undefined }
+            })}
+            value={[op]}
+            onPick={(o) => {
+              setOperator(o as FilterOperator)
+              closeOperators()
+            }}
+          />
+        </div>
+      ) : (
+        <>
+          {control}
+          {ownMessage && message && (
+            <p id={messageId} className="text-sm text-text-destructive">
+              {message}
+            </p>
+          )}
+        </>
       )}
     </div>
   )
@@ -1368,19 +1521,15 @@ function FilterEditor({ field, filter, onChange, onDone, isNew, labels, containe
 export interface FilterBarAddProps extends Omit<React.ComponentProps<typeof Button>, 'variant' | 'asChild' | 'iconOnly'> {}
 
 /**
- * `+ Filter`: a menu of the fields; picking one adds its chip with the editor open. Shows the
- * bar's `shortcut` as Kbd. Other props, `ref` included, go to the Button.
+ * `+ Filter`: a menu of the fields; picking one adds its chip with the editor open. Other props,
+ * `ref` included, go to the Button.
  */
 export function FilterBarAdd({ className, children, ...props }: FilterBarAddProps) {
   const bar = useBar('FilterBarAdd')
-  const { labels, shortcut, registerAdd } = bar
-  const [open, setOpen] = React.useState(false)
+  const { labels } = bar
   const picked = React.useRef(false)
-  React.useEffect(() => registerAdd(() => setOpen(true)), [registerAdd])
   return (
     <DropdownMenu
-      open={open}
-      onOpenChange={setOpen}
       container={bar.container}
       // Picking a field hands focus to its editor, not back to this button.
       onCloseAutoFocus={(e: Event) => {
@@ -1391,13 +1540,11 @@ export function FilterBarAdd({ className, children, ...props }: FilterBarAddProp
         <Button
           variant="tertiary"
           data-slot="filter-bar-add"
-          aria-keyshortcuts={shortcut ? shortcut.toUpperCase() : undefined}
           className={cn('shrink-0', className)}
           {...props}
         >
           <PlusGlyph />
           {children ?? labels.filterAdd}
-          {shortcut && <KbdGroup keys={shortcut.toUpperCase()} aria-hidden className="ms-0.5" />}
         </Button>
       }
     >
@@ -1477,7 +1624,7 @@ function SaveView({ focusAfter }: { focusAfter: () => void }) {
             setOpen(false)
           }}
         >
-          <Input size="sm" label={labels.filterViewName} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
+          <Input label={labels.filterViewName} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
           <div className="flex justify-end">
             <Button type="submit" disabled={!name.trim()}>
               {labels.filterSave}
