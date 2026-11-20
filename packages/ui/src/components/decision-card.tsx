@@ -365,6 +365,15 @@ function Header({
   nextStepLabel?: string
 }) {
   const labels = useSatinLabels()
+  // A step button that turns disabled while it has focus (Previous on the first question, Next on
+  // the last) would drop focus to the page; it goes to the other step button instead.
+  const prevRef = React.useRef<HTMLButtonElement>(null)
+  const nextRef = React.useRef<HTMLButtonElement>(null)
+  React.useLayoutEffect(() => {
+    const active = document.activeElement
+    if (!onPreviousStep && active === prevRef.current) nextRef.current?.focus()
+    else if (!onNextStep && active === nextRef.current) prevRef.current?.focus()
+  }, [onPreviousStep, onNextStep])
   return (
     <div className="flex items-start gap-0.5 py-3 ps-3 pe-px">
       {/* The title and hint move with the question; the step navigator stays. */}
@@ -383,6 +392,7 @@ function Header({
             size="xs"
             shape="rounded"
             iconOnly
+            ref={prevRef}
             aria-label={previousStepLabel ?? labels.previousQuestion}
             disabled={!onPreviousStep}
             onClick={onPreviousStep}
@@ -396,6 +406,7 @@ function Header({
             size="xs"
             shape="rounded"
             iconOnly
+            ref={nextRef}
             aria-label={nextStepLabel ?? labels.nextQuestion}
             disabled={!onNextStep}
             onClick={onNextStep}

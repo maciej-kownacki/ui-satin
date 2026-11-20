@@ -61,14 +61,15 @@ describe('DecisionCard', () => {
     expect(onDone).toHaveBeenCalledWith({ 0: 'dairy-free', 2: 'monday' })
   })
 
-  it('goes on with the keyboard, and the step buttons keep focus', async () => {
+  it('goes on with the keyboard, and focus stays on the step buttons', async () => {
     const { user } = renderWithSatin(<Flow onDone={() => {}} />)
     await user.click(screen.getByRole('button', { name: 'Next question' }))
     expect(count()).toBe('2/3')
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Next question' })))
     await user.click(screen.getByRole('button', { name: 'Previous question' }))
     expect(count()).toBe('1/3')
-    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Previous question' })))
+    // Back on the first question Previous is disabled, so focus moves to Next rather than the page.
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Next question' })))
 
     // Tab to Continue (past Skip) and press Enter: on to the next question.
     screen.getByRole('button', { name: 'Skip' }).focus()
