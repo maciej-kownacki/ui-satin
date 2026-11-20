@@ -1,10 +1,11 @@
 'use client'
 
 import * as React from 'react'
-import { Clock, Copy, DoubleCheck, Link, ThumbsDown, ThumbsUp } from 'iconoir-react'
+import { Check, Clock, Copy, DoubleCheck, Link, ThumbsDown, ThumbsUp } from 'iconoir-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { useSatinLabels } from './labels'
+import { Tooltip } from './tooltip'
 
 /**
  * MessageActions, 1:1 with uiKit `_chat/answerActions` (901:20164): the row under an assistant
@@ -14,6 +15,10 @@ import { useSatinLabels } from './labels'
  *
  * Feedback: a clicked thumb stays pressed (border/input fill, icon text/subtle) until the other
  * one is clicked or it is clicked again; `feedback` sets it, `onFeedback` reports it.
+ *
+ * The three icon buttons carry a Tooltip with their name ("Good response", "Bad response",
+ * "Copy"). Copy confirms itself: for 1.5 s its icon turns to a check and its tooltip stays open
+ * saying "Copied", which screen readers hear too. Share has a visible label, so no tooltip.
  * The status and time show only when there is a `timestamp`.
  */
 export type MessageFeedback = 'like' | 'dislike' | null
@@ -55,6 +60,17 @@ export function MessageActions({
 
   const thumb = 'aria-pressed:bg-bg-pressed aria-pressed:[&_svg]:text-text-subtle'
 
+  // "Copied" for 1.5 s after a copy: the icon turns to a check and the tooltip stays open.
+  const [copied, setCopied] = React.useState(false)
+  const copyTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
+  React.useEffect(() => () => clearTimeout(copyTimer.current), [])
+  const copy = () => {
+    onCopy?.()
+    setCopied(true)
+    clearTimeout(copyTimer.current)
+    copyTimer.current = setTimeout(() => setCopied(false), 1500)
+  }
+
   return (
     <div data-slot="message-actions" className={cn('flex items-center gap-2', className)} {...props}>
       {timestamp && (
@@ -74,31 +90,40 @@ export function MessageActions({
         </>
       )}
       <span className="flex items-center gap-0.5">
-        <Button
-          variant="tertiary"
-          size="xs"
-          iconOnly
-          aria-label={labels.goodResponse}
-          aria-pressed={feedback === 'like'}
-          onClick={() => toggle('like')}
-          className={thumb}
-        >
-          <ThumbsUp />
-        </Button>
-        <Button
-          variant="tertiary"
-          size="xs"
-          iconOnly
-          aria-label={labels.badResponse}
-          aria-pressed={feedback === 'dislike'}
-          onClick={() => toggle('dislike')}
-          className={thumb}
-        >
-          <ThumbsDown />
-        </Button>
-        <Button variant="tertiary" size="xs" iconOnly aria-label={labels.copy} onClick={onCopy}>
-          <Copy />
-        </Button>
+        <Tooltip label={labels.goodResponse}>
+          <Button
+            variant="tertiary"
+            size="xs"
+            iconOnly
+            aria-label={labels.goodResponse}
+            aria-pressed={feedback === 'like'}
+            onClick={() => toggle('like')}
+            className={thumb}
+          >
+            <ThumbsUp />
+          </Button>
+        </Tooltip>
+        <Tooltip label={labels.badResponse}>
+          <Button
+            variant="tertiary"
+            size="xs"
+            iconOnly
+            aria-label={labels.badResponse}
+            aria-pressed={feedback === 'dislike'}
+            onClick={() => toggle('dislike')}
+            className={thumb}
+          >
+            <ThumbsDown />
+          </Button>
+        </Tooltip>
+        <Tooltip label={copied ? labels.copied : labels.copy} open={copied || undefined}>
+          <Button variant="tertiary" size="xs" iconOnly aria-label={labels.copy} onClick={copy}>
+            {copied ? <Check /> : <Copy />}
+          </Button>
+        </Tooltip>
+        <span aria-live="polite" className="sr-only">
+          {copied ? labels.copied : ''}
+        </span>
       </span>
       {showShare && (
         <>

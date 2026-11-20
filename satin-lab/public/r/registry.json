@@ -1273,7 +1273,8 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/labels.json"
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/tooltip.json"
       ],
       "docs": "Message actions docs: https://uisatin.dev/ai-patterns/message-actions",
       "meta": {
