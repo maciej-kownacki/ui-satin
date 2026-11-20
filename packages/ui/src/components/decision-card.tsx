@@ -7,6 +7,7 @@ import { cn } from '../lib/utils'
 import { Button } from './button'
 import { Checkbox } from './checkbox'
 import { useSatinLabels } from './labels'
+import { useStepSlide } from './step-slide'
 
 /**
  * DecisionCard, 1:1 with the uiKit `DecisionCard` set (3096:1626) and its `decisionItem` rows
@@ -27,7 +28,8 @@ import { useSatinLabels } from './labels'
  * Stepping between questions slides like a track: the old title and answers and the new ones sit
  * side by side, 24px apart, and move a whole card's width to the side (the new ones in from the
  * right going forward), the one leaving fading out; each part's box eases to the new height as
- * they go, clipped while it moves. All of it is 360 ms on cubic-bezier(0.22, 1, 0.36, 1). The
+ * they go, clipped while it moves. All of it is 360 ms on cubic-bezier(0.22, 1, 0.36, 1)
+ * (step-slide.tsx, which Satin Pro's CommandPages shares). The
  * "1/3" count rolls its changed digit like an odometer (up going forward, down going back, 350
  * ms). The navigator and the footer stay put. Stepping again mid-slide carries on from where
  * things are. A part that reads the same on both steps (a title every step shares) stays still.
@@ -141,7 +143,7 @@ export function DecisionCard({
   const titleRef = React.useRef<HTMLDivElement>(null)
   const bodyRef = React.useRef<HTMLDivElement>(null)
   const footerRef = React.useRef<HTMLDivElement>(null)
-  useStepSlide(question, step, cardRef, [titleRef, bodyRef])
+  useStepSlide(question, stepIndex(step), cardRef, () => [titleRef.current, bodyRef.current])
 
   // Continue or Skip took the user to another question: focus goes into it (its picked answer,
   // or the first control), so the new question is read out and answered from there. From the
@@ -410,86 +412,8 @@ function Header({
 // hands focus on to its items, which it hasn't registered yet when the question is new.
 const TABBABLE = 'button:not(:disabled):not([tabindex="-1"]), input:not(:disabled):not([tabindex="-1"]), textarea:not(:disabled), [tabindex="0"]'
 
-const STEP_MS = 360
-const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
-const GAP = 24
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 const stepIndex = (step?: string) => (step ? parseInt(step, 10) || 0 : 0)
-
-/**
- * Slides the parts in `refs` when `key` changes, as one horizontal track: a copy of how each part
- * looked and the part itself sit side by side, GAP apart, and move a card's width plus GAP to the
- * side together, the copy fading out and the part fading in, while the part's box (its parent)
- * eases from the old height to the new one and clips them. The direction comes from the "2/3"
- * step; without one it moves forward. A part that reads the same on both steps stays still.
- */
-function useStepSlide(
-  key: string,
-  step: string | undefined,
-  cardRef: React.RefObject<HTMLDivElement | null>,
-  refs: React.RefObject<HTMLDivElement | null>[],
-) {
-  const last = React.useRef<{ key: string; index: number; heights: number[]; copies: (Node | null)[] } | null>(null)
-  const index = stepIndex(step)
-
-  React.useLayoutEffect(() => {
-    const card = cardRef.current
-    const prev = last.current
-
-    if (card && prev && prev.key !== key && !reducedMotion()) {
-      // The next question comes in from the end side: the right, or the left in right-to-left.
-      const sign = (index < prev.index ? -1 : 1) * (getComputedStyle(card).direction === 'rtl' ? -1 : 1)
-      const distance = card.clientWidth + GAP
-      const timing: KeyframeAnimationOptions = { duration: STEP_MS, easing: EASE }
-      refs.forEach((ref, i) => {
-        const el = ref.current
-        const host = el?.parentElement
-        const copy = prev.copies[i] as HTMLElement | null
-        if (!el || !host) return
-        // The same on both steps (a title every step shares): it stays still.
-        if (copy?.isEqualNode(el)) return
-        // Stepping again mid-slide: everything goes on from where it is now, not from rest.
-        const midway = el.getAnimations().length > 0
-        const now = midway ? getComputedStyle(el) : null
-        const start: Keyframe = {
-          transform: now && now.transform !== 'none' ? now.transform : 'translate3d(0, 0, 0)',
-          opacity: now ? Number(now.opacity) : 1,
-        }
-        const fromHeight = host.getAnimations().length > 0 ? host.getBoundingClientRect().height : prev.heights[i]
-        for (const n of [el, host]) n.getAnimations().forEach((a) => a.cancel())
-        host.querySelectorAll(':scope > [data-step-copy]').forEach((n) => n.remove())
-        const toHeight = el.offsetHeight
-
-        host.style.overflow = 'clip'
-        const slide = el.animate(
-          [{ transform: `translate3d(${sign * distance}px, 0, 0)`, opacity: 0 }, { transform: 'translate3d(0, 0, 0)', opacity: 1 }],
-          timing,
-        )
-        if (Math.abs(fromHeight - toHeight) > 0.5) host.animate([{ height: `${fromHeight}px` }, { height: `${toHeight}px` }], timing)
-        if (copy) {
-          copy.setAttribute('data-step-copy', '')
-          copy.setAttribute('aria-hidden', 'true')
-          copy.setAttribute('inert', '')
-          copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'))
-          copy.style.cssText += ';position:absolute;top:0;left:0;right:0;pointer-events:none'
-          host.appendChild(copy)
-          copy.animate([start, { transform: `translate3d(${-sign * distance}px, 0, 0)`, opacity: 0 }], timing)
-        }
-        // Done: the copy goes and the box stops clipping. Cut short by another step: that one takes over.
-        slide.finished.then(
-          () => {
-            copy?.remove()
-            host.style.overflow = ''
-          },
-          () => {},
-        )
-      })
-    }
-
-    // Each part's own height, which no running animation changes.
-    last.current = { key, index, heights: refs.map((r) => r.current?.offsetHeight ?? 0), copies: refs.map((r) => r.current?.cloneNode(true) ?? null) }
-  })
-}
 
 const ROLL_MS = 350
 const ROLL_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)'

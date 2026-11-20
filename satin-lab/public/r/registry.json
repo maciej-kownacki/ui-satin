@@ -761,7 +761,8 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/checkbox.json",
-        "https://uisatin.dev/r/labels.json"
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/step-slide.json"
       ],
       "docs": "Decision card docs: https://uisatin.dev/ai-patterns/decision-card",
       "meta": {
@@ -1883,6 +1884,27 @@
       ]
     },
     {
+      "name": "step-slide",
+      "type": "registry:ui",
+      "title": "Step slide",
+      "description": "The Satin Step slide component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/step-slide.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "stepper",
       "type": "registry:ui",
       "title": "Stepper",
@@ -2455,6 +2477,7 @@
         "https://uisatin.dev/r/command-menu.json",
         "https://uisatin.dev/r/kbd.json",
         "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/step-slide.json",
         "https://uisatin.dev/r/streaming-text.json",
         "https://uisatin.dev/r/toast.json"
       ],

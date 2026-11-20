@@ -23,7 +23,10 @@ The tokens live in `src/styles/motion.css`.
 2. **Ease-out for anything the user starts.** It moves fast at first, so the interface answers the click at once.
    Never use ease-in for UI: it starts slowly and feels late.
 3. **Stay under 250 ms.** Most transitions are 150–200 ms. Anything longer starts to feel like waiting. The dialog is
-   the one exception: it rises over 300 ms with its scrim, so a whole-screen change doesn't read as a cut.
+   the one exception: it rises over 300 ms with its scrim, so a whole-screen change doesn't read as a cut. So is the
+   step slide (`step-slide.tsx`: Decision card's questions, Satin Pro's Command pages): the old and new content cross on
+   one track a whole frame wide while their box eases to the new height, 360 ms on `cubic-bezier(0.22, 1, 0.36, 1)`,
+   since the content trades places across the full width rather than settling a few pixels.
 4. **Pressing gives feedback.** Buttons scale to 0.97 while held (`active:scale-[0.97]`).
 5. **Nothing grows from zero.** Elements that appear start from opacity 0 and a few pixels of offset (or scale 0.95),
    never from `scale(0)`. Collapsible content fades and settles in; its height is not animated, with two exceptions.

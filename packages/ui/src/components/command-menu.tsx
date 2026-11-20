@@ -294,12 +294,16 @@ export function CommandMenu({
               </Kbd>
             </label>
 
-            {showList
-              ? list.renderList({
-                  label: labels.commands,
-                  empty: <p className="px-2 py-8 text-center text-sm text-text-muted">{(emptyText ?? labels.noResultsFor)(query)}</p>,
-                })
-              : children}
+            {/* The list's own box, which nothing else sizes: a menu that steps between pages (Satin
+                Pro's CommandPages) slides the list in it and eases it to the new height. */}
+            <div data-slot="command-menu-body" className="relative flex min-h-0 flex-col overflow-hidden">
+              {showList
+                ? list.renderList({
+                    label: labels.commands,
+                    empty: <p className="px-2 py-8 text-center text-sm text-text-muted">{(emptyText ?? labels.noResultsFor)(query)}</p>,
+                  })
+                : children}
+            </div>
 
             {hints && (
               <div aria-hidden className="flex h-10 shrink-0 items-center gap-4 border-t border-border-subtle px-4">
