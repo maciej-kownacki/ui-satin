@@ -499,10 +499,11 @@ export function AgentActionLogRoot({
         }}
         data-slot="agent-action-log"
         aria-label={props['aria-labelledby'] ? undefined : labels.actionLog}
-        className={cn('w-full overflow-hidden rounded-xl border border-border-default bg-bg-card text-text-default [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]', className)}
+        // Card's surface (bg/popover): lighter than the page in Dark, like Card and AgentSuggestion.
+        className={cn('w-full overflow-hidden rounded-xl border border-border-default bg-bg-popover text-text-default [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]', className)}
         {...props}
       >
-        <ol role="list" className="m-0 flex list-none flex-col divide-y divide-border-subtle p-0">
+        <ol role="list" className="m-0 flex list-none flex-col divide-y divide-border-default p-0">
           {children}
         </ol>
         <span role="status" className="sr-only">
