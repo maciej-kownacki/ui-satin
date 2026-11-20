@@ -78,7 +78,7 @@ const pairs = [
   ['text', 'text-destructive', 'status-red-bg'],
   ...['action-focus-ring', 'border-focus'].flatMap((fg) => SURFACES.map((bg) => ['focus', fg, bg])),
   ...FIELD_SURFACES.map((bg) => ['edge', 'action-destructive-bg', bg]),
-  // Reviewable changes (Pro): the source preview inside a step, and Accept's green check on the card.
+  // Reviewable changes (Pro): the source preview inside a step, and the Accepted note's green check on the card.
   ['text', 'text-default', 'component-changes-review-source-bg'],
   ['text', 'text-muted', 'component-changes-review-source-bg'],
   ['focus', 'action-focus-ring', 'component-changes-review-source-bg'],

@@ -2,7 +2,7 @@
  * Field-level review of agent changes (components/agent-changes-review.tsx), one change per step
  * of a DecisionCard.
  *
- * A dismissed change's new value fades to text/muted over --duration-base, and a rich value (a
+ * A skipped change's new value fades to text/muted over --duration-base, and a rich value (a
  * Badge) loses its colour, which keeps its text's contrast; nothing moves. Satin's reduced-motion
  * rule (motion.css) cuts the fade.
  */
@@ -14,18 +14,6 @@
 .satin-changes-review-row[data-state='rejected'] [data-slot='agent-suggestion-change-value'] > :last-child {
   color: var(--text-muted);
   filter: grayscale(1);
-}
-
-/*
- * Accept's check is green whatever its state; both toggles stay the bordered secondary button.
- * Pressed (the change's decision), one keeps the secondary button's pressed fill and ring.
- */
-.satin-changes-review-toggle[data-decision='accept'] svg {
-  color: var(--status-green-fg);
-}
-.satin-changes-review-toggle[aria-pressed='true'] {
-  background-color: var(--action-secondary-bg-pressed);
-  box-shadow: 0 0 0 1px var(--border-strong);
 }
 
 /*

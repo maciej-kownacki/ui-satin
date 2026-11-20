@@ -7,9 +7,9 @@ import {
 } from '@uisatin/pro/agent-changes-review'
 
 /**
- * Every ReviewableChanges state: a change pending, accepted and dismissed, the set applying, with a
- * title and without one (each field is the title then). Applying is held with `status`. Once
- * applied the card leaves, so there is no applied state to show.
+ * Every ReviewableChanges state: a change pending, accepted and skipped (as it shows when you go
+ * back to it), the set applying, with a title and without one (each field is the title then).
+ * Applying is held with `status`. Once applied the card leaves, so there is no applied state.
  */
 const changes: ReviewableChange[] = [
   {
@@ -27,7 +27,7 @@ const changes: ReviewableChange[] = [
 const columns: { name: string; value: ReviewableChangesValue; status?: ReviewableChangesStatus }[] = [
   { name: 'pending', value: {} },
   { name: 'accepted', value: { stage: 'accepted' } },
-  { name: 'dismissed', value: { stage: 'rejected', value: 'accepted' } },
+  { name: 'skipped', value: { stage: 'rejected', value: 'accepted' } },
   { name: 'applying', value: { stage: 'accepted', value: 'accepted' }, status: 'applying' },
 ]
 const rows = ['title', 'no title'] as const

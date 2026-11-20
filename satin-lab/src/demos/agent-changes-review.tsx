@@ -52,7 +52,7 @@ export function DealUpdate({ deal, recordRef }: { deal: Deal; recordRef: React.R
       ]}
       value={value}
       onValueChange={setValue}
-      // Only the accepted fields: stage and closeDate when Value is dismissed.
+      // When the last change is decided: the accepted fields only (stage and closeDate when Value is skipped).
       onApply={(accepted) =>
         updateDeal(deal.id, Object.fromEntries(accepted.map((c) => [c.id, proposal[c.id]])))
       }
@@ -93,9 +93,9 @@ const changesWith = (source: boolean): ReviewableChange[] =>
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
- * The Sales scenario: the agent updates a deal. Accept or dismiss each change and the next one
- * slides in; the last decision takes focus to Apply, which sends the accepted ones and the card
- * leaves. A quiet button brings it back, so the stage isn't left empty.
+ * The Sales scenario: the agent updates a deal. Accept or skip each change and the next one
+ * slides in; the last decision applies the accepted ones and the card leaves. A quiet button
+ * brings it back, so the stage isn't left empty.
  */
 function Preview({ v }: { v: Record<string, string> }) {
   const [round, setRound] = React.useState(0)

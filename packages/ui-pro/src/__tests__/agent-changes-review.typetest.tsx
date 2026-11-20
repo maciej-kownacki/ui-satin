@@ -71,10 +71,11 @@ export const labels = (
     labels={{
       acceptFieldChange: (field) => `Zaakceptuj zmianę: ${field}`,
       acceptFieldChangeText: 'Akceptuj',
-      rejectFieldChange: (field) => `Odrzuć zmianę: ${field}`,
+      skipFieldChange: (field) => `Pomiń zmianę: ${field}`,
+      fieldChangeAccepted: 'Zaakceptowano',
+      fieldChangeSkipped: 'Pominięto',
       previousFieldChange: 'Poprzednia zmiana',
       nextFieldChange: 'Następna zmiana',
-      applyFieldChanges: (count, number) => `Zastosuj (${number})`,
       fieldChangesApplied: (count, number) => `Zastosowano: ${number}`,
     }}
   >

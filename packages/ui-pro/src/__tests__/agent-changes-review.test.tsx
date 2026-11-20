@@ -38,7 +38,7 @@ describe('ReviewableChanges', () => {
   beforeEach(() => setReducedMotion(true))
   afterEach(() => setReducedMotion(false))
 
-  it('shows one change at a time, in a DecisionCard, with its source', () => {
+  it('shows one change at a time, in a DecisionCard, with its source and Skip and Accept', () => {
     renderWithSatin(<ReviewableChanges title={TITLE} description="Based on today's call" changes={changes} />)
     expect(card().getAttribute('data-slot')).toBe('reviewable-changes')
     expect(within(card()).getByText("Based on today's call")).toBeTruthy()
@@ -50,11 +50,12 @@ describe('ReviewableChanges', () => {
     const source = stage.querySelector('[data-slot="reviewable-change-source"]')!
     expect(source.textContent).toContain('Transcription')
     expect(source.querySelector('q')?.textContent).toBe('We’re ready to talk terms.')
-    expect(button('Accept Stage change').getAttribute('aria-pressed')).toBe('false')
-    expect(button('Dismiss Stage change').getAttribute('aria-pressed')).toBe('false')
+    // Pending: no note. The footer is Skip and Accept, named after the change.
+    expect(stage.querySelector('[data-slot="reviewable-change-decision"]')).toBeNull()
+    expect(button('Skip Stage change').textContent).toBe('Skip')
+    expect(button('Accept Stage change').textContent).toBe('Accept')
     expect((button('Previous change') as HTMLButtonElement).disabled).toBe(true)
-    // Nothing accepted yet: Apply can't run.
-    expect((button('Apply changes') as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.queryByRole('button', { name: /Accept all|Apply/ })).toBeNull()
   })
 
   it('takes AgentSuggestionChange[] as they are; without a title, each field is the title', () => {
@@ -67,46 +68,65 @@ describe('ReviewableChanges', () => {
     expect(screen.queryByRole('button', { name: 'Next change' })).toBeNull()
   })
 
-  it('steps through with the keyboard: each decision moves on, the last one to Apply', async () => {
+  it('steps through with the keyboard; the last decision applies what was accepted and leaves', async () => {
     const onValueChange = vi.fn()
-    const { user } = renderWithSatin(<ReviewableChanges title={TITLE} changes={changes} onValueChange={onValueChange} />)
-    // The navigator first (Previous is disabled on the first change), then Dismiss and Accept.
+    const onApply = vi.fn()
+    const onApplied = vi.fn()
+    const { user } = renderWithSatin(
+      <ReviewableChanges title={TITLE} changes={changes} onValueChange={onValueChange} onApply={onApply} onApplied={onApplied} />,
+    )
+    // The navigator first (Previous is disabled on the first change), then Skip and Accept.
     await user.tab()
     expect(document.activeElement).toBe(button('Next change'))
     await user.tab()
-    expect(document.activeElement).toBe(button('Dismiss Stage change'))
+    expect(document.activeElement).toBe(button('Skip Stage change'))
     await user.tab()
     expect(document.activeElement).toBe(button('Accept Stage change'))
 
     await user.keyboard('{Enter}')
     expect(counter()).toBe('2/3')
     expect(onValueChange).toHaveBeenLastCalledWith({ stage: 'accepted' })
-    // Focus is on the next change's Accept, a new button with its own name.
+    // Focus stays on Accept, a new button with the next change's name.
     expect(document.activeElement).toBe(button('Accept Value change'))
 
     await user.keyboard('{Shift>}{Tab}{/Shift}{Enter}')
     expect(onValueChange).toHaveBeenLastCalledWith({ stage: 'accepted', value: 'rejected' })
     expect(counter()).toBe('3/3')
-    expect(document.activeElement).toBe(button('Accept Close date change'))
+    expect(document.activeElement).toBe(button('Skip Close date change'))
+    expect(onApply).not.toHaveBeenCalled()
 
+    await user.keyboard('{Shift>}{Tab}{/Shift}')
+    await user.tab()
+    await user.tab()
+    expect(document.activeElement).toBe(button('Accept Close date change'))
     await user.keyboard('{Enter}')
-    // None pending: it stays on the last change and focus goes to Apply.
-    expect(counter()).toBe('3/3')
-    expect(document.activeElement).toBe(button('Apply 2 changes'))
+    // None pending: done. Only the accepted changes are applied, then the card leaves.
+    const value: ReviewableChangesValue = { stage: 'accepted', value: 'rejected', close: 'accepted' }
+    expect(onApply).toHaveBeenCalledWith([changes[0], changes[2]], value)
+    const root = document.querySelector('[data-slot="reviewable-changes"]')!
+    expect(root.classList.contains('satin-changes-review-exit')).toBe(true)
+    expect(root.hasAttribute('inert')).toBe(true)
+    expect(onApplied).toHaveBeenCalledWith([changes[0], changes[2]], value)
+    expect(document.activeElement).toBe(document.body)
+    await waitForAnnouncement()
+    expect(announced()).toBe('2 changes applied')
   })
 
-  it('goes back with the navigator, shows the decision, and toggles it back to pending', async () => {
-    const { user } = renderWithSatin(<ReviewableChanges title={TITLE} changes={changes} defaultValue={{ value: 'rejected' }} />)
+  it('goes back with the navigator, says what was decided, and decides again', async () => {
+    const onValueChange = vi.fn()
+    const { user } = renderWithSatin(
+      <ReviewableChanges title={TITLE} changes={changes} defaultValue={{ value: 'rejected' }} onValueChange={onValueChange} />,
+    )
     await user.click(button('Next change'))
     expect(counter()).toBe('2/3')
     expect(change().getAttribute('data-state')).toBe('rejected')
-    expect(button('Dismiss Value change').getAttribute('aria-pressed')).toBe('true')
-    // Pressing a pressed toggle makes the change pending again, and stays on it.
-    await user.click(button('Dismiss Value change'))
-    expect(change().getAttribute('data-state')).toBe('pending')
-    expect(counter()).toBe('2/3')
+    expect(change().querySelector('[data-slot="reviewable-change-decision"]')?.textContent).toBe('Skipped')
+    await user.click(button('Accept Value change'))
+    expect(onValueChange).toHaveBeenLastCalledWith({ value: 'accepted' })
+    // On to the next pending change.
+    expect(counter()).toBe('3/3')
     await user.click(button('Previous change'))
-    expect(counter()).toBe('1/3')
+    expect(change().querySelector('[data-slot="reviewable-change-decision"]')?.textContent).toBe('Accepted')
   })
 
   it('moves to the next pending change, wrapping round', async () => {
@@ -119,39 +139,17 @@ describe('ReviewableChanges', () => {
     expect(counter()).toBe('1/3')
   })
 
-  it('accepts everything with Accept all, says so, and moves focus to Apply', async () => {
-    const onValueChange = vi.fn()
-    const { user } = renderWithSatin(
-      <ReviewableChanges title={TITLE} changes={changes} defaultValue={{ value: 'rejected' }} onValueChange={onValueChange} />,
-    )
-    await user.click(button('Accept all'))
-    expect(onValueChange).toHaveBeenLastCalledWith({ stage: 'accepted', value: 'accepted', close: 'accepted' })
-    expect(status().textContent).toBe('All changes accepted')
-    expect(document.activeElement).toBe(button('Apply 3 changes'))
-  })
-
-  it('applies only the accepted changes, then leaves: onApplied, focus on the body, read out', async () => {
+  it('skipping everything applies nothing, and still leaves', async () => {
     const onApply = vi.fn()
     const onApplied = vi.fn()
     const { user } = renderWithSatin(
-      <ReviewableChanges
-        title={TITLE}
-        changes={changes}
-        defaultValue={{ stage: 'accepted', value: 'rejected', close: 'accepted' }}
-        onApply={onApply}
-        onApplied={onApplied}
-      />,
+      <ReviewableChanges title={TITLE} changes={changes} defaultValue={{ stage: 'rejected', value: 'rejected' }} defaultStep={2} onApply={onApply} onApplied={onApplied} />,
     )
-    await user.click(button('Apply 2 changes'))
-    const value: ReviewableChangesValue = { stage: 'accepted', value: 'rejected', close: 'accepted' }
-    expect(onApply).toHaveBeenCalledWith([changes[0], changes[2]], value)
-    const root = document.querySelector('[data-slot="reviewable-changes"]')!
-    expect(root.classList.contains('satin-changes-review-exit')).toBe(true)
-    expect(root.hasAttribute('inert')).toBe(true)
-    expect(onApplied).toHaveBeenCalledWith([changes[0], changes[2]], value)
-    expect(document.activeElement).toBe(document.body)
+    await user.click(button('Skip Close date change'))
+    expect(onApply).not.toHaveBeenCalled()
+    expect(onApplied).toHaveBeenCalledWith([], { stage: 'rejected', value: 'rejected', close: 'rejected' })
     await waitForAnnouncement()
-    expect(announced()).toBe('2 changes applied')
+    expect(announced()).toBe('No changes applied')
   })
 
   it('returns focus where the app says, once it removes the card', async () => {
@@ -165,7 +163,8 @@ describe('ReviewableChanges', () => {
             <ReviewableChanges
               title={TITLE}
               changes={changes}
-              defaultValue={{ stage: 'accepted' }}
+              defaultValue={{ stage: 'accepted', value: 'accepted' }}
+              defaultStep={2}
               onApplied={() => setOpen(false)}
               returnFocus={() => deal.current}
             />
@@ -174,7 +173,7 @@ describe('ReviewableChanges', () => {
       )
     }
     const { user } = renderWithSatin(<App />)
-    await user.click(button('Apply 1 change'))
+    await user.click(button('Accept Close date change'))
     expect(screen.queryByRole('group', { name: TITLE })).toBeNull()
     expect(document.activeElement).toBe(button('Quanta deal'))
   })
@@ -184,25 +183,26 @@ describe('ReviewableChanges', () => {
     const onApply = vi.fn().mockReturnValueOnce(first.promise).mockReturnValueOnce(undefined)
     const onApplied = vi.fn()
     const { user } = renderWithSatin(
-      <ReviewableChanges title={TITLE} changes={changes} defaultValue={{ stage: 'accepted' }} onApply={onApply} onApplied={onApplied} />,
+      <ReviewableChanges title={TITLE} changes={changes} defaultValue={{ stage: 'accepted', value: 'accepted' }} defaultStep={2} onApply={onApply} onApplied={onApplied} />,
     )
-    await user.click(button('Apply 1 change'))
+    await user.click(button('Accept Close date change'))
     expect(card().getAttribute('data-status')).toBe('applying')
     expect(status().textContent).toBe('Applying changes…')
-    expect((button('Accept Stage change') as HTMLButtonElement).disabled).toBe(true)
-    expect((button('Accept all') as HTMLButtonElement).disabled).toBe(true)
+    // The button pressed spins and keeps focus; the other is disabled.
+    expect(button('Accept Close date change').getAttribute('aria-busy')).toBe('true')
+    expect((button('Skip Close date change') as HTMLButtonElement).disabled).toBe(true)
     await act(async () => first.reject(new Error('offline')))
     expect(card().getAttribute('data-status')).toBe('review')
-    expect((button('Accept Stage change') as HTMLButtonElement).disabled).toBe(false)
+    expect((button('Skip Close date change') as HTMLButtonElement).disabled).toBe(false)
     expect(onApplied).not.toHaveBeenCalled()
-    await user.click(button('Apply 1 change'))
+    await user.click(button('Accept Close date change'))
     expect(onApplied).toHaveBeenCalledTimes(1)
   })
 
   it('holds a stage with status', () => {
     renderWithSatin(<ReviewableChanges title={TITLE} changes={changes} status="applying" />)
     expect(card().getAttribute('data-status')).toBe('applying')
-    expect((button('Dismiss Stage change') as HTMLButtonElement).disabled).toBe(true)
+    expect((button('Skip Stage change') as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('follows a controlled value', async () => {
@@ -211,34 +211,29 @@ describe('ReviewableChanges', () => {
       return (
         <>
           <ReviewableChanges title={TITLE} changes={changes} value={value} onValueChange={setValue} />
-          <button onClick={() => setValue({ stage: 'accepted', value: 'accepted' })}>Accept two</button>
+          <button onClick={() => setValue({ stage: 'accepted' })}>Accept stage</button>
         </>
       )
     }
     const { user } = renderWithSatin(<Controlled />)
-    await user.click(button('Accept two'))
-    expect(button('Accept Stage change').getAttribute('aria-pressed')).toBe('true')
-    expect(button('Apply 2 changes')).toBeTruthy()
+    await user.click(button('Accept stage'))
+    expect(change().getAttribute('data-state')).toBe('accepted')
+    expect(change().querySelector('[data-slot="reviewable-change-decision"]')?.textContent).toBe('Accepted')
   })
 
   it('says its words through SatinLabels', async () => {
-    const { user } = renderWithSatin(
-      <ReviewableChanges title={TITLE} changes={changes} defaultValue={{ stage: 'accepted' }} onApply={() => {}} />,
-      {
-        labels: {
-          acceptFieldChange: (field: string) => `Zaakceptuj: ${field}`,
-          acceptFieldChangeText: 'Akceptuj',
-          rejectFieldChange: (field: string) => `Odrzuć: ${field}`,
-          nextFieldChange: 'Następna zmiana',
-          applyFieldChanges: (_: number, number: string) => `Zastosuj (${number})`,
-          fieldChangesApplied: (_: number, number: string) => `Zastosowano: ${number}`,
-        },
+    const { user } = renderWithSatin(<ReviewableChanges title={TITLE} changes={changes.slice(0, 1)} onApply={() => {}} />, {
+      labels: {
+        acceptFieldChange: (field: string) => `Zaakceptuj: ${field}`,
+        acceptFieldChangeText: 'Akceptuj',
+        skipFieldChange: (field: string) => `Pomiń: ${field}`,
+        skip: 'Pomiń',
+        fieldChangesApplied: (_: number, number: string) => `Zastosowano: ${number}`,
       },
-    )
+    })
     expect(button('Zaakceptuj: Stage').textContent).toBe('Akceptuj')
-    expect(button('Odrzuć: Stage')).toBeTruthy()
-    expect(button('Następna zmiana')).toBeTruthy()
-    await user.click(button('Zastosuj (1)'))
+    expect(button('Pomiń: Stage').textContent).toBe('Pomiń')
+    await user.click(button('Zaakceptuj: Stage'))
     await waitForAnnouncement()
     expect(announced()).toBe('Zastosowano: 1')
   })
@@ -248,10 +243,8 @@ describe('ReviewableChanges', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       const onApplied = vi.fn()
-      const { user } = renderWithSatin(
-        <ReviewableChanges title={TITLE} changes={changes} defaultValue={{ stage: 'accepted' }} onApplied={onApplied} />,
-      )
-      await user.click(button('Apply 1 change'))
+      const { user } = renderWithSatin(<ReviewableChanges title={TITLE} changes={changes.slice(0, 1)} onApplied={onApplied} />)
+      await user.click(button('Accept Stage change'))
       expect(card().classList.contains('satin-changes-review-exit')).toBe(true)
       expect(onApplied).not.toHaveBeenCalled()
       // jsdom runs no transitions, so the fallback ends the wait.

@@ -37,7 +37,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Combobox': [448, 448],
   'Command menu': [468, 468],
   'Agent suggestion': [340, 340],
-  'Reviewable changes': [332, 351],
+  'Reviewable changes': [300, 319],
   'Decision card': [368, 392],
   'Dialog': [352, 352],
   'Dot': [280, 280],
