@@ -1,18 +1,44 @@
 import * as React from 'react'
-import { ArrowRight, Building, EditPencil, Group, Link, Phone, Suitcase, TriangleFlag, User, UserPlus, ViewColumns3 } from 'iconoir-react'
+import { ArrowRight, Building, EditPencil, Group, Link, Phone, Suitcase, TriangleFlag, UserPlus, ViewColumns3 } from 'iconoir-react'
+import { Avatar, type AvatarTone } from '@uisatin/ui/avatar'
 import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { SearchBar } from '@uisatin/ui/search-bar'
 import { Toaster } from '@uisatin/ui/toast'
 import { CommandPages, type CommandPage, type CommandPageGroup, type CommandPagesControl } from '@uisatin/pro/command-pages'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
+import portrait1 from './assets/person-1.png'
+import portrait2 from './assets/person-2.png'
+import portrait3 from './assets/person-3.png'
 
 type Stage = 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Won' | 'Lost'
 const STAGES: Stage[] = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost']
 const STAGE_TONE: Record<Stage, BadgeTone> = { Lead: 'neutral', Qualified: 'sky', Proposal: 'plum', Negotiation: 'amber', Won: 'green', Lost: 'neutral' }
-const OWNERS = ['Tara Mendes', 'Jon Park', 'Ada Novak']
-// What the deal touches, by kind: each kind has its icon.
+type Person = { name: string; photo?: string; initials: string; tone: AvatarTone }
+
+/**
+ * A person's face in the row's icon place, 20px as in People picker's rows: their photo, or their
+ * initials on a tone. Decorative: the name is right after it. The row's icon box is 16px: 2px off
+ * every side centres the face on the icons' column and keeps the label where it is.
+ */
+function Face({ person }: { person: Person }) {
+  return person.photo ? (
+    <img src={person.photo} alt="" className="-m-0.5 size-5 max-w-none shrink-0 rounded-full object-cover" />
+  ) : (
+    <Avatar aria-hidden size={20} initials={person.initials} tone={person.tone} className="-m-0.5" />
+  )
+}
+
+const OWNERS: Person[] = [
+  { name: 'Tara Mendes', photo: portrait1.src, initials: 'TM', tone: 'sky' },
+  { name: 'Jon Park', photo: portrait3.src, initials: 'JP', tone: 'green' },
+  { name: 'Ada Novak', initials: 'AN', tone: 'plum' },
+]
+const CONTACTS: (Person & { id: string; role: string })[] = [
+  { id: 'dana', name: 'Dana Whitfield', role: 'Head of operations', initials: 'DW', tone: 'amber' },
+  { id: 'marco', name: 'Marco Ruiz', role: 'Legal', photo: portrait2.src, initials: 'MR', tone: 'fuchsia' },
+]
+// What the deal touches, by kind: people by their faces, the rest by their kind's icon.
 const RELATED = [
-  { label: 'People', icon: <User />, items: [['dana', 'Dana Whitfield', 'Head of operations'], ['marco', 'Marco Ruiz', 'Legal']] },
   { label: 'Companies', icon: <Building />, items: [['acme-log', 'Acme Logistics', 'Subsidiary'], ['acme-eu', 'Acme Europe', 'Berlin']] },
   { label: 'Jobs', icon: <Suitcase />, items: [['dpa', 'DPA review', 'Due Friday'], ['pilot', 'Berlin pilot', 'Q1']] },
 ]
@@ -42,7 +68,8 @@ const STATE_LABEL: Record<string, string> = { root: 'First page', page: 'Sub-pag
 function code(v: Record<string, string>) {
   return `import * as React from 'react'
 import { CommandPages, type CommandPage } from '@uisatin/pro/command-pages'
-import { ArrowRight, EditPencil, Group, Link, Phone, TriangleFlag, User, UserPlus, ViewColumns3 } from 'iconoir-react'
+import { Avatar } from '@uisatin/ui/avatar'
+import { ArrowRight, EditPencil, Group, Link, Phone, TriangleFlag, UserPlus, ViewColumns3 } from 'iconoir-react'
 
 const stages = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost']
 
@@ -71,10 +98,16 @@ export function DealCommands({ deal }: { deal: Deal }) {
     groups: [
       {
         label: 'People',
-        icon: <User />,
         items: team.map((person) => ({
           id: person.id,
           label: person.name,
+          // A person shows their face in the icon's place, 20px: the photo, or the initials.
+          // -2px on every side keeps it on the icons' column, over the row's 16px icon box.
+          icon: person.photo ? (
+            <img src={person.photo} alt="" style={{ width: 20, height: 20, margin: -2, maxWidth: 'none', borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            <Avatar aria-hidden size={20} initials={person.initials} tone={person.tone} style={{ margin: -2 }} />
+          ),
           onSelect: () => setOwner(deal.id, person.id),
           success: \`Owner set to \${person.name}\`,
         })),
@@ -179,23 +212,29 @@ function Preview({ v }: { v: Record<string, string> }) {
     groups: [
       {
         label: 'People',
-        icon: <User />,
         items: OWNERS.map((o) => ({
-          id: o,
-          label: o,
-          description: o === owner ? 'Owner' : undefined,
-          onSelect: () => setOwner(o),
-          success: `Owner set to ${o}`,
+          id: o.name,
+          label: o.name,
+          icon: <Face person={o} />,
+          description: o.name === owner ? 'Owner' : undefined,
+          onSelect: () => setOwner(o.name),
+          success: `Owner set to ${o.name}`,
         })),
       },
     ],
   }
   const related: CommandPage = {
-    groups: RELATED.map((g) => ({
-      label: g.label,
-      icon: g.icon,
-      items: g.items.map(([id, label, description]) => ({ id, label, description, success: `Opened ${label}` })),
-    })),
+    groups: [
+      {
+        label: 'People',
+        items: CONTACTS.map((c) => ({ id: c.id, label: c.name, description: c.role, icon: <Face person={c} />, success: `Opened ${c.name}` })),
+      },
+      ...RELATED.map((g) => ({
+        label: g.label,
+        icon: g.icon,
+        items: g.items.map(([id, label, description]) => ({ id, label, description, success: `Opened ${label}` })),
+      })),
+    ],
   }
   const groups: CommandPageGroup[] = [
     {
