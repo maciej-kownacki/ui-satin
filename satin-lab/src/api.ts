@@ -952,17 +952,19 @@ export const api: Record<string, Api> = {
   },
   'agent-changes-review': {
     description:
-      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) takes the `changes` AgentSuggestionChanges takes and draws each as a card: the field\'s name on top, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line); quote the line that justifies that change, short and specific to it, not a summary. At the card\'s bottom right sit Dismiss (X) and Accept (a green check and "Accept"), both bordered xs buttons (or a Checkbox before the name, `control="checkbox"`); then Accept all and Apply. Dismiss slides the card out of the list and the cards under it move up into its place; the UI has no way back, but a controlled `value` can set it to `"pending"` again. With checkboxes a cleared card stays and fades. Put it in an AgentSuggestion as its body. `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. Once applied, the AgentSuggestion it sits in fades out and rises 4px (`--duration-base`; at once under reduced motion), then `onApplied(accepted, value)` fires: remove it there, as you would after an `onDismiss`. If focus was inside, it goes to `returnFocus()` or, without one, to the page, and "2 changes applied" is read out from a live region on the body. `label` names a change for its buttons when `field` isn\'t a string. Parts: `ReviewableChangesRoot` (around the whole card, so Apply can sit in its `actions`), `ReviewableChangesList`, `ReviewableChangesAcceptAll`, `ReviewableChangesApply`. For a new set of changes, give it a new `key`.',
+      'The `ReviewableChanges` component (Satin Pro, `@uisatin/pro/agent-changes-review`) is a DecisionCard that takes the `changes` AgentSuggestionChanges takes and shows one per step: the same card, header, "‹ 1/3 ›" navigator, footer and step slide. The header is `title` (the suggestion: "Update the Quanta deal") and `description`; without a `title`, each change\'s field is the title. The body is the field\'s name, the old value struck through, an arrow and the new one, then, when the change has a `source` (`{ icon, label, quote }`), a preview of where it comes from (a logo, "Transcription" and the quoted line); quote the line that justifies that change, short and specific to it, not a summary. Under it sit Dismiss (X) and Accept (a green check and "Accept"), both toggles: deciding a change slides in the next one still pending, and once none is, focus goes to Apply; pressing a pressed one makes the change pending again. The footer, where DecisionCard has Skip and Continue, holds Accept all and Apply ("Apply 2 changes"). `value` is `{ [id]: "pending" | "accepted" | "rejected" }`, keyed by each change\'s `id` (or its place, `"0"`, `"1"`, …); a change left out is pending. `defaultStep` opens on another change. `onApply(accepted, value)` gets the accepted changes only; return a promise to hold the `applying` stage, and if it rejects, review starts again. Once applied, the card fades out and rises 4px (`--duration-base`; at once under reduced motion), then `onApplied(accepted, value)` fires: remove it there, as you would after an `onDismiss`. If focus was inside, it goes to `returnFocus()` or, without one, to the page, and "2 changes applied" is read out from a live region on the body. `label` names a change for its buttons and the title when `field` isn\'t a string. For a new set of changes, give it a new `key`.',
     props: [
       { name: 'changes', type: ['{ id?, field, label?, from?, to, source? }[]'] },
+      { name: 'title', type: ['string'] },
+      { name: 'description', type: ['string'] },
       { name: 'value', type: ['ReviewableChangesValue'] },
       { name: 'defaultValue', type: ['ReviewableChangesValue'], default: '{}' },
       { name: 'onValueChange', type: ['(value) => void'] },
+      { name: 'defaultStep', type: ['number'], default: '0' },
       { name: 'onApply', type: ['(accepted, value) => unknown'] },
       { name: 'onApplied', type: ['(accepted, value) => void'] },
       { name: 'returnFocus', type: ['() => HTMLElement | null | undefined'] },
       { name: 'status', type: ['"review"', '"applying"'] },
-      { name: 'control', type: ['"buttons"', '"checkbox"'], default: '"buttons"' },
     ],
   },
   attachment: {
@@ -989,7 +991,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'decision-card': {
-    description: 'The `DecisionCard` component is a wrapper around the `div` that holds one question, its answers and the Skip and Continue actions.',
+    description: 'The `DecisionCard` component is a wrapper around the `div` that holds one question, its answers and the Skip and Continue actions. For a step none of the types covers, `children` take the answers\' place and move with the step, and `footer` takes Skip and Continue\'s place in the same row (ReviewableChanges is built this way).',
     props: [
       { name: 'type', type: ['"radio"', '"checkbox"', '"chips"', '"ranking"', '"draft"', '"summary"'], default: '"radio"' },
       { name: 'title', type: ['string'] },
@@ -1009,6 +1011,10 @@ export const api: Record<string, Api> = {
       { name: 'onRewrite', type: ['() => void'] },
       { name: 'continueLabel', type: ['string'], default: '"Continue"' },
       { name: 'skipLabel', type: ['string'], default: '"Skip"' },
+      { name: 'previousStepLabel', type: ['string'], default: '"Previous question"' },
+      { name: 'nextStepLabel', type: ['string'], default: '"Next question"' },
+      { name: 'children', type: ['ReactNode'] },
+      { name: 'footer', type: ['ReactNode'] },
     ],
   },
   'message-actions': {

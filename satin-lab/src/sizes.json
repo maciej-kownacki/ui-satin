@@ -1,7 +1,7 @@
 {
   "accordion": 19116,
   "action-button": 14968,
-  "agent-changes-review": 4104,
+  "agent-changes-review": 2853,
   "agent-loading": 13653,
   "agent-picker": 46895,
   "agent-suggestion": 13493,
@@ -29,7 +29,7 @@
   "context-menu": 45478,
   "cookie-consent": 14520,
   "date-picker": 52894,
-  "decision-card": 29480,
+  "decision-card": 29595,
   "dialog": 28541,
   "donut-chart": 47941,
   "dot": 9791,

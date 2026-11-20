@@ -1,13 +1,9 @@
-/* Type test, never run: ReviewableChanges' props, its parts, refs, and its words in SatinLabels. */
+/* Type test, never run: ReviewableChanges' props, its ref, and its words in SatinLabels. */
 import * as React from 'react'
-import { AgentSuggestion, type AgentSuggestionChange } from '@uisatin/ui/agent-suggestion'
+import { type AgentSuggestionChange } from '@uisatin/ui/agent-suggestion'
 import { SatinLabels } from '@uisatin/ui/labels'
 import {
   ReviewableChanges,
-  ReviewableChangesAcceptAll,
-  ReviewableChangesApply,
-  ReviewableChangesList,
-  ReviewableChangesRoot,
   type ReviewableChange,
   type ReviewableChangesStatus,
   type ReviewableChangesValue,
@@ -26,20 +22,22 @@ export const noSourceLabel: ReviewableChange = { field: 'Stage', to: 'Negotiatio
 // @ts-expect-error: no such decision
 const wrong: ReviewableChangesValue = { stage: 'maybe' }
 
-// @ts-expect-error: applied isn't a stage any more; the suggestion leaves (onApplied)
+// @ts-expect-error: applied isn't a stage; the card leaves (onApplied)
 const wrongStatus: ReviewableChangesStatus = 'applied'
 
 const rootRef = React.createRef<HTMLDivElement>()
-const buttonRef = React.createRef<HTMLButtonElement>()
 
 export function Controlled() {
   const [value, setValue] = React.useState<ReviewableChangesValue>({ value: 'rejected' })
   return (
     <ReviewableChanges
       ref={rootRef}
+      title="Update the Quanta deal"
+      description="Based on today's call"
       changes={changes}
       value={value}
       onValueChange={setValue}
+      defaultStep={1}
       onApply={async (accepted, decisions) => {
         const fields: ReviewableChange[] = accepted
         void fields
@@ -50,7 +48,6 @@ export function Controlled() {
         void decisions
       }}
       returnFocus={() => document.getElementById('deal')}
-      control="checkbox"
       status="review"
       aria-describedby="hint"
     />
@@ -59,27 +56,14 @@ export function Controlled() {
 
 export const uncontrolled = <ReviewableChanges changes={plain} defaultValue={{ '0': 'accepted' }} onApply={() => {}} />
 
-export const parts = (
-  <ReviewableChangesRoot ref={rootRef} changes={changes} onApply={() => {}}>
-    <AgentSuggestion
-      kind="CRM update"
-      actions={
-        <>
-          <ReviewableChangesAcceptAll ref={buttonRef} variant="tertiary" />
-          <ReviewableChangesApply ref={buttonRef}>Update deal</ReviewableChangesApply>
-        </>
-      }
-    >
-      <ReviewableChangesList className="gap-3" />
-    </AgentSuggestion>
-  </ReviewableChangesRoot>
-)
-
 // @ts-expect-error: changes is required
 export const missing = <ReviewableChanges onApply={() => {}} />
 
-// @ts-expect-error: no such control
-export const wrongControl = <ReviewableChanges changes={plain} control="switch" />
+// @ts-expect-error: the title is text, as DecisionCard's is
+export const richTitle = <ReviewableChanges changes={plain} title={<b>Deal</b>} />
+
+// @ts-expect-error: the body is the changes; there are no children
+export const withChildren = <ReviewableChanges changes={plain}>Hi</ReviewableChanges>
 
 // The words join SatinLabels, functions where they carry data.
 export const labels = (
@@ -88,6 +72,8 @@ export const labels = (
       acceptFieldChange: (field) => `Zaakceptuj zmianę: ${field}`,
       acceptFieldChangeText: 'Akceptuj',
       rejectFieldChange: (field) => `Odrzuć zmianę: ${field}`,
+      previousFieldChange: 'Poprzednia zmiana',
+      nextFieldChange: 'Następna zmiana',
       applyFieldChanges: (count, number) => `Zastosuj (${number})`,
       fieldChangesApplied: (count, number) => `Zastosowano: ${number}`,
     }}

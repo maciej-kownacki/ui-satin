@@ -2131,7 +2131,7 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/agent-suggestion.json",
         "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/decision-card.json",
         "https://uisatin.dev/r/labels.json"
       ],
       "docs": "Reviewable changes docs: https://uisatin.dev/ai-patterns/agent-changes-review",

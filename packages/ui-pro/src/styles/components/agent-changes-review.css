@@ -1,10 +1,10 @@
 /*
- * Field-level review of agent changes (components/agent-changes-review.tsx).
+ * Field-level review of agent changes (components/agent-changes-review.tsx), one change per step
+ * of a DecisionCard.
  *
- * Each change is a card on component/changes-review/card-bg. With checkboxes, a rejected
- * card's new value fades to text/muted over --duration-base, and a rich value (a Badge) loses
- * its colour, which keeps its text's contrast; nothing moves. Satin's reduced-motion rule
- * (motion.css) cuts the fade.
+ * A dismissed change's new value fades to text/muted over --duration-base, and a rich value (a
+ * Badge) loses its colour, which keeps its text's contrast; nothing moves. Satin's reduced-motion
+ * rule (motion.css) cuts the fade.
  */
 .satin-changes-review-row [data-slot='agent-suggestion-change-value'] > :last-child {
   transition:
@@ -17,21 +17,20 @@
 }
 
 /*
- * Accept's check is green whatever its state; the button stays the bordered secondary one.
- * Pressed (accepted), it keeps the secondary button's pressed fill and ring.
+ * Accept's check is green whatever its state; both toggles stay the bordered secondary button.
+ * Pressed (the change's decision), one keeps the secondary button's pressed fill and ring.
  */
 .satin-changes-review-toggle[data-decision='accept'] svg {
   color: var(--status-green-fg);
 }
-.satin-changes-review-toggle[aria-pressed='true'][data-decision='accept'] {
+.satin-changes-review-toggle[aria-pressed='true'] {
   background-color: var(--action-secondary-bg-pressed);
   box-shadow: 0 0 0 1px var(--border-strong);
 }
 
 /*
- * Applied: the suggestion the set sits in (its AgentSuggestion, or the root) fades out and rises
- * 4px over --duration-base; then onApplied hands it to the app to remove. Under reduced motion,
- * motion.css cuts it to nothing.
+ * Applied: the card fades out and rises 4px over --duration-base; then onApplied hands it to the
+ * app to remove. Under reduced motion the component doesn't wait for it, and motion.css cuts it.
  */
 .satin-changes-review-exit {
   opacity: 0;
@@ -40,30 +39,4 @@
   transition:
     opacity var(--duration-base) var(--ease-out),
     transform var(--duration-base) var(--ease-out);
-}
-
-/*
- * Reject (X) with buttons: the row slides 32px to the start and fades over --duration-slow,
- * clipped at the list's edge so it slips out rather than over the card's border; then the rows
- * under it (and the footer) move up into its place over --duration-base. The component adds
- * .satin-changes-review-shift and the transform, and drops both as the row leaves the layout.
- * Under reduced motion the component skips both and the row simply goes.
- */
-.satin-changes-review-row[data-leaving] {
-  opacity: 0;
-  transform: translateX(-32px);
-  pointer-events: none;
-  transition:
-    opacity var(--duration-slow) var(--ease-out),
-    transform var(--duration-slow) var(--ease-out);
-}
-.satin-changes-review-row[data-leaving]:dir(rtl) {
-  transform: translateX(32px);
-}
-[data-slot='reviewable-changes-list']:has(> [data-leaving]) {
-  overflow-x: clip;
-  overflow-clip-margin: 4px;
-}
-.satin-changes-review-shift {
-  transition: transform var(--duration-base) var(--ease-in-out);
 }

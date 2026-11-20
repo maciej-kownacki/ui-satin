@@ -1,22 +1,25 @@
 import * as React from 'react'
-import { Flash } from 'iconoir-react'
-import { AgentSuggestion } from '@uisatin/ui/agent-suggestion'
-import { Badge } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
 import { ReviewableChanges, type ReviewableChange } from '@uisatin/pro/agent-changes-review'
-import { Showcase, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
+import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
-const kinds = [
-  { value: 'buttons', label: 'Buttons' },
-  { value: 'checkbox', label: 'Checkbox' },
+// Title and Source are the parts a step can go without, as on DecisionCard's page.
+export const controls: ShowcaseControl[] = [
+  { id: 'title', label: 'Title', type: 'switch', default: 'on' },
+  { id: 'source', label: 'Source', type: 'switch', default: 'on' },
 ]
 
-export const controls: ShowcaseControl[] = [{ id: 'control', label: 'Control', items: kinds }]
+const QUOTES = {
+  stage: 'We’re ready to talk terms. Send the contract over.',
+  value: 'We can go to $22k if onboarding is included.',
+  closeDate: 'Let’s aim to sign by mid-December.',
+}
 
-const code = (control: string) => `import { AgentSuggestion } from '@uisatin/ui/agent-suggestion'
-import { Badge } from '@uisatin/ui/badge'
+function code(v: Record<string, string>) {
+  const source = (id: keyof typeof QUOTES) =>
+    v.source === 'on' ? `\n      // The line from the call that justifies it.\n      source: { icon: <MeetLogo />, label: 'Transcription', quote: '${QUOTES[id]}' },` : ''
+  return `import * as React from 'react'
 import { ReviewableChanges, type ReviewableChangesValue } from '@uisatin/pro/agent-changes-review'
-import { Flash } from 'iconoir-react'
 
 // What the agent proposes, as the CRM takes it.
 const proposal = { stage: 'negotiation', value: 22_000, closeDate: '2026-12-15' }
@@ -26,54 +29,47 @@ export function DealUpdate({ deal, recordRef }: { deal: Deal; recordRef: React.R
   const [open, setOpen] = React.useState(true)
   if (!open) return null
   return (
-    <AgentSuggestion
-      kind="CRM update"
-      icon={<Flash />}
-      meta={<Badge size="sm">HubSpot</Badge>}
-      title="Update the Quanta deal"
-      description="Based on today's call:"
-    >
-      <ReviewableChanges${control === 'checkbox' ? '\n        control="checkbox"' : ''}
-        changes={[
-          {
-            id: 'stage',
-            field: 'Stage',
-            from: 'Proposal',
-            to: 'Negotiation',
-            // The line from the call that justifies it, shown under the change.
-            source: { icon: <MeetLogo />, label: 'Transcription', quote: 'We’re ready to talk terms. Send the contract over.' },
-          },
-          {
-            id: 'value',
-            field: 'Value',
-            from: '$18,000',
-            to: '$22,000',
-            source: { icon: <MeetLogo />, label: 'Transcription', quote: 'We can go to $22k if onboarding is included.' },
-          },
-          {
-            id: 'closeDate',
-            field: 'Close date',
-            from: '30 Nov',
-            to: '15 Dec',
-            source: { icon: <MeetLogo />, label: 'Transcription', quote: 'Let’s aim to sign by mid-December.' },
-          },
-        ]}
-        value={value}
-        onValueChange={setValue}
-        // Only the accepted fields: stage and closeDate when Value is rejected.
-        onApply={(accepted) =>
-          updateDeal(deal.id, Object.fromEntries(accepted.map((c) => [c.id, proposal[c.id]])))
-        }
-        // Once applied, the suggestion fades out; then it's yours to remove.
-        onApplied={() => setOpen(false)}
-        // Focus goes to the deal it updated; without this, to the page ("2 changes applied" is read out).
-        returnFocus={() => recordRef.current}
-      />
-    </AgentSuggestion>
+    <ReviewableChanges${v.title === 'on' ? `\n      title="Update the Quanta deal"\n      description="Based on today's call"` : ''}
+      changes={[
+        {
+          id: 'stage',
+          field: 'Stage',
+          from: 'Proposal',
+          to: 'Negotiation',${source('stage')}
+        },
+        {
+          id: 'value',
+          field: 'Value',
+          from: '$18,000',
+          to: '$22,000',${source('value')}
+        },
+        {
+          id: 'closeDate',
+          field: 'Close date',
+          from: '30 Nov',
+          to: '15 Dec',${source('closeDate')}
+        },
+      ]}
+      value={value}
+      onValueChange={setValue}
+      // Only the accepted fields: stage and closeDate when Value is dismissed.
+      onApply={(accepted) =>
+        updateDeal(deal.id, Object.fromEntries(accepted.map((c) => [c.id, proposal[c.id]])))
+      }
+      // Once applied, the card fades out; then it's yours to remove.
+      onApplied={() => setOpen(false)}
+      // Focus goes to the deal it updated; without this, to the page ("2 changes applied" is read out).
+      returnFocus={() => recordRef.current}
+    />
   )
 }`
+}
 
-export const options: ShowcaseOption[] = kinds.map((i) => ({ id: i.value, label: i.label, code: code(i.value) }))
+export const options: ShowcaseOption[] = combos(controls).map((v) => ({
+  id: comboId(controls, v),
+  label: [v.title === 'on' ? 'Title' : 'No title', v.source === 'on' ? 'Source' : 'No source'].join(' · '),
+  code: code(v),
+}))
 
 type Deal = { stage: string; value: string; closeDate: string }
 const DEAL: Deal = { stage: 'Proposal', value: '$18,000', closeDate: '30 Nov' }
@@ -85,20 +81,23 @@ const MeetLogo = () => <img alt="" src="https://www.google.com/s2/favicons?domai
 // Each change quotes the line from the call that justifies it.
 const fromCall = (quote: string) => ({ icon: <MeetLogo />, label: 'Transcription', quote })
 
-const changes: ReviewableChange[] = [
-  { id: 'stage', field: 'Stage', from: DEAL.stage, to: PROPOSAL.stage, source: fromCall('We’re ready to talk terms. Send the contract over.') },
-  { id: 'value', field: 'Value', from: DEAL.value, to: PROPOSAL.value, source: fromCall('We can go to $22k if onboarding is included.') },
-  { id: 'closeDate', field: 'Close date', from: DEAL.closeDate, to: PROPOSAL.closeDate, source: fromCall('Let’s aim to sign by mid-December.') },
-]
+const changesWith = (source: boolean): ReviewableChange[] =>
+  (['stage', 'value', 'closeDate'] as const).map((id) => ({
+    id,
+    field: { stage: 'Stage', value: 'Value', closeDate: 'Close date' }[id],
+    from: DEAL[id],
+    to: PROPOSAL[id],
+    source: source ? fromCall(QUOTES[id]) : undefined,
+  }))
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
- * The Sales scenario: the agent updates a deal. Stage and Close date start accepted; reject Value
- * with its X and its card slides out of the list, then Apply sends Stage and Close date and the
- * suggestion leaves. A quiet button brings it back, so the stage isn't left empty.
+ * The Sales scenario: the agent updates a deal. Accept or dismiss each change and the next one
+ * slides in; the last decision takes focus to Apply, which sends the accepted ones and the card
+ * leaves. A quiet button brings it back, so the stage isn't left empty.
  */
-function Preview({ control }: { control: 'buttons' | 'checkbox' }) {
+function Preview({ v }: { v: Record<string, string> }) {
   const [round, setRound] = React.useState(0)
   const [open, setOpen] = React.useState(true)
   const again = React.useRef<HTMLButtonElement>(null)
@@ -123,18 +122,17 @@ function Preview({ control }: { control: 'buttons' | 'checkbox' }) {
       </Button>
     )
   return (
-    <AgentSuggestion key={round} kind="CRM update" icon={<Flash />} meta={<Badge size="sm">HubSpot</Badge>} title="Update the Quanta deal" description="Based on today's call:">
-      <ReviewableChanges
-        control={control}
-        changes={changes}
-        defaultValue={{ stage: 'accepted', closeDate: 'accepted' }}
-        onApply={() => wait(900)}
-        onApplied={() => {
-          applied.current = true
-          setOpen(false)
-        }}
-      />
-    </AgentSuggestion>
+    <ReviewableChanges
+      key={round}
+      title={v.title === 'on' ? 'Update the Quanta deal' : undefined}
+      description={v.title === 'on' ? "Based on today's call" : undefined}
+      changes={changesWith(v.source === 'on')}
+      onApply={() => wait(900)}
+      onApplied={() => {
+        applied.current = true
+        setOpen(false)
+      }}
+    />
   )
 }
 
@@ -145,11 +143,11 @@ export default function AgentChangesReviewDemo({ codeHtml }: { codeHtml: Record<
       options={options}
       codeHtml={codeHtml}
       controls={controls}
-      // Pinned to the top: when a dismissed card leaves, the panel shortens from its bottom and nothing above moves.
+      // Pinned to the top, as DecisionCard's: a taller or shorter change never moves the header.
       align="top"
-      render={(id) => (
+      render={(id, v) => (
         <div className="flex w-full justify-center">
-          <Preview key={id} control={id as 'buttons' | 'checkbox'} />
+          <Preview key={id} v={v} />
         </div>
       )}
     />
