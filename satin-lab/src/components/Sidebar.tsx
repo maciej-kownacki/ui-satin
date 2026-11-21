@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Badge, Button, SearchBar, cn } from '@uisatin/ui'
+import { curve, easeSize, measure } from '@uisatin/ui/pixel-motion'
 import { ArrowUpRight, Menu, Minus } from 'iconoir-react'
 import type { NavGroup, NavItem } from '../nav'
 import { useScrollLock } from '../lib/scroll-lock'
@@ -472,6 +473,9 @@ function NavParent({
   )
 }
 
+/** --ease-out (motion.css) as a function of time, for the help banner's resize. */
+const easeOut = curve(0.23, 1, 0.32, 1)
+
 /** Banner / Mesh, Layout=Sidebar (uiKit 3822:3475): 230 wide inside the 246 sidebar. */
 /**
  * The design-help banner (uiKit 3857:6969). The minus doesn't dismiss it: it folds to the 44px
@@ -486,23 +490,23 @@ function HelpBanner() {
   const swapRef = React.useRef<HTMLButtonElement>(null)
   // The card keeps its element and its height follows the change like the nav's dropdown
   // (satin-expand): --duration-slow when it opens, --duration-base when it folds, on --ease-out.
-  // A click mid-way starts from the height it has reached.
+  // It eases on the device-pixel grid between the exact heights (pixel-motion), so nothing in it
+  // lands between pixels on the way or snaps when it ends. A click mid-way starts from the height
+  // it has reached; easeSize does nothing under reduced motion.
   const cardRef = React.useRef<HTMLElement>(null)
   const fromHeight = React.useRef(0)
   const resize = React.useRef<Animation | null>(null)
   React.useLayoutEffect(() => {
     const card = cardRef.current
     if (!toggled.current || !card) return
+    // The new height without the running resize; it starts from the one measured at the click.
     resize.current?.cancel()
-    const to = card.offsetHeight
+    const to = measure(card).height
     const from = fromHeight.current
-    if (from === to || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (from === to) return
     const css = getComputedStyle(document.documentElement)
     const ms = (name: string) => parseFloat(css.getPropertyValue(name)) * (css.getPropertyValue(name).trim().endsWith('ms') ? 1 : 1000)
-    resize.current = card.animate([{ height: `${from}px` }, { height: `${to}px` }], {
-      duration: ms(open ? '--duration-slow' : '--duration-base'),
-      easing: css.getPropertyValue('--ease-out').trim() || 'ease-out',
-    })
+    resize.current = easeSize(card, { from, to, duration: ms(open ? '--duration-slow' : '--duration-base'), ease: easeOut })
   }, [open])
   React.useEffect(() => {
     if (toggled.current) swapRef.current?.focus()
@@ -514,8 +518,8 @@ function HelpBanner() {
   }, [])
   const setOpen = (next: boolean) => {
     toggled.current = true
-    // The height it has now, mid-animation included, is where the next change starts.
-    fromHeight.current = cardRef.current?.offsetHeight ?? 0
+    // The height it has now, mid-animation included and unrounded, is where the next change starts.
+    fromHeight.current = cardRef.current ? measure(cardRef.current).height : 0
     setOpenState(next)
     try {
       sessionStorage.setItem(KEY, next ? 'open' : 'min')
@@ -610,11 +614,14 @@ const pressEase = 'active:transition-[background-color,color] active:duration-(-
 /** A click shorter than the ease ends mid-way; the row, now current, finishes it rather than snapping. */
 const currentEase = 'transition-[background-color,color] duration-(--duration-fast) ease-(--ease-out)'
 
-/** The count fades out and the chevron in while a group's row is hovered or has keyboard focus. */
+/**
+ * The count fades out and the chevron in while a group's row is hovered or has keyboard focus;
+ * at once under reduced motion, which no data-slot above them brings in.
+ */
 const swapOut =
-  'transition-opacity duration-(--duration-fast) ease-(--ease-out) group-hover/row:opacity-0 group-focus-visible/row:opacity-0'
+  'transition-opacity duration-(--duration-fast) ease-(--ease-out) motion-reduce:transition-none group-hover/row:opacity-0 group-focus-visible/row:opacity-0'
 const swapIn =
-  'flex opacity-0 transition-opacity duration-(--duration-fast) ease-(--ease-out) group-hover/row:opacity-100 group-focus-visible/row:opacity-100'
+  'flex opacity-0 transition-opacity duration-(--duration-fast) ease-(--ease-out) motion-reduce:transition-none group-hover/row:opacity-100 group-focus-visible/row:opacity-100'
 
 /** Marks a Satin Pro page's row, in the place a parent row shows its count. */
 function ProMark() {
