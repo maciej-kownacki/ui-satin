@@ -3,49 +3,82 @@ import { describe, expect, it, vi } from 'vitest'
 import { act, screen, waitFor, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import { Item, List } from '@uisatin/ui/list'
-import { FilterBar, applyFilters, isFilterValid, type Filter, type FilterField, type FilterView } from '../components/filter-bar'
+import {
+  FilterBar,
+  FilterBarClear,
+  FilterBarCount,
+  FilterBarFacet,
+  FilterBarRoot,
+  applyFilters,
+  isFilterValid,
+  type Filter,
+  type FilterField,
+  type FilterOperator,
+} from '../components/filter-bar'
 
 const fields: FilterField[] = [
+  {
+    key: 'owner',
+    label: 'Owner',
+    type: 'person',
+    me: 'tara',
+    // Tara is not first here: the menu puts "Me" first itself.
+    options: [
+      { value: 'jon', label: 'Jon Park' },
+      { value: 'tara', label: 'Tara Mendes' },
+      { value: 'ada', label: 'Ada Novak' },
+    ],
+  },
   {
     key: 'stage',
     label: 'Stage',
     type: 'enum',
     options: [
       { value: 'lead', label: 'Lead' },
-      { value: 'interview', label: 'Interview' },
-      { value: 'won', label: 'Won' },
+      { value: 'qualified', label: 'Qualified', tone: 'sky' },
+      { value: 'proposal', label: 'Proposal', tone: 'plum' },
+      { value: 'won', label: 'Won', tone: 'green' },
     ],
   },
-  { key: 'company', label: 'Company', type: 'text' },
-  { key: 'value', label: 'Value', type: 'number', operators: ['gt', 'lt', 'between'], format: { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 } },
-  { key: 'close', label: 'Close date', type: 'date', operators: ['inThis', 'inLast', 'between'] },
   {
-    key: 'owner',
-    label: 'Owner',
-    type: 'person',
-    me: 'tara',
-    options: [
-      { value: 'tara', label: 'Tara Mendes' },
-      { value: 'jon', label: 'Jon Park' },
+    key: 'value',
+    label: 'Value',
+    type: 'number',
+    format: { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 },
+    presets: [
+      { operator: 'gt', value: 10000, label: '> €10k' },
+      { operator: 'gt', value: 20000, label: '> €20k' },
+      { operator: 'lt', value: 10000 },
+      { operator: 'between', value: [10000, 50000] },
     ],
   },
-  { key: 'tags', label: 'Tags', type: 'multi', options: [{ value: 'vip', label: 'VIP' }, { value: 'eu', label: 'EU' }, { value: 'new', label: 'New' }] },
+  { key: 'close', label: 'Close date', shortLabel: 'Close', type: 'date' },
+  {
+    key: 'tags',
+    label: 'Tags',
+    type: 'multi',
+    options: [
+      { value: 'vip', label: 'VIP' },
+      { value: 'eu', label: 'EU' },
+      { value: 'new', label: 'New' },
+    ],
+  },
 ]
 
-type Deal = { company: string; stage: string; value: number; close: string; owner: string; tags: string[] }
+type Deal = { company: string; owner: string; stage: string; value: number; close: string; tags: string[] }
 const deals: Deal[] = [
-  { company: 'Acme Corp', stage: 'interview', value: 48000, close: '2026-11-28', owner: 'tara', tags: ['vip'] },
-  { company: 'Globex', stage: 'lead', value: 12000, close: '2026-12-15', owner: 'jon', tags: ['eu'] },
-  { company: 'Initech', stage: 'interview', value: 31000, close: '2027-01-20', owner: 'tara', tags: ['eu', 'new'] },
-  { company: 'Umbrella', stage: 'won', value: 9000, close: '2026-10-02', owner: 'tara', tags: [] },
+  { company: 'Acme Corp', owner: 'tara', stage: 'proposal', value: 48000, close: '2026-11-28', tags: ['vip'] },
+  { company: 'Globex', owner: 'jon', stage: 'lead', value: 12000, close: '2026-12-15', tags: ['eu'] },
+  { company: 'Initech', owner: 'tara', stage: 'qualified', value: 31000, close: '2027-01-20', tags: ['eu', 'new'] },
+  { company: 'Umbrella', owner: 'ada', stage: 'won', value: 9000, close: '2026-10-02', tags: [] },
 ]
+// A Thursday in the fourth quarter.
 const today = new Date(2026, 10, 19)
 
 /** A FilterBar over a plain List, wired the way the docs show. */
-function Deals({ initial = [] as Filter[], onChange, views, onSaveView, maxVisible }: { initial?: Filter[]; onChange?: (v: Filter[]) => void; views?: FilterView[]; onSaveView?: (name: string, v: Filter[]) => void; maxVisible?: number }) {
+function Deals({ initial = [] as Filter[], onChange }: { initial?: Filter[]; onChange?: (v: Filter[]) => void }) {
   const [value, setValue] = React.useState(initial)
-  const [query, setQuery] = React.useState('')
-  const shown = applyFilters(deals, value, fields, { today }).filter((d) => d.company.toLowerCase().includes(query.toLowerCase()))
+  const shown = applyFilters(deals, value, fields, { today })
   return (
     <div>
       <FilterBar
@@ -55,18 +88,12 @@ function Deals({ initial = [] as Filter[], onChange, views, onSaveView, maxVisib
           setValue(v)
           onChange?.(v)
         }}
-        search
-        query={query}
-        onQueryChange={setQuery}
         resultCount={shown.length}
         resultLabel={(count, number) => (
           <>
             {number} {count === 1 ? 'deal' : 'deals'}
           </>
         )}
-        views={views}
-        onSaveView={onSaveView}
-        maxVisible={maxVisible}
         today={today}
       />
       <List aria-label="Deals">
@@ -78,308 +105,330 @@ function Deals({ initial = [] as Filter[], onChange, views, onSaveView, maxVisib
   )
 }
 
-const chip = (name: string) => screen.getByRole('button', { name })
+const button = (name: string | RegExp) => screen.getByRole('button', { name })
 const rows = () => within(screen.getByRole('list', { name: 'Deals' })).queryAllByRole('listitem').map((li) => li.textContent)
+const facetOf = (el: HTMLElement) => el.closest<HTMLElement>('[data-slot="filter-bar-facet"]')!
+const count = () => document.querySelector('[data-slot="filter-bar-count"]')!
+const SCENARIO: Filter[] = [
+  { field: 'owner', operator: 'is', value: 'tara' },
+  { field: 'value', operator: 'gt', value: 20000 },
+  { field: 'close', operator: 'inThis', value: 'quarter' },
+]
 
 describe('FilterBar', () => {
-  it('shows just + Filter when empty, and each filter as a chip button', () => {
-    const { unmount } = renderWithSatin(<FilterBar fields={fields} />)
+  it('names a facet by its label while idle, and by the field and its value in full once set', () => {
+    renderWithSatin(<Deals initial={SCENARIO} />)
     const bar = screen.getByRole('group', { name: 'Filters' })
-    expect(within(bar).getAllByRole('button').map((b) => b.textContent)).toEqual(['Filter'])
-    unmount()
-    renderWithSatin(
-      <FilterBar
-        fields={fields}
-        defaultValue={[
-          { field: 'stage', operator: 'is', value: 'interview' },
-          { field: 'value', operator: 'gt', value: 20000 },
-          { field: 'close', operator: 'inThis', value: 'quarter' },
-          { field: 'owner', operator: 'is', value: 'tara' },
-        ]}
-      />,
-    )
-    expect(chip('Stage is Interview')).toBeTruthy()
-    // The symbol shows; screen readers hear it in words.
-    expect(chip('Value greater than €20,000').textContent).toBe('Value>€20,000')
-    expect(chip('Close date this quarter')).toBeTruthy()
-    expect(chip('Owner is me')).toBeTruthy()
-    expect(chip('Remove Stage is Interview')).toBeTruthy()
-  })
-
-  it('round-trips its value through JSON', async () => {
-    const value: Filter[] = [
-      { field: 'stage', operator: 'isAnyOf', value: ['interview', 'won'] },
-      { field: 'value', operator: 'between', value: [10000, 50000] },
-      { field: 'close', operator: 'between', value: ['2026-11-01', '2026-12-31'] },
-    ]
-    const copy: Filter[] = JSON.parse(JSON.stringify(value))
-    expect(copy).toEqual(value)
-    const onChange = vi.fn()
-    const { user } = renderWithSatin(<Deals initial={copy} onChange={onChange} />)
-    expect(chip('Stage is any of Interview or Won')).toBeTruthy()
-    expect(chip('Value between €10,000 and €50,000')).toBeTruthy()
-    expect(chip('Close date between Nov 1 – Dec 31, 2026')).toBeTruthy()
+    expect(within(bar).getAllByRole('button').map((b) => b.getAttribute('aria-label') ?? b.textContent)).toEqual([
+      'Owner: Me',
+      'Clear Owner',
+      'Stage',
+      'Value: over €20,000',
+      'Clear Value',
+      'Close date: This quarter',
+      'Clear Close date',
+      'Tags',
+      'Clear filters',
+    ])
+    // Shown short, heard in full: the preset's label, and the short label of a set date.
+    expect(button('Value: over €20,000').textContent).toBe('Value:> €20k')
+    expect(button('Close date: This quarter').textContent).toBe('Close:This quarter')
+    expect(facetOf(button('Owner: Me')).hasAttribute('data-active')).toBe(true)
+    expect(facetOf(button('Stage')).hasAttribute('data-active')).toBe(false)
     expect(rows()).toEqual(['Acme Corp'])
-    await user.click(chip('Remove Close date between Nov 1 – Dec 31, 2026'))
-    const emitted = onChange.mock.lastCall![0] as Filter[]
-    expect(JSON.parse(JSON.stringify(emitted))).toEqual(value.slice(0, 2))
+    expect(count().getAttribute('aria-live')).toBe('polite')
+    expect(count().textContent).toBe('11 deal')
   })
 
-  it('adds a filter from + Filter: pick a field, then a value, and the list follows', async () => {
+  it('keeps the checkbox menu open, and a second pick turns is into isAnyOf', async () => {
     const onChange = vi.fn()
     const { user } = renderWithSatin(<Deals onChange={onChange} />)
-    expect(rows()).toHaveLength(4)
-    await user.click(screen.getByRole('button', { name: 'Filter' }))
-    await user.click(screen.getByRole('menuitem', { name: 'Stage' }))
-    // The editor lists the choices on its own surface: nothing opens over it.
-    const editor = screen.getByRole('dialog', { name: 'Stage' })
-    expect(document.activeElement).toBe(within(editor).getByRole('listbox', { name: 'Stage is' }))
-    await user.click(within(editor).getByRole('option', { name: 'Interview' }))
-    expect(onChange).toHaveBeenLastCalledWith([{ field: 'stage', operator: 'is', value: 'interview' }])
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
-    expect(rows()).toEqual(['Acme Corp', 'Initech'])
-    await waitFor(() => expect(document.activeElement).toBe(chip('Stage is Interview')))
-  })
-
-  it('drops a new chip closed before it has a value', async () => {
-    const onChange = vi.fn()
-    const { user } = renderWithSatin(<Deals onChange={onChange} />)
-    await user.click(screen.getByRole('button', { name: 'Filter' }))
-    await user.click(screen.getByRole('menuitem', { name: 'Company' }))
-    expect(screen.getByRole('textbox', { name: 'Company contains' })).toBe(document.activeElement)
+    await user.click(button('Stage'))
+    const menu = screen.getByRole('menu', { name: 'Stage' })
+    await user.click(within(menu).getByRole('menuitemcheckbox', { name: 'Qualified' }))
+    expect(onChange).toHaveBeenLastCalledWith([{ field: 'stage', operator: 'is', value: 'qualified' }])
+    // Still open; its name follows the trigger's (Radix labels a menu by its trigger).
+    expect(screen.getByRole('menu', { name: 'Stage: Qualified' })).toBe(menu)
+    await user.click(within(menu).getByRole('menuitemcheckbox', { name: 'Won' }))
+    expect(onChange).toHaveBeenLastCalledWith([{ field: 'stage', operator: 'isAnyOf', value: ['qualified', 'won'] }])
+    expect(within(menu).getByRole('menuitemcheckbox', { name: 'Won' }).getAttribute('aria-checked')).toBe('true')
+    expect(button('Stage: Qualified or Won')).toBeTruthy()
+    expect(rows()).toEqual(['Initech', 'Umbrella'])
+    // A multi field always writes hasAnyOf.
     await user.keyboard('{Escape}')
-    expect(onChange).not.toHaveBeenCalled()
-    expect(screen.queryByRole('button', { name: /^Company/ })).toBeNull()
-    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Filter' })))
+    await user.click(button('Tags'))
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'EU' }))
+    expect(onChange).toHaveBeenLastCalledWith([
+      { field: 'stage', operator: 'isAnyOf', value: ['qualified', 'won'] },
+      { field: 'tags', operator: 'hasAnyOf', value: ['eu'] },
+    ])
   })
 
-  it('edits text live and closes with Enter', async () => {
+  it('lists the person using the app first, as Me', async () => {
     const onChange = vi.fn()
     const { user } = renderWithSatin(<Deals onChange={onChange} />)
-    await user.click(screen.getByRole('button', { name: 'Filter' }))
-    await user.click(screen.getByRole('menuitem', { name: 'Company' }))
-    await user.keyboard('glo')
-    expect(onChange).toHaveBeenLastCalledWith([{ field: 'company', operator: 'contains', value: 'glo' }])
-    expect(rows()).toEqual(['Globex'])
-    await user.keyboard('{Enter}')
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
-    expect(chip('Company contains “glo”')).toBeTruthy()
+    await user.click(button('Owner'))
+    const items = screen.getAllByRole('menuitemcheckbox')
+    expect(items.map((i) => i.textContent)).toEqual(['Me', 'Jon Park', 'Ada Novak'])
+    await user.click(items[0])
+    await user.click(items[1])
+    // Picks keep the menu's order, so Me leads the facet.
+    expect(onChange).toHaveBeenLastCalledWith([{ field: 'owner', operator: 'isAnyOf', value: ['tara', 'jon'] }])
+    const trigger = button('Owner: Me or Jon Park')
+    expect(trigger.textContent).toBe('Owner:Me+1')
   })
 
-  it('takes a number, and a new operator keeps it', async () => {
+  it('shows toned picks as Badges, two at most, then +N', () => {
+    renderWithSatin(<Deals initial={[{ field: 'stage', operator: 'isAnyOf', value: ['lead', 'proposal', 'won'] }]} />)
+    const trigger = button('Stage: Lead, Proposal, or Won')
+    const badges = trigger.querySelectorAll<HTMLElement>('[data-slot="badge"]')
+    expect([...badges].map((b) => b.textContent)).toEqual(['Lead', 'Proposal'])
+    // An option without a tone is neutral.
+    expect(badges[0].dataset.tone).toBe('neutral')
+    expect(badges[1].dataset.tone).toBe('plum')
+    expect(within(trigger).getByText('+1')).toBeTruthy()
+  })
+
+  it('picks one number preset; its row closes the menu', async () => {
     const onChange = vi.fn()
-    const { user } = renderWithSatin(<Deals onChange={onChange} />)
-    await user.click(screen.getByRole('button', { name: 'Filter' }))
-    await user.click(screen.getByRole('menuitem', { name: 'Value' }))
-    const field = screen.getByRole('spinbutton', { name: 'Value greater than' })
-    expect(document.activeElement).toBe(field)
-    await user.clear(field)
-    await user.type(field, '20000{Enter}')
-    expect(onChange).toHaveBeenLastCalledWith([{ field: 'value', operator: 'gt', value: 20000 }])
+    const { user } = renderWithSatin(<Deals initial={SCENARIO} onChange={onChange} />)
+    await user.click(button('Value: over €20,000'))
+    const radios = screen.getAllByRole('menuitemradio')
+    // A preset without a label reads compact.
+    expect(radios.map((r) => r.textContent)).toEqual(['> €10k', '> €20k', '< €10K', '€10K – €50K'])
+    expect(radios.map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false', 'false'])
+    await user.click(radios[3])
+    expect(onChange).toHaveBeenLastCalledWith([SCENARIO[0], { field: 'value', operator: 'between', value: [10000, 50000] }, SCENARIO[2]])
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+    expect(button('Value: €10,000 to €50,000').textContent).toBe('Value:€10K – €50K')
+  })
+
+  it('shows a number filter no preset matches as set, with no row checked', async () => {
+    const { user } = renderWithSatin(<Deals initial={[{ field: 'value', operator: 'gte', value: 31000 }]} />)
+    const trigger = button('Value: at least €31,000')
+    expect(trigger.textContent).toBe('Value:≥ €31K')
     expect(rows()).toEqual(['Acme Corp', 'Initech'])
-    await user.click(chip('Value greater than €20,000'))
-    // The operator opens its list in place of the value, in the same panel.
-    await user.click(screen.getByRole('button', { name: 'Value >' }))
-    const editor = screen.getByRole('dialog', { name: 'Value' })
-    expect(within(editor).queryByRole('spinbutton')).toBeNull()
-    await user.click(within(editor).getByRole('option', { name: /between/ }))
-    expect(onChange).toHaveBeenLastCalledWith([{ field: 'value', operator: 'between', value: [20000, 20000] }])
-    expect(within(editor).getAllByRole('spinbutton')).toHaveLength(2)
+    await user.click(trigger)
+    expect(screen.getAllByRole('menuitemradio').every((r) => r.getAttribute('aria-checked') === 'false')).toBe(true)
   })
 
-  it('sets a date period, and its list opens by itself', async () => {
+  it('opens the date list with ↓, moves with the arrows, Home and End, and picks with Enter', async () => {
     const onChange = vi.fn()
     const { user } = renderWithSatin(<Deals onChange={onChange} />)
-    await user.click(screen.getByRole('button', { name: 'Filter' }))
-    await user.click(screen.getByRole('menuitem', { name: 'Close date' }))
-    await user.click(await screen.findByRole('option', { name: 'quarter' }))
+    act(() => button('Close date').focus())
+    await user.keyboard('{ArrowDown}')
+    const list = await screen.findByRole('listbox', { name: 'Close date' })
+    await waitFor(() => expect(document.activeElement).toBe(list))
+    const lit = () => document.getElementById(list.getAttribute('aria-activedescendant')!)?.textContent
+    expect(within(list).getAllByRole('option').map((o) => o.textContent)).toEqual(['This month', 'This quarter', 'This year', 'Last 30 days', 'Custom range…'])
+    expect(lit()).toBe('This month')
+    await user.keyboard('{ArrowDown}')
+    expect(lit()).toBe('This quarter')
+    await user.keyboard('{End}')
+    expect(lit()).toBe('Custom range…')
+    await user.keyboard('{ArrowDown}')
+    expect(lit()).toBe('This month')
+    await user.keyboard('{ArrowUp}{Home}{ArrowDown}{Enter}')
     expect(onChange).toHaveBeenLastCalledWith([{ field: 'close', operator: 'inThis', value: 'quarter' }])
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    await waitFor(() => expect(document.activeElement).toBe(button('Close date: This quarter')))
     expect(rows()).toEqual(['Acme Corp', 'Globex', 'Umbrella'])
   })
 
-  it('picks people from a searchable list, me first', async () => {
-    const onChange = vi.fn()
-    const { user } = renderWithSatin(<Deals onChange={onChange} />)
-    await user.click(screen.getByRole('button', { name: 'Filter' }))
-    await user.click(screen.getByRole('menuitem', { name: 'Owner' }))
-    const options = await screen.findAllByRole('option')
-    expect(options[0].textContent).toContain('Me')
-    await user.click(options[0])
-    expect(onChange).toHaveBeenLastCalledWith([{ field: 'owner', operator: 'is', value: 'tara' }])
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Owner' })).toBeNull())
-    expect(chip('Owner is me')).toBeTruthy()
-  })
-
-  it('opens a chip with Enter, closes with Escape, and removes it with Backspace', async () => {
-    const { user } = renderWithSatin(
-      <Deals
-        initial={[
-          { field: 'stage', operator: 'is', value: 'interview' },
-          { field: 'owner', operator: 'is', value: 'tara' },
-        ]}
-      />,
-    )
-    chip('Stage is Interview').focus()
-    await user.keyboard('{Enter}')
-    expect(screen.getByRole('dialog', { name: 'Stage' })).toBeTruthy()
-    // The operator and the value are labelled: "Stage is" (the field and the operator).
-    expect(screen.getByRole('button', { name: 'Stage is' }).getAttribute('aria-expanded')).toBe('false')
-    expect(document.activeElement).toBe(screen.getByRole('listbox', { name: 'Stage is' }))
-    await user.keyboard('{Escape}')
-    await waitFor(() => expect(document.activeElement).toBe(chip('Stage is Interview')))
-    await user.keyboard('{Backspace}')
-    expect(screen.queryByRole('button', { name: 'Stage is Interview' })).toBeNull()
-    // Focus moves to the chip that took its place.
-    expect(document.activeElement).toBe(chip('Owner is me'))
-    expect(screen.getByRole('status').textContent).toBe('Stage is Interview removed')
-  })
-
-  it('removes the last chip with Backspace in the empty search', async () => {
-    const { user } = renderWithSatin(
-      <Deals
-        initial={[
-          { field: 'stage', operator: 'is', value: 'interview' },
-          { field: 'owner', operator: 'is', value: 'tara' },
-        ]}
-      />,
-    )
-    const search = screen.getByRole('textbox', { name: 'Search' })
-    await user.click(search)
-    await user.keyboard('a{Backspace}')
-    expect(chip('Owner is me')).toBeTruthy()
-    await user.keyboard('{Backspace}')
-    expect(screen.queryByRole('button', { name: 'Owner is me' })).toBeNull()
-    expect(document.activeElement).toBe(search)
-    await user.keyboard('{Backspace}')
-    expect(screen.queryByRole('button', { name: 'Stage is Interview' })).toBeNull()
-  })
-
-  it('shows a filter that cannot apply, says why, and leaves it out', async () => {
-    const broken: Filter[] = [{ field: 'value', operator: 'between', value: [40000, 10000] }]
-    expect(isFilterValid(broken[0], fields)).toBe(false)
-    const { user } = renderWithSatin(<Deals initial={broken} />)
-    const c = chip('Value between €40,000 and €10,000')
-    expect(c.closest('[data-slot="filter-chip"]')?.hasAttribute('data-invalid')).toBe(true)
-    expect(c.getAttribute('aria-describedby') && document.getElementById(c.getAttribute('aria-describedby')!)?.textContent).toBe('Check the range')
-    expect(rows()).toHaveLength(4)
-    await user.click(c)
-    expect(within(screen.getByRole('dialog', { name: 'Value' })).getByText('Check the range')).toBeTruthy()
-  })
-
-  it('folds chips past maxVisible into +N more', async () => {
-    const many: Filter[] = ['lead', 'interview', 'won'].map((v) => ({ field: 'stage', operator: 'isNot', value: v }))
-    const { user } = renderWithSatin(<Deals initial={many} maxVisible={1} />)
-    expect(screen.queryByRole('button', { name: 'Stage is not Interview' })).toBeNull()
-    await user.click(screen.getByRole('button', { name: '+2 more' }))
-    expect(chip('Stage is not Won')).toBeTruthy()
-    expect(document.activeElement).toBe(chip('Stage is not Interview'))
-  })
-
-  it('shows the count live and reads it out once it settles', async () => {
+  it('swaps the list for a calendar on Custom range…, and Escape goes back to the list', async () => {
     const { user } = renderWithSatin(<Deals />)
-    expect(screen.getByText((_, el) => el?.getAttribute('data-slot') === 'filter-bar-count' && el.textContent === '44 deals')).toBeTruthy()
-    await user.click(screen.getByRole('textbox', { name: 'Search' }))
-    await user.keyboard('acme')
-    await waitFor(() => expect(screen.getByRole('status').textContent).toBe('1 deal'))
-  })
-
-  it('applies a view and saves the filters as a new one', async () => {
-    const onSaveView = vi.fn()
-    const views: FilterView[] = [{ id: 'mine', label: 'My deals', value: [{ field: 'owner', operator: 'is', value: 'tara' }] }]
-    const { user } = renderWithSatin(<Deals views={views} onSaveView={onSaveView} />)
-    await user.click(screen.getByRole('button', { name: 'Views' }))
-    await user.click(screen.getByRole('menuitem', { name: 'My deals' }))
-    expect(chip('Owner is me')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'My deals' })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: 'Save view' })).toBeNull()
-    await user.click(screen.getByRole('textbox', { name: 'Search' }))
-    await user.keyboard('{Backspace}')
-    await user.click(screen.getByRole('button', { name: 'Filter' }))
-    await user.click(screen.getByRole('menuitem', { name: 'Stage' }))
-    await user.click(await screen.findByRole('option', { name: 'Won' }))
-    await user.click(screen.getByRole('button', { name: 'Save view' }))
-    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Won{Enter}')
-    expect(onSaveView).toHaveBeenCalledWith('Won', [{ field: 'stage', operator: 'is', value: 'won' }])
-  })
-
-  it('picks from the list with the keys, and Escape leaves the operator list before the editor', async () => {
-    const onChange = vi.fn()
-    const { user } = renderWithSatin(<Deals onChange={onChange} />)
-    await user.click(screen.getByRole('button', { name: 'Filter' }))
-    await user.click(screen.getByRole('menuitem', { name: 'Stage' }))
-    await user.keyboard('{ArrowDown}{Enter}')
-    expect(onChange).toHaveBeenLastCalledWith([{ field: 'stage', operator: 'is', value: 'interview' }])
-    await waitFor(() => expect(document.activeElement).toBe(chip('Stage is Interview')))
-    await user.keyboard('{Enter}')
-    const operator = screen.getByRole('button', { name: 'Stage is' })
-    act(() => operator.focus())
-    await user.keyboard('{ArrowDown}')
-    expect(operator.getAttribute('aria-expanded')).toBe('true')
-    expect(document.activeElement).toBe(screen.getByRole('listbox', { name: 'Stage' }))
+    await user.click(button('Close date'))
+    await user.click(screen.getByRole('option', { name: 'Custom range…' }))
+    const dialog = screen.getByRole('dialog', { name: 'Custom range' })
+    expect(within(dialog).getByRole('button', { name: 'Back' })).toBeTruthy()
+    expect(within(dialog).queryByRole('listbox')).toBeNull()
+    expect(within(dialog).getByText('Pick the first day')).toBeTruthy()
     await user.keyboard('{Escape}')
-    // Back to the value; the editor stays open.
-    expect(screen.getByRole('dialog', { name: 'Stage' })).toBeTruthy()
-    expect(document.activeElement).toBe(operator)
-    expect(screen.getByRole('listbox', { name: 'Stage is' })).toBeTruthy()
+    const list = await screen.findByRole('listbox', { name: 'Close date' })
+    expect(screen.getByRole('dialog', { name: 'Close date' })).toBeTruthy()
+    await waitFor(() => expect(document.activeElement).toBe(list))
     await user.keyboard('{Escape}')
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
   })
 
-  it('has no keyboard shortcut of its own', async () => {
-    const { user } = renderWithSatin(<Deals />)
-    act(() => screen.getByRole('button', { name: 'Filter' }).focus())
-    await user.keyboard('f')
-    expect(screen.queryByRole('menu')).toBeNull()
-    expect(screen.getByRole('button', { name: 'Filter' }).hasAttribute('aria-keyshortcuts')).toBe(false)
+  it('writes a full range as between and closes', async () => {
+    const onChange = vi.fn()
+    const { user } = renderWithSatin(<Deals onChange={onChange} />)
+    await user.click(button('Close date'))
+    await user.click(screen.getByRole('option', { name: 'Custom range…' }))
+    await user.click(screen.getByRole('button', { name: /November 3, 2026/ }))
+    expect(screen.getByText('Nov 3 – pick the end')).toBeTruthy()
+    expect(onChange).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: /November 28, 2026/ }))
+    expect(onChange).toHaveBeenLastCalledWith([{ field: 'close', operator: 'between', value: ['2026-11-03', '2026-11-28'] }])
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(button('Close date: Nov 3 to Nov 28').textContent).toBe('Close:Nov 3 – Nov 28')
+    expect(rows()).toEqual(['Acme Corp'])
+    // Reopened, the range is the checked row, with its days beside it.
+    await user.click(button('Close date: Nov 3 to Nov 28'))
+    expect(screen.getByRole('option', { name: /Custom range…/ }).getAttribute('aria-selected')).toBe('true')
   })
 
-  it('speaks the words SatinLabels gives it', () => {
-    renderWithSatin(<FilterBar fields={fields} defaultValue={[{ field: 'close', operator: 'inLast', value: 30 }]} resultCount={3} />, {
+  it('clears a facet with its ×, keeping focus on the facet', async () => {
+    const onChange = vi.fn()
+    const { user } = renderWithSatin(<Deals initial={SCENARIO} onChange={onChange} />)
+    const trigger = button('Owner: Me')
+    await user.click(button('Clear Owner'))
+    expect(onChange).toHaveBeenLastCalledWith(SCENARIO.slice(1))
+    expect(trigger.getAttribute('aria-label')).toBeNull()
+    expect(document.activeElement).toBe(trigger)
+    expect(trigger.textContent).toBe('Owner')
+  })
+
+  it('clears every filter with Clear filters and focuses the first facet; nothing to clear, no button', async () => {
+    const onChange = vi.fn()
+    const { user } = renderWithSatin(<Deals initial={[{ field: 'close', operator: 'inLast', value: 60 }]} onChange={onChange} />)
+    await user.click(button('Clear filters'))
+    expect(onChange).toHaveBeenLastCalledWith([])
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull()
+    expect(document.activeElement).toBe(button('Owner'))
+    expect(rows()).toHaveLength(4)
+  })
+
+  it('leaves a filter no facet can say idle and unapplied', () => {
+    const broken: Filter[] = [
+      { field: 'value', operator: 'between', value: [40000, 10000] },
+      { field: 'stage', operator: 'isNot' as FilterOperator, value: 'won' },
+      { field: 'owner', operator: 'is', value: 'gone' },
+      { field: 'tags', operator: 'isAnyOf', value: ['eu'] },
+      { field: 'close', operator: 'inLast', value: 0 },
+      { field: 'nope', operator: 'is', value: 'x' },
+    ]
+    expect(broken.map((f) => isFilterValid(f, fields))).toEqual([false, false, false, false, false, false])
+    renderWithSatin(<Deals initial={broken} />)
+    for (const name of ['Owner', 'Stage', 'Value', 'Close date', 'Tags']) expect(facetOf(button(name)).hasAttribute('data-active')).toBe(false)
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull()
+    expect(rows()).toHaveLength(4)
+  })
+
+  it('takes the first filter of a field, and a change replaces all of them', async () => {
+    const onChange = vi.fn()
+    const twice: Filter[] = [
+      { field: 'stage', operator: 'is', value: 'lead' },
+      { field: 'value', operator: 'gt', value: 10000 },
+      { field: 'stage', operator: 'is', value: 'won' },
+    ]
+    const { user } = renderWithSatin(<Deals initial={twice} onChange={onChange} />)
+    expect(button('Stage: Lead')).toBeTruthy()
+    expect(rows()).toEqual(['Globex'])
+    await user.click(button('Stage: Lead'))
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Won' }))
+    expect(onChange).toHaveBeenLastCalledWith([{ field: 'stage', operator: 'isAnyOf', value: ['lead', 'won'] }, twice[1]])
+    // A first filter that can't apply leaves the field unfiltered, whatever follows it.
+    const stale: Filter[] = [
+      { field: 'stage', operator: 'is', value: 'gone' },
+      { field: 'stage', operator: 'is', value: 'won' },
+    ]
+    expect(applyFilters(deals, stale, fields)).toHaveLength(4)
+  })
+
+  it('ignores the values a field no longer has', async () => {
+    const onChange = vi.fn()
+    const partly: Filter[] = [{ field: 'stage', operator: 'isAnyOf', value: ['qualified', 'gone'] }]
+    expect(isFilterValid(partly[0], fields)).toBe(true)
+    const { user } = renderWithSatin(<Deals initial={partly} onChange={onChange} />)
+    expect(button('Stage: Qualified')).toBeTruthy()
+    expect(rows()).toEqual(['Initech'])
+    await user.click(button('Stage: Qualified'))
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Proposal' }))
+    // The write keeps only what the field has.
+    expect(onChange).toHaveBeenLastCalledWith([{ field: 'stage', operator: 'isAnyOf', value: ['qualified', 'proposal'] }])
+  })
+
+  it('shows days with their year once a range leaves the current year', () => {
+    renderWithSatin(<Deals initial={[{ field: 'close', operator: 'between', value: ['2026-12-01', '2027-01-31'] }]} />)
+    expect(button('Close date: Dec 1, 2026 to Jan 31, 2027').textContent).toBe('Close:Dec 1, 2026 – Jan 31, 2027')
+    expect(rows()).toEqual(['Globex', 'Initech'])
+  })
+
+  it('speaks the words SatinLabels gives it', async () => {
+    const { user } = renderWithSatin(<Deals initial={SCENARIO} />, {
       labels: {
+        clear: 'Wyczyść',
         filterBar: 'Filtry',
-        filterAdd: 'Filtr',
-        filterOperator: (op) => (op === 'inLast' ? 'w ostatnich' : op),
-        filterDays: (n) => `${n} dniach`,
-        filterResults: (count, number) => <>{number} wyników</>,
-        removeItem: (name) => `Usuń ${name}`,
+        filterMe: 'Ja',
+        filterFacetValue: (field, value) => `${field} – ${value}`,
+        filterClearField: (field) => `Wyczyść ${field}`,
+        filterClearAll: 'Wyczyść filtry',
+        filterComparison: (operator, value) => `${operator === 'gt' ? 'od' : 'do'} ${value}`,
+        filterComparisonName: (operator, value) => `${operator === 'gt' ? 'ponad' : 'poniżej'} ${value}`,
+        filterThis: (period) => (period === 'quarter' ? 'Ten kwartał' : period),
+        filterLastDays: (n) => `Ostatnie ${n} dni`,
+        filterCustomRange: 'Własny zakres…',
       },
     })
     expect(screen.getByRole('group', { name: 'Filtry' })).toBeTruthy()
-    expect(chip('Close date w ostatnich 30 dniach')).toBeTruthy()
-    expect(chip('Usuń Close date w ostatnich 30 dniach')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Filtr' })).toBeTruthy()
-    expect(screen.getByText('wyników', { exact: false }).textContent).toBe('33 wyników')
+    expect(button('Owner – Ja')).toBeTruthy()
+    expect(button('Wyczyść Owner')).toBeTruthy()
+    expect(button('Value – ponad €20,000')).toBeTruthy()
+    expect(button('Close date – Ten kwartał')).toBeTruthy()
+    expect(button('Wyczyść filtry')).toBeTruthy()
+    await user.click(button('Close date – Ten kwartał'))
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['month', 'Ten kwartał(selected)', 'year', 'Ostatnie 30 dni', 'Własny zakres…'])
+    expect(screen.getByRole('button', { name: 'Wyczyść' })).toBeTruthy()
   })
 
-  it.each(['light', 'dark'] as const)('has no axe violations in %s, closed and editing', async (theme) => {
-    const { user } = renderWithSatin(
-      <Deals
-        initial={[
-          { field: 'stage', operator: 'is', value: 'interview' },
-          { field: 'value', operator: 'between', value: [40000, 10000] },
-        ]}
-        views={[{ id: 'all', label: 'All deals', value: [] }]}
-      />,
-      { theme },
+  it('builds a bar from its parts; a facet for a key the fields lack renders nothing', () => {
+    const root = React.createRef<HTMLDivElement>()
+    const facet = React.createRef<HTMLSpanElement>()
+    const clear = React.createRef<HTMLButtonElement>()
+    renderWithSatin(
+      <FilterBarRoot ref={root} fields={fields} defaultValue={SCENARIO} resultCount={1} data-testid="bar">
+        <FilterBarFacet ref={facet} field="value" className="max-w-60" />
+        <FilterBarFacet field="nope" />
+        <FilterBarClear ref={clear} />
+        <FilterBarCount />
+      </FilterBarRoot>,
     )
+    const bar = screen.getByRole('group', { name: 'Filters' })
+    expect(root.current).toBe(bar)
+    expect(bar.dataset.testid).toBe('bar')
+    expect(bar.querySelectorAll('[data-slot="filter-bar-facet"]')).toHaveLength(1)
+    expect(facet.current?.classList.contains('max-w-60')).toBe(true)
+    expect(clear.current).toBe(button('Clear filters'))
+    expect(count().textContent).toBe('11 result')
+  })
+
+  it.each(['light', 'dark'] as const)('has no axe violations in %s, closed and open', async (theme) => {
+    const { user } = renderWithSatin(<Deals initial={[...SCENARIO, { field: 'stage', operator: 'isAnyOf', value: ['lead', 'won'] }]} />, { theme })
     await expectNoAxeViolations()
-    await user.click(chip('Stage is Interview'))
+    await user.click(button('Stage: Lead or Won'))
+    await expectNoAxeViolations()
+    await user.keyboard('{Escape}')
+    await user.click(button('Close date: This quarter'))
+    await expectNoAxeViolations()
+    await user.click(screen.getByRole('option', { name: 'Custom range…' }))
     await expectNoAxeViolations()
   })
 })
 
 describe('applyFilters', () => {
-  const at = (filters: Filter[]) => applyFilters(deals, filters, fields, { today }).map((d) => d.company)
-  it('matches every operator the way the chips read', () => {
-    expect(at([{ field: 'stage', operator: 'isNoneOf', value: ['interview', 'won'] }])).toEqual(['Globex'])
-    expect(at([{ field: 'tags', operator: 'hasAllOf', value: ['eu', 'new'] }])).toEqual(['Initech'])
-    expect(at([{ field: 'tags', operator: 'hasNoneOf', value: ['eu'] }])).toEqual(['Acme Corp', 'Umbrella'])
-    expect(at([{ field: 'company', operator: 'startsWith', value: 'IN' }])).toEqual(['Initech'])
-    expect(at([{ field: 'value', operator: 'lt', value: 12000 }])).toEqual(['Umbrella'])
-    expect(at([{ field: 'close', operator: 'inLast', value: 60 }])).toEqual(['Umbrella'])
-    expect(at([{ field: 'close', operator: 'inThis', value: 'month' }])).toEqual(['Acme Corp'])
-    expect(at([{ field: 'close', operator: 'between', value: ['2026-12-01', '2027-01-31'] }])).toEqual(['Globex', 'Initech'])
-    // A filter that can't apply lets everything through.
-    expect(at([{ field: 'stage', operator: 'is', value: '' }])).toHaveLength(4)
+  const at = (...filters: Filter[]) => applyFilters(deals, filters, fields, { today }).map((d) => d.company)
+  it('matches each operator the way the facets read', () => {
+    expect(at({ field: 'owner', operator: 'is', value: 'tara' })).toEqual(['Acme Corp', 'Initech'])
+    expect(at({ field: 'stage', operator: 'isAnyOf', value: ['lead', 'won'] })).toEqual(['Globex', 'Umbrella'])
+    expect(at({ field: 'tags', operator: 'hasAnyOf', value: ['eu'] })).toEqual(['Globex', 'Initech'])
+    expect(at({ field: 'value', operator: 'gt', value: 31000 })).toEqual(['Acme Corp'])
+    expect(at({ field: 'value', operator: 'gte', value: 31000 })).toEqual(['Acme Corp', 'Initech'])
+    expect(at({ field: 'value', operator: 'lt', value: 12000 })).toEqual(['Umbrella'])
+    expect(at({ field: 'value', operator: 'lte', value: 12000 })).toEqual(['Globex', 'Umbrella'])
+    expect(at({ field: 'value', operator: 'between', value: [12000, 31000] })).toEqual(['Globex', 'Initech'])
+    expect(at({ field: 'close', operator: 'inThis', value: 'month' })).toEqual(['Acme Corp'])
+    expect(at({ field: 'close', operator: 'inThis', value: 'quarter' })).toEqual(['Acme Corp', 'Globex', 'Umbrella'])
+    expect(at({ field: 'close', operator: 'inLast', value: 60 })).toEqual(['Umbrella'])
+    expect(at({ field: 'close', operator: 'between', value: ['2026-12-01', '2027-01-31'] })).toEqual(['Globex', 'Initech'])
+    // Every filter at once.
+    expect(at({ field: 'owner', operator: 'is', value: 'tara' }, { field: 'tags', operator: 'hasAnyOf', value: ['new'] })).toEqual(['Initech'])
+  })
+
+  it('reads rows through getValue', () => {
+    const nested = deals.map((d) => ({ name: d.company, data: d }))
+    const shown = applyFilters(nested, [{ field: 'owner', operator: 'is', value: 'jon' }], fields, { getValue: (row, key) => row.data[key as keyof Deal] })
+    expect(shown.map((r) => r.name)).toEqual(['Globex'])
   })
 })
