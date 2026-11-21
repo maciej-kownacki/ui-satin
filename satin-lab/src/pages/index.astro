@@ -2,7 +2,7 @@
 /**
  * All components, the home page (uisatin.dev/): every component and AI pattern page as a card with a preview, like a
  * catalogue. Each preview is the page's own demo, live and scaled to the card (CardPreview),
- * loaded as the card comes into view, so it is the real component at any resolution, in the
+ * loaded a screen before the card comes into view (client:near), so it is the real component at any resolution, in the
  * current theme and brand. The search and the group filter are one small island.
  */
 import Docs from '../layouts/Docs.astro'
@@ -40,7 +40,7 @@ const card =
           <article class={card}>
             {/* The card's corner less its 1px edge, from the token, so it stays concentric when Customize scales the corners. */}
             <div class="relative aspect-[16/10] rounded-t-(--inner) border-b border-border-subtle bg-bg-field [--inner:max(0px,calc(var(--radius-2xl)-1px))] [clip-path:inset(0_round_var(--inner)_var(--inner)_0_0)]">
-              <CardPreview client:visible={{ rootMargin: '300px' }} id={c.id} />
+              <CardPreview client:near id={c.id} />
             </div>
             <div class="flex items-center justify-between gap-3 px-4 py-3">
               <a href={c.href} class="truncate text-base font-medium text-text-default outline-none after:absolute after:inset-0 after:content-['']">
