@@ -23,7 +23,7 @@
   ],
   "docs": "Reviewable changes docs: https://uisatin.dev/ai-patterns/agent-changes-review",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "pro",
     "props": {
       "ReviewableChanges": {

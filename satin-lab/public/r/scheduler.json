@@ -31,7 +31,7 @@
   ],
   "docs": "Scheduler docs: https://uisatin.dev/components/scheduler",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "pro",
     "props": {
       "SchedulerRoot": {

@@ -23,7 +23,7 @@
   ],
   "docs": "Message actions docs: https://uisatin.dev/ai-patterns/message-actions",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "MessageActions": {

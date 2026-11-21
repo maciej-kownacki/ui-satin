@@ -24,7 +24,7 @@
   ],
   "docs": "Agent presence docs: https://uisatin.dev/ai-patterns/agent-presence",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "pro",
     "props": {
       "AgentPresenceRoot": {

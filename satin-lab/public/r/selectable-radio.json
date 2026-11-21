@@ -21,7 +21,7 @@
   ],
   "docs": "Selectable radio docs: https://uisatin.dev/components/selectable-radio",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "SelectableRadio": {

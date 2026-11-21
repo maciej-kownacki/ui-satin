@@ -20,7 +20,7 @@
   ],
   "docs": "Accordion docs: https://uisatin.dev/components/accordion",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "Accordion": {
