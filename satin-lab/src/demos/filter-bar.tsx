@@ -62,8 +62,6 @@ export function Pipeline({ deals }: { deals: Deal[] }) {
         query={query}
         onQueryChange={setQuery}
         searchPlaceholder="Search deals…"
-        views={views}
-        onSaveView={(label, value) => saveView({ label, value })}
       />
       <Table label="Deals" columns={columns} rows={shown} />
     </div>

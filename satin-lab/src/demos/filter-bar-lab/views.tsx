@@ -27,9 +27,11 @@ const QUICK: { id: string; label: string; filter: Filter }[] = [
   { id: 'vip', label: 'VIP', filter: { field: 'tags', operator: 'hasAnyOf', value: ['vip'] } },
 ]
 
-/** What "More" offers: what neither a view nor a toggle covers. VIP has its toggle, so Tags here leave it out. */
-const tags = fieldOf('tags')
-const MORE_FIELDS: FilterField[] = [fieldOf('stage'), { ...tags, options: tags.options?.filter((o) => o.value !== 'vip') }]
+/**
+ * What "More" offers: a field neither a view nor a toggle touches. Not Tags: VIP has its toggle,
+ * and a second tags filter would AND with it (VIP and EU matches no deal).
+ */
+const MORE_FIELDS: FilterField[] = [fieldOf('stage')]
 
 export function ViewsDirection({ deals }: { deals: Deal[] }) {
   const [view, setView] = React.useState('mine')
@@ -126,7 +128,7 @@ const quick = {
 export function Pipeline({ deals }: { deals: Deal[] }) {
   const [view, setView] = React.useState('mine')
   const [on, setOn] = React.useState(['value', 'quarter'])
-  const [more, setMore] = React.useState<Filter[]>([]) // Stage and the other tags, in the Panel's sheet
+  const [more, setMore] = React.useState<Filter[]>([]) // Stage, in the Panel's sheet
   const [open, setOpen] = React.useState(false)
   const shown = applyFilters(deals, [...views[view], ...on.map((id) => quick[id]), ...more], fields)
 
@@ -135,7 +137,7 @@ export function Pipeline({ deals }: { deals: Deal[] }) {
       <Tabs aria-label="Views" value={view} onValueChange={setView} items={tabsWithCounts} />
       {toggles.map((t) => <Toggle key={t.id} size="sm" pressed={on.includes(t.id)} onPressedChange={() => setOn(flip(on, t.id))}>{t.label}</Toggle>)}
       <Button variant="tertiary" onClick={() => setOpen(true)}>More</Button> <span>{shown.length} deals</span>
-      <FilterSheet open={open} onOpenChange={setOpen} title="More filters" fields={[stage, otherTags]} value={more} onValueChange={setMore} />
+      <FilterSheet open={open} onOpenChange={setOpen} title="More filters" fields={[stage]} value={more} onValueChange={setMore} />
       <Table label="Deals" columns={columns} rows={shown} />
     </>
   )

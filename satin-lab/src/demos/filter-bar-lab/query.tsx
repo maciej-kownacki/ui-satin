@@ -72,23 +72,30 @@ function tokenOf(word: string): Filter | null {
 
 const gathers = (key: string) => key === 'owner' || key === 'stage' || key === 'tags'
 
+/** Owners, stages or tags as one filter: `is` for one, `isAnyOf` for more, `hasAnyOf` on tags. */
+const gathered = (key: string, values: string[]): Filter =>
+  key === 'tags'
+    ? { field: 'tags', operator: 'hasAnyOf', value: values }
+    : values.length === 1
+      ? { field: key, operator: 'is', value: values[0] }
+      : { field: key, operator: 'isAnyOf', value: values }
+
 /**
  * The filters with one more value. Owners, stages and tags gather into one "any of" pill (a deal
  * has one owner, so two can only mean either); value and close date replace theirs, and so does
- * any pick for a pill being changed.
+ * a pick for a value or close date pill being changed.
  */
 function add(filters: Filter[], next: Filter, replace: boolean): Filter[] {
-  let filter = next
-  if (!replace && gathers(next.field)) {
-    const values = [...new Set([...pickedOf(readFilter(filters, next.field)), ...pickedOf(next)])]
-    filter =
-      next.field === 'tags'
-        ? { field: 'tags', operator: 'hasAnyOf', value: values }
-        : values.length === 1
-          ? { field: next.field, operator: 'is', value: values[0] }
-          : { field: next.field, operator: 'isAnyOf', value: values }
-  }
+  const filter = !replace && gathers(next.field) ? gathered(next.field, [...new Set([...pickedOf(readFilter(filters, next.field)), ...pickedOf(next)])]) : next
   return writeFilter(filters, next.field, filter)
+}
+
+/** The filters with one owner, stage or tag on or off, as the checks of a pill being changed say. The last one off drops the pill. */
+function toggle(filters: Filter[], next: Filter): Filter[] {
+  const value = pickedOf(next)[0]
+  const now = pickedOf(readFilter(filters, next.field))
+  const values = now.includes(value) ? now.filter((v) => v !== value) : [...now, value]
+  return writeFilter(filters, next.field, values.length ? gathered(next.field, values) : null)
 }
 
 /* ---------- words ---------- */
@@ -154,15 +161,21 @@ interface Row {
   description?: React.ReactNode
   icon?: React.ReactNode
   selected?: boolean
+  /** A hint row ("No match…"): listed and read out, never picked. */
+  disabled?: boolean
   pick: () => void
 }
+
+/** What a value pick does: `add` after a typed `key:`; for a pill being changed, `toggle` on owners, stages, tags, `replace` on the rest. */
+type Mode = 'add' | 'toggle' | 'replace'
 
 export function QueryDirection({ deals }: { deals: Deal[] }) {
   const [filters, setFilters] = React.useState<Filter[]>(SCENARIO)
   const [text, setText] = React.useState('')
   const [open, setOpen] = React.useState(false)
-  // A pill being changed: the list shows its key's values, and a pick replaces its value.
-  const [editing, setEditing] = React.useState<Key | null>(null)
+  // A pill being changed: the list shows its key's values. `base` is the field's text when it was
+  // pressed; a word typed after it narrows the values.
+  const [editing, setEditing] = React.useState<{ key: Key; base: string } | null>(null)
   const [active, setActive] = React.useState(0)
   // The highlight shows the focus ring only when the arrows put it there (see menuItemClass).
   const [viaKeys, setViaKeys] = React.useState(false)
@@ -173,44 +186,48 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
   const hintId = React.useId()
   const headerId = React.useId()
 
-  // Free words search the company; a word with a key (`stage:pro`, still being typed) doesn't.
-  const terms = text
-    .toLowerCase()
-    .split(/\s+/)
-    .filter((w) => w && !isKey(w.slice(0, Math.max(0, w.indexOf(':')))))
-  const shown = applyFilters(deals, filters, fields).filter((d) => terms.every((t) => d.company.toLowerCase().includes(t)))
-
   // The word at the end of the field, and what comes before it.
   const [, before, word] = /^([\s\S]*?)(\S*)$/.exec(text) as RegExpExecArray
+  // What was typed after a pressed pill, narrowing its values.
+  const narrow = editing ? text.slice(editing.base.length).trim() : ''
 
   const focusInput = () => {
     quiet.current = true
     inputRef.current?.focus()
     quiet.current = false
   }
-  const pickValue = (f: Filter, replace: boolean) => {
-    setFilters(add(filters, f, replace))
-    // The token typed so far becomes the pill.
-    if (!replace) setText(before)
+  const pickValue = (f: Filter, mode: Mode) => {
+    if (mode === 'toggle') {
+      // A check: the list stays open on the pill's values, and the word that narrowed them goes.
+      setFilters(toggle(filters, f))
+      if (editing) setText(editing.base)
+      return
+    }
+    setFilters(add(filters, f, mode === 'replace'))
+    // The token typed so far becomes the pill; a changed pill drops the word that narrowed its values.
+    setText(mode === 'replace' && editing ? editing.base : before)
     setEditing(null)
     setOpen(false)
   }
-  /** Every complete token in the field becomes a pill (Enter with nothing listed, or leaving). */
-  const commitAll = () => {
+  /** Every complete token in `source` becomes a pill, the rest stays as text (Enter with nothing listed, or leaving). */
+  const commitAll = (source = text) => {
     let next = filters
     const rest: string[] = []
-    for (const w of text.split(/\s+/).filter(Boolean)) {
+    for (const w of source.split(/\s+/).filter(Boolean)) {
       const f = tokenOf(w)
       if (f) next = add(next, f, false)
       else rest.push(w)
     }
-    if (next === filters) return
+    if (next === filters) {
+      if (source !== text) setText(source)
+      return
+    }
     setFilters(next)
     setText(rest.join(' '))
   }
 
   /* The one list: a pill's values, a key's values after `key:`, or the keys. */
-  const valueRows = (key: Key, partial: string, replace: boolean): Row[] => {
+  const valueRows = (key: Key, partial: string, mode: Mode): Row[] => {
     const p = partial.toLowerCase()
     const current = readFilter(filters, key)
     const offered = tokensOf(key)
@@ -218,6 +235,25 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
     // What is typed, when it is a value of its own (`value:>35000`, `close:last-7-days`), comes first.
     const typed = p ? resolve(key, p) : null
     if (typed && !offered.some((o) => o.token === p)) list = [{ token: p, label: cap(valueText(typed)) }, ...list]
+    if (!list.length) {
+      // A value nobody can read (`value:20000`, `stage:foo`) says so, with one that works, instead of a list that vanishes.
+      const example = `${key}:${KEYS.find((k) => k.key === key)?.example}`
+      return [
+        {
+          id: `${key}:none`,
+          disabled: true,
+          label:
+            mode === 'add' ? (
+              <span className="font-normal text-text-muted">
+                No match. Try <span className="font-mono">{example}</span>
+              </span>
+            ) : (
+              <span className="font-normal text-text-muted">No match</span>
+            ),
+          pick: () => {},
+        },
+      ]
+    }
     return list.map((o) => {
       const f = resolve(key, o.token) as Filter
       return {
@@ -226,7 +262,11 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
         icon: o.icon,
         description: <span className="font-mono">{`${key}:${o.token}`}</span>,
         selected: holds(current, f),
-        pick: () => pickValue(f, replace),
+        pick: () => {
+          pickValue(f, mode)
+          // After a check the highlight stays on its row, in the full list the narrowing word gave way to.
+          if (mode === 'toggle') setActive(Math.max(0, offered.findIndex((x) => x.token === o.token)))
+        },
       }
     })
   }
@@ -251,15 +291,31 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
   const colon = word.indexOf(':')
   const typedKey = word.slice(0, Math.max(0, colon)).toLowerCase()
   const list: { header: string; rows: Row[] } = editing
-    ? { header: fieldOf(editing).label, rows: valueRows(editing, '', true) }
+    ? { header: fieldOf(editing.key).label, rows: valueRows(editing.key, narrow, gathers(editing.key) ? 'toggle' : 'replace') }
     : colon > 0
       ? isKey(typedKey)
-        ? { header: fieldOf(typedKey).label, rows: valueRows(typedKey, word.slice(colon + 1), false) }
+        ? { header: fieldOf(typedKey).label, rows: valueRows(typedKey, word.slice(colon + 1), 'add') }
         : { header: '', rows: [] }
       : { header: 'Filter by', rows: keyRows(word.toLowerCase()) }
   const rows = list.rows
   const expanded = open && rows.length > 0
   const at = Math.max(0, Math.min(active, rows.length - 1))
+  const row = expanded ? rows[at] : undefined
+
+  // Free words search the company. Not searched: a word with a key (`stage:pro`), a key name still
+  // being typed while the keys are listed (`sta`), and the word narrowing a pressed pill's values.
+  const keyTyping = !editing && colon < 0 && word !== '' && expanded
+  const terms = (editing ? editing.base : keyTyping ? before : text)
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w && !isKey(w.slice(0, Math.max(0, w.indexOf(':')))))
+  const shown = applyFilters(deals, filters, fields).filter((d) => terms.every((t) => d.company.toLowerCase().includes(t)))
+
+  /** Leaves a pressed pill: the word typed to narrow its values goes with it. */
+  const stopEditing = () => {
+    if (editing) setText(editing.base)
+    setEditing(null)
+  }
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const input = e.currentTarget
@@ -272,22 +328,23 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
       } else setActive((at + (e.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length)
     } else if (e.key === 'Enter') {
       e.preventDefault()
-      if (expanded) rows[at].pick()
+      if (row && !row.disabled) row.pick()
       else commitAll()
-    } else if (e.key === 'Tab' && !e.shiftKey && expanded && (text || viaKeys || editing)) {
-      // Tab picks once something is typed or chosen; Tab into an empty field and out again just passes.
+    } else if (e.key === 'Tab' && !e.shiftKey && row && !row.disabled && (viaKeys || keyTyping)) {
+      // Tab takes a row the arrows moved to, or completes a key being typed (`sta` → `stage:`).
+      // Anything else (a value row nobody arrowed to) it leaves, and focus moves on.
       e.preventDefault()
-      rows[at].pick()
+      row.pick()
     } else if (e.key === 'Escape' && (expanded || editing)) {
       e.preventDefault()
       setOpen(false)
-      setEditing(null)
+      stopEditing()
     } else if (e.key === ' ' && input.selectionStart === text.length) {
       // A complete token before the caret becomes a pill; anything else is a space.
       const f = tokenOf(word)
       if (!f) return
       e.preventDefault()
-      pickValue(f, false)
+      pickValue(f, 'add')
     } else if (e.key === 'Backspace' && input.selectionStart === 0 && input.selectionEnd === 0 && filters.length) {
       e.preventDefault()
       setFilters(filters.slice(0, -1))
@@ -305,7 +362,8 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
             setOpen(false)
             setEditing(null)
             setActive(0)
-            commitAll()
+            // A word that narrowed a pressed pill's values isn't kept as a search.
+            commitAll(editing ? editing.base : text)
           }}
         >
           {/* The Input skin, growing a row at a time as the pills wrap, as in Combobox multiple. */}
@@ -335,22 +393,27 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
                     size="sm"
                     variant="outline"
                     // The pill being changed looks pressed while its values are listed.
-                    data-force={editing === f.field ? 'pressed' : undefined}
+                    data-force={editing?.key === f.field ? 'pressed' : undefined}
                     removeLabel={`Remove ${words}`}
                     onRemove={() => {
                       setFilters(filters.filter((_, j) => j !== i))
-                      setEditing(null)
+                      stopEditing()
                       setOpen(false)
                       focusInput()
                     }}
                     className="max-w-full"
                   >
-                    {/* Pressing the pill lists its key's values; a pick replaces its value. */}
+                    {/* Pressing the pill lists its key's values: owners, stages and tags toggle like
+                        their checks, a value or close date pick replaces the pill's. */}
                     <button
                       type="button"
                       onClick={() => {
-                        setEditing(f.field as Key)
-                        setActive(Math.max(0, valueRows(f.field as Key, '', true).findIndex((r) => r.selected)))
+                        const key = f.field as Key
+                        // A word typed next narrows the values; a space keeps it apart from a word already there.
+                        const base = text && !/\s$/.test(text) ? `${text} ` : text
+                        setText(base)
+                        setEditing({ key, base })
+                        setActive(Math.max(0, tokensOf(key).findIndex((o) => holds(f, resolve(key, o.token) as Filter))))
                         setViaKeys(false)
                         inputRef.current?.focus()
                         setOpen(true)
@@ -377,9 +440,14 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
                 placeholder="Search or filter…"
                 value={text}
                 onChange={(e) => {
-                  setText(e.target.value)
-                  setEditing(null)
+                  const next = e.target.value
+                  setText(next)
+                  // One word typed after a pressed pill narrows its values; a colon, a second word or a
+                  // change before it leaves the pill.
+                  if (editing && !(next.startsWith(editing.base) && !/[\s:]/.test(next.slice(editing.base.length).trimStart()))) setEditing(null)
                   setActive(0)
+                  // The highlight moved by typing isn't one the arrows chose (Tab won't take it).
+                  setViaKeys(false)
                   setOpen(true)
                 }}
                 onFocus={() => {
@@ -390,7 +458,8 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
                 // After Escape, a click brings the list back.
                 onClick={() => setOpen(true)}
                 onKeyDown={onKeyDown}
-                className="satin-field-input h-6! min-w-[140px]!"
+                // 96px: beside the three scenario pills on the first row while there is room, under them when there isn't.
+                className="satin-field-input h-6! min-w-24!"
               />
             </div>
           </div>
@@ -415,16 +484,18 @@ export function QueryDirection({ deals }: { deals: Deal[] }) {
                     id={`${listId}-${i}`}
                     role="option"
                     aria-selected={r.selected ?? false}
-                    data-highlighted={i === at ? '' : undefined}
-                    data-keyboard={i === at && viaKeys ? '' : undefined}
+                    aria-disabled={r.disabled || undefined}
+                    // A hint row is read out (it is the active descendant) but never lit or picked.
+                    data-highlighted={i === at && !r.disabled ? '' : undefined}
+                    data-keyboard={i === at && viaKeys && !r.disabled ? '' : undefined}
                     onPointerMove={() => {
                       setViaKeys(false)
                       setActive(i)
                     }}
                     // Focus stays in the field.
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={r.pick}
-                    className={cn(menuItemClass, r.selected && 'bg-bg-selected')}
+                    onClick={r.disabled ? undefined : r.pick}
+                    className={cn(menuItemClass, r.selected && 'bg-bg-selected', r.disabled && 'cursor-default')}
                   >
                     <MenuItemContent label={r.label} description={r.description} icon={r.icon} layout="inline" selected={r.selected} />
                   </div>

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { NavArrowDown, NavArrowLeft, Xmark } from 'iconoir-react'
+import { NavArrowDown, NavArrowLeft, Xmark, XmarkCircle } from 'iconoir-react'
 import { Button } from '@uisatin/ui/button'
 import { Calendar, type DateRange } from '@uisatin/ui/date-picker'
 import {
@@ -14,6 +14,7 @@ import {
 } from '@uisatin/ui/dropdown'
 import { cn } from '@uisatin/ui/lib/utils'
 import { Popover } from '@uisatin/ui/popover'
+import { Tooltip } from '@uisatin/ui/tooltip'
 import { applyFilters, isFilterValid, toFilterDate, type Filter, type FilterField } from '@uisatin/pro/filter-bar'
 import { DealsTable, SCENARIO, date, dealsLabel, euro, fieldOf, fields, type Deal } from './data'
 import { pickedOf, readFilter, writeFilter } from './panel'
@@ -39,8 +40,9 @@ const idleClass =
   'border-border-default bg-bg-popover text-text-muted [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)] satin-hover:border-border-strong satin-hover:bg-bg-hover has-[[aria-expanded=true]]:border-border-strong has-[[aria-expanded=true]]:bg-bg-hover'
 const activeClass = 'border-border-strong bg-bg-selected text-text-default'
 // The Button's ring: 2px off the trigger. data-slot + aria-haspopup drop it after a mouse press (satin.css).
+// Insets a little under a Button's 10px, so five facets, the clear button and the count fit one row.
 const triggerClass =
-  'flex h-full cursor-pointer items-center rounded-[inherit] ps-2.5 outline-none satin-focus:outline-2 satin-focus:outline-solid satin-focus:outline-offset-2 satin-focus:outline-action-focus-ring'
+  'flex h-full cursor-pointer items-center rounded-[inherit] ps-2 outline-none satin-focus:outline-2 satin-focus:outline-solid satin-focus:outline-offset-2 satin-focus:outline-action-focus-ring'
 const clearClass =
   'me-1 grid size-5 shrink-0 cursor-pointer place-items-center rounded-md text-text-muted outline-none transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-bg-pressed hover:text-text-default focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]'
 
@@ -69,7 +71,7 @@ function Slot({ field, short = field.label, value, full = value ?? '', onClear, 
       type="button"
       data-slot="facet-trigger"
       aria-label={active ? `${field.label}: ${full}` : undefined}
-      className={cn(triggerClass, active ? 'gap-1 pe-1' : 'gap-1.5 pe-2')}
+      className={cn(triggerClass, active ? 'gap-1 pe-0.5' : 'gap-1 pe-1.5')}
     >
       {active ? (
         <>
@@ -293,7 +295,8 @@ function CloseFacet({ filters, onChange }: FacetProps) {
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onPointerLeave={() => setHovered(false)}
-        className="flex flex-col gap-0.5 outline-none"
+        // The list holds focus but draws no ring of its own: the highlighted row shows it (data-keyboard).
+        className="flex flex-col gap-0.5 outline-none focus-visible:ring-0"
       >
         {rows.map((label, i) => {
           const lit = i === active && (focused || hovered)
@@ -426,23 +429,30 @@ export function FacetsDirection({ deals }: { deals: Deal[] }) {
 
   return (
     <div className="flex w-[760px] max-w-full flex-col gap-3">
-      <div ref={barRef} role="group" aria-label="Filters" className="flex flex-wrap items-center gap-2">
+      {/* Sized for one row at the docs stage's width with one more facet set. The count comes last,
+          so a long value pushes it to the next row before the clear button. */}
+      <div ref={barRef} role="group" aria-label="Filters" className="flex flex-wrap items-center gap-1.5">
         <OptionsFacet field={fieldOf('owner')} {...props} />
         <OptionsFacet field={fieldOf('stage')} {...props} />
         <ValueFacet {...props} />
         <CloseFacet {...props} />
         <OptionsFacet field={fieldOf('tags')} {...props} />
         {any && (
-          <Button
-            variant="tertiary"
-            onClick={() => {
-              setFilters([])
-              // Clear goes with the filters; focus moves to the first facet.
-              barRef.current?.querySelector<HTMLElement>('[data-slot="facet-trigger"]')?.focus()
-            }}
-          >
-            Clear
-          </Button>
+          // Icon-sized: the word "Clear" pushed the count to a second row.
+          <Tooltip label="Clear filters">
+            <Button
+              variant="tertiary"
+              iconOnly
+              aria-label="Clear filters"
+              onClick={() => {
+                setFilters([])
+                // Clear goes with the filters; focus moves to the first facet.
+                barRef.current?.querySelector<HTMLElement>('[data-slot="facet-trigger"]')?.focus()
+              }}
+            >
+              <XmarkCircle />
+            </Button>
+          </Tooltip>
         )}
         <span aria-live="polite" className="ms-auto shrink-0 text-sm text-text-muted tabular-nums">
           {dealsLabel(shown.length)}
@@ -456,6 +466,7 @@ export function FacetsDirection({ deals }: { deals: Deal[] }) {
 export const facetsCode = `// Exploration, not package API: direction A, Facets. A fixed slot per field, no operators.
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@uisatin/ui/dropdown'
 import { Popover } from '@uisatin/ui/popover'
+import { Tooltip } from '@uisatin/ui/tooltip'
 import { Calendar } from '@uisatin/ui/date-picker'
 import { applyFilters, type Filter } from '@uisatin/pro/filter-bar'
 
@@ -475,7 +486,11 @@ export function Pipeline({ deals }: { deals: Deal[] }) {
         <ValueFacet filters={filters} onChange={setFilters} />
         <CloseFacet filters={filters} onChange={setFilters} />
         <OptionsFacet field={tags} filters={filters} onChange={setFilters} />
-        {filters.length > 0 && <Button variant="tertiary" onClick={() => setFilters([])}>Clear</Button>}
+        {filters.length > 0 && (
+          <Tooltip label="Clear filters">
+            <Button variant="tertiary" iconOnly aria-label="Clear filters" onClick={() => setFilters([])}><XmarkCircle /></Button>
+          </Tooltip>
+        )}
         <span>{shown.length} deals</span>
       </div>
       <Table label="Deals" columns={columns} rows={shown} />

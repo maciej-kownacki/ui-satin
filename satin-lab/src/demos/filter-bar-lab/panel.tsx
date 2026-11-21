@@ -224,12 +224,16 @@ function OptionsSection({ field, filter, onChange }: SectionProps) {
   )
 }
 
-/** Value: a range slider with fields → `between`, and no filter while it spans everything. */
+/**
+ * Value: a range slider with fields. A thumb at its end leaves that side open, so the words and
+ * the filter agree: the top thumb at max → `gt`, the bottom one at min → `lt`, both in → `between`,
+ * both at the ends → no filter.
+ */
 function ValueSection({ field, filter, onChange }: SectionProps) {
   const [min, max] = VALUE_SPAN
   const [from, to] = rangeOf(filter)
   const format = React.useMemo(() => new Intl.NumberFormat('en-US', field.format).format, [field.format])
-  const aside = from <= min && to >= max ? 'Any value' : to >= max ? `${format(from)} and up` : from <= min ? `Up to ${format(to)}` : `${format(from)} – ${format(to)}`
+  const aside = from <= min && to >= max ? 'Any value' : to >= max ? `Over ${format(from)}` : from <= min ? `Under ${format(to)}` : `${format(from)} – ${format(to)}`
   return (
     <Section title={field.label} aside={aside}>
       <Slider
@@ -239,9 +243,19 @@ function ValueSection({ field, filter, onChange }: SectionProps) {
         step={field.step ?? 1000}
         inputs
         formatValue={format}
+        // The fields show the raw number ("100000"); 80px instead of 64 fits six digits.
+        className="[&_[data-slot=input-wrapper]]:w-20"
         onValueChange={(v) => {
           const [a, b] = v as [number, number]
-          onChange(a <= min && b >= max ? null : { field: field.key, operator: 'between', value: [a, b] })
+          onChange(
+            a <= min && b >= max
+              ? null
+              : b >= max
+                ? { field: field.key, operator: 'gt', value: a }
+                : a <= min
+                  ? { field: field.key, operator: 'lt', value: b }
+                  : { field: field.key, operator: 'between', value: [a, b] },
+          )
         }}
       />
     </Section>
@@ -417,7 +431,7 @@ export function Pipeline({ deals }: { deals: Deal[] }) {
   const shown = applyFilters(deals, filters, fields)
 
   // The form edits one filter per field: Owner, Stage → isAnyOf (Checkbox),
-  // Value → between (Slider; none at the full span), Close date → inThis
+  // Value → gt, lt or between (Slider; none at the full span), Close date → inThis
   // (SegmentedControl) or between (DateRangePicker), Tags → hasAnyOf (Checkbox).
   return (
     <>
