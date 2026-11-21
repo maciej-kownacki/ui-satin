@@ -24,7 +24,8 @@ import { SplitButton } from '@uisatin/ui/split-button'
  *   soft aura of that tone from the top edge, and the title and reason centred under them. The
  *   scopes and the answers below stay aligned to the start.
  * - Scopes that `send` reach other people as you, so they stand apart: the icon tile turns amber
- *   and the title goes on in muted text, "Send emails · Sends as you". Reads and writes stay neutral.
+ *   and the title goes on in muted text, "Send emails · Sends as you". Reads and writes stay neutral, on
+ *   the file-icon tile Attachment and a neutral Toast use.
  * - Every scope starts ticked. Unticking one makes the request partial: its title turns muted
  *   and the footer counts what is left ("2 of 3 selected"). With nothing ticked, Allow is off.
  * - It is the question only. What follows an answer (closing the Dialog, granting the access,
@@ -392,9 +393,10 @@ export function AgentPermissionScope({ scope, className, ...props }: AgentPermis
         <span
           aria-hidden
           data-tone={sends ? 'amber' : undefined}
+          // The neutral tile is an Attachment's file-icon tile (and a neutral Toast's): 32px, radius 8, its fill.
           className={cn(
-            'grid size-8 shrink-0 place-items-center rounded-lg',
-            sends ? 'bg-tone-bg text-tone-fg' : 'bg-bg-muted text-text-muted',
+            'grid size-8 shrink-0 place-items-center rounded-md',
+            sends ? 'bg-tone-bg text-tone-fg' : 'bg-component-file-icon-bg text-text-muted',
           )}
         >
           <ActionIcon action={action} />
