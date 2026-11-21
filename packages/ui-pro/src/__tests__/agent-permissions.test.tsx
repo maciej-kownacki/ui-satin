@@ -1,9 +1,8 @@
-import * as React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { act, screen, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import { Dialog } from '@uisatin/ui/dialog'
-import { AgentPermissionRequest, type AgentPermissionScope, type AgentPermissionStatus } from '../components/agent-permissions'
+import { AgentPermissionRequest, type AgentPermissionScope } from '../components/agent-permissions'
 
 // The docs scenario: a recruiting agent asks to read candidates, write notes and send emails as you.
 const scopes: AgentPermissionScope[] = [
@@ -15,7 +14,6 @@ const scopes: AgentPermissionScope[] = [
 const card = () => screen.getByRole('group', { name: /Recruiting agent/ })
 const box = (name: string | RegExp) => screen.getByRole('checkbox', { name })
 const button = (name: string | RegExp) => screen.getByRole('button', { name })
-const status = () => within(document.querySelector('[data-slot="agent-permissions"]') as HTMLElement).getByRole('status')
 
 describe('AgentPermissionRequest', () => {
   it('lists each scope with a plain verb, ticked, and sets the sending one apart', () => {
@@ -80,20 +78,17 @@ describe('AgentPermissionRequest', () => {
     expect(document.activeElement).toBe(button('More ways to allow'))
   })
 
-  it('allows once with what is ticked, folds to its summary and moves focus there', async () => {
+  it('allows once with what is ticked, and leaves what follows to the app', async () => {
     const onAllow = vi.fn()
-    const onStatusChange = vi.fn()
     const { user } = renderWithSatin(
-      <AgentPermissionRequest agent="Recruiting agent" scopes={scopes} defaultValue={['candidates', 'notes']} onAllow={onAllow} onStatusChange={onStatusChange} onRevoke={() => {}} />,
+      <AgentPermissionRequest agent="Recruiting agent" scopes={scopes} defaultValue={['candidates', 'notes']} onAllow={onAllow} />,
     )
     await user.click(button('Allow once'))
     expect(onAllow).toHaveBeenCalledWith('once', [scopes[0], scopes[1]])
-    expect(onStatusChange).toHaveBeenLastCalledWith('allowed')
-    expect(screen.getByRole('group', { name: 'Recruiting agent · Allowed once' })).toBeTruthy()
-    expect(screen.getByText('Read candidates · Write notes')).toBeTruthy()
-    expect(screen.queryByRole('checkbox')).toBeNull()
-    expect(document.activeElement).toBe(button('Remove access'))
-    expect(status().textContent).toBe('Allowed once: Read candidates, Write notes')
+    // No answered state: the request stays as it is until the app closes it.
+    expect(card()).toBeTruthy()
+    expect(screen.getAllByRole('checkbox')).toHaveLength(3)
+    expect(screen.queryByRole('status')).toBeNull()
   })
 
   it('always allows from the menu, by keyboard', async () => {
@@ -105,33 +100,14 @@ describe('AgentPermissionRequest', () => {
     expect(item.textContent).toContain('Until you remove access')
     await user.keyboard('{Enter}')
     expect(onAllow).toHaveBeenCalledWith('always', scopes)
-    expect(screen.getByRole('group', { name: 'Recruiting agent · Always allowed' })).toBeTruthy()
-    // No onRevoke, so nothing to press: the summary itself takes focus.
-    expect(document.activeElement).toBe(card())
   })
 
-  it("doesn't allow, and Change brings the request back with focus on Don't allow", async () => {
+  it("doesn't allow", async () => {
     const onDeny = vi.fn()
     const { user } = renderWithSatin(<AgentPermissionRequest agent="Recruiting agent" scopes={scopes} onDeny={onDeny} />)
     await user.click(button('Don’t allow'))
     expect(onDeny).toHaveBeenCalledOnce()
-    expect(screen.getByRole('group', { name: 'Recruiting agent · Not allowed' })).toBeTruthy()
-    expect(screen.getByText('Read candidates · Write notes · Send emails')).toBeTruthy()
-    expect(document.activeElement).toBe(button('Change'))
-    expect(status().textContent).toBe('Not allowed: Read candidates, Write notes, Send emails')
-    await user.keyboard('{Enter}')
-    expect(screen.getByRole('group', { name: 'Recruiting agent wants to:' })).toBeTruthy()
-    expect(document.activeElement).toBe(button('Don’t allow'))
-  })
-
-  it('removes access later, and says so', async () => {
-    const onRevoke = vi.fn()
-    const { user } = renderWithSatin(<AgentPermissionRequest agent="Recruiting agent" scopes={scopes} defaultStatus="allowed" mode="always" onRevoke={onRevoke} />)
-    expect(screen.getByRole('group', { name: 'Recruiting agent · Always allowed' })).toBeTruthy()
-    await user.click(button('Remove access'))
-    expect(onRevoke).toHaveBeenCalledOnce()
-    expect(screen.getByRole('group', { name: 'Recruiting agent · Access removed' })).toBeTruthy()
-    expect(document.activeElement).toBe(button('Change'))
+    expect(card()).toBeTruthy()
   })
 
   it('holds the button busy while a promise runs, and stays put if it rejects', async () => {
@@ -142,35 +118,16 @@ describe('AgentPermissionRequest', () => {
     expect(button('Allow once').getAttribute('aria-busy')).toBe('true')
     expect(button('Don’t allow').hasAttribute('disabled')).toBe(true)
     expect(box('Read candidates').hasAttribute('disabled')).toBe(true)
+    // A second press while it runs does nothing.
+    await user.click(button('Allow once'))
+    expect(onAllow).toHaveBeenCalledOnce()
     await act(async () => settle.reject())
-    expect(screen.getByRole('group', { name: 'Recruiting agent wants to:' })).toBeTruthy()
     expect(button('Allow once').getAttribute('aria-busy')).toBeNull()
+    expect(box('Read candidates').hasAttribute('disabled')).toBe(false)
     await user.click(button('Allow once'))
     await act(async () => settle.resolve())
-    expect(screen.getByRole('group', { name: 'Recruiting agent · Allowed once' })).toBeTruthy()
-  })
-
-  it('follows a controlled status, and asks for changes instead of making them', async () => {
-    const onStatusChange = vi.fn()
-    function Controlled() {
-      const [current, setCurrent] = React.useState<AgentPermissionStatus>('allowed')
-      return (
-        <>
-          <AgentPermissionRequest agent="Recruiting agent" scopes={scopes} status={current} mode="always" onStatusChange={onStatusChange} onRevoke={() => {}} />
-          <button type="button" onClick={() => setCurrent('revoked')}>
-            Revoke in settings
-          </button>
-        </>
-      )
-    }
-    const { user } = renderWithSatin(<Controlled />)
-    await user.click(button('Remove access'))
-    expect(onStatusChange).toHaveBeenLastCalledWith('revoked')
-    expect(screen.getByRole('group', { name: 'Recruiting agent · Always allowed' })).toBeTruthy()
-    // Removed elsewhere: it shows, but focus stays where it was.
-    await user.click(button('Revoke in settings'))
-    expect(screen.getByRole('group', { name: 'Recruiting agent · Access removed' })).toBeTruthy()
-    expect(document.activeElement).toBe(button('Revoke in settings'))
+    expect(onAllow).toHaveBeenCalledTimes(2)
+    expect(button('Allow once').getAttribute('aria-busy')).toBeNull()
   })
 
   it('starts on Don’t allow inside a Dialog, and leaves focus alone inline', () => {
@@ -195,8 +152,6 @@ describe('AgentPermissionRequest', () => {
         agentPermissionsDeny: 'Nie zezwalaj',
         agentPermissionsAllowOnce: 'Zezwól raz',
         agentPermissionsAllowOptions: 'Inne opcje',
-        agentPermissionsDenied: 'Brak zgody',
-        change: 'Zmień',
       },
     })
     expect(screen.getByRole('group', { name: 'Agent rekrutacyjny chce:' })).toBeTruthy()
@@ -205,23 +160,16 @@ describe('AgentPermissionRequest', () => {
     expect(screen.getByText('Wybrano 2 z 3')).toBeTruthy()
     expect(button('Zezwól raz')).toBeTruthy()
     expect(button('Inne opcje')).toBeTruthy()
-    await user.click(button('Nie zezwalaj'))
-    expect(screen.getByRole('group', { name: 'Agent rekrutacyjny · Brak zgody' })).toBeTruthy()
-    expect(button('Zmień')).toBeTruthy()
+    expect(button('Nie zezwalaj')).toBeTruthy()
   })
 
-  it.each(['light', 'dark'] as const)('has no axe violations in %s, asking and answered', async (theme) => {
-    const { user, unmount } = renderWithSatin(
-      <AgentPermissionRequest agent="Recruiting agent" scopes={scopes} description="To screen this week's applicants." onRevoke={() => {}} />,
+  it.each(['light', 'dark'] as const)('has no axe violations in %s, whole and partial', async (theme) => {
+    const { user } = renderWithSatin(
+      <AgentPermissionRequest agent="Recruiting agent" scopes={scopes} description="To screen this week's applicants." />,
       { theme },
     )
     await expectNoAxeViolations()
     await user.click(box(/Send emails/))
-    await expectNoAxeViolations()
-    await user.click(button('Allow once'))
-    await expectNoAxeViolations()
-    unmount()
-    renderWithSatin(<AgentPermissionRequest agent="Recruiting agent" scopes={scopes} defaultStatus="denied" />, { theme })
     await expectNoAxeViolations()
   })
 })
