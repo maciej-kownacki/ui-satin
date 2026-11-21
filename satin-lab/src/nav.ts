@@ -378,22 +378,11 @@ const released = (items: NavItem[]): NavItem[] =>
 export const nav: NavGroup[] = allNav.map((g) => ({ ...g, items: released(g.items) })).filter((g) => g.items.length)
 
 /**
- * Pages built or changed in the P1 batch, marked New in the sidebar so they are easy to find
- * while they are reviewed (preview only: the public build shows no New marks). The last four
- * existed before and gained a feature: Combobox (creatable), Dropdown (submenus), Date picker
- * (presets), Toast (Undo countdown).
+ * Pages built or changed in the P1 batch that are still under review, marked New in the sidebar
+ * so they are easy to find (preview only: the public build shows no New marks). The reviewed ones
+ * shipped and lost the mark; it's the same set as `unreleased`.
  */
-export const newPages = new Set<string>(
-  publicBuild
-    ? []
-    : [
-    'agent-presence', 'agent-changes-review', 'agent-plan', 'agent-undo-log', 'agent-permissions', 'review-queue',
-    'prompt-mentions', 'tool-call',
-    'activity-timeline', 'bulk-action-bar', 'people-picker', 'command-pages', 'data-grid', 'filter-bar',
-    'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'search-scoped', 'stepper', 'table-pro',
-    'combobox', 'dropdown', 'date-picker', 'toast',
-  ],
-)
+export const newPages = new Set<string>(publicBuild ? [] : [...unreleased])
 
 /** The package a page's component comes from. */
 export const packageOf = (item: Pick<NavItem, 'edition'>) => (item.edition === 'pro' ? '@uisatin/pro' : '@uisatin/ui')
