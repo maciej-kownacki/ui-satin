@@ -32,6 +32,8 @@ jobs:
       - run: node scripts/check-cn.mjs
       # Text 4.5:1, focus and error edges 3:1, in Light and Dark and for themeCss() brands.
       - run: npm run check:contrast
+      # Layout properties move only through pixel-motion or an exception MOTION.md names (rule 1).
+      - run: npm run check:motion
       # The built themeVars()/themeCss() give a real CSS value for every brand and corner scale.
       - run: node scripts/check-theme.mjs
       # What an app ships for Button, Banner and Dialog with their dependencies, and the stylesheet (.size-limit.json).

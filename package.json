@@ -23,6 +23,7 @@
     "props": "node scripts/props.mjs",
     "check:docs": "node scripts/props.mjs --check && node --no-warnings scripts/check-docs.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
+    "check:motion": "node scripts/check-motion.mjs",
     "build:pro": "npm run build -w @uisatin/pro"
   },
   "devDependencies": {

@@ -29,6 +29,7 @@
     visibility 0s;
 }
 .satin-agent-presence[data-shown][data-glide] {
+  /* motion-allow: width and height glide with the transform, so the edge doesn't stretch; off the pixel grid, to revisit (MOTION.md rule 1) */
   transition:
     opacity var(--duration-fast) var(--ease-out),
     visibility 0s,

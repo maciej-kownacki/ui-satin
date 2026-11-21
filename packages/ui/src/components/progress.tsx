@@ -10,7 +10,8 @@ import { cn } from '../lib/utils'
  * text/muted) on the right.
  *
  * Leave `value` out while the amount is unknown: a third of the track then slides across.
- * The bar moves to a new value over 300 ms on ease-out.
+ * The bar moves to a new value over 300 ms on ease-out. It slides rather than resizes (a clip
+ * the track's width, moved back by what is left to do), so nothing is laid out on the way.
  *
  * A `progressbar` with aria-valuenow (and the label as its name) when there is a value.
  */
@@ -73,10 +74,19 @@ export function Progress({
         className={cn('relative w-full overflow-hidden rounded-full bg-bg-muted', size === 'md' ? 'h-2' : 'h-1')}
       >
         {known ? (
+          // The clip, rounded at its end, slides back by what is left to do; the bar in it, rounded
+          // at its start, slides forward by as much, so the bar stays on the track and only its
+          // end moves. At rest both ends are drawn as before. Mirrored right to left (a scale, left
+          // out of the transition so a change of direction doesn't play the flip).
           <div
-            className="h-full rounded-full bg-action-primary-bg transition-[width] duration-300 ease-(--ease-out)"
-            style={{ width: `${(v / max) * 100}%` }}
-          />
+            className="h-full w-full overflow-hidden rounded-r-full transition-[transform] duration-300 ease-(--ease-out) rtl:-scale-x-100"
+            style={{ transform: `translateX(-${100 - (v / max) * 100}%)` }}
+          >
+            <div
+              className="h-full w-full rounded-l-full bg-action-primary-bg transition-[transform] duration-300 ease-(--ease-out)"
+              style={{ transform: `translateX(${100 - (v / max) * 100}%)` }}
+            />
+          </div>
         ) : (
           // Starts at the reading side; right to left it slides the other way (motion.css).
           <div className="absolute inset-y-0 start-0 w-1/3 rounded-full bg-action-primary-bg animate-[satin-progress-indeterminate_1.4s_var(--ease-in-out)_infinite] rtl:animate-[satin-progress-indeterminate-rtl_1.4s_var(--ease-in-out)_infinite]" />

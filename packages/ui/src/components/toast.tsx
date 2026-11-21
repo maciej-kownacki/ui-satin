@@ -448,7 +448,9 @@ function StackedToast({ record, index, paused, y, scale, height, beyond, content
       const report = () => {
         const cs = getComputedStyle(card)
         const chrome = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'].reduce((t, k) => t + parseFloat(cs[k as 'paddingTop']), 0)
-        onMeasure(id, node.offsetHeight + chrome)
+        // Unrounded (offsetHeight rounds) and from layout, not a rect: the cards behind are scaled.
+        // motion-allow: offsetHeight only where computed style has no height (jsdom)
+        onMeasure(id, (parseFloat(getComputedStyle(node).height) || node.offsetHeight) + chrome)
       }
       report()
       const observer = new ResizeObserver(report)
@@ -495,6 +497,7 @@ function StackedToast({ record, index, paused, y, scale, height, beyond, content
         style={{
           transform: inPlace ? 'translate3d(0, 0, 0)' : `translate3d(0, ${OFFSCREEN}, 0)`,
           height,
+          // motion-allow: the stack's cut to the front card's height (MOTION.md rule 1)
           transition: cardMotion,
           willChange: 'transform',
         }}
@@ -648,8 +651,11 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
       })}
       <ToastPrimitive.Viewport
         ref={viewportRef}
+        // A slot like every Satin part, so reduced motion (motion.css) also stops its height transition.
+        data-slot="toast-viewport"
         // The region screen readers land on with F8, in the app's words; Radix puts the key in {hotkey}.
         label={`${labels.notifications} ({hotkey})`}
+        // motion-allow: the viewport follows the stack's height (MOTION.md rule 1)
         style={{ height, transition: `height ${MOTION_MS}ms var(--ease-out)` }}
         className={cn(
           'fixed end-4 bottom-4 z-[100] m-0 w-[397px] max-w-[calc(100%-32px)] list-none p-0 outline-none',

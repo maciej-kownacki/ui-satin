@@ -53,7 +53,11 @@ export function AccordionItem({ title, icon, children, className, 'data-force': 
               {icon}
             </span>
           )}
-          <span className="min-w-0 flex-1 text-base leading-[21px] font-medium text-text-default">{title}</span>
+          {/* A 20px line, not 21: a 21px line centred in the 40px row puts the baseline on a half
+              pixel, and Chrome draws text on whole pixels, rounding half up. The title of the
+              section below an opening one then sat a pixel high while the height eased in, and
+              dropped when it ended. At rest it draws in the same place. */}
+          <span className="min-w-0 flex-1 text-base leading-5 font-medium text-text-default">{title}</span>
           <svg
             width="16"
             height="16"

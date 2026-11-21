@@ -21,6 +21,7 @@
 [data-slot='activity-timeline-fold'] {
   display: grid;
   grid-template-rows: 0fr;
+  /* motion-allow: the fold, a CSS expander (MOTION.md rule 1) */
   transition: grid-template-rows var(--duration-slower) cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-slot='activity-timeline-fold'][data-state='open'] {
