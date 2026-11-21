@@ -219,7 +219,7 @@ export const allNav: NavGroup[] = [
         id: 'filter-bar',
         title: 'Filter bar',
         href: '/components/filter-bar',
-        description: 'Filters as chips that read as sentences, each with its own editor, and the result count live as they change.',
+        description: 'One facet per field, always in the same place, each opening its own choices (checkboxes, presets, a date range), and the result count live as they change.',
         edition: 'pro',
       },
       {

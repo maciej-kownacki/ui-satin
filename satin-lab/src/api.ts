@@ -1377,7 +1377,7 @@ export const api: Record<string, Api> = {
   },
   'filter-bar': {
     description:
-      'The `FilterBar` component (Satin Pro, `@uisatin/pro/filter-bar`) is a `role="group"` of filter chips, `+ Filter` and, with `search`, a search field. `fields` are `{ key, label, type, options, operators, icon, me, min, max, step, format, placeholder }`, `type` one of `enum`, `multi`, `text`, `number`, `date`, `person`. `value` is `Filter[]` (`{ field, operator, value }`, plain JSON, dates as `YYYY-MM-DD`); `applyFilters(rows, value, fields, { getValue, today })` returns the rows they let through, for a List, Table or DataGrid, and `isFilterValid` says whether one applies. The editor is one surface: choices are listed in it and the operator opens its list in place of the value, so no menu opens over another. Parts: `FilterBarRoot`, `FilterBarSearch`, `FilterBarChips`, `FilterBarAdd`, `FilterBarCount`, `FilterBarViews`. Its words (`filterOperator`, `filterResults`, `filterDays`…) are translated with SatinLabels.',
+      'The `FilterBar` component (Satin Pro, `@uisatin/pro/filter-bar`) is a `role="group"` with one facet per field, each in a fixed place: idle it shows the field\'s label ("Stage"), set its value and a × ("Owner: Me"). There is no "+ Filter" and no operator to pick; a facet opens its choices. `enum`, `person` and `multi` fields open a menu of checkboxes that stays open: one pick writes `is`, several `isAnyOf`, and `multi` always `hasAnyOf`. A `person` field lists its `me` first, as "Me". When an option has a `tone`, picks show as Badges, two at most, then "+N". A `number` field opens a menu of its `presets` (`gt`, `gte`, `lt`, `lte` or `between`, each with an optional `label`), shown compact through `format`. A `date` field opens its `presets` (a period for "This quarter", a number for "Last 30 days"; by default this month, quarter and year and the last 30 days) and Custom range…, a Calendar on the same surface. Each field is `{ key, label, shortLabel, type }` plus `options` and `me`, or `presets` and `format`, or `presets` and `customRange`, by type. `value` is `Filter[]` (`{ field, operator, value }`, plain JSON, dates as `YYYY-MM-DD`), one filter per field; `applyFilters(rows, value, fields, { getValue, today })` returns the rows it lets through, for a List, Table or DataGrid, and `isFilterValid` says whether a filter applies. A filter no facet can say leaves its facet idle and doesn\'t apply. Clear filters shows while a filter applies; the count shows with `resultCount`. Parts: `FilterBarRoot`, `FilterBarFacet`, `FilterBarClear`, `FilterBarCount`. Its words (`filterFacetValue`, `filterFacetField`, `filterComparison`, `filterThis`, `filterLastDays`, `filterResults`…) are translated with SatinLabels.',
     props: [
       { name: 'fields', type: ['FilterField[]'] },
       { name: 'value', type: ['Filter[]'] },
@@ -1385,14 +1385,8 @@ export const api: Record<string, Api> = {
       { name: 'onValueChange', type: ['(value: Filter[]) => void'] },
       { name: 'resultCount', type: ['number'] },
       { name: 'resultLabel', type: ['(count: number, number: ReactNode) => ReactNode'] },
-      { name: 'views', type: ['FilterView[]'] },
-      { name: 'onSaveView', type: ['(name: string, value: Filter[]) => void'] },
-      { name: 'search', type: ['boolean'], default: 'false' },
-      { name: 'query', type: ['string'] },
-      { name: 'onQueryChange', type: ['(query: string) => void'] },
-      { name: 'searchPlaceholder', type: ['string'], default: '"Search…"' },
-      { name: 'maxVisible', type: ['number'], default: '6' },
       { name: 'container', type: ['HTMLElement | null'] },
+      { name: 'today', type: ['Date'] },
     ],
   },
   'agent-plan': {

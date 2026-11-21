@@ -2566,22 +2566,22 @@
       "name": "filter-bar",
       "type": "registry:ui",
       "title": "Filter bar",
-      "description": "Filters as chips that read as sentences, each with its own editor, and the result count live as they change.",
-      "dependencies": [],
+      "description": "One facet per field, always in the same place, each opening its own choices (checkboxes, presets, a date range), and the result count live as they change.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/satin-pro-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/button.json",
-        "https://uisatin.dev/r/chip.json",
         "https://uisatin.dev/r/date-picker.json",
         "https://uisatin.dev/r/dropdown.json",
-        "https://uisatin.dev/r/input.json",
         "https://uisatin.dev/r/labels.json",
-        "https://uisatin.dev/r/number-input.json",
         "https://uisatin.dev/r/popover.json",
         "https://uisatin.dev/r/rolling-number.json",
-        "https://uisatin.dev/r/select.json"
+        "https://uisatin.dev/r/tooltip.json"
       ],
       "docs": "Filter bar docs: https://uisatin.dev/components/filter-bar",
       "meta": {
