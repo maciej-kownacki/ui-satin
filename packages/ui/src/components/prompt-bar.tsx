@@ -28,6 +28,11 @@ import { toPromptValue, usePromptMentions, type PromptCommand, type PromptMentio
  * Dictation toggles to the primary button with a three-bar wave that moves while it records.
  * Enter sends, Shift+Enter adds a line.
  *
+ * `notice` puts a Banner (`layout="inline"`) or an Alert (`layout="inline"`) inside the bar, above
+ * the attachments and the field (uiKit 4316:54633): 8px from the bar's outer edges, so 1px wider
+ * on each side than the input row, and 8px above it. The bar then takes radius 20 in either
+ * shape, the notice's 12 plus the 8 around it.
+ *
  * `mentions` and `commands` add @mentions and /commands to the field (see prompt-mentions.tsx):
  * a menu across the bar while one is typed, and tokens in the text. `value` can then be a
  * `PromptValue` (`{ text, mentions, command }`), and `onValueChange` and `onSubmit` report one.
@@ -64,6 +69,11 @@ export interface PromptBarProps extends Omit<React.ComponentProps<'form'>, 'onSu
   onValueChange?: (value: string, detail: PromptValue) => void
   /** Defaults to the `writeMessage` label. */
   placeholder?: string
+  /**
+   * A message inside the bar, above everything else: a `<Banner layout="inline">` or an
+   * `<Alert layout="inline">`. Leave it out (or pass null) once it is dismissed.
+   */
+  notice?: React.ReactNode
   /** Files shown as chips above the field; people can remove them before sending. */
   attachments?: File[]
   onAttachmentsChange?: (files: File[]) => void
@@ -117,6 +127,7 @@ export function PromptBar({
   defaultValue = '',
   onValueChange,
   placeholder,
+  notice,
   attachments: attachmentsProp,
   onAttachmentsChange,
   model: modelProp,
@@ -271,7 +282,7 @@ export function PromptBar({
             'data-filled:border-border-strong',
             // Focus: a 2px border/focus edge, as on every field.
             'has-[textarea:focus-visible]:border-border-focus has-[textarea:focus-visible]:[box-shadow:0_0_0_1px_var(--border-focus)]',
-            pill ? (files.length > 0 || expanded ? 'rounded-3xl' : 'rounded-pill') : 'rounded-xl',
+            notice ? 'rounded-3xl' : pill ? (files.length > 0 || expanded ? 'rounded-3xl' : 'rounded-pill') : 'rounded-xl',
             disabled && 'opacity-50',
             className,
           )}
@@ -288,6 +299,13 @@ export function PromptBar({
               e.target.value = ''
             }}
           />
+
+          {notice && (
+            // -1px on three sides: the notice sits 8px from the bar's outer edge, the rows 9px.
+            <div data-slot="prompt-bar-notice" className="-mx-px -mt-px">
+              {notice}
+            </div>
+          )}
 
           {files.length > 0 && (
             <ul aria-label={labels.attachments} className="flex flex-wrap gap-1 pb-1">

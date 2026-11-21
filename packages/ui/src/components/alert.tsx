@@ -18,6 +18,9 @@ import { useSatinLabels } from './labels'
  *   medium title and a 13px muted description; either can be left out.
  * - `action` holds a Button or a Link: on the right when there's only a title, under the
  *   description when there is one. `onDismiss` adds the close button.
+ * - `layout="inline"` is one row for a tight spot, the alert a PromptBar holds in its `notice`
+ *   (uiKit 4316:54633): 12px padding, everything centred, a 14/21 title and the 28px close
+ *   button, 38px tall with it.
  * - Errors and warnings are `role="alert"` (read out when they appear), the rest `role="status"`.
  */
 export type AlertIntent = 'neutral' | 'info' | 'success' | 'warning' | 'error'
@@ -25,6 +28,8 @@ export type AlertIntent = 'neutral' | 'info' | 'success' | 'warning' | 'error'
 export interface AlertProps extends Omit<React.ComponentProps<'div'>, 'title'> {
   intent?: AlertIntent
   variant?: 'soft' | 'outline'
+  /** `inline`: one centred row with 12px padding and the 28px close button, as in a PromptBar's `notice`. */
+  layout?: 'block' | 'inline'
   title?: React.ReactNode
   description?: React.ReactNode
   /** `false` hides the status icon; a node replaces it. */
@@ -54,6 +59,7 @@ const iconColor: Record<AlertIntent, string> = {
 export function Alert({
   intent = 'neutral',
   variant = 'soft',
+  layout = 'block',
   title,
   description,
   icon = true,
@@ -65,15 +71,19 @@ export function Alert({
 }: AlertProps) {
   const labels = useSatinLabels()
   const body = description ?? children
-  const actionBelow = action && body
+  const inline = layout === 'inline'
+  const actionBelow = action && body && !inline
   return (
     <div
       role={intent === 'error' || intent === 'warning' ? 'alert' : 'status'}
       data-slot="alert"
       data-intent={intent}
       data-variant={variant}
+      data-layout={layout}
       className={cn(
-        'flex w-full items-start gap-2.5 rounded-xl px-4 py-3',
+        'flex w-full gap-2.5 rounded-xl',
+        // Inline: 5px over and under the 28px close button makes the 38px row Figma draws.
+        inline ? 'items-center px-3 py-[5px]' : 'items-start px-4 py-3',
         variant === 'soft' ? soft[intent] : 'border border-border-default bg-bg-card [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
         className,
       )}
@@ -81,18 +91,25 @@ export function Alert({
     >
       {icon !== false && (
         // 16px on the middle of the title's 20px line.
-        <span className={cn('mt-0.5 grid shrink-0 place-items-center [&_svg]:size-4', iconColor[intent])}>
+        <span className={cn('grid shrink-0 place-items-center [&_svg]:size-4', !inline && 'mt-0.5', iconColor[intent])}>
           {icon === true ? <StatusIcon intent={intent} /> : icon}
         </span>
       )}
       <div className="flex min-w-0 flex-1 flex-col">
-        {title && <p className="text-base leading-5 font-medium text-text-default">{title}</p>}
-        {body && <div className={cn('text-body text-text-muted', title && 'mt-0.5')}>{body}</div>}
+        {title && <p className={cn('text-base font-medium text-text-default', inline ? 'truncate leading-[21px]' : 'leading-5')}>{title}</p>}
+        {body && <div className={cn('text-body text-text-muted', title && 'mt-0.5', inline && 'truncate')}>{body}</div>}
         {actionBelow && <div className="mt-2.5 flex flex-wrap items-center gap-2">{action}</div>}
       </div>
-      {action && !actionBelow && <div className="-my-1 flex shrink-0 items-center gap-2">{action}</div>}
+      {action && !actionBelow && <div className={cn('flex shrink-0 items-center gap-2', !inline && '-my-1')}>{action}</div>}
       {onDismiss && (
-        <Button variant="tertiary" size="xs" iconOnly aria-label={labels.dismiss} onClick={onDismiss} className="-my-0.5 -me-1.5">
+        <Button
+          variant="tertiary"
+          size={inline ? 'md' : 'xs'}
+          iconOnly
+          aria-label={labels.dismiss}
+          onClick={onDismiss}
+          className={inline ? undefined : '-my-0.5 -me-1.5'}
+        >
           <CloseIcon />
         </Button>
       )}

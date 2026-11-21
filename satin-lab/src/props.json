@@ -1302,6 +1302,13 @@
           "default": "'soft'"
         },
         {
+          "name": "layout",
+          "type": "'block' | 'inline'",
+          "required": false,
+          "default": "'block'",
+          "description": "`inline`: one centred row with 12px padding and the 28px close button, as in a PromptBar's `notice`."
+        },
+        {
           "name": "title",
           "type": "React.ReactNode",
           "required": false
@@ -1658,6 +1665,12 @@
           "name": "title",
           "type": "React.ReactNode",
           "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "16px mark before the title, such as a model's icon."
         },
         {
           "name": "description",
@@ -6320,6 +6333,12 @@
           "type": "string",
           "required": false,
           "description": "Defaults to the `writeMessage` label."
+        },
+        {
+          "name": "notice",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A message inside the bar, above everything else: a `<Banner layout=\"inline\">` or an `<Alert layout=\"inline\">`. Leave it out (or pass null) once it is dismissed."
         },
         {
           "name": "attachments",

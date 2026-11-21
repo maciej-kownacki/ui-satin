@@ -16,6 +16,8 @@ import { bannerMesh, type Mesh } from './banner-mesh'
  *   button sit on the right, 4px apart.
  * - layout="sidebar": 222 wide (the navigation column's inner width), 12 padding, 12 gap; copy on
  *   top, the action stretched across the bottom, close pinned 3px from the top-right corner.
+ * - layout="inline": the width of its container, one row, 10 × 4 padding, 10 gap and a 13/18
+ *   title; the banner a PromptBar holds in its `notice` (uiKit 4316:54633).
  * - shape="rounded" is radius-xl (12). shape="pill" takes the theme's pill corner on a one-line
  *   horizontal banner (12px at Satin's default corners, fully round at Large) and radius-3xl
  *   (20) wherever the banner is taller.
@@ -28,8 +30,9 @@ import { bannerMesh, type Mesh } from './banner-mesh'
  * action/primary/fg copy (description at 80%); its mesh is the dark glow alone, in Screen, so it
  * lightens the primary. `shimmer` sends a soft band of light across now and then.
  *
- * Title is 14/18 medium, description Body/md in text/muted, 2px apart. The close
- * button only renders when `onDismiss` is passed.
+ * Title is 14/18 medium (13/18 inline), description Body/md in text/muted, 2px apart. `icon`
+ * puts a 16px mark 8px before the title. The close button only renders when `onDismiss` is
+ * passed.
  */
 const bannerVariants = cva(
   [
@@ -41,6 +44,7 @@ const bannerVariants = cva(
       layout: {
         horizontal: 'w-[450px] items-center gap-2.5 px-3 py-2',
         sidebar: 'w-[222px] flex-col items-start gap-3 p-3',
+        inline: 'w-full items-center gap-2.5 px-2.5 py-1',
       },
       shape: {
         rounded: 'rounded-xl',
@@ -63,6 +67,8 @@ export interface BannerProps
   extends Omit<React.ComponentProps<'div'>, 'title'>,
     Omit<VariantProps<typeof bannerVariants>, 'lines'> {
   title: React.ReactNode
+  /** 16px mark before the title, such as a model's icon. */
+  icon?: React.ReactNode
   description?: React.ReactNode
   /** One action, usually `<Button variant="secondary">`. Stretches across a sidebar banner. */
   action?: React.ReactNode
@@ -82,6 +88,7 @@ export interface BannerProps
 export function Banner({
   className,
   title,
+  icon,
   description,
   action,
   layout = 'horizontal',
@@ -99,6 +106,7 @@ export function Banner({
   const layoutKey = layout ?? 'horizontal'
   const glow = mesh ?? bannerMesh[layoutKey][lines]
   const sidebar = layoutKey === 'sidebar'
+  const inline = layoutKey === 'inline'
   const primary = tone === 'primary'
 
   const close = onDismiss && (
@@ -162,7 +170,19 @@ export function Banner({
           description && 'gap-0.5',
         )}
       >
-        <p className={cn('truncate text-base leading-[18px] font-medium', primary ? 'text-action-primary-fg' : 'text-text-default')}>{title}</p>
+        <div className="flex min-w-0 items-center gap-2">
+          {icon && <span className="flex size-4 shrink-0 items-center justify-center [&>*]:size-4">{icon}</span>}
+          <p
+            className={cn(
+              // Size first: cn lets a later text size drop the 18px leading.
+              inline ? 'text-sm' : 'text-base',
+              'min-w-0 truncate leading-[18px] font-medium',
+              primary ? 'text-action-primary-fg' : 'text-text-default',
+            )}
+          >
+            {title}
+          </p>
+        </div>
         {description && (
           <p className={cn('text-body', primary ? 'text-action-primary-fg/80' : 'text-text-muted', !sidebar && 'truncate')}>{description}</p>
         )}

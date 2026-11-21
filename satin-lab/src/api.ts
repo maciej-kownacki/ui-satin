@@ -136,6 +136,7 @@ export const api: Record<string, Api> = {
     props: [
       { name: 'intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"neutral"' },
       { name: 'variant', type: ['"soft"', '"outline"'], default: '"soft"' },
+      { name: 'layout', type: ['"block"', '"inline"'], default: '"block"' },
       { name: 'title', type: ['ReactNode'] },
       { name: 'description', type: ['ReactNode'] },
       { name: 'icon', type: ['boolean', 'ReactNode'], default: 'true' },
@@ -286,12 +287,13 @@ export const api: Record<string, Api> = {
   banner: {
     description: 'The `Banner` component is a wrapper around the `div` element that holds a title, an optional description and one action.',
     props: [
-      { name: 'layout', type: ['"horizontal"', '"sidebar"'], default: '"horizontal"' },
+      { name: 'layout', type: ['"horizontal"', '"sidebar"', '"inline"'], default: '"horizontal"' },
       { name: 'background', type: ['"mesh"', '"plain"'], default: '"mesh"' },
       { name: 'shape', type: ['"rounded"', '"pill"'], default: '"rounded"' },
       { name: 'tone', type: ['"default"', '"primary"'], default: '"default"' },
       { name: 'shimmer', type: ['boolean'], default: 'false' },
       { name: 'title', type: ['string'] },
+      { name: 'icon', type: ['ReactNode'] },
       { name: 'description', type: ['string'] },
       { name: 'action', type: ['ReactNode'] },
       { name: 'onDismiss', type: ['() => void'] },
@@ -1106,6 +1108,7 @@ export const api: Record<string, Api> = {
       { name: 'defaultValue', type: ['string', 'PromptValue'], default: '""' },
       { name: 'onValueChange', type: ['(value: string, detail: PromptValue) => void'] },
       { name: 'placeholder', type: ['string'], default: '"Write a message"' },
+      { name: 'notice', type: ['ReactNode'] },
       { name: 'disabled', type: ['boolean'], default: 'false' },
       { name: 'actions', type: ['PromptBarAction[]'] },
       { name: 'onAddAgent', type: ['() => void'] },
