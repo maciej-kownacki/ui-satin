@@ -613,7 +613,7 @@ export const api: Record<string, Api> = {
   },
   'kanban-board': {
     description:
-      'The `KanbanBoard` component (Satin Pro, `@uisatin/pro/kanban-board`) is controlled: `items` holds each column\'s cards in order, by column id, and a drop only calls `onMove(itemId, toColumn, index)`, where `index` is the card\'s place in `toColumn` once it\'s there. `moveKanbanItem(items, getItemId, itemId, toColumn, index)` returns `items` with the card moved. A column is `{ id, title, tone, limit }`; past its `limit` the count turns amber. A move to another column shows a "Moved to Interview" toast whose Undo calls `onMove` with the old place (it needs a `<Toaster />`). `KanbanCard` is the card part: `title`, `meta`, `badges`, `avatar`, children, and a ⋯ menu that moves the card without dragging, with your own `actions` after the moves.',
+      'The `KanbanBoard` component (Satin Pro, `@uisatin/pro/kanban-board`) is controlled: `items` holds each column\'s cards in order, by column id, and a drop only calls `onMove(itemId, toColumn, index)`, where `index` is the card\'s place in `toColumn` once it\'s there, counting loaded cards only. `moveKanbanItem(items, getItemId, itemId, toColumn, index)` returns `items` with the card moved. A column is `{ id, title, tone, limit, more }`. Past its `limit` the count turns amber. `more` counts cards `items` doesn\'t hold yet: the count and the limit include them, and the column ends with "+2 more", a button when `onShowMore` is set. `canMove(item, column)` refuses a column when it returns anything but `true`, and a string says why: while a card is lifted, that column\'s cards dim, the reason shows under the card, and a drop there puts it back. `confirmMove(item, column, index)` runs before `onMove` on every move but Undo; return a promise to ask in a Dialog, and the card waits at its new place until it settles. A move to another column shows a "Moved to Negotiation" toast whose Undo calls `onMove` with the old place (it needs a `<Toaster />`). `KanbanCard` is the card part: `logo`, `title`, `status` (a Badge under the title), `meta`, `fields` (`{ icon, label, value, placeholder }`, each label for screen readers), and a bottom row with `footer`, `age` (an amber Badge when `stale`) and `avatar`. Its `changed` key lights the card up once when it changes. Children go between the fields and the bottom row, and a ⋯ menu moves the card without dragging, with your own `actions` after the moves.',
     props: [
       { name: 'columns', type: ['KanbanColumn[]'] },
       { name: 'items', type: ['Record<string, T[]>'] },
@@ -621,6 +621,9 @@ export const api: Record<string, Api> = {
       { name: 'getItemLabel', type: ['(item: T) => string'] },
       { name: 'renderCard', type: ['(item: T, state: KanbanCardState) => ReactNode'] },
       { name: 'onMove', type: ['(itemId: string, toColumn: string, index: number) => void'] },
+      { name: 'canMove', type: ['(item: T, toColumn: string) => boolean | string'] },
+      { name: 'confirmMove', type: ['(item: T, toColumn: string, index: number) => boolean | Promise<boolean>'] },
+      { name: 'onShowMore', type: ['(columnId: string) => void'] },
       { name: 'collapsedColumns', type: ['string[]'] },
       { name: 'defaultCollapsedColumns', type: ['string[]'] },
       { name: 'onCollapsedColumnsChange', type: ['(collapsedColumns: string[]) => void'] },

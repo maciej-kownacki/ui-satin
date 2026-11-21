@@ -8,12 +8,18 @@
  *   easing there, only its scale and shadow ease in when it lifts.
  * - Cards making room shift to their new place with --ease-in-out (data-flip="shift"); a dropped
  *   card settles into its place with --ease-out over --duration-base (data-flip="settle").
+ * - Inactive states, by opacity: the cards of a column the lifted card can't go to (data-refused
+ *   on the column, for the whole drag; no dashed edge, which means "lands here"), and a card
+ *   waiting for its confirmation (data-pending).
+ * - A card whose `changed` key changed lights up once: KanbanCard's flash fades in over 150 ms,
+ *   holds a second and fades out over 250 ms, opacity only (MOTION.md names the exception).
  * Satin's reduced-motion rule (motion.css) cuts all of it; the component skips the shifts too.
  */
 .satin-kanban-item {
   transition:
     scale var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
+    box-shadow var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
 }
 .satin-kanban-item[data-lifted],
 .satin-kanban-item[data-flip='lift'],
@@ -57,4 +63,37 @@
     translate var(--duration-base) var(--ease-out),
     scale var(--duration-base) var(--ease-out),
     box-shadow var(--duration-base) var(--ease-out);
+}
+
+/* Inactive: a column that won't take the lifted card, and a move waiting for its confirmation. */
+[data-slot='kanban-column'][data-refused] :is([data-slot='kanban-item']:not([data-lifted]), [data-slot='kanban-empty'], [data-slot='kanban-more']) {
+  opacity: 0.5;
+}
+.satin-kanban-item[data-pending] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Changed: in over 150 ms, a second's hold, out over 250 ms. Under reduced motion the animation
+   is cut to nothing, so the flash never shows; the status and the announcement still say it. */
+.satin-kanban-card-flash {
+  opacity: 0;
+  animation: satin-kanban-changed 1400ms;
+}
+@keyframes satin-kanban-changed {
+  0% {
+    opacity: 0;
+    animation-timing-function: var(--ease-out);
+  }
+  10.7% {
+    opacity: 1;
+    animation-timing-function: linear;
+  }
+  82.1% {
+    opacity: 1;
+    animation-timing-function: var(--ease-out);
+  }
+  100% {
+    opacity: 0;
+  }
 }

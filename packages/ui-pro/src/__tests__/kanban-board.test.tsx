@@ -2,6 +2,7 @@ import * as React from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, screen, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
+import { Badge } from '@uisatin/ui/badge'
 import { Toaster, toast } from '@uisatin/ui/toast'
 import { KanbanBoard, KanbanCard, moveKanbanItem, type KanbanBoardProps, type KanbanColumn } from '../components/kanban-board'
 
@@ -48,6 +49,30 @@ const card = (name: string) => screen.getByRole('listitem', { name })
 const list = (column: string) => screen.getByRole('list', { name: new RegExp(`^${column}`) })
 const names = (column: string) => within(list(column)).queryAllByRole('listitem').map((li) => li.getAttribute('aria-label'))
 const status = () => within(screen.getByRole('region', { name: 'Hiring' })).getByRole('status')
+const columnOf = (id: string) => document.querySelector(`[data-column="${id}"]`) as HTMLElement
+/** Interview takes only people who had a phone screen; Emma had one. */
+const canMove = (p: Person, to: string) => (to === 'interview' && p.name !== 'Emma Laurent' ? 'Phone screen first' : true)
+/** A confirmation the test answers by hand. */
+function deferred() {
+  const answers: ((ok: boolean) => void)[] = []
+  const confirmMove = vi.fn((_item: Person, _to: string, _index: number) => new Promise<boolean>((resolve) => void answers.push(resolve)))
+  return { confirmMove, answer: (ok: boolean) => act(async () => answers.shift()?.(ok)) }
+}
+/** A card the way the sales pipeline uses it: status, labelled fields, age. */
+const richCard = (p: Person) => (
+  <KanbanCard
+    title={p.name}
+    logo={<span aria-hidden>{p.name[0]}</span>}
+    status={p.name === 'Tara Mendes' ? <Badge size="sm" tone="brand">Nudged · 2h</Badge> : undefined}
+    fields={[
+      { icon: <svg aria-hidden />, label: 'Role', value: 'Product designer' },
+      { label: 'Next step', value: p.name === 'Tara Mendes' ? 'Set next step…' : 'Call on Tue', placeholder: p.name === 'Tara Mendes' },
+    ]}
+    footer={<Badge size="sm">Referral</Badge>}
+    age={p.name === 'Tara Mendes' ? '16d' : '2d'}
+    stale={p.name === 'Tara Mendes'}
+  />
+)
 
 afterEach(async () => {
   act(() => toast.dismiss())
@@ -235,14 +260,264 @@ describe('KanbanBoard', () => {
     expect(screen.getByRole('button', { name: 'Cofnij' })).toBeTruthy()
   })
 
-  it.each(['light', 'dark'] as const)('has no axe violations in %s, at rest and with a card picked up', async (theme) => {
-    const { user } = renderWithSatin(<Board collapsible onAddItem={() => {}} />, { theme })
+  it.each(['light', 'dark'] as const)('has no axe violations in %s: at rest, lifted over a refused column, and waiting', async (theme) => {
+    const { confirmMove } = deferred()
+    const { user } = renderWithSatin(
+      <Board
+        collapsible
+        onAddItem={() => {}}
+        onShowMore={() => {}}
+        columns={[...columns.slice(0, 2), { ...columns[2]!, more: 2 }]}
+        canMove={canMove}
+        confirmMove={confirmMove}
+        renderCard={richCard}
+      />,
+      { theme },
+    )
     await expectNoAxeViolations()
     card('Tara Mendes').focus()
     await user.keyboard(' {ArrowRight}')
     await expectNoAxeViolations()
-    // axe walks every card twice: slow on a busy machine.
+    await user.keyboard('{ArrowRight} ')
+    expect(card('Tara Mendes').getAttribute('aria-busy')).toBe('true')
+    await expectNoAxeViolations()
+    // axe walks every card three times: slow on a busy machine.
   }, 60_000)
+})
+
+describe('KanbanBoard: more cards than loaded', () => {
+  const more: KanbanColumn[] = [{ ...columns[0]!, more: 2 }, { ...columns[1]!, more: 1 }, { ...columns[2]!, more: 3 }]
+
+  it('counts them, ends the column with "+N more", and shows no empty state while there are some', () => {
+    renderWithSatin(<Board columns={more} />)
+    expect(screen.getByRole('list', { name: 'Screening 5 cards' })).toBeTruthy()
+    expect(screen.getByRole('list', { name: 'Interview 3 of 3 cards' })).toBeTruthy()
+    expect(within(columnOf('screening')).getByText('5')).toBeTruthy()
+    // Without onShowMore it's text.
+    expect(within(columnOf('screening')).getByText('+2 more').tagName).toBe('P')
+    expect(screen.queryByRole('button', { name: '+2 more' })).toBeNull()
+    // Offer holds no loaded card but three more: no "No cards".
+    expect(within(columnOf('offer')).queryByText('No cards')).toBeNull()
+    expect(within(columnOf('offer')).getByText('+3 more')).toBeTruthy()
+  })
+
+  it('makes "+N more" a button with onShowMore', async () => {
+    const onShowMore = vi.fn()
+    const { user } = renderWithSatin(<Board columns={more} onShowMore={onShowMore} />)
+    await user.click(within(columnOf('offer')).getByRole('button', { name: '+3 more' }))
+    expect(onShowMore).toHaveBeenCalledExactlyOnceWith('offer')
+  })
+
+  it('counts them in what it reads out, and turns the count amber past the limit', async () => {
+    const onMove = vi.fn()
+    const { user } = renderWithSatin(<Board columns={more} onMove={onMove} />)
+    card('Tara Mendes').focus()
+    await user.keyboard(' ')
+    expect(status().textContent).toBe('Picked up Tara Mendes. Screening, position 1 of 5.')
+    await user.keyboard('{ArrowRight}')
+    expect(status().textContent).toBe('Interview, position 1 of 4')
+    expect(screen.getByRole('list', { name: 'Interview 4 cards, over the limit of 3' })).toBeTruthy()
+    await user.keyboard('{End} ')
+    // The last place among the loaded cards: index 2, before the one not loaded.
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('tara-mendes', 'interview', 2)
+    expect(status().textContent).toBe('Moved Tara Mendes to Interview, position 3 of 4')
+  })
+})
+
+describe('KanbanBoard: canMove', () => {
+  it('dims refused columns from the lift, reads the reason on entering one, keeps the card up on Space, and cancels with Escape', async () => {
+    const onMove = vi.fn()
+    const check = vi.fn(canMove)
+    const { user } = renderWithSatin(<Board onMove={onMove} canMove={check} />)
+    card('Tara Mendes').focus()
+    await user.keyboard(' ')
+    // Asked once per other column, at the lift.
+    expect(check.mock.calls.map(([, to]) => to)).toEqual(['interview', 'offer'])
+    expect(columnOf('interview').hasAttribute('data-refused')).toBe(true)
+    expect(columnOf('offer').hasAttribute('data-refused')).toBe(false)
+
+    await user.keyboard('{ArrowRight}')
+    expect(status().textContent).toBe("Can't move Tara Mendes to Interview: Phone screen first")
+    expect(within(card('Tara Mendes')).getByText('Phone screen first')).toBeTruthy()
+    // No highlight there, and the count leaves the card out.
+    expect(columnOf('interview').hasAttribute('data-over')).toBe(false)
+    expect(screen.getByRole('list', { name: 'Interview 2 of 3 cards' })).toBeTruthy()
+
+    const said = status().firstElementChild
+    await user.keyboard(' ')
+    expect(card('Tara Mendes').hasAttribute('data-lifted')).toBe(true)
+    expect(onMove).not.toHaveBeenCalled()
+    // The same words again, in a new element, so a screen reader reads them again.
+    expect(status().textContent).toBe("Can't move Tara Mendes to Interview: Phone screen first")
+    expect(status().firstElementChild).not.toBe(said)
+
+    // Passable: Offer is next.
+    await user.keyboard('{ArrowRight}')
+    expect(status().textContent).toBe('Offer, position 1 of 1')
+    await user.keyboard('{ArrowLeft}{Escape}')
+    expect(onMove).not.toHaveBeenCalled()
+    expect(names('Screening')).toEqual(['Tara Mendes', 'Priya Nair', 'Daniel Kim'])
+    expect(columnOf('interview').hasAttribute('data-refused')).toBe(false)
+    expect(check).toHaveBeenCalledTimes(2)
+  })
+
+  it('lists refused columns in the ⋯ menu with the reason, and refuses the move from there', async () => {
+    const onMove = vi.fn()
+    const { user } = renderWithSatin(<Board onMove={onMove} canMove={canMove} />)
+    await user.click(screen.getByRole('button', { name: 'More options for Daniel Kim' }))
+    const interview = within(screen.getByRole('menu')).getByRole('menuitem', { name: /^Interview/ })
+    expect(interview.textContent).toBe('InterviewPhone screen first')
+    expect(interview.hasAttribute('data-disabled')).toBe(false)
+    await user.click(interview)
+    expect(onMove).not.toHaveBeenCalled()
+    expect(status().textContent).toBe("Can't move Daniel Kim to Interview: Phone screen first")
+    expect(names('Screening')).toEqual(['Tara Mendes', 'Priya Nair', 'Daniel Kim'])
+  })
+})
+
+describe('KanbanBoard: confirmMove', () => {
+  it('puts the card back when it answers false', async () => {
+    const onMove = vi.fn()
+    const confirmMove = vi.fn(() => false)
+    const { user } = renderWithSatin(<Board onMove={onMove} confirmMove={confirmMove} />)
+    card('Tara Mendes').focus()
+    await user.keyboard(' {ArrowRight} ')
+    expect(confirmMove).toHaveBeenCalledExactlyOnceWith({ id: 'tara-mendes', name: 'Tara Mendes' }, 'interview', 0)
+    expect(onMove).not.toHaveBeenCalled()
+    expect(names('Screening')).toEqual(['Tara Mendes', 'Priya Nair', 'Daniel Kim'])
+    expect(status().textContent).toBe('Move cancelled. Tara Mendes is back in Screening, position 1 of 3.')
+    expect(document.activeElement).toBe(card('Tara Mendes'))
+    expect(screen.queryByText('Moved to Interview')).toBeNull()
+  })
+
+  it('keeps the card at its new place, busy, while a promise waits, then moves it on true', async () => {
+    const onMove = vi.fn()
+    const { confirmMove, answer } = deferred()
+    const { user } = renderWithSatin(<Board onMove={onMove} confirmMove={confirmMove} />)
+    card('Tara Mendes').focus()
+    await user.keyboard(' {ArrowRight} ')
+    expect(onMove).not.toHaveBeenCalled()
+    expect(names('Interview')).toEqual(['Tara Mendes', 'Emma Laurent', 'Kenji Mori'])
+    expect(card('Tara Mendes').hasAttribute('data-pending')).toBe(true)
+    expect(card('Tara Mendes').getAttribute('aria-busy')).toBe('true')
+    expect(screen.getByRole('list', { name: 'Interview 3 of 3 cards' })).toBeTruthy()
+    // It takes no keys meanwhile.
+    await user.keyboard(' ')
+    expect(card('Tara Mendes').hasAttribute('data-lifted')).toBe(false)
+
+    await answer(true)
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('tara-mendes', 'interview', 0)
+    expect(card('Tara Mendes').hasAttribute('data-pending')).toBe(false)
+    expect(names('Interview')).toEqual(['Tara Mendes', 'Emma Laurent', 'Kenji Mori'])
+    expect(status().textContent).toBe('Moved Tara Mendes to Interview, position 1 of 3')
+    expect(screen.getByText('Moved to Interview')).toBeTruthy()
+    expect(document.activeElement).toBe(card('Tara Mendes'))
+  })
+
+  it('puts the card back on false, and gives it focus: moved by keys', async () => {
+    const onMove = vi.fn()
+    const { confirmMove, answer } = deferred()
+    const { user } = renderWithSatin(<Board onMove={onMove} confirmMove={confirmMove} />)
+    card('Priya Nair').focus()
+    await user.keyboard(' {ArrowRight}{ArrowRight} ')
+    expect(names('Offer')).toEqual(['Priya Nair'])
+    await answer(false)
+    expect(onMove).not.toHaveBeenCalled()
+    expect(names('Screening')).toEqual(['Tara Mendes', 'Priya Nair', 'Daniel Kim'])
+    expect(names('Offer')).toEqual([])
+    expect(status().textContent).toBe('Move cancelled. Priya Nair is back in Screening, position 2 of 3.')
+    expect(document.activeElement).toBe(card('Priya Nair'))
+  })
+
+  it('puts the card back on false, and gives it focus: moved from the ⋯ menu', async () => {
+    const onMove = vi.fn()
+    const { confirmMove, answer } = deferred()
+    const { user } = renderWithSatin(<Board onMove={onMove} confirmMove={confirmMove} />)
+    await user.click(screen.getByRole('button', { name: 'More options for Daniel Kim' }))
+    await user.click(screen.getByRole('menuitem', { name: 'Offer' }))
+    expect(confirmMove).toHaveBeenCalledExactlyOnceWith({ id: 'daniel-kim', name: 'Daniel Kim' }, 'offer', 0)
+    expect(names('Offer')).toEqual(['Daniel Kim'])
+    await answer(false)
+    expect(onMove).not.toHaveBeenCalled()
+    expect(names('Screening')).toEqual(['Tara Mendes', 'Priya Nair', 'Daniel Kim'])
+    expect(status().textContent).toBe('Move cancelled. Daniel Kim is back in Screening, position 3 of 3.')
+    expect(document.activeElement).toBe(card('Daniel Kim'))
+  })
+
+  it('asks nothing for Undo', async () => {
+    const onMove = vi.fn()
+    const confirmMove = vi.fn(() => true)
+    const { user } = renderWithSatin(<Board onMove={onMove} confirmMove={confirmMove} />)
+    card('Priya Nair').focus()
+    await user.keyboard(' {ArrowRight} ')
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('priya-nair', 'interview', 1)
+    await user.click(screen.getByRole('button', { name: 'Undo' }))
+    expect(onMove).toHaveBeenLastCalledWith('priya-nair', 'screening', 1)
+    expect(confirmMove).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('KanbanCard', () => {
+  it('lists its fields as terms and values, and describes the card with its status and staleness', () => {
+    renderWithSatin(<Board renderCard={richCard} />)
+    const tara = card('Tara Mendes')
+    expect(within(tara).getAllByRole('term').map((dt) => dt.textContent)).toEqual(['Role', 'Next step'])
+    expect(within(tara).getAllByRole('definition').map((dd) => dd.textContent)).toEqual(['Product designer', 'Set next step…'])
+    // A placeholder reads muted, a value doesn't.
+    expect(within(tara).getByText('Set next step…').className).toContain('text-text-muted')
+    expect(within(card('Priya Nair')).getByText('Call on Tue').className).not.toContain('text-text-muted')
+    // Stale: the age in an amber Badge, with "stale" for screen readers.
+    const age = within(tara).getByText('16d').closest('[data-slot="badge"]')
+    expect(age?.getAttribute('data-tone')).toBe('amber')
+    expect(age?.querySelector('.sr-only')?.textContent).toBe(' stale')
+    expect(within(card('Priya Nair')).getByText('2d').closest('[data-slot="badge"]')).toBeNull()
+    expect(screen.getByRole('listitem', { name: 'Tara Mendes', description: /^Nudged · 2h stale Press Space to pick it up\./ })).toBeTruthy()
+    expect(screen.getByRole('listitem', { name: 'Priya Nair', description: /^\s*Press Space to pick it up\./ })).toBeTruthy()
+  })
+
+  it('lights up and is read out when its changed key changes, never on first render nor after a move', async () => {
+    const version = (v: Record<string, number>) => (p: Person) => <KanbanCard title={p.name} changed={v[p.id] ?? 1} />
+    const flash = (name: string) => card(name).querySelector('[data-slot="kanban-card-flash"]')
+    const { user, rerender } = renderWithSatin(<Board renderCard={version({})} />)
+    expect(document.querySelectorAll('[data-slot="kanban-card-flash"]')).toHaveLength(0)
+
+    // A move remounts the card in its new column: still nothing.
+    card('Tara Mendes').focus()
+    await user.keyboard(' {ArrowRight} ')
+    expect(names('Interview')).toContain('Tara Mendes')
+    expect(document.querySelectorAll('[data-slot="kanban-card-flash"]')).toHaveLength(0)
+
+    rerender(<Board renderCard={version({ 'tara-mendes': 2 })} />)
+    expect(flash('Tara Mendes')).toBeTruthy()
+    expect(flash('Tara Mendes')?.getAttribute('aria-hidden')).toBe('true')
+    expect(flash('Priya Nair')).toBeNull()
+    expect(status().textContent).toBe('Tara Mendes was updated')
+  })
+})
+
+describe('KanbanBoard and KanbanCard: their new words', () => {
+  it('say them in the app’s language', async () => {
+    const { user, rerender } = renderWithSatin(
+      <Board columns={[{ ...columns[0]!, more: 2 }, ...columns.slice(1)]} canMove={canMove} renderCard={richCard} />,
+      {
+        labels: {
+          kanbanMore: (count) => `+${count} więcej`,
+          kanbanRefused: (item, column, reason) => `Nie można przenieść ${item} do: ${column}. ${reason}`,
+          kanbanStale: 'bez ruchu',
+          kanbanUpdated: (item) => `Zmieniono: ${item}`,
+        },
+      },
+    )
+    expect(within(columnOf('screening')).getByText('+2 więcej')).toBeTruthy()
+    expect(screen.getByRole('listitem', { name: 'Tara Mendes', description: /^Nudged · 2h bez ruchu / })).toBeTruthy()
+    card('Tara Mendes').focus()
+    await user.keyboard(' {ArrowRight}')
+    expect(status().textContent).toBe('Nie można przenieść Tara Mendes do: Interview. Phone screen first')
+    await user.keyboard('{Escape}')
+    rerender(<Board renderCard={(p) => <KanbanCard title={p.name} changed={1} />} />)
+    rerender(<Board renderCard={(p) => <KanbanCard title={p.name} changed={p.name === 'Kenji Mori' ? 2 : 1} />} />)
+    expect(status().textContent).toBe('Zmieniono: Kenji Mori')
+  })
 })
 
 /* ---------- pointer and touch ---------- */
@@ -280,6 +555,42 @@ describe('KanbanBoard with a pointer', () => {
     expect(names('Interview')).toEqual(['Emma Laurent', 'Kenji Mori', 'Tara Mendes'])
     expect(document.querySelector('[data-slot="kanban-overlay"]')).toBeNull()
     expect(screen.getByText('Moved to Interview')).toBeTruthy()
+    rects.mockRestore()
+  })
+
+  it('dims a refused column, shows the reason under the card over it, and puts the card back when dropped there', () => {
+    const rects = layoutColumns()
+    const onMove = vi.fn()
+    renderWithSatin(<Board onMove={onMove} canMove={canMove} />)
+    pointer('pointerdown', card('Tara Mendes'), 40, 20)
+    pointer('pointermove', window, 46, 22)
+    expect(columnOf('interview').hasAttribute('data-refused')).toBe(true)
+    pointer('pointermove', window, 340, 500)
+    expect(columnOf('interview').hasAttribute('data-over')).toBe(false)
+    expect(columnOf('interview').querySelector('[data-slot="kanban-gap"]')).toBeNull()
+    const overlay = document.querySelector('[data-slot="kanban-overlay"]') as HTMLElement
+    expect(within(overlay).getByText('Phone screen first')).toBeTruthy()
+    pointer('pointerup', window, 340, 500)
+    expect(onMove).not.toHaveBeenCalled()
+    expect(names('Screening')).toEqual(['Tara Mendes', 'Priya Nair', 'Daniel Kim'])
+    expect(status().textContent).toBe("Can't move Tara Mendes to Interview: Phone screen first")
+    expect(document.querySelector('[data-slot="kanban-overlay"]')).toBeNull()
+    rects.mockRestore()
+  })
+
+  it('puts a dropped card back when confirmMove says no', () => {
+    const rects = layoutColumns()
+    const onMove = vi.fn()
+    const confirmMove = vi.fn(() => false)
+    renderWithSatin(<Board onMove={onMove} confirmMove={confirmMove} />)
+    pointer('pointerdown', card('Tara Mendes'), 40, 20)
+    pointer('pointermove', window, 46, 22)
+    pointer('pointermove', window, 640, 500)
+    pointer('pointerup', window, 640, 500)
+    expect(confirmMove).toHaveBeenCalledExactlyOnceWith({ id: 'tara-mendes', name: 'Tara Mendes' }, 'offer', 0)
+    expect(onMove).not.toHaveBeenCalled()
+    expect(names('Screening')).toEqual(['Tara Mendes', 'Priya Nair', 'Daniel Kim'])
+    expect(status().textContent).toBe('Move cancelled. Tara Mendes is back in Screening, position 1 of 3.')
     rects.mockRestore()
   })
 

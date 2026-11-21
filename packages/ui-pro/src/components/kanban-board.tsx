@@ -13,7 +13,7 @@ import { Skeleton } from '@uisatin/ui/skeleton'
 import { toast } from '@uisatin/ui/toast'
 
 /**
- * KanbanBoard: columns of cards, each column a stage (Applied, Screening, Interview), with its
+ * KanbanBoard: columns of cards, each column a stage (Lead, Qualified, Proposal), with its
  * count and an optional limit, and cards that move between them by pointer, touch or keyboard.
  *
  * It is controlled: `items` holds the cards of each column in order, and a move only calls
@@ -27,16 +27,25 @@ import { toast } from '@uisatin/ui/toast'
  *   over 200 ms; Escape puts it back. A collapsed column takes a card at its end.
  * - Keyboard: Space picks the focused card up; ↑ ↓ move it within its column, ← → to the next
  *   column (mirrored right to left), Home and End to the top or bottom; Space drops it and
- *   Escape puts it back. Every step is read out from a polite live region: "Moved Tara Mendes
- *   to Interview, position 2 of 7". Without a card picked up, the arrow keys move focus
+ *   Escape puts it back. Every step is read out from a polite live region: "Moved Lumen Bank
+ *   to Proposal, position 2 of 4". Without a card picked up, the arrow keys move focus
  *   between cards. These moves don't animate (MOTION.md: no motion on frequent keys).
  * - Without dragging: KanbanCard's ⋯ menu moves a card to another column or up and down, the
  *   single-pointer way WCAG 2.5.7 asks for.
- * - A move to another column shows a toast, "Moved to Interview", whose Undo calls `onMove`
+ * - A move to another column shows a toast, "Moved to Proposal", whose Undo calls `onMove`
  *   with the card's old column and index, so it goes back to the exact place. It needs the
  *   app's `<Toaster />`; turn it off with `undoToast={false}`.
  * - A column past its `limit` turns its count amber (while a card is dragged over it, too).
- *   An empty column shows an EmptyState; `loading` shows Skeleton cards.
+ *   An empty column shows an EmptyState; `loading` shows Skeleton cards. A column's `more`
+ *   counts cards `items` doesn't hold yet: the count includes them and the column ends with
+ *   "+3 more" (a button when `onShowMore` is set).
+ * - `canMove(item, column)` refuses columns: from the moment a card lifts, their cards dim and
+ *   take no gap, the reason shows under the lifted card while it's over one, and a drop there
+ *   puts it back and reads the reason out. The ⋯ menu lists them with the reason.
+ * - `confirmMove(item, column, index)` runs before `onMove`. A promise keeps the card at its
+ *   new place, dimmed and busy, until it settles: `true` moves it, anything else puts it back.
+ * - KanbanCard's `changed` key: when it changes, the card lights up once (opacity only) and
+ *   the board reads "Northwind Labs was updated".
  *
  * Words go through SatinLabels (`kanbanBoardLabels`). Other props, `ref` included, go to the
  * board's `section`; give it an `aria-label` and it becomes a named region.
@@ -44,7 +53,7 @@ import { toast } from '@uisatin/ui/toast'
 
 /** The words the Kanban board says on its own. They join SatinLabels, so the app translates them there. */
 export const kanbanBoardLabels = {
-  /** What a card is, read after its name: "Tara Mendes, draggable card". */
+  /** What a card is, read after its name: "Lumen Bank, draggable card". */
   kanbanCard: 'draggable card',
   /** How to move a card from the keyboard, read when a card gets focus. */
   kanbanCardHint: 'Press Space to pick it up. Arrow keys move it, Space drops it, Escape cancels.',
@@ -81,6 +90,15 @@ export const kanbanBoardLabels = {
   kanbanMovedTo: (column: string) => `Moved to ${column}`,
   /** The toast's action. */
   undo: 'Undo',
+  /** The end of a column with cards `items` doesn't hold yet. */
+  kanbanMore: (count: number) => `+${count} more`,
+  /** Read out when `canMove` refuses a column; `reason` is what it returned. */
+  kanbanRefused: (item: string, column: string, reason?: string) =>
+    reason ? `Can't move ${item} to ${column}: ${reason}` : `Can't move ${item} to ${column}`,
+  /** Read after a stale card's name, with its status. */
+  kanbanStale: 'stale',
+  /** Read out when a card's `changed` key changes. */
+  kanbanUpdated: (item: string) => `${item} was updated`,
 }
 
 type KanbanBoardLabels = typeof kanbanBoardLabels
@@ -104,9 +122,15 @@ export interface KanbanColumn {
   tone?: DotTone
   /**
    * How many cards the column should hold (a work-in-progress limit). The count shows `6/8`
-   * and turns amber past it. Moves past it are still allowed.
+   * and turns amber past it. Moves past it are still allowed (`confirmMove` can ask first).
    */
   limit?: number
+  /**
+   * Cards in the column that `items` doesn't hold (not loaded yet, or paged). The count, the
+   * limit and the announcements include them; the column ends with "+3 more". A card can only
+   * land among the loaded ones.
+   */
+  more?: number
 }
 
 /** What `renderCard` gets besides the item. */
@@ -126,15 +150,31 @@ export interface KanbanBoardProps<T> extends Omit<React.ComponentProps<'section'
   items: Record<string, T[]>
   /** A card's id: unique on the board, stable across moves. */
   getItemId: (item: T) => string
-  /** A card's name for screen readers, announcements and the toast: "Tara Mendes". */
+  /** A card's name for screen readers, announcements and the toast: "Lumen Bank". */
   getItemLabel: (item: T) => string
   /** The card itself, usually a `KanbanCard`. */
   renderCard: (item: T, state: KanbanCardState) => React.ReactNode
   /**
-   * A card was dropped. `index` is its place in `toColumn` once it's there, from 0. Move it in
-   * `items` (`moveKanbanItem()` does it); until you do, the board shows it where it was.
+   * A card was dropped. `index` is its place in `toColumn` once it's there, from 0, counting
+   * loaded cards only (a column's `more` sit after them). Move it in `items`
+   * (`moveKanbanItem()` does it); until you do, the board shows it where it was.
    */
   onMove: (itemId: string, toColumn: string, index: number) => void
+  /**
+   * Whether a card may go to a column. `true` allows it; anything else refuses, and a
+   * non-empty string is the reason ("Set a next step first"), shown under the lifted card and
+   * read out. Called once per column when a card lifts, and for the ⋯ menu; never for the
+   * card's own column.
+   */
+  canMove?: (item: T, toColumn: string) => boolean | string
+  /**
+   * Asked before `onMove`, for every real move (Undo skips it). `false` puts the card back. A
+   * promise keeps the card at its new place, dimmed and busy, until it settles: `true` moves
+   * it, `false` or a rejection puts it back. Open a Dialog from here to ask.
+   */
+  confirmMove?: (item: T, toColumn: string, index: number) => boolean | Promise<boolean>
+  /** Makes a column's "+3 more" a button, which calls this with the column's id. */
+  onShowMore?: (columnId: string) => void
   /** Collapsed columns, by id: a narrow strip with the title and count. Controlled. */
   collapsedColumns?: string[]
   /** Collapsed columns at first, when `collapsedColumns` isn't set. */
@@ -148,14 +188,30 @@ export interface KanbanBoardProps<T> extends Omit<React.ComponentProps<'section'
   loading?: boolean
   /** What an empty column shows. Defaults to an EmptyState saying "No cards". */
   renderEmpty?: (column: KanbanColumn) => React.ReactNode
-  /** The "Moved to Interview" toast with Undo after a move to another column. Needs a `<Toaster />`. */
+  /** The "Moved to Proposal" toast with Undo after a move to another column. Needs a `<Toaster />`. */
   undoToast?: boolean
   /** A column's width in px. */
   columnWidth?: number
 }
 
 type Place = { column: string; index: number }
-type Drag = { id: string; mode: 'pointer' | 'keyboard'; from: Place; to: Place; width: number; height: number }
+type Drag = {
+  id: string
+  mode: 'pointer' | 'keyboard'
+  from: Place
+  to: Place
+  width: number
+  height: number
+  /** The columns `canMove` refused at lift, with the reason when it gave one. */
+  refused: ReadonlyMap<string, string | undefined>
+}
+/** How a move started: a pointer drop glides back when a confirmation says no. */
+type Via = 'pointer' | 'keyboard' | 'menu'
+/** A move waiting for `confirmMove`'s promise: the board shows the card at `to` meanwhile. */
+type Pending = { from: Place; to: Place; via: Via }
+
+const isThenable = (value: unknown): value is PromiseLike<unknown> =>
+  !!value && typeof (value as PromiseLike<unknown>).then === 'function'
 
 /**
  * `items` with one card moved: out of its column, into `toColumn` at `index` (counted without
@@ -189,15 +245,22 @@ export function moveKanbanItem<T>(
 
 interface BoardContextValue {
   columns: KanbanColumn[]
-  /** Cards in a column, as the board shows it now. */
-  countOf: (columnId: string) => number
+  /** Loaded cards in a column, as the board shows it now. */
+  loadedOf: (columnId: string) => number
   moveTo: (itemId: string, to: Place) => void
+  /** The columns a card can't go to (`canMove`), with the reason when there is one. */
+  refusals: (itemId: string) => ReadonlyMap<string, string | undefined>
+  /** Each card's last `changed` key, so a card that remounts in another column doesn't light up. */
+  seen: Map<string, string | number>
+  announce: (text: string) => void
 }
 interface ItemContextValue {
   id: string
   label: string
   columnId: string
   index: number
+  /** The id of the card's description (its status and staleness), which KanbanCard renders. */
+  descId: string
   /** In the card that follows the pointer: a picture, nothing to press. */
   overlay?: boolean
 }
@@ -280,6 +343,41 @@ const CollapseIcon = ({ expand }: { expand?: boolean }) => (
     />
   </svg>
 )
+/** A circle with a bar: the column won't take the card. */
+const NoEntryIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden className="shrink-0">
+    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.25" />
+    <path d="M5.25 8h5.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+  </svg>
+)
+const ClockIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden className="shrink-0">
+    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.25" />
+    <path d="M8 5v3l2 1.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+/** The clock with an exclamation mark beside it: nothing has happened for too long. */
+const ClockAlertIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden className="shrink-0">
+    <path d="M12.2 6.6A5.5 5.5 0 1 0 12.2 10.9" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+    <path d="M7 6v2.75l1.75 1.25M14.5 4.5v3.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="14.5" cy="10.5" r="0.75" fill="currentColor" />
+  </svg>
+)
+
+/** Why the lifted card can't land here: a small pill under it, outside the column's layout. */
+function RefusedNote({ reason }: { reason: string }) {
+  return (
+    <span
+      aria-hidden
+      data-slot="kanban-refused"
+      className="pointer-events-none absolute start-0 top-full z-10 mt-2 inline-flex max-w-full items-center gap-1.5 rounded-pill border border-border-subtle bg-bg-popover px-2 py-1 text-sm text-text-destructive"
+    >
+      <NoEntryIcon />
+      <span className="truncate">{reason}</span>
+    </span>
+  )
+}
 
 /* ---------- the board ---------- */
 
@@ -290,6 +388,9 @@ export function KanbanBoard<T>({
   getItemLabel,
   renderCard,
   onMove,
+  canMove,
+  confirmMove,
+  onShowMore,
   collapsedColumns,
   defaultCollapsedColumns,
   onCollapsedColumnsChange,
@@ -321,7 +422,15 @@ export function KanbanBoard<T>({
     dragRef.current = next
     setDragState(next)
   }
-  const [message, setMessage] = React.useState('')
+  // `n` keys the live region's text, so the same words twice still change it and are read again.
+  const [message, setMessage] = React.useState({ text: '', n: 0 })
+  const [pending, setPendingState] = React.useState<ReadonlyMap<string, Pending>>(() => new Map())
+  const pendingRef = React.useRef(pending)
+  const setPending = (next: ReadonlyMap<string, Pending>) => {
+    pendingRef.current = next
+    setPendingState(next)
+  }
+  const seen = React.useRef(new Map<string, string | number>())
 
   // Elements, by id.
   const itemEls = React.useRef(new Map<string, HTMLLIElement>())
@@ -342,51 +451,106 @@ export function KanbanBoard<T>({
     pendingFocus.current = { id, column, scroll, items: latest.current.items }
   }
 
-  // The card as the board shows it now: moved to where a keyboard drag holds it.
+  // The cards as the board shows them: `items`, with moves waiting for `confirmMove` applied…
+  const shown = React.useMemo(() => {
+    let all = items
+    for (const [id, p] of pending) all = moveKanbanItem(all, getItemId, id, p.to.column, p.to.index)
+    return all
+  }, [items, pending, getItemId])
+  // …and the lifted card where a drag holds it.
   const view = React.useMemo(
-    () => (drag ? moveKanbanItem(items, getItemId, drag.id, drag.to.column, drag.to.index) : items),
-    [drag, items, getItemId],
+    () => (drag ? moveKanbanItem(shown, getItemId, drag.id, drag.to.column, drag.to.index) : shown),
+    [drag, shown, getItemId],
   )
 
+  // Everything the window listeners and promises need, fresh on every render.
+  const latest = React.useRef({ items, shown, columns, collapsed, getItemId, getItemLabel, onMove, canMove, confirmMove, labels, undoToast })
+  latest.current = { items, shown, columns, collapsed, getItemId, getItemLabel, onMove, canMove, confirmMove, labels, undoToast }
+
   const findItem = (id: string) => {
+    const { columns, shown, getItemId } = latest.current
     for (const column of columns) {
-      const list = items[column.id] ?? []
+      const list = shown[column.id] ?? []
       const index = list.findIndex((item) => getItemId(item) === id)
       if (index >= 0) return { item: list[index]!, place: { column: column.id, index } }
     }
     return null
   }
-  const titleOf = (columnId: string) => columns.find((c) => c.id === columnId)?.title ?? columnId
-  /** Cards in a column once `id` has left it: the most a drop index can be. */
-  const room = (columnId: string, id: string) => (items[columnId] ?? []).filter((item) => getItemId(item) !== id).length
+  const titleOf = (columnId: string) => latest.current.columns.find((c) => c.id === columnId)?.title ?? columnId
+  const moreOf = (columnId: string) => latest.current.columns.find((c) => c.id === columnId)?.more ?? 0
+  /** Loaded cards in a column once `id` has left it: the most a drop index can be. */
+  const room = (columnId: string, id: string) => {
+    const { shown, getItemId } = latest.current
+    return (shown[columnId] ?? []).filter((item) => getItemId(item) !== id).length
+  }
+  /** The card's position count in a column it would join: the loaded cards, the unloaded, and it. */
+  const total = (columnId: string, id: string) => room(columnId, id) + moreOf(columnId) + 1
 
-  // Everything the window listeners need, fresh on every render.
-  const latest = React.useRef({ items, columns, collapsed, getItemId, getItemLabel, onMove, labels, undoToast })
-  latest.current = { items, columns, collapsed, getItemId, getItemLabel, onMove, labels, undoToast }
+  /** The columns `canMove` refuses for a card in `from`, with their reasons. */
+  const refusals = (item: T, from: string) => {
+    const refused = new Map<string, string | undefined>()
+    const { canMove, columns } = latest.current
+    if (!canMove) return refused
+    for (const c of columns) {
+      if (c.id === from) continue
+      const answer: unknown = canMove(item, c.id)
+      if (answer !== true && answer !== undefined) refused.set(c.id, typeof answer === 'string' && answer ? answer : undefined)
+    }
+    return refused
+  }
+  const refusalsOf = (id: string) => {
+    const found = findItem(id)
+    return found ? refusals(found.item, found.place.column) : new Map<string, string | undefined>()
+  }
 
   /* ----- moves ----- */
 
-  const announce = (text: string) => setMessage(text)
-
-  /** Lands a card: calls onMove, reads it out, offers Undo. */
-  const commit = (id: string, from: Place, to: Place, focus: 'keyboard' | 'pointer' | 'none') => {
-    const { items, getItemLabel, labels, undoToast } = latest.current
+  const announce = (text: string) => setMessage((m) => ({ text, n: m.n + 1 }))
+  const announceRefused = (id: string, columnId: string, reason?: string) => {
     const found = findItem(id)
-    if (!found) return
-    const label = getItemLabel(found.item)
-    const count = room(to.column, id) + 1
-    if (focus !== 'none') focusLater(id, to.column, focus === 'keyboard')
-    announce(labels.kanbanMoved(label, titleOf(to.column), to.index + 1, count))
-    if (from.column === to.column && from.index === to.index) return
+    if (found) announce(latest.current.labels.kanbanRefused(latest.current.getItemLabel(found.item), titleOf(columnId), reason))
+  }
+
+  /**
+   * After a confirmation: focus the card where it ended up, unless something else took focus.
+   * A dialog that asked returns focus once it has closed, to a card that may have moved and
+   * remounted since, which leaves it on the body: catch that for a moment.
+   */
+  const focusIfLost = (id: string, column: string, scroll: boolean) => {
+    const lost = () => {
+      const active = document.activeElement
+      return !active || active === document.body || active === itemEls.current.get(id)
+    }
+    if (lost()) return focusLater(id, column, scroll)
+    const until = performance.now() + 1000
+    const watch = () => {
+      const active = document.activeElement
+      if (lost()) {
+        const el = itemEls.current.get(id)
+        if (el?.isConnected && active !== el) el.focus({ preventScroll: !scroll })
+      } else if (active?.closest('[role="dialog"], [role="alertdialog"]') && performance.now() < until) {
+        requestAnimationFrame(watch)
+      }
+    }
+    requestAnimationFrame(watch)
+  }
+
+  /** The move is on: calls onMove, reads it out, offers Undo. */
+  const land = (id: string, item: T, from: Place, to: Place, via: Via, waited: boolean) => {
+    const { getItemLabel, labels, undoToast } = latest.current
+    const label = getItemLabel(item)
+    ;(waited ? focusIfLost : focusLater)(id, to.column, via !== 'pointer')
+    announce(labels.kanbanMoved(label, titleOf(to.column), to.index + 1, total(to.column, id)))
     latest.current.onMove(id, to.column, to.index)
     if (!undoToast || from.column === to.column) return
-    const fromCount = (items[from.column] ?? []).length
+    const fromCount = total(from.column, id)
     toast.success(labels.kanbanMovedTo(titleOf(to.column)), {
       description: label,
       // As long as toastBatch's Undo: time to notice the move and take it back.
       duration: UNDO_MS,
       action: {
         label: labels.undo,
+        // Undo puts back what was confirmed: it asks nothing.
         onClick: () => {
           focusLater(id, from.column, true)
           latest.current.onMove(id, from.column, from.index)
@@ -396,9 +560,58 @@ export function KanbanBoard<T>({
     })
   }
 
-  const moveTo = (id: string, to: Place) => {
+  /** The confirmation said no: the card stays (or goes back) where it was. */
+  const back = (id: string, item: T, from: Place, via: Via, waited: boolean) => {
+    const { getItemLabel, labels } = latest.current
+    ;(waited ? focusIfLost : focusLater)(id, from.column, via !== 'pointer')
+    announce(labels.kanbanCancelled(getItemLabel(item), titleOf(from.column), from.index + 1, total(from.column, id)))
+  }
+
+  /** Lands a card, once `confirmMove` agrees. */
+  const commit = (id: string, from: Place, to: Place, via: Via) => {
     const found = findItem(id)
-    if (found) commit(id, found.place, to, 'keyboard')
+    if (!found) return
+    if (from.column === to.column && from.index === to.index) {
+      focusLater(id, to.column, via !== 'pointer')
+      announce(latest.current.labels.kanbanMoved(latest.current.getItemLabel(found.item), titleOf(to.column), to.index + 1, total(to.column, id)))
+      return
+    }
+    const answer = latest.current.confirmMove?.(found.item, to.column, to.index) ?? true
+    if (!isThenable(answer)) {
+      if (answer === true) land(id, found.item, from, to, via, false)
+      else back(id, found.item, from, via, false)
+      return
+    }
+    // Waiting: the card shows at its new place, dimmed and busy, and takes no presses.
+    setPending(new Map(pendingRef.current).set(id, { from, to, via }))
+    answer.then(
+      (ok) => settlePending(id, ok === true),
+      () => settlePending(id, false),
+    )
+  }
+
+  function settlePending(id: string, ok: boolean) {
+    const p = pendingRef.current.get(id)
+    if (!p) return
+    const found = findItem(id)
+    // A pointer move glides back; keyboard and menu moves don't move (MOTION.md: frequent keys).
+    if (!ok && p.via === 'pointer') captureLayout()
+    const next = new Map(pendingRef.current)
+    next.delete(id)
+    setPending(next)
+    if (!found) return
+    if (ok) land(id, found.item, p.from, p.to, p.via, true)
+    else back(id, found.item, p.from, p.via, true)
+  }
+
+  /** The ⋯ menu's moves: a refused column says why instead. */
+  const moveTo = (id: string, to: Place) => {
+    if (pendingRef.current.has(id)) return
+    const found = findItem(id)
+    if (!found) return
+    const refused = refusalsOf(id)
+    if (refused.has(to.column)) return announceRefused(id, to.column, refused.get(to.column))
+    commit(id, found.place, to, 'menu')
   }
 
   /* ----- keyboard ----- */
@@ -406,8 +619,8 @@ export function KanbanBoard<T>({
   const lift = (id: string) => {
     const found = findItem(id)
     if (!found) return
-    setDrag({ id, mode: 'keyboard', from: found.place, to: found.place, width: 0, height: 0 })
-    announce(labels.kanbanPickedUp(getItemLabel(found.item), titleOf(found.place.column), found.place.index + 1, room(found.place.column, id) + 1))
+    setDrag({ id, mode: 'keyboard', from: found.place, to: found.place, width: 0, height: 0, refused: refusals(found.item, found.place.column) })
+    announce(labels.kanbanPickedUp(getItemLabel(found.item), titleOf(found.place.column), found.place.index + 1, total(found.place.column, id)))
   }
 
   const cancel = (focus: boolean) => {
@@ -417,7 +630,7 @@ export function KanbanBoard<T>({
     if (d.mode === 'pointer') captureLayout()
     setDrag(null)
     if (focus) focusLater(d.id, d.from.column, d.mode === 'keyboard')
-    if (found) announce(labels.kanbanCancelled(getItemLabel(found.item), titleOf(d.from.column), d.from.index + 1, room(d.from.column, d.id) + 1))
+    if (found) announce(labels.kanbanCancelled(getItemLabel(found.item), titleOf(d.from.column), d.from.index + 1, total(d.from.column, d.id)))
   }
 
   const stepLifted = (key: string) => {
@@ -439,8 +652,12 @@ export function KanbanBoard<T>({
     if (column === d.to.column && index === d.to.index) return
     if (column !== d.to.column) focusLater(d.id, column, true)
     setDrag({ ...d, to: { column, index } })
-    const found = findItem(d.id)
-    if (found) announce(labels.kanbanOver(getItemLabel(found.item), titleOf(column), index + 1, room(column, d.id) + 1))
+    // A refused column stays passable, so the next one can be reached: it says why it won't do.
+    if (d.refused.has(column)) announceRefused(d.id, column, d.refused.get(column))
+    else {
+      const found = findItem(d.id)
+      if (found) announce(labels.kanbanOver(getItemLabel(found.item), titleOf(column), index + 1, total(column, d.id)))
+    }
     // Within a column the card keeps its element: bring it into view after the render.
     requestAnimationFrame(() => itemEls.current.get(d.id)?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }))
   }
@@ -450,7 +667,7 @@ export function KanbanBoard<T>({
     const found = findItem(id)
     if (!found) return
     const { column, index } = found.place
-    const ids = (columnId: string) => (items[columnId] ?? []).map(getItemId)
+    const ids = (columnId: string) => (shown[columnId] ?? []).map(getItemId)
     let target: string | undefined
     if (key === 'ArrowUp') target = ids(column)[index - 1]
     else if (key === 'ArrowDown') target = ids(column)[index + 1]
@@ -476,7 +693,10 @@ export function KanbanBoard<T>({
     if (d) {
       if (d.mode !== 'keyboard' || d.id !== id) return
       if (e.key === ' ' || e.key === 'Escape' || LIFTED_KEYS.includes(e.key)) e.preventDefault()
-      if (e.key === ' ') {
+      if (e.key === ' ' && d.refused.has(d.to.column)) {
+        // It can't land here: it stays up, and the reason is read again.
+        announceRefused(d.id, d.to.column, d.refused.get(d.to.column))
+      } else if (e.key === ' ') {
         setDrag(null)
         commit(d.id, d.from, d.to, 'keyboard')
       } else if (e.key === 'Escape') cancel(true)
@@ -485,7 +705,8 @@ export function KanbanBoard<T>({
     }
     if (e.key === ' ') {
       e.preventDefault()
-      lift(id)
+      // A card waiting for its confirmation can't be picked up; the arrows still leave it.
+      if (!pendingRef.current.has(id)) lift(id)
     } else if (LIFTED_KEYS.includes(e.key)) {
       e.preventDefault()
       focusNeighbour(id, e.key)
@@ -535,7 +756,7 @@ export function KanbanBoard<T>({
 
   /** The column and index under the pointer. */
   const hitTest = (x: number, y: number, id: string): Place | null => {
-    const { columns, collapsed, items, getItemId } = latest.current
+    const { columns, collapsed, shown, getItemId } = latest.current
     let best: string | null = null
     let distance = Infinity
     for (const column of columns) {
@@ -549,7 +770,7 @@ export function KanbanBoard<T>({
       }
     }
     if (best === null) return null
-    const others = (items[best] ?? []).filter((item) => getItemId(item) !== id)
+    const others = (shown[best] ?? []).filter((item) => getItemId(item) !== id)
     if (collapsed.includes(best)) return { column: best, index: others.length }
     const list = listEls.current.get(best)
     if (!list) return { column: best, index: others.length }
@@ -609,8 +830,16 @@ export function KanbanBoard<T>({
     if (!found) return
     const r = p.el.getBoundingClientRect()
     grab.current = { dx: p.x - r.left, dy: p.y - r.top }
-    setDrag({ id: p.id, mode: 'pointer', from: found.place, to: found.place, width: r.width, height: r.height })
-    announce(labels.kanbanPickedUp(getItemLabel(found.item), titleOf(found.place.column), found.place.index + 1, room(found.place.column, p.id) + 1))
+    setDrag({
+      id: p.id,
+      mode: 'pointer',
+      from: found.place,
+      to: found.place,
+      width: r.width,
+      height: r.height,
+      refused: refusals(found.item, found.place.column),
+    })
+    announce(labels.kanbanPickedUp(getItemLabel(found.item), titleOf(found.place.column), found.place.index + 1, total(found.place.column, p.id)))
     document.body.style.setProperty('cursor', 'grabbing')
     document.body.style.setProperty('user-select', 'none')
     document.body.style.setProperty('-webkit-user-select', 'none')
@@ -676,7 +905,9 @@ export function KanbanBoard<T>({
       if (rect && flipFirst.current) settle.current = { id: d.id, rect }
       setDrag(null)
       swallowClick()
-      commit(d.id, d.from, d.to, 'pointer')
+      // Dropped on a column that won't take it: it glides back home, and the reason is read.
+      if (d.refused.has(d.to.column)) announceRefused(d.id, d.to.column, d.refused.get(d.to.column))
+      else commit(d.id, d.from, d.to, 'pointer')
     },
     cancel(e) {
       const p = press.current
@@ -715,7 +946,7 @@ export function KanbanBoard<T>({
   )
 
   const onItemPointerDown = (e: React.PointerEvent<HTMLLIElement>, id: string) => {
-    if (dragRef.current || press.current || !e.isPrimary || loading) return
+    if (dragRef.current || press.current || !e.isPrimary || loading || pendingRef.current.has(id)) return
     if (e.pointerType === 'mouse' && e.button !== 0) return
     if (isInteractive(e.target, e.currentTarget)) return
     press.current = { id, pointerId: e.pointerId, type: e.pointerType, x: e.clientX, y: e.clientY, el: e.currentTarget }
@@ -782,16 +1013,30 @@ export function KanbanBoard<T>({
   /* ----- render ----- */
 
   const boardContext = React.useMemo<BoardContextValue>(
-    () => ({ columns, countOf: (columnId) => (view[columnId] ?? []).length, moveTo }),
-    // `view` changes with `items`, so moveTo is never stale.
+    () => ({
+      columns,
+      loadedOf: (columnId) => (view[columnId] ?? []).length,
+      moveTo,
+      refusals: refusalsOf,
+      seen: seen.current,
+      announce,
+    }),
+    // `view` changes with `items`; the functions read `latest`, so they're never stale.
     [columns, view],
   )
 
   const dragged = drag ? findItem(drag.id) : null
+  // Over a column that won't take the card: no gap, no count for it, the reason under it.
+  const refusedHere = !!drag && drag.refused.has(drag.to.column)
+  const reasonHere = drag && refusedHere ? drag.refused.get(drag.to.column) : undefined
+  // What the counts include: the lifted card only where it can land.
+  const counted = refusedHere ? shown : view
 
   const card = (item: T, columnId: string, index: number, opts: { lifted?: boolean; source?: boolean }) => {
     const id = getItemId(item)
     const label = getItemLabel(item)
+    const descId = `${baseId}-desc-${encodeURIComponent(id)}`
+    const waiting = pending.has(id)
     return (
       <li
         key={id}
@@ -805,10 +1050,12 @@ export function KanbanBoard<T>({
         data-slot="kanban-item"
         data-lifted={opts.lifted || undefined}
         data-source={opts.source ? '' : undefined}
+        data-pending={waiting || undefined}
+        aria-busy={waiting || undefined}
         tabIndex={opts.source ? -1 : 0}
         aria-roledescription={labels.kanbanCard}
         aria-label={label}
-        aria-describedby={hintId}
+        aria-describedby={`${descId} ${hintId}`}
         onPointerDown={(e) => onItemPointerDown(e, id)}
         onKeyDown={(e) => onItemKeyDown(e, id)}
         onBlur={onItemBlur}
@@ -823,20 +1070,23 @@ export function KanbanBoard<T>({
           opts.source && 'pointer-events-none invisible absolute inset-x-0 top-0 h-0 overflow-hidden',
         )}
       >
-        <ItemContext.Provider value={{ id, label, columnId, index }}>
+        <ItemContext.Provider value={{ id, label, columnId, index, descId }}>
           {renderCard(item, { columnId, index, lifted: !!opts.lifted })}
         </ItemContext.Provider>
+        {opts.lifted && drag?.mode === 'keyboard' && reasonHere && <RefusedNote reason={reasonHere} />}
       </li>
     )
   }
 
   const column = (c: KanbanColumn, i: number) => {
     const isCollapsed = collapsed.includes(c.id)
-    const count = (view[c.id] ?? []).length
+    const more = c.more ?? 0
+    const count = (counted[c.id] ?? []).length + more
     const over = c.limit !== undefined && count > c.limit
     const titleId = `${baseId}-title-${i}`
     const countId = `${baseId}-count-${i}`
-    const target = !!drag && drag.to.column === c.id
+    const refused = !!drag && drag.refused.has(c.id)
+    const target = !!drag && drag.to.column === c.id && !refused
     const toggle = () => setCollapsed(isCollapsed ? collapsed.filter((id) => id !== c.id) : [...collapsed, c.id])
     const countBadge = !loading && (
       <Badge size="sm" shape="rounded" tone={over ? 'amber' : 'neutral'} data-slot="kanban-count" className="tabular-nums">
@@ -864,6 +1114,7 @@ export function KanbanBoard<T>({
       'data-state': isCollapsed ? 'collapsed' : 'expanded',
       'data-over': target || undefined,
       'data-over-limit': over || undefined,
+      'data-refused': refused || undefined,
     }
     const lane =
       'flex min-h-0 shrink-0 flex-col rounded-2xl border border-border-subtle bg-bg-canvas transition-[border-color] duration-(--duration-fast) ease-(--ease-out) data-over:border-border-strong'
@@ -886,9 +1137,12 @@ export function KanbanBoard<T>({
     }
 
     // What the column lists: the cards, and in pointer drags the gap where the card would land.
-    const list = drag?.mode === 'pointer' ? items[c.id] ?? [] : view[c.id] ?? []
+    const list = drag?.mode === 'pointer' ? shown[c.id] ?? [] : view[c.id] ?? []
+    const gapAt = drag?.mode === 'pointer' && target ? drag.to.index : -1
+    const gap = gapAt >= 0
+    const gapRow = drag && <Gap key="kanban-gap" height={drag.height} />
     const rows: React.ReactNode[] = []
-    let shown = 0
+    let shownCards = 0
     for (const item of list) {
       const id = getItemId(item)
       const isDragged = drag?.id === id
@@ -896,11 +1150,13 @@ export function KanbanBoard<T>({
         rows.push(card(item, c.id, drag.from.index, { source: true }))
         continue
       }
-      if (drag?.mode === 'pointer' && target && shown === drag.to.index) rows.push(<Gap key="kanban-gap" height={drag.height} />)
-      rows.push(card(item, c.id, shown, { lifted: isDragged }))
-      shown++
+      if (shownCards === gapAt) rows.push(gapRow)
+      rows.push(card(item, c.id, shownCards, { lifted: isDragged }))
+      shownCards++
     }
-    if (drag?.mode === 'pointer' && target && shown <= drag.to.index) rows.push(<Gap key="kanban-gap" height={drag.height} />)
+    if (gap && shownCards <= gapAt) rows.push(gapRow)
+    // Empty: no card to see, none landing, none beyond the loaded ones.
+    const empty = shownCards === 0 && !gap && more === 0
 
     return (
       <div key={c.id} {...shared} className={lane} style={{ width: columnWidth }}>
@@ -958,12 +1214,27 @@ export function KanbanBoard<T>({
               >
                 {rows}
               </ul>
-              {count === 0 &&
-                (renderEmpty ? (
-                  renderEmpty(c)
-                ) : (
-                  <EmptyState border="dashed" title={labels.kanbanEmpty} className="w-full max-w-none min-w-0 gap-2 px-3 py-6 [&_p]:text-base" />
-                ))}
+              {empty && (
+                <div data-slot="kanban-empty">
+                  {renderEmpty ? (
+                    renderEmpty(c)
+                  ) : (
+                    <EmptyState border="dashed" title={labels.kanbanEmpty} className="w-full max-w-none min-w-0 gap-2 px-3 py-6 [&_p]:text-base" />
+                  )}
+                </div>
+              )}
+              {more > 0 && (
+                <div data-slot="kanban-more" className={cn('flex', shownCards > 0 || gap ? 'pt-2' : '')}>
+                  {onShowMore ? (
+                    // "+3 more" in every column: the column's title tells them apart.
+                    <Button variant="tertiary" size="xs" aria-describedby={titleId} onClick={() => onShowMore(c.id)}>
+                      {labels.kanbanMore(more)}
+                    </Button>
+                  ) : (
+                    <p className="px-1 text-sm text-text-muted">{labels.kanbanMore(more)}</p>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -988,7 +1259,7 @@ export function KanbanBoard<T>({
           {labels.kanbanCardHint}
         </span>
         <div role="status" className="sr-only">
-          {message}
+          <span key={message.n}>{message.text}</span>
         </div>
         {drag?.mode === 'pointer' && dragged && (
           <>
@@ -1002,10 +1273,11 @@ export function KanbanBoard<T>({
               style={{ width: drag.width }}
             >
               <ItemContext.Provider
-                value={{ id: drag.id, label: getItemLabel(dragged.item), columnId: drag.to.column, index: drag.to.index, overlay: true }}
+                value={{ id: drag.id, label: getItemLabel(dragged.item), columnId: drag.to.column, index: drag.to.index, descId: '', overlay: true }}
               >
                 {renderCard(dragged.item, { columnId: drag.to.column, index: drag.to.index, lifted: true })}
               </ItemContext.Provider>
+              {reasonHere && <RefusedNote reason={reasonHere} />}
             </div>
           </>
         )}
@@ -1021,15 +1293,46 @@ function Gap({ height }: { height: number }) {
 
 /* ---------- the card ---------- */
 
+/** One line of a card's `fields`: a deal's close date, value, owner, next step. */
+export interface KanbanCardField {
+  /** A 16px icon before the value, in text/muted. */
+  icon?: React.ReactNode
+  /** What the value is ("Close date"): screen readers hear it, the icon shows it. */
+  label: string
+  /** The value: text, a Badge, an Avatar with a name. */
+  value: React.ReactNode
+  /** The value is a prompt for something missing ("Set next step…"): in text/muted. */
+  placeholder?: boolean
+}
+
 export interface KanbanCardProps extends Omit<React.ComponentProps<typeof Card>, 'title' | 'size' | 'onClose' | 'closeLabel' | 'description' | 'footer'> {
-  /** What the card is: a person, a deal, an order. */
+  /** What the card is: a company, a person, an order. A Link when it opens a page. */
   title: React.ReactNode
+  /** Before the title: a 20px Avatar (rounded for a company), a logo. */
+  logo?: React.ReactNode
+  /**
+   * A Badge under the title for what's happening to it ("Nudged by agent · 2h"). Screen readers
+   * hear it as the card's description.
+   */
+  status?: React.ReactNode
   /** One line under the title, in text/muted: a role, an amount, a date. */
   meta?: React.ReactNode
-  /** Badges, in a row at the bottom. */
-  badges?: React.ReactNode
+  /** Labelled lines, 8px apart: icon and value, each label for screen readers. */
+  fields?: KanbanCardField[]
+  /** The start of the bottom row: counts (comments, tasks), Badges. */
+  footer?: React.ReactNode
+  /** How long it has been in its column ("3d"), with a clock, at the end of the bottom row. */
+  age?: React.ReactNode
+  /** It has waited too long: the age turns into an amber Badge with an alert clock, and reads "stale". */
+  stale?: boolean
   /** An Avatar or AvatarGroup at the end of the bottom row: who owns it. */
   avatar?: React.ReactNode
+  /**
+   * A key for what the card shows (a version, an updated-at time). When it changes, not on
+   * first render nor when the card moves, the card lights up once and the board reads
+   * "Northwind Labs was updated". For changes nobody watched happen: an agent's, a teammate's.
+   */
+  changed?: string | number
   /** More DropdownMenuItems for the ⋯ menu, after the moves. */
   actions?: React.ReactNode
   /** "Move to" each other column, and up and down, in the ⋯ menu. */
@@ -1037,30 +1340,111 @@ export interface KanbanCardProps extends Omit<React.ComponentProps<typeof Card>,
 }
 
 /**
- * A card for `renderCard`: Satin's Card (small) with the title, a line of meta, badges and an
- * avatar, and a ⋯ menu that moves it without dragging. The menu button shows on hover and
- * focus (always on touch screens). Children go between the title and the bottom row. Other
- * props, `ref` included, go to the Card.
+ * A card for `renderCard`, laid out like a sales pipeline's lead: Satin's Card (small) with a
+ * title row (logo, title, ⋯ menu), a status Badge and a line of meta under it, labelled
+ * `fields`, then a bottom row with the `footer`, the age (amber when `stale`) and an avatar.
+ * Children go between the fields and the bottom row. The ⋯ menu moves the card without
+ * dragging; it shows on hover and focus (always on touch screens). Other props, `ref`
+ * included, go to the Card.
  */
-export function KanbanCard({ title, meta, badges, avatar, actions, moveActions = true, className, children, ...props }: KanbanCardProps) {
+export function KanbanCard({
+  title,
+  logo,
+  status,
+  meta,
+  fields,
+  footer,
+  age,
+  stale = false,
+  avatar,
+  changed,
+  actions,
+  moveActions = true,
+  className,
+  children,
+  ...props
+}: KanbanCardProps) {
   const item = React.useContext(ItemContext)
   const board = React.useContext(BoardContext)
+  const labels = useLabels()
   const menu = item && board && (moveActions || actions != null)
+
+  // A changed key lights the card up once. The board remembers the last key of every card, so
+  // a card seen for the first time, or remounting in another column, stays still (and
+  // StrictMode's second mount finds its own key).
+  const [flash, setFlash] = React.useState(0)
+  React.useLayoutEffect(() => {
+    if (!item || !board || item.overlay || changed === undefined) return
+    const prev = board.seen.get(item.id)
+    board.seen.set(item.id, changed)
+    if (prev === undefined || prev === changed) return
+    setFlash((n) => n + 1)
+    board.announce(labels.kanbanUpdated(item.label))
+  }, [changed])
+
+  const hasFields = !!fields?.length
+  const bottom = footer != null || age != null || avatar != null
   return (
     <Card size="sm" data-slot="kanban-card" className={cn('w-full rounded-xl', className)} {...props}>
-      <div className="flex items-start gap-2">
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="text-base leading-5 font-medium text-text-default">{title}</span>
+      {flash > 0 && (
+        <span
+          key={flash}
+          aria-hidden
+          data-slot="kanban-card-flash"
+          className="satin-kanban-card-flash pointer-events-none absolute inset-0 rounded-[inherit] bg-status-brand-bg [box-shadow:inset_0_0_0_1px_var(--status-brand-fg)]"
+        />
+      )}
+      {/* Positioned, so it paints above the flash. */}
+      <div className="relative flex min-w-0 flex-col">
+        <div className="flex flex-col items-start gap-1">
+          <div className="flex w-full items-start gap-2">
+            {logo != null && <span className="flex h-5 shrink-0 items-center">{logo}</span>}
+            <span className="min-w-0 flex-1 text-base leading-5 font-medium break-words text-text-default">{title}</span>
+            {menu && <CardMenu item={item} board={board} actions={actions} moveActions={moveActions} />}
+          </div>
+          {status}
           {meta != null && <span className="text-sm text-text-muted">{meta}</span>}
         </div>
-        {menu && <CardMenu item={item} board={board} actions={actions} moveActions={moveActions} />}
+        {hasFields && (
+          <dl className="mt-3 flex flex-col gap-2">
+            {fields.map((field, i) => (
+              <div key={i} data-slot="kanban-card-field" className="flex min-w-0">
+                <dt className="sr-only">{field.label}</dt>
+                <dd className="flex min-h-5 min-w-0 flex-1 items-center gap-2 text-sm text-text-default">
+                  {field.icon != null && <span className="flex size-4 shrink-0 items-center justify-center text-text-muted [&_svg]:size-4">{field.icon}</span>}
+                  <span className={cn('min-w-0 truncate', field.placeholder && 'text-text-muted')}>{field.value}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {children != null && <div className="mt-3 flex flex-col gap-2">{children}</div>}
+        {bottom && (
+          <div className={cn('flex min-h-5 items-center gap-3', hasFields || children != null ? 'mt-4' : 'mt-3')}>
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-sm text-text-muted">{footer}</div>
+            {age != null &&
+              (stale ? (
+                <Badge size="sm" tone="amber">
+                  <ClockAlertIcon />
+                  {age}
+                  <span className="sr-only"> {labels.kanbanStale}</span>
+                </Badge>
+              ) : (
+                <span className="flex shrink-0 items-center gap-1 text-sm text-text-muted">
+                  <ClockIcon />
+                  {age}
+                </span>
+              ))}
+            {avatar}
+          </div>
+        )}
       </div>
-      {children}
-      {(badges != null || avatar != null) && (
-        <div className="flex items-end gap-2">
-          <div className="flex min-w-0 flex-1 flex-wrap gap-1">{badges}</div>
-          {avatar}
-        </div>
+      {/* The card's description (the li points at it): its status, and whether it's stale. */}
+      {item && !item.overlay && (
+        <span id={item.descId} hidden>
+          {status}
+          {stale && ` ${labels.kanbanStale}`}
+        </span>
       )}
     </Card>
   )
@@ -1068,8 +1452,7 @@ export function KanbanCard({ title, meta, badges, avatar, actions, moveActions =
 
 function CardMenu({ item, board, actions, moveActions }: { item: ItemContextValue; board: BoardContextValue; actions?: React.ReactNode; moveActions: boolean }) {
   const labels = useLabels()
-  const others = board.columns.filter((c) => c.id !== item.columnId)
-  const count = board.countOf(item.columnId)
+  const count = board.loadedOf(item.columnId)
   const trigger = (
     <Button
       variant="tertiary"
@@ -1087,13 +1470,7 @@ function CardMenu({ item, board, actions, moveActions }: { item: ItemContextValu
   if (item.overlay) return trigger
   return (
     <DropdownMenu align="end" trigger={trigger}>
-      {moveActions && others.length > 0 && (
-        <DropdownMenuGroup label={labels.kanbanMoveTo}>
-          {others.map((c) => (
-            <DropdownMenuItem key={c.id} label={c.title} layout="inline" onSelect={() => board.moveTo(item.id, { column: c.id, index: board.countOf(c.id) })} />
-          ))}
-        </DropdownMenuGroup>
-      )}
+      {moveActions && <MoveTargets item={item} board={board} />}
       {moveActions && count > 1 && (
         <DropdownMenuGroup>
           {item.index > 0 && (
@@ -1106,5 +1483,33 @@ function CardMenu({ item, board, actions, moveActions }: { item: ItemContextValu
       )}
       {actions}
     </DropdownMenu>
+  )
+}
+
+/**
+ * "Move to" each other column. Rendered only while the menu is open, so `canMove` runs then. A
+ * refused column stays a live item with its reason under it: a disabled one would hide the
+ * reason from the keyboard. Choosing it reads the refusal out.
+ */
+function MoveTargets({ item, board }: { item: ItemContextValue; board: BoardContextValue }) {
+  const labels = useLabels()
+  const others = board.columns.filter((c) => c.id !== item.columnId)
+  const refused = board.refusals(item.id)
+  if (!others.length) return null
+  return (
+    <DropdownMenuGroup label={labels.kanbanMoveTo}>
+      {others.map((c) => {
+        const reason = refused.get(c.id)
+        return (
+          <DropdownMenuItem
+            key={c.id}
+            label={c.title}
+            description={reason}
+            layout={reason ? 'stacked' : 'inline'}
+            onSelect={() => board.moveTo(item.id, { column: c.id, index: board.loadedOf(c.id) })}
+          />
+        )
+      })}
+    </DropdownMenuGroup>
   )
 }

@@ -22,8 +22,11 @@ The tokens live in `src/styles/motion.css`.
    crept, which read as a snap.
 2. **Ease-out for anything the user starts.** It moves fast at first, so the interface answers the click at once.
    Never use ease-in for UI: it starts slowly and feels late.
-3. **Stay under 250 ms.** Most transitions are 150–200 ms. Anything longer starts to feel like waiting. The dialog is
-   the one exception: it rises over 300 ms with its scrim, so a whole-screen change doesn't read as a cut.
+3. **Stay under 250 ms.** Most transitions are 150–200 ms. Anything longer starts to feel like waiting. Two named
+   exceptions. The dialog rises over 300 ms with its scrim, so a whole-screen change doesn't read as a cut. The
+   changed highlight on a Kanban card (Satin Pro) fades in over 150 ms on `--ease-out`, holds about a second and
+   fades out over 250 ms, opacity only: it marks something the agent or a teammate changed, found by the eye; nobody
+   waits for it. Under reduced motion it doesn't show; the card's status and an announcement still say it.
 4. **Pressing gives feedback.** Buttons scale to 0.97 while held (`active:scale-[0.97]`).
 5. **Nothing grows from zero.** Elements that appear start from opacity 0 and a few pixels of offset (or scale 0.95),
    never from `scale(0)`. Collapsible content fades and settles in; its height is not animated.
