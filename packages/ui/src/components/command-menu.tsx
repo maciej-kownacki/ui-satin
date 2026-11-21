@@ -278,7 +278,7 @@ export function CommandMenu({
           >
             <DialogPrimitive.Title className="sr-only">{labels.commandMenu}</DialogPrimitive.Title>
             {header}
-            <label className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-4 text-text-muted">
+            <label className="flex h-12 shrink-0 items-center gap-2 border-b-[length:var(--border-width-strong)] border-border-subtle px-4 text-text-muted">
               <Search aria-hidden className="size-4 shrink-0 [stroke-width:1.875]" />
               <input
                 {...(showList ? list.inputProps : { role: 'combobox', 'aria-expanded': false, 'aria-autocomplete': 'list' })}
@@ -306,7 +306,7 @@ export function CommandMenu({
             </div>
 
             {hints && (
-              <div aria-hidden className="flex h-10 shrink-0 items-center gap-4 border-t border-border-subtle px-4">
+              <div aria-hidden className="flex h-10 shrink-0 items-center gap-4 border-t-[length:var(--border-width-strong)] border-border-subtle px-4">
                 {footer ?? (
                   <>
                     <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
