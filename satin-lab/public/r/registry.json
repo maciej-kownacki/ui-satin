@@ -2726,39 +2726,6 @@
       ]
     },
     {
-      "name": "search-scoped",
-      "type": "registry:ui",
-      "title": "Scoped search",
-      "description": "One search box over several kinds of record or places, with a scope chip (Everywhere, Candidates, This project) that says where it looks; use it instead of a Search bar when one list of hits would bury the one wanted.",
-      "dependencies": [
-        "iconoir-react@^7.12.2",
-        "radix-ui@^1.8.1"
-      ],
-      "registryDependencies": [
-        "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/satin-pro-styles.json",
-        "https://uisatin.dev/r/utils.json",
-        "https://uisatin.dev/r/badge.json",
-        "https://uisatin.dev/r/chip.json",
-        "https://uisatin.dev/r/dropdown.json",
-        "https://uisatin.dev/r/kbd.json",
-        "https://uisatin.dev/r/labels.json",
-        "https://uisatin.dev/r/search-bar.json",
-        "https://uisatin.dev/r/spinner.json"
-      ],
-      "docs": "Scoped search docs: https://uisatin.dev/components/search-scoped",
-      "meta": {
-        "version": "0.7.1",
-        "edition": "pro"
-      },
-      "files": [
-        {
-          "path": "registry/satin/ui/search-scoped.tsx",
-          "type": "registry:ui"
-        }
-      ]
-    },
-    {
       "name": "table-pro",
       "type": "registry:ui",
       "title": "Grouped table",
@@ -4192,21 +4159,6 @@
       "files": [
         {
           "path": "registry/satin/examples/scheduler-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "search-scoped-demo",
-      "type": "registry:example",
-      "title": "Scoped search example",
-      "description": "The shortest use of Scoped search, from its docs page.",
-      "registryDependencies": [
-        "https://uisatin.dev/r/search-scoped.json"
-      ],
-      "files": [
-        {
-          "path": "registry/satin/examples/search-scoped-demo.tsx",
           "type": "registry:example"
         }
       ]

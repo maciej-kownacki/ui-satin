@@ -292,13 +292,6 @@ export const nav: NavGroup[] = [
         edition: 'pro',
       },
       { id: 'search-bar', title: 'Search bar', href: '/components/search-bar', description: 'A search field for the sidebar or a toolbar, with ⌘K to focus it from anywhere.' },
-      {
-        id: 'search-scoped',
-        title: 'Scoped search',
-        href: '/components/search-scoped',
-        description: 'One search box over several kinds of record or places, with a scope chip (Everywhere, Candidates, This project) that says where it looks; use it instead of a Search bar when one list of hits would bury the one wanted.',
-        edition: 'pro',
-      },
       { id: 'segmented-control', title: 'Segmented control', href: '/components/segmented-control', description: 'Switches between two to five views or filters in place.' },
       { id: 'select', title: 'Select', href: '/components/select', description: 'Picks one value from a list, with a label, a hint and an error like any field.' },
       {
@@ -345,7 +338,7 @@ export const newPages = new Set<string>([
   'agent-presence', 'agent-changes-review', 'agent-plan', 'agent-undo-log', 'agent-permissions', 'review-queue',
   'prompt-mentions', 'tool-call',
   'activity-timeline', 'bulk-action-bar', 'people-picker', 'command-pages', 'data-grid', 'filter-bar',
-  'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'search-scoped', 'stepper', 'table-pro',
+  'time-picker', 'date-availability', 'kanban-board', 'scheduler', 'stepper', 'table-pro',
   'combobox', 'dropdown', 'date-picker', 'toast',
 ])
 

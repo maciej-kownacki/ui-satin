@@ -282,18 +282,6 @@
     "limit": "6 kB"
   },
   {
-    "name": "Scoped search (Satin Pro, with Radix Popover and its floating-ui and three iconoir icons, all shared with Free; @uisatin/ui left out, it is the peer)",
-    "path": "packages/ui-pro/dist/components/search-scoped.js",
-    "import": "{ ScopedSearch }",
-    "ignore": [
-      "react",
-      "react-dom",
-      "@uisatin/ui"
-    ],
-    "gzip": true,
-    "limit": "29 kB"
-  },
-  {
     "name": "Stepper (with Progress, cn and the check icon)",
     "path": "packages/ui/dist/components/stepper.js",
     "import": "{ Stepper, StepperItem }",
