@@ -197,7 +197,7 @@
       "@uisatin/ui"
     ],
     "gzip": true,
-    "limit": "9 kB"
+    "limit": "7 kB"
   },
   {
     "name": "Kanban board (Satin Pro; @uisatin/ui left out, it is the peer)",

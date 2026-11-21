@@ -682,17 +682,16 @@ export const a11y: Record<string, A11y> = {
   },
   'filter-bar': {
     summary:
-      'A `group` named "Filters" (`filterBar` in SatinLabels). Each chip is a button named in words, "Value greater than €20,000" (`filterOperatorName` reads symbols out), that opens its editor: a Popover dialog named after the field. In it, the operator is a button named after the field and the operator ("Stage is") that shows its choices in place of the value (`aria-expanded`); choices are a `listbox` named the same way ("Stage is"), on the editor\'s own surface, never a menu over it. A chip that can\'t apply is described by why ("Check the range"). Its remove button is named "Remove Stage is Interview". A polite `status` region reads the result count once it settles and which chip was removed; the rolling digits are hidden from screen readers.',
+      'A `group` named "Filters" (`filterBar` in SatinLabels). Each facet is a button with `aria-haspopup` and `aria-expanded`. Idle, it is named by its label ("Stage"); set, by the field and its value in full, "Stage: Lead or Qualified" (`filterFacetValue`), with numbers in words ("Value: over €20,000"). The name lists every pick, so the "+1" a set facet shows is not in it. The × beside a set facet is named "Clear Stage" (`filterClearField`) and leaves focus on the facet. Options and number facets open a `menu` named after the facet, of `menuitemcheckbox` or `menuitemradio` rows. A date facet opens a `dialog` named after the field, with its presets as a `listbox` that keeps focus while `aria-activedescendant` follows the highlight; Custom range… turns it into a dialog named "Custom range" with the Calendar, and the line over it ("Pick the first day") is a polite live region. Clear filters is an icon button named "Clear filters", there only while a filter applies; it moves focus to the first facet. The count is a polite live region read as a whole ("14 results"); the rolling digits are hidden from screen readers.',
     keyboard: [
-      { keys: ['Tab'], action: 'Moves through the search, each chip and its remove button, `+ Filter`, the views menu and Save view.' },
-      { keys: ['Enter', 'Space'], action: 'On a chip: opens its editor, focus on the value. On `+ Filter`: opens the fields. On the operator: shows its choices.' },
-      { keys: ['↓', '↑'], action: 'In a list of choices: moves through them, wrapping. On the operator: shows its choices.' },
-      { keys: ['Home', 'End'], action: 'In a list of choices: the first or the last.' },
-      { keys: ['Enter', 'Space'], action: 'In a list of choices: picks the highlighted one. A single choice closes the editor; with several, it turns one on or off.' },
-      { keys: ['Backspace', 'Delete'], action: 'On a chip: removes it; focus moves to the chip that takes its place, or to `+ Filter`.' },
-      { keys: ['Backspace'], action: 'In the empty search: removes the last chip; focus stays in the search.' },
-      { keys: ['Enter'], action: 'In an editor\'s text or number field: keeps the value and closes the editor. A day picked in the calendar closes it too.' },
-      { keys: ['Esc'], action: 'In the operator\'s choices: back to the value. Otherwise closes the editor as it is, focus back on its chip; a new chip still without a value goes, focus back on `+ Filter`.' },
+      { keys: ['Tab'], action: 'Moves through each facet, the × of a set one, then Clear filters. In the date surface: from the list to Clear, or from Back to the calendar.' },
+      { keys: ['Enter', 'Space', '↓'], action: 'On a facet: opens its menu, or its date list on the picked row.' },
+      { keys: ['↑', '↓'], action: 'In a menu or the date list: moves between rows. The date list wraps.' },
+      { keys: ['Home', 'End'], action: 'In a menu or the date list: the first or the last row.' },
+      { keys: ['Enter', 'Space'], action: 'On a checkbox row: turns it on or off; the menu stays open. On a number preset: picks it and closes the menu. On Clear: clears the facet and closes.' },
+      { keys: ['Enter', 'Space'], action: 'In the date list: picks the highlighted preset and closes; on Custom range…, shows the Calendar, focus on its day. In the calendar: picks a day, and the second applies the range and closes.' },
+      { keys: ['←', '→', '↑', '↓'], action: 'In the calendar: moves by day and by week, as on Date picker; Page Up and Page Down move by month.' },
+      { keys: ['Esc'], action: 'In the calendar: back to the list. Otherwise closes the menu or the date list, focus back on the facet.' },
     ],
   },
   'agent-plan': {
