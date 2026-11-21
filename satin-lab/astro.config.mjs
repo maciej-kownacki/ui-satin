@@ -3,12 +3,14 @@ import { defineConfig } from 'astro/config'
 import react from '@astrojs/react'
 import tailwindcss from '@tailwindcss/vite'
 import satinRelease from './integrations/release.mjs'
+import near from './integrations/near.mjs'
 
 export default defineConfig({
   site: 'https://uisatin.dev',
   // satinRelease: `astro build` is the public site, without unreleased pages and with Satin Pro
   // docs-only; SATIN_PREVIEW=1 builds everything (integrations/release.mjs).
-  integrations: [react(), satinRelease()],
+  // near: client:near, client:visible measured against the scroller (integrations/near.mjs).
+  integrations: [react(), satinRelease(), near()],
   // Old addresses from before the Intro and Foundations groups became Docs.
   redirects: {
     '/intro/who-is-satin-for': '/introduction',
