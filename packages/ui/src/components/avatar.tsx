@@ -213,6 +213,7 @@ function GroupTooltip({ anchor, name, side }: { anchor: HTMLElement; name: strin
         )}
       >
         <TooltipBubble
+          // motion-allow: the bubble's width follows the name, unscaled so its corners don't stretch (MOTION.md rule 1)
           className="overflow-hidden transition-[width] duration-(--duration-base) ease-(--ease-out) motion-reduce:transition-none"
           style={{ width }}
           label={

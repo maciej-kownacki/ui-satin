@@ -93,6 +93,7 @@ export function Notification({
         const cs = getComputedStyle(card)
         const chrome = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'].reduce((t, k) => t + parseFloat(cs[k as 'paddingTop']), 0)
         // Unrounded (offsetHeight rounds) and from layout, not a rect: the cards behind are scaled.
+        // motion-allow: offsetHeight only where computed style has no height (jsdom)
         onMeasure((parseFloat(getComputedStyle(node).height) || node.offsetHeight) + chrome)
       }
       report()
@@ -131,6 +132,7 @@ export function Notification({
           surface,
           '[box-shadow:0_4px_6px_-1px_var(--effect-shadow-sm),0_2px_4px_-2px_var(--effect-shadow-sm)]',
         )}
+        // motion-allow: the stack's cut to the front card's height (MOTION.md rule 1)
         style={item ? { height: item.height, transition: `height 150ms ${ease}` } : undefined}
       >
         <div

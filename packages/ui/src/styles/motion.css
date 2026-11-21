@@ -112,10 +112,12 @@
    which never moves, revealing its content; closing is quicker. The text itself never scales:
    Chrome draws scaled text as a bitmap, so it looked heavier until the animation ended, and it
    played on every page load, since Radix skips the height animation on mount but not this one. */
+/* motion-allow: the Accordion, a CSS expander (MOTION.md rule 1) */
 @keyframes satin-accordion-down {
   from { height: 0; }
   to { height: var(--radix-accordion-content-height); }
 }
+/* motion-allow: the Accordion, a CSS expander */
 @keyframes satin-accordion-up {
   from { height: var(--radix-accordion-content-height); }
   to { height: 0; }
@@ -124,9 +126,11 @@
   overflow: hidden;
 }
 .satin-accordion-content[data-state='open'] {
+  /* motion-allow: the Accordion opening */
   animation: satin-accordion-down var(--duration-slow) var(--ease-out);
 }
 .satin-accordion-content[data-state='closed'] {
+  /* motion-allow: the Accordion folding */
   animation: satin-accordion-up var(--duration-base) var(--ease-out);
 }
 
@@ -139,6 +143,7 @@
   display: grid;
   grid-template-rows: 0fr;
   visibility: hidden;
+  /* motion-allow: .satin-expand, a CSS expander (MOTION.md rule 1) */
   transition:
     grid-template-rows var(--duration-base) var(--ease-out),
     visibility 0s linear var(--duration-base);
@@ -146,6 +151,7 @@
 .satin-expand[data-state='open'] {
   grid-template-rows: 1fr;
   visibility: visible;
+  /* motion-allow: .satin-expand opening */
   transition:
     grid-template-rows var(--duration-slow) var(--ease-out),
     visibility 0s;
