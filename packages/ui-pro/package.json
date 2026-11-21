@@ -1,6 +1,6 @@
 {
   "name": "@uisatin/pro",
-  "version": "0.7.1",
+  "version": "1.0.0",
   "private": true,
   "description": "Satin Pro: the licensed components and AI patterns of the Satin design system, built on @uisatin/ui.",
   "license": "UNLICENSED",
@@ -44,7 +44,7 @@
     "prepublishOnly": "node -e \"console.error('Satin Pro is not published yet: distribution and licensing are decided separately (see README).'); process.exit(1)\""
   },
   "peerDependencies": {
-    "@uisatin/ui": "0.7.1",
+    "@uisatin/ui": "1.0.0",
     "react": ">=19",
     "react-dom": ">=19"
   },
@@ -55,7 +55,7 @@
   "devDependencies": {
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@uisatin/ui": "0.7.1",
+    "@uisatin/ui": "1.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tsup": "^9.0.0",

@@ -23,7 +23,7 @@
   ],
   "docs": "Dialog docs: https://uisatin.dev/components/dialog",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "Dialog": {

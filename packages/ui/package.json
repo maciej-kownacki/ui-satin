@@ -1,6 +1,6 @@
 {
   "name": "@uisatin/ui",
-  "version": "0.7.1",
+  "version": "1.0.0",
   "description": "Satin Free: the open-source React components of the Satin design system. shadcn-based, built on Radix, themed with Satin tokens.",
   "license": "MIT",
   "author": "Maciej Kownacki",

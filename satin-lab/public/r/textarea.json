@@ -20,7 +20,7 @@
   ],
   "docs": "Textarea docs: https://uisatin.dev/components/textarea",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "Textarea": {
