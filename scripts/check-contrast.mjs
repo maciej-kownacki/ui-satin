@@ -92,6 +92,10 @@ const pairs = [
   ['text', 'text-default', 'component-changes-review-source-bg'],
   ['text', 'text-muted', 'component-changes-review-source-bg'],
   ['focus', 'action-focus-ring', 'component-changes-review-source-bg'],
+  // Kanban board (Pro): the column's header, "+2 more" and a card's focus ring on the top of the column's wash.
+  ['text', 'text-default', 'component-kanban-column-bg'],
+  ['text', 'text-muted', 'component-kanban-column-bg'],
+  ['focus', 'action-focus-ring', 'component-kanban-column-bg'],
   ['text', 'status-green-fg', 'bg-popover'],
 ]
 const MIN = { text: 4.5, focus: 3, edge: 3 }
