@@ -58,6 +58,24 @@ function endingAnimations(root: Element) {
   })
 }
 
+/**
+ * A copy's menus are position: fixed, placed against the layer's transform. Safari scrolls
+ * those on its own scrolling thread as if fixed to the window, so while the page scrolls they
+ * trail behind their card and snap back when it stops. Absolute does the same layout without
+ * that; where it would take a nearer positioned ancestor as its box, a margin puts it back.
+ */
+function unfix(root: Element) {
+  const fixed = [...root.querySelectorAll<HTMLElement>('*')].filter((el) => getComputedStyle(el).position === 'fixed')
+  for (const el of fixed) {
+    const was = el.getBoundingClientRect()
+    el.style.position = 'absolute'
+    const now = el.getBoundingClientRect()
+    const cs = getComputedStyle(el)
+    if (now.left !== was.left) el.style.marginLeft = `${parseFloat(cs.marginLeft) + was.left - now.left}px`
+    if (now.top !== was.top) el.style.marginTop = `${parseFloat(cs.marginTop) + was.top - now.top}px`
+  }
+}
+
 type Box = { x: number; y: number; w: number; h: number }
 
 /**
@@ -98,7 +116,8 @@ function fitIn(box: Box, FW: number, FH: number) {
  *
  * In the card, the frame crops with clip-path (an overflow would make Radix squeeze menus
  * inside it), and one layer moves and scales the demo with a transform; that layer is also the
- * containing block of the copied menus (position: fixed), so they move and scale with it.
+ * containing block of the copied menus, so they move and scale with it. The copies are made
+ * position: absolute (unfix), since Safari moves fixed ones apart from their card as it scrolls.
  */
 export function CardPreview({ id }: { id: string }) {
   const [Demo, setDemo] = React.useState<Demo | null>(null)
@@ -184,6 +203,7 @@ export function CardPreview({ id }: { id: string }) {
       }
       // Moved or copied, an element plays its opening animation again; show it as it ended instead.
       for (const a of endingAnimations(target)) a.finish()
+      if (target.firstChild !== holder) unfix(target)
     }
     settle()
     return () => {
