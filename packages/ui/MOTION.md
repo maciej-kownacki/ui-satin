@@ -26,7 +26,9 @@ The tokens live in `src/styles/motion.css`.
    exceptions. The dialog rises over 300 ms with its scrim, so a whole-screen change doesn't read as a cut. The step
    slide (`step-slide.tsx`: Decision card's questions, Satin Pro's Command pages): the old and new content cross on one
    track a whole frame wide while their box eases to the new height, 360 ms on `cubic-bezier(0.22, 1, 0.36, 1)`, since
-   the content trades places across the full width rather than settling a few pixels. The changed highlight on a Kanban
+   the content trades places across the full width rather than settling a few pixels. It moves in whole device pixels
+   (keyframes held at each one, from and to exact layout values) and holds the moving parts at their measured size, so
+   only the box's height is laid out on the way and no icon is resampled or snaps when it lands. The changed highlight on a Kanban
    card (Satin Pro) fades in over 150 ms on `--ease-out`, holds about a second and fades out over 250 ms, opacity only:
    it marks something the agent or a teammate changed, found by the eye; nobody waits for it. Under reduced motion it
    doesn't show; the card's status and an announcement still say it.

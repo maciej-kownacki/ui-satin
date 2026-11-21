@@ -217,23 +217,24 @@ describe('CommandPages', () => {
     const { user } = renderWithSatin(<CommandPages defaultOpen hotkey={false} groups={groupsFor()} />)
     await user.type(field(), 'move{Enter}')
     // One track, the menu's width plus 24px (jsdom has no width): the new page in from the end
-    // side and fading in, a copy of the old one out the other way and fading out.
-    expect(calls[0]).toEqual([
-      { transform: 'translate3d(24px, 0, 0)', opacity: 0 },
-      { transform: 'translate3d(0, 0, 0)', opacity: 1 },
-    ])
-    expect(calls[1]).toEqual([
-      { transform: 'translate3d(0, 0, 0)', opacity: 1 },
-      { transform: 'translate3d(-24px, 0, 0)', opacity: 0 },
-    ])
+    // side and fading in, a copy of the old one out the other way and fading out. The track moves
+    // in whole pixels, each held (steps), from and to exact values.
+    const xs = (k: Keyframe[]) => k.map((f) => f.transform)
+    expect(calls[0][0]).toEqual({ transform: 'translate3d(24px, 0, 0)', offset: 0, easing: 'steps(1, end)' })
+    expect(calls[0].at(-1)).toMatchObject({ transform: 'translate3d(0px, 0, 0)', offset: 1 })
+    for (const t of xs(calls[0])) expect(t).toMatch(/^translate3d\(-?\d+px, 0, 0\)$/)
+    expect(calls[1]).toEqual([{ opacity: 0 }, { opacity: 1 }])
+    expect(calls[2][0]).toMatchObject({ transform: 'translate3d(0px, 0, 0)' })
+    expect(calls[2].at(-1)).toMatchObject({ transform: 'translate3d(-24px, 0, 0)' })
+    expect(calls[3]).toEqual([{ opacity: 1 }, { opacity: 0 }])
     await user.keyboard('{Backspace}')
-    expect(calls[2][0]).toEqual({ transform: 'translate3d(-24px, 0, 0)', opacity: 0 })
-    expect(calls[3][1]).toEqual({ transform: 'translate3d(24px, 0, 0)', opacity: 0 })
+    expect(calls[4][0]).toMatchObject({ transform: 'translate3d(-24px, 0, 0)' })
+    expect(calls[6].at(-1)).toMatchObject({ transform: 'translate3d(24px, 0, 0)' })
 
     setReducedMotion(true)
     await user.clear(field())
     await user.type(field(), 'move{Enter}')
-    expect(calls).toHaveLength(4)
+    expect(calls).toHaveLength(8)
   })
 
   it('slides out the old page as it looked at the key press: its highlight, and a page pushed without a title too', async () => {
@@ -252,7 +253,7 @@ describe('CommandPages', () => {
     expect(copy.getAttribute('aria-hidden')).toBe('true')
     expect(copy.hasAttribute('id')).toBe(false)
     expect(copy.querySelector('[aria-selected="true"]')?.textContent).toBe('Assign owner…')
-    expect(calls).toHaveLength(2)
+    expect(calls).toHaveLength(4)
 
     // From the first page, a page with no title still counts as another page.
     await user.click(screen.getByRole('button', { name: 'Commands' }))
