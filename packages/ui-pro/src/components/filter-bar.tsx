@@ -94,7 +94,10 @@ export type FilterNumberPreset =
   | { operator: 'gt' | 'gte' | 'lt' | 'lte'; value: number; label?: string }
   | { operator: 'between'; value: [number, number]; label?: string }
 
-/** A period is "This quarter" (`inThis`); a number is "Last 30 days" (`inLast`). */
+/**
+ * A period is "This quarter" (`inThis`); a number is "Last 30 days" (`inLast`): today and the
+ * 29 days before it, as Date picker's `last30Days`.
+ */
 export type FilterDatePreset = FilterPeriod | number
 
 interface FilterFieldBase {
@@ -160,6 +163,11 @@ export const filterBarLabels = {
   filterClearField: (field: string) => `Clear ${field}`,
   /** A set facet's name: the field's label and its value in full ("Owner: Me or Jon Park"). */
   filterFacetValue: (field: string, value: string) => `${field}: ${value}`,
+  /**
+   * The field's name as a set facet shows it, before the value: "Close:". Visible only; the
+   * facet's name is `filterFacetValue`.
+   */
+  filterFacetField: (field: string) => `${field}:`,
   /** A person field's `me`, first in its menu and in the facet. */
   filterMe: 'Me',
   /** The picks past the ones a set facet shows: "+2". */
@@ -329,7 +337,8 @@ function periodOf(period: FilterPeriod, today: Date): [Date, Date] {
 /** A date filter's days: the first day in and the first day after. */
 function spanOf({ operator: op, value: v }: Filter, today: Date): [Date, Date] {
   if (op === 'inThis') return periodOf(v as FilterPeriod, today)
-  if (op === 'inLast') return [addDays(today, -(v as number)), addDays(today, 1)]
+  // Today counts as one of the N days, as in Date picker's presets.
+  if (op === 'inLast') return [addDays(today, -((v as number) - 1)), addDays(today, 1)]
   const [a, b] = daysOf(v) as [Date, Date]
   return [a, addDays(b, 1)]
 }
@@ -578,7 +587,7 @@ function FacetShell({ field, value, name, onClear, surface, triggerProps, classN
     >
       {active ? (
         <>
-          <span className="text-text-muted">{field.shortLabel ?? field.label}:</span>
+          <span className="text-text-muted">{labels.filterFacetField(field.shortLabel ?? field.label)}</span>
           {/* Flex, so Badges sit centred in the facet; words sit as they would anyway. */}
           <span className="flex items-center gap-1 font-medium">{value}</span>
         </>
@@ -676,7 +685,7 @@ function OptionsFacet({ field, ...props }: ShellOwnProps & { field: OptionsField
       onClear={() => set([])}
       surface={(trigger) => (
         // Not modal: a press on the next facet closes this menu and opens that one in one go.
-        <DropdownMenu trigger={trigger} aria-label={field.label} modal={false} container={bar.container}>
+        <DropdownMenu trigger={trigger} modal={false} container={bar.container}>
           <DropdownMenuGroup>
             {options.map((o) => (
               <DropdownMenuCheckboxItem
@@ -723,7 +732,7 @@ function NumberFacet({ field, ...props }: ShellOwnProps & { field: FilterNumberF
       name={set ? words.name(set) : ''}
       onClear={() => write(null)}
       surface={(trigger) => (
-        <DropdownMenu trigger={trigger} aria-label={field.label} modal={false} container={bar.container}>
+        <DropdownMenu trigger={trigger} modal={false} container={bar.container}>
           <DropdownMenuRadioGroup
             value={at >= 0 ? String(at) : ''}
             onValueChange={(i) => {
@@ -774,7 +783,6 @@ function DateFacet({ field, ...props }: ShellOwnProps & { field: FilterDateField
   const [hovered, setHovered] = React.useState(false)
   // The row gets the focus ring only when keys put it there (see menuItemClass).
   const [viaKeys, setViaKeys] = React.useState(false)
-  const byKeys = React.useRef(false)
   const listRef = React.useRef<HTMLDivElement>(null)
   const calendarRef = React.useRef<HTMLDivElement>(null)
   const listId = React.useId()
@@ -828,14 +836,22 @@ function DateFacet({ field, ...props }: ShellOwnProps & { field: FilterDateField
         aria-activedescendant={rows.length ? `${listId}-${active}` : undefined}
         tabIndex={0}
         onKeyDown={onKeyDown}
-        onFocus={() => setFocused(true)}
+        onFocus={() => {
+          setFocused(true)
+          // How focus got here: after a pointer press, no ring until a key moves it; after Tab,
+          // Shift+Tab or a key that opened the list, the ring. data-satin-pointer is set by the
+          // pointer tracking the Dropdown installs (trackPointerModality).
+          setViaKeys(!document.documentElement.hasAttribute('data-satin-pointer'))
+        }}
         onBlur={() => setFocused(false)}
         onPointerLeave={() => setHovered(false)}
         // The list holds focus but draws no ring of its own: the highlighted row shows it (data-keyboard).
         className="flex flex-col gap-0.5 outline-none focus-visible:ring-0"
       >
         {rows.map((label, i) => {
-          const lit = i === active && (focused || hovered)
+          // Under the pointer, or under the keys' ring; a pointer open lights no row until it moves.
+          const keyed = i === active && focused && viaKeys
+          const lit = keyed || (i === active && hovered)
           return (
             <div
               key={i}
@@ -843,7 +859,7 @@ function DateFacet({ field, ...props }: ShellOwnProps & { field: FilterDateField
               role="option"
               aria-selected={i === selected}
               data-highlighted={lit ? '' : undefined}
-              data-keyboard={lit && focused && viaKeys ? '' : undefined}
+              data-keyboard={keyed ? '' : undefined}
               onPointerMove={() => {
                 setHovered(true)
                 setViaKeys(false)
@@ -854,7 +870,13 @@ function DateFacet({ field, ...props }: ShellOwnProps & { field: FilterDateField
               onClick={() => pick(i)}
               className={cn(menuItemClass, i === selected && 'bg-bg-selected')}
             >
-              <MenuItemContent label={label} description={i === CUSTOM && range ? days.text(range) : undefined} layout="inline" selected={i === selected} />
+              <MenuItemContent label={label} description={i === CUSTOM && range ? days.text(range) : undefined} layout="inline" />
+              {/* aria-selected says it; MenuItemContent's selected would say "(selected)" again. */}
+              {i === selected && (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className="shrink-0 text-status-green-fg">
+                  <path d="M3.33333 8.66667L6 11.3333L12.6667 4.66667" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
             </div>
           )
         })}
@@ -879,7 +901,7 @@ function DateFacet({ field, ...props }: ShellOwnProps & { field: FilterDateField
     <div ref={calendarRef} className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
         <Button variant="tertiary" size="xs" onClick={back}>
-          <NavArrowLeft />
+          <NavArrowLeft aria-hidden className="rtl:-scale-x-100" />
           {labels.filterBack}
         </Button>
         <span aria-live="polite" className="text-sm text-text-muted tabular-nums">
@@ -912,16 +934,11 @@ function DateFacet({ field, ...props }: ShellOwnProps & { field: FilterDateField
       triggerProps={{
         // ↓ opens it too, as on the menus' triggers.
         onKeyDown: (e) => {
-          byKeys.current = true
           if (e.key !== 'ArrowDown') return
           e.preventDefault()
           setPicking(false)
           setActive(Math.max(0, selected))
-          setViaKeys(true)
           setOpen(true)
-        },
-        onPointerDown: () => {
-          byKeys.current = false
         },
       }}
       surface={(trigger) => (
@@ -938,7 +955,6 @@ function DateFacet({ field, ...props }: ShellOwnProps & { field: FilterDateField
             if (next) {
               setPicking(false)
               setActive(Math.max(0, selected))
-              setViaKeys(byKeys.current)
             }
             setOpen(next)
           }}

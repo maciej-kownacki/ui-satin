@@ -121,7 +121,8 @@ function DealsTable({ rows }: { rows: Deal[] }) {
   )
 }
 
-const code = `import { FilterBar, applyFilters, type Filter, type FilterField } from '@uisatin/pro/filter-bar'
+const code = `import * as React from 'react'
+import { FilterBar, applyFilters, type Filter, type FilterField } from '@uisatin/pro/filter-bar'
 import { Table } from '@uisatin/ui/table'
 
 const fields: FilterField[] = [

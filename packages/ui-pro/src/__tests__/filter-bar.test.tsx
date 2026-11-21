@@ -109,6 +109,18 @@ const button = (name: string | RegExp) => screen.getByRole('button', { name })
 const rows = () => within(screen.getByRole('list', { name: 'Deals' })).queryAllByRole('listitem').map((li) => li.textContent)
 const facetOf = (el: HTMLElement) => el.closest<HTMLElement>('[data-slot="filter-bar-facet"]')!
 const count = () => document.querySelector('[data-slot="filter-bar-count"]')!
+/** What a screen reader reads of an element: its text without the aria-hidden parts (the rolling digits). */
+const spoken = (el: Element) => {
+  const copy = el.cloneNode(true) as Element
+  copy.querySelectorAll('[aria-hidden="true"]').forEach((n) => n.remove())
+  return copy.textContent?.replace(/\s+/g, ' ').trim()
+}
+/** The date list's rows that carry `attr`, by their text. */
+const rowsWith = (list: HTMLElement, attr: string) =>
+  within(list)
+    .getAllByRole('option')
+    .filter((o) => o.hasAttribute(attr))
+    .map((o) => o.textContent)
 const SCENARIO: Filter[] = [
   { field: 'owner', operator: 'is', value: 'tara' },
   { field: 'value', operator: 'gt', value: 20000 },
@@ -137,7 +149,7 @@ describe('FilterBar', () => {
     expect(facetOf(button('Stage')).hasAttribute('data-active')).toBe(false)
     expect(rows()).toEqual(['Acme Corp'])
     expect(count().getAttribute('aria-live')).toBe('polite')
-    expect(count().textContent).toBe('11 deal')
+    expect(spoken(count())).toBe('1 deal')
   })
 
   it('keeps the checkbox menu open, and a second pick turns is into isAnyOf', async () => {
@@ -222,6 +234,8 @@ describe('FilterBar', () => {
     const lit = () => document.getElementById(list.getAttribute('aria-activedescendant')!)?.textContent
     expect(within(list).getAllByRole('option').map((o) => o.textContent)).toEqual(['This month', 'This quarter', 'This year', 'Last 30 days', 'Custom range…'])
     expect(lit()).toBe('This month')
+    // Keys opened it, so the row shows the ring.
+    expect(rowsWith(list, 'data-keyboard')).toEqual(['This month'])
     await user.keyboard('{ArrowDown}')
     expect(lit()).toBe('This quarter')
     await user.keyboard('{End}')
@@ -263,6 +277,7 @@ describe('FilterBar', () => {
     expect(onChange).toHaveBeenLastCalledWith([{ field: 'close', operator: 'between', value: ['2026-11-03', '2026-11-28'] }])
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     expect(button('Close date: Nov 3 to Nov 28').textContent).toBe('Close:Nov 3 – Nov 28')
+    await waitFor(() => expect(document.activeElement).toBe(button('Close date: Nov 3 to Nov 28')))
     expect(rows()).toEqual(['Acme Corp'])
     // Reopened, the range is the checked row, with its days beside it.
     await user.click(button('Close date: Nov 3 to Nov 28'))
@@ -303,6 +318,107 @@ describe('FilterBar', () => {
     renderWithSatin(<Deals initial={broken} />)
     for (const name of ['Owner', 'Stage', 'Value', 'Close date', 'Tags']) expect(facetOf(button(name)).hasAttribute('data-active')).toBe(false)
     expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull()
+    expect(rows()).toHaveLength(4)
+  })
+
+  it('keeps its own value when uncontrolled: a pick and a × update the facet and call onValueChange', async () => {
+    const onValueChange = vi.fn()
+    const mine: Filter = { field: 'owner', operator: 'is', value: 'tara' }
+    const { user } = renderWithSatin(<FilterBar fields={fields} defaultValue={[mine]} onValueChange={onValueChange} today={today} />)
+    await user.click(button('Stage'))
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Won' }))
+    expect(onValueChange).toHaveBeenLastCalledWith([mine, { field: 'stage', operator: 'is', value: 'won' }])
+    expect(button('Stage: Won')).toBeTruthy()
+    await user.keyboard('{Escape}')
+    await user.click(button('Clear Owner'))
+    expect(onValueChange).toHaveBeenLastCalledWith([{ field: 'stage', operator: 'is', value: 'won' }])
+    expect(facetOf(button('Owner')).hasAttribute('data-active')).toBe(false)
+    expect(onValueChange).toHaveBeenCalledTimes(2)
+  })
+
+  it('lights no date row after a pointer open, and rings the active one once keys bring focus back', async () => {
+    const { user } = renderWithSatin(<Deals initial={[{ field: 'close', operator: 'inThis', value: 'quarter' }]} />)
+    await user.click(button('Close date: This quarter'))
+    const list = await screen.findByRole('listbox', { name: 'Close date' })
+    await waitFor(() => expect(document.activeElement).toBe(list))
+    // The press marks the pointer (pointer-modality.tsx): focus is on the list, but no row is lit.
+    expect(document.documentElement.hasAttribute('data-satin-pointer')).toBe(true)
+    expect(rowsWith(list, 'data-highlighted')).toEqual([])
+    expect(rowsWith(list, 'data-keyboard')).toEqual([])
+    // Tab to Clear and Shift+Tab back: keyboard focus, so the active row, the picked one, shows the ring.
+    await user.tab()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Clear' }))
+    await user.tab({ shift: true })
+    expect(document.activeElement).toBe(list)
+    expect(document.documentElement.hasAttribute('data-satin-pointer')).toBe(false)
+    expect(rowsWith(list, 'data-keyboard')).toEqual(['This quarter'])
+    expect(rowsWith(list, 'data-highlighted')).toEqual(['This quarter'])
+  })
+
+  it('opens a set date facet with ↓ on its picked row', async () => {
+    const { user } = renderWithSatin(<Deals initial={[{ field: 'close', operator: 'inLast', value: 30 }]} />)
+    act(() => button('Close date: Last 30 days').focus())
+    await user.keyboard('{ArrowDown}')
+    const list = await screen.findByRole('listbox', { name: 'Close date' })
+    await waitFor(() => expect(document.activeElement).toBe(list))
+    const active = document.getElementById(list.getAttribute('aria-activedescendant')!)!
+    expect(active.textContent).toBe('Last 30 days')
+    expect(active.getAttribute('aria-selected')).toBe('true')
+    expect(rowsWith(list, 'data-keyboard')).toEqual(['Last 30 days'])
+  })
+
+  it('gives focus back to the facet when Escape closes the date list', async () => {
+    const { user } = renderWithSatin(<Deals />)
+    await user.click(button('Close date'))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('listbox', { name: 'Close date' })))
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    await waitFor(() => expect(document.activeElement).toBe(button('Close date')))
+  })
+
+  it('clears one field from the Clear row of its menu or date surface, and closes it', async () => {
+    const onChange = vi.fn()
+    const { user } = renderWithSatin(<Deals initial={SCENARIO} onChange={onChange} />)
+    await user.click(button('Owner: Me'))
+    await user.click(screen.getByRole('menuitem', { name: 'Clear' }))
+    expect(onChange).toHaveBeenLastCalledWith([SCENARIO[1], SCENARIO[2]])
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+    await user.click(button('Value: over €20,000'))
+    await user.click(screen.getByRole('menuitem', { name: 'Clear' }))
+    expect(onChange).toHaveBeenLastCalledWith([SCENARIO[2]])
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+    await user.click(button('Close date: This quarter'))
+    await user.click(within(screen.getByRole('dialog', { name: 'Close date' })).getByRole('button', { name: 'Clear' }))
+    expect(onChange).toHaveBeenLastCalledWith([])
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(rows()).toHaveLength(4)
+  })
+
+  it('takes its own date presets; without customRange, a range shows on the facet and no row is picked', async () => {
+    const dates: FilterField[] = [{ key: 'close', label: 'Close date', type: 'date', presets: ['week', 7, 90], customRange: false }]
+    const { user } = renderWithSatin(
+      <FilterBar fields={dates} defaultValue={[{ field: 'close', operator: 'between', value: ['2026-11-03', '2026-11-28'] }]} today={today} />,
+    )
+    const trigger = button('Close date: Nov 3 to Nov 28')
+    expect(trigger.textContent).toBe('Close date:Nov 3 – Nov 28')
+    await user.click(trigger)
+    const options = within(await screen.findByRole('listbox', { name: 'Close date' })).getAllByRole('option')
+    expect(options.map((o) => o.textContent)).toEqual(['This week', 'Last 7 days', 'Last 90 days'])
+    expect(options.map((o) => o.getAttribute('aria-selected'))).toEqual(['false', 'false', 'false'])
+  })
+
+  it.each([
+    ['a range the wrong way round', { field: 'close', operator: 'between', value: ['2026-11-28', '2026-11-03'] }, 'Close date'],
+    ['a day that does not exist', { field: 'close', operator: 'between', value: ['2026-02-01', '2026-02-30'] }, 'Close date'],
+    ['a period it does not know', { field: 'close', operator: 'inThis', value: 'decade' }, 'Close date'],
+    ['a number of days that is not whole', { field: 'close', operator: 'inLast', value: 1.5 }, 'Close date'],
+    ['a number as a string', { field: 'value', operator: 'gt', value: '20000' }, 'Value'],
+    ['a number that is not finite', { field: 'value', operator: 'gt', value: Infinity }, 'Value'],
+  ] satisfies [string, Filter, string][])('treats %s as invalid: an idle facet, and no row filtered out', (_, filter, facet) => {
+    expect(isFilterValid(filter, fields)).toBe(false)
+    expect(applyFilters(deals, [filter], fields, { today })).toHaveLength(4)
+    renderWithSatin(<Deals initial={[filter]} />)
+    expect(facetOf(button(facet)).hasAttribute('data-active')).toBe(false)
     expect(rows()).toHaveLength(4)
   })
 
@@ -353,6 +469,7 @@ describe('FilterBar', () => {
         filterBar: 'Filtry',
         filterMe: 'Ja',
         filterFacetValue: (field, value) => `${field} – ${value}`,
+        filterFacetField: (field) => `${field} –`,
         filterClearField: (field) => `Wyczyść ${field}`,
         filterClearAll: 'Wyczyść filtry',
         filterComparison: (operator, value) => `${operator === 'gt' ? 'od' : 'do'} ${value}`,
@@ -363,13 +480,15 @@ describe('FilterBar', () => {
       },
     })
     expect(screen.getByRole('group', { name: 'Filtry' })).toBeTruthy()
-    expect(button('Owner – Ja')).toBeTruthy()
+    expect(button('Owner – Ja').textContent).toBe('Owner –Ja')
     expect(button('Wyczyść Owner')).toBeTruthy()
     expect(button('Value – ponad €20,000')).toBeTruthy()
     expect(button('Close date – Ten kwartał')).toBeTruthy()
     expect(button('Wyczyść filtry')).toBeTruthy()
     await user.click(button('Close date – Ten kwartał'))
-    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['month', 'Ten kwartał(selected)', 'year', 'Ostatnie 30 dni', 'Własny zakres…'])
+    // aria-selected says which row is picked; the name doesn't say it again.
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['month', 'Ten kwartał', 'year', 'Ostatnie 30 dni', 'Własny zakres…'])
+    expect(screen.getByRole('option', { name: 'Ten kwartał' }).getAttribute('aria-selected')).toBe('true')
     expect(screen.getByRole('button', { name: 'Wyczyść' })).toBeTruthy()
   })
 
@@ -391,7 +510,7 @@ describe('FilterBar', () => {
     expect(bar.querySelectorAll('[data-slot="filter-bar-facet"]')).toHaveLength(1)
     expect(facet.current?.classList.contains('max-w-60')).toBe(true)
     expect(clear.current).toBe(button('Clear filters'))
-    expect(count().textContent).toBe('11 result')
+    expect(spoken(count())).toBe('1 result')
   })
 
   it.each(['light', 'dark'] as const)('has no axe violations in %s, closed and open', async (theme) => {
@@ -424,6 +543,27 @@ describe('applyFilters', () => {
     expect(at({ field: 'close', operator: 'between', value: ['2026-12-01', '2027-01-31'] })).toEqual(['Globex', 'Initech'])
     // Every filter at once.
     expect(at({ field: 'owner', operator: 'is', value: 'tara' }, { field: 'tags', operator: 'hasAnyOf', value: ['new'] })).toEqual(['Initech'])
+  })
+
+  it('counts today as one of the last N days, takes a quarter to its last day, and reads Dates, timestamps and nulls', () => {
+    const keeps = (close: unknown, filter: Filter) => applyFilters([{ close }], [filter], fields, { today }).length === 1
+    // Today is Nov 19: the last 30 days are Oct 21 to Nov 19, as Date picker's last30Days.
+    const last30: Filter = { field: 'close', operator: 'inLast', value: 30 }
+    expect(keeps('2026-11-19', last30)).toBe(true)
+    expect(keeps('2026-10-21', last30)).toBe(true)
+    expect(keeps('2026-10-20', last30)).toBe(false)
+    expect(keeps('2026-11-20', last30)).toBe(false)
+    const quarter: Filter = { field: 'close', operator: 'inThis', value: 'quarter' }
+    expect(keeps('2026-10-01', quarter)).toBe(true)
+    expect(keeps('2026-12-31', quarter)).toBe(true)
+    expect(keeps('2026-09-30', quarter)).toBe(false)
+    expect(keeps('2027-01-01', quarter)).toBe(false)
+    // A Date late on the last day, a timestamp, nothing.
+    expect(keeps(new Date(2026, 11, 31, 23, 59), quarter)).toBe(true)
+    expect(keeps(new Date(2026, 11, 31).getTime(), quarter)).toBe(true)
+    expect(keeps(new Date(2027, 0, 1).getTime(), quarter)).toBe(false)
+    expect(keeps(null, quarter)).toBe(false)
+    expect(keeps(undefined, quarter)).toBe(false)
   })
 
   it('reads rows through getValue', () => {
