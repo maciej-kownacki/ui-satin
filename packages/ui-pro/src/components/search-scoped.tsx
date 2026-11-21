@@ -638,9 +638,14 @@ export function ScopedSearch({
         ) : (
           <>
             {option.item.media ? (
-              <span className="-ms-0.5 flex shrink-0 items-center">{option.item.media}</span>
+              // The group header reads these slots to line up with the labels (see its class).
+              <span data-slot="scoped-search-media" className="-ms-0.5 flex shrink-0 items-center">
+                {option.item.media}
+              </span>
             ) : option.item.icon ? (
-              <span className="grid size-4 shrink-0 place-items-center text-text-muted [&_svg]:size-4 [&_svg]:[stroke-width:1.875]">{option.item.icon}</span>
+              <span data-slot="menu-item-icon" className="grid size-4 shrink-0 place-items-center text-text-muted [&_svg]:size-4 [&_svg]:[stroke-width:1.875]">
+                {option.item.icon}
+              </span>
             ) : null}
             <MenuItemContent layout="inline" label={option.item.label} description={option.item.description} />
             {option.item.meta != null && <span className="ms-auto flex shrink-0 items-center">{option.item.meta}</span>}
@@ -762,7 +767,8 @@ export function ScopedSearch({
               return (
                 // Each group fades in as it appears; the rows inside never move.
                 <div key={section.key} role="group" aria-labelledby={headingId} className="flex flex-col animate-[satin-fade-in_var(--duration-base)_var(--ease-out)]">
-                  <div id={headingId} className={cn(menuGroupLabelClass, 'gap-1.5')}>
+                  {/* Past a 20px Avatar pulled 2px out (12 - 2 + 20 + 8); past an icon, the shared header's own inset. */}
+                  <div id={headingId} className={cn(menuGroupLabelClass, 'gap-1.5 [&:has(~*_[data-slot=scoped-search-media])]:ps-9.5')}>
                     {section.count == null ? (
                       section.heading
                     ) : (

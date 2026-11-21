@@ -52,8 +52,8 @@ interface SlotProps {
   field: FilterField
   /** The label while set; "Close" is enough next to a date. */
   short?: string
-  /** The value in a few words ("Me +1"), or null while the facet is idle. */
-  value: string | null
+  /** The value in a few words ("Me +1") or Badges, or null while the facet is idle. */
+  value: React.ReactNode
   /** The value in full, for screen readers ("me or Jon Park"). */
   full?: string
   onClear: () => void
@@ -63,7 +63,7 @@ interface SlotProps {
   triggerProps?: React.ComponentProps<'button'>
 }
 
-function Slot({ field, short = field.label, value, full = value ?? '', onClear, surface, triggerProps }: SlotProps) {
+function Slot({ field, short = field.label, value, full = typeof value === 'string' ? value : '', onClear, surface, triggerProps }: SlotProps) {
   const ref = React.useRef<HTMLButtonElement>(null)
   const active = value !== null
   const trigger = (
@@ -78,7 +78,8 @@ function Slot({ field, short = field.label, value, full = value ?? '', onClear, 
       {active ? (
         <>
           <span className="text-text-muted">{short}:</span>
-          <span className="font-medium">{value}</span>
+          {/* Flex, so Badges sit centred in the chip; a word sits the same as before. */}
+          <span className="flex items-center gap-1 font-medium">{value}</span>
         </>
       ) : (
         <>
@@ -121,6 +122,8 @@ function ClearGroup({ disabled, onClear }: { disabled: boolean; onClear: () => v
 /* ---------- Owner, Stage, Tags: any of, as checkboxes ---------- */
 
 const anyOf = new Intl.ListFormat('en-US', { type: 'disjunction' })
+/** Badges a set facet shows before "+N", so a long pick can't push the rest of the bar away. */
+const MAX_BADGES = 2
 
 /** `tones` draws each row's label as the Badge the table shows for that value (Stage). */
 function OptionsFacet({ field, tones, filters, onChange }: FacetProps & { field: FilterField; tones?: Record<string, BadgeTone> }) {
@@ -144,7 +147,22 @@ function OptionsFacet({ field, tones, filters, onChange }: FacetProps & { field:
   return (
     <Slot
       field={field}
-      value={on.length ? `${nameOf(on[0])}${on.length > 1 ? ` +${on.length - 1}` : ''}` : null}
+      value={
+        !on.length ? null : tones ? (
+          // The picked values as the Badges the menu and the table show: two at most, then "+N".
+          <>
+            {on.slice(0, MAX_BADGES).map((v) => (
+              // A neutral fill is about the set chip's own fill (bg/selected), so it gets its edge instead.
+              <Badge key={v} size="sm" tone={tones[v]} variant={tones[v] === 'neutral' ? 'outline' : 'soft'}>
+                {nameOf(v)}
+              </Badge>
+            ))}
+            {on.length > MAX_BADGES && <span className="tabular-nums">+{on.length - MAX_BADGES}</span>}
+          </>
+        ) : (
+          `${nameOf(on[0])}${on.length > 1 ? ` +${on.length - 1}` : ''}`
+        )
+      }
       full={anyOf.format(on.map(nameOf))}
       onClear={() => set([])}
       surface={(trigger) => (
@@ -491,7 +509,8 @@ export function Pipeline({ deals }: { deals: Deal[] }) {
   const [filters, setFilters] = React.useState<Filter[]>(saved)
   const shown = applyFilters(deals, filters, fields)
 
-  // Every facet reads and writes its field's one filter. Idle: "Stage ▾". Set: "Owner: Me ×".
+  // Every facet reads and writes its field's one filter. Idle: "Stage ▾". Set: "Owner: Me ×";
+  // Stage shows its picks as their Badges, two at most, then "+N".
   // Owner, Stage, Tags → isAnyOf / hasAnyOf (DropdownMenuCheckboxItem, the menu stays open).
   // Value → gt / lt presets (DropdownMenuRadioGroup). Close date → inThis / inLast presets,
   // or "Custom range…": the same Popover swaps its list for <Calendar mode="range" /> → between.
