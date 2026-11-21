@@ -232,6 +232,21 @@ describe('DropdownMenu checkable rows', () => {
     expect(screen.getByRole('menuitemradio', { name: 'Newest first' }).getAttribute('aria-checked')).toBe('true')
   })
 
+  it('draws a label with renderLabel; the row keeps its name and its typeahead', async () => {
+    const { user } = renderWithSatin(
+      <DropdownMenu trigger={<Button>Stage</Button>}>
+        <DropdownMenuCheckboxItem label="Lead" renderLabel={(label) => <b>{label}</b>} />
+        <DropdownMenuCheckboxItem label="Won" renderLabel={(label) => <b>{label}</b>} />
+      </DropdownMenu>,
+    )
+    await user.tab()
+    await user.keyboard('{Enter}')
+    const won = screen.getByRole('menuitemcheckbox', { name: 'Won' })
+    expect(won.querySelector('b')?.textContent).toBe('Won')
+    await user.keyboard('w')
+    expect(document.activeElement).toBe(won)
+  })
+
   it.each(['light', 'dark'] as const)('has no axe violations with a submenu open, in %s', async (theme) => {
     const { user } = renderWithSatin(<CandidateMenu />, { theme })
     await user.tab()

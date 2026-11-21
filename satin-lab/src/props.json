@@ -4209,7 +4209,7 @@
           "type": "(label: React.ReactNode) => React.ReactNode",
           "required": false,
           "default": "(l) => l",
-          "description": "Wraps the label, e.g. in Radix Select's `ItemText`."
+          "description": "Draws the label: as a Badge, say, or wrapped in Radix Select's `ItemText`. `label` still names the row and drives typeahead, so keep its words in what you draw."
         }
       ]
     },
@@ -4217,7 +4217,7 @@
       "type": "DropdownMenuItemProps",
       "extends": [
         "Omit<React.ComponentProps<typeof DropdownPrimitive.Item>, 'children'>",
-        "Omit<MenuItemContentProps, 'label' | 'renderLabel'>"
+        "Omit<MenuItemContentProps, 'label'>"
       ],
       "props": [
         {
@@ -4296,7 +4296,7 @@
       "type": "DropdownMenuCheckboxItemProps",
       "extends": [
         "Omit< React.ComponentProps<typeof DropdownPrimitive.CheckboxItem>, 'children' | 'checked' | 'defaultChecked' | 'onCheckedChange' >",
-        "Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'>"
+        "Omit<MenuItemContentProps, 'label' | 'selected'>"
       ],
       "props": [
         {
@@ -4369,7 +4369,7 @@
       "type": "DropdownMenuRadioItemProps",
       "extends": [
         "Omit<React.ComponentProps<typeof DropdownPrimitive.RadioItem>, 'children'>",
-        "Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'>"
+        "Omit<MenuItemContentProps, 'label' | 'selected'>"
       ],
       "props": [
         {

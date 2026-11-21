@@ -32,6 +32,12 @@ export function Uncontrolled() {
       <DropdownMenuGroup label="Show columns">
         <DropdownMenuCheckboxItem label="Interview" defaultChecked ref={React.createRef<HTMLDivElement>()} />
         <DropdownMenuCheckboxItem label="All" defaultChecked="indeterminate" closeOnSelect />
+        {/* A label drawn another way, as a Badge, say; on every kind of row. */}
+        <DropdownMenuCheckboxItem label="Lead" renderLabel={(label: React.ReactNode) => <b>{label}</b>} />
+        <DropdownMenuItem label="Open" renderLabel={(label) => <b>{label}</b>} />
+        <DropdownMenuRadioGroup defaultValue="won">
+          <DropdownMenuRadioItem value="won" label="Won" renderLabel={(label) => <b>{label}</b>} />
+        </DropdownMenuRadioGroup>
       </DropdownMenuGroup>
     </DropdownMenu>
   )

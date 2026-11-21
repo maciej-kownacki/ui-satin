@@ -23,7 +23,9 @@ trackPointerModality()
  * Groups: `DropdownMenuGroup`. Content: a 14px medium label (20px line). `stacked` puts the
  * description under it, 2px apart, at 13px / 18px in text/muted; `inline` puts it on the same
  * baseline 12px after the label, at 13px, truncated. Groups have a 24px header in 12px
- * text/subtle and are 4px apart with a bg/muted rule between them. Items are 4px apart.
+ * text/muted, in line with the rows' labels (past a checkbox or icon), and are 4px apart with a
+ * bg/muted rule between them. Items are 4px apart. A row's `renderLabel` draws its label another
+ * way, as a Badge for example.
  *
  * Submenus: `DropdownMenuSub` holds a `DropdownMenuSubTrigger` row (ending in a chevron) and a
  * `DropdownMenuSubContent` panel, which opens beside the row on hover, → or Enter and fades in
@@ -46,9 +48,18 @@ export const menuSurfaceClass = cn(
 /** A group of rows, with a 1px bg/muted rule under every group but the last. */
 /** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const menuGroupClass = 'flex flex-col gap-1 not-last:after:block not-last:after:h-(--border-width-default) not-last:after:bg-bg-muted'
-/** The 24px group header in 12px text/subtle. */
+/**
+ * The 24px group header: 12px regular text/muted, in line with the rows' labels, its text
+ * nearer the rows below than the edge above (in a Dropdown, 12px over it and 8px under it).
+ */
 // text/muted: a group's name is read to find a row, so it needs 4.5:1 (subtle is 2.6:1).
-export const menuGroupLabelClass = 'flex h-6 items-center px-3 text-xs leading-3 tracking-normal text-text-muted'
+// The start inset follows the rows after it: past a leading checkbox or 16px icon (12 + 16 + 8),
+// a 20px icon (12 + 20 + 8), or both a checkbox and an icon (12 + 16 + 8 + 16 + 8).
+export const menuGroupLabelClass = cn(
+  'flex h-6 items-center px-3 pt-1 text-xs leading-3 font-normal tracking-normal text-text-muted',
+  '[&:has(~[role=menuitemcheckbox])]:ps-9 [&:has(~*_[data-slot=menu-item-icon])]:ps-9',
+  '[&:has(~*_[data-slot=menu-item-icon][data-large])]:ps-10 [&:has(~[role=menuitemcheckbox]_[data-slot=menu-item-icon])]:ps-15',
+)
 
 export interface DropdownMenuProps
   extends Omit<
@@ -222,7 +233,10 @@ export interface MenuItemContentProps {
   layout?: 'stacked' | 'inline'
   /** Keys that run the item, e.g. "⌘N", shown on the right (Figma's `showShortcut`). */
   shortcut?: string
-  /** Wraps the label, e.g. in Radix Select's `ItemText`. */
+  /**
+   * Draws the label: as a Badge, say, or wrapped in Radix Select's `ItemText`. `label` still
+   * names the row and drives typeahead, so keep its words in what you draw.
+   */
   renderLabel?: (label: React.ReactNode) => React.ReactNode
 }
 
@@ -242,6 +256,9 @@ export function MenuItemContent({
     <>
       {icon ? (
         <span
+          // A group header reads these to line up with the labels (menuGroupLabelClass).
+          data-slot="menu-item-icon"
+          data-large={iconSize === 20 || undefined}
           className={cn(
             'grid shrink-0 place-items-center text-text-muted',
             iconSize === 20 ? 'size-5 [&_svg]:size-5 [&_svg]:[stroke-width:1.5]' : 'size-4 [&_svg]:size-4 [&_svg]:[stroke-width:1.875]',
@@ -289,7 +306,7 @@ function SelectedCheck() {
 
 export interface DropdownMenuItemProps
   extends Omit<React.ComponentProps<typeof DropdownPrimitive.Item>, 'children'>,
-    Omit<MenuItemContentProps, 'label' | 'renderLabel'> {
+    Omit<MenuItemContentProps, 'label'> {
   label: string
 }
 
@@ -301,6 +318,7 @@ export function DropdownMenuItem({
   selected = false,
   layout = 'stacked',
   shortcut,
+  renderLabel,
   className,
   ...props
 }: DropdownMenuItemProps) {
@@ -320,6 +338,7 @@ export function DropdownMenuItem({
         selected={selected}
         layout={layout}
         shortcut={shortcut}
+        renderLabel={renderLabel}
       />
     </DropdownPrimitive.Item>
   )
@@ -428,7 +447,7 @@ export interface DropdownMenuCheckboxItemProps
       React.ComponentProps<typeof DropdownPrimitive.CheckboxItem>,
       'children' | 'checked' | 'defaultChecked' | 'onCheckedChange'
     >,
-    Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'> {
+    Omit<MenuItemContentProps, 'label' | 'selected'> {
   label: string
   /** Controlled state. `'indeterminate'` for a row that stands for a set only partly on. */
   checked?: boolean | 'indeterminate'
@@ -454,6 +473,7 @@ export function DropdownMenuCheckboxItem({
   iconSize = 16,
   layout = 'stacked',
   shortcut,
+  renderLabel,
   checked,
   defaultChecked = false,
   onCheckedChange,
@@ -508,6 +528,7 @@ export function DropdownMenuCheckboxItem({
         iconSize={iconSize}
         layout={layout}
         shortcut={shortcut}
+        renderLabel={renderLabel}
       />
     </DropdownPrimitive.CheckboxItem>
   )
@@ -567,7 +588,7 @@ export function DropdownMenuRadioGroup({
 
 export interface DropdownMenuRadioItemProps
   extends Omit<React.ComponentProps<typeof DropdownPrimitive.RadioItem>, 'children'>,
-    Omit<MenuItemContentProps, 'label' | 'renderLabel' | 'selected'> {
+    Omit<MenuItemContentProps, 'label' | 'selected'> {
   label: string
   /** What `onValueChange` reports when this row is chosen. */
   value: string
@@ -589,6 +610,7 @@ export function DropdownMenuRadioItem({
   iconSize = 16,
   layout = 'stacked',
   shortcut,
+  renderLabel,
   closeOnSelect = true,
   onSelect,
   className,
@@ -612,6 +634,7 @@ export function DropdownMenuRadioItem({
         iconSize={iconSize}
         layout={layout}
         shortcut={shortcut}
+        renderLabel={renderLabel}
       />
       <DropdownPrimitive.ItemIndicator className="flex shrink-0">
         <SelectedCheck />
