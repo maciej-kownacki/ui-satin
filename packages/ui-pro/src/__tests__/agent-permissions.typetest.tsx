@@ -1,4 +1,4 @@
-/* Type test, never run: AgentPermissionRequest's props, controlled and not, its parts, refs, and its words in SatinLabels. */
+/* Type test, never run: AgentPermissionRequest's props, controlled ticks and not, its parts, refs, and its words in SatinLabels. */
 import * as React from 'react'
 import { SatinLabels } from '@uisatin/ui/labels'
 import {
@@ -8,11 +8,9 @@ import {
   AgentPermissionRoot,
   AgentPermissionScope,
   AgentPermissionScopeList,
-  AgentPermissionSummary,
   agentPermissionScopeId,
   type AgentPermissionMode,
   type AgentPermissionScope as Scope,
-  type AgentPermissionStatus,
 } from '../components/agent-permissions'
 
 const scopes: Scope[] = [
@@ -28,7 +26,7 @@ const cardRef = React.createRef<HTMLDivElement>()
 const listRef = React.createRef<HTMLUListElement>()
 const rowRef = React.createRef<HTMLLIElement>()
 
-// Uncontrolled: it keeps its own status and ticks.
+// Uncontrolled: it keeps its own ticks.
 export const uncontrolled = (
   <AgentPermissionRequest
     ref={cardRef}
@@ -37,21 +35,16 @@ export const uncontrolled = (
     description="To screen this week's applicants."
     defaultValue={['candidates']}
     onAllow={(mode: AgentPermissionMode, granted: Scope[]) => fetch(`/grant?mode=${mode}&n=${granted.length}`)}
-    onDeny={() => {}}
-    onRevoke={async () => {}}
+    onDeny={async () => {}}
   />
 )
 
 function Controlled() {
-  const [status, setStatus] = React.useState<AgentPermissionStatus>('allowed')
   const [value, setValue] = React.useState<string[]>(scopes.map(agentPermissionScopeId))
   return (
     <AgentPermissionRequest
       agent={{ name: 'Recruiting agent', initials: 'RA', tone: 'plum', avatar: 'flappy' }}
       scopes={scopes}
-      status={status}
-      onStatusChange={setStatus}
-      mode="always"
       value={value}
       onValueChange={setValue}
       autoFocus={false}
@@ -61,21 +54,23 @@ function Controlled() {
 export const controlled = <Controlled />
 
 export const parts = (
-  <AgentPermissionRoot agent="Recruiting agent" scopes={scopes} defaultStatus="request" aria-describedby="why">
+  <AgentPermissionRoot agent="Recruiting agent" scopes={scopes} aria-describedby="why">
     <AgentPermissionHeader description="Why it asks" />
     <AgentPermissionScopeList ref={listRef}>
       <AgentPermissionScope ref={rowRef} scope={scopes[0]} />
     </AgentPermissionScopeList>
     <AgentPermissionFooter className="pt-2" />
-    <AgentPermissionSummary />
   </AgentPermissionRoot>
 )
 
 // @ts-expect-error: agent and scopes are required
 export const missing = <AgentPermissionRequest onAllow={() => {}} />
 
-// @ts-expect-error: no such status
-export const wrongStatus = <AgentPermissionRequest agent="A" scopes={scopes} status="pending" />
+// @ts-expect-error: it is the question only, with no answered status
+export const noStatus = <AgentPermissionRequest agent="A" scopes={scopes} status="allowed" />
+
+// @ts-expect-error: no Remove access either
+export const noRevoke = <AgentPermissionRequest agent="A" scopes={scopes} onRevoke={() => {}} />
 
 // Pro's words join SatinLabels: one provider for both packages, typed.
 export const translated = (

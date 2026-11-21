@@ -1302,21 +1302,16 @@ export const api: Record<string, Api> = {
   },
   'agent-permissions': {
     description:
-      'The `AgentPermissionRequest` component (Satin Pro, `@uisatin/pro/agent-permissions`) is a `div` with `role="group"` that asks for the `scopes` an agent needs, one Checkbox row each, and answers with Don’t allow, Allow once or Always allow. The agent’s avatar sits centred in a tile of its `tone`, over a soft aura of the same tone. Each scope is `{ id, resource, actions, detail, label }`; `actions` take `"read"`, `"write"` and `"send"`, and the title says them as verbs ("Read and write notes"). Once answered it folds to a summary row. `status` (`"request"`, `"allowed"`, `"denied"`, `"revoked"`) and `value` (the ticked ids) can be controlled; `onAllow`, `onDeny` and `onRevoke` may return a promise. Parts: `AgentPermissionRoot`, `AgentPermissionHeader`, `AgentPermissionScopeList`, `AgentPermissionScope`, `AgentPermissionFooter`, `AgentPermissionSummary`.',
+      'The `AgentPermissionRequest` component (Satin Pro, `@uisatin/pro/agent-permissions`) is a `div` with `role="group"` that asks for the `scopes` an agent needs, one Checkbox row each, and answers with Don’t allow, Allow once or Always allow. The agent’s avatar sits centred in a tile of its `tone`, over a soft aura of the same tone. Each scope is `{ id, resource, actions, detail, label }`; `actions` take `"read"`, `"write"` and `"send"`, and the title says them as verbs ("Read and write notes"). It is the question only: what follows an answer (closing the Dialog, granting the access) is the app’s part. `value` (the ticked ids) can be controlled; `onAllow` and `onDeny` may return a promise. Parts: `AgentPermissionRoot`, `AgentPermissionHeader`, `AgentPermissionScopeList`, `AgentPermissionScope`, `AgentPermissionFooter`.',
     props: [
       { name: 'agent', type: ['string', '{ name, initials?, tone?, avatar? }'] },
       { name: 'scopes', type: ['AgentPermissionScope[]'] },
       { name: 'description', type: ['ReactNode'] },
-      { name: 'status', type: ['"request"', '"allowed"', '"denied"', '"revoked"'] },
-      { name: 'defaultStatus', type: ['"request"', '"allowed"', '"denied"', '"revoked"'], default: '"request"' },
-      { name: 'onStatusChange', type: ['(status) => void'] },
-      { name: 'mode', type: ['"once"', '"always"'] },
       { name: 'value', type: ['string[]'] },
       { name: 'defaultValue', type: ['string[]'], default: 'every scope' },
       { name: 'onValueChange', type: ['(value) => void'] },
       { name: 'onAllow', type: ['(mode, scopes) => void | Promise'] },
       { name: 'onDeny', type: ['() => void | Promise'] },
-      { name: 'onRevoke', type: ['() => void | Promise'] },
       { name: 'autoFocus', type: ['boolean'], default: 'true in a Dialog' },
     ],
   },

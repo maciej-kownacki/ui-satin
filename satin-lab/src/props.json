@@ -507,30 +507,6 @@
           "description": "What it asks for, one row each: `{ resource, actions, detail }`."
         },
         {
-          "name": "status",
-          "type": "AgentPermissionStatus",
-          "required": false,
-          "description": "Where the request stands. Set it to control it; Allow, Don't allow, Remove access and Change move it."
-        },
-        {
-          "name": "defaultStatus",
-          "type": "AgentPermissionStatus",
-          "required": false,
-          "default": "'request'",
-          "description": "The status to start from when it isn't controlled."
-        },
-        {
-          "name": "onStatusChange",
-          "type": "(status: AgentPermissionStatus) => void",
-          "required": false
-        },
-        {
-          "name": "mode",
-          "type": "AgentPermissionMode",
-          "required": false,
-          "description": "How it was allowed, for the summary. Allow sets it on its own; pass it with a controlled `status` of `allowed` (a permission loaded from the server)."
-        },
-        {
           "name": "value",
           "type": "string[]",
           "required": false,
@@ -551,19 +527,13 @@
           "name": "onAllow",
           "type": "(mode: AgentPermissionMode, scopes: AgentPermissionScope[]) => unknown",
           "required": false,
-          "description": "Allow once (`once`) or Always allow (`always`), with the ticked scopes. Return a promise and the button shows a Spinner until it settles; if it rejects, the request stays."
+          "description": "Allow once (`once`) or Always allow (`always`), with the ticked scopes. Return a promise and the button shows a Spinner until it settles; if it rejects, the request stays as it was."
         },
         {
           "name": "onDeny",
           "type": "() => unknown",
           "required": false,
           "description": "Don't allow. A promise works as for `onAllow`."
-        },
-        {
-          "name": "onRevoke",
-          "type": "() => unknown",
-          "required": false,
-          "description": "Shows Remove access on an allowed summary, which calls it. A promise works as for `onAllow`."
         },
         {
           "name": "autoFocus",
@@ -619,16 +589,8 @@
       ],
       "props": []
     },
-    "AgentPermissionSummary": {
-      "description": "The answered request on one row: who and the answer, what it covers, and Remove access or Change. The Root shows it in place of its children once the status isn't `request`. Other props, `ref` included, go to its `div`.",
-      "type": "AgentPermissionSummaryProps",
-      "extends": [
-        "React.ComponentProps<'div'>"
-      ],
-      "props": []
-    },
     "AgentPermissionRequest": {
-      "description": "The request from props: the header, the scopes and the answers, folding to its summary once answered. Other props, `ref` included, go to the card's `div`.",
+      "description": "The request from props: the header, the scopes and the answers. Other props, `ref` included, go to the card's `div`.",
       "type": "AgentPermissionRequestProps",
       "extends": [
         "Omit<AgentPermissionRootProps, 'children'>"

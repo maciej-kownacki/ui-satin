@@ -27,21 +27,17 @@ import { SplitButton } from '@uisatin/ui/split-button'
  *   and the title goes on in muted text, "Send emails · Sends as you". Reads and writes stay neutral.
  * - Every scope starts ticked. Unticking one makes the request partial: its title turns muted
  *   and the footer counts what is left ("2 of 3 selected"). With nothing ticked, Allow is off.
- * - Answered, the card folds to one summary row like Decision card's: who, the answer ("Always
- *   allowed", "Allowed once", "Not allowed", "Access removed"), what it covers, and Remove access
- *   (when `onRevoke` is set) or Change, which brings the request back.
+ * - It is the question only. What follows an answer (closing the Dialog, granting the access,
+ *   saying so) is the app's part: `onAllow` gets the mode and the ticked scopes.
  * - Focus: inside a Dialog it starts on Don't allow, the safest answer (`autoFocus` to choose).
- *   After an answer it moves to the summary's button, and back to Don't allow after Change. A
- *   polite status region reads the answer out.
- * - `onAllow`, `onDeny` and `onRevoke` may return a promise: the button shows a Spinner until it
- *   settles. If it rejects, nothing changes; showing the error is the app's part.
+ * - `onAllow` and `onDeny` may return a promise: the button shows a Spinner and the rest of the
+ *   request waits until it settles. If it rejects, the request stays as it was; showing the
+ *   error is the app's part.
  *
- * Controlled or not: `status` / `defaultStatus` / `onStatusChange` for the answer, `value` /
- * `defaultValue` / `onValueChange` for the ticked scopes' ids, `mode` for how it was allowed.
+ * Controlled or not: `value` / `defaultValue` / `onValueChange` for the ticked scopes' ids.
  *
  * Parts, for a request of your own: `AgentPermissionRoot` › `AgentPermissionHeader`,
- * `AgentPermissionScopeList` (› `AgentPermissionScope`), `AgentPermissionFooter`; once answered
- * the Root shows `AgentPermissionSummary` in place of its children. Other props on
+ * `AgentPermissionScopeList` (› `AgentPermissionScope`), `AgentPermissionFooter`. Other props on
  * AgentPermissionRequest and AgentPermissionRoot, `ref` included, go to the card's `div`.
  */
 
@@ -49,9 +45,6 @@ export type AgentPermissionAction = 'read' | 'write' | 'send'
 
 /** How long a permission lasts: this run only, or until someone removes it. */
 export type AgentPermissionMode = 'once' | 'always'
-
-/** Where the request stands. `revoked` is an allowed request whose access was removed later. */
-export type AgentPermissionStatus = 'request' | 'allowed' | 'denied' | 'revoked'
 
 export interface AgentPermissionScope {
   /** Names the scope in `value`. Defaults to `resource`. */
@@ -96,11 +89,6 @@ export const agentPermissionsLabels = {
   agentPermissionsAllowOptions: 'More ways to allow',
   /** In the footer while some scopes are unticked: "2 of 3 selected". */
   agentPermissionsSelected: (count: number, total: number) => `${count} of ${total} selected`,
-  agentPermissionsAllowedOnce: 'Allowed once',
-  agentPermissionsAllowedAlways: 'Always allowed',
-  agentPermissionsDenied: 'Not allowed',
-  agentPermissionsRevoked: 'Access removed',
-  agentPermissionsRevoke: 'Remove access',
 }
 
 type AgentPermissionsLabels = typeof agentPermissionsLabels
@@ -130,23 +118,18 @@ const isThenable = (value: unknown): value is PromiseLike<unknown> =>
 
 /* ---------- state ---------- */
 
-type Busy = 'allow' | 'deny' | 'revoke' | null
+type Busy = 'allow' | 'deny' | null
 
 interface PermissionContextValue {
   agent: Agent
   scopes: AgentPermissionScope[]
   selected: string[]
   toggle: (id: string, on: boolean) => void
-  status: AgentPermissionStatus
-  mode: AgentPermissionMode
   busy: Busy
   allow: (mode: AgentPermissionMode) => void
   deny: () => void
-  revoke: (() => void) | undefined
-  reopen: () => void
   titleId: string
   descriptionId: string
-  summaryId: string
   /** The header says it's there, so the card is named after its title only when it is. */
   setHeader: (header: { description: boolean } | null) => void
   denyRef: React.RefObject<HTMLButtonElement | null>
@@ -182,16 +165,6 @@ export interface AgentPermissionRootProps extends Omit<React.ComponentProps<'div
   agent: AgentPermissionAgent
   /** What it asks for, one row each: `{ resource, actions, detail }`. */
   scopes: AgentPermissionScope[]
-  /** Where the request stands. Set it to control it; Allow, Don't allow, Remove access and Change move it. */
-  status?: AgentPermissionStatus
-  /** The status to start from when it isn't controlled. */
-  defaultStatus?: AgentPermissionStatus
-  onStatusChange?: (status: AgentPermissionStatus) => void
-  /**
-   * How it was allowed, for the summary. Allow sets it on its own; pass it with a controlled
-   * `status` of `allowed` (a permission loaded from the server).
-   */
-  mode?: AgentPermissionMode
   /** The ticked scopes' ids (`id`, or `resource`). */
   value?: string[]
   /** The ticked scopes to start from. Defaults to every scope. */
@@ -199,13 +172,11 @@ export interface AgentPermissionRootProps extends Omit<React.ComponentProps<'div
   onValueChange?: (value: string[]) => void
   /**
    * Allow once (`once`) or Always allow (`always`), with the ticked scopes. Return a promise and
-   * the button shows a Spinner until it settles; if it rejects, the request stays.
+   * the button shows a Spinner until it settles; if it rejects, the request stays as it was.
    */
   onAllow?: (mode: AgentPermissionMode, scopes: AgentPermissionScope[]) => unknown
   /** Don't allow. A promise works as for `onAllow`. */
   onDeny?: () => unknown
-  /** Shows Remove access on an allowed summary, which calls it. A promise works as for `onAllow`. */
-  onRevoke?: () => unknown
   /**
    * Focus Don't allow, the safest answer, when the request appears. Defaults to true inside a
    * Dialog and false elsewhere, so a request arriving in a chat never takes the keys from
@@ -218,16 +189,11 @@ export interface AgentPermissionRootProps extends Omit<React.ComponentProps<'div
 export function AgentPermissionRoot({
   agent: agentProp,
   scopes,
-  status: statusProp,
-  defaultStatus = 'request',
-  onStatusChange,
-  mode: modeProp,
   value: valueProp,
   defaultValue,
   onValueChange,
   onAllow,
   onDeny,
-  onRevoke,
   autoFocus,
   className,
   children,
@@ -236,18 +202,13 @@ export function AgentPermissionRoot({
 }: AgentPermissionRootProps) {
   const labels = useLabels()
   const agent = React.useMemo(() => toAgent(agentProp), [agentProp])
-  const [status, setStatus] = useControllable(statusProp, defaultStatus, onStatusChange)
   const [selected, setSelected] = useControllable(valueProp, () => defaultValue ?? scopes.map(agentPermissionScopeId), onValueChange)
-  const [ownMode, setOwnMode] = React.useState<AgentPermissionMode>('once')
-  const mode = modeProp ?? ownMode
   const [busy, setBusy] = React.useState<Busy>(null)
   const [header, setHeader] = React.useState<{ description: boolean } | null>(null)
-  const [message, setMessage] = React.useState('')
 
   const base = React.useId()
   const titleId = `${base}-title`
   const descriptionId = `${base}-description`
-  const summaryId = `${base}-summary`
   const rootRef = React.useRef<HTMLDivElement>(null)
   const denyRef = React.useRef<HTMLButtonElement>(null)
 
@@ -259,46 +220,24 @@ export function AgentPermissionRoot({
     }
   }, [])
 
-  // Answers given here move focus and are read out; a status the app sets from elsewhere is not.
-  const answered = React.useRef(false)
-  // A render of its own for every answer, so the answer lapses even when a controlled status ignores it.
-  const [, setAnswers] = React.useState(0)
-  const go = React.useCallback(
-    (next: AgentPermissionStatus) => {
-      answered.current = true
-      setAnswers((n) => n + 1)
-      setStatus(next)
-    },
-    [setStatus],
-  )
-
-  /** Runs a handler; a promise holds the button busy and only moves on once it resolves. */
-  const settle = (kind: Exclude<Busy, null>, run: () => unknown, then: () => void) => {
+  /** Runs a handler; a promise holds its button busy, and the rest of the request, until it settles. */
+  const settle = (kind: Exclude<Busy, null>, run: () => unknown) => {
     if (busy) return
     const result = run()
-    if (!isThenable(result)) return then()
+    if (!isThenable(result)) return
     setBusy(kind)
-    Promise.resolve(result).then(
-      () => {
-        if (!alive.current) return
-        setBusy(null)
-        then()
-      },
-      () => alive.current && setBusy(null),
-    )
+    const done = () => {
+      if (alive.current) setBusy(null)
+    }
+    Promise.resolve(result).then(done, done)
   }
 
   const granted = scopes.filter((s) => selected.includes(agentPermissionScopeId(s)))
-  const allow = (next: AgentPermissionMode) => {
+  const allow = (mode: AgentPermissionMode) => {
     if (granted.length === 0) return
-    settle('allow', () => onAllow?.(next, granted), () => {
-      setOwnMode(next)
-      go('allowed')
-    })
+    settle('allow', () => onAllow?.(mode, granted))
   }
-  const deny = () => settle('deny', () => onDeny?.(), () => go('denied'))
-  const revoke = onRevoke ? () => settle('revoke', onRevoke, () => go('revoked')) : undefined
-  const reopen = () => go('request')
+  const deny = () => settle('deny', () => onDeny?.())
   const toggle = (id: string, on: boolean) => {
     const next = new Set(selected)
     if (on) next.add(id)
@@ -306,31 +245,8 @@ export function AgentPermissionRoot({
     setSelected(scopes.map(agentPermissionScopeId).filter((s) => next.has(s)))
   }
 
-  // Focus where the next step is, and say what happened.
-  React.useLayoutEffect(() => {
-    if (!answered.current) return
-    answered.current = false
-    if (status === 'request') {
-      setMessage('')
-      denyRef.current?.focus()
-      return
-    }
-    const root = rootRef.current
-    const action = root?.querySelector<HTMLButtonElement>('[data-slot="agent-permissions-summary"] button')
-    ;(action ?? root)?.focus()
-    const covered = (status === 'denied' ? scopes : granted).map((s) => s.label ?? labels.agentPermissionsScope(actionsOf(s), s.resource))
-    setMessage(`${statusText(status, mode, labels)}: ${covered.join(', ')}`)
-    // Only an answer moves focus, so this runs on the status alone.
-  }, [status])
-  // An answer counts for the render it causes. When a controlled status doesn't follow it, it
-  // lapses, so a status the app sets later (removed in its settings) leaves focus alone.
-  React.useEffect(() => {
-    answered.current = false
-  })
-
   // Inside a Dialog the request opens on Don't allow. A Dialog's own focus scope then leaves it there.
   React.useEffect(() => {
-    if (status !== 'request') return
     const inDialog = !!rootRef.current?.closest('[role="dialog"], [role="alertdialog"]')
     if (autoFocus ?? inDialog) denyRef.current?.focus()
   }, []) // On mount only.
@@ -340,22 +256,16 @@ export function AgentPermissionRoot({
     scopes,
     selected,
     toggle,
-    status,
-    mode,
     busy,
     allow,
     deny,
-    revoke,
-    reopen,
     titleId,
     descriptionId,
-    summaryId,
     setHeader,
     denyRef,
     labels,
   }
 
-  const asking = status === 'request'
   return (
     <PermissionContext.Provider value={value}>
       <div
@@ -365,37 +275,24 @@ export function AgentPermissionRoot({
           else if (ref) ref.current = node
         }}
         role="group"
-        aria-labelledby={asking ? (header ? titleId : undefined) : summaryId}
-        aria-describedby={asking && header?.description ? descriptionId : undefined}
-        // The summary takes focus after an answer when it has no button of its own.
-        tabIndex={asking ? undefined : -1}
+        aria-labelledby={header ? titleId : undefined}
+        aria-describedby={header?.description ? descriptionId : undefined}
         data-slot="agent-permissions"
-        data-status={status}
-        data-partial={(asking && selected.length < scopes.length) || undefined}
+        data-partial={selected.length < scopes.length || undefined}
         className={cn(
           // isolate: the header's aura sits under the content (-z-1) but over the card's own fill.
           cardVariants(),
           'isolate',
           '[box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)]',
-          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action-focus-ring focus-visible:outline-solid',
-          'data-[status=request]:animate-[satin-dialog-in_var(--duration-slow)_var(--ease-out)]',
+          'animate-[satin-dialog-in_var(--duration-slow)_var(--ease-out)]',
           className,
         )}
         {...props}
       >
-        {asking ? children : <AgentPermissionSummary />}
-        <span role="status" className="sr-only">
-          {message}
-        </span>
+        {children}
       </div>
     </PermissionContext.Provider>
   )
-}
-
-function statusText(status: AgentPermissionStatus, mode: AgentPermissionMode, labels: ReturnType<typeof useLabels>) {
-  if (status === 'allowed') return mode === 'always' ? labels.agentPermissionsAllowedAlways : labels.agentPermissionsAllowedOnce
-  if (status === 'denied') return labels.agentPermissionsDenied
-  return labels.agentPermissionsRevoked
 }
 
 /* ---------- the request ---------- */
@@ -579,59 +476,6 @@ export function AgentPermissionFooter({ className, ...props }: AgentPermissionFo
   )
 }
 
-/* ---------- the answer ---------- */
-
-export interface AgentPermissionSummaryProps extends React.ComponentProps<'div'> {}
-
-/**
- * The answered request on one row: who and the answer, what it covers, and Remove access or
- * Change. The Root shows it in place of its children once the status isn't `request`. Other
- * props, `ref` included, go to its `div`.
- */
-export function AgentPermissionSummary({ className, ...props }: AgentPermissionSummaryProps) {
-  const { agent, scopes, selected, status, mode, busy, revoke, reopen, summaryId, labels } = usePermission('AgentPermissionSummary')
-  if (status === 'request') return null
-  const allowed = status === 'allowed'
-  // Not allowed covers everything asked; the others cover what was ticked.
-  const covered = status === 'denied' ? scopes : scopes.filter((s) => selected.includes(agentPermissionScopeId(s)))
-  return (
-    <div
-      data-slot="agent-permissions-summary"
-      className={cn('flex items-center gap-2.5 py-2.5 ps-3 pe-2.5 animate-[satin-fade-in_var(--duration-base)_var(--ease-out)]', className)}
-      {...props}
-    >
-      <span
-        aria-hidden
-        className={cn(
-          'flex size-6 shrink-0 items-center justify-center rounded-full',
-          allowed ? 'bg-action-primary-bg text-action-primary-fg' : 'bg-bg-muted text-text-muted',
-        )}
-      >
-        {allowed ? <CheckGlyph /> : <CrossGlyph />}
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span id={summaryId} className="text-xs text-text-muted">
-          {agent.name} · {statusText(status, mode, labels)}
-        </span>
-        <span className="text-sm font-medium text-text-default">
-          {covered.map((s) => s.label ?? labels.agentPermissionsScope(actionsOf(s), s.resource)).join(' · ')}
-        </span>
-      </div>
-      {allowed
-        ? revoke && (
-            <Button variant="tertiary" className="shrink-0 text-text-muted" loading={busy === 'revoke'} onClick={revoke}>
-              {labels.agentPermissionsRevoke}
-            </Button>
-          )
-        : (
-            <Button variant="tertiary" className="shrink-0 text-text-muted" onClick={reopen}>
-              {labels.change}
-            </Button>
-          )}
-    </div>
-  )
-}
-
 /* ---------- the common case ---------- */
 
 export interface AgentPermissionRequestProps extends Omit<AgentPermissionRootProps, 'children'> {
@@ -640,8 +484,8 @@ export interface AgentPermissionRequestProps extends Omit<AgentPermissionRootPro
 }
 
 /**
- * The request from props: the header, the scopes and the answers, folding to its summary once
- * answered. Other props, `ref` included, go to the card's `div`.
+ * The request from props: the header, the scopes and the answers. Other props, `ref` included,
+ * go to the card's `div`.
  */
 export function AgentPermissionRequest({ description, ...props }: AgentPermissionRequestProps) {
   return (
@@ -682,30 +526,6 @@ function ActionIcon({ action }: { action: AgentPermissionAction }) {
           </>
         )}
       </g>
-    </svg>
-  )
-}
-
-/** The Check from Figma, 14px on the summary's 24px circle, as on Decision card. */
-function CheckGlyph() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path d="M3.33333 8.66667L6 11.3333L12.6667 4.66667" stroke="currentColor" strokeWidth="1.43" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-/** The X from Toast's close, 14px at 1.09. */
-function CrossGlyph() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path
-        d="M3.94232 10.0582L7.00053 7M7.00053 7L10.0587 3.94179M7.00053 7L3.94232 3.94179M7.00053 7L10.0587 10.0582"
-        stroke="currentColor"
-        strokeWidth="1.09375"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
     </svg>
   )
 }
