@@ -105,7 +105,8 @@ New primitives: cyan, sky, indigo, violet (two steps each).
   (Dark is about 2× black), and every style carries an inner shadow 0 1 0 0 bound to `effect/highlight-top`,
   which is transparent in Light. One style resolves correctly in both modes.
 - **Names**: Figma and W3C disallow `.` in names, so `spacing/0-5` = Tailwind `0.5`.
-- **Line heights** are px variables in Figma (150% of the size, 130% for 2xl). CSS uses unitless ratios.
+- **Line heights** are px variables in Figma, all whole pixels (13 on 20, 24 on 32), so a box of text ends on a whole
+  pixel. CSS uses exact unitless ratios (`calc(20 / 13)`); `tokens/build.mjs` fails on a fractional one.
 
 ## Rules (also on the Tokens page)
 

@@ -9,7 +9,7 @@ import { useSatinLabels } from './labels'
 /**
  * Chip, 1:1 with the uiKit `Chip` set (3206:79959): Subtle or Outline, md (28, control-height)
  * or sm (24, control-height-xs), eight tones like Badge, an optional dot, avatar and remove
- * button. Label medium 13/19.5, 8px side padding; the dot, avatar and close slots overlap
+ * button. Label medium 13/20, 8px side padding; the dot, avatar and close slots overlap
  * the label padding by 4px, as in Figma.
  *
  * Neutral is its own look: Outline is a popover surface with a border-default edge and an

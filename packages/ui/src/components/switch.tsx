@@ -7,7 +7,7 @@ import { cn } from '../lib/utils'
 /**
  * Switch, 1:1 with the uiKit `_switchBase` (3647:17617) and `Switch` (3647:17714) sets: a
  * 32 × 18 track (bg/pressed off, calm green on, each with its hover), a 14px white thumb,
- * a 2px focus ring, 50% when disabled. Label medium 13/19.5, description muted, 10px from
+ * a 2px focus ring, 50% when disabled. Label medium 13/20, description muted, 10px from
  * the track. Use it for settings that apply at once; use a checkbox inside a form.
  * The look of every state lives in styles/components.css.
  */
@@ -42,7 +42,7 @@ export function Switch({ className, label, description, placement = 'left', id, 
       className={cn('flex items-start gap-2.5', placement === 'right' && 'flex-row-reverse justify-between')}
     >
       {control}
-      <div className="grid gap-0.5 text-sm leading-[19.5px] peer-disabled:opacity-50">
+      <div className="grid gap-0.5 text-sm leading-5 peer-disabled:opacity-50">
         {label && (
           <label htmlFor={switchId} className="font-medium text-text-default">
             {label}

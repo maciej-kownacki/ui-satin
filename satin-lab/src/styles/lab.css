@@ -60,7 +60,7 @@ html.dark .theme-switch:not([data-ready]) button:nth-of-type(2) {
   --text-2xs: 11px;
   --text-xs: 12px;
   --text-sm: 13px;
-  --text-sm--line-height: 1.54;
+  --text-sm--line-height: calc(20 / 13);
   --text-base: 15px;
   --text-base--line-height: 1.6;
   --text-lg: 18px;

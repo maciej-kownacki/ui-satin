@@ -20,14 +20,15 @@ The tokens live in `src/styles/motion.css`.
    line height, font size, border widths, grid tracks) moves only through `pixel-motion.tsx` (`easeSize`,
    `pixelKeyframes`) or one of the exceptions below. pixel-motion measures layout sizes unrounded and unscaled, holds
    every step on the device-pixel grid counted from the end value, and starts and ends on the exact layout values, so
-   the box isn't resampled on the way and doesn't snap at the end. Only with `freeze` does it also hold the content
-   at its size while the box moves; without it the content is laid out again at every step. Never ease between
-   `offsetHeight`, `offsetWidth` or `offsetLeft` values: they round to whole pixels, so the content snaps the rest of
-   the way when the animation ends. The one place Satin moves something from them is the sliding pill's fallback:
-   while its list is scaled (a dialog zooming in) or the selected item is moved inside it (Pagination's strip),
-   rects count the transform and offsets are the only measure that doesn't, so for as long as the transform lasts
-   the pill lands on whole CSS pixels. `npm run check:motion` fails on anything else; each exception carries a
-   `motion-allow: <reason>` comment where it happens. The exceptions, each for a reason:
+   the box isn't resampled on the way and doesn't snap at the end. Line heights are whole pixels (13px text on a 20px
+   line), so content heights end on whole pixels and a box easing to them doesn't hop at the end. Only with `freeze`
+   does it also hold the content at its size while the box moves; without it the content is laid out again at every
+   step. Never ease between `offsetHeight`, `offsetWidth` or `offsetLeft` values: they round to whole pixels, so the
+   content snaps the rest of the way when the animation ends. The one place Satin moves something from them is the
+   sliding pill's fallback: while its list is scaled (a dialog zooming in) or the selected item is moved inside it
+   (Pagination's strip), rects count the transform and offsets are the only measure that doesn't, so for as long as
+   the transform lasts the pill lands on whole CSS pixels. `npm run check:motion` fails on anything else; each
+   exception carries a `motion-allow: <reason>` comment where it happens. The exceptions, each for a reason:
    - The sliding pill (Segmented control, Tabs, Pagination) animates `width` along with `transform`, and Avatar
      group's tooltip its bubble's width, so their corners don't stretch. The pill runs 300 ms on its own gentler
      curve, `cubic-bezier(0.32, 0.72, 0, 1)`: on `--ease-out` it covered half the way in two frames and then crept,

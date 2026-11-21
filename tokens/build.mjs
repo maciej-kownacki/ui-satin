@@ -154,13 +154,22 @@ function css() {
   for (const t of of('radius').filter((t) => cssVar(t) !== '--radius')) {
     L.push(`  ${cssVar(t)}: ${isAlias(t.$value) ? `var(${cssVar(target(t.$value))})` : px(t.$value)};`);
   }
+  // Line heights are ratios of their size, written exactly: a rounded ratio misses the whole
+  // pixel (1.455 × 11 is 16.005px), so 16 on 11 is calc(16 / 11) and 21 on 14 stays 1.5.
+  const ratio = (lh, size) => {
+    const r = Math.round((lh / size) * 1000) / 1000;
+    return Math.abs(r * size - lh) < 1e-9 ? `${r}` : `calc(${lh} / ${size})`;
+  };
   {
     const tracking = resolve('{typography.tracking.tracking-tight}');
     for (const t of of('typography').filter((t) => t.path[1] === 'text')) {
       const size = dim(t.$value);
       const lh = dim(flat.get(`typography.leading.${t.path[2]}--line-height`).$value);
+      // A half-pixel line leaves every box of text on a half pixel, and one easing to its height
+      // drops a pixel when it lands.
+      if (!Number.isInteger(lh)) throw new Error(`${t.path[2]}--line-height is ${lh}px: line heights are whole pixels`);
       L.push(`  ${cssVar(t)}: ${size}px;`);
-      L.push(`  ${cssVar(t)}--line-height: ${Math.round((lh / size) * 1000) / 1000};`);
+      L.push(`  ${cssVar(t)}--line-height: ${ratio(lh, size)};`);
       L.push(`  ${cssVar(t)}--letter-spacing: ${tracking.value}${tracking.unit};`);
     }
   }
