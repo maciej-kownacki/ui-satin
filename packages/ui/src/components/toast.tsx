@@ -144,7 +144,8 @@ export const toast = Object.assign((title: React.ReactNode, options?: ToastOptio
 /* ---------- glyphs, from Figma ---------- */
 
 const tile: Record<ToastIntent, string> = {
-  neutral: 'bg-status-neutral-bg text-text-default',
+  // The same tile as an Attachment's file icon: zinc-100 in Light, a lighter grey than the toast in Dark.
+  neutral: 'bg-component-file-icon-bg text-text-default',
   info: 'bg-status-sky-bg text-status-sky-fg',
   success: 'bg-status-green-bg text-status-green-fg',
   warning: 'bg-status-amber-bg text-status-amber-fg',
