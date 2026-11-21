@@ -2,7 +2,9 @@ import * as React from 'react'
 import { FilterBar, applyFilters, type Filter, type FilterView } from '@uisatin/pro/filter-bar'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import { DealsTable, ME, SCENARIO, fields, pipeline, type Deal } from './filter-bar-lab/data'
+import { FacetsDirection, facetsCode } from './filter-bar-lab/facets'
 import { PanelDirection, panelCode } from './filter-bar-lab/panel'
+import { QueryDirection, queryCode } from './filter-bar-lab/query'
 import { ViewsDirection, viewsCode } from './filter-bar-lab/views'
 
 /*
@@ -68,9 +70,6 @@ export function Pipeline({ deals }: { deals: Deal[] }) {
   )
 }`
 
-// Part 2 replaces these with the Facets and Query sketches.
-const pendingCode = (name: string) => `// Exploration, not package API: direction ${name}, coming in part 2.`
-
 const LABELS: Record<string, string> = {
   baseline: 'Baseline: the current Filter bar',
   facets: 'A · Facets',
@@ -80,8 +79,8 @@ const LABELS: Record<string, string> = {
 }
 const CODE: Record<string, string> = {
   baseline: baselineCode,
-  facets: pendingCode('A, Facets'),
-  query: pendingCode('B, Query'),
+  facets: facetsCode,
+  query: queryCode,
   panel: panelCode,
   views: viewsCode,
 }
@@ -134,18 +133,14 @@ function Baseline({ deals }: { deals: Deal[] }) {
 function Preview({ direction }: { direction: string }) {
   const deals = React.useMemo(pipeline, [])
   switch (direction) {
+    case 'facets':
+      return <FacetsDirection deals={deals} />
+    case 'query':
+      return <QueryDirection deals={deals} />
     case 'panel':
       return <PanelDirection deals={deals} />
     case 'views':
       return <ViewsDirection deals={deals} />
-    // Part 2: FacetsDirection from ./filter-bar-lab/facets, QueryDirection from ./filter-bar-lab/query.
-    case 'facets':
-    case 'query':
-      return (
-        <div className="flex w-[760px] max-w-full flex-col gap-3">
-          <p className="text-sm text-text-muted">Direction coming in part 2</p>
-        </div>
-      )
     default:
       return <Baseline deals={deals} />
   }

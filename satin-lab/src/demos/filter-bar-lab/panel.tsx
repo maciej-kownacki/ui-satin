@@ -29,7 +29,7 @@ export function writeFilter(filters: readonly Filter[], key: string, next: Filte
 }
 
 /** The options a filter picks: `is` reads as a list of one; operators the form can't show read as none. */
-function pickedOf(filter: Filter | undefined): string[] {
+export function pickedOf(filter: Filter | undefined): string[] {
   if (!filter || !['is', 'isAnyOf', 'hasAnyOf'].includes(filter.operator)) return []
   return Array.isArray(filter.value) ? filter.value.map(String) : [String(filter.value)]
 }
