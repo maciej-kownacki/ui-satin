@@ -10,8 +10,8 @@ import { hideProSource, isReleased } from '../nav'
 
 const demos = import.meta.glob<{ options?: { code: string }[] }>('../demos/*.tsx')
 
-/** Docs pages whose component lives in another file (Area chart is line-chart.tsx's AreaCard). */
-export const ALIASES: Record<string, string> = { 'area-chart': 'line-chart' }
+/** Docs pages whose component lives in another file (Area chart is line-chart.tsx's AreaCard, Notice is PromptBar's `notice`). */
+export const ALIASES: Record<string, string> = { 'area-chart': 'line-chart', 'prompt-bar-notice': 'prompt-bar' }
 
 /** The registry folder, from the site's own folder or the repo's. */
 export const registryDir = [join(process.cwd(), 'public/r'), join(process.cwd(), 'satin-lab/public/r')].find((d) => existsSync(d))

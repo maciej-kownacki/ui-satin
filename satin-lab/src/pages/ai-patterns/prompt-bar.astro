@@ -1,29 +1,16 @@
 ---
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
-import Chip from '../../components/Chip.astro'
-import PromptBarDemo, { options, noticeOptions, PromptBarNoticeDemo } from '../../demos/prompt-bar'
+import PromptBarDemo, { options } from '../../demos/prompt-bar'
 import { api } from '../../api'
 import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
 const codeHtml = await highlight(options)
-const noticeHtml = await highlight(noticeOptions)
 ---
 
 <Docs current="prompt-bar">
   <DocSection item={page('prompt-bar')} api={api['prompt-bar']}>
     <PromptBarDemo client:load codeHtml={codeHtml} />
-
-    <section aria-labelledby="notice-title" class="flex flex-col gap-4 pt-8">
-      <h2 id="notice-title" class="text-lg font-medium text-text-default">Notice</h2>
-      <p class="text-base leading-6 text-text-muted">
-        <Chip>notice</Chip> puts a message inside the bar, above the field: a <Chip>Banner</Chip> with
-        <Chip>layout="inline"</Chip> for something new, like a model to switch to, or an <Chip>Alert</Chip> with
-        <Chip>layout="inline"</Chip> for something people should know before they send. It sits 8px from the bar's edges, and
-        the bar takes the 20px corner in either shape. Clear <Chip>notice</Chip> when it is dismissed.
-      </p>
-      <PromptBarNoticeDemo client:load codeHtml={noticeHtml} />
-    </section>
   </DocSection>
 </Docs>

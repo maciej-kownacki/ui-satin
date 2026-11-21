@@ -35,7 +35,7 @@ const INTERNAL = {
   'rolling-number': 'the rolling count of Bulk action bar (Satin Pro)',
 }
 // Pages whose component lives in another file (as in registry/build.mjs).
-const ALIASES = { 'area-chart': 'line-chart' }
+const ALIASES = { 'area-chart': 'line-chart', 'prompt-bar-notice': 'prompt-bar' }
 const SHARED_ITEMS = ['satin-styles', 'satin-pro-styles', 'utils', 'registry']
 
 const componentFiles = (dir) =>

@@ -1095,7 +1095,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'prompt-bar': {
-    description: 'The `PromptBar` component is a wrapper around the `form` element with a text input, attachments, a model picker and a send button. `mentions` and `commands` add @mentions and /commands to it, in either shape and next to everything else (see Mentions and commands).',
+    description: 'The `PromptBar` component is a wrapper around the `form` element with a text input, attachments, a model picker and a send button. `mentions` and `commands` add @mentions and /commands to it, in either shape and next to everything else (see Mentions and commands). `notice` puts a Banner or an Alert inside the bar, above the field (see Notice).',
     props: [
       { name: 'shape', type: ['"pill"', '"default"'], default: '"pill"' },
       { name: 'model', type: ['string'] },
@@ -1116,6 +1116,22 @@ export const api: Record<string, Api> = {
       { name: 'onSubmit', type: ['(value: string, attachments: File[], detail: PromptValue) => void'] },
       { name: 'mentions', type: ['PromptMentions'] },
       { name: 'commands', type: ['PromptCommand[]'] },
+    ],
+  },
+  'prompt-bar-notice': {
+    description:
+      'The notice is the `notice` prop on `PromptBar`: whatever it gets sits inside the bar, above the attachments and the field, 8px from the bar’s edges, and the bar takes radius 20 in either shape. Give it a `Banner` with `layout="inline"` (an icon, a title, one action, a close button) for something new, or an `Alert` with `layout="inline"` (`intent` sets the icon and the colour) for something to know before sending. Pass `null` once it is dismissed; if focus was in the notice, it moves to the field. Disabling the bar dims the bar, not the notice.',
+    props: [
+      { name: 'notice', type: ['ReactNode'] },
+      { name: 'Banner.layout', type: ['"inline"'] },
+      { name: 'Banner.icon', type: ['ReactNode'] },
+      { name: 'Banner.title', type: ['string'] },
+      { name: 'Banner.action', type: ['ReactNode'] },
+      { name: 'Banner.onDismiss', type: ['() => void'] },
+      { name: 'Alert.layout', type: ['"inline"'] },
+      { name: 'Alert.intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"neutral"' },
+      { name: 'Alert.title', type: ['ReactNode'] },
+      { name: 'Alert.onDismiss', type: ['() => void'] },
     ],
   },
   'streaming-text': {

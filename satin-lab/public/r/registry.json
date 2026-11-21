@@ -2261,6 +2261,35 @@
       ]
     },
     {
+      "name": "prompt-bar-notice",
+      "type": "registry:ui",
+      "title": "Notice",
+      "description": "A banner or an alert inside the prompt bar, above the field: a new model, a tip or an outage.",
+      "dependencies": [
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/prompt-mentions.json"
+      ],
+      "docs": "Notice docs: https://uisatin.dev/ai-patterns/prompt-bar-notice",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/prompt-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "satin-pro-styles",
       "type": "registry:item",
       "title": "Satin Pro styles",
@@ -4233,6 +4262,21 @@
       "files": [
         {
           "path": "registry/satin/examples/area-chart-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "prompt-bar-notice-demo",
+      "type": "registry:example",
+      "title": "Notice example",
+      "description": "The shortest use of Notice, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/prompt-bar-notice.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/prompt-bar-notice-demo.tsx",
           "type": "registry:example"
         }
       ]

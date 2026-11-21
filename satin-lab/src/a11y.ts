@@ -561,6 +561,11 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Closes the open panel or menu, the @ or / menu first.' },
     ],
   },
+  'prompt-bar-notice': {
+    summary:
+      'The notice is inside the bar’s `form`, before the field, so it comes first in reading and tab order. An `Alert` keeps its role: `role="alert"` for errors and warnings, read out when it appears, `role="status"` for the rest; a `Banner` has no role and isn’t read out on its own. Each close button is named "Dismiss". When the notice goes while focus is in it, focus moves to the "Message" field instead of dropping to the page.',
+    keyboard: [{ keys: ['Enter', 'Space'], action: 'On the action or the close button: presses it.' }],
+  },
   'streaming-text': {
     summary:
       'The whole text received is in the DOM from the start (letters not yet written are only transparent), so screen readers get it at once, and the box is `aria-busy` while it streams. It is not a live region, so arriving text isn’t read out on its own. The caret is hidden. Under reduced motion it shows everything received straight away.',

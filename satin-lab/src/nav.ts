@@ -101,7 +101,8 @@ export const allNav: NavGroup[] = [
           { id: 'message', title: 'Message', href: '/ai-patterns/message', description: 'One chat turn: a bubble for the user, plain text with actions for the assistant.' },
           { id: 'citations', title: 'Citations', href: '/ai-patterns/citations', description: 'Numbered sources in an answer, with a preview on hover and the list under it.' },
         ],
-      },      { id: 'message-actions', title: 'Message actions', href: '/ai-patterns/message-actions', description: 'Status, feedback, copy and share under an assistant reply.' },
+      },
+      { id: 'message-actions', title: 'Message actions', href: '/ai-patterns/message-actions', description: 'Status, feedback, copy and share under an assistant reply.' },
       {
         id: 'agent-permissions',
         title: 'Permission request',
@@ -109,7 +110,17 @@ export const allNav: NavGroup[] = [
         description: 'What an agent will touch before it first runs: each resource and action in plain verbs, once or always.',
         edition: 'pro',
       },
-      { id: 'prompt-bar', title: 'Prompt bar', href: '/ai-patterns/prompt-bar', description: 'Where people write to an agent: attachments, model, voice and send.' },
+      {
+        id: 'prompt-bar-group',
+        title: 'Prompt bar',
+        href: '/ai-patterns/prompt-bar',
+        description: 'Where people write to an agent, and what the bar holds.',
+        children: [
+          { id: 'prompt-bar', title: 'Prompt bar', href: '/ai-patterns/prompt-bar', description: 'Where people write to an agent: attachments, model, voice and send.' },
+          { id: 'prompt-bar-notice', title: 'Notice', href: '/ai-patterns/prompt-bar-notice', description: 'A banner or an alert inside the prompt bar, above the field: a new model, a tip or an outage.' },
+          { id: 'prompt-mentions', title: 'Mentions and commands', href: '/ai-patterns/prompt-mentions', description: 'Reference people and records with @ and run actions with / from the prompt bar.' },
+        ],
+      },
       {
         id: 'review-queue',
         title: 'Review queue',
@@ -117,7 +128,6 @@ export const allNav: NavGroup[] = [
         description: 'Agent drafts gone through one at a time, Approve, Edit or Skip with the keyboard, and a summary at the end.',
         edition: 'pro',
       },
-      { id: 'prompt-mentions', title: 'Mentions and commands', href: '/ai-patterns/prompt-mentions', description: 'Reference people and records with @ and run actions with / from the prompt bar.' },
       { id: 'streaming-text', title: 'Streaming text', href: '/ai-patterns/streaming-text', description: 'An answer writing itself out as it arrives, at an even pace with a caret.' },
       { id: 'thinking', title: 'Thinking', href: '/ai-patterns/thinking', description: 'What an agent did, folded into a summary that opens onto its steps.' },
       { id: 'tool-call', title: 'Tool call', href: '/ai-patterns/tool-call', description: 'One call an agent made to a tool: what it sent, what came back, how it went, and Retry when it failed.' },

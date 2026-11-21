@@ -111,8 +111,9 @@ const components = readdirSync(join(ui, 'src/components'))
 
 // What each file's components take, from the TypeScript source (scripts/props.mjs).
 const props = JSON.parse(readFileSync(join(root, 'satin-lab/src/props.json'), 'utf8'))
-// Docs pages whose component lives in another file: the Area chart is line-chart.tsx's AreaCard.
-const ALIASES = { 'area-chart': 'line-chart' }
+// Docs pages whose component lives in another file: the Area chart is line-chart.tsx's AreaCard,
+// the prompt bar's Notice is PromptBar's `notice` prop.
+const ALIASES = { 'area-chart': 'line-chart', 'prompt-bar-notice': 'prompt-bar' }
 // The imports, read with the comments taken out: a comment that mentions "from './dialog'" isn't one.
 const importsOf = (code) => code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"])\/\/.*$/gm, '$1')
 
