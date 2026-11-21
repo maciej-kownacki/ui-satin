@@ -5307,7 +5307,7 @@
           "name": "getItemLabel",
           "type": "(item: T) => string",
           "required": true,
-          "description": "A card's name for screen readers, announcements and the toast: \"Tara Mendes\"."
+          "description": "A card's name for screen readers, announcements and the toast: \"Lumen Bank\"."
         },
         {
           "name": "renderCard",
@@ -5319,7 +5319,25 @@
           "name": "onMove",
           "type": "(itemId: string, toColumn: string, index: number) => void",
           "required": true,
-          "description": "A card was dropped. `index` is its place in `toColumn` once it's there, from 0. Move it in `items` (`moveKanbanItem()` does it); until you do, the board shows it where it was."
+          "description": "A card was dropped. `index` is its place in `toColumn` once it's there, from 0, counting loaded cards only (a column's `more` sit after them). Move it in `items` (`moveKanbanItem()` does it); until you do, the board shows it where it was."
+        },
+        {
+          "name": "canMove",
+          "type": "(item: T, toColumn: string) => boolean | string",
+          "required": false,
+          "description": "Whether a card may go to a column. `true` allows it; anything else refuses, and a non-empty string is the reason (\"Set a next step first\"), shown under the lifted card and read out. Called once per column when a card lifts, and for the ⋯ menu; never for the card's own column."
+        },
+        {
+          "name": "confirmMove",
+          "type": "(item: T, toColumn: string, index: number) => boolean | Promise<boolean>",
+          "required": false,
+          "description": "Asked before `onMove`, for every real move (Undo skips it). `false` puts the card back. A promise keeps the card at its new place, dimmed and busy, until it settles: `true` moves it, `false` or a rejection puts it back. Open a Dialog from here to ask."
+        },
+        {
+          "name": "onShowMore",
+          "type": "(columnId: string) => void",
+          "required": false,
+          "description": "Makes a column's \"+3 more\" a button, which calls this with the column's id."
         },
         {
           "name": "collapsedColumns",
@@ -5369,7 +5387,7 @@
           "type": "boolean",
           "required": false,
           "default": "true",
-          "description": "The \"Moved to Interview\" toast with Undo after a move to another column. Needs a `<Toaster />`."
+          "description": "The \"Moved to Proposal\" toast with Undo after a move to another column. Needs a `<Toaster />`."
         },
         {
           "name": "columnWidth",
@@ -5381,7 +5399,7 @@
       ]
     },
     "KanbanCard": {
-      "description": "A card for `renderCard`: Satin's Card (small) with the title, a line of meta, badges and an avatar, and a ⋯ menu that moves it without dragging. The menu button shows on hover and focus (always on touch screens). Children go between the title and the bottom row. Other props, `ref` included, go to the Card.",
+      "description": "A card for `renderCard`, laid out like a sales pipeline's lead: Satin's Card (small) with a title row (logo, title, ⋯ menu), a status Badge and a line of meta under it, labelled `fields`, then a bottom row with the `footer`, the age (amber when `stale`) and an avatar. Children go between the fields and the bottom row. The ⋯ menu moves the card without dragging; it shows on hover and focus (always on touch screens). Other props, `ref` included, go to the Card.",
       "type": "KanbanCardProps",
       "extends": [
         "Omit<React.ComponentProps<typeof Card>, 'title' | 'size' | 'onClose' | 'closeLabel' | 'description' | 'footer'>"
@@ -5391,7 +5409,19 @@
           "name": "title",
           "type": "React.ReactNode",
           "required": true,
-          "description": "What the card is: a person, a deal, an order."
+          "description": "What the card is: a company, a person, an order. A Link when it opens a page."
+        },
+        {
+          "name": "logo",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Before the title: a 20px Avatar (rounded for a company), a logo."
+        },
+        {
+          "name": "status",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A Badge under the title for what's happening to it (\"Nudged by agent · 2h\"). Screen readers hear it as the card's description."
         },
         {
           "name": "meta",
@@ -5400,16 +5430,41 @@
           "description": "One line under the title, in text/muted: a role, an amount, a date."
         },
         {
-          "name": "badges",
+          "name": "fields",
+          "type": "KanbanCardField[]",
+          "required": false,
+          "description": "Labelled lines, 8px apart: icon and value, each label for screen readers."
+        },
+        {
+          "name": "footer",
           "type": "React.ReactNode",
           "required": false,
-          "description": "Badges, in a row at the bottom."
+          "description": "The start of the bottom row: counts (comments, tasks), Badges."
+        },
+        {
+          "name": "age",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "How long it has been in its column (\"3d\"), with a clock, at the end of the bottom row."
+        },
+        {
+          "name": "stale",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "It has waited too long: the age turns into an amber Badge with an alert clock, and reads \"stale\"."
         },
         {
           "name": "avatar",
           "type": "React.ReactNode",
           "required": false,
           "description": "An Avatar or AvatarGroup at the end of the bottom row: who owns it."
+        },
+        {
+          "name": "changed",
+          "type": "string | number",
+          "required": false,
+          "description": "A key for what the card shows (a version, an updated-at time). When it changes, not on first render nor when the card moves, the card lights up once and the board reads \"Northwind Labs was updated\". For changes nobody watched happen: an agent's, a teammate's."
         },
         {
           "name": "actions",

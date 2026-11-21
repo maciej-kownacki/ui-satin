@@ -209,7 +209,7 @@
       "@uisatin/ui"
     ],
     "gzip": true,
-    "limit": "8 kB"
+    "limit": "9.5 kB"
   },
   {
     "name": "People picker (Satin Pro; @uisatin/ui left out, it is the peer)",

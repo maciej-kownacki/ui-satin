@@ -292,6 +292,20 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Drops what was typed and puts the last value back.' },
     ],
   },
+  'kanban-board': {
+    summary:
+      'Each column\'s cards are a list named after the column and its count ("Negotiation, 3 of 3 cards"; past the limit, "5 cards, over the limit of 4"), `more` included. Every card is a focusable list item named by `getItemLabel`, described as a "draggable card" by its status, the word "stale" when it is, and how to move it from the keyboard. A card\'s `fields` are a description list: each value has its label for screen readers ("Close date", "Owner"), shown to the eye by its icon. A stale card\'s age has its own glyph, a clock with an alert, not only the amber. Moves are read out from a polite `status` region: "Picked up Northwind Labs. Lead, position 1 of 4.", each step, then "Moved Northwind Labs to Qualified, position 6 of 6" or "Move cancelled. Northwind Labs is back in Lead…"; the same words twice are read again. A column `canMove` refuses dims its cards from the moment a card lifts (opacity 0.5, an inactive state, not the only cue): entering it reads "Can\'t move Northwind Labs to Discovery: Set a next step first", the reason shows under the card, and a drop there puts the card back and reads it again. In the ⋯ menu a refused column stays a live item with its reason under it, so the keyboard reaches the reason too. While `confirmMove` waits, the card shows at its new place at 0.6 opacity, an inactive state, with `aria-busy`; it takes no presses or keys, and when the answer comes focus goes back to it. A card whose `changed` key changes lights up once (opacity only, not under reduced motion) and "Northwind Labs was updated" is read out. Dragging has a single-pointer alternative (WCAG 2.5.7): a card\'s ⋯ menu moves it to another column, or up and down. The Undo toast is read out like any toast. Every word is in SatinLabels (`kanbanBoardLabels`). Give the board an `aria-label` to make it a named region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through the cards and the buttons in them, column by column.' },
+      { keys: ['↑', '↓', '←', '→'], action: 'Moves focus to the card above or below, or to the nearest card in the next column; mirrored right to left.' },
+      { keys: ['Home', 'End'], action: 'Moves focus to the first or last card in the column.' },
+      { keys: ['Space'], action: 'Picks up the focused card, and drops it where it is. Over a column it can\'t go to, the card stays up and the reason is read again.' },
+      { keys: ['↑', '↓'], action: 'With a card picked up: moves it one place up or down in its column.' },
+      { keys: ['←', '→'], action: 'With a card picked up: moves it to the previous or next column (collapsed ones are skipped); mirrored right to left.' },
+      { keys: ['Home', 'End'], action: 'With a card picked up: moves it to the top or bottom of its column.' },
+      { keys: ['Esc'], action: 'Puts a picked-up card back where it was, also during a pointer drag.' },
+    ],
+  },
   kbd: {
     summary:
       'A native `kbd` element, read as its text; screen readers may say symbols such as ⌘ in different ways. `KbdArrowUp`, `KbdArrowDown` and `KbdReturn` are hidden glyphs with no text, so add words for screen readers next to them, or hide the hint when the same help is spoken elsewhere.',

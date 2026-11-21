@@ -81,7 +81,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Breadcrumb': [280, 280],
   'Bulk action bar': [352, 352],
   'Filter bar': [408, 464],
-  'Kanban board': [536, 536],
+  'Kanban board': [816, 816],
   'Data grid': [508, 508],
   'Scheduler': [648, 648],
   'Scoped search': [548, 548],
