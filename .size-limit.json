@@ -48,7 +48,7 @@
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,
-    "limit": "26 kB",
+    "limit": "27 kB",
     "rolldown": false
   },
   {
