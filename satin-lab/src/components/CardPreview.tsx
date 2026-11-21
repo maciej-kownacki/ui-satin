@@ -58,6 +58,24 @@ function endingAnimations(root: Element) {
   })
 }
 
+/**
+ * A copy's menus are position: fixed, placed against the layer's transform. Safari scrolls
+ * those on its own scrolling thread as if fixed to the window, so while the page scrolls they
+ * trail behind their card and snap back when it stops. Absolute does the same layout without
+ * that; where it would take a nearer positioned ancestor as its box, a margin puts it back.
+ */
+function unfix(root: Element) {
+  const fixed = [...root.querySelectorAll<HTMLElement>('*')].filter((el) => getComputedStyle(el).position === 'fixed')
+  for (const el of fixed) {
+    const was = el.getBoundingClientRect()
+    el.style.position = 'absolute'
+    const now = el.getBoundingClientRect()
+    const cs = getComputedStyle(el)
+    if (now.left !== was.left) el.style.marginLeft = `${parseFloat(cs.marginLeft) + was.left - now.left}px`
+    if (now.top !== was.top) el.style.marginTop = `${parseFloat(cs.marginTop) + was.top - now.top}px`
+  }
+}
+
 type Box = { x: number; y: number; w: number; h: number }
 
 /**
@@ -89,7 +107,7 @@ function fitIn(box: Box, FW: number, FH: number) {
  * The demo first mounts in an invisible holder pinned near the window's top-left corner, where
  * its menus and tooltips have the whole window to open into and nothing that scrolls closes
  * them. It stays there until it has settled: its menus placed, its opening animations done and
- * what it draws the same size for a few frames, each counted only once the page is idle. Only then is it measured, once, and placed in
+ * what it draws the same size for a few frames. Only then is it measured, once, and placed in
  * the card at its final scale and position, so it appears where it stays and never moves or
  * rescales after (a later fit only follows the card itself changing size). In the card the
  * demo carries on, live; one that opened a menu, tooltip or dialog is copied into the card
@@ -98,7 +116,8 @@ function fitIn(box: Box, FW: number, FH: number) {
  *
  * In the card, the frame crops with clip-path (an overflow would make Radix squeeze menus
  * inside it), and one layer moves and scales the demo with a transform; that layer is also the
- * containing block of the copied menus (position: fixed), so they move and scale with it.
+ * containing block of the copied menus, so they move and scale with it. The copies are made
+ * position: absolute (unfix), since Safari moves fixed ones apart from their card as it scrolls.
  */
 export function CardPreview({ id }: { id: string }) {
   const [Demo, setDemo] = React.useState<Demo | null>(null)
@@ -137,60 +156,50 @@ export function CardPreview({ id }: { id: string }) {
     holder.setAttribute('aria-hidden', 'true')
     holder.className = 'flex justify-center'
     document.body.appendChild(holder)
+    const start = performance.now()
     let raf = 0
-    let hop = 0
     let frames = 0
     let last = ''
     let same = 0
-    const idle = typeof requestIdleCallback === 'function'
     const settle = () => {
-      // Each frame waits for the page to be idle first: while other cards hydrate, React can
-      // hold an update the demo has made (a search's answer filling its list) for most of a
-      // second, and frames counted meanwhile would settle on the half-drawn demo.
-      const next = () => (raf = requestAnimationFrame(check))
-      hop = idle ? requestIdleCallback(next, { timeout: 1000 }) : window.setTimeout(next)
-    }
-    const check = () => {
-      frames++
-      // Radix parks a popper at -200% until Floating UI has placed it.
-      const unplaced = [...holder.querySelectorAll<HTMLElement>('[data-radix-popper-content-wrapper]')].some((w) => w.style.transform.includes('-200%'))
-      const opening = endingAnimations(holder).length > 0
-      const h = holder.getBoundingClientRect()
-      const d = drawnBox(holder)
-      const key = d ? [d.l - h.left, d.t - h.top, d.r - h.left, d.b - h.top].map((n) => n.toFixed(1)).join() : ''
-      same = key === last ? same + 1 : 0
-      last = key
-      // What it draws the same for six frames; a loop (a spinner turning) never is, so 40 frames do.
-      const settled = frames >= 4 && !unplaced && !opening && d && (same >= 6 || frames >= 40)
-      // 120 frames at most (two seconds of an idle page), whatever happens. Counted in frames, not
-      // time, so a busy page (every card hydrating at once on a slow machine) doesn't use them up.
-      if (!settled && frames < 120) return settle()
-      const target = layer.current
-      const f = frame.current
-      if (!target || !f || !d) return
-      const measured = { x: d.l - h.left, y: d.t - h.top, w: d.r - d.l, h: d.b - d.t }
-      setBox(measured)
-      setView(fitIn(measured, f.clientWidth, f.clientHeight))
-      if (holder.querySelector(OVERLAYS)) {
-        target.replaceChildren(...[...holder.childNodes].map((n) => n.cloneNode(true)))
-        setPhase('copied')
-      } else {
-        holder.removeAttribute('style')
-        holder.style.width = '100%'
-        holder.removeAttribute('inert')
-        holder.removeAttribute('aria-hidden')
-        target.appendChild(holder)
-        setPhase('live')
-      }
-      // Moved or copied, an element plays its opening animation again; show it as it ended instead.
-      for (const a of endingAnimations(target)) a.finish()
+      raf = requestAnimationFrame(() => {
+        frames++
+        // Radix parks a popper at -200% until Floating UI has placed it.
+        const unplaced = [...holder.querySelectorAll<HTMLElement>('[data-radix-popper-content-wrapper]')].some((w) => w.style.transform.includes('-200%'))
+        const opening = endingAnimations(holder).length > 0
+        const h = holder.getBoundingClientRect()
+        const d = drawnBox(holder)
+        const key = d ? [d.l - h.left, d.t - h.top, d.r - h.left, d.b - h.top].map((n) => n.toFixed(1)).join() : ''
+        same = key === last ? same + 1 : 0
+        last = key
+        // What it draws the same for six frames; a loop (a spinner turning) never is, so 40 frames do.
+        const settled = frames >= 4 && !unplaced && !opening && d && (same >= 6 || frames >= 40)
+        // Two seconds at most, whatever happens.
+        if (!settled && performance.now() - start < 2000) return settle()
+        const target = layer.current
+        const f = frame.current
+        if (!target || !f || !d) return
+        const measured = { x: d.l - h.left, y: d.t - h.top, w: d.r - d.l, h: d.b - d.t }
+        setBox(measured)
+        setView(fitIn(measured, f.clientWidth, f.clientHeight))
+        if (holder.querySelector(OVERLAYS)) {
+          target.replaceChildren(...[...holder.childNodes].map((n) => n.cloneNode(true)))
+          setPhase('copied')
+        } else {
+          holder.removeAttribute('style')
+          holder.style.width = '100%'
+          holder.removeAttribute('inert')
+          holder.removeAttribute('aria-hidden')
+          target.appendChild(holder)
+          setPhase('live')
+        }
+        // Moved or copied, an element plays its opening animation again; show it as it ended instead.
+        for (const a of endingAnimations(target)) a.finish()
+        if (target.firstChild !== holder) unfix(target)
+      })
     }
     settle()
-    return () => {
-      if (idle) cancelIdleCallback(hop)
-      else window.clearTimeout(hop)
-      cancelAnimationFrame(raf)
-    }
+    return () => cancelAnimationFrame(raf)
   }, [holder, Demo])
 
   // A copy no longer needs the demo; take the holder away with it, and on unmount in any case.
