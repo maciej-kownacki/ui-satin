@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Calendar, ChatBubble, Label, Notes, SendDiagonal, Sparks, User } from 'iconoir-react'
+import { Calendar, ChatBubble, Label, Notes, SendDiagonal, Sparks } from 'iconoir-react'
 import { Avatar, type AvatarTone } from '@uisatin/ui/avatar'
 import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
@@ -148,7 +148,7 @@ const LOGOS: Record<string, React.ReactNode> = {
 }
 
 const CompanyLogo = ({ id }: { id: string }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className="size-5 text-text-default">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className="size-4 text-text-default">
     {LOGOS[id]}
   </svg>
 )
@@ -188,16 +188,7 @@ function DealCard({ d }: { d: Deal }) {
             </Badge>
           ),
         },
-        {
-          icon: <User />,
-          label: 'Owner',
-          value: (
-            <span className="inline-flex items-center gap-1.5 align-top">
-              <Avatar size={16} initials={owner.initials} tone={owner.tone} aria-hidden />
-              {owner.name}
-            </span>
-          ),
-        },
+        { icon: <Avatar size={16} initials={owner.initials} tone={owner.tone} aria-hidden />, label: 'Owner', value: owner.name },
         { icon: <Notes />, label: 'Next step', value: d.next ?? 'Set next step…', placeholder: !d.next },
       ]}
       footer={
@@ -274,7 +265,8 @@ function code(v: Record<string, string>) {
   }
 `
     : ''
-  return `import { Calendar, ChatBubble, Label, Notes, Sparks, User } from 'iconoir-react'
+  return `import { Calendar, ChatBubble, Label, Notes, Sparks } from 'iconoir-react'
+import { Avatar } from '@uisatin/ui/avatar'
 import { Badge } from '@uisatin/ui/badge'${limits ? `\nimport { Button } from '@uisatin/ui/button'\nimport { Dialog } from '@uisatin/ui/dialog'` : ''}
 import { Link } from '@uisatin/ui/link'
 import { Toaster } from '@uisatin/ui/toast'
@@ -311,13 +303,13 @@ ${asking}
         onShowMore={(column) => loadMore(column)}${extra ? `\n${extra}` : ''}
         renderCard={(d) => (
           <KanbanCard
-            logo={<img src={d.logoUrl} alt="" className="size-5" />}
+            logo={<img src={d.logoUrl} alt="" className="size-4" />}
             title={<Link href={\`/deals/\${d.id}\`} underline="hover">{d.company}</Link>}
             status={d.status && <Badge size="sm" tone="brand"><Sparks />{d.status}</Badge>}
             fields={[
               { icon: <Calendar />, label: 'Close date', value: d.closeDate },
               { icon: <Label />, label: 'Value', value: <Badge size="sm" tone={valueTone(d.value)}>{euro(d.value)}</Badge> },
-              { icon: <User />, label: 'Owner', value: <Owner person={d.owner} /> },
+              { icon: <Avatar size={16} initials={d.owner.initials} tone={d.owner.tone} />, label: 'Owner', value: d.owner.name },
               { icon: <Notes />, label: 'Next step', value: d.next ?? 'Set next step…', placeholder: !d.next },
             ]}
             footer={

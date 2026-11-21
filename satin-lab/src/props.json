@@ -5356,7 +5356,7 @@
           "name": "logo",
           "type": "React.ReactNode",
           "required": false,
-          "description": "Before the title: a 20px Avatar (rounded for a company), a logo."
+          "description": "Before the title, in the fields' icon column: a 16px logo, or a 16px Avatar (rounded for a company)."
         },
         {
           "name": "status",
