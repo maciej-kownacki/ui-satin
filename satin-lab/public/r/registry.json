@@ -1393,6 +1393,27 @@
       ]
     },
     {
+      "name": "pixel-motion",
+      "type": "registry:ui",
+      "title": "Pixel motion",
+      "description": "The Satin Pixel motion component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/pixel-motion.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "pointer-modality",
       "type": "registry:ui",
       "title": "Pointer modality",
@@ -1892,7 +1913,8 @@
       "dependencies": [],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/pixel-motion.json"
       ],
       "meta": {
         "version": "0.7.1",

@@ -1,68 +1,27 @@
 'use client'
 
 import * as React from 'react'
+import { curve, easeSize, freeze, measure, pixelKeyframes } from './pixel-motion'
 
 /** How long a step takes, ms. */
 export const STEP_MS = 360
 /** Its curve: quick to leave, long to settle. */
 export const STEP_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
+/** STEP_EASE as progress over time, 0 to 1. */
+const STEP = curve(0.22, 1, 0.36, 1)
 /** The space between the old and the new step on the track, px. */
 const GAP = 24
-/** A keyframe every 4 ms: finer than any screen's frames, so the steps below read as a glide. */
-const KEYFRAMES = Math.round(STEP_MS / 4)
 
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-/** STEP_EASE as progress over time, 0 to 1. */
-function ease(t: number) {
-  const [x1, y1, x2, y2] = [0.22, 1, 0.36, 1]
-  const at = (a: number, b: number, s: number) => 3 * a * s * (1 - s) ** 2 + 3 * b * s * s * (1 - s) + s ** 3
-  let lo = 0
-  let hi = 1
-  for (let i = 0; i < 24; i++) {
-    const mid = (lo + hi) / 2
-    if (at(x1, x2, mid) < t) lo = mid
-    else hi = mid
-  }
-  return at(y1, y2, (lo + hi) / 2)
-}
-
-/**
- * Keyframes from `from` to `to` along the curve, every value on the screen's pixel grid (half a
- * CSS pixel on a 2x screen) and each held until the next (`steps`): whichever moment the browser
- * draws, a part sits on whole device pixels, so its icons and text are never resampled between
- * them. The ends are exactly where layout puts things, so nothing snaps when a step starts or
- * ends, and a box whose height ends on a half pixel gets there without a last half-pixel hop.
- */
-function wholePixels(from: number, to: number, css: (v: number) => Keyframe): Keyframe[] {
-  const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1
-  const grid = (v: number) => Math.round(v * dpr) / dpr
-  return Array.from({ length: KEYFRAMES + 1 }, (_, i) => {
-    const t = i / KEYFRAMES
-    const v = i === 0 ? from : i === KEYFRAMES ? to : grid(from + (to - from) * ease(t))
-    return { ...css(v), offset: t, easing: 'steps(1, end)' }
-  })
-}
-const across = (x: number): Keyframe => ({ transform: `translate3d(${x}px, 0, 0)` })
-const tall = (h: number): Keyframe => ({ height: `${h}px` })
-
-/** A part held at its size while it moves, so the box easing around it never lays it out again. */
-const LOCKS = ['width', 'height', 'min-height', 'max-height', 'flex', 'contain'] as const
-function lock(el: HTMLElement, width: number, height: number) {
-  const before = LOCKS.map((p) => el.style.getPropertyValue(p))
-  el.style.setProperty('width', `${width}px`)
-  el.style.setProperty('height', `${height}px`)
-  el.style.setProperty('min-height', `${height}px`)
-  el.style.setProperty('max-height', `${height}px`)
-  el.style.setProperty('flex', 'none')
-  el.style.setProperty('contain', 'layout paint')
-  return () => LOCKS.forEach((p, i) => (before[i] ? el.style.setProperty(p, before[i]) : el.style.removeProperty(p)))
-}
+/** The track from `from` to `to` in whole device pixels, from and to exact values (see pixelKeyframes). */
+const across = (from: number, to: number) =>
+  pixelKeyframes(from, to, (x) => ({ transform: `translate3d(${x}px, 0, 0)` }), { ease: STEP, duration: STEP_MS })
 
 type Snapshot = { heights: number[]; copies: (Node | null)[]; scrolls: number[] }
 
 /** The slide running in each box: where its part started, and how to let it go. */
-const running = new WeakMap<Element, { slide: Animation; from: number; unlock: () => void }>()
+const running = new WeakMap<Element, { slide: Animation; from: number; release: () => void }>()
 
 /**
  * The step slide: how DecisionCard moves between its questions, and Satin Pro's CommandPages
@@ -76,7 +35,8 @@ const running = new WeakMap<Element, { slide: Animation; from: number; unlock: (
  *
  * Nothing in the parts is laid out or painted again while they move: both are held at the size
  * they were measured at (and contained) while only the box's height changes around them, and the
- * track and the height advance in whole pixels from and to exact layout values (see wholePixels).
+ * track and the height advance in whole device pixels from and to exact layout values (see
+ * pixelKeyframes in pixel-motion.tsx).
  *
  * `key` names the step; `order` puts steps in order (higher is forward); `frameRef` is what the
  * track is as wide as (the card, the menu); `parts` returns the elements that move, each the only
@@ -96,7 +56,7 @@ export function useStepSlide(key: string, order: number, frameRef: React.RefObje
     const now = partsRef.current()
     return {
       // Each part's own height, unrounded (offsetHeight rounds, and the half pixel then snaps).
-      heights: now.map((p) => p?.getBoundingClientRect().height ?? 0),
+      heights: now.map((p) => (p ? measure(p).height : 0)),
       copies: now.map((p) => p?.cloneNode(true) ?? null),
       scrolls: now.map((p) => p?.scrollTop ?? 0),
     }
@@ -127,23 +87,25 @@ export function useStepSlide(key: string, order: number, frameRef: React.RefObje
         let startOpacity = 1
         if (ongoing?.slide.playState === 'running') {
           const p = ongoing.slide.effect?.getComputedTiming().progress ?? 1
-          startX = ongoing.from * (1 - ease(p))
-          startOpacity = ease(p)
+          startX = ongoing.from * (1 - STEP(p))
+          startOpacity = STEP(p)
         }
-        const fromHeight = host.getAnimations().length > 0 ? host.getBoundingClientRect().height : prev.heights[i]
+        const fromHeight = host.getAnimations().length > 0 ? measure(host).height : prev.heights[i]
         for (const n of [el, host]) n.getAnimations().forEach((a) => a.cancel())
         ongoing?.slide.cancel()
-        ongoing?.unlock()
+        ongoing?.release()
         host.querySelectorAll(':scope > [data-step-copy]').forEach((n) => n.remove())
-        const box = el.getBoundingClientRect()
+        const box = measure(el)
         const toHeight = box.height
 
         host.style.overflow = 'clip'
-        const unlock = lock(el, box.width, box.height)
-        const slide = el.animate(wholePixels(sign * distance, 0, across), steps)
+        const release = freeze(el, box.width, box.height)
+        const slide = el.animate(across(sign * distance, 0), steps)
         el.animate([{ opacity: 0 }, { opacity: 1 }], fade)
-        running.set(host, { slide, from: sign * distance, unlock })
-        if (Math.abs(fromHeight - toHeight) > 0.25) host.animate(wholePixels(fromHeight, toHeight, tall), steps)
+        running.set(host, { slide, from: sign * distance, release })
+        // The box's earlier run was cancelled above, so easeSize starts from fromHeight; it clips and
+        // lets go on the same frame as the slide below.
+        if (Math.abs(fromHeight - toHeight) > 0.25) easeSize(host, { from: fromHeight, to: toHeight, duration: STEP_MS, ease: STEP })
         if (copy) {
           copy.setAttribute('data-step-copy', '')
           copy.setAttribute('aria-hidden', 'true')
@@ -156,7 +118,7 @@ export function useStepSlide(key: string, order: number, frameRef: React.RefObje
           // A scrolled list leaves as it was scrolled.
           const scroll = prev.scrolls[i] ?? 0
           if (scroll > 0) copy.scrollTop = scroll
-          copy.animate(wholePixels(startX, -sign * distance, across), steps)
+          copy.animate(across(startX, -sign * distance), steps)
           copy.animate([{ opacity: startOpacity }, { opacity: 0 }], fade)
         }
         // Done: the copy goes, the part is let go and the box stops clipping, all on the same
@@ -166,7 +128,7 @@ export function useStepSlide(key: string, order: number, frameRef: React.RefObje
             if (running.get(host)?.slide !== slide) return
             running.delete(host)
             copy?.remove()
-            unlock()
+            release()
             host.style.overflow = ''
           },
           () => {},
