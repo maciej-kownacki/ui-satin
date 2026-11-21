@@ -526,8 +526,9 @@ function HelpBanner() {
     'relative mx-2 overflow-clip rounded-xl border border-border-default bg-bg-card',
     'shadow-[0_2px_4px_-2px_var(--effect-shadow-sm),0_4px_6px_-1px_var(--effect-shadow-sm)]',
   )
-  // The content that comes in fades in over the resize, as the dropdown's rows do.
-  const fade = toggled.current && 'animate-[satin-fade-in_var(--duration-base)_var(--ease-out)]'
+  // The content that comes in fades in over the resize, as the dropdown's rows do; not under
+  // reduced motion, which no data-slot above it brings in.
+  const fade = toggled.current && 'animate-[satin-fade-in_var(--duration-base)_var(--ease-out)] motion-reduce:animate-none'
   const mesh = (
     <>
       <img src="/figma/mesh-light.png" alt="" className="pointer-events-none absolute -inset-px size-[calc(100%+2px)] max-w-none object-cover mix-blend-multiply" />

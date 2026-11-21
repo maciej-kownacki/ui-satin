@@ -181,6 +181,16 @@
     transition-duration: var(--duration-slow);
   }
 }
+/* Reduced motion: the group opens and folds at once wherever the class is used. The reset at the
+   top only reaches it under a data-slot, and an app (the lab's sidebar) can use it without one.
+   The same near-zero duration as the reset, so transitionend still fires. Unlayered, since base
+   rules are scoped by data-slot; !important outranks every transition set on it. */
+@media (prefers-reduced-motion: reduce) {
+  .satin-expand,
+  .satin-expand > * > * {
+    transition-duration: 0.01ms !important;
+  }
+}
 
 /* Progress (components/progress.tsx) without a value: a third of the track slides across,
    from the start side, so right to left it runs the other way. */

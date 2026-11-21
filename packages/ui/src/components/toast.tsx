@@ -648,6 +648,8 @@ export function Toaster({ className, limit = 3, children }: ToasterProps) {
       })}
       <ToastPrimitive.Viewport
         ref={viewportRef}
+        // A slot like every Satin part, so reduced motion (motion.css) also stops its height transition.
+        data-slot="toast-viewport"
         // The region screen readers land on with F8, in the app's words; Radix puts the key in {hotkey}.
         label={`${labels.notifications} ({hotkey})`}
         style={{ height, transition: `height ${MOTION_MS}ms var(--ease-out)` }}
