@@ -286,13 +286,6 @@ export const allNav: NavGroup[] = [
         edition: 'pro',
       },
       { id: 'search-bar', title: 'Search bar', href: '/components/search-bar', description: 'A search field for the sidebar or a toolbar, with ⌘K to focus it from anywhere.' },
-      {
-        id: 'search-scoped',
-        title: 'Scoped search',
-        href: '/components/search-scoped',
-        description: 'One search box over several kinds of record or places, with a scope chip (Everywhere, Candidates, This project) that says where it looks; use it instead of a Search bar when one list of hits would bury the one wanted.',
-        edition: 'pro',
-      },
       { id: 'segmented-control', title: 'Segmented control', href: '/components/segmented-control', description: 'Switches between two to five views or filters in place.' },
       { id: 'select', title: 'Select', href: '/components/select', description: 'Picks one value from a list, with a label, a hint and an error like any field.' },
       {
@@ -351,7 +344,7 @@ export const allNav: NavGroup[] = [
  * preview builds show them. The one list to edit when a page is done.
  */
 export const unreleased = new Set<string>([
-  'command-pages', 'search-scoped', 'kanban-board', 'scheduler', 'stepper', 'review-queue',
+  'command-pages', 'kanban-board', 'scheduler', 'stepper', 'review-queue',
 ])
 
 /**

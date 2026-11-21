@@ -8,12 +8,17 @@ import { ButtonDefaultsContext, type ButtonDefaults } from './button'
  * Buttons that belong together: a toolbar, Prev / Next, a set of views, the two halves of a
  * SplitButton.
  *
- * `attached` (the default) joins them into one block: the inner corners go square, the buttons
- * touch, and the only line between two of them is the later one's leading border (the
- * outline colour on secondary). Each button's outer ring and shadow are clipped on the sides it
- * shares, so they run unbroken along the top and bottom of the block, with no notch at a seam. The button under the
- * pointer or with focus comes to the front, so its ring and focus ring are never cut by a
- * neighbour. `attached={false}` keeps every button whole, 8px apart (4px at xs), for a looser
+ * `attached` (the default) joins them into one block: the inner corners go square and the only
+ * line between two buttons is the divider (the style's border colour, the outline colour on
+ * secondary). Neighbours overlap by that line's width and both draw it, the earlier one as its
+ * trailing border and the later one as its leading border, so whichever is in front the divider
+ * looks the same, and at a fractional position there is always an opaque button under the seam
+ * (two buttons that only touched would each cover part of the seam pixel and let the page show
+ * through as a hairline). Each button's outer ring and shadow are clipped on the sides it
+ * shares, so they run unbroken along the top and bottom of the block, with no notch at a seam;
+ * outside the ring the later button's clip starts one line further in, so the two shadows never
+ * stack into a darker stripe. The button under the pointer or with focus comes to the front, so
+ * its ring and focus ring are never cut by a neighbour. `attached={false}` keeps every button whole, 8px apart (4px at xs), for a looser
  * toolbar; put a `ButtonGroupSeparator` between sets there.
  *
  * `variant`, `size` and `shape` are defaults for every Button inside (a button's own prop wins),
@@ -50,22 +55,32 @@ export function ButtonGroup({
           horizontal ? 'flex-row items-center' : 'flex-col items-stretch',
           attached
             ? [
+                // The overlap: one divider's width (the buttons' border width).
+                '[--seam:var(--border-width-strong)]',
                 '[&>*]:relative [&>*:hover]:z-10 [&>*:focus-visible]:z-20 [&>*:focus-visible]:[clip-path:none]!',
                 horizontal
                   ? [
                       // Logical sides, so the block joins the same way right to left.
-                      '[&>*:not(:first-child)]:rounded-s-none [&>*:not(:last-child)]:rounded-e-none [&>*:not(:last-child)]:border-e-0',
-                      '[&>[data-variant=secondary]:not(:first-child)]:border-s-border-default',
-                      '[&>*:not(:last-child)]:[clip-path:inset(-12px_0_-12px_-12px)] [&>*:not(:first-child)]:[clip-path:inset(-12px_-12px_-12px_0)]',
-                      // clip-path has no logical form: right to left, the shared side is the other one.
-                      '[&>*:not(:last-child)]:rtl:[clip-path:inset(-12px_-12px_-12px_0)] [&>*:not(:first-child)]:rtl:[clip-path:inset(-12px_0_-12px_-12px)]',
-                      '[&>*:not(:first-child):not(:last-child)]:[clip-path:inset(-12px_0)]',
+                      '[&>*:not(:first-child)]:rounded-s-none [&>*:not(:last-child)]:rounded-e-none',
+                      '[&>*:not(:first-child):not([data-variant=tertiary])]:-ms-(--seam)',
+                      '[&>[data-variant=secondary]:not(:first-child)]:border-s-border-default [&>[data-variant=secondary]:not(:last-child)]:border-e-border-default',
+                      // The shared side of an earlier button is clipped at its edge; a later one's
+                      // at its edge only across the box and its ring, one seam further in beyond.
+                      '[&>*:not(:last-child)]:[clip-path:inset(-12px_0_-12px_-12px)]',
+                      '[&>*:not(:first-child)]:[clip-path:polygon(var(--seam)_-12px,calc(100%_+_12px)_-12px,calc(100%_+_12px)_calc(100%_+_12px),var(--seam)_calc(100%_+_12px),var(--seam)_calc(100%_+_var(--seam)),0_calc(100%_+_var(--seam)),0_calc(var(--seam)_*_-1),var(--seam)_calc(var(--seam)_*_-1))]',
+                      '[&>*:not(:first-child):not(:last-child)]:[clip-path:polygon(var(--seam)_-12px,100%_-12px,100%_calc(100%_+_12px),var(--seam)_calc(100%_+_12px),var(--seam)_calc(100%_+_var(--seam)),0_calc(100%_+_var(--seam)),0_calc(var(--seam)_*_-1),var(--seam)_calc(var(--seam)_*_-1))]',
+                      // clip-path has no logical form: right to left, the shared sides swap.
+                      '[&>*:not(:last-child)]:rtl:[clip-path:inset(-12px_-12px_-12px_0)]',
+                      '[&>*:not(:first-child)]:rtl:[clip-path:polygon(-12px_-12px,calc(100%_-_var(--seam))_-12px,calc(100%_-_var(--seam))_calc(var(--seam)_*_-1),100%_calc(var(--seam)_*_-1),100%_calc(100%_+_var(--seam)),calc(100%_-_var(--seam))_calc(100%_+_var(--seam)),calc(100%_-_var(--seam))_calc(100%_+_12px),-12px_calc(100%_+_12px))]',
+                      '[&>*:not(:first-child):not(:last-child)]:rtl:[clip-path:polygon(0_-12px,calc(100%_-_var(--seam))_-12px,calc(100%_-_var(--seam))_calc(var(--seam)_*_-1),100%_calc(var(--seam)_*_-1),100%_calc(100%_+_var(--seam)),calc(100%_-_var(--seam))_calc(100%_+_var(--seam)),calc(100%_-_var(--seam))_calc(100%_+_12px),0_calc(100%_+_12px))]',
                     ]
                   : [
-                      '[&>*:not(:first-child)]:rounded-t-none [&>*:not(:last-child)]:rounded-b-none [&>*:not(:last-child)]:border-b-0',
-                      '[&>[data-variant=secondary]:not(:first-child)]:border-t-border-default',
-                      '[&>*:not(:last-child)]:[clip-path:inset(-12px_-12px_0_-12px)] [&>*:not(:first-child)]:[clip-path:inset(0_-12px_-12px_-12px)]',
-                      '[&>*:not(:first-child):not(:last-child)]:[clip-path:inset(0_-12px)]',
+                      '[&>*:not(:first-child)]:rounded-t-none [&>*:not(:last-child)]:rounded-b-none',
+                      '[&>*:not(:first-child):not([data-variant=tertiary])]:-mt-(--seam)',
+                      '[&>[data-variant=secondary]:not(:first-child)]:border-t-border-default [&>[data-variant=secondary]:not(:last-child)]:border-b-border-default',
+                      '[&>*:not(:last-child)]:[clip-path:inset(-12px_-12px_0_-12px)]',
+                      '[&>*:not(:first-child)]:[clip-path:polygon(-12px_var(--seam),calc(var(--seam)_*_-1)_var(--seam),calc(var(--seam)_*_-1)_0,calc(100%_+_var(--seam))_0,calc(100%_+_var(--seam))_var(--seam),calc(100%_+_12px)_var(--seam),calc(100%_+_12px)_calc(100%_+_12px),-12px_calc(100%_+_12px))]',
+                      '[&>*:not(:first-child):not(:last-child)]:[clip-path:polygon(-12px_var(--seam),calc(var(--seam)_*_-1)_var(--seam),calc(var(--seam)_*_-1)_0,calc(100%_+_var(--seam))_0,calc(100%_+_var(--seam))_var(--seam),calc(100%_+_12px)_var(--seam),calc(100%_+_12px)_100%,-12px_100%)]',
                     ],
               ]
             : size === 'xs'

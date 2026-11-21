@@ -293,6 +293,7 @@
   --component-switch-on-hover: var(--color-green-soft-600);
   --component-kbd-bg: var(--bg-card);
   --component-changes-review-source-bg: var(--bg-card);
+  --component-kanban-column-bg: var(--bg-canvas);
   --component-notification-badge-bg: var(--status-neutral-bg);
   --component-table-pro-total-bg: var(--color-zinc-50);
   --component-bulk-action-bar-count-bg: var(--status-neutral-bg);
@@ -416,6 +417,7 @@
   --component-switch-on-hover: var(--color-green-soft-500);
   --component-kbd-bg: var(--bg-muted);
   --component-changes-review-source-bg: var(--bg-muted);
+  --component-kanban-column-bg: var(--bg-card);
   --component-notification-badge-bg: var(--color-secondary-pressed-dark);
   --component-table-pro-total-bg: var(--color-popover-dark);
   --component-bulk-action-bar-count-bg: var(--color-secondary-pressed-dark);
@@ -532,6 +534,7 @@
     --component-switch-on-hover: var(--color-green-soft-500);
     --component-kbd-bg: var(--bg-muted);
     --component-changes-review-source-bg: var(--bg-muted);
+    --component-kanban-column-bg: var(--bg-card);
     --component-notification-badge-bg: var(--color-secondary-pressed-dark);
     --component-table-pro-total-bg: var(--color-popover-dark);
     --component-bulk-action-bar-count-bg: var(--color-secondary-pressed-dark);
@@ -751,6 +754,7 @@
   --color-component-switch-on-hover: var(--component-switch-on-hover);
   --color-component-kbd-bg: var(--component-kbd-bg);
   --color-component-changes-review-source-bg: var(--component-changes-review-source-bg);
+  --color-component-kanban-column-bg: var(--component-kanban-column-bg);
   --color-component-notification-badge-bg: var(--component-notification-badge-bg);
   --color-component-table-pro-total-bg: var(--component-table-pro-total-bg);
   --color-component-bulk-action-bar-count-bg: var(--component-bulk-action-bar-count-bg);

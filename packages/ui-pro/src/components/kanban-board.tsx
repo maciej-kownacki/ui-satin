@@ -1116,8 +1116,10 @@ export function KanbanBoard<T>({
       'data-over-limit': over || undefined,
       'data-refused': refused || undefined,
     }
+    // A wash one step under the surface the board sits on, fading out down the column. No resting
+    // edge, which would outline the full height; the edge shows only while the column takes a drop.
     const lane =
-      'flex min-h-0 shrink-0 flex-col rounded-2xl border border-border-subtle bg-bg-canvas transition-[border-color] duration-(--duration-fast) ease-(--ease-out) data-over:border-border-strong'
+      'flex min-h-0 shrink-0 flex-col rounded-2xl border border-transparent bg-linear-to-b from-component-kanban-column-bg to-transparent transition-[border-color] duration-(--duration-fast) ease-(--ease-out) data-over:border-border-strong'
 
     if (isCollapsed) {
       return (
@@ -1295,11 +1297,14 @@ function Gap({ height }: { height: number }) {
 
 /** One line of a card's `fields`: a deal's close date, value, owner, next step. */
 export interface KanbanCardField {
-  /** A 16px icon before the value, in text/muted. */
+  /** A 16px icon before the value, in text/muted, or a 16px Avatar for a person. */
   icon?: React.ReactNode
   /** What the value is ("Close date"): screen readers hear it, the icon shows it. */
   label: string
-  /** The value: text, a Badge, an Avatar with a name. */
+  /**
+   * The value: text, a name, or a small Badge. A Badge that opens the value steps back by its
+   * padding, so every value's words start at the same place.
+   */
   value: React.ReactNode
   /** The value is a prompt for something missing ("Set next step…"): in text/muted. */
   placeholder?: boolean
@@ -1308,7 +1313,7 @@ export interface KanbanCardField {
 export interface KanbanCardProps extends Omit<React.ComponentProps<typeof Card>, 'title' | 'size' | 'onClose' | 'closeLabel' | 'description' | 'footer'> {
   /** What the card is: a company, a person, an order. A Link when it opens a page. */
   title: React.ReactNode
-  /** Before the title: a 20px Avatar (rounded for a company), a logo. */
+  /** Before the title, in the fields' icon column: a 16px logo, or a 16px Avatar (rounded for a company). */
   logo?: React.ReactNode
   /**
    * A Badge under the title for what's happening to it ("Nudged by agent · 2h"). Screen readers
@@ -1398,7 +1403,8 @@ export function KanbanCard({
       <div className="relative flex min-w-0 flex-col">
         <div className="flex flex-col items-start gap-1">
           <div className="flex w-full items-start gap-2">
-            {logo != null && <span className="flex h-5 shrink-0 items-center">{logo}</span>}
+            {/* The fields' icon column, so the title starts where their values do. */}
+            {logo != null && <span className="flex h-5 w-4 shrink-0 items-center justify-center [&>svg]:size-4">{logo}</span>}
             <span className="min-w-0 flex-1 text-base leading-5 font-medium break-words text-text-default">{title}</span>
             {menu && <CardMenu item={item} board={board} actions={actions} moveActions={moveActions} />}
           </div>
@@ -1412,7 +1418,8 @@ export function KanbanCard({
                 <dt className="sr-only">{field.label}</dt>
                 <dd className="flex min-h-5 min-w-0 flex-1 items-center gap-2 text-sm text-text-default">
                   {field.icon != null && <span className="flex size-4 shrink-0 items-center justify-center text-text-muted [&_svg]:size-4">{field.icon}</span>}
-                  <span className={cn('min-w-0 truncate', field.placeholder && 'text-text-muted')}>{field.value}</span>
+                  {/* A small Badge opening the value steps back by its padding, so its words start where the others do. */}
+                  <span className={cn('min-w-0 truncate has-[>[data-slot=badge]:first-child]:-ms-1.5', field.placeholder && 'text-text-muted')}>{field.value}</span>
                 </dd>
               </div>
             ))}

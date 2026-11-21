@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Calendar, ChatBubble, Label, Notes, SendDiagonal, Sparks, User } from 'iconoir-react'
+import { Calendar, ChatBubble, Label, Notes, SendDiagonal, Sparks } from 'iconoir-react'
 import { Avatar, type AvatarTone } from '@uisatin/ui/avatar'
 import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
@@ -90,6 +90,69 @@ const columnsFor = (limits: boolean, more: number): KanbanColumn[] => [
   { id: 'won', title: 'Won' },
 ]
 
+/* Fictional companies' marks, drawn for this demo in the manner of Logoipsum: one plain shape each,
+   in the text colour, so they hold up in Light and Dark. Keyed by deal id. */
+const LOGOS: Record<string, React.ReactNode> = {
+  'northwind-labs': <path d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z" />,
+  'fjordline-logistics': <path d="M1.5 4h5l8 8-8 8h-5l8-8zM10 4h5l8 8-8 8h-5l8-8z" />,
+  'lumen-bank': <path fillRule="evenodd" d="M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zm3 3a4 4 0 1 0 0 8a4 4 0 1 0 0-8z" />,
+  'orbit-retail': (
+    <>
+      <circle cx="10" cy="14" r="8" />
+      <circle cx="19.5" cy="4.5" r="3.5" />
+    </>
+  ),
+  'brightpath-edu': <path d="M2 22v-6h6v-6h6V4h8v18z" />,
+  'vela-studios': <path d="M11 2v15H3.5zM13 5.5L20.5 17H13zM2.5 19h19L19 22.5H5z" />,
+  'corva-health': (
+    <>
+      <circle cx="12" cy="6.75" r="4.75" />
+      <circle cx="17.25" cy="12" r="4.75" />
+      <circle cx="12" cy="17.25" r="4.75" />
+      <circle cx="6.75" cy="12" r="4.75" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  'quanta-freight': (
+    <>
+      <rect x="2" y="2" width="9" height="9" rx="2" />
+      <rect x="13" y="2" width="9" height="9" rx="2" />
+      <rect x="2" y="13" width="9" height="9" rx="2" />
+      <circle cx="17.5" cy="17.5" r="4.5" />
+    </>
+  ),
+  'halden-maritime': (
+    <>
+      <path d="M3 12a9 9 0 0 1 18 0z" />
+      <rect x="1" y="14" width="22" height="3" rx="1.5" />
+      <rect x="5" y="19" width="14" height="3" rx="1.5" />
+    </>
+  ),
+  'tidewater-group': (
+    <path d="M2 6a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v4.5c-3.3-2.7-6.7-2.7-10 0s-6.7 2.7-10 0zM2 14c3.3 2.7 6.7 2.7 10 0s6.7-2.7 10 0v4a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" />
+  ),
+  'nordlicht-bank': (
+    <>
+      <rect x="3" y="11" width="4.5" height="11" rx="2.25" />
+      <rect x="9.75" y="6.5" width="4.5" height="15.5" rx="2.25" />
+      <rect x="16.5" y="2" width="4.5" height="20" rx="2.25" />
+    </>
+  ),
+  'helix-pharma': (
+    <path fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" d="M7 2c0 6 10 6 10 10s-10 4-10 10M17 2c0 6-10 6-10 10s10 4 10 10" />
+  ),
+  'sierra-telecom': <path d="M1 21L8.5 6l4.6 9.2L16 10l7 11z" />,
+  'ember-hotels': <path fillRule="evenodd" d="M12 1.5s7.5 7.8 7.5 13a7.5 7.5 0 0 1-15 0C4.5 9.3 12 1.5 12 1.5zM12 12.5a3 3 0 1 0 0 6a3 3 0 1 0 0-6z" />,
+  'kestrel-analytics': <path d="M2 4.5l10 6 10-6V9l-10 6-10-6zM2 12l10 6 10-6v4.5l-10 6-10-6z" />,
+  'moss-pine-legal': <path d="M12 1.5L18.5 10h-3l5.5 7h-7.5v5.5h-3V17H3l5.5-7h-3z" />,
+}
+
+const CompanyLogo = ({ id }: { id: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className="size-4 text-text-default">
+    {LOGOS[id]}
+  </svg>
+)
+
 const euro = (n: number) => `€${n.toLocaleString('en-US')}`
 const valueTone = (n: number): BadgeTone => (n >= 100000 ? 'green' : n >= 40000 ? 'sky' : 'neutral')
 
@@ -100,7 +163,7 @@ function DealCard({ d }: { d: Deal }) {
   const owner = OWNERS[d.owner]
   return (
     <KanbanCard
-      logo={<Avatar size={20} shape="rounded" initials={d.company[0]!} aria-hidden />}
+      logo={<CompanyLogo id={d.id} />}
       title={
         <Link href="#" underline="hover" onClick={(e) => e.preventDefault()}>
           {d.company}
@@ -125,16 +188,7 @@ function DealCard({ d }: { d: Deal }) {
             </Badge>
           ),
         },
-        {
-          icon: <User />,
-          label: 'Owner',
-          value: (
-            <span className="inline-flex items-center gap-1.5 align-top">
-              <Avatar size={16} initials={owner.initials} tone={owner.tone} aria-hidden />
-              {owner.name}
-            </span>
-          ),
-        },
+        { icon: <Avatar size={16} initials={owner.initials} tone={owner.tone} aria-hidden />, label: 'Owner', value: owner.name },
         { icon: <Notes />, label: 'Next step', value: d.next ?? 'Set next step…', placeholder: !d.next },
       ]}
       footer={
@@ -211,7 +265,7 @@ function code(v: Record<string, string>) {
   }
 `
     : ''
-  return `import { Calendar, ChatBubble, Label, Notes, Sparks, User } from 'iconoir-react'
+  return `import { Calendar, ChatBubble, Label, Notes, Sparks } from 'iconoir-react'
 import { Avatar } from '@uisatin/ui/avatar'
 import { Badge } from '@uisatin/ui/badge'${limits ? `\nimport { Button } from '@uisatin/ui/button'\nimport { Dialog } from '@uisatin/ui/dialog'` : ''}
 import { Link } from '@uisatin/ui/link'
@@ -249,13 +303,13 @@ ${asking}
         onShowMore={(column) => loadMore(column)}${extra ? `\n${extra}` : ''}
         renderCard={(d) => (
           <KanbanCard
-            logo={<Avatar size={20} shape="rounded" initials={d.company[0]} aria-hidden />}
+            logo={<img src={d.logoUrl} alt="" className="size-4" />}
             title={<Link href={\`/deals/\${d.id}\`} underline="hover">{d.company}</Link>}
             status={d.status && <Badge size="sm" tone="brand"><Sparks />{d.status}</Badge>}
             fields={[
               { icon: <Calendar />, label: 'Close date', value: d.closeDate },
               { icon: <Label />, label: 'Value', value: <Badge size="sm" tone={valueTone(d.value)}>{euro(d.value)}</Badge> },
-              { icon: <User />, label: 'Owner', value: <Owner person={d.owner} /> },
+              { icon: <Avatar size={16} initials={d.owner.initials} tone={d.owner.tone} />, label: 'Owner', value: d.owner.name },
               { icon: <Notes />, label: 'Next step', value: d.next ?? 'Set next step…', placeholder: !d.next },
             ]}
             footer={
