@@ -1116,8 +1116,10 @@ export function KanbanBoard<T>({
       'data-over-limit': over || undefined,
       'data-refused': refused || undefined,
     }
+    // A wash one step under the surface the board sits on, fading out down the column. No resting
+    // edge, which would outline the full height; the edge shows only while the column takes a drop.
     const lane =
-      'flex min-h-0 shrink-0 flex-col rounded-2xl border border-border-subtle bg-bg-canvas transition-[border-color] duration-(--duration-fast) ease-(--ease-out) data-over:border-border-strong'
+      'flex min-h-0 shrink-0 flex-col rounded-2xl border border-transparent bg-linear-to-b from-component-kanban-column-bg to-transparent transition-[border-color] duration-(--duration-fast) ease-(--ease-out) data-over:border-border-strong'
 
     if (isCollapsed) {
       return (
