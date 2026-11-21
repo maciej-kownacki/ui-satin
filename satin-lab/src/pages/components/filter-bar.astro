@@ -1,12 +1,13 @@
 ---
 import Docs from '../../layouts/Docs.astro'
 import DocSection from '../../components/DocSection.astro'
-import FilterBarDemo, { options } from '../../demos/filter-bar'
+import FilterBarDemo, { directionOptions, options } from '../../demos/filter-bar'
 import { api } from '../../api'
 import { page } from '../../nav'
 import { highlight } from '../../lib/highlight'
 
-const codeHtml = await highlight(options)
+// The directions of the exploration have code too, but only Baseline's is the page's example.
+const codeHtml = await highlight([...options, ...directionOptions])
 ---
 
 <Docs current="filter-bar">
