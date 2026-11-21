@@ -6338,7 +6338,7 @@
           "name": "notice",
           "type": "React.ReactNode",
           "required": false,
-          "description": "A message inside the bar, above everything else: a `<Banner layout=\"inline\">` or an `<Alert layout=\"inline\">`. Leave it out (or pass null) once it is dismissed."
+          "description": "A message inside the bar, above everything else: a `<Banner layout=\"inline\">` or an `<Alert layout=\"inline\">`. Pass null or undefined when there is nothing to show (once it is dismissed, say): the bar's radius follows the prop, so an empty fragment still rounds it to 20. Dismissing it from the keyboard moves focus to the field."
         },
         {
           "name": "attachments",

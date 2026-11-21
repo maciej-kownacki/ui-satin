@@ -71,7 +71,9 @@ export interface PromptBarProps extends Omit<React.ComponentProps<'form'>, 'onSu
   placeholder?: string
   /**
    * A message inside the bar, above everything else: a `<Banner layout="inline">` or an
-   * `<Alert layout="inline">`. Leave it out (or pass null) once it is dismissed.
+   * `<Alert layout="inline">`. Pass null or undefined when there is nothing to show (once it is
+   * dismissed, say): the bar's radius follows the prop, so an empty fragment still rounds it to 20.
+   * Dismissing it from the keyboard moves focus to the field.
    */
   notice?: React.ReactNode
   /** Files shown as chips above the field; people can remove them before sending. */
@@ -176,6 +178,8 @@ export function PromptBar({
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
   const fileRef = React.useRef<HTMLInputElement>(null)
   const formRef = React.useRef<HTMLFormElement>(null)
+  // Whether focus is inside the notice: dismissing it would otherwise drop focus to <body>.
+  const noticeFocusRef = React.useRef(false)
   const setFormRef = React.useCallback(
     (node: HTMLFormElement | null) => {
       formRef.current = node
@@ -209,6 +213,16 @@ export function PromptBar({
     if (value.length === 0) setExpanded(false)
     else if (h > 28) setExpanded(true)
   }, [value, expanded])
+
+  // The notice is gone: if focus went with it, hand it to the field.
+  const hasNotice = Boolean(notice)
+  React.useLayoutEffect(() => {
+    if (hasNotice) return
+    const focusWasInside = noticeFocusRef.current
+    noticeFocusRef.current = false
+    const active = document.activeElement
+    if (focusWasInside && (!active || active === document.body)) textareaRef.current?.focus()
+  }, [hasNotice])
 
   // The menu opens above the whole bar, as the + menu does.
   const tokens = usePromptMentions({
@@ -283,7 +297,8 @@ export function PromptBar({
             // Focus: a 2px border/focus edge, as on every field.
             'has-[textarea:focus-visible]:border-border-focus has-[textarea:focus-visible]:[box-shadow:0_0_0_1px_var(--border-focus)]',
             notice ? 'rounded-3xl' : pill ? (files.length > 0 || expanded ? 'rounded-3xl' : 'rounded-pill') : 'rounded-xl',
-            disabled && 'opacity-50',
+            // Disabled dims the bar, not a notice in it: that stays readable and its buttons work.
+            disabled && (notice ? 'border-border-default/50 bg-bg-field/50 data-filled:border-border-strong/50' : 'opacity-50'),
             className,
           )}
           {...props}
@@ -301,14 +316,25 @@ export function PromptBar({
           />
 
           {notice && (
-            // -1px on three sides: the notice sits 8px from the bar's outer edge, the rows 9px.
-            <div data-slot="prompt-bar-notice" className="-mx-px -mt-px">
+            // Out by the bar's border on three sides: the notice sits 8px from the bar's outer edge, the
+            // rows 8px inside the border.
+            <div
+              data-slot="prompt-bar-notice"
+              className="-mx-(--border-width-strong) -mt-(--border-width-strong) empty:hidden"
+              onFocus={() => {
+                noticeFocusRef.current = true
+              }}
+              onBlur={(e) => {
+                // Focus moving elsewhere clears it; a blur with nowhere to go (the notice removed) keeps it.
+                if (e.relatedTarget && !e.currentTarget.contains(e.relatedTarget as Node)) noticeFocusRef.current = false
+              }}
+            >
               {notice}
             </div>
           )}
 
           {files.length > 0 && (
-            <ul aria-label={labels.attachments} className="flex flex-wrap gap-1 pb-1">
+            <ul aria-label={labels.attachments} className={cn('flex flex-wrap gap-1 pb-1', disabled && notice && 'opacity-50')}>
               {files.map((file, i) => (
                 <li key={`${file.name}-${i}`}>
                   <AttachmentChip
@@ -324,7 +350,7 @@ export function PromptBar({
 
           {/* One line: + | field | model, dictation, send. Expanded: the field on its own row over
               + and the model on the left, dictation and send on the right. */}
-          <div className={cn('flex flex-wrap items-end gap-x-2 gap-y-2', expanded && 'items-center')}>
+          <div className={cn('flex flex-wrap items-end gap-x-2 gap-y-2', expanded && 'items-center', disabled && notice && 'opacity-50')}>
             <Popover.Trigger asChild>
               <Button
                 variant="tertiary"

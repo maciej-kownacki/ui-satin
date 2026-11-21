@@ -17,7 +17,8 @@ import { bannerMesh, type Mesh } from './banner-mesh'
  * - layout="sidebar": 222 wide (the navigation column's inner width), 12 padding, 12 gap; copy on
  *   top, the action stretched across the bottom, close pinned 3px from the top-right corner.
  * - layout="inline": the width of its container, one row, 10 × 4 padding, 10 gap and a 13/18
- *   title; the banner a PromptBar holds in its `notice` (uiKit 4316:54633).
+ *   title, 38px tall like an inline Alert so the two swap without a shift; the banner a PromptBar
+ *   holds in its `notice` (uiKit 4316:54633). It keeps radius-xl whatever its `shape`.
  * - shape="rounded" is radius-xl (12). shape="pill" takes the theme's pill corner on a one-line
  *   horizontal banner (12px at Satin's default corners, fully round at Large) and radius-3xl
  *   (20) wherever the banner is taller.
@@ -44,7 +45,7 @@ const bannerVariants = cva(
       layout: {
         horizontal: 'w-[450px] items-center gap-2.5 px-3 py-2',
         sidebar: 'w-[222px] flex-col items-start gap-3 p-3',
-        inline: 'w-full items-center gap-2.5 px-2.5 py-1',
+        inline: 'min-h-[38px] w-full items-center gap-2.5 px-2.5 py-1',
       },
       shape: {
         rounded: 'rounded-xl',
@@ -55,7 +56,10 @@ const bannerVariants = cva(
         two: '',
       },
     },
-    compoundVariants: [{ layout: 'horizontal', shape: 'pill', lines: 'one', className: 'rounded-pill' }],
+    compoundVariants: [
+      { layout: 'horizontal', shape: 'pill', lines: 'one', className: 'rounded-pill' },
+      { layout: 'inline', shape: 'pill', className: 'rounded-xl' },
+    ],
     defaultVariants: { layout: 'horizontal', shape: 'rounded', lines: 'one' },
   },
 )

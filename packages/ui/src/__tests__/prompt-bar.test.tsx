@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import { Alert } from '../components/alert'
@@ -14,7 +14,9 @@ function Dismissable() {
   const [shown, setShown] = React.useState(true)
   return (
     <PromptBar
-      notice={shown && <Alert layout="inline" intent="info" title="You can launch your agents anywhere in the app" onDismiss={() => setShown(false)} />}
+      notice={
+        shown ? <Alert layout="inline" intent="info" title="You can launch your agents anywhere in the app" onDismiss={() => setShown(false)} /> : null
+      }
     />
   )
 }
@@ -45,6 +47,47 @@ describe('PromptBar notice', () => {
     expect(screen.getByRole('status').textContent).toContain('anywhere in the app')
     await user.click(screen.getByRole('button', { name: 'Dismiss' }))
     expect(slot()).toBeNull()
+  })
+
+  it('hands focus to the field when the notice is dismissed from the keyboard', async () => {
+    const { user } = renderWithSatin(<Dismissable />)
+    const dismiss = screen.getByRole('button', { name: 'Dismiss' })
+    dismiss.focus()
+    await user.keyboard('{Enter}')
+    expect(slot()).toBeNull()
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Message' }))
+  })
+
+  it('does not send the typed text when a button in the notice is pressed', async () => {
+    const onSubmit = vi.fn()
+    const relaunch = vi.fn()
+    const { user } = renderWithSatin(
+      <PromptBar
+        onSubmit={onSubmit}
+        notice={
+          <Banner layout="inline" title="Fable 5.2 available" action={<Button variant="secondary" onClick={relaunch}>Relaunch</Button>} />
+        }
+      />,
+    )
+    await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Hello')
+    await user.click(screen.getByRole('button', { name: 'Relaunch' }))
+    expect(relaunch).toHaveBeenCalledTimes(1)
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect((screen.getByRole('textbox', { name: 'Message' }) as HTMLTextAreaElement).value).toBe('Hello')
+  })
+
+  it('names the dismiss button in the labels', async () => {
+    const { user } = renderWithSatin(<Dismissable />, { labels: { dismiss: 'Odrzuć' } })
+    await user.click(screen.getByRole('button', { name: 'Odrzuć' }))
+    expect(slot()).toBeNull()
+  })
+
+  it('dims a disabled bar but not its notice', () => {
+    renderWithSatin(<PromptBar disabled notice={<Alert layout="inline" title="Read only" onDismiss={() => {}} />} />)
+    expect(bar().className).not.toContain('opacity-50')
+    expect(slot()!.className).not.toContain('opacity')
+    expect((screen.getByRole('button', { name: 'Dismiss' }) as HTMLButtonElement).disabled).toBe(false)
+    expect(screen.getByRole('textbox', { name: 'Message' }).closest('.opacity-50')).toBeTruthy()
   })
 
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {

@@ -142,7 +142,7 @@ function noticeCode(notice: string) {
     notice === 'banner'
       ? `<Banner
       layout="inline"
-      icon={<ModelMark />}
+      icon={<Sparks />}
       title="Fable 5.2 available"
       action={<Button variant="secondary">Relaunch</Button>}
       onDismiss={() => setNotice(false)}
@@ -156,7 +156,8 @@ function noticeCode(notice: string) {
   const imports =
     notice === 'banner'
       ? `import { Banner } from '@uisatin/ui/banner'
-import { Button } from '@uisatin/ui/button'`
+import { Button } from '@uisatin/ui/button'
+import { Sparks } from 'iconoir-react'`
       : `import { Alert } from '@uisatin/ui/alert'`
   return `${imports}
 import { PromptBar } from '@uisatin/ui/prompt-bar'
