@@ -1083,7 +1083,7 @@ export function DataGrid<R>({
         }}
       >
         {toolbar}
-        <div data-slot="data-grid-frame" className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-card">
+        <div data-slot="data-grid-frame" className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-card [--border-width-default:var(--border-width-strong)]">
           <div
             ref={viewportRef}
             data-slot="data-grid-viewport"

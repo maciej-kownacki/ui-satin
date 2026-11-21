@@ -10,7 +10,8 @@ import { useSatinLabels } from './labels'
  * table/row (3410:18040), table/cell (3409:17760), table/headerCell (3409:17734) and
  * table/checkboxCell (3409:17703). A real `<table>`.
  *
- * - Frame: bg/card, a border-subtle edge, radius-xl, clipped.
+ * - Frame: bg/card, a border-subtle edge, radius-xl, clipped. Every edge and rule is a full
+ *   1px (border-width-strong), not the surface hairline.
  * - Header row: component/table-header fill, a border-subtle rule under it. Header cells pad
  *   4 / 8 / 4 / 4 around a label button (8px sides, 3px top and bottom, radius-md, medium
  *   13/18, text-muted); hover tints the button bg-hover. Sortable headers cycle
@@ -372,7 +373,12 @@ export function Table<R extends Row = Row>({
   return (
     <div
       data-slot="table"
-      className={cn('relative overflow-hidden rounded-xl border border-border-subtle bg-bg-card', className)}
+      className={cn(
+        // Tables draw every edge and rule at a full 1px, not the 0.5px surface hairline: on a
+        // retina screen the hairline in border-subtle is too faint to carry the grid.
+        'relative overflow-hidden rounded-xl border border-border-subtle bg-bg-card [--border-width-default:var(--border-width-strong)]',
+        className,
+      )}
       {...props}
     >
       {scroll ? (
