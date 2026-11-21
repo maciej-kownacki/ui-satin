@@ -584,20 +584,6 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Esc'], action: 'Puts a picked-up card back where it was, also during a pointer drag.' },
     ],
   },
-  'search-scoped': {
-    summary:
-      'The input is a `combobox` (named "Search" through `searchField`, or your `aria-label`) that controls a `listbox` named "Search results"; the highlighted row is its `aria-activedescendant`, so focus stays in the query. The scope chip is a button named "Search in: Candidates" with `aria-haspopup="listbox"`: pressing it keeps focus in the query and lists the scopes there, the current one marked "(selected)", each with its result count read as words. The scope and the filter chips describe the input (`aria-describedby`), so where it looks is heard without leaving the query; each filter chip has a remove button ("Remove Stage: Interview"). Rows sit in a `group` per section, named by its heading with the count as words ("Candidates, 6 results"). A polite `status` says "Searching in Jobs", "Filter added: …" or "Filter removed: …", and the result count once typing settles. The footer of key hints is hidden from screen readers. Every word is in SatinLabels (`scopedSearch*`).',
-    keyboard: [
-      { keys: ['⌘K', 'Ctrl+K'], action: 'Focuses the query and opens the list, from anywhere on the page, unless `hotkey` is off.' },
-      { keys: ['↑', '↓'], action: 'Moves the highlight through the list, wrapping at the ends; ↓ opens a closed list. No motion.' },
-      { keys: ['Enter'], action: 'Runs the highlighted row: a scope becomes the scope, a recent search fills the query, a filter types `key:`, a value makes its chip, a result calls `onSelect` and closes the list.' },
-      { keys: ['Space'], action: 'After `in:scope` or a `key:value`, turns it into the scope or a chip.' },
-      { keys: ['Backspace'], action: 'At the start of the query, removes the last filter chip; with none left, puts the scope back to the default.' },
-      { keys: ['Esc'], action: 'Closes the list and keeps the query; with the list closed, clears the words.' },
-      { keys: ['Shift+Tab'], action: 'From the query back through the chips’ buttons: each filter’s remove button, then the scope.' },
-      { keys: ['Enter', 'Space'], action: 'On the scope chip: lists the scopes and puts focus back in the query.' },
-    ],
-  },
   stepper: {
     summary:
       'An ordered list (`role="list"`, so it stays a list without bullets) named by `aria-label`. The current step has `aria-current="step"`. A complete or failed step says so after its label, "Details, Completed" or "CV, Error" (`stepCompleted` and `stepError` in SatinLabels); the circles and their numbers are hidden, since the list gives each step its place. Linear, the steps are plain text; with `linear={false}` each is a `button` named by its label and described by its description, and a disabled step is a disabled button. Narrow, the list gives way to a `progressbar` named by the current step and read as "Step 3 of 4" (`stepOf`).',
