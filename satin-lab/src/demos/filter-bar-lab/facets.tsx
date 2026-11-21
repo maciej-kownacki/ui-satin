@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { NavArrowDown, NavArrowLeft, Xmark, XmarkCircle } from 'iconoir-react'
+import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
 import { Calendar, type DateRange } from '@uisatin/ui/date-picker'
 import {
@@ -10,13 +11,14 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   MenuItemContent,
+  menuGroupLabelClass,
   menuItemClass,
 } from '@uisatin/ui/dropdown'
 import { cn } from '@uisatin/ui/lib/utils'
 import { Popover } from '@uisatin/ui/popover'
 import { Tooltip } from '@uisatin/ui/tooltip'
 import { applyFilters, isFilterValid, toFilterDate, type Filter, type FilterField } from '@uisatin/pro/filter-bar'
-import { DealsTable, SCENARIO, date, dealsLabel, euro, fieldOf, fields, type Deal } from './data'
+import { DealsTable, SCENARIO, STAGE_TONE, date, dealsLabel, euro, fieldOf, fields, type Deal } from './data'
 import { pickedOf, readFilter, writeFilter } from './panel'
 
 /*
@@ -120,7 +122,8 @@ function ClearGroup({ disabled, onClear }: { disabled: boolean; onClear: () => v
 
 const anyOf = new Intl.ListFormat('en-US', { type: 'disjunction' })
 
-function OptionsFacet({ field, filters, onChange }: FacetProps & { field: FilterField }) {
+/** `tones` draws each row's label as the Badge the table shows for that value (Stage). */
+function OptionsFacet({ field, tones, filters, onChange }: FacetProps & { field: FilterField; tones?: Record<string, BadgeTone> }) {
   const picked = pickedOf(readFilter(filters, field.key))
   // "Me" first, as everywhere else in the lab.
   const options = [...(field.options ?? [])].sort((a, b) => Number(b.value === field.me) - Number(a.value === field.me))
@@ -154,6 +157,15 @@ function OptionsFacet({ field, filters, onChange }: FacetProps & { field: Filter
                 label={nameOf(o.value)}
                 icon={o.icon}
                 layout="inline"
+                renderLabel={
+                  tones
+                    ? (label) => (
+                        <Badge size="sm" tone={tones[o.value]}>
+                          {label}
+                        </Badge>
+                      )
+                    : undefined
+                }
                 checked={on.includes(o.value)}
                 onCheckedChange={(checked) => toggle(o.value, checked)}
               />
@@ -283,7 +295,8 @@ function CloseFacet({ filters, onChange }: FacetProps) {
   }
 
   const list = (
-    <div className="-mx-1 flex flex-col gap-1">
+    // -mt-3: 4px under the header, as in a menu, not the Popover's 16px.
+    <div className="-mx-1 -mt-3 flex flex-col gap-1">
       <div
         ref={listRef}
         id={listId}
@@ -388,7 +401,11 @@ function CloseFacet({ filters, onChange }: FacetProps) {
       }}
       surface={(trigger) => (
         <Popover
-          title={custom ? 'Custom range' : field.label}
+          // The title is drawn as a menu's group header, as the other facets' menus would show it:
+          // 12px text/muted, in line with the rows' labels. The margins undo the Popover's 10px edge.
+          title={<span className={cn(menuGroupLabelClass, '-ms-1 -mt-1.5')}>{custom ? 'Custom range' : field.label}</span>}
+          // The list ends 6px from the edge, as it starts; the calendar keeps the Popover's 10px.
+          className={custom ? undefined : 'pb-1.5'}
           closeButton={false}
           open={open}
           onOpenChange={(next) => {
@@ -433,7 +450,7 @@ export function FacetsDirection({ deals }: { deals: Deal[] }) {
           so a long value pushes it to the next row before the clear button. */}
       <div ref={barRef} role="group" aria-label="Filters" className="flex flex-wrap items-center gap-1.5">
         <OptionsFacet field={fieldOf('owner')} {...props} />
-        <OptionsFacet field={fieldOf('stage')} {...props} />
+        <OptionsFacet field={fieldOf('stage')} tones={STAGE_TONE} {...props} />
         <ValueFacet {...props} />
         <CloseFacet {...props} />
         <OptionsFacet field={fieldOf('tags')} {...props} />
