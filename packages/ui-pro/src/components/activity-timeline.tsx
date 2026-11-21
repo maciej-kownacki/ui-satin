@@ -15,11 +15,11 @@ import { toast } from '@uisatin/ui/toast'
  * alike, under the name of each day ("Today", "Yesterday", "Monday, November 16").
  *
  * - Each entry is the actor's avatar on a rail (an agent's is the tetris mark at rest, in a
- *   bg/muted circle with a 0.75px border/strong edge, the rail's colour, so it reads on card and
- *   popover alike), the sentence (**actor** verb **target**) and its time. Today's times are
- *   relative ("5 min ago") and move on by themselves: one shared clock ticks every 30 s, and
- *   only a time whose text changes renders again. Older days show the clock time. Screen readers
- *   hear the full date.
+ *   circle filled like Toast's and Attachment's icon tiles, component/file-icon-bg, with a 0.75px
+ *   border/strong edge, the rail's colour, so it reads on card and popover alike), the sentence
+ *   (**actor** verb **target**) and its time. Today's times are relative ("5 min ago") and move
+ *   on by themselves: one shared clock ticks every 30 s, and only a time whose text changes
+ *   renders again. Older days show the clock time. Screen readers hear the full date.
  * - `changes` (`AgentSuggestionChange[]`) are drawn as AgentSuggestion draws them: the field, the
  *   old value struck through, an arrow, the new one.
  * - A run of `collapseRuns` (3) or more entries by the same actor folds into one row ("Agent made
@@ -415,7 +415,7 @@ function ActorAvatar({ actor }: { actor: ActivityActor }) {
     return (
       <span
         data-slot="activity-timeline-agent"
-        className="grid size-6 place-items-center rounded-full bg-bg-muted [box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-strong)]"
+        className="grid size-6 place-items-center rounded-full bg-component-file-icon-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-strong)]"
       >
         <TetrisStill />
       </span>
