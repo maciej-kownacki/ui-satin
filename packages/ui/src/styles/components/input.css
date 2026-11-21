@@ -198,10 +198,12 @@
   background: var(--bg-muted);
   color: var(--text-muted);
   font-size: var(--text-base);
+  line-height: 21px;
   white-space: nowrap;
 }
 [data-slot="input-group"][data-size="sm"] .satin-input-addon {
   font-size: var(--text-sm);
+  line-height: 20px;
 }
 [data-slot="input-group"][data-size="lg"] > .satin-input-addon {
   border-radius: var(--radius-xl);

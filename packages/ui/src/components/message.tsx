@@ -12,10 +12,10 @@ import { Thinking, type ThinkingStep } from './thinking'
  *
  * user: a right-aligned bubble (component/message/bubble-bg and -fg: action/inverse with
  * text/on-inverse in Light, bg/muted with text/default in Dark; 12px corners, 4px bottom-right),
- * 12 × 8 padding, 13/19.5 text, wrapping at 256px of text. A source card sits 8px above
+ * 12 × 8 padding, 13/20 text, wrapping at 256px of text. A source card sits 8px above
  * it: bg/canvas, border/subtle, radius 10, 16px logo, title medium 13/18, url 12/12 muted.
  *
- * assistant: no bubble, so long answers read like a document — text/default 13/19.5, with
+ * assistant: no bubble, so long answers read like a document — text/default 13/20, with
  * the collapsed Thinking above and the actions below, 12px apart.
  */
 export interface MessageSource {

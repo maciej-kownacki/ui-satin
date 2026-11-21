@@ -15,7 +15,7 @@ import { useSatinLabels } from './labels'
  *   4 / 8 / 4 / 4 around a label button (8px sides, 3px top and bottom, radius-md, medium
  *   13/18, text-muted); hover tints the button bg-hover. Sortable headers cycle
  *   none → asc → desc with a 14px arrow 10px after the label, and set aria-sort.
- * - Cells: 12 left, 10 right, 8 top and bottom, at least 40 high, regular 13/19.5, clipped
+ * - Cells: 12 left, 10 right, 8 top and bottom, at least 40 high, regular 13/20, clipped
  *   with an ellipsis. Chips and other nodes sit in a row 4px apart.
  * - Checkbox column: 8px left padding, no right padding; the header box selects all.
  * - zebra: every second row on component/table-zebra.

@@ -11,7 +11,7 @@ import { useSatinLabels } from './labels'
  * (3124:20131): a card-surface block, a border-default edge, radius-2xl, 12px bottom padding.
  * The header holds the file icon, the filename (medium 13/18), diff stats in a diff, and a
  * tertiary xs Copy button that reads "Copied" with a check for 1.5 s. Lines are Geist Mono
- * 13/19.5, 24 high, 16px side padding, a 20px right-aligned number column 16px from the
+ * 13/20, 24 high, 16px side padding, a 20px right-aligned number column 16px from the
  * code (8px, plus an 8px sign column, in a diff).
  *
  * Line types: highlighted (code/line-highlight fill), added (status green bg, green number

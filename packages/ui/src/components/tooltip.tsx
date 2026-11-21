@@ -7,7 +7,7 @@ import { KbdGroup } from './kbd'
 
 /**
  * Tooltip, 1:1 with the uiKit `tooltip/shortcut` set (3306:17555): an inverse pill
- * (text/default fill, bg/canvas text, medium 13/19.5) with the action name and optional
+ * (text/default fill, bg/canvas text, medium 13/20) with the action name and optional
  * keys: a KbdGroup of sm keys in the inverse tone, so they read on the dark pill in Light and
  * the light one in Dark. Padding 4 / 6 / 4 / 10, 8px between
  * label and keys. Shape default is radius-lg; rounded is a pill. Shadow md (0 8 12 shadow-md, 0 1 1.5 shadow-ambient) and the

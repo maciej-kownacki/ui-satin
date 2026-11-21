@@ -6,7 +6,7 @@ import { FieldSizeContext, useFormField } from './form-field'
 
 /**
  * Input, 1:1 with the uiKit `Input` set (820:51657): a label (medium), the field, and a hint
- * (13/19.5, muted) 8px apart. The label is 13px at every size. Three sizes: sm 28 with a 13px
+ * (13/20, muted) 8px apart. The label is 13px at every size. Three sizes: sm 28 with a 13px
  * value, md 32 and lg 36 with 14px (lg at radius-xl), fixed whatever the theme's body size; 12px side padding,
  * optional 16px leading and trailing icons 8px from the text.
  *

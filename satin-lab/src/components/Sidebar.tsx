@@ -189,7 +189,7 @@ export function Sidebar({
             setDrawer(false)
           }}
           className={cn(
-            'flex h-8 items-center truncate rounded-pill pr-3 text-[13px] leading-[19.5px]',
+            'flex h-8 items-center truncate rounded-pill pr-3 text-[13px] leading-5',
             nested ? 'pl-[46px]' : 'pl-[34px]',
             rowHover,
             'focus-visible:shadow-border-focus focus-visible:outline-none',
@@ -446,7 +446,7 @@ function NavParent({
         aria-controls={listId}
         onClick={onToggle}
         className={cn(
-          'flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left text-[13px] leading-[19.5px] select-none',
+          'flex h-8 w-full items-center gap-2 rounded-pill px-3 text-left text-[13px] leading-5 select-none',
           rowHover,
           'hover:bg-bg-hover hover:text-text-default',
           'focus-visible:shadow-border-focus focus-visible:outline-none',
@@ -573,7 +573,7 @@ function HelpBanner() {
       {mesh}
       <div className={cn('relative flex flex-col gap-0.5 pr-6 text-sm', fade)}>
         <p className="leading-[18px] font-medium text-text-default">Need design help?</p>
-        <p className="leading-[19.5px] text-text-muted">Get expert product design for your business.</p>
+        <p className="leading-5 text-text-muted">Get expert product design for your business.</p>
       </div>
       <Button asChild variant="secondary" shape="rounded" className={cn('relative w-full', fade)}>
         <a href="https://cal.com/maciej-kownacki-22br6h/15min" target="_blank" rel="noreferrer" data-track="book_call">

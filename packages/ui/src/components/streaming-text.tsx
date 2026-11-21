@@ -5,7 +5,7 @@ import { cn } from '../lib/utils'
 
 /**
  * Streaming text: an agent's answer writing itself out as it arrives, in the assistant
- * Message's type (text/default 13/19.5).
+ * Message's type (text/default 13/20).
  *
  * Give it the text received so far and keep it growing; `streaming` while more is coming. A
  * model sends text in uneven chunks, so the component doesn't print them as they land: it
