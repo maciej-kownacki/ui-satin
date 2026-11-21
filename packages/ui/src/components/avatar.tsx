@@ -176,7 +176,8 @@ function GroupTooltip({ anchor, name, side }: { anchor: HTMLElement; name: strin
   const [point, setPoint] = React.useState<{ x: number; y: number }>()
 
   React.useLayoutEffect(() => {
-    if (label.current) setWidth(label.current.offsetWidth + BUBBLE_PADDING)
+    // Unrounded: offsetWidth rounds, which left the name up to half a pixel off centre.
+    if (label.current) setWidth(label.current.getBoundingClientRect().width + BUBBLE_PADDING)
   }, [name])
 
   React.useLayoutEffect(() => {

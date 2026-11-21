@@ -186,6 +186,7 @@ export function Pagination({
     // Later pages are to the right, or to the left in right-to-left.
     const sign = (dir === 'next' ? 1 : -1) * (getComputedStyle(list).direction === 'rtl' ? -1 : 1)
     const timing: KeyframeAnimationOptions = { duration: STRIP_MS, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
+    const base = list.getBoundingClientRect().left
     const seen = new Set<string>()
     list.querySelectorAll<HTMLElement>('[data-cell]').forEach((li) => {
       const key = li.dataset.cell!
@@ -193,7 +194,8 @@ export function Pagination({
       li.getAnimations().forEach((a) => a.cancel())
       const from = prev.get(key)
       if (from) {
-        const dx = from.x - li.offsetLeft
+        // From rects, as the snapshot: offsetLeft rounds, and the page landed up to half a pixel off.
+        const dx = from.x - (li.getBoundingClientRect().left - base)
         if (Math.abs(dx) > 0.5) li.animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], timing)
       } else {
         li.animate([{ transform: `translateX(${sign * STEP_PX}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], timing)

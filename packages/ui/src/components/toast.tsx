@@ -448,7 +448,8 @@ function StackedToast({ record, index, paused, y, scale, height, beyond, content
       const report = () => {
         const cs = getComputedStyle(card)
         const chrome = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'].reduce((t, k) => t + parseFloat(cs[k as 'paddingTop']), 0)
-        onMeasure(id, node.offsetHeight + chrome)
+        // Unrounded (offsetHeight rounds) and from layout, not a rect: the cards behind are scaled.
+        onMeasure(id, (parseFloat(getComputedStyle(node).height) || node.offsetHeight) + chrome)
       }
       report()
       const observer = new ResizeObserver(report)

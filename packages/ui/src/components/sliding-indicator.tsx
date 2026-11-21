@@ -35,6 +35,15 @@ function easeOut(t: number) {
   return bez(y1, y2, (lo + hi) / 2)
 }
 
+/** Whether the target, or anything between it and the list, is moved or scaled by a transform. */
+function movedWithin(target: HTMLElement, list: HTMLElement) {
+  for (let n: HTMLElement | null = target; n && n !== list; n = n.parentElement) {
+    const cs = getComputedStyle(n)
+    if (cs.transform !== 'none' || cs.translate !== 'none' || cs.scale !== 'none' || cs.rotate !== 'none') return true
+  }
+  return false
+}
+
 export function useSlidingIndicator<T extends HTMLElement = HTMLSpanElement>(
   listRef: React.RefObject<HTMLElement | null>,
   selector: string,
@@ -56,13 +65,26 @@ export function useSlidingIndicator<T extends HTMLElement = HTMLSpanElement>(
         el.style.opacity = '0'
         return
       }
-      // The target's place in the list, from layout (transforms on it don't count).
-      let x = target.offsetLeft
-      for (let p = target.offsetParent as HTMLElement | null; p && p !== list; p = p.offsetParent as HTMLElement | null) x += p.offsetLeft
-      const w = target.offsetWidth
+      // The target's edges from the list's padding edge (the indicator's left 0), measured
+      // unrounded and put on the nearest device pixel. offsetLeft and offsetWidth round to whole
+      // CSS pixels, which left the pill up to a device pixel off the item at 2x; unrounded, its
+      // resting edges fell between device pixels and changed when the animation handed over.
+      const listBox = list.getBoundingClientRect()
+      const origin = listBox.left + list.clientLeft
+      const rect = target.getBoundingClientRect()
+      const dpr = window.devicePixelRatio || 1
+      let x = Math.round((rect.left - origin) * dpr) / dpr
+      let w = Math.round((rect.right - origin) * dpr) / dpr - x
+      // Rects count transforms: while the list is scaled (a dialog zooming in) or the target is
+      // moved inside it (Pagination's strip sliding), its place comes from layout instead.
+      if (Math.abs(listBox.width - list.offsetWidth) > 0.5 || movedWithin(target, list)) {
+        x = target.offsetLeft
+        for (let p = target.offsetParent as HTMLElement | null; p && p !== list; p = p.offsetParent as HTMLElement | null) x += p.offsetLeft
+        w = target.offsetWidth
+      }
       // Where the indicator is on screen right now, mid-move included.
       const box = el.getBoundingClientRect()
-      const from = { x: box.left - list.getBoundingClientRect().left, w: box.width }
+      const from = { x: box.left - origin, w: box.width }
       el.getAnimations().forEach((a) => a.cancel())
       el.style.opacity = '1'
       el.style.width = `${w}px`
