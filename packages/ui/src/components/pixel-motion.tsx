@@ -34,21 +34,31 @@ export function curve(x1: number, y1: number, x2: number, y2: number): (t: numbe
 }
 
 /**
- * An element's size as drawn, unrounded: offsetWidth and offsetHeight round, and an animation
- * that starts or ends on the rounded value hops the half pixel back when layout takes over.
+ * An element's layout size, unrounded and transform-free: its computed width and height (the
+ * border box, under Satin's preflight), mid-animation the animated value. Not offsetWidth and
+ * offsetHeight, which round, so an animation that starts or ends on them hops the half pixel back
+ * when layout takes over; not a rect, which counts the scale of anything around it (a dialog
+ * zooming in), so the end is wrong by the scale and snaps. Where computed style gives no length
+ * (an inline box, jsdom), the rect.
  * @internal Shared by Satin's own components; not part of the public API and may change in any release.
  */
 export function measure(el: Element): { width: number; height: number } {
-  const { width, height } = el.getBoundingClientRect()
-  return { width, height }
+  const cs = getComputedStyle(el)
+  const length = (v: string) => (v.endsWith('px') ? parseFloat(v) : NaN)
+  const width = length(cs.width)
+  const height = length(cs.height)
+  if (Number.isFinite(width) && Number.isFinite(height)) return { width, height }
+  const rect = el.getBoundingClientRect()
+  return { width: rect.width, height: rect.height }
 }
 
 /**
  * Keyframes from `from` to `to` along `ease`, one every 4 ms, each held until the next
  * (`steps(1, end)`), so whichever moment the browser draws, the value sits on the screen's pixel
- * grid (half a CSS pixel on a 2x screen). The grid is counted from `to`: Satin's 0.75px edges put
- * rest sizes on quarter pixels, and a grid counted from zero would leave a half-device-pixel hop
- * onto them at the end. The first keyframe is exactly `from` and the last exactly `to`.
+ * grid (half a CSS pixel on a 2x screen). The grid is counted from `to`: fractional line heights
+ * and borders leave rest sizes between device pixels, and a grid counted from zero would leave a
+ * last hop of up to half a device pixel onto them. The first keyframe is exactly `from` and the
+ * last exactly `to`.
  * `css` turns a value into the keyframe's properties.
  * @internal Shared by Satin's own components; not part of the public API and may change in any release.
  */
@@ -95,7 +105,7 @@ export function freeze(el: HTMLElement, width: number, height: number): () => vo
 export interface EaseSizeOptions {
   /** Where it starts, px; a box still easing from an earlier call starts from where it is instead. */
   from: number
-  /** Where it ends, px: the size layout gives the box afterwards, unrounded (see measure). */
+  /** Where it ends, px: the size layout gives the box afterwards (see measure). */
   to: number
   /** @default 'height' */
   axis?: 'height' | 'width'
@@ -105,36 +115,55 @@ export interface EaseSizeOptions {
   ease: (t: number) => number
   /** Content to hold at its measured size while the box eases around it (see freeze). */
   freeze?: HTMLElement
+  /**
+   * Clips the box while it eases and puts its own overflow back after. Off when the caller clips
+   * the box itself for longer than the size eases (the step slide clips its track).
+   * @default true
+   */
+  clip?: boolean
 }
 
-/** The easeSize running on each box, and what it holds. */
-const runs = new WeakMap<HTMLElement, { animation: Animation; release?: () => void }>()
+/** The box's inline overflow a run replaces with its clip, and puts back. */
+const OVERFLOW = ['overflow-x', 'overflow-y'] as const
+
+/** The easeSize running on each box: its animation, the content's release, the box's own overflow. */
+type Run = { animation: Animation; release?: () => void; overflow?: string[] }
+const runs = new WeakMap<HTMLElement, Run>()
+
+/** Lets go of what a run holds: the content's freeze, and the clip, back to the box's own overflow. */
+function letGo(box: HTMLElement, run: Run) {
+  run.release?.()
+  run.overflow?.forEach((v, i) => (v ? box.style.setProperty(OVERFLOW[i], v) : box.style.removeProperty(OVERFLOW[i])))
+}
 
 /**
  * Eases a box's height (or width) from `from` to `to` on the pixel grid (see pixelKeyframes),
- * clipping what it holds and, with `freeze`, holding that content at its size. When it ends, the
- * freeze is let go and the clip removed on the same frame, the box back at its layout size. A
- * new call on the same box cancels the running one and starts from the size the box has
- * reached. Returns the animation, or null under reduced motion (the box just takes its size).
- * Cancelled any other way, the box keeps its clip until the next call.
+ * clipping what it holds and, only with `freeze`, holding that content at its size; without it
+ * the content is laid out again at each step. When the animation ends, or anything else cancels
+ * it, the freeze is let go and the box's own overflow put back before the next frame, the box at
+ * its layout size. A new call on the same box cancels the running one and starts from the size
+ * the box has reached. Returns the animation, or null under reduced motion (the box just takes
+ * its size).
  * @internal Shared by Satin's own components; not part of the public API and may change in any release.
  */
-export function easeSize(box: HTMLElement, { from, to, axis = 'height', duration, ease, freeze: content }: EaseSizeOptions): Animation | null {
+export function easeSize(
+  box: HTMLElement,
+  { from, to, axis = 'height', duration, ease, freeze: content, clip = true }: EaseSizeOptions,
+): Animation | null {
   const old = runs.get(box)
   let start = from
   if (old) {
     // Mid-way: carry on from the size it has reached, measured before the old run lets it go.
     if (old.animation.playState !== 'idle') start = measure(box)[axis]
-    old.animation.cancel()
-    old.release?.()
+    // Out of the map first, so the old run's own ending leaves the box to this one.
     runs.delete(box)
+    old.animation.cancel()
+    letGo(box, old)
   }
-  if (reducedMotion() || typeof box.animate !== 'function') {
-    if (old) box.style.removeProperty('overflow')
-    return null
-  }
+  if (reducedMotion() || typeof box.animate !== 'function') return null
 
-  box.style.setProperty('overflow', 'clip')
+  const overflow = clip ? OVERFLOW.map((p) => box.style.getPropertyValue(p)) : undefined
+  if (clip) box.style.setProperty('overflow', 'clip')
   let release: (() => void) | undefined
   if (content) {
     const size = measure(content)
@@ -142,16 +171,15 @@ export function easeSize(box: HTMLElement, { from, to, axis = 'height', duration
   }
   const css = axis === 'width' ? (v: number): Keyframe => ({ width: `${v}px` }) : (v: number): Keyframe => ({ height: `${v}px` })
   const animation = box.animate(pixelKeyframes(start, to, css, { ease, duration }), { duration })
-  const run = { animation, release }
+  const run: Run = { animation, release, overflow }
   runs.set(box, run)
-  animation.finished.then(
-    () => {
-      if (runs.get(box) !== run) return
-      runs.delete(box)
-      release?.()
-      box.style.removeProperty('overflow')
-    },
-    () => {},
-  )
+  // Finished, or cancelled by anyone (then `finished` rejects, in a microtask): while it is still
+  // the box's run, let go of what it holds.
+  const end = () => {
+    if (runs.get(box) !== run) return
+    runs.delete(box)
+    letGo(box, run)
+  }
+  animation.finished.then(end, end)
   return animation
 }

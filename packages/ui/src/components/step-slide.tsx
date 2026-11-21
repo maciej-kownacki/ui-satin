@@ -55,7 +55,8 @@ export function useStepSlide(key: string, order: number, frameRef: React.RefObje
   const record = React.useCallback((): Snapshot => {
     const now = partsRef.current()
     return {
-      // Each part's own height, unrounded (offsetHeight rounds, and the half pixel then snaps).
+      // Each part's own height from layout, unrounded and unscaled (see measure): offsetHeight
+      // rounds, and a rect counts a dialog's zoom, so the end would snap.
       heights: now.map((p) => (p ? measure(p).height : 0)),
       copies: now.map((p) => p?.cloneNode(true) ?? null),
       scrolls: now.map((p) => p?.scrollTop ?? 0),
@@ -103,9 +104,9 @@ export function useStepSlide(key: string, order: number, frameRef: React.RefObje
         const slide = el.animate(across(sign * distance, 0), steps)
         el.animate([{ opacity: 0 }, { opacity: 1 }], fade)
         running.set(host, { slide, from: sign * distance, release })
-        // The box's earlier run was cancelled above, so easeSize starts from fromHeight; it clips and
-        // lets go on the same frame as the slide below.
-        if (Math.abs(fromHeight - toHeight) > 0.25) easeSize(host, { from: fromHeight, to: toHeight, duration: STEP_MS, ease: STEP })
+        // The box's earlier run was cancelled above, so easeSize starts from fromHeight. The box
+        // clips for the whole slide (above, let go below), so easeSize leaves its overflow alone.
+        if (Math.abs(fromHeight - toHeight) > 0.25) easeSize(host, { from: fromHeight, to: toHeight, duration: STEP_MS, ease: STEP, clip: false })
         if (copy) {
           copy.setAttribute('data-step-copy', '')
           copy.setAttribute('aria-hidden', 'true')

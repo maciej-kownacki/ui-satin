@@ -1843,7 +1843,8 @@
       "dependencies": [],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
-        "https://uisatin.dev/r/utils.json"
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/pixel-motion.json"
       ],
       "meta": {
         "version": "0.7.1",

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { setReducedMotion } from 'satin-test'
-import { curve, easeSize, freeze, pixelKeyframes } from '../components/pixel-motion'
+import { curve, easeSize, freeze, measure, pixelKeyframes } from '../components/pixel-motion'
 
 const STEP = curve(0.22, 1, 0.36, 1)
 const tall = (h: number): Keyframe => ({ height: `${h}px` })
@@ -51,6 +51,25 @@ describe('pixelKeyframes', () => {
   })
 })
 
+describe('measure', () => {
+  it('reads the layout size from computed style, unrounded', () => {
+    const el = document.body.appendChild(document.createElement('div'))
+    el.style.width = '200.5px'
+    el.style.height = '80.25px'
+    // A rect counts transforms around it; computed style doesn't.
+    el.getBoundingClientRect = () => ({ width: 192.48, height: 77.04 }) as DOMRect
+    expect(measure(el)).toEqual({ width: 200.5, height: 80.25 })
+    el.remove()
+  })
+
+  it('falls back to the rect where computed style has no length', () => {
+    const el = document.createElement('div')
+    el.style.width = '50%'
+    el.getBoundingClientRect = () => ({ width: 120, height: 40 }) as DOMRect
+    expect(measure(el)).toEqual({ width: 120, height: 40 })
+  })
+})
+
 describe('freeze', () => {
   it('holds the size and puts back what was there', () => {
     const el = document.createElement('div')
@@ -91,6 +110,60 @@ describe('easeSize', () => {
     await Promise.resolve()
     expect(box.style.overflow).toBe('')
     expect(content.style.contain).toBe('')
+  })
+
+  /** An animation that can be finished or cancelled from the test, as the browser's settles `finished`. */
+  const controllable = () => {
+    const runs: { cancel: () => void; finish: () => void }[] = []
+    HTMLElement.prototype.animate = vi.fn(() => {
+      let settle!: (ok: boolean) => void
+      const finished = new Promise<void>((resolve, reject) => (settle = (ok) => (ok ? resolve() : reject(new DOMException('cancelled', 'AbortError')))))
+      const run = { playState: 'running', finished, cancel: () => ((run.playState = 'idle'), settle(false)), finish: () => settle(true) }
+      runs.push(run)
+      return run
+    }) as unknown as HTMLElement['animate']
+    HTMLElement.prototype.getAnimations = () => []
+    return runs
+  }
+  const flush = () => new Promise((r) => setTimeout(r))
+
+  it("lets go when anyone else cancels it, and puts the box's own overflow back", async () => {
+    controllable()
+    const box = document.createElement('div')
+    box.style.overflow = 'auto'
+    const content = box.appendChild(document.createElement('div'))
+    const run = easeSize(box, { from: 100, to: 140, duration: 200, ease: STEP, freeze: content })
+    expect(box.style.overflow).toBe('clip')
+    run!.cancel()
+    await flush()
+    expect(box.style.overflow).toBe('auto')
+    expect(content.style.contain).toBe('')
+  })
+
+  it('hands the box from one run to the next without the first one letting go of it', async () => {
+    const runs = controllable()
+    const box = document.createElement('div')
+    const content = box.appendChild(document.createElement('div'))
+    easeSize(box, { from: 100, to: 140, duration: 200, ease: STEP, freeze: content })
+    easeSize(box, { from: 140, to: 100, duration: 200, ease: STEP, freeze: content })
+    await flush()
+    // The first run was cancelled; the second still clips and holds.
+    expect(box.style.overflow).toBe('clip')
+    expect(content.style.contain).toBe('layout paint')
+    runs[1].finish()
+    await flush()
+    expect(box.style.overflow).toBe('')
+    expect(content.style.contain).toBe('')
+  })
+
+  it("leaves the box's overflow to a caller that clips it itself", async () => {
+    const runs = controllable()
+    const box = document.createElement('div')
+    box.style.overflow = 'clip'
+    easeSize(box, { from: 100, to: 140, duration: 200, ease: STEP, clip: false })
+    runs[0].cancel()
+    await flush()
+    expect(box.style.overflow).toBe('clip')
   })
 
   it('does nothing under reduced motion', () => {

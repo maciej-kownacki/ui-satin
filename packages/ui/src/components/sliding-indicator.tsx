@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { measure } from './pixel-motion'
 
 /**
  * The background (or underline) that slides under the selected item of Tabs, Segmented control
@@ -65,22 +66,27 @@ export function useSlidingIndicator<T extends HTMLElement = HTMLSpanElement>(
         el.style.opacity = '0'
         return
       }
-      // The target's edges from the list's padding edge (the indicator's left 0), measured
-      // unrounded and put on the nearest device pixel. offsetLeft and offsetWidth round to whole
-      // CSS pixels, which left the pill up to a device pixel off the item at 2x; unrounded, its
-      // resting edges fell between device pixels and changed when the animation handed over.
+      // The target's edges from the indicator's left 0, measured unrounded and put on the nearest
+      // device pixel. offsetLeft and offsetWidth round to whole CSS pixels, which left the pill up
+      // to a device pixel off the item at 2x; unrounded, its resting edges fell between device
+      // pixels and changed when the animation handed over. Left 0 is the list's left padding edge
+      // (the border unrounded: clientLeft rounds) where the list is scrolled to 0, so the scroll
+      // counts in; right to left, scrollLeft runs from 0 down, and adding it holds there too.
       const listBox = list.getBoundingClientRect()
-      const origin = listBox.left + list.clientLeft
+      const origin = listBox.left + (parseFloat(getComputedStyle(list).borderLeftWidth) || 0) - list.scrollLeft
       const rect = target.getBoundingClientRect()
       const dpr = window.devicePixelRatio || 1
       let x = Math.round((rect.left - origin) * dpr) / dpr
       let w = Math.round((rect.right - origin) * dpr) / dpr - x
-      // Rects count transforms: while the list is scaled (a dialog zooming in) or the target is
-      // moved inside it (Pagination's strip sliding), its place comes from layout instead.
-      if (Math.abs(listBox.width - list.offsetWidth) > 0.5 || movedWithin(target, list)) {
-        x = target.offsetLeft
-        for (let p = target.offsetParent as HTMLElement | null; p && p !== list; p = p.offsetParent as HTMLElement | null) x += p.offsetLeft
+      // Rects count transforms: while the list is scaled (a dialog zooming in; its rect then
+      // differs from its layout width, which measure gives unrounded) or the target is moved
+      // inside it (Pagination's strip sliding), its place comes from layout instead. The one place
+      // the pill reads offsets: they round to whole CSS pixels, but only while the transform lasts.
+      if (Math.abs(listBox.width - measure(list).width) > 0.05 || movedWithin(target, list)) {
+        // motion-allow: transform fallback, above (MOTION.md rule 1)
         w = target.offsetWidth
+        x = target.offsetLeft // motion-allow: transform fallback, as above
+        for (let p = target.offsetParent as HTMLElement | null; p && p !== list; p = p.offsetParent as HTMLElement | null) x += p.offsetLeft
       }
       // Where the indicator is on screen right now, mid-move included.
       const box = el.getBoundingClientRect()
@@ -110,6 +116,7 @@ export function useSlidingIndicator<T extends HTMLElement = HTMLSpanElement>(
         const pr = right ? lead(t) : trail(t)
         const l = L0 + (L1 - L0) * pl
         const r = R0 + (R1 - R0) * pr
+        // motion-allow: the pill's width moves with its transform, so its corners don't stretch (MOTION.md rule 1)
         frames.push({ offset: t, transform: `translateX(${l}px)`, width: `${Math.max(r - l, 0)}px` })
       }
       el.animate(frames, { duration: SLIDE_MS, easing: 'linear' })
