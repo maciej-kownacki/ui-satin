@@ -344,7 +344,7 @@ export const allNav: NavGroup[] = [
  * preview builds show them. The one list to edit when a page is done.
  */
 export const unreleased = new Set<string>([
-  'command-pages', 'kanban-board', 'scheduler', 'stepper', 'review-queue',
+  'command-pages', 'scheduler', 'stepper', 'review-queue',
 ])
 
 /**
