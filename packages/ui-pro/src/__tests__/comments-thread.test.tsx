@@ -689,6 +689,24 @@ describe('CommentsThread', () => {
     expect(field().value.slice(field().selectionStart, field().selectionEnd)).toBe('url')
   })
 
+  it('takes a mark off when it is pressed again', async () => {
+    const { user } = renderWithSatin(<Live onReply={() => {}} />)
+    await user.click(field())
+    await user.keyboard('Signed today')
+    act(() => field().setSelectionRange(7, 12))
+    await user.click(screen.getByRole('button', { name: 'Bold' }))
+    expect(field().value).toBe('Signed **today**')
+    await user.click(screen.getByRole('button', { name: 'Bold' }))
+    expect(field().value).toBe('Signed today')
+    expect(field().value.slice(field().selectionStart, field().selectionEnd)).toBe('today')
+    // A selection that holds the marks too.
+    act(() => field().setSelectionRange(7, 12))
+    await user.keyboard('{Control>}i{/Control}')
+    act(() => field().setSelectionRange(7, 14))
+    await user.keyboard('{Control>}i{/Control}')
+    expect(field().value).toBe('Signed today')
+  })
+
   it('never splits a mention: a selection cutting into one takes all of it, and the mention moves', async () => {
     const onReply = vi.fn()
     const { user } = renderWithSatin(<Live onReply={onReply} mentions={{ search: () => [tara] }} />)

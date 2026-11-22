@@ -640,6 +640,24 @@ function formatEdits(text: string, a: number, b: number, format: Format): { edit
     return { edits, select: a === b ? [a + 1, a + 1] : [b + 3, b + 3 + LINK_URL.length] }
   }
   const mark = format === 'bold' ? '**' : format === 'italic' ? '_' : '`'
+  const m = mark.length
+  // Pressed again, a mark takes itself off: around the selection, or at its own ends.
+  if (text.slice(a - m, a) === mark && text.slice(b, b + m) === mark)
+    return {
+      edits: [
+        { at: b, remove: m, insert: '' },
+        { at: a - m, remove: m, insert: '' },
+      ],
+      select: [a - m, b - m],
+    }
+  if (b - a >= 2 * m && text.slice(a, a + m) === mark && text.slice(b - m, b) === mark)
+    return {
+      edits: [
+        { at: b - m, remove: m, insert: '' },
+        { at: a, remove: m, insert: '' },
+      ],
+      select: [a, b - 2 * m],
+    }
   return {
     edits: [
       { at: b, remove: 0, insert: mark },
