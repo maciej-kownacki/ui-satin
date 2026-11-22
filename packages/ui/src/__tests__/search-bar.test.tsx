@@ -16,6 +16,19 @@ describe('SearchBar', () => {
     expect((field as HTMLInputElement).value).toBe('')
   })
 
+  it('leaves ⌘K to a field that already handled it', async () => {
+    const { user } = renderWithSatin(
+      <>
+        <SearchBar />
+        <div role="textbox" tabIndex={0} aria-label="Editor" onKeyDown={(e) => e.key === 'k' && e.metaKey && e.preventDefault()} />
+      </>,
+    )
+    const editor = screen.getByRole('textbox', { name: 'Editor' })
+    editor.focus()
+    await user.keyboard('{Meta>}k{/Meta}')
+    expect(document.activeElement).toBe(editor)
+  })
+
   it('takes its name from the labels', () => {
     renderWithSatin(<SearchBar />, { labels: { searchField: 'Szukaj', search: 'Szukaj…' } })
     expect(screen.getByRole('searchbox', { name: 'Szukaj' }).getAttribute('placeholder')).toBe('Szukaj…')
