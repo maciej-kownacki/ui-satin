@@ -17,9 +17,24 @@ import { arrow, autoUpdate, flip, offset, shift, useFloating } from '@floating-u
  */
 export type FloatingSide = 'top' | 'right' | 'bottom' | 'left'
 
+/**
+ * Something to point at that isn't an element: a text selection, a caret. Pass a new object
+ * when the rect moves (Floating repositions when `anchor` changes), and set `contextElement` to
+ * the element the rect lives in, so scrolling its ancestors moves the layer with it.
+ */
+export interface FloatingVirtualElement {
+  getBoundingClientRect(): DOMRect
+  /** The rects of a range that wraps, for inline placement. */
+  getClientRects?(): DOMRectList | DOMRect[]
+  contextElement?: Element
+}
+
 export interface FloatingProps {
-  /** The element it points at. Nothing renders while it's null. */
-  anchor: Element | null
+  /**
+   * The element it points at, or a virtual one (a selection's rect, see FloatingVirtualElement).
+   * Nothing renders while it's null.
+   */
+  anchor: Element | FloatingVirtualElement | null
   side?: FloatingSide
   /** Gap between the anchor and the layer, pointer included. */
   sideOffset?: number
