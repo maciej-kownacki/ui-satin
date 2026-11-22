@@ -21,7 +21,7 @@ import { toast } from '@uisatin/ui/toast'
  *
  * - Root comments, each with its replies one level deep, in a `List` (`ul`) of threads. A reply
  *   whose `parentId` points at a reply joins that reply's root; a reply whose parent is missing
- *   becomes a root. Only roots have Reply: it opens a reply composer under the replies, with focus
+ *   becomes a root, unless that parent is a root deleted here. Only roots have Reply: it opens a reply composer under the replies, with focus
  *   in it; Escape closes it and puts focus back on Reply.
  * - Each comment is an `<article>` named "Comment by Marta Nowak, {full date}": avatar (initials
  *   by default), name, the time relative today (Free's `RelativeTime`, the full date for screen
@@ -30,12 +30,15 @@ import { toast } from '@uisatin/ui/toast'
  *   and Delete on yours, or on anyone's with `moderator` (`onDelete`).
  * - Send is optimistic: while `onReply`'s promise runs, a row from `currentUser` shows dimmed with
  *   a Spinner. It goes when a new comment by `currentUser` with the same parent and body arrives
- *   in `comments`, which takes the row's place without fading in again. A rejected promise leaves
+ *   in `comments`, which takes the row's place without fading in again. A row whose promise
+ *   resolves first stays, undimmed, until the comment ids change; if a comment of yours under the
+ *   same parent already showed by then (its body rewritten by the server), the row goes. A rejected promise leaves
  *   the row with "Not sent", Retry (focused) and Discard. A handler that returns nothing shows no
  *   sending row: the comment appears when `comments` has it.
  * - Edit happens in place (Save, Cancel; Ctrl/⌘+Enter saves, Escape cancels). The new text shows
  *   until the comment's `body` changes; a rejected `onEdit` puts the old text back and reopens
- *   the editor with an error.
+ *   the editor with an error (or, when another comment's editor is open by then, keeps that one
+ *   and says it in an error toast).
  * - Delete never asks: the comment (a root with its replies) goes at once, focus moves to the
  *   next comment or the composer, and a toast offers Undo with a countdown. `onDelete(id)` runs
  *   when the toast closes without Undo, or at once if the thread unmounts or the page is left
@@ -52,7 +55,7 @@ import { toast } from '@uisatin/ui/toast'
  * on CommentsThread, `ref` included, go to the root `div`.
  */
 
-/** The words the Comments thread says on its own. They join SatinLabels, so the app translates them there. Send is Free's `send`. */
+/** The words the Comments thread says on its own. They join SatinLabels, so the app translates them there. Send, Cancel and the spinner's "Sending" are Free's `send`, `cancel` and `sending`. */
 export const commentsThreadLabels = {
   /** The list of threads, for screen readers. */
   comments: 'Comments',
@@ -74,14 +77,11 @@ export const commentsThreadLabels = {
   commentsEditField: 'Edit comment',
   commentsEdit: 'Edit',
   commentsSave: 'Save',
-  commentsCancel: 'Cancel',
   commentsDelete: 'Delete',
   commentsRetry: 'Retry',
   commentsDiscard: 'Discard',
   /** On a comment whose send failed; Retry is described by it. */
   commentsNotSent: 'Not sent',
-  /** The spinner's name on a comment being sent. */
-  commentsSending: 'Sending',
   commentsResolve: 'Resolve',
   commentsReopen: 'Reopen',
   /** The resolved bar, when nobody is named. */
@@ -262,7 +262,7 @@ export interface CommentProps extends Omit<React.ComponentProps<'article'>, 'chi
   footer?: React.ReactNode
   /** In place of the body: an edit `CommentComposer`. */
   children?: React.ReactNode
-  /** Fades in 4px up as it mounts, for a comment that arrives after the thread showed. */
+  /** Fades in 4px up as it mounts, for a comment that arrives after the thread showed. It plays once: a later Show comments doesn't replay it. */
   animateIn?: boolean
 }
 
@@ -284,9 +284,12 @@ export function Comment({
   children,
   animateIn = false,
   className,
+  onAnimationEnd,
   ...props
 }: CommentProps) {
   const labels = useLabels()
+  // The entry plays once. Kept, it would replay whenever the thread's body shows again (display: none and back).
+  const [entered, setEntered] = React.useState(false)
   const time = (at instanceof Date ? at : new Date(at)).getTime()
   const locale = labels.dateLocale
   const full = React.useMemo(() => dateTimeFormat(locale, { dateStyle: 'full', timeStyle: 'short' }).format(time), [locale, time])
@@ -294,7 +297,11 @@ export function Comment({
     <article
       data-slot="comment"
       data-state={state}
-      data-enter={animateIn || undefined}
+      data-enter={(animateIn && !entered) || undefined}
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget) setEntered(true)
+        onAnimationEnd?.(event)
+      }}
       tabIndex={-1}
       aria-label={labels.commentBy(author.name, full)}
       aria-busy={state === 'sending' || undefined}
@@ -313,7 +320,7 @@ export function Comment({
           <span className="min-w-0 truncate text-sm leading-5 font-medium text-text-default">{author.name}</span>
           <RelativeTime at={time} />
           {edited && <span className="shrink-0 text-sm leading-5 text-text-muted">{labels.commentsEdited}</span>}
-          {state === 'sending' && <Spinner size="xs" label={labels.commentsSending} className="text-text-muted" />}
+          {state === 'sending' && <Spinner size="xs" label={labels.sending} className="text-text-muted" />}
           {actions && <span className="ms-auto flex shrink-0">{actions}</span>}
         </div>
         {children ?? (
@@ -513,7 +520,7 @@ export function CommentComposer({
         <div className="ms-auto flex items-center gap-2">
           {onCancel && (
             <Button variant="tertiary" onClick={onCancel} disabled={disabled}>
-              {labels.commentsCancel}
+              {labels.cancel}
             </Button>
           )}
           <Button aria-disabled={blank || undefined} disabled={disabled} onClick={submit}>
@@ -538,12 +545,14 @@ export interface CommentsThreadProps extends Omit<React.ComponentProps<'div'>, '
    * Retry. Without `onReply` there is no composer.
    */
   onReply?: (parentId: string | null, body: string, mentions: CommentMention[]) => void | Promise<void>
-  /** Adds Edit to your own comments. A rejected promise puts the old text back and reopens the editor. */
+  /** Adds Edit to your own comments. A rejected promise puts the old text back and reopens the editor, or shows an error toast if another editor is open. */
   onEdit?: (id: string, body: string, mentions: CommentMention[]) => void | Promise<void>
   /**
    * Adds Delete to your own comments (anyone's with `moderator`). Called when the Undo toast closes
    * without Undo, or at once if the thread unmounts or the page is left first. A rejected promise
-   * brings the comment back with an error toast.
+   * brings the comment back with an error toast. Deleting a root takes its replies with it, but
+   * `onDelete` gets the root's id only: the app deletes the replies too. Until it does, they stay
+   * hidden rather than becoming roots.
    */
   onDelete?: (id: string) => void | Promise<void>
   /** Resolve and Reopen. A promise is optimistic; a rejection undoes the change. */
@@ -572,13 +581,16 @@ type Pending = {
   body: string
   mentions: CommentMention[]
   at: Date
-  /** `sent`: resolved with no matching comment yet; it stays, undimmed, until `comments` next changes. */
+  /** `sent`: resolved with no matching comment yet; it stays, undimmed, until the set of comment ids changes. */
   status: 'sending' | 'sent' | 'failed'
   /** The comment ids there were when it was first sent: a match is a comment that wasn't. */
   seen: Set<string>
-  /** `comments` when it resolved. */
-  settledWith?: CommentItem[]
+  /** The comment ids when it resolved. Compared by content, so a new array with the same comments keeps the row. */
+  settledIds?: Set<string>
 }
+
+/** Bodies compared the way a server may store them: line endings and runs of spaces don't count. */
+const looseBody = (body: string) => body.replace(/\s+/g, ' ').trim()
 
 type Editing = { id: string; value: PromptValue; error?: React.ReactNode }
 
@@ -664,6 +676,8 @@ export function CommentsThread({
   const [pending, setPending] = React.useState<Pending[]>([])
   // A comment that replaced a pending row keeps the row's key, so it doesn't mount (and fade) again.
   const keyFor = React.useRef(new Map<string, string>())
+  // Comments that already showed on their own when their row's promise resolved: the row went instead.
+  const claimed = React.useRef(new Set<string>())
   const matched = React.useMemo(() => {
     const out = new Map<string, string>()
     for (const p of pending) {
@@ -672,6 +686,7 @@ export function CommentsThread({
           !out.has(c.id) &&
           !p.seen.has(c.id) &&
           !keyFor.current.has(c.id) &&
+          !claimed.current.has(c.id) &&
           c.author.id === currentUser.id &&
           (c.parentId ?? null) === p.parentId &&
           c.body === p.body,
@@ -687,10 +702,14 @@ export function CommentsThread({
     const done = new Set(matched.values())
     setPending((list) => list.filter((p) => !done.has(p.key)))
   }, [matched])
-  // A row whose promise resolved without its comment showing up goes when `comments` next changes.
+  // A row whose promise resolved without its comment showing up goes when the comment ids change:
+  // the comment arrived (with a body the server rewrote) or the list was reloaded. A new array with
+  // the same comments (a parent re-rendering `data.map(…)`) keeps it.
   React.useEffect(() => {
     setPending((list) => {
-      const next = list.filter((p) => !(p.status === 'sent' && p.settledWith !== comments))
+      const next = list.filter(
+        (p) => !(p.status === 'sent' && p.settledIds && (p.settledIds.size !== comments.length || comments.some((c) => !p.settledIds!.has(c.id)))),
+      )
       return next.length === list.length ? list : next
     })
   }, [comments])
@@ -712,10 +731,30 @@ export function CommentsThread({
     )
     if (retry) focusLater(() => article(key))
     result.then(
-      () =>
-        setPending((list) =>
-          list.map((p) => (p.key === key && p.status === 'sending' ? { ...p, status: 'sent', settledWith: commentsRef.current } : p)),
-        ),
+      () => {
+        const now = commentsRef.current
+        // A comment of ours under the same parent that wasn't there at send already showed with a
+        // body the server changed (CRLF, spaces), say from a realtime push: the row goes, no copy
+        // stays. An exact body is left to `matched`, which keeps the row's element.
+        const candidates = now.filter(
+          (c) =>
+            !seen.has(c.id) &&
+            !keyFor.current.has(c.id) &&
+            !claimed.current.has(c.id) &&
+            c.author.id === currentUser.id &&
+            (c.parentId ?? null) === parentId,
+        )
+        if (!candidates.some((c) => c.body === body)) {
+          const c = candidates.find((c) => looseBody(c.body) === looseBody(body)) ?? candidates[0]
+          if (c) {
+            claimed.current.add(c.id)
+            setPending((list) => list.filter((p) => p.key !== key))
+            return
+          }
+        }
+        const ids = new Set(now.map((c) => c.id))
+        setPending((list) => list.map((p) => (p.key === key && p.status === 'sending' ? { ...p, status: 'sent', settledIds: ids } : p)))
+      },
       () => {
         setPending((list) => list.map((p) => (p.key === key ? { ...p, status: 'failed' } : p)))
         focusLater(() => part('retry', key))
@@ -740,6 +779,8 @@ export function CommentsThread({
 
   /* editing */
   const [editing, setEditing] = React.useState<Editing | null>(null)
+  const editingRef = React.useRef(editing)
+  editingRef.current = editing
   const [overrides, setOverrides] = React.useState<Record<string, Override>>({})
   const shown = (c: CommentItem) => {
     const o = overrides[c.id]
@@ -779,16 +820,22 @@ export function CommentsThread({
           delete next[c.id]
           return next
         })
-        setEditing({ id: c.id, value: { text: body, mentions: found }, error: labelsRef.current.commentsSaveFailed })
+        const error = labelsRef.current.commentsSaveFailed
+        // Another comment's editor opened meanwhile: it stays, and the failure is a toast.
+        const other = editingRef.current && editingRef.current.id !== c.id
+        if (other) toast.error(error)
+        setEditing((e) => (e && e.id !== c.id ? e : { id: c.id, value: { text: body, mentions: found }, error }))
       })
   }
 
   /* deleting */
-  const [hidden, setHidden] = React.useState<ReadonlySet<string>>(() => new Set())
+  // Deleted comments, and whether each was a root. They stay hidden after onDelete, so a deleted
+  // root's replies don't come back as roots when the app removes only the root.
+  const [hidden, setHidden] = React.useState<ReadonlyMap<string, boolean>>(() => new Map())
   const deletions = React.useRef(new Map<string, { toastId: string; done: boolean }>())
   const unhide = (id: string) =>
     setHidden((s) => {
-      const next = new Set(s)
+      const next = new Map(s)
       next.delete(id)
       return next
     })
@@ -810,7 +857,7 @@ export function CommentsThread({
         )
       : undefined
     const before = own ? all('[data-slot="comment"]').filter((el) => el.compareDocumentPosition(own) & Node.DOCUMENT_POSITION_FOLLOWING && !gone?.contains(el)).pop() : undefined
-    setHidden((s) => new Set(s).add(c.id))
+    setHidden((s) => new Map(s).set(c.id, !c.parentId || !commentsRef.current.some((p) => p.id === c.parentId)))
     focusLater(() => (next?.isConnected ? next : null) ?? composerField('root') ?? (before?.isConnected ? before : null))
 
     const entry = { toastId: `comments-thread-${uid}-delete-${++seq.current}`, done: false }
@@ -875,11 +922,15 @@ export function CommentsThread({
       result.then(
         () => setOptimistic(null),
         () => {
+          // Focus was on the control the change put there, which goes with the rollback: it moves
+          // to the one that comes back (Resolve or Reopen), not to the page.
+          const had = document.activeElement === part(next ? 'reopen' : 'resolve')
           setOptimistic(null)
           if (!controlled) {
             setLocalResolved(!next)
             setLocalBy(prevBy)
           }
+          if (had) focusLater(() => part(next ? 'resolve' : 'reopen'))
         },
       )
     }
@@ -908,12 +959,25 @@ export function CommentsThread({
       if (thread) thread.replies.push(c)
       else roots.set(c.id, { root: c, replies: [] })
     }
-    return [...roots.values()]
+    return { byId, threads: [...roots.values()] }
   }, [comments])
 
-  const visible = threads
-    .filter((t) => !hidden.has(t.root.id))
-    .map((t) => ({ ...t, replies: t.replies.filter((r) => !hidden.has(r.id)) }))
+  // Hidden: a deleted comment, and anything whose chain of parents reaches a deleted root, even
+  // once the root has left `comments`. Other orphans still become roots.
+  const isHidden = (c: CommentItem) => {
+    if (hidden.has(c.id)) return true
+    const seen = new Set([c.id])
+    let parent = c.parentId
+    while (parent && !seen.has(parent)) {
+      if (hidden.get(parent)) return true
+      seen.add(parent)
+      parent = threads.byId.get(parent)?.parentId
+    }
+    return false
+  }
+  const visible = threads.threads
+    .filter((t) => !isHidden(t.root))
+    .map((t) => ({ ...t, replies: t.replies.filter((r) => !isHidden(r)) }))
   const shownPending = pending.filter((p) => !matchedKeys.has(p.key))
   const pendingRoots = shownPending.filter((p) => p.parentId === null)
   const pendingFor = (id: string) => shownPending.filter((p) => p.parentId === id)

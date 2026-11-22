@@ -386,6 +386,8 @@ describe('CommentsThread', () => {
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Resolve' }))
     await act(async () => d.reject(new Error('offline')))
     expect(screen.getByText('Resolved by Tom Okafor')).toBeTruthy()
+    // Resolve went with the rollback: focus moves to Reopen, which came back.
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Reopen' }))
 
     rerender(<CommentsThread comments={seed()} currentUser={you} resolvable resolved />)
     expect(screen.getByText('Resolved')).toBeTruthy()
@@ -442,6 +444,182 @@ describe('CommentsThread', () => {
     expect(screen.getByRole('button', { name: 'Wyślij' })).toBeTruthy()
     expect(screen.getByText('(edytowany)')).toBeTruthy()
     expect(screen.getByRole('article', { name: `Komentarz: Tom Okafor, ${full(at1)}` })).toBeTruthy()
+  })
+
+  it('keeps a sent row through a re-render with the same comments in a new array', async () => {
+    const d = deferred()
+    const { user } = renderWithSatin(<Live onReply={() => d.promise} />)
+    await user.type(field(), 'Survives')
+    await user.keyboard('{Control>}{Enter}{/Control}')
+    const row = articleOf('Survives')
+    await act(async () => d.resolve())
+    // The parent maps its data again (a query's isPending flips): same comments, new objects.
+    act(() => live.set((cs) => cs.map((c) => ({ ...c }))))
+    expect(articleOf('Survives')).toBe(row)
+    act(() => live.add({ id: 'saved', author: you, body: 'Survives', at: new Date() }))
+    await waitFor(() => expect(screen.getAllByText('Survives')).toHaveLength(1))
+    expect(articleOf('Survives')).toBe(row)
+    expect(row.getAttribute('data-comment-id')).toBe('saved')
+  })
+
+  it('drops a sending row whose comment came first with a body the server rewrote', async () => {
+    const d = deferred()
+    const { user } = renderWithSatin(<Live onReply={() => d.promise} />)
+    await user.type(field(), 'Two{Enter}lines')
+    await user.keyboard('{Control>}{Enter}{/Control}')
+    // A realtime push, before the promise resolves, with CRLF and a trailing space.
+    act(() => live.add({ id: 'pushed', author: you, body: 'Two\r\nlines ', at: new Date() }))
+    await act(async () => d.resolve())
+    expect(document.querySelectorAll('[data-slot="comment"][data-comment-id="pushed"]')).toHaveLength(1)
+    expect(document.querySelector('[data-comment-id^="comment-pending"]')).toBeNull()
+    act(() => live.set((cs) => [...cs]))
+    expect(document.querySelector('[data-comment-id^="comment-pending"]')).toBeNull()
+  })
+
+  it('reconciles two identical sends one to one', async () => {
+    const sends = [deferred(), deferred()]
+    const queue = [...sends]
+    const { user } = renderWithSatin(<Live onReply={() => queue.shift()!.promise} />)
+    await user.type(field(), 'Same')
+    await user.keyboard('{Control>}{Enter}{/Control}')
+    await user.type(field(), 'Same')
+    await user.keyboard('{Control>}{Enter}{/Control}')
+    expect(screen.getAllByText('Same')).toHaveLength(2)
+    act(() => live.add({ id: 's1', author: you, body: 'Same', at: new Date() }))
+    expect(screen.getAllByText('Same')).toHaveLength(2)
+    expect(document.querySelectorAll('[data-state="sending"]')).toHaveLength(1)
+    act(() => live.add({ id: 's2', author: you, body: 'Same', at: new Date() }))
+    expect(screen.getAllByText('Same')).toHaveLength(2)
+    expect(document.querySelectorAll('[data-state="sending"]')).toHaveLength(0)
+    await act(async () => sends.forEach((d) => d.resolve()))
+    expect(Array.from(document.querySelectorAll('[data-slot="comment"]'), (el) => el.getAttribute('data-comment-id')).slice(-2)).toEqual(['s1', 's2'])
+  })
+
+  it('keeps a deleted root’s replies hidden once the app removes only the root', () => {
+    vi.useFakeTimers()
+    const onDelete = vi.fn()
+    renderWithSatin(
+      <>
+        <Live onDelete={onDelete} onReply={() => {}} moderator />
+        <Toaster />
+      </>,
+    )
+    const trigger = within(articleOf('Tara asked for 9k. Can we go there?')).getByRole('button', { name: /Actions/ })
+    act(() => void fireEvent.keyDown(trigger, { key: 'Enter' }))
+    act(() => void fireEvent.click(screen.getByRole('menuitem', { name: 'Delete' })))
+    act(() => void vi.advanceTimersByTime(6000))
+    expect(onDelete).toHaveBeenCalledExactlyOnceWith('c1')
+    act(() => live.set((cs) => cs.filter((c) => c.id !== 'c1')))
+    expect(screen.queryByText('Budget tops at 8.5k.')).toBeNull()
+    expect(screen.queryByText('Fine, 8.5k with a review at six months.')).toBeNull()
+    expect(screen.getAllByRole('button', { name: /^Reply to/ }).map((b) => b.getAttribute('aria-label'))).toEqual(['Reply to Marta Nowak'])
+  })
+
+  it('keeps another open editor when an edit fails, and says so in a toast', async () => {
+    const d = deferred()
+    const { user } = renderWithSatin(
+      <>
+        <Live onEdit={() => d.promise} />
+        <Toaster />
+      </>,
+    )
+    await user.click(within(articleOf('Offer is out.')).getByRole('button', { name: /Actions/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Edit' }))
+    await user.clear(field('Edit comment'))
+    await user.type(field('Edit comment'), 'Changed')
+    await user.keyboard('{Control>}{Enter}{/Control}')
+    expect(screen.getByText('Changed')).toBeTruthy()
+
+    await user.click(within(articleOf('Budget tops at 8.5k.')).getByRole('button', { name: /Actions/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Edit' }))
+    await user.type(field('Edit comment'), ' Firm.')
+    await act(async () => d.reject(new Error('offline')))
+    const editor = field('Edit comment')
+    expect(editor.value).toBe('Budget tops at 8.5k. Firm.')
+    expect(editor.closest('article')!.getAttribute('data-comment-id')).toBe('c2')
+    expect(editor.getAttribute('aria-invalid')).toBeNull()
+    expect(screen.getByText('Offer is out.')).toBeTruthy()
+    expect(await screen.findByText('Couldn’t save the comment. Try again.')).toBeTruthy()
+  })
+
+  it('plays the entry once, so showing the comments again doesn’t replay it', () => {
+    renderWithSatin(<Live onReply={() => {}} />)
+    act(() => live.add({ id: 'late', author: tom, body: 'Late', at: new Date() }))
+    const late = articleOf('Late')
+    expect(late.hasAttribute('data-enter')).toBe(true)
+    // React listens for the prefixed name where the DOM (jsdom here) has no AnimationEvent.
+    fireEvent(late, new Event('AnimationEvent' in window ? 'animationend' : 'webkitAnimationEnd', { bubbles: true }))
+    expect(late.hasAttribute('data-enter')).toBe(false)
+  })
+
+  it('says Cancel and Sending with Free’s words', async () => {
+    const { user } = renderWithSatin(<Live onReply={() => new Promise(() => {})} />, { labels: { cancel: 'Anuluj', sending: 'Wysyłanie' } })
+    await user.click(screen.getByRole('button', { name: 'Reply to Tom Okafor' }))
+    expect(screen.getByRole('button', { name: 'Anuluj' })).toBeTruthy()
+    await user.keyboard('Tak{Control>}{Enter}{/Control}')
+    expect(screen.getByRole('status', { name: 'Wysyłanie' })).toBeTruthy()
+  })
+
+  it('deletes at once on pagehide; the toast closing later does nothing', () => {
+    vi.useFakeTimers()
+    const onDelete = vi.fn()
+    renderWithSatin(
+      <>
+        <Live onDelete={onDelete} />
+        <Toaster />
+      </>,
+    )
+    const trigger = within(articleOf('Offer is out.')).getByRole('button', { name: /Actions/ })
+    act(() => void fireEvent.keyDown(trigger, { key: 'Enter' }))
+    act(() => void fireEvent.click(screen.getByRole('menuitem', { name: 'Delete' })))
+    act(() => void window.dispatchEvent(new Event('pagehide')))
+    expect(onDelete).toHaveBeenCalledExactlyOnceWith('c4')
+    act(() => void vi.advanceTimersByTime(10_000))
+    expect(onDelete).toHaveBeenCalledOnce()
+    expect(screen.queryByText('Offer is out.')).toBeNull()
+  })
+
+  it('commits a delete on the next microtask when no Toaster is mounted', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const onDelete = vi.fn()
+    const { user } = renderWithSatin(<Live onDelete={onDelete} />)
+    await user.click(within(articleOf('Offer is out.')).getByRole('button', { name: /Actions/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Delete' }))
+    await act(async () => {})
+    expect(onDelete).toHaveBeenCalledExactlyOnceWith('c4')
+    expect(screen.queryByText('Offer is out.')).toBeNull()
+    warn.mockRestore()
+  })
+
+  it('puts a reply to a reply under its root when it’s listed before the root', () => {
+    renderWithSatin(
+      <CommentsThread
+        currentUser={you}
+        onReply={() => {}}
+        comments={[
+          { id: 'r2', author: tom, body: 'Deep', at: at2, parentId: 'r1' },
+          { id: 'r1', author: you, body: 'Mid', at: at2, parentId: 'r0' },
+          { id: 'r0', author: tara, body: 'Top', at: at1 },
+        ]}
+      />,
+    )
+    const list = screen.getByRole('list', { name: 'Comments' })
+    const threads = within(list).getAllByRole('listitem').filter((li) => li.parentElement === list)
+    expect(threads).toHaveLength(1)
+    const replies = threads[0]!.querySelector<HTMLElement>('[data-slot="comment-replies"]')!
+    expect(within(replies).getByText('Deep')).toBeTruthy()
+    expect(within(replies).getByText('Mid')).toBeTruthy()
+    expect(screen.getAllByRole('button', { name: /^Reply to/ }).map((b) => b.getAttribute('aria-label'))).toEqual(['Reply to Tara Mendes'])
+  })
+
+  it('moves mentions with the leading whitespace it trims', async () => {
+    const onReply = vi.fn()
+    const { user } = renderWithSatin(<Live onReply={onReply} mentions={{ search: () => [tara] }} />)
+    await user.click(field())
+    await user.keyboard('  @ta')
+    await user.keyboard('{Enter}')
+    await user.keyboard('ok{Control>}{Enter}{/Control}')
+    expect(onReply).toHaveBeenLastCalledWith(null, '@Tara Mendes ok', [{ id: 'u-tara', label: 'Tara Mendes', start: 0, end: 12 }])
   })
 
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {

@@ -2762,7 +2762,7 @@
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "Fades in 4px up as it mounts, for a comment that arrives after the thread showed."
+          "description": "Fades in 4px up as it mounts, for a comment that arrives after the thread showed. It plays once: a later Show comments doesn't replay it."
         }
       ]
     },
@@ -2908,13 +2908,13 @@
           "name": "onEdit",
           "type": "(id: string, body: string, mentions: CommentMention[]) => void | Promise<void>",
           "required": false,
-          "description": "Adds Edit to your own comments. A rejected promise puts the old text back and reopens the editor."
+          "description": "Adds Edit to your own comments. A rejected promise puts the old text back and reopens the editor, or shows an error toast if another editor is open."
         },
         {
           "name": "onDelete",
           "type": "(id: string) => void | Promise<void>",
           "required": false,
-          "description": "Adds Delete to your own comments (anyone's with `moderator`). Called when the Undo toast closes without Undo, or at once if the thread unmounts or the page is left first. A rejected promise brings the comment back with an error toast."
+          "description": "Adds Delete to your own comments (anyone's with `moderator`). Called when the Undo toast closes without Undo, or at once if the thread unmounts or the page is left first. A rejected promise brings the comment back with an error toast. Deleting a root takes its replies with it, but `onDelete` gets the root's id only: the app deletes the replies too. Until it does, they stay hidden rather than becoming roots."
         },
         {
           "name": "onResolve",
