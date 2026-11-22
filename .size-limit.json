@@ -92,7 +92,7 @@
       "@uisatin/ui"
     ],
     "gzip": true,
-    "limit": "8 kB"
+    "limit": "12 kB"
   },
   {
     "name": "Agent presence (Satin Pro; @uisatin/ui left out, it is the peer)",

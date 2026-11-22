@@ -54,7 +54,31 @@ const teamsHtml = await highlight(teamOptions)
         can return a promise. The composer is a Satin Textarea that takes that menu through its <Chip>underlay</Chip>, so a
         mention is a token in the text, removed whole with Backspace. <Chip>onReply</Chip> and <Chip>onEdit</Chip> get the
         mentions with their place in the body, and a comment's <Chip>mentions</Chip> are drawn as Free's Mention where the body
-        reads "@" and the name.
+        reads "@" and the name. Hover or focus one and a tooltip shows the person's avatar and full name: the mention's
+        <Chip>avatar</Chip>, else that of an author with the same id in <Chip>comments</Chip>, else their initials. A person
+        picked from <Chip>search</Chip> with an <Chip>avatar</Chip> sends it with the mention.
+      </p>
+    </section>
+
+    <section aria-labelledby="formatting-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="formatting-title" class="text-lg font-medium text-text-default">Formatting</h2>
+      <p class="text-base leading-6 text-text-muted">
+        A comment's <Chip>body</Chip> is markdown-lite: <Chip>**bold**</Chip>, <Chip>_italic_</Chip>,
+        <Chip>~~struck~~</Chip>, <Chip>`code`</Chip>, <Chip>[text](https://…)</Chip> and lines starting
+        <Chip>- </Chip> as a bulleted list. Links go only to http, https and mailto addresses; any other shows its text alone,
+        and no HTML is ever drawn from a body. The composer's toolbar (Bold, Italic, Code, Bulleted list, Link, and ⌘B, ⌘I,
+        ⌘E, ⌘K in the field, Ctrl off Apple) writes those marks round the selection with the field's own editing, so undo takes
+        them back and a mention is never split. The text stays plain, so <Chip>onReply</Chip> stores it as it is, mentions
+        and all.
+      </p>
+    </section>
+
+    <section aria-labelledby="agents-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="agents-title" class="text-lg font-medium text-text-default">Agents</h2>
+      <p class="text-base leading-6 text-text-muted">
+        An author with <Chip>kind: 'agent'</Chip> takes the agent mark at rest in a circle, as in the Activity timeline, and
+        an "Agent" badge after the name, so it is both seen and said. In the demo the hiring assistant drafts the offer letter
+        and the recruiter answers it; in Sales, a deal assistant flags the discount policy.
       </p>
     </section>
 

@@ -1,16 +1,18 @@
 import * as React from 'react'
-import { WarningCircle } from 'iconoir-react'
+import { Refresh, WarningCircle, Xmark } from 'iconoir-react'
 import { Button } from '@uisatin/ui/button'
 import { Comment, CommentsThread, commentsThreadLabels as labels, type CommentAuthor, type CommentItem } from '@uisatin/pro/comments-thread'
 
 /**
  * Every Comments thread state, one per row: empty (the empty state over the composer), sending
  * and failed (the `Comment` part, as the thread draws a pending row, since a real one needs a
- * send), resolved (folded to one line) and disabled (read only). Fixed dates, so the page is the
- * same on every load.
+ * send), an agent's comment (the agent mark and an Agent badge, a markdown-lite body), resolved
+ * (folded to one line) and disabled (read only). Fixed dates, so the page is the same on every load.
  */
 const MARTA: CommentAuthor = { id: 'marta', name: 'Marta Nowak' }
 const JON: CommentAuthor = { id: 'jon', name: 'Jon Park' }
+const ASSISTANT: CommentAuthor = { id: 'hiring-assistant', name: 'Hiring assistant', kind: 'agent' }
+const agentBody = 'Drafted the offer letter:\n- **€9.5k** a month\n- a **€5k** signing bonus\n- start date _January 4_'
 
 const ask = '@Marta Nowak can we meet her at €9.5k with a signing bonus?'
 const comments: CommentItem[] = [
@@ -33,14 +35,16 @@ function Failed() {
       state="failed"
       footer={
         <>
-          <span id={id} className="inline-flex items-center gap-1 text-sm leading-5 text-text-destructive">
+          <span id={id} className="me-1 inline-flex items-center gap-1 text-sm leading-5 text-text-destructive">
             <WarningCircle aria-hidden className="size-3.5 [stroke-width:1.875]" />
             {labels.commentsNotSent}
           </span>
           <Button variant="secondary" size="xs" aria-describedby={id}>
+            <Refresh aria-hidden />
             {labels.commentsRetry}
           </Button>
-          <Button variant="tertiary" size="xs">
+          <Button variant="tertiary" size="xs" className="text-text-muted satin-hover:text-text-default">
+            <Xmark aria-hidden />
             {labels.commentsDiscard}
           </Button>
         </>
@@ -53,6 +57,7 @@ const rows: { name: string; node: React.ReactNode }[] = [
   { name: 'Empty', node: <CommentsThread comments={[]} currentUser={MARTA} onReply={noop} resolvable /> },
   { name: 'Sending', node: <Comment author={MARTA} own at="2026-11-16T11:00:00" body={pendingBody} state="sending" /> },
   { name: 'Failed, Retry', node: <Failed /> },
+  { name: 'Agent', node: <Comment author={ASSISTANT} at="2026-11-16T11:10:00" body={agentBody} /> },
   { name: 'Resolved', node: <CommentsThread comments={comments} currentUser={MARTA} onReply={noop} resolvable defaultResolved resolvedBy={MARTA} /> },
   { name: 'Disabled', node: <CommentsThread comments={comments} currentUser={MARTA} onReply={noop} onEdit={noop} onDelete={noop} resolvable disabled /> },
 ]

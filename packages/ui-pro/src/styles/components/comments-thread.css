@@ -28,14 +28,15 @@
 [data-slot='comment'][data-state='sending'] [data-slot='comment-body'] {
   color: var(--text-muted);
 }
-/* The composer's field is two lines tall (Textarea's own is 96px); it still resizes. */
+/* The composer's field is 72px, a little over two lines (Textarea's own is 96px); it still resizes. */
 [data-slot='comment-composer'] textarea[data-slot='textarea'] {
-  height: 64px;
+  height: 72px;
 }
 /*
  * Replies hang off a thread line: border/strong at the default (decoration) width, centred under
  * the root's 24px avatar (12px in from the start), from the first reply down to the reply composer.
- * border/default at that width all but vanished on the card.
+ * It fades in over its first quarter and out over its last, so it hangs off the root and trails
+ * off rather than ending in a cut. border/default at that width all but vanished on the card.
  */
 [data-slot='comment-replies-thread']::before {
   content: '';
@@ -44,5 +45,5 @@
   inset-inline-start: calc(12px - var(--border-width-default) / 2);
   width: var(--border-width-default);
   border-radius: var(--radius-full);
-  background: var(--border-strong);
+  background: linear-gradient(to bottom, transparent, var(--border-strong) 24%, var(--border-strong) 76%, transparent);
 }

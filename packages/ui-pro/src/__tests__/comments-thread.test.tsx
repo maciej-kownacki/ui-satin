@@ -635,6 +635,122 @@ describe('CommentsThread', () => {
     expect(onReply).toHaveBeenLastCalledWith(null, '@Tara Mendes ok', [{ id: 'u-tara', label: 'Tara Mendes', start: 0, end: 12 }])
   })
 
+  it('shows a mention’s avatar and full name in a tooltip on focus', async () => {
+    renderWithSatin(
+      <CommentsThread
+        currentUser={you}
+        comments={[
+          { id: 't', author: tara, body: 'Here.', at: at1 },
+          { id: 'm', author: tom, body: 'Ask @Tara Mendes', at: at2, mentions: [{ id: 'u-tara', label: 'Tara Mendes', start: 4, end: 16 }] },
+        ]}
+      />,
+    )
+    const mention = document.querySelector<HTMLElement>('[data-slot="mention"]')!
+    expect(mention.getAttribute('tabindex')).toBe('0')
+    act(() => mention.focus())
+    const tip = await screen.findByRole('tooltip')
+    // The initials are hidden from screen readers; the name is what the tooltip says.
+    expect(tip.textContent).toBe('TMTara Mendes')
+  })
+
+  it('formats the selection from the toolbar and with shortcuts, through the composer’s value', async () => {
+    const onReply = vi.fn()
+    const { user } = renderWithSatin(<Live onReply={onReply} />)
+    const toolbar = screen.getByRole('toolbar', { name: 'Formatting' })
+    expect(within(toolbar).getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual(['Bold', 'Italic', 'Code', 'Bulleted list', 'Link'])
+    await user.type(field(), 'make this bold')
+    act(() => field().setSelectionRange(10, 14))
+    await user.click(within(toolbar).getByRole('button', { name: 'Bold' }))
+    expect(field().value).toBe('make this **bold**')
+    expect([field().selectionStart, field().selectionEnd]).toEqual([12, 16])
+    expect(document.activeElement).toBe(field())
+    act(() => field().setSelectionRange(0, 4))
+    await user.keyboard('{Control>}i{/Control}')
+    expect(field().value).toBe('_make_ this **bold**')
+    act(() => field().setSelectionRange(1, 5))
+    await user.keyboard('{Control>}e{/Control}')
+    expect(field().value).toBe('_`make`_ this **bold**')
+    await user.keyboard('{Control>}{Enter}{/Control}')
+    expect(onReply).toHaveBeenLastCalledWith(null, '_`make`_ this **bold**', [])
+  })
+
+  it('makes lines a list and back, and wraps a link with its address selected', async () => {
+    const { user } = renderWithSatin(<Live onReply={() => {}} />)
+    await user.type(field(), 'a{Enter}b')
+    act(() => field().setSelectionRange(0, 3))
+    await user.click(screen.getByRole('button', { name: 'Bulleted list' }))
+    expect(field().value).toBe('- a\n- b')
+    act(() => field().setSelectionRange(2, 7))
+    await user.click(screen.getByRole('button', { name: 'Bulleted list' }))
+    expect(field().value).toBe('a\nb')
+    act(() => field().setSelectionRange(2, 3))
+    await user.keyboard('{Control>}k{/Control}')
+    expect(field().value).toBe('a\n[b](url)')
+    expect(field().value.slice(field().selectionStart, field().selectionEnd)).toBe('url')
+  })
+
+  it('never splits a mention: a selection cutting into one takes all of it, and the mention moves', async () => {
+    const onReply = vi.fn()
+    const { user } = renderWithSatin(<Live onReply={onReply} mentions={{ search: () => [tara] }} />)
+    await user.click(field())
+    await user.keyboard('@ta{Enter}hi')
+    act(() => field().setSelectionRange(3, 5))
+    await user.click(screen.getByRole('button', { name: 'Bold' }))
+    expect(field().value).toBe('**@Tara Mendes** hi')
+    await user.keyboard('{Control>}{Enter}{/Control}')
+    expect(onReply).toHaveBeenLastCalledWith(null, '**@Tara Mendes** hi', [{ id: 'u-tara', label: 'Tara Mendes', start: 2, end: 14 }])
+  })
+
+  it('renders markdown-lite bodies, mentions inside marks, and never an unsafe link', () => {
+    renderWithSatin(
+      <CommentsThread
+        currentUser={you}
+        comments={[
+          {
+            id: 'md',
+            author: tom,
+            body: '**Ask @Tara Mendes** about _it_, `snake_case` and ~~old~~.\nSee [docs](https://example.com) or [this](javascript:evil).\n- one\n* two',
+            at: at1,
+            mentions: [{ id: 'u-tara', label: 'Tara Mendes', start: 6, end: 18 }],
+          },
+        ]}
+      />,
+    )
+    const body = document.querySelector('[data-slot="comment-body"]')!
+    const strong = body.querySelector('strong')!
+    expect(strong.textContent).toBe('Ask @Tara Mendes')
+    expect(strong.querySelector('[data-slot="mention"]')!.getAttribute('data-mention-id')).toBe('u-tara')
+    expect(body.querySelector('em')!.textContent).toBe('it')
+    expect(body.querySelector('code')!.textContent).toBe('snake_case')
+    expect(body.querySelector('s')!.textContent).toBe('old')
+    expect(screen.getByRole('link', { name: 'docs' }).getAttribute('href')).toBe('https://example.com')
+    expect(screen.queryByRole('link', { name: 'this' })).toBeNull()
+    expect(body.textContent).toContain('or this.')
+    expect(body.querySelector('[href^="javascript"]')).toBeNull()
+    const items = within(body.querySelector('ul')!).getAllByRole('listitem')
+    expect(items.map((li) => li.textContent)).toEqual(['one', 'two'])
+    expect(body.querySelectorAll('p')).toHaveLength(1)
+  })
+
+  it('marks an agent’s comment: the agent mark and an Agent badge, no Edit', () => {
+    const agent: CommentAuthor = { id: 'a-hire', name: 'Hiring assistant', kind: 'agent' }
+    renderWithSatin(<CommentsThread currentUser={you} comments={[{ id: 'a', author: agent, body: 'Band B fits.', at: at1 }]} onReply={() => {}} onEdit={() => {}} />)
+    const article = screen.getByRole('article', { name: `Comment by Hiring assistant, ${full(at1)}` })
+    expect(within(article).getByText('Agent')).toBeTruthy()
+    expect(article.querySelector('[data-slot="comment-agent-avatar"] .satin-tetris')).toBeTruthy()
+    expect(within(article).queryByRole('button', { name: 'Edit' })).toBeNull()
+    expect(within(article).getByRole('button', { name: 'Reply to Hiring assistant' })).toBeTruthy()
+  })
+
+  it('draws Reply and Edit with icons, keeping their names', () => {
+    renderWithSatin(<Live onReply={() => {}} onEdit={() => {}} />)
+    const reply = screen.getByRole('button', { name: 'Reply to Tom Okafor' })
+    expect(reply.querySelector('svg')).toBeTruthy()
+    expect(reply.textContent).toBe('Reply')
+    const edit = screen.getAllByRole('button', { name: 'Edit' })[0]!
+    expect(edit.querySelector('svg')).toBeTruthy()
+  })
+
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
     const { user } = renderWithSatin(
       <>

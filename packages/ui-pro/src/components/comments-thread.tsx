@@ -1,20 +1,24 @@
 'use client'
 
 import * as React from 'react'
-import { ChatLines, Check, EditPencil, MoreHoriz, Trash, WarningCircle } from 'iconoir-react'
+import { Bold, ChatLines, Check, Code, EditPencil, Italic, Link as LinkIcon, List as ListIcon, MoreHoriz, Refresh, Reply, Trash, WarningCircle, Xmark } from 'iconoir-react'
+import { TetrisStill } from '@uisatin/ui/agent-loading'
 import { Avatar, type AvatarTone } from '@uisatin/ui/avatar'
 import { Badge } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
+import { ButtonGroupSeparator } from '@uisatin/ui/button-group'
 import { DropdownMenu, DropdownMenuItem } from '@uisatin/ui/dropdown'
 import { EmptyState } from '@uisatin/ui/empty-state'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
+import { Link } from '@uisatin/ui/link'
 import { List } from '@uisatin/ui/list'
 import { Mention, usePromptMentions, type PromptMention, type PromptMentions, type PromptValue } from '@uisatin/ui/prompt-mentions'
 import { RelativeTime, dateTimeFormat } from '@uisatin/ui/relative-time'
 import { Spinner } from '@uisatin/ui/spinner'
 import { Textarea } from '@uisatin/ui/textarea'
 import { toast } from '@uisatin/ui/toast'
+import { Toolbar, ToolbarButton } from '@uisatin/ui/toolbar'
 
 /**
  * CommentsThread: a discussion on a record (a candidate, a deal, a campaign, an order), with
@@ -26,11 +30,20 @@ import { toast } from '@uisatin/ui/toast'
  *   in it; Escape closes it and puts focus back on Reply.
  * - Each comment is an `<article>` named "Comment by Marta Nowak, {full date}": avatar (initials
  *   by default), name, the time relative today (Free's `RelativeTime`, the full date for screen
- *   readers), "(edited)", the body with its line breaks and its `mentions` drawn as `Mention`.
+ *   readers), "(edited)", the body and its `mentions` drawn as `Mention`, each with a tooltip of
+ *   the person's avatar and full name on hover and focus.
+ * - Bodies are markdown-lite: `**bold**` (or `__bold__`), `_italic_` (or `*italic*`),
+ *   `~~struck~~`, `` `code` ``, `[text](https://…)` (http, https and mailto only; any other link
+ *   shows its text alone), and lines starting `- ` or `* ` as a bulleted list. Other line breaks
+ *   are kept. No HTML is ever rendered from the body.
+ * - The composer has a formatting toolbar (Bold, Italic, Code, Bulleted list, Link; ⌘/Ctrl+B, I,
+ *   E, K in the field) that writes those marks into the text, through the field's own undo.
+ * - An author with `kind: 'agent'` shows the agent mark at rest in a circle (Activity timeline's)
+ *   and an "Agent" Badge after the name.
  * - Your own comments say "(me)" after your name and show Edit next to Reply (`onEdit`). The ⋯
  *   menu ("Actions for comment by Marta Nowak") holds Delete, on yours or on anyone's with
  *   `moderator` (`onDelete`).
- * - Replies hang off a thread line under the root's avatar.
+ * - Replies hang off a thread line under the root's avatar, fading out at both ends.
  * - `title` puts a heading over it with the count in a Badge ("Comments 5"); `variant="card"`
  *   sets it on a card.
  * - Send is optimistic: while `onReply`'s promise runs, a row from `currentUser` shows dimmed with
@@ -99,6 +112,15 @@ export const commentsThreadLabels = {
   commentsEdited: '(edited)',
   /** After your own name on your comments. */
   commentsMe: '(me)',
+  /** The Badge after an agent's name. */
+  commentsAgent: 'Agent',
+  /** The composer's formatting toolbar. */
+  commentsFormatting: 'Formatting',
+  commentsBold: 'Bold',
+  commentsItalic: 'Italic',
+  commentsCode: 'Code',
+  commentsList: 'Bulleted list',
+  commentsLink: 'Link',
   /** The count next to `title`, for screen readers: "5 comments". */
   commentsCount: (count: number) => `${count} ${count === 1 ? 'comment' : 'comments'}`,
   /** The ⋯ button's name: "Actions for comment by Marta Nowak". */
@@ -131,8 +153,10 @@ export interface CommentAuthor {
   /** Tells people apart: your own comments are those whose author id is `currentUser.id`. */
   id: string
   name: string
-  /** 24px in place of the initials: an Avatar in the person's tone, a photo. */
+  /** 24px in place of the initials: an Avatar in the person's tone, a photo. 20px in the mentions menu. */
   avatar?: React.ReactNode
+  /** `agent`: the agent mark in place of the initials, and an "Agent" Badge after the name. Defaults to `person`. */
+  kind?: 'person' | 'agent'
 }
 
 /** A mention in a comment's body: `body.slice(start, end)` is "@" and the label. The fields of Free's `PromptMentionToken`. */
@@ -141,12 +165,20 @@ export interface CommentMention {
   label: string
   start: number
   end: number
+  /**
+   * 20px, in the mention's tooltip. Left out, the thread uses the avatar of an author with this id
+   * in `comments`, else the initials in the person's tone. The composer fills it from a
+   * `mentions.search` result that has an `avatar`.
+   */
+  avatar?: React.ReactNode
+  /** `agent`: the agent mark in the tooltip. Filled like `avatar`. */
+  kind?: 'person' | 'agent'
 }
 
 export interface CommentItem {
   id: string
   author: CommentAuthor
-  /** Plain text; line breaks are kept. */
+  /** Markdown-lite: bold, italic, strikethrough, code, links and bulleted lists; line breaks are kept. */
   body: string
   /** When: a Date or an ISO string. */
   at: Date | string
@@ -199,8 +231,25 @@ function initialsOf(name: string) {
     .toUpperCase()
 }
 
-function AuthorAvatar({ author, size }: { author: CommentAuthor; size: 20 | 24 }) {
+/** An agent's avatar: the Tetris mark at rest in a circle, as the Activity timeline draws it. */
+function AgentAvatar({ size }: { size: 20 | 24 }) {
+  return (
+    <span
+      aria-hidden
+      data-slot="comment-agent-avatar"
+      className={cn(
+        'grid shrink-0 place-items-center rounded-full bg-component-file-icon-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-strong)]',
+        size === 24 ? 'size-6' : 'size-5',
+      )}
+    >
+      <TetrisStill />
+    </span>
+  )
+}
+
+function AuthorAvatar({ author, size }: { author: Pick<CommentAuthor, 'id' | 'name' | 'avatar' | 'kind'>; size: 20 | 24 }) {
   if (author.avatar) return <>{author.avatar}</>
+  if (author.kind === 'agent') return <AgentAvatar size={size} />
   return (
     <span aria-hidden className="flex">
       <Avatar initials={initialsOf(author.name)} tone={toneOf(author.id)} size={size} />
@@ -215,33 +264,153 @@ function validMentions(text: string, mentions: CommentMention[] | undefined): Co
   let at = 0
   for (const m of [...mentions].sort((a, b) => a.start - b.start)) {
     if (m.start < at || text.slice(m.start, m.end) !== `@${m.label}`) continue
-    out.push({ id: m.id, label: m.label, start: m.start, end: m.end })
+    out.push({ id: m.id, label: m.label, start: m.start, end: m.end, ...(m.avatar != null && { avatar: m.avatar }), ...(m.kind && { kind: m.kind }) })
     at = m.end
   }
   return out
 }
 
-/** The body with its mentions as `Mention`. */
-function renderBody(body: string, mentions: CommentMention[] | undefined) {
+/* ---------- the body: markdown-lite ---------- */
+
+const SAFE_URL = /^(?:https?:\/\/|mailto:)/i
+
+// The inline marks, in the order a tie is won. Code first: nothing inside it is a mark.
+const INLINE: { kind: 'code' | 'link' | 'bold' | 'strike' | 'italic'; re: RegExp }[] = [
+  { kind: 'code', re: /`([^`\n]+)`/ },
+  { kind: 'link', re: /\[([^\]\n]+)\]\(([^()\s]+)\)/ },
+  { kind: 'bold', re: /\*\*(?![\s*])([^\n]*?[^\s*])\*\*|__(?![\s_])([^\n]*?[^\s_])__/ },
+  { kind: 'strike', re: /~~(?![\s~])([^\n]*?[^\s~])~~/ },
+  // Not inside a word (snake_case stays text). The character before is captured, not looked
+  // behind at, so Safari before 16.4 still parses the module.
+  { kind: 'italic', re: /(^|[^\w*])\*(?![\s*])([^\n]*?[^\s*])\*(?![\w*])|(^|[^\w_])_(?![\s_])([^\n]*?[^\s_])_(?![\w_])/ },
+]
+
+/** A 20px avatar for a mention's tooltip. */
+function mentionAvatar(m: CommentMention) {
+  return m.avatar ?? <AuthorAvatar author={{ id: m.id, name: m.label, kind: m.kind }} size={20} />
+}
+
+/**
+ * The body as React: markdown-lite, with its mentions as `Mention`. Each valid mention is swapped
+ * for one private-use character before parsing, so a mark can hold a mention but never split one,
+ * and swapped back as a `Mention` at the end. Only text and elements are made; never HTML.
+ */
+function renderBody(body: string, mentions: CommentMention[] | undefined): React.ReactNode {
   const valid = validMentions(body, mentions)
-  if (!valid.length) return body
-  const parts: React.ReactNode[] = []
+  // The first private-use character from which none the body already has stand in for mentions.
+  let base = 0xe000
+  while (valid.some((_, i) => body.includes(String.fromCharCode(base + i)))) base += valid.length
+  let text = ''
   let at = 0
-  for (const m of valid) {
-    if (m.start > at) parts.push(body.slice(at, m.start))
-    parts.push(<Mention key={m.start} id={m.id} label={m.label} />)
+  valid.forEach((m, i) => {
+    text += body.slice(at, m.start) + String.fromCharCode(base + i)
     at = m.end
+  })
+  text += body.slice(at)
+
+  let key = 0
+  const restore = (s: string, asText = false): React.ReactNode[] => {
+    const out: React.ReactNode[] = []
+    let run = ''
+    for (const ch of s) {
+      const i = ch.charCodeAt(0) - base
+      const m = ch.length === 1 && i >= 0 && i < valid.length ? valid[i] : undefined
+      if (!m) {
+        run += ch
+        continue
+      }
+      if (asText) {
+        run += `@${m.label}`
+        continue
+      }
+      if (run) out.push(run)
+      run = ''
+      out.push(<Mention key={key++} id={m.id} label={m.label} name={m.label} avatar={mentionAvatar(m)} />)
+    }
+    if (run) out.push(run)
+    return out
   }
-  if (at < body.length) parts.push(body.slice(at))
-  return parts
+  const inline = (s: string): React.ReactNode[] => {
+    const out: React.ReactNode[] = []
+    let rest = s
+    while (rest) {
+      let best: { kind: (typeof INLINE)[number]['kind']; match: RegExpExecArray; index: number; lead: number } | null = null
+      for (const { kind, re } of INLINE) {
+        const match = re.exec(rest)
+        if (!match) continue
+        // Italic captures the character before its mark: the mark starts after it.
+        const lead = kind === 'italic' ? (match[1] ?? match[3] ?? '').length : 0
+        const index = match.index + lead
+        if (!best || index < best.index) best = { kind, match, index, lead }
+      }
+      if (!best) break
+      const { kind, match, index } = best
+      if (index > 0) out.push(...restore(rest.slice(0, index)))
+      const inner = (kind === 'italic' ? (match[2] ?? match[4]) : (match[1] ?? match[2])) ?? ''
+      if (kind === 'code')
+        out.push(
+          <code key={key++} data-slot="comment-code" className="rounded-xs bg-bg-muted px-1 py-px font-mono text-[0.9em]">
+            {restore(inner, true)}
+          </code>,
+        )
+      else if (kind === 'link') {
+        const url = match[2]!
+        out.push(
+          SAFE_URL.test(url) ? (
+            <Link key={key++} href={url}>
+              {inline(inner)}
+            </Link>
+          ) : (
+            <React.Fragment key={key++}>{inline(inner)}</React.Fragment>
+          ),
+        )
+      } else if (kind === 'bold') out.push(<strong key={key++} className="font-semibold">{inline(inner)}</strong>)
+      else if (kind === 'strike') out.push(<s key={key++}>{inline(inner)}</s>)
+      else out.push(<em key={key++} className="italic">{inline(inner)}</em>)
+      rest = rest.slice(match.index + match[0].length)
+    }
+    if (rest) out.push(...restore(rest))
+    return out
+  }
+
+  // Blocks: runs of "- " or "* " lines are a list; everything else keeps its line breaks.
+  const LIST = /^[-*] /
+  const blocks: { list: boolean; lines: string[] }[] = []
+  for (const line of text.split('\n')) {
+    const list = LIST.test(line)
+    const last = blocks[blocks.length - 1]
+    if (last && last.list === list) last.lines.push(list ? line.slice(2) : line)
+    else blocks.push({ list, lines: [list ? line.slice(2) : line] })
+  }
+  // A blank line next to a list is the list's own spacing.
+  blocks.forEach((b, i) => {
+    if (b.list) return
+    if (blocks[i - 1]?.list) while (b.lines.length && !b.lines[0]!.trim()) b.lines.shift()
+    if (blocks[i + 1]?.list) while (b.lines.length && !b.lines[b.lines.length - 1]!.trim()) b.lines.pop()
+  })
+  const shown = blocks.filter((b) => b.lines.length)
+  if (shown.length === 1 && !shown[0]!.list) return inline(shown[0]!.lines.join('\n'))
+  return shown.map((b) =>
+    b.list ? (
+      <ul key={key++} className="m-0 list-disc ps-5 marker:text-text-muted">
+        {b.lines.map((line) => (
+          <li key={key++}>{inline(line)}</li>
+        ))}
+      </ul>
+    ) : (
+      <p key={key++} className="m-0">
+        {inline(b.lines.join('\n'))}
+      </p>
+    ),
+  )
 }
 
 /** The text trimmed, with the mentions moved by what the start lost. */
 function trimValue(value: PromptValue): { body: string; mentions: CommentMention[] } {
   const lead = value.text.length - value.text.trimStart().length
   const body = value.text.trim()
-  const mentions = value.mentions
-    .map((m) => ({ id: m.id, label: m.label, start: m.start - lead, end: m.end - lead }))
+  const mentions = (value.mentions as (PromptValue['mentions'][number] & Pick<CommentMention, 'avatar' | 'kind'>)[])
+    .map((m) => ({ id: m.id, label: m.label, start: m.start - lead, end: m.end - lead, avatar: m.avatar, kind: m.kind }))
     .filter((m) => m.start >= 0 && m.end <= body.length)
   return { body, mentions: validMentions(body, mentions) }
 }
@@ -257,9 +426,9 @@ export interface CommentProps extends Omit<React.ComponentProps<'article'>, 'chi
   author: CommentAuthor
   /** When: a Date or an ISO string. Shown relative today; the full date goes into the article's name. */
   at: Date | string
-  /** Plain text; line breaks are kept. */
+  /** Markdown-lite (bold, italic, strikethrough, code, links, bulleted lists); line breaks are kept. */
   body: string
-  /** Drawn as `Mention` where the body reads "@" and the label. */
+  /** Drawn as `Mention`, with a tooltip of the avatar and full name, where the body reads "@" and the label. */
   mentions?: CommentMention[]
   /** Shows "(edited)" after the time. */
   edited?: boolean
@@ -279,10 +448,10 @@ export interface CommentProps extends Omit<React.ComponentProps<'article'>, 'chi
 
 /**
  * One comment: an `<article tabIndex={-1}>` named "Comment by {name}, {full date}", so focus can
- * be moved to it. The avatar (initials in a tone picked from the author's id), the name in medium
- * 13px, `RelativeTime`, "(edited)" in text/muted, then the body in 14/21 text/default with its
- * line breaks. With `own`, "(me)" in text/muted follows the name. Other props, `ref` included,
- * go to the `article`.
+ * be moved to it. The avatar (initials in a tone picked from the author's id, the agent mark for
+ * an agent), the name in medium 13px, an "Agent" Badge for an agent, `RelativeTime`, "(edited)"
+ * in text/muted, then the body in 14/21 text/default: markdown-lite, with its line breaks. With
+ * `own`, "(me)" in text/muted follows the name. Other props, `ref` included, go to the `article`.
  */
 export function Comment({
   author,
@@ -334,18 +503,23 @@ export function Comment({
             {author.name}
             {own && <span className="font-normal text-text-muted"> {labels.commentsMe}</span>}
           </span>
+          {author.kind === 'agent' && (
+            <Badge size="sm" data-part="comment-agent" className="shrink-0">
+              {labels.commentsAgent}
+            </Badge>
+          )}
           <RelativeTime at={time} />
           {edited && <span className="shrink-0 text-sm leading-5 text-text-muted">{labels.commentsEdited}</span>}
           {state === 'sending' && <Spinner size="xs" label={labels.sending} className="text-text-muted" />}
           {actions && <span className="ms-auto flex shrink-0">{actions}</span>}
         </div>
         {children ?? (
-          <p data-slot="comment-body" className="m-0 text-body break-words whitespace-pre-wrap text-text-default">
+          <div data-slot="comment-body" className="text-body break-words whitespace-pre-wrap text-text-default">
             {renderBody(body, mentions)}
-          </p>
+          </div>
         )}
         {footer && (
-          <div data-slot="comment-footer" className="mt-1 flex flex-wrap items-center gap-2">
+          <div data-slot="comment-footer" className="mt-1.5 flex flex-wrap items-center gap-1">
             {footer}
           </div>
         )}
@@ -410,6 +584,71 @@ export function CommentActions({ authorName, onEdit, onDelete, className, ...pro
 
 /* ---------- CommentComposer ---------- */
 
+/** ⌘ on Apple platforms, Ctrl elsewhere, read after hydration so the server's markup never disagrees. */
+const isApple = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+const noop = () => () => {}
+const useIsApple = () => React.useSyncExternalStore(noop, isApple, () => false)
+
+type Format = 'bold' | 'italic' | 'code' | 'list' | 'link'
+const FORMAT_KEYS: Record<string, Format> = { b: 'bold', i: 'italic', e: 'code', k: 'link' }
+/** An edit of the text: `remove` characters at `at` give way to `insert`. */
+type TextEdit = { at: number; remove: number; insert: string }
+const LINK_URL = 'url'
+
+/** The value through edits, the mentions after each moved by it. Applied from the end, so earlier offsets hold. */
+function applyEdits(v: PromptValue, edits: TextEdit[]): PromptValue {
+  let { text, mentions } = v
+  for (const e of [...edits].sort((a, b) => b.at - a.at)) {
+    text = text.slice(0, e.at) + e.insert + text.slice(e.at + e.remove)
+    const by = e.insert.length - e.remove
+    mentions = mentions.map((m) => (m.start >= e.at + e.remove ? { ...m, start: m.start + by, end: m.end + by } : m))
+  }
+  return { ...v, text, mentions }
+}
+
+/** Where a position lands after edits listed from the start of the text. */
+function mapThrough(pos: number, edits: TextEdit[]) {
+  let by = 0
+  for (const e of edits) {
+    if (e.at > pos) break
+    if (e.at + e.remove <= pos) by += e.insert.length - e.remove
+    else return e.at + by
+  }
+  return pos + by
+}
+
+/**
+ * The edits a format makes to the selection [a, b], and the selection after. Marks wrap the
+ * selection (or go round the caret); a list puts "- " before each line it touches, or takes it
+ * off when they all have it; a link wraps the text as `[text](url)` and selects `url`.
+ */
+function formatEdits(text: string, a: number, b: number, format: Format): { edits: TextEdit[]; select: [number, number] } {
+  if (format === 'list') {
+    const starts = [text.lastIndexOf('\n', a - 1) + 1]
+    for (let i = starts[0]!; i < b; i++) if (text[i] === '\n' && i + 1 < b) starts.push(i + 1)
+    const listed = starts.every((at) => /^[-*] /.test(text.slice(at, at + 2)))
+    const edits = listed
+      ? starts.map((at) => ({ at, remove: 2, insert: '' }))
+      : starts.filter((at) => !/^[-*] /.test(text.slice(at, at + 2))).map((at) => ({ at, remove: 0, insert: '- ' }))
+    return { edits, select: [mapThrough(a, edits), mapThrough(b, edits)] }
+  }
+  if (format === 'link') {
+    const edits = [
+      { at: b, remove: 0, insert: `](${LINK_URL})` },
+      { at: a, remove: 0, insert: '[' },
+    ]
+    return { edits, select: a === b ? [a + 1, a + 1] : [b + 3, b + 3 + LINK_URL.length] }
+  }
+  const mark = format === 'bold' ? '**' : format === 'italic' ? '_' : '`'
+  return {
+    edits: [
+      { at: b, remove: 0, insert: mark },
+      { at: a, remove: 0, insert: mark },
+    ],
+    select: [a + mark.length, b + mark.length],
+  }
+}
+
 export interface CommentComposerProps extends Omit<React.ComponentProps<'div'>, 'onSubmit' | 'defaultValue'> {
   /** The draft, controlled: its text and mentions. The composer doesn't clear a controlled draft on submit. */
   value?: PromptValue
@@ -433,13 +672,17 @@ export interface CommentComposerProps extends Omit<React.ComponentProps<'div'>, 
   error?: React.ReactNode
   /** Focus the field when it mounts, with the caret at the end. */
   autoFocus?: boolean
-  /** At the start of the button row, away from Send: the thread puts Resolve here. */
+  /** At the start of the button row, after the formatting toolbar and away from Send: the thread puts Resolve here. */
   start?: React.ReactNode
 }
 
 /**
- * The field and Send: a Satin Textarea (64px, resizable) with @mentions from `usePromptMentions`,
- * and the button row under it. Ctrl/⌘+Enter sends, Enter alone is a new line, Escape cancels
+ * The field and Send: a Satin Textarea (72px, resizable) with @mentions from `usePromptMentions`,
+ * and the button row under it: the formatting toolbar (Free's Toolbar, one tab stop: Bold,
+ * Italic, Code, Bulleted list, Link), `start`, then Cancel and Send. A format writes its
+ * markdown-lite marks round the selection through the field's own editing, so undo takes it back;
+ * a selection that cuts into a mention takes the whole mention. ⌘/Ctrl+B, I, E and K do the same
+ * in the field. Ctrl/⌘+Enter sends, Enter alone is a new line, Escape cancels
  * when `onCancel` is given (after the mentions menu, which takes Enter and Escape while open).
  * Send stays `aria-disabled` while the text is blank. Other props, `ref` included, go to the
  * root `div`.
@@ -474,11 +717,16 @@ export function CommentComposer({
   // One search object for the hook, reading the newest `mentions`: an inline object stays cheap.
   const mentionsRef = React.useRef(mentions)
   mentionsRef.current = mentions
+  // The people search found, so a sent mention keeps their avatar and kind.
+  const known = React.useRef(new Map<string, CommentAuthor>())
   const search = React.useMemo<PromptMentions>(
     () => ({
       search: (query) => {
         const toMention = (people: CommentAuthor[]): PromptMention[] =>
-          people.map((p) => ({ id: p.id, label: p.name, icon: <AuthorAvatar author={p} size={20} /> }))
+          people.map((p) => {
+            known.current.set(p.id, p)
+            return { id: p.id, label: p.name, icon: <AuthorAvatar author={p} size={20} /> }
+          })
         const found = mentionsRef.current?.search(query) ?? []
         return isThenable(found) ? Promise.resolve(found).then(toMention) : toMention(found)
       },
@@ -502,8 +750,58 @@ export function CommentComposer({
   const submit = () => {
     if (blank || disabled) return
     const { body, mentions: found } = trimValue(value)
-    onSubmit(body, found)
+    onSubmit(
+      body,
+      found.map((m) => {
+        const p = known.current.get(m.id)
+        return { ...m, ...(m.avatar == null && p?.avatar != null && { avatar: p.avatar }), ...(!m.kind && p?.kind && { kind: p.kind }) }
+      }),
+    )
     if (!controlled) setLocal(EMPTY)
+  }
+
+  /* formatting */
+  const apple = useIsApple()
+  const keys = (key: string) => (apple ? `⌘${key}` : `Ctrl+${key}`)
+  // The selection a format leaves, set again after the render its value change causes.
+  const nextSelection = React.useRef<[number, number] | null>(null)
+  React.useLayoutEffect(() => {
+    const el = textareaRef.current
+    const sel = nextSelection.current
+    if (!el || !sel) return
+    nextSelection.current = null
+    el.setSelectionRange(sel[0], sel[1])
+  })
+  const format = (kind: Format) => {
+    const el = textareaRef.current
+    if (!el || disabled) return
+    let a = Math.min(el.selectionStart, el.selectionEnd)
+    let b = Math.max(el.selectionStart, el.selectionEnd)
+    // Never split a mention: a selection that cuts into one takes all of it.
+    for (const t of value.mentions) {
+      if (t.start < a && a < t.end) a = t.start
+      if (t.start < b && b < t.end) b = t.end
+    }
+    const { edits, select } = formatEdits(value.text, a, b, kind)
+    el.focus()
+    nextSelection.current = select
+    // Through the field's own editing, one edit at a time from the end, so undo takes it back and
+    // the mentions hook moves its tokens; where the browser can't (no execCommand), set the value.
+    let native = typeof document.execCommand === 'function'
+    const ordered = [...edits].sort((x, y) => y.at - x.at)
+    for (let i = 0; native && i < ordered.length; i++) {
+      const e = ordered[i]!
+      el.setSelectionRange(e.at, e.at + e.remove)
+      try {
+        native = e.insert ? document.execCommand('insertText', false, e.insert) : document.execCommand('delete')
+      } catch {
+        native = false
+      }
+      // The browser took some of it and then refused: leave what it did.
+      if (!native && i > 0) return
+    }
+    if (!native) setValue(applyEdits(value, edits))
+    el.setSelectionRange(select[0], select[1])
   }
 
   return (
@@ -521,7 +819,11 @@ export function CommentComposer({
         onKeyDown={(event) => {
           onKeyDown(event)
           if (event.defaultPrevented || event.nativeEvent.isComposing) return
-          if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+          const shortcut = (apple ? event.metaKey : event.ctrlKey) && !event.altKey && !event.shiftKey && FORMAT_KEYS[event.key.toLowerCase()]
+          if (shortcut) {
+            event.preventDefault()
+            format(shortcut)
+          } else if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
             event.preventDefault()
             submit()
           } else if (event.key === 'Escape' && onCancel) {
@@ -532,6 +834,15 @@ export function CommentComposer({
       />
       {m.menu}
       <div data-slot="comment-composer-actions" className="flex flex-wrap items-center gap-2">
+        {/* -ms-1.5 puts the first icon on the field's edge. */}
+        <Toolbar aria-label={labels.commentsFormatting} data-slot="comment-formatting" preventFocusOnPress className="-ms-1.5">
+          <ToolbarButton icon={<Bold />} label={labels.commentsBold} shortcut={keys('B')} disabled={disabled} onClick={() => format('bold')} />
+          <ToolbarButton icon={<Italic />} label={labels.commentsItalic} shortcut={keys('I')} disabled={disabled} onClick={() => format('italic')} />
+          <ToolbarButton icon={<Code />} label={labels.commentsCode} shortcut={keys('E')} disabled={disabled} onClick={() => format('code')} />
+          <ToolbarButton icon={<ListIcon />} label={labels.commentsList} disabled={disabled} onClick={() => format('list')} />
+          <ToolbarButton icon={<LinkIcon />} label={labels.commentsLink} shortcut={keys('K')} disabled={disabled} onClick={() => format('link')} />
+        </Toolbar>
+        {start != null && start !== false && <ButtonGroupSeparator aria-hidden />}
         {start}
         <div className="ms-auto flex items-center gap-2">
           {onCancel && (
@@ -618,6 +929,13 @@ type Pending = {
 const looseBody = (body: string) => body.replace(/\s+/g, ' ').trim()
 
 type Editing = { id: string; value: PromptValue; error?: React.ReactNode }
+
+/**
+ * Reply, Edit and Discard under a comment. Tertiary has no fill at rest, so a word in text/default
+ * read as more of the comment: the label goes text/muted like its icon (4.5:1) and takes
+ * text/default on hover, with the hover fill, so the row reads as actions, not a sentence.
+ */
+const FOOTER_BUTTON = 'text-text-muted satin-hover:text-text-default'
 
 type Override = { body: string; mentions: CommentMention[]; base: string }
 
@@ -837,7 +1155,9 @@ export function CommentsThread({
     const s = shown(c)
     setEditing(null)
     focusLater(() => article(c.id))
-    const same = body === s.body && JSON.stringify(found) === JSON.stringify(validMentions(s.body, s.mentions))
+    // Compared by place, not by object: an avatar is a React element.
+    const where = (list: CommentMention[]) => list.map((m) => `${m.id}:${m.start}:${m.end}`).join()
+    const same = body === s.body && where(found) === where(validMentions(s.body, s.mentions))
     if (same || !onEdit) return
     setOverrides((o) => ({ ...o, [c.id]: { body, mentions: found, base: c.body } }))
     const result = attempt(() => onEdit(c.id, body, found))
@@ -1013,6 +1333,18 @@ export function CommentsThread({
   const canCompose = !disabled && !!onReply
   const collapsed = isResolved && !expanded
 
+  // A mention without an avatar takes the one of an author with its id, so the tooltip shows it.
+  const authors = React.useMemo(() => {
+    const map = new Map<string, CommentAuthor>([[currentUser.id, currentUser]])
+    for (const c of comments) if (!map.has(c.author.id)) map.set(c.author.id, c.author)
+    return map
+  }, [comments, currentUser])
+  const withAuthors = (list: CommentMention[] | undefined) =>
+    list?.map((m) => {
+      const a = authors.get(m.id)
+      return a && (m.avatar == null || !m.kind) ? { ...m, avatar: m.avatar ?? a.avatar, kind: m.kind ?? a.kind } : m
+    })
+
   const renderComment = (c: CommentItem, isRoot: boolean) => {
     const s = shown(c)
     const own = c.author.id === currentUser.id
@@ -1026,13 +1358,14 @@ export function CommentsThread({
         author={c.author}
         at={c.at}
         body={s.body}
-        mentions={s.mentions}
+        mentions={withAuthors(s.mentions)}
         edited={s.edited}
         own={own}
         actions={!isEditing && canDelete ? <CommentActions authorName={c.author.name} onDelete={() => remove(c)} /> : undefined}
         footer={
           !isEditing && ((isRoot && canCompose) || canEdit) ? (
-            <span className="-ms-2 flex items-center">
+            // -ms-2 takes back the button's 8px, so the first icon starts where the body does.
+            <span className="-ms-2 flex items-center gap-1">
               {isRoot && canCompose && (
                 <Button
                   variant="tertiary"
@@ -1040,13 +1373,16 @@ export function CommentsThread({
                   data-part="reply"
                   data-key={c.id}
                   aria-label={labels.commentsReplyTo(c.author.name)}
+                  className={FOOTER_BUTTON}
                   onClick={() => openReply(c.id)}
                 >
+                  <Reply aria-hidden />
                   {labels.commentsReply}
                 </Button>
               )}
               {canEdit && (
-                <Button variant="tertiary" size="xs" data-part="edit" data-key={c.id} onClick={() => startEdit(c)}>
+                <Button variant="tertiary" size="xs" data-part="edit" data-key={c.id} className={FOOTER_BUTTON} onClick={() => startEdit(c)}>
+                  <EditPencil aria-hidden />
                   {labels.commentsEdit}
                 </Button>
               )}
@@ -1085,19 +1421,21 @@ export function CommentsThread({
           own
           at={p.at}
           body={p.body}
-          mentions={p.mentions}
+          mentions={withAuthors(p.mentions)}
           state={p.status === 'sending' ? 'sending' : p.status === 'failed' ? 'failed' : undefined}
           footer={
             p.status === 'failed' ? (
               <>
-                <span id={errorId} className="inline-flex items-center gap-1 text-sm leading-5 text-text-destructive">
+                <span id={errorId} className="me-1 inline-flex items-center gap-1 text-sm leading-5 text-text-destructive">
                   <WarningCircle aria-hidden className="size-3.5 [stroke-width:1.875]" />
                   {labels.commentsNotSent}
                 </span>
                 <Button variant="secondary" size="xs" data-part="retry" data-key={p.key} aria-describedby={errorId} onClick={() => send(p.parentId, p.body, p.mentions, p)}>
+                  <Refresh aria-hidden />
                   {labels.commentsRetry}
                 </Button>
-                <Button variant="tertiary" size="xs" onClick={() => discard(p)}>
+                <Button variant="tertiary" size="xs" className={FOOTER_BUTTON} onClick={() => discard(p)}>
+                  <Xmark aria-hidden />
                   {labels.commentsDiscard}
                 </Button>
               </>
@@ -1108,9 +1446,10 @@ export function CommentsThread({
     )
   }
 
-  const resolveButton =
+  // In the composer's row it follows the formatting toolbar; alone, -ms-2.5 puts its icon on the edge.
+  const resolveButton = (alone: boolean) =>
     resolvable && !disabled && !isResolved ? (
-      <Button variant="tertiary" className="-ms-2.5" data-part="resolve" onClick={() => setResolved(true)}>
+      <Button variant="tertiary" className={alone ? '-ms-2.5' : undefined} data-part="resolve" onClick={() => setResolved(true)}>
         <Check aria-hidden />
         {labels.commentsResolve}
       </Button>
@@ -1226,11 +1565,11 @@ export function CommentsThread({
           ))
         )}
         {canCompose ? (
-          <CommentComposer data-key="root" mentions={mentions} onSubmit={(body, found) => send(null, body, found)} start={resolveButton} />
+          <CommentComposer data-key="root" mentions={mentions} onSubmit={(body, found) => send(null, body, found)} start={resolveButton(false)} />
         ) : (
-          resolveButton && (
+          resolveButton(true) && (
             <div data-slot="comments-thread-footer" className="flex">
-              {resolveButton}
+              {resolveButton(true)}
             </div>
           )
         )}

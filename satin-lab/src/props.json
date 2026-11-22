@@ -2697,7 +2697,7 @@
   },
   "comments-thread": {
     "Comment": {
-      "description": "One comment: an `<article tabIndex={-1}>` named \"Comment by {name}, {full date}\", so focus can be moved to it. The avatar (initials in a tone picked from the author's id), the name in medium 13px, `RelativeTime`, \"(edited)\" in text/muted, then the body in 14/21 text/default with its line breaks. With `own`, \"(me)\" in text/muted follows the name. Other props, `ref` included, go to the `article`.",
+      "description": "One comment: an `<article tabIndex={-1}>` named \"Comment by {name}, {full date}\", so focus can be moved to it. The avatar (initials in a tone picked from the author's id, the agent mark for an agent), the name in medium 13px, an \"Agent\" Badge for an agent, `RelativeTime`, \"(edited)\" in text/muted, then the body in 14/21 text/default: markdown-lite, with its line breaks. With `own`, \"(me)\" in text/muted follows the name. Other props, `ref` included, go to the `article`.",
       "type": "CommentProps",
       "extends": [
         "Omit<React.ComponentProps<'article'>, 'children'>"
@@ -2718,13 +2718,13 @@
           "name": "body",
           "type": "string",
           "required": true,
-          "description": "Plain text; line breaks are kept."
+          "description": "Markdown-lite (bold, italic, strikethrough, code, links, bulleted lists); line breaks are kept."
         },
         {
           "name": "mentions",
           "type": "CommentMention[]",
           "required": false,
-          "description": "Drawn as `Mention` where the body reads \"@\" and the label."
+          "description": "Drawn as `Mention`, with a tooltip of the avatar and full name, where the body reads \"@\" and the label."
         },
         {
           "name": "edited",
@@ -2801,7 +2801,7 @@
       ]
     },
     "CommentComposer": {
-      "description": "The field and Send: a Satin Textarea (64px, resizable) with @mentions from `usePromptMentions`, and the button row under it. Ctrl/⌘+Enter sends, Enter alone is a new line, Escape cancels when `onCancel` is given (after the mentions menu, which takes Enter and Escape while open). Send stays `aria-disabled` while the text is blank. Other props, `ref` included, go to the root `div`.",
+      "description": "The field and Send: a Satin Textarea (72px, resizable) with @mentions from `usePromptMentions`, and the button row under it: the formatting toolbar (Free's Toolbar, one tab stop: Bold, Italic, Code, Bulleted list, Link), `start`, then Cancel and Send. A format writes its markdown-lite marks round the selection through the field's own editing, so undo takes it back; a selection that cuts into a mention takes the whole mention. ⌘/Ctrl+B, I, E and K do the same in the field. Ctrl/⌘+Enter sends, Enter alone is a new line, Escape cancels when `onCancel` is given (after the mentions menu, which takes Enter and Escape while open). Send stays `aria-disabled` while the text is blank. Other props, `ref` included, go to the root `div`.",
       "type": "CommentComposerProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'onSubmit' | 'defaultValue'>"
@@ -2883,7 +2883,7 @@
           "name": "start",
           "type": "React.ReactNode",
           "required": false,
-          "description": "At the start of the button row, away from Send: the thread puts Resolve here."
+          "description": "At the start of the button row, after the formatting toolbar and away from Send: the thread puts Resolve here."
         }
       ]
     },

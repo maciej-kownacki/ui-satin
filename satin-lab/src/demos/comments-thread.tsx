@@ -76,14 +76,19 @@ const JON: CommentAuthor = { id: 'jon', name: 'Jon Park' } // the recruiter
 const LENA: CommentAuthor = { id: 'lena', name: 'Lena Fischer' } // finance
 const PRIYA: CommentAuthor = { id: 'priya', name: 'Priya Nair' }
 const MATEO: CommentAuthor = { id: 'mateo', name: 'Mateo Ruiz' }
-const hrPeople = [JON, LENA, PRIYA, MATEO, MARTA]
+// An agent: the agent mark for an avatar and an "Agent" badge after the name.
+const ASSISTANT: CommentAuthor = { id: 'hiring-assistant', name: 'Hiring assistant', kind: 'agent' }
+const hrPeople = [JON, LENA, PRIYA, MATEO, MARTA, ASSISTANT]
 
 const lenaAsk = '@Lena Fischer could a €5k signing bonus fit the Q1 budget?'
 const priyaNote = 'Yes, €5k fits. Anything above that needs @Priya Nair to sign off.'
+const draftNote =
+  'Drafted the offer letter from this thread:\n- **€9.5k** a month, the top of the senior band\n- a **€5k** signing bonus, within Q1 budget per @Lena Fischer\n- start date _January 4_\nIt’s in [the offer drafts](https://example.com/offers/tara-mendes) for review.'
+const draftReply = '@Hiring assistant reads right. Sending it as is.'
 
 function taraThread({ ago, dayAt }: Clock): CommentItem[] {
   return [
-    { id: 'band', author: JON, body: 'Tara Mendes expects €8–10k a month. Our band for a senior product designer tops out at €9.5k.', at: dayAt(1, 16, 20) },
+    { id: 'band', author: JON, body: 'Tara Mendes expects €8–10k a month. Our band for a senior product designer tops out at **€9.5k**.', at: dayAt(1, 16, 20) },
     {
       id: 'meet',
       author: MARTA,
@@ -93,6 +98,8 @@ function taraThread({ ago, dayAt }: Clock): CommentItem[] {
     },
     { id: 'bonus', author: JON, parentId: 'band', body: lenaAsk, mentions: mentionsIn(lenaAsk, [LENA]), edited: true, at: dayAt(1, 17, 5) },
     { id: 'budget', author: LENA, parentId: 'band', body: priyaNote, mentions: mentionsIn(priyaNote, [PRIYA]), at: ago(140) },
+    { id: 'draft', author: ASSISTANT, body: draftNote, mentions: mentionsIn(draftNote, [LENA]), at: ago(45) },
+    { id: 'sent', author: JON, parentId: 'draft', body: draftReply, mentions: mentionsIn(draftReply, [ASSISTANT]), at: ago(20) },
     {
       id: 'offer',
       author: JON,
@@ -132,6 +139,8 @@ import { Toaster } from '@uisatin/ui/toast'
 
 const marta = { id: 'marta', name: 'Marta Nowak' }
 const jon = { id: 'jon', name: 'Jon Park' }
+// An agent: the agent mark for an avatar and an "Agent" badge after the name.
+const assistant = { id: 'hiring-assistant', name: 'Hiring assistant', kind: 'agent' as const }
 
 // Roots and replies, oldest first. Replies are one level deep.
 const comments: CommentItem[] = [
@@ -151,6 +160,13 @@ const comments: CommentItem[] = [
     mentions: [{ id: 'lena', label: 'Lena Fischer', start: 0, end: 13 }],
     edited: true,
     at: '2026-11-21T17:05:00Z',
+  },
+  {
+    id: 'draft',
+    author: assistant,
+    // Markdown-lite: **bold**, _italic_, \`code\`, ~~struck~~, [links](https://…) and "- " lists.
+    body: 'Drafted the offer letter:\n- **€9.5k** a month\n- a **€5k** signing bonus\n- start date _January 4_',
+    at: '2026-11-22T10:15:00Z',
   },
   // …
 ]
@@ -224,11 +240,14 @@ export default function CommentsThreadDemo({ codeHtml }: { codeHtml: Record<stri
 // Sales: a discount on a deal, with an @ of the account executive.
 const SOFIA: CommentAuthor = { id: 'sofia', name: 'Sofia Lind' } // sales director: you
 const RAVI: CommentAuthor = { id: 'ravi', name: 'Ravi Shah' } // account executive
-const salesPeople = [RAVI, { id: 'hana', name: 'Hana Sato' }, { id: 'omar', name: 'Omar Haddad' }]
+const DEAL_ASSISTANT: CommentAuthor = { id: 'deal-assistant', name: 'Deal assistant', kind: 'agent' }
+const salesPeople = [RAVI, { id: 'hana', name: 'Hana Sato' }, { id: 'omar', name: 'Omar Haddad' }, DEAL_ASSISTANT]
+const policyNote = 'Heads-up: **15%** is over the 10% a sales director can approve alone; above that the deal desk signs off. See the [discount policy](https://example.com/policies/discounts).'
 const discountAsk = 'Acme asks for 15% off the 120-seat plan if they sign this quarter.'
 const discountReply = '@Ravi Shah 10% works for a two-year term. Can you send the updated quote today?'
 const salesThread = ({ ago }: Clock): CommentItem[] => [
   { id: 'ask', author: RAVI, body: discountAsk, at: ago(95) },
+  { id: 'policy', author: DEAL_ASSISTANT, parentId: 'ask', body: policyNote, at: ago(94) },
   { id: 'ten', author: SOFIA, parentId: 'ask', body: discountReply, mentions: mentionsIn(discountReply, [RAVI]), at: ago(40) },
 ]
 

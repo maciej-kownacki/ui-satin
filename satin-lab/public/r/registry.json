@@ -2613,18 +2613,22 @@
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/satin-pro-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
         "https://uisatin.dev/r/avatar.json",
         "https://uisatin.dev/r/badge.json",
         "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/button-group.json",
         "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/empty-state.json",
         "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/link.json",
         "https://uisatin.dev/r/list.json",
         "https://uisatin.dev/r/prompt-mentions.json",
         "https://uisatin.dev/r/relative-time.json",
         "https://uisatin.dev/r/spinner.json",
         "https://uisatin.dev/r/textarea.json",
-        "https://uisatin.dev/r/toast.json"
+        "https://uisatin.dev/r/toast.json",
+        "https://uisatin.dev/r/toolbar.json"
       ],
       "docs": "Comments thread docs: https://uisatin.dev/components/comments-thread",
       "meta": {
