@@ -178,3 +178,18 @@ html[data-theme-sweep] .customizer-panel {
 ::view-transition-old(customizer) {
   display: none;
 }
+
+/* CSV import prototype: the dot arrow between the file and the app. Every dot rests dim; a pulse
+   runs column by column from the file side (delays set inline), each dot flaring to text/default at
+   full opacity and settling back, the head's branches with their column. Opacity and colour only;
+   off under reduced motion, where the arrow holds a still fade. */
+@keyframes csv-arrow-pulse {
+  0%, 55%, 100% { opacity: 0.25; }
+  18% { opacity: 1; background-color: var(--text-default); }
+}
+.csv-arrow-dot {
+  animation: csv-arrow-pulse 1400ms ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .csv-arrow-dot { animation: none; }
+}

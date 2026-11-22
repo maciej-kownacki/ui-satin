@@ -33,8 +33,8 @@ import { Blockable, focusTargetClass, LiveRegion, ReadingView, Root, Stage, useF
  * title and what to do inside it. From Map columns on, the step opens with a left-aligned title
  * and description in the dialog header's type; Map columns is then one flat card with two headed
  * columns, the file's column → the field, each field's Select led by an icon for its type.
- * Bottom, 52: Back, the reason the primary is blocked, the primary, 16 from the bottom and
- * nothing above them: the step's own 16 is the gap. No lines between the three.
+ * Bottom, 68: Back, the reason the primary is blocked, the primary, 16 above and below them, so
+ * content scrolling under the step never runs up to the buttons. No lines between the three.
  *
  * In a Dialog the step's title and description are the dialog's DialogTitle and
  * DialogDescription (its name and description): the app says so with CsvImportInDialog. On
@@ -210,7 +210,18 @@ export function CsvImportHeaderSteps({ onBrowse, dragging, ...props }: CsvImport
   return (
     // A size container, so the header steps and the footer can fold at a narrow width.
     <Root ref={rootRef} variant={6} stage={flow.finished ? 'result' : view} className={cn('@container h-[600px]', props.className)}>
-      <HeaderSteps view={view} complete={flow.imp.status === 'result' && flow.imp.result === 'done'} words={words} n={n} />
+      <HeaderSteps
+        view={view}
+        complete={flow.imp.status === 'result' && flow.imp.result === 'done'}
+        words={words}
+        n={n}
+        // A step is a way back, or forward as far as Next would go: never while importing or after
+        // a finished import, Map once the file is read, Review once the mapping holds.
+        reachable={(s) =>
+          !flow.importing && !flow.finished && (s === 'upload' || (ready && (s === 'map' || !mapBlock)))
+        }
+        onGo={go}
+      />
       {/* Title, description and body scroll as one; only Review's and the result's tables keep their own scroll. */}
       <Stage partRef={partRef} className="overflow-y-auto px-4 pb-4">
         {view === 'upload' && flow.parse.status !== 'reading' ? (
@@ -222,7 +233,7 @@ export function CsvImportHeaderSteps({ onBrowse, dragging, ...props }: CsvImport
           </>
         )}
       </Stage>
-      <div data-slot="csv-import-footer" className="flex h-[52px] shrink-0 items-start gap-3 px-4 @max-[440px]:gap-2">
+      <div data-slot="csv-import-footer" className="flex h-[68px] shrink-0 items-start gap-3 px-4 pt-4 @max-[440px]:gap-2">
         {back}
         {/* The reason stays in the Tooltip and aria-describedby where there is no room to show it. */}
         <div className="flex min-h-9 min-w-0 flex-1 items-center">
@@ -243,42 +254,74 @@ export function CsvImportHeaderSteps({ onBrowse, dragging, ...props }: CsvImport
  * The steps as the header row: a numbered circle and a label each, a dot between. Upcoming steps
  * are muted on bg/muted; the current one is solid action/primary with its number in
  * action/primary fg, as Stepper draws its current step, and its label in text/default medium; a
- * done one shows a check. The row leaves the end free for the dialog's close
- * button (36 at 7 from the corner: circles 13 from the top put both on one centre line, 25).
+ * done one shows a check. The row is centred on the panel, with the same inset at both ends so
+ * the end stays free for the dialog's close button (36 at 7 from the corner: circles 13 from the top put both on one centre line, 25).
  * Prototype-local: Free's Stepper draws its labels under the circles, or folds to a count.
  */
-function HeaderSteps({ view, complete, words, n }: { view: Step; complete: boolean; words: V6Words; n: (count: number) => string }) {
+function HeaderSteps({
+  view,
+  complete,
+  words,
+  n,
+  reachable,
+  onGo,
+}: {
+  view: Step
+  complete: boolean
+  words: V6Words
+  n: (count: number) => string
+  reachable: (step: Step) => boolean
+  onGo: (step: Step) => void
+}) {
   const labels = useSatinLabels()
   const current = complete ? -1 : STEPS.indexOf(view)
   const stepLabel = { upload: words.csvV6StepUpload, map: words.csvStepMap, review: words.csvStepReview }
   return (
-    <div data-slot="csv-import-header" className="flex h-[37px] shrink-0 items-end ps-4 pe-14">
+    <div data-slot="csv-import-header" className="flex h-[37px] shrink-0 items-end justify-center px-14">
       <ol aria-label={words.csvSteps} className="m-0 flex min-w-0 list-none items-center gap-3 p-0 @max-[479px]:gap-2">
         {STEPS.map((s, i) => {
           const state = complete || i < current ? 'complete' : i === current ? 'current' : 'upcoming'
           return (
             <li key={s} aria-current={state === 'current' ? 'step' : undefined} className="flex min-w-0 items-center gap-3 @max-[479px]:gap-2">
               {i > 0 && <span aria-hidden className="size-1 shrink-0 rounded-full bg-border-strong @max-[359px]:hidden" />}
-              <span
-                aria-hidden
-                data-state={state}
-                className={cn(
-                  'grid size-6 shrink-0 place-items-center rounded-full text-xs leading-none font-medium tabular-nums',
-                  state === 'current' ? 'bg-action-primary-bg text-action-primary-fg' : 'bg-bg-muted text-text-muted',
-                  state === 'complete' && 'text-text-default',
-                )}
-              >
-                {state === 'complete' ? <Check className="size-3.5 [stroke-width:2]" /> : n(i + 1)}
-              </span>
-              <span
-                className={cn(
-                  'truncate text-sm whitespace-nowrap',
-                  state === 'current' ? 'font-medium text-text-default' : 'text-text-muted @max-[479px]:sr-only',
-                )}
-              >
-                {stepLabel[s]}
-                {state === 'complete' && <span className="sr-only">, {labels.stepCompleted}</span>}
-              </span>
+              {(() => {
+                const content = (
+                  <>
+                <span
+                  aria-hidden
+                  data-state={state}
+                  className={cn(
+                    'grid size-6 shrink-0 place-items-center rounded-full text-xs leading-none font-medium tabular-nums',
+                    state === 'current' ? 'bg-action-primary-bg text-action-primary-fg' : 'bg-bg-muted text-text-muted',
+                    state === 'complete' && 'text-text-default',
+                  )}
+                >
+                  {state === 'complete' ? <Check className="size-3.5 [stroke-width:2]" /> : n(i + 1)}
+                </span>
+                <span
+                  className={cn(
+                    'truncate text-sm whitespace-nowrap',
+                    state === 'current' ? 'font-medium text-text-default' : 'text-text-muted group-hover/step:text-text-default @max-[479px]:sr-only',
+                  )}
+                >
+                  {stepLabel[s]}
+                  {state === 'complete' && <span className="sr-only">, {labels.stepCompleted}</span>}
+                </span>
+                  </>
+                )
+                // The current step stays text; another one you can reach is a button that goes there.
+                return state !== 'current' && reachable(s) ? (
+                  <button
+                    type="button"
+                    onClick={() => onGo(s)}
+                    className="group/step -m-1 flex min-w-0 items-center gap-3 rounded-full p-1 outline-offset-2 focus-visible:outline-2 focus-visible:outline-(--action-focus-ring) @max-[479px]:gap-2"
+                  >
+                    {content}
+                  </button>
+                ) : (
+                  <span className="flex min-w-0 items-center gap-3 @max-[479px]:gap-2">{content}</span>
+                )
+              })()}
             </li>
           )
         })}
@@ -312,19 +355,24 @@ function Tile({ children }: { children: React.ReactNode }) {
 
 /*
  * The arrow from the file to the app, drawn in dots: a shaft along the middle row and a chevron
- * head pointing at the app's tile, on a 7 × 5 grid. text/muted, the same token in both themes
- * (a grey in Light, a light grey in Dark), fading in from the file's side so it reads as going
- * one way. Static: it says where the data goes; nothing is waiting on it.
+ * head pointing at the app's tile, on a 7 × 5 grid. Every dot rests dim (text/muted at 25%) and
+ * a pulse runs through the columns from the file to the app, lighting each to text/default at full
+ * strength, the head's side branches with their column (lab.css, csv-arrow-pulse). Under reduced
+ * motion it holds still at a quiet fade toward the app.
  */
 const ARROW = ['....x..', '.....x.', 'xxxxxxx', '.....x.', '....x..']
-/** Each column's opacity, file side to app side. Whole class strings, for the build's rewrite. */
-const ARROW_FADE = ['opacity-30', 'opacity-40', 'opacity-50', 'opacity-60', 'opacity-75', 'opacity-90', 'opacity-100']
+/** Each column's still opacity under reduced motion, file side to app side. Whole class strings. */
+const ARROW_FADE = ['motion-reduce:opacity-40', 'motion-reduce:opacity-50', 'motion-reduce:opacity-60', 'motion-reduce:opacity-70', 'motion-reduce:opacity-80', 'motion-reduce:opacity-90', 'motion-reduce:opacity-100']
 function Dots() {
   return (
     <span aria-hidden className="grid grid-cols-[repeat(7,2px)] gap-[1.5px]">
       {ARROW.flatMap((row, r) =>
         [...row].map((cell, c) => (
-          <span key={`${r}-${c}`} className={cn('size-[2px] rounded-full', cell === 'x' && cn('bg-text-muted', ARROW_FADE[c]))} />
+          <span
+            key={`${r}-${c}`}
+            className={cn('size-[2px] rounded-full', cell === 'x' && cn('csv-arrow-dot bg-text-muted opacity-25', ARROW_FADE[c]))}
+            style={cell === 'x' ? { animationDelay: `${c * 120}ms` } : undefined}
+          />
         )),
       )}
     </span>
