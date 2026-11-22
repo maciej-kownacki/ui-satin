@@ -44,6 +44,14 @@ The tokens live in `src/styles/motion.css`.
      edge can't be scaled without stretching its line and corners. Not yet on the pixel grid; to revisit.
 2. **Ease-out for anything the user starts.** It moves fast at first, so the interface answers the click at once.
    Never use ease-in for UI: it starts slowly and feels late.
+   The one exception follows the pointer rather than a click: the chart tooltip's glide (`useGlide` in `chart.tsx`).
+   As the pointer moves across a Line, Area, Bar or Channel chart (and Satin Pro's Stat card sparkline), the tooltip,
+   with the dot and the drop line where there are any, chases the hovered point on a critically damped spring that
+   looks settled in about 200 ms (stiffness ≈ 685, damping ≈ 52, no bounce) and snaps exactly onto the point at
+   rest. A spring, not a curve, because the target moves while it travels: it keeps its speed and catches up
+   smoothly when the pointer moves fast, where a restarted ease-out would jerk. Transform only, written per frame,
+   no React render. It jumps when it first appears, on the keyboard (rule 6) and under reduced motion (rule 7); the
+   x label and the live text change at once.
 3. **Stay under 250 ms.** Most transitions are 150–200 ms. Anything longer starts to feel like waiting. The longer
    ones, all of them:
    - The dialog rises over 300 ms (`--duration-slower`) with its scrim, so a whole-screen change doesn't read as a cut.

@@ -41,6 +41,11 @@ export interface FloatingProps {
   /** How close to the viewport edge it may go. */
   collisionPadding?: number
   className?: string
+  /**
+   * Gets a function that measures the anchor again and moves the layer within the same frame.
+   * For an anchor moved by a transform (a chart's gliding dot), which nothing else notices.
+   */
+  updateRef?: React.RefObject<(() => void) | null>
   /** Gets the side it ended up on and the pointer's props (ref and position). */
   children: (state: {
     side: FloatingSide
@@ -49,12 +54,12 @@ export interface FloatingProps {
   }) => React.ReactNode
 }
 
-export function Floating({ anchor, side = 'top', sideOffset = 8, collisionPadding = 8, className, children }: FloatingProps) {
+export function Floating({ anchor, side = 'top', sideOffset = 8, collisionPadding = 8, className, updateRef, children }: FloatingProps) {
   const arrowRef = React.useRef<HTMLElement | null>(null)
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => setMounted(true), [])
 
-  const { refs, floatingStyles, placement, middlewareData, isPositioned } = useFloating({
+  const { refs, floatingStyles, placement, middlewareData, isPositioned, update } = useFloating({
     strategy: 'fixed',
     placement: side,
     elements: { reference: anchor },
@@ -66,6 +71,14 @@ export function Floating({ anchor, side = 'top', sideOffset = 8, collisionPaddin
       arrow({ element: arrowRef, padding: 8 }),
     ],
   })
+
+  React.useLayoutEffect(() => {
+    if (!updateRef) return
+    updateRef.current = update
+    return () => {
+      updateRef.current = null
+    }
+  }, [updateRef, update])
 
   if (!mounted || !anchor) return null
   const actual = placement.split('-')[0] as FloatingSide

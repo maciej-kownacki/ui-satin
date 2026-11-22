@@ -2049,7 +2049,7 @@
       ]
     },
     "ChartTooltip": {
-      "description": "The chart tooltip pill with its pointer. Exported for custom charts. With `anchor` it floats over the page (see Floating): it never gets cut off by the card, flips below when there's no room above, slides in from the screen edge, and its pointer keeps pointing at the anchor. Without it, it renders in place.",
+      "description": "The chart tooltip pill with its pointer. Exported for custom charts. With `anchor` it floats over the page (see Floating): it never gets cut off by the card, flips below when there's no room above, slides in from the screen edge, and its pointer keeps pointing at the anchor. Without it, it renders in place. A chart whose tooltip follows the pointer from point to point moves it with `useGlide`.",
       "extends": [
         "React.ComponentProps<'div'>",
         "React.ComponentProps<'div'>"
@@ -2067,9 +2067,15 @@
         },
         {
           "name": "anchor",
-          "type": "Element | null",
+          "type": "Element | FloatingVirtualElement | null",
           "required": false,
-          "description": "The element it points at."
+          "description": "What it points at: an element, or a stand-in (`glideAnchor`)."
+        },
+        {
+          "name": "updateRef",
+          "type": "React.RefObject<(() => void) | null>",
+          "required": false,
+          "description": "Gets a function that moves it to the anchor within the frame, for an anchor that glides (see Floating)."
         },
         {
           "name": "sideOffset",
@@ -5125,6 +5131,12 @@
           "name": "className",
           "type": "string",
           "required": false
+        },
+        {
+          "name": "updateRef",
+          "type": "React.RefObject<(() => void) | null>",
+          "required": false,
+          "description": "Gets a function that measures the anchor again and moves the layer within the same frame. For an anchor moved by a transform (a chart's gliding dot), which nothing else notices."
         },
         {
           "name": "children",
@@ -8609,7 +8621,7 @@
       ]
     },
     "StatCardSparkline": {
-      "description": "The sparkline alone: the line and its gradient, no axes. The drawing is hidden; a sentence sums it up (\"Upward trend over 12 points, from 980 to 1,284\"). Interactive, it is one tab stop: focus picks the last point, ← → move along them, a pointer picks the nearest. The drawing keeps time running left to right in right-to-left pages too, as the Line chart does, so → is always the next point. Other props, `ref` included, go to its `div`.",
+      "description": "The sparkline alone: the line and its gradient, no axes, 64px tall and drawn to the bottom of a card: the line's ends sit on its left and right edges, and its focus ring is drawn inside, with the bottom corners of a radius-2xl card. Hover glides the dot and the tooltip from point to point; the arrow keys move them at once. The drawing is hidden; a sentence sums it up (\"Upward trend over 12 points, from 980 to 1,284\"). Interactive, it is one tab stop: focus picks the last point, ← → move along them, a pointer picks the nearest. The drawing keeps time running left to right in right-to-left pages too, as the Line chart does, so → is always the next point. Other props, `ref` included, go to its `div`.",
       "type": "StatCardSparklineProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'title' | 'children'>"
