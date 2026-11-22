@@ -21,6 +21,16 @@ export type KnownIssue = {
 
 export const knownIssues: KnownIssue[] = [
   {
+    id: 'rich-text-editor-table-tab',
+    components: ['rich-text-editor'],
+    title: 'Tab inside a Rich text editor table',
+    problem:
+      'In a table, Tab and Shift+Tab move between cells, as in a spreadsheet, so they don\'t move focus out of the editor from a cell. Everywhere else in the editor Tab leaves it.',
+    affects: 'Keyboard users who expect Tab to leave the field while the caret is in a table.',
+    workaround: 'Move the caret out of the table with the arrow keys, then Tab.',
+    wcag: ['2.1.2'],
+  },
+  {
     id: 'data-grid-cell-controls',
     components: ['data-grid'],
     title: 'Controls inside Data grid cells',

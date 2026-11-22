@@ -96,6 +96,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Grouped table': [579, 579],
   'Tabs': [280, 280],
   'Textarea': [280, 280],
+  'Rich text editor': [456, 504],
   'Thinking': [280, 280],
   'Toast': [312, 312],
   'Undo countdown': [368, 368],
