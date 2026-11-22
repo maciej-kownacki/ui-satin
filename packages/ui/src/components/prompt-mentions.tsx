@@ -7,6 +7,7 @@ import { Avatar } from './avatar'
 import { MenuItemContent, menuGroupLabelClass, menuItemClass, menuSurfaceClass } from './dropdown'
 import { KbdArrowDown, KbdArrowUp, KbdHint, KbdReturn } from './kbd'
 import { useSatinLabels } from './labels'
+import { Tooltip } from './tooltip'
 
 /**
  * Mentions and commands, for PromptBar (`mentions`, `commands`) or any textarea
@@ -910,6 +911,10 @@ export interface MentionProps extends Omit<React.ComponentProps<'span'>, 'id' | 
   trigger?: string
   /** Your id for the person or record, as `data-mention-id` (not the element's `id`). */
   id?: string
+  /** A 20px picture of the person (an Avatar, a photo) for the preview tooltip. Giving it, or `name`, adds the preview. */
+  avatar?: React.ReactNode
+  /** The full name in the preview tooltip. Defaults to `label`. Giving it, or `avatar`, adds the preview. */
+  name?: string
 }
 
 /**
@@ -919,13 +924,36 @@ export interface MentionProps extends Omit<React.ComponentProps<'span'>, 'id' | 
  * The look is plain CSS on `[data-slot="mention"]` (styles/components/mention.css), so an editor
  * that builds the same `<span data-slot="mention">` without React gets it too.
  *
+ * With `avatar` or `name` it has a preview: Free's Tooltip with the avatar and the full name opens
+ * on hover and on keyboard focus, so the span takes `tabIndex={0}` and the focus ring (an outline
+ * 2px off). The tooltip describes the span (aria-describedby); the avatar in it is hidden from
+ * screen readers. Without either, the span is as before: not focusable, no tooltip.
+ *
  * Other props, `ref` included, go to the `span`.
  */
-export function Mention({ label, trigger = '@', id, ...props }: MentionProps) {
-  return (
-    <span data-slot="mention" data-mention-id={id} {...props}>
+export function Mention({ label, trigger = '@', id, avatar, name, ...props }: MentionProps) {
+  const preview = avatar != null || name != null
+  const span = (
+    <span data-slot="mention" data-mention-id={id} tabIndex={preview ? 0 : undefined} {...props}>
       {trigger}
       {label}
     </span>
+  )
+  if (!preview) return span
+  return (
+    <Tooltip
+      label={
+        <span data-slot="mention-preview" className="flex items-center gap-1.5">
+          {avatar != null && (
+            <span aria-hidden className="flex shrink-0">
+              {avatar}
+            </span>
+          )}
+          {name ?? label}
+        </span>
+      }
+    >
+      {span}
+    </Tooltip>
   )
 }

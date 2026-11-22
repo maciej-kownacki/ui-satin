@@ -1524,7 +1524,8 @@
         "https://uisatin.dev/r/avatar.json",
         "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/kbd.json",
-        "https://uisatin.dev/r/labels.json"
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/tooltip.json"
       ],
       "docs": "Mentions and commands docs: https://uisatin.dev/ai-patterns/prompt-mentions",
       "meta": {

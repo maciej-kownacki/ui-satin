@@ -7209,7 +7209,7 @@
       ]
     },
     "Mention": {
-      "description": "A mention in text that isn't a field: a sent message, a rich text editor's content. It reads as what it says (\"@Tara Mendes\") and wears a mention token's look: status/brand-bg with a status/brand-border edge, radius-sm, 3px past the text on each side, in medium text/default. The look is plain CSS on `[data-slot=\"mention\"]` (styles/components/mention.css), so an editor that builds the same `<span data-slot=\"mention\">` without React gets it too. Other props, `ref` included, go to the `span`.",
+      "description": "A mention in text that isn't a field: a sent message, a rich text editor's content. It reads as what it says (\"@Tara Mendes\") and wears a mention token's look: status/brand-bg with a status/brand-border edge, radius-sm, 3px past the text on each side, in medium text/default. The look is plain CSS on `[data-slot=\"mention\"]` (styles/components/mention.css), so an editor that builds the same `<span data-slot=\"mention\">` without React gets it too. With `avatar` or `name` it has a preview: Free's Tooltip with the avatar and the full name opens on hover and on keyboard focus, so the span takes `tabIndex={0}` and the focus ring (an outline 2px off). The tooltip describes the span (aria-describedby); the avatar in it is hidden from screen readers. Without either, the span is as before: not focusable, no tooltip. Other props, `ref` included, go to the `span`.",
       "type": "MentionProps",
       "extends": [
         "Omit<React.ComponentProps<'span'>, 'id' | 'children'>"
@@ -7233,6 +7233,18 @@
           "type": "string",
           "required": false,
           "description": "Your id for the person or record, as `data-mention-id` (not the element's `id`)."
+        },
+        {
+          "name": "avatar",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A 20px picture of the person (an Avatar, a photo) for the preview tooltip. Giving it, or `name`, adds the preview."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The full name in the preview tooltip. Defaults to `label`. Giving it, or `avatar`, adds the preview."
         }
       ]
     }

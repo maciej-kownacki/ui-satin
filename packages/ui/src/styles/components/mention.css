@@ -17,3 +17,14 @@
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
+/*
+ * A mention with a preview (avatar or name) is focusable, so its tooltip opens from the keyboard:
+ * the focus ring is an outline 2px off, as on other standalone controls.
+ */
+[data-slot="mention"][tabindex] {
+  outline: none;
+}
+[data-slot="mention"][tabindex]:focus-visible {
+  outline: 2px solid var(--action-focus-ring);
+  outline-offset: 2px;
+}
