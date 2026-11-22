@@ -57,7 +57,7 @@ One rule: **interactive → strong, surfaces → default.** When something is bo
 
 - Both at once, interactive wins: File upload's drop zone (a surface you drop onto), attachment chips (a file card you press), Notification's dismiss button on the card's corner. A Table row lifts on hover but the table is a surface whether its rows open anything or not, so its outline stays default.
 - In CSS, `default` is written as what browsers draw for a 0.75px border: whole device pixels, rounded down, at least one. 1px on 1x screens, 0.5px on 2x, 0.667px on 3x (`@media (min-resolution: …)` in theme.css). Borders would snap that way anyway; writing it out makes box-shadow strokes, which browsers don't snap, as crisp as borders instead of a soft 1.5-pixel smear.
-- Not stroke widths, so untouched: focus rings (the 2px `action/focus-ring`, the field's 1px `border/focus` ring that doubles the edge to 2px), error and success edges on fields, shadow offsets (`0 1px 2px`), the 1px top highlight on tooltips and the OTP suggestion, carets, the Thinking rail, the dash between OTP groups.
+- Not stroke widths, so untouched: focus rings (the 2px `action/focus-ring`, the field's 1px `border/focus` ring that doubles the edge to 2px), error and success edges on fields, shadow offsets (`0 1px 2px`), the 1px top highlight on tooltips and the OTP suggestion, carets, the Thinking rail, the Rich text editor's quote bar (2px), the dash between OTP groups.
 - In code use the token, never a raw width: `border` or `border-strong`, `var(--border-width-default)` or `var(--border-width-strong)`. `cn()` knows `border-strong` is a width, so it survives next to a border colour.
 
 ### Dark surfaces and the menu shadow (21 November 2026)

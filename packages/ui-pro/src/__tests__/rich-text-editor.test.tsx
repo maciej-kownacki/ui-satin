@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
-import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_LOW, KEY_ESCAPE_COMMAND, createEditor, type LexicalEditor, type LexicalNode } from 'lexical'
+import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_LOW, KEY_ESCAPE_COMMAND, createEditor, type ElementNode, type LexicalEditor, type LexicalNode } from 'lexical'
+import { $createLinkNode } from '@lexical/link'
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
 import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown'
 import { Dialog } from '@uisatin/ui/dialog'
@@ -9,6 +10,7 @@ import { FormField } from '@uisatin/ui/form-field'
 import { ToolbarButton } from '@uisatin/ui/toolbar'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import {
+  $createMentionNode,
   MentionNode,
   RICH_TEXT_NODES,
   RICH_TEXT_TRANSFORMERS,
@@ -1052,5 +1054,195 @@ describe('RichTextEditor mentions and commands', () => {
     type(handle, '@')
     expect(screen.getByRole('listbox')).toBeTruthy()
     await expectNoAxeViolations()
+  })
+})
+
+/* ---------- review fixes ---------- */
+
+/** Selects the whole first paragraph. */
+function selectAll() {
+  const paragraph = $getRoot().getFirstChildOrThrow() as ElementNode
+  paragraph.select(0, paragraph.getChildrenSize())
+}
+
+describe('RichTextEditor value edge cases', () => {
+  beforeAll(() => {
+    Range.prototype.getBoundingClientRect ??= () => new DOMRect(10, 10, 40, 16)
+    Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList
+  })
+
+  it('keeps a mention out of a link, so a link over it round-trips', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" defaultValue="see [@Ann](mention:a)" />)
+    act(() => handle().focus())
+    act(() => lexical().update(() => selectAll(), { discrete: true }))
+    await user.keyboard('{Control>}k{/Control}')
+    const url = await screen.findByRole('textbox', { name: 'URL' })
+    await waitFor(() => expect(document.activeElement).toBe(url))
+    await user.type(url, 'https://x.com{Enter}')
+    const value = handle().getValue()
+    expect(value).toBe('[see ](https://x.com)[@Ann](mention:a)')
+    expect(richTextMentions(value)).toEqual([{ id: 'a', label: 'Ann', trigger: '@' }])
+    const { types, mention, back } = nodeTypes(value)
+    expect(types).toEqual(['paragraph', 'link', 'text', 'mention'])
+    expect(mention).toEqual({ id: 'a', label: 'Ann', bold: false })
+    expect(back).toBe(value)
+  })
+
+  it('splits a link around a mention, the part after it keeping the address', () => {
+    const { handle } = renderEditor(<RichTextEditor aria-label="Notes" />)
+    act(() =>
+      lexical().update(
+        () => {
+          const link = $createLinkNode('https://x.com').append($createTextNode('ask '), $createMentionNode({ id: 'a', label: 'Ann' }), $createTextNode(' now'))
+          $getRoot().clear().append($createParagraphNode().append(link))
+        },
+        { discrete: true },
+      ),
+    )
+    expect(handle().getValue()).toBe('[ask ](https://x.com)[@Ann](mention:a)[ now](https://x.com)')
+  })
+
+  it('reads link text that ends in a mention, or a letter for a trigger, as no mention of its own', () => {
+    expect(richTextMentions('[see [@Ann](mention:a)](https://x.com)')).toEqual([{ id: 'a', label: 'Ann', trigger: '@' }])
+    expect(richTextMentions('[s@x](mention:y) [1x](mention:z) [[x](mention:w)')).toEqual([])
+    expect(nodeTypes('[s@x](mention:y)').mention).toBeNull()
+  })
+
+  it('never puts code on a mention, so code over one round-trips', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" defaultValue="Ask [@Tara](mention:t) now" />)
+    act(() => handle().focus())
+    act(() => lexical().update(() => selectAll(), { discrete: true }))
+    await user.keyboard('{Control>}e{/Control}')
+    const value = handle().getValue()
+    lexical().getEditorState().read(() => {
+      const nodes = $getRoot().getAllTextNodes()
+      expect(nodes.filter((n) => !(n instanceof MentionNode)).every((n) => n.hasFormat('code'))).toBe(true)
+      expect(nodes.find((n) => n instanceof MentionNode)?.hasFormat('code')).toBe(false)
+    })
+    expect(richTextMentions(value)).toEqual([{ id: 't', label: 'Tara', trigger: '@' }])
+    expect(nodeTypes(value).mention).toEqual({ id: 't', label: 'Tara', bold: false })
+    expect(nodeTypes(value).back).toBe(value)
+  })
+
+  it('reads mentions past escaped backticks, and code spans as runs of the same length', () => {
+    const ann = [{ id: 'a', label: 'Ann', trigger: '@' }]
+    expect(richTextMentions('run \\` then [@Ann](mention:a) and \\` ok')).toEqual(ann)
+    expect(richTextMentions('``a ` b`` [@Ann](mention:a)')).toEqual(ann)
+    expect(richTextMentions('`a`` [@Ann](mention:a)')).toEqual(ann)
+    expect(richTextMentions('``x [@Ann](mention:a) ` y``')).toEqual([])
+    expect(richTextMentions('`[@Ann](mention:a)` and \\[@Ann](mention:a)')).toEqual([])
+  })
+
+  it('stops matching echoes past the last 50 sent values', () => {
+    const onValueChange = vi.fn()
+    const ref = React.createRef<RichTextEditorHandle>()
+    const ui = (value: string) => <RichTextEditor aria-label="Notes" value={value} onValueChange={onValueChange} editorRef={ref} />
+    const { rerender } = renderWithSatin(ui(''))
+    for (let i = 0; i < 60; i++) act(() => ref.current!.insertText('a'))
+    const sent = onValueChange.mock.calls.map((c) => c[0] as string)
+    expect(sent).toHaveLength(60)
+    // Still waiting to come back: an echo, the document stays.
+    rerender(ui(sent[20]!))
+    expect(ref.current!.getValue()).toBe(sent[59])
+    // Dropped from the queue (with the ones before the echo): loaded as a new value.
+    rerender(ui(sent[5]!))
+    expect(ref.current!.getValue()).toBe(sent[5])
+    expect(onValueChange).toHaveBeenCalledTimes(60)
+  })
+
+  it('counts characters as a textarea would, one per block break', () => {
+    renderWithSatin(<RichTextEditor aria-label="Notes" maxLength={100} defaultValue={'ab\n\ncd\n\n- e\n- f'} />)
+    expect(screen.getByText('9/100')).toBeTruthy()
+  })
+
+  it('counts a table’s cells with one break between them', () => {
+    renderWithSatin(<RichTextEditor aria-label="Notes" maxLength={100} defaultValue={'| a | bc |\n| --- | --- |\n| d |  |'} />)
+    // a, bc, d and an empty cell: 4 characters, 3 breaks.
+    expect(screen.getByText('7/100')).toBeTruthy()
+  })
+
+  it('gives its own label an id a FormField’s label doesn’t have', () => {
+    renderWithSatin(
+      <FormField label="Outer" name="notes">
+        <RichTextEditor label="Inner" />
+      </FormField>,
+    )
+    const ids = [...document.querySelectorAll('[id]')].map((el) => el.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(screen.getByRole('textbox', { name: 'Inner' })).toBeTruthy()
+  })
+
+  it('sends nothing on mount for a JSON value the editor normalises', async () => {
+    const source = createEditor({ nodes: RICH_TEXT_NODES, onError: (e) => { throw e } })
+    source.update(() => {
+      $getRoot().clear().append($createParagraphNode().append($createTextNode('Hi').toggleFormat('underline')))
+    }, { discrete: true })
+    const json = JSON.stringify(source.getEditorState().toJSON())
+    const onValueChange = vi.fn()
+    const { handle } = renderEditor(<RichTextEditor aria-label="Notes" format="json" defaultValue={json} onValueChange={onValueChange} />)
+    await act(async () => {})
+    await flush()
+    expect(onValueChange).not.toHaveBeenCalled()
+    expect(JSON.parse(handle().getValue()).root.children[0].children[0].format).toBe(0)
+    act(() => handle().insertText('!'))
+    expect(onValueChange).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('RichTextEditor inside a modal Dialog', () => {
+  beforeAll(() => {
+    Range.prototype.getBoundingClientRect ??= () => new DOMRect(10, 10, 40, 16)
+    Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList
+  })
+
+  function renderInDialog() {
+    const onOpenChange = vi.fn()
+    const ref = React.createRef<RichTextEditorHandle>()
+    const result = renderWithSatin(
+      <Dialog defaultOpen onOpenChange={onOpenChange} title="Feedback">
+        <RichTextEditor aria-label="Notes" defaultValue="Hello world" editorRef={ref} />
+      </Dialog>,
+    )
+    return { ...result, onOpenChange, handle: () => ref.current! }
+  }
+
+  it('applies bold from the bubble and keeps the Dialog open', async () => {
+    const { user, handle, onOpenChange } = renderInDialog()
+    act(() => handle().focus())
+    const bubble = await pointerSelect(0, 5)
+    await user.click(button('Bold', bubble))
+    expect(handle().getValue()).toBe('**Hello** world')
+    expect(onOpenChange).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog', { name: 'Feedback' })).toBeTruthy()
+    // Escape with the bubble up takes the bubble only.
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('toolbar', { name: 'Selection formatting' })).toBeNull()
+    expect(onOpenChange).not.toHaveBeenCalled()
+    expect(document.activeElement).toBe(textbox())
+  })
+
+  it('focuses the link popover’s field, applies with Enter and closes only the popover on Escape', async () => {
+    const { user, handle, onOpenChange } = renderInDialog()
+    act(() => handle().focus())
+    select(0, 5)
+    await user.keyboard('{Control>}k{/Control}')
+    let url = await screen.findByRole('textbox', { name: 'URL' })
+    await waitFor(() => expect(document.activeElement).toBe(url))
+    // The Dialog doesn't pull focus back.
+    await flush()
+    expect(document.activeElement).toBe(url)
+    await user.type(url, 'example.com{Enter}')
+    expect(handle().getValue()).toBe('[Hello](https://example.com) world')
+    expect(document.activeElement).toBe(textbox())
+
+    select(1, 6, 1)
+    await user.keyboard('{Control>}k{/Control}')
+    url = await screen.findByRole('textbox', { name: 'URL' })
+    await waitFor(() => expect(document.activeElement).toBe(url))
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('textbox', { name: 'URL' })).toBeNull()
+    expect(screen.getByRole('dialog', { name: 'Feedback' })).toBeTruthy()
+    expect(onOpenChange).not.toHaveBeenCalled()
+    expect(document.activeElement).toBe(textbox())
   })
 })

@@ -349,7 +349,7 @@
     "limit": "21 kB"
   },
   {
-    "name": "Rich text editor (Satin Pro) with the Lexical engine, @lexical/table included (lexical, @lexical/*: an optional peer; @uisatin/ui left out). Lexical's entries carry its dev and prod builds and size-limit sets no NODE_ENV, so this counts both (151 kB before @lexical/table); in an app's production build @lexical/table adds about 20 kB to the 97 kB",
+    "name": "Rich text editor (Satin Pro) with the Lexical engine, @lexical/table included (lexical, @lexical/*: an optional peer; @uisatin/ui left out), and Radix Popover with its positioning for the bubble and the link popover, which an app shares with Free. Lexical's entries carry its dev and prod builds and size-limit sets no NODE_ENV, so this counts both; the docs' size (scripts/sizes.mjs, a production build) counts the prod build only, about 157 kB",
     "path": "packages/ui-pro/dist/components/rich-text-editor.js",
     "import": "{ RichTextEditor }",
     "gzip": true,
@@ -358,10 +358,10 @@
       "react-dom",
       "@uisatin/ui"
     ],
-    "limit": "190 kB"
+    "limit": "200 kB"
   },
   {
-    "name": "Rich text editor (Satin Pro), its own code only: Lexical and @uisatin/ui left out (its toolbar icons from iconoir-react, about 2.3 kB, counted)",
+    "name": "Rich text editor (Satin Pro), its own code: Lexical and @uisatin/ui left out (its toolbar icons from iconoir-react, about 2.3 kB, and Radix Popover with its positioning, about 22 kB, which an app shares with Free, counted)",
     "path": "packages/ui-pro/dist/components/rich-text-editor.js",
     "import": "{ RichTextEditor }",
     "gzip": true,
@@ -377,6 +377,6 @@
       "@lexical/history",
       "@lexical/table"
     ],
-    "limit": "14.5 kB"
+    "limit": "38 kB"
   }
 ]

@@ -2784,7 +2784,8 @@
         "@lexical/rich-text@~0.53.0",
         "@lexical/table@~0.53.0",
         "iconoir-react@^7.12.2",
-        "lexical@~0.53.0"
+        "lexical@~0.53.0",
+        "radix-ui@^1.8.1"
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
@@ -2792,7 +2793,6 @@
         "https://uisatin.dev/r/utils.json",
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/dropdown.json",
-        "https://uisatin.dev/r/floating.json",
         "https://uisatin.dev/r/form-field.json",
         "https://uisatin.dev/r/input.json",
         "https://uisatin.dev/r/labels.json",

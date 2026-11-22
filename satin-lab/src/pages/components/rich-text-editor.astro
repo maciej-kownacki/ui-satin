@@ -34,7 +34,7 @@ const formHtml = await highlight(formOptions)
         The editor runs on Lexical, an optional peer of Satin Pro that only this entry imports. Install it next to
         <Chip>@uisatin/pro</Chip>: <Chip>npm i lexical @lexical/rich-text @lexical/list @lexical/link @lexical/markdown @lexical/history @lexical/table</Chip>.
         In an app's production build Lexical adds about 97 kB gzipped, and about 20 kB more for tables; the editor's own code is
-        about 14 kB. None of it is in the Satin Free bundle, and <Chip>@uisatin/pro</Chip> itself doesn't export the editor, so
+        about 14 kB, and Radix Popover (about 22 kB, which Satin Free's popovers load too) places its bubble and link popover. None of the rest is in the Satin Free bundle, and <Chip>@uisatin/pro</Chip> itself doesn't export the editor, so
         only a page that imports <Chip>@uisatin/pro/rich-text-editor</Chip> loads it.
       </p>
     </section>

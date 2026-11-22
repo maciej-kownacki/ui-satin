@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { Popover as PopoverPrimitive } from 'radix-ui'
 import {
   $createParagraphNode,
   $createRangeSelection,
@@ -21,6 +22,7 @@ import {
   COMMAND_PRIORITY_EDITOR,
   COMMAND_PRIORITY_HIGH,
   FORMAT_TEXT_COMMAND,
+  HISTORY_MERGE_TAG,
   KEY_ARROW_DOWN_COMMAND,
   KEY_ARROW_UP_COMMAND,
   KEY_DOWN_COMMAND,
@@ -105,7 +107,6 @@ import {
 import { Bold, Code, Italic, Link as LinkIcon, List, NavArrowDown, NumberedListLeft, NumberedListRight, Quote, Strikethrough } from 'iconoir-react'
 import { Button } from '@uisatin/ui/button'
 import { DropdownMenu, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@uisatin/ui/dropdown'
-import { Floating, type FloatingVirtualElement } from '@uisatin/ui/floating'
 import { useFormField } from '@uisatin/ui/form-field'
 import { Input } from '@uisatin/ui/input'
 import { useSatinLabels } from '@uisatin/ui/labels'
@@ -396,11 +397,36 @@ export function $isMentionNode(node: LexicalNode | null | undefined): node is Me
   return node instanceof MentionNode
 }
 
+/**
+ * A link never holds a mention: markdown can't nest a link in a link, so it wouldn't come back.
+ * The mention moves out after the link, which splits around it (the part after it keeps the
+ * address); a link left empty goes.
+ */
+function $moveMentionsOutOfLink(link: LinkNode) {
+  let current = link
+  for (;;) {
+    const mention = current.getChildren().find($isMentionNode)
+    if (!mention) return
+    const after = mention.getNextSiblings()
+    const url = current.getURL()
+    const attributes = { rel: current.getRel(), target: current.getTarget(), title: current.getTitle() }
+    current.insertAfter(mention)
+    if (current.isEmpty()) current.remove()
+    if (!after.length) return
+    const rest = $createLinkNode(url, attributes)
+    rest.append(...after)
+    mention.insertAfter(rest)
+    current = rest
+  }
+}
+
 /* ---------- markdown ---------- */
 
 // A mention is a link to `mention:<id>` whose text is the trigger and the label:
-// [@Tara Mendes](mention:tara-id). Plain CommonMark, readable, and the id survives.
-const MENTION_RE = /\[([^\s\\\]])((?:\\.|[^\\\]])*)\]\(mention:([^)\s]*)\)/
+// [@Tara Mendes](mention:tara-id). Plain CommonMark, readable, and the id survives. The trigger
+// is a symbol (never a letter, a digit or a bracket) and the label holds no unescaped bracket,
+// so link text that only ends in a mention (`[see [@Ann](mention:a)](…)`) never reads as one.
+const MENTION_RE = /\[([^\s\\[\]\p{L}\p{N}])((?:\\.|[^\\[\]])*)\]\(mention:([^)\s]*)\)/u
 const escapeLabel = (label: string) => label.replace(/[\\[\]]/g, '\\$&')
 const unescapeLabel = (label: string) => label.replace(/\\(.)/g, '$1')
 
@@ -427,7 +453,7 @@ export const MENTION: TextMatchTransformer = {
     return exportFormat(node, '\u0000').replace('\u0000', link)
   },
   importRegExp: MENTION_RE,
-  regExp: new RegExp(`${MENTION_RE.source}$`),
+  regExp: new RegExp(`${MENTION_RE.source}$`, 'u'),
   replace: (textNode, match) => {
     const [, trigger, label, id] = match
     const mention = $createMentionNode({ id: decodeId(id), label: unescapeLabel(label), trigger })
@@ -549,6 +575,48 @@ export const RICH_TEXT_TRANSFORMERS: Transformer[] = [
 ]
 
 /**
+ * Where the code spans are, as [start, end) pairs: a run of backticks opens one and the next run
+ * of the same length closes it, scanned left to right (CommonMark). A run with no match is text.
+ */
+function codeSpans(text: string): [number, number][] {
+  const spans: [number, number][] = []
+  const runAt = (i: number) => {
+    let n = 0
+    while (text[i + n] === '`') n++
+    return n
+  }
+  let i = 0
+  while (i < text.length) {
+    if (text[i] !== '`') {
+      i++
+      continue
+    }
+    const open = runAt(i)
+    let j = i + open
+    let close = -1
+    while (j < text.length) {
+      if (text[j] !== '`') {
+        j++
+        continue
+      }
+      const run = runAt(j)
+      if (run === open) {
+        close = j
+        break
+      }
+      j += run
+    }
+    if (close === -1) {
+      i += open
+      continue
+    }
+    spans.push([i, close + open])
+    i = close + open
+  }
+  return spans
+}
+
+/**
  * The mentions in a value, in order, each once (by id). For markdown it reads the
  * `[@Label](mention:id)` links outside code spans; for JSON, the `mention` nodes.
  */
@@ -576,8 +644,13 @@ export function richTextMentions(value: RichTextDocument, format: RichTextFormat
     return found
   }
   // A code span's text and an escaped bracket are text, not mentions, as the editor reads them.
-  const text = value.replace(/(`+)(?!`)[\s\S]*?[^`]\1(?!`)/g, (span) => ' '.repeat(span.length))
-  for (const m of text.matchAll(new RegExp(MENTION_RE.source, 'g'))) {
+  // Code spans are found with every backslash escape blanked (an escaped backtick opens none),
+  // then blanked in the value itself, whose escapes the labels still need.
+  let text = value
+  for (const [start, end] of codeSpans(value.replace(/\\[\s\S]/g, '  '))) {
+    text = text.slice(0, start) + ' '.repeat(end - start) + text.slice(end)
+  }
+  for (const m of text.matchAll(new RegExp(MENTION_RE.source, 'gu'))) {
     if (/(^|[^\\])(\\\\)*\\$/.test(text.slice(0, m.index))) continue
     add({ id: decodeId(m[3]), label: unescapeLabel(m[2]), trigger: m[1] })
   }
@@ -585,6 +658,9 @@ export function richTextMentions(value: RichTextDocument, format: RichTextFormat
 }
 
 /* ---------- the engine ---------- */
+
+/** Values sent out and not yet back through `value`: a parent this many edits behind loads its value as new. */
+const MAX_PENDING = 50
 
 /** An update that loads a value from outside: it isn't sent back through onValueChange. */
 const EXTERNAL_TAG = 'satin-rte-external'
@@ -612,13 +688,35 @@ function serialize(state: EditorState, format: RichTextFormat): string {
   return state.read(() => $convertToMarkdownString(RICH_TEXT_TRANSFORMERS))
 }
 
+/**
+ * Characters of text as a textarea counts them: every text node (a mention's "@Label" too), one
+ * for each line break, and one between blocks (paragraphs, list items, a table cell's
+ * paragraphs), not the blank line Lexical's text content puts there.
+ */
+function $countCharacters(): number {
+  let characters = 0
+  let blocks = 0
+  const walk = (node: LexicalNode) => {
+    if ($isTextNode(node)) characters += node.getTextContentSize()
+    else if ($isLineBreakNode(node)) characters += 1
+    else if ($isElementNode(node)) {
+      const children = node.getChildren()
+      const leaf = !node.isInline() && !$isRootOrShadowRoot(node) && !children.some((c) => $isElementNode(c) && !c.isInline())
+      if (leaf) blocks++
+      children.forEach(walk)
+    }
+  }
+  walk($getRoot())
+  return characters + Math.max(0, blocks - 1)
+}
+
 function readDoc(state: EditorState) {
   return state.read(() => {
     const root = $getRoot()
-    const text = root.getTextContent()
     const first = root.getFirstChild()
-    const empty = text === '' && root.getChildrenSize() <= 1 && (first === null || $isParagraphNode(first))
-    return { length: text.length, empty }
+    const length = $countCharacters()
+    const empty = length === 0 && root.getChildrenSize() <= 1 && (first === null || $isParagraphNode(first))
+    return { length, empty }
   })
 }
 
@@ -630,6 +728,13 @@ function selectionRect(root: HTMLElement | null): DOMRect | null {
   const rect = range.getBoundingClientRect?.()
   if (rect && (rect.width || rect.height)) return rect
   return range.getClientRects?.()[0] ?? root.getBoundingClientRect()
+}
+
+/** Something a layer opens next to that isn't an element: a selection's or a character's rect. */
+interface VirtualAnchor {
+  getBoundingClientRect(): DOMRect
+  /** The element the rect lives in, so scrolling its ancestors moves the layer with it. */
+  contextElement?: Element
 }
 
 /* ---------- formatting ---------- */
@@ -797,7 +902,7 @@ export function normalizeRichTextUrl(raw: string): string | null {
 }
 
 /** Points at the selection as it was when called (a live range), else at `fallback`. */
-function rangeAnchor(root: HTMLElement | null, fallback: Element | null): FloatingVirtualElement {
+function rangeAnchor(root: HTMLElement | null, fallback: Element | null): VirtualAnchor {
   const selection = typeof window === 'undefined' ? null : window.getSelection()
   const live = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null
   const range = live && root?.contains(live.commonAncestorContainer) ? live.cloneRange() : null
@@ -818,8 +923,8 @@ const nextFrame = (fn: () => void) =>
 const cancelFrame = (id: number) => (typeof cancelAnimationFrame === 'function' ? cancelAnimationFrame(id) : clearTimeout(id))
 
 /**
- * Focuses an element in a Floating layer once it can take focus: the layer mounts a render later
- * and stays `visibility: hidden` until it's placed. Returns a cancel.
+ * Focuses an element in a popover layer once it can take focus: the layer mounts a render or
+ * more later. Returns a cancel.
  */
 function focusWhenShown(get: () => HTMLElement | null | undefined) {
   let frames = 0
@@ -849,7 +954,7 @@ interface LinkEditorState {
   saved: BaseSelection | null
   url: string
   inLink: boolean
-  anchor: FloatingVirtualElement
+  anchor: VirtualAnchor
   /** The button that opened it: a press on it closes the popover instead of reopening it. */
   opener: HTMLElement | null
 }
@@ -1234,7 +1339,7 @@ export function RichTextEditorRoot({
   const trigger = mentions ? (mentions.trigger ?? '@') : null
   const commandsOn = !!commands?.length
   const menuOn = trigger !== null || commandsOn
-  const [menuQuery, setMenuQuery] = React.useState<{ query: PromptMenuQuery; anchor: FloatingVirtualElement } | null>(null)
+  const [menuQuery, setMenuQuery] = React.useState<{ query: PromptMenuQuery; anchor: VirtualAnchor } | null>(null)
   const found = React.useRef<MenuQuery | null>(null)
   const promptCommands = React.useMemo(() => commands?.map(({ run: _run, ...command }) => command), [commands])
   const menu = usePromptMenuState({
@@ -1266,7 +1371,7 @@ export function RichTextEditorRoot({
       }
       const root = editor.getRootElement()
       const captured = next
-      const anchor: FloatingVirtualElement = {
+      const anchor: VirtualAnchor = {
         getBoundingClientRect: () => {
           const at = found.current ?? captured
           return triggerRect(editor, at.key, at.offset) ?? root?.getBoundingClientRect() ?? new DOMRect()
@@ -1349,6 +1454,11 @@ export function RichTextEditorRoot({
     shown.current = serialize(editor.getEditorState(), formatRef.current)
     const strip = (node: TextNode) => {
       for (const f of UNSUPPORTED_FORMATS) if (node.hasFormat(f)) node.toggleFormat(f)
+    }
+    // A mention is never code: markdown has no link inside a code span, so it wouldn't come back.
+    const stripMention = (node: MentionNode) => {
+      strip(node)
+      if (node.hasFormat('code')) node.toggleFormat('code')
     }
     // ⌥F10 to the toolbar, and the shortcuts Lexical doesn't know: ⌘⇧X, ⌘E, ⌘⇧7, ⌘⇧8, ⌘K.
     // (⌘B and ⌘I are Lexical's own.)
@@ -1461,7 +1571,8 @@ export function RichTextEditorRoot({
       // ⌘U and the rest of the unsupported marks do nothing; pasted ones are stripped below.
       editor.registerCommand(FORMAT_TEXT_COMMAND, (f) => UNSUPPORTED_FORMATS.includes(f), COMMAND_PRIORITY_HIGH),
       editor.registerNodeTransform(TextNode, strip),
-      editor.registerNodeTransform(MentionNode, strip),
+      editor.registerNodeTransform(MentionNode, stripMention),
+      editor.registerNodeTransform(LinkNode, $moveMentionsOutOfLink),
       editor.registerCommand(KEY_DOWN_COMMAND, (event) => onShortcut(event), COMMAND_PRIORITY_HIGH),
       editor.registerUpdateListener(findQuery),
       // The open menu's keys come first: in a table, the table's own arrows and Tab (high) follow.
@@ -1529,11 +1640,19 @@ export function RichTextEditorRoot({
         shown.current = serialized
         if (tags.has(EXTERNAL_TAG) || serialized === lastValue.current) return
         lastValue.current = serialized
-        pending.current.push(serialized)
+        // Only a controlled editor gets values back to match; the oldest go past MAX_PENDING.
+        if (controlledRef.current) {
+          pending.current.push(serialized)
+          if (pending.current.length > MAX_PENDING) pending.current.splice(0, pending.current.length - MAX_PENDING)
+        }
         if (!controlledRef.current) setUncontrolled(serialized)
         onValueChangeRef.current?.(serialized, { mentions: richTextMentions(serialized, formatRef.current) })
       }),
     )
+    // Registering the transforms marks nodes dirty for an update a moment later. Run it now, as
+    // part of loading the value: a value they normalise (an underline stripped, a table
+    // completed) is the document as loaded, not an edit to send.
+    editor.update(() => {}, { discrete: true, tag: [EXTERNAL_TAG, HISTORY_MERGE_TAG] })
     return () => {
       unregister()
       contentElement.removeEventListener('compositionstart', onCompositionStart)
@@ -1592,7 +1711,7 @@ export function RichTextEditorRoot({
   }
 
   // Without an anchor of its own Radix draws an empty anchor element; this one is never measured while shut.
-  const contentAnchor = React.useMemo<FloatingVirtualElement>(
+  const contentAnchor = React.useMemo<VirtualAnchor>(
     () => ({ getBoundingClientRect: () => contentElement?.getBoundingClientRect() ?? new DOMRect(), contextElement: contentElement ?? undefined }),
     [contentElement],
   )
@@ -1991,7 +2110,8 @@ export function RichTextToolbar({ preset = 'default', children, className, onKey
 /**
  * A Popover panel under the selection with the address field, Apply and (in a link) Remove link.
  * Enter applies, Escape and the close button go back to the text with the selection put back; a
- * press or focus outside closes it where it is.
+ * press or focus outside closes it where it is. A Radix Popover layer, so inside a modal Dialog
+ * it takes presses and focus, and Escape closes it before the Dialog.
  */
 function LinkEditor({
   state,
@@ -2007,81 +2127,86 @@ function LinkEditor({
   const labels = useLabels()
   const [value, setValue] = React.useState(state.url)
   const [invalid, setInvalid] = React.useState(false)
-  const panel = React.useRef<HTMLDivElement | null>(null)
   const input = React.useRef<HTMLInputElement | null>(null)
-  const dismiss = React.useRef(onDismiss)
-  dismiss.current = onDismiss
-
-  React.useEffect(() => focusWhenShown(() => input.current), [])
-  React.useEffect(() => {
-    const onPointerDown = (event: PointerEvent) => {
-      const target = event.target as Node
-      if (panel.current?.contains(target) || state.opener?.contains(target)) return
-      dismiss.current(false)
-    }
-    document.addEventListener('pointerdown', onPointerDown, true)
-    return () => document.removeEventListener('pointerdown', onPointerDown, true)
-  }, [state.opener])
+  const anchorRef = React.useRef<VirtualAnchor>(state.anchor)
+  anchorRef.current = state.anchor
 
   return (
-    <Floating anchor={state.anchor} side="bottom" sideOffset={8}>
-      {() => (
-        <PopoverPanel
-          ref={panel}
-          title={state.inLink ? labels.richTextEditLink : labels.richTextAddLink}
-          className="satin-rte-link"
-          onClose={() => onDismiss(true)}
-          onKeyDown={(event) => {
-            if (event.key !== 'Escape') return
+    <PopoverPrimitive.Root
+      open
+      onOpenChange={(open) => {
+        // A press or focus outside (Escape is taken below).
+        if (!open) onDismiss(false)
+      }}
+    >
+      <PopoverPrimitive.Anchor virtualRef={anchorRef} />
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content
+          asChild
+          side="bottom"
+          align="center"
+          sideOffset={8}
+          collisionPadding={8}
+          onOpenAutoFocus={(event) => {
             event.preventDefault()
-            event.stopPropagation()
+            input.current?.focus({ preventScroll: true })
+          }}
+          // Focus goes back to the text only on Escape, Apply or Remove (onDismiss decides).
+          onCloseAutoFocus={(event) => event.preventDefault()}
+          onEscapeKeyDown={(event) => {
+            event.preventDefault()
             onDismiss(true)
           }}
-          onBlur={(event) => {
-            // Focus left for something else on the page (not another window): close where it is.
-            const next = event.relatedTarget as Node | null
-            if (next && !event.currentTarget.contains(next)) onDismiss(false)
+          onInteractOutside={(event) => {
+            // A press on the button that opened it closes it from there (and puts the selection back).
+            if (state.opener?.contains(event.target as Node)) event.preventDefault()
           }}
-          body={
-            <form
-              className="flex flex-col gap-3"
-              noValidate
-              onSubmit={(event) => {
-                // Portaled, but still inside the editor in React: keep the submit from reaching a form around it.
-                event.preventDefault()
-                event.stopPropagation()
-                const url = normalizeRichTextUrl(value)
-                if (url) onApply(url, value.trim())
-                else setInvalid(true)
-              }}
-            >
-              <Input
-                ref={input}
-                type="url"
-                aria-label={labels.richTextUrl}
-                placeholder={labels.richTextUrlPlaceholder}
-                autoComplete="off"
-                spellCheck={false}
-                value={value}
-                onChange={(event) => {
-                  setValue(event.target.value)
-                  setInvalid(false)
+        >
+          <PopoverPanel
+            title={state.inLink ? labels.richTextEditLink : labels.richTextAddLink}
+            className="satin-rte-link pointer-events-auto z-50 outline-none"
+            onClose={() => onDismiss(true)}
+            body={
+              <form
+                className="flex flex-col gap-3"
+                noValidate
+                onSubmit={(event) => {
+                  // Portaled, but still inside the editor in React: keep the submit from reaching a form around it.
+                  event.preventDefault()
+                  event.stopPropagation()
+                  const url = normalizeRichTextUrl(value)
+                  if (url) onApply(url, value.trim())
+                  else setInvalid(true)
                 }}
-                error={invalid ? labels.richTextUrlInvalid : undefined}
-              />
-              <div className="flex justify-end gap-2">
-                {state.inLink && (
-                  <Button type="button" variant="secondary" onClick={onRemove}>
-                    {labels.richTextRemoveLink}
-                  </Button>
-                )}
-                <Button type="submit">{labels.apply}</Button>
-              </div>
-            </form>
-          }
-        />
-      )}
-    </Floating>
+              >
+                <Input
+                  ref={input}
+                  type="url"
+                  aria-label={labels.richTextUrl}
+                  placeholder={labels.richTextUrlPlaceholder}
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={value}
+                  onChange={(event) => {
+                    setValue(event.target.value)
+                    setInvalid(false)
+                  }}
+                  error={invalid ? labels.richTextUrlInvalid : undefined}
+                />
+                <div className="flex justify-end gap-2">
+                  {state.inLink && (
+                    <Button type="button" variant="secondary" onClick={onRemove}>
+                      {labels.richTextRemoveLink}
+                    </Button>
+                  )}
+                  <Button type="submit">{labels.apply}</Button>
+                </div>
+              </form>
+            }
+          />
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Root>
   )
 }
 
@@ -2098,8 +2223,9 @@ export interface RichTextSelectionToolbarProps extends Omit<ToolbarProps, 'varia
 }
 
 /**
- * The bubble over a selection: Free's `Toolbar variant="floating"` placed by `Floating` above the
- * selected text. It shows after a pointer selection (on release) or a double click, never for a
+ * The bubble over a selection: Free's `Toolbar variant="floating"` in a Radix Popover layer
+ * (non-modal) above the selected text, so inside a modal Dialog it takes presses and Escape
+ * reaches it first. It shows after a pointer selection (on release) or a double click, never for a
  * selection made with the keyboard; it follows a selection changed while it's up, and goes with a
  * collapsed selection, Escape, or focus leaving the text and the bubble. It doesn't take focus or
  * sit in the tab order: ⌥F10 in the text reaches it when there's no fixed toolbar (and opens it on
@@ -2115,15 +2241,19 @@ export function RichTextSelectionToolbar({ children, actions, className, onKeyDo
   const labels = useLabels()
   const { editor, contentElement, registerSelectionToolbar } = ctx
   const enabled = !ctx.disabled && !ctx.readOnly && contentElement !== null
-  const [anchor, setAnchor] = React.useState<FloatingVirtualElement | null>(null)
+  const [anchor, setAnchor] = React.useState<VirtualAnchor | null>(null)
+  const anchorRef = React.useRef(anchor)
+  anchorRef.current = anchor
   const own = React.useRef<HTMLDivElement | null>(null)
   const refs = React.useMemo(() => mergeRefs(ref, own), [ref])
   const open = React.useRef(false)
   // Opened with ⌥F10: stays on a collapsed selection, and its first item takes focus once shown.
   const pinned = React.useRef(false)
   const focusOnShow = React.useRef(false)
+  // The Escape the layer handled, so the editor's own Escape (which leaves the text) skips it.
+  const escaped = React.useRef<KeyboardEvent | null>(null)
 
-  const anchorNow = React.useCallback((): FloatingVirtualElement | null => {
+  const anchorNow = React.useCallback((): VirtualAnchor | null => {
     const root = editor.getRootElement()
     if (!root) return null
     const captured = selectionRect(root) ?? root.getBoundingClientRect()
@@ -2187,7 +2317,9 @@ export function RichTextSelectionToolbar({ children, actions, className, onKeyDo
       }),
       editor.registerCommand(
         KEY_ESCAPE_COMMAND,
-        () => {
+        (event) => {
+          // The layer took this Escape first (and hid the bubble): the text keeps focus.
+          if (event && event === escaped.current) return true
           if (!open.current) return false
           hide()
           return true
@@ -2229,54 +2361,83 @@ export function RichTextSelectionToolbar({ children, actions, className, onKeyDo
 
   if (!enabled) return null
   return (
-    <Floating anchor={anchor} side="top" sideOffset={8}>
-      {() => (
-        <Toolbar
-          ref={refs}
-          variant="floating"
-          preventFocusOnPress
-          // Out of the tab order: ⌥F10 or the pointer reach it.
-          tabIndex={-1}
-          aria-label={ariaLabel ?? labels.richTextSelectionToolbar}
-          data-rich-text-selection-toolbar=""
-          className={cn('satin-rte-bubble', className)}
-          onMouseDown={(event) => {
-            onMouseDown?.(event)
-            if (event.target === event.currentTarget) event.preventDefault()
+    <PopoverPrimitive.Root
+      open={anchor !== null}
+      onOpenChange={(next) => {
+        if (!next) hide()
+      }}
+    >
+      <PopoverPrimitive.Anchor virtualRef={anchorRef as React.RefObject<VirtualAnchor>} />
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content
+          asChild
+          side="top"
+          align="center"
+          sideOffset={8}
+          collisionPadding={8}
+          // Focus stays in the text (⌥F10 moves it in on purpose), and comes back to nothing on close.
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => event.preventDefault()}
+          // It goes by the editor's own rules (a press in the text, the selection collapsing, focus leaving).
+          onInteractOutside={(event) => event.preventDefault()}
+          // The topmost layer gets Escape, wherever focus is: the bubble goes, a Dialog around it stays.
+          onEscapeKeyDown={(event) => {
+            event.preventDefault()
+            escaped.current = event
+            hide()
+            focusEditor(editor)
           }}
-          onKeyDown={(event) => {
-            onKeyDown?.(event)
-            if (event.key === 'Escape' && event.currentTarget.contains(event.target as Node)) {
-              event.preventDefault()
-              hide()
-              focusEditor(editor)
-            }
-          }}
-          onBlur={(event) => {
-            onBlur?.(event)
-            const next = event.relatedTarget as Node | null
-            if (next && (event.currentTarget.contains(next) || contentElement?.contains(next))) return
-            if (next) hide()
-          }}
-          {...props}
         >
-          {children ?? (
-            <>
-              <RichTextFormatToggle format="bold" />
-              <RichTextFormatToggle format="italic" />
-              <RichTextFormatToggle format="strikethrough" />
-              <RichTextLinkButton />
-            </>
-          )}
-          {actions != null && actions !== false && (
-            <>
-              <ToolbarSeparator />
-              {actions}
-            </>
-          )}
-        </Toolbar>
-      )}
-    </Floating>
+          <Toolbar
+            ref={refs}
+            role="toolbar"
+            variant="floating"
+            preventFocusOnPress
+            // Out of the tab order: ⌥F10 or the pointer reach it.
+            tabIndex={-1}
+            aria-label={ariaLabel ?? labels.richTextSelectionToolbar}
+            data-rich-text-selection-toolbar=""
+            className={cn('satin-rte-bubble pointer-events-auto z-50', className)}
+            onMouseDown={(event) => {
+              onMouseDown?.(event)
+              // A press between the items keeps the selection in the text too.
+              if (event.target === event.currentTarget) event.preventDefault()
+            }}
+            onKeyDown={(event) => {
+              onKeyDown?.(event)
+              // With a tooltip open, Escape is the tooltip's layer's: this still closes the bubble.
+              if (event.key === 'Escape' && event.currentTarget.contains(event.target as Node)) {
+                event.preventDefault()
+                hide()
+                focusEditor(editor)
+              }
+            }}
+            onBlur={(event) => {
+              onBlur?.(event)
+              const next = event.relatedTarget as Node | null
+              if (next && (event.currentTarget.contains(next) || contentElement?.contains(next))) return
+              if (next) hide()
+            }}
+            {...props}
+          >
+            {children ?? (
+              <>
+                <RichTextFormatToggle format="bold" />
+                <RichTextFormatToggle format="italic" />
+                <RichTextFormatToggle format="strikethrough" />
+                <RichTextLinkButton />
+              </>
+            )}
+            {actions != null && actions !== false && (
+              <>
+                <ToolbarSeparator />
+                {actions}
+              </>
+            )}
+          </Toolbar>
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Root>
   )
 }
 
@@ -2341,7 +2502,8 @@ export function RichTextEditor({
   const contentId = id ?? field?.id ?? autoId
   const hasMessage = typeof error === 'string' || React.isValidElement(error)
   const message = hasMessage ? error : hint
-  const labelId = label ? `${contentId}-label` : undefined
+  // Not `${id}-label`: that's a FormField's label, which may be around it.
+  const labelId = label ? `${contentId}-rte-label` : undefined
   const messageId = message ? `${contentId}-hint` : undefined
   const counterId = maxLength != null ? `${contentId}-counter` : undefined
   const statusId = status != null && status !== false ? `${contentId}-status` : undefined

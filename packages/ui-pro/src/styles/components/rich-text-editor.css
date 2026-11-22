@@ -147,6 +147,8 @@
 }
 [data-slot="rich-text-editor-content"] blockquote {
   padding-inline-start: 12px;
+  /* exception: the quote bar is a mark in the text, like Thinking's rail, not an edge, so no
+     border-width token (tokens/SEMANTIC.md, "Not stroke widths"). 2px reads as a bar at 14px. */
   border-inline-start: 2px solid var(--border-default);
   color: var(--text-muted);
 }
