@@ -38,8 +38,12 @@ export interface LineCardProps extends ChartCardBaseProps {
 
 const TRACK = 180
 
-/** Monotone cubic (Fritsch–Carlson) through the points, as an SVG path. */
-function smoothPath(pts: [number, number][]) {
+/**
+ * Monotone cubic (Fritsch–Carlson) through the points, as an SVG path: the curve the Line and
+ * Area chart draw, which never overshoots a point. Exported for custom charts and sparklines that
+ * should draw the same line (Satin Pro's Stat card uses it).
+ */
+export function smoothPath(pts: [number, number][]) {
   const n = pts.length
   if (n === 0) return ''
   if (n === 1) return `M ${pts[0][0]} ${pts[0][1]}`
