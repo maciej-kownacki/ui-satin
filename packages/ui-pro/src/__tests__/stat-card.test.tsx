@@ -139,6 +139,19 @@ describe('StatCard', () => {
     expect(live.textContent).toBe('5 of 5: 1,284')
   })
 
+  it('draws the sparkline edge to edge, out through the padding, at the same total height', () => {
+    renderWithSatin(<StatCard label="Signups" value={1284} sparkline={points} countUp={false} />)
+    const spark = document.querySelector('[data-slot="stat-card-sparkline"]')!
+    // 64px tall, 16 of them in the card's bottom padding: the 48px row it was, plus the padding.
+    for (const c of ['-mx-4', '-mb-4', 'w-auto', 'h-16']) expect(spark.classList.contains(c)).toBe(true)
+    // Its focus ring is drawn inside, so the card's clip doesn't cut it.
+    expect(spark.className).toContain('focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]')
+    const line = spark.querySelectorAll('path')[1].getAttribute('d')!
+    // The line starts on the left edge and ends on the right one.
+    expect(line.startsWith('M 0 ')).toBe(true)
+    expect(line.split(' ').at(-2)).toBe('100')
+  })
+
   it('draws no sparkline from fewer than two points', () => {
     renderWithSatin(<StatCard label="Signups" value={1284} sparkline={[3]} countUp={false} />)
     expect(document.querySelector('[data-slot="stat-card-sparkline"]')).toBeNull()

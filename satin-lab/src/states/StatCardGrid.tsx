@@ -66,7 +66,8 @@ export function StatCardGrid() {
       <div className="flex w-[240px] flex-col gap-3">
         {/* StatCard has no highlight prop: the part shows the hovered point, held still. */}
         <span>StatCardSparkline, highlight={'{8}'} (the hovered look)</span>
-        <div className="rounded-2xl border border-border-default bg-bg-card p-4">
+        {/* Drawn to the frame's bottom and sides, as in the card. */}
+        <div className="overflow-hidden rounded-2xl border border-border-default bg-bg-card pt-4">
           <StatCardSparkline data={signups} labels={WEEKS} highlight={8} title="Signups" />
         </div>
       </div>

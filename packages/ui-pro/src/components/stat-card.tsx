@@ -4,7 +4,7 @@ import * as React from 'react'
 import { ArrowDown, ArrowUp, Minus, WarningCircle } from 'iconoir-react'
 import { Badge } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
-import { ChartTooltip } from '@uisatin/ui/chart'
+import { ChartTooltip, glideTransform, useGlide } from '@uisatin/ui/chart'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { smoothPath } from '@uisatin/ui/line-chart'
 import { cn } from '@uisatin/ui/lib/utils'
@@ -22,12 +22,15 @@ import { useReducedMotion } from './rolling-number'
  *   tabular, never cut) and the change as a small Badge with an arrow, which wraps under a long
  *   value: green when it moved the way that is good, red when
  *   not, grey when flat. `good: 'down'` is for CAC, refund rate, time to hire. Row three: the
- *   sparkline, a 2px chart/3 line over a chart/3 gradient (28% to nothing), 48px tall.
+ *   sparkline, a 2px chart/3 line over a chart/3 gradient (28% to nothing), full bleed: it runs
+ *   from the card's left edge to its right and its gradient down to the bottom edge (64px tall,
+ *   in the card's 16px padding at the sides and the bottom), clipped by the card's corners.
  * - The accessible name says it all in words: "Signups, 1,284, up 12% vs last week"; for a
  *   metric where down is good it adds ", good" or ", bad". Colour is never the only signal: the
  *   arrow and the words carry the direction.
  * - Without `href` the card is a `group` and the sparkline one tab stop: arrow keys move along
- *   its points, the dot and a tooltip show the value, a polite live region reads it. With
+ *   its points, the dot and a tooltip show the value, a polite live region reads it; after the
+ *   pointer the dot and the tooltip glide from point to point (Free's `useGlide`). With
  *   `href` the whole card is one link (focus ring on the card) and the sparkline only a picture
  *   with its text summary.
  * - `loading` shows Skeletons in boxes of the loaded rows' heights, so a row of tiles never
@@ -159,10 +162,11 @@ export function StatCardChange({ value, direction, good, format, period, classNa
 
 /* ---------- sparkline ---------- */
 
-const SPARK = 48
-// Room above the highest point and under the lowest, so the 2px stroke isn't cut.
+const SPARK = 64
+// Room above the highest point, so the 2px stroke isn't cut, and under the lowest, so the
+// gradient still shows below it.
 const SPARK_TOP = 4
-const SPARK_BOTTOM = 1
+const SPARK_BOTTOM = 12
 
 export interface StatCardSparklineProps extends Omit<React.ComponentProps<'div'>, 'title' | 'children'> {
   /** The values, oldest first. Values that aren't finite are left out; fewer than two finite draw nothing. */
@@ -182,7 +186,10 @@ export interface StatCardSparklineProps extends Omit<React.ComponentProps<'div'>
 }
 
 /**
- * The sparkline alone: the line and its gradient, no axes. The drawing is hidden; a sentence
+ * The sparkline alone: the line and its gradient, no axes, 64px tall and drawn to the bottom of
+ * a card: the line's ends sit on its left and right edges, and its focus ring is drawn inside,
+ * with the bottom corners of a radius-2xl card. Hover glides the dot and the tooltip from point
+ * to point; the arrow keys move them at once. The drawing is hidden; a sentence
  * sums it up ("Upward trend over 12 points, from 980 to 1,284"). Interactive, it is one tab stop:
  * focus picks the last point, ← → move along them, a pointer picks the nearest. The drawing keeps
  * time running left to right in right-to-left pages too, as the Line chart does, so → is always
@@ -202,6 +209,7 @@ export function StatCardSparkline({
   onFocus,
   onBlur,
   onKeyDown,
+  ref,
   ...props
 }: StatCardSparklineProps) {
   const labels = useLabels()
@@ -214,6 +222,16 @@ export function StatCardSparkline({
   const [hovered, setHovered] = React.useState<number | null>(null)
   const [focused, setFocused] = React.useState<number | null>(null)
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
+  const boxRef = React.useRef<HTMLDivElement | null>(null)
+  const setBox = React.useCallback(
+    (el: HTMLDivElement | null) => {
+      boxRef.current = el
+      if (typeof ref === 'function') return ref(el)
+      if (ref) ref.current = el
+    },
+    [ref],
+  )
+  const updateTooltip = React.useRef<(() => void) | null>(null)
 
   // A gap (NaN, Infinity) is left out, with its label, rather than breaking the drawing.
   const { values, names } = React.useMemo(() => {
@@ -235,11 +253,9 @@ export function StatCardSparkline({
 
   const fmt = React.useMemo(() => format ?? ((v: number) => new Intl.NumberFormat(labels.dateLocale).format(v)), [format, labels.dateLocale])
 
-  if (n < 2) return null
-
   const pointer = interactive && hovered != null && hovered < n ? hovered : null
   const keyboard = interactive && focused != null && focused < n ? focused : null
-  const active = pointer ?? keyboard ?? (highlight != null && highlight < n ? highlight : null)
+  const active = n < 2 ? null : (pointer ?? keyboard ?? (highlight != null && highlight < n ? highlight : null))
   const min = Math.min(...values)
   const max = Math.max(...values)
   // A near-flat series keeps a range of at least ±5% of its mean (±1 around 0), so 3.0 to 3.2
@@ -257,6 +273,18 @@ export function StatCardSparkline({
   const trend = last > first ? 'up' : last < first ? 'down' : 'flat'
   const pointName = (i: number) => names[i] ?? labels.statPoint(i + 1, n)
 
+  // The pointer's moves glide; the keyboard's (and a highlight's) jump.
+  useGlide(active, {
+    measure: () => (active == null || !boxRef.current ? null : { x: (x(active) / 100) * boxRef.current.clientWidth, y: y(values[active]) }),
+    apply: (offset) => {
+      if (anchor) anchor.style.transform = glideTransform(offset)
+      updateTooltip.current?.()
+    },
+    immediate: pointer == null,
+  })
+
+  if (n < 2) return null
+
   const pick = (e: React.PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     if (!r.width) return
@@ -266,14 +294,16 @@ export function StatCardSparkline({
 
   return (
     <div
+      ref={setBox}
       data-slot="stat-card-sparkline"
       role={interactive ? 'group' : undefined}
       aria-label={interactive ? (title ? labels.chartPoints(title, n) : labels.statPoints(n)) : undefined}
       aria-describedby={interactive ? descId : undefined}
       tabIndex={interactive ? 0 : undefined}
       className={cn(
-        'relative h-12 w-full shrink-0 rounded-md',
-        interactive && 'outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]',
+        'relative h-16 w-full shrink-0 rounded-b-2xl',
+        // Inside its box, so the card's clip doesn't cut it.
+        interactive && 'outline-none focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)]',
         className,
       )}
       onPointerMove={(e) => {
@@ -340,6 +370,7 @@ export function StatCardSparkline({
           <ChartTooltip
             anchor={anchor}
             sideOffset={6}
+            updateRef={updateTooltip}
             // Without a title the value stands alone: the empty title span takes no room.
             className="[&_span:empty]:hidden"
             label={names[active] ?? ''}
@@ -606,7 +637,8 @@ export function StatCard({
                   interactive={!link && !disabled}
                   summaryId={summaryId}
                   aria-hidden={link || undefined}
-                  className={link ? 'pointer-events-none' : undefined}
+                  // Full bleed: out through the card's padding to its sides and bottom; the card clips it.
+                  className={cn('-mx-4 -mb-4 w-auto', link && 'pointer-events-none')}
                 />
               ) : (
                 // Too few points: the row stays, so the tile keeps its loading height.
