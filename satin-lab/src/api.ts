@@ -699,7 +699,7 @@ export const api: Record<string, Api> = {
     ],
   },
   'line-chart': {
-    description: 'The `LineCard` component is a wrapper around the `div` element with the title and a period Select, the KPI with its change and the range, then the line. Arrow keys move along the points once the plot has focus.',
+    description: 'The `LineCard` component is a wrapper around the `div` element with the title and a period Select, the KPI with its change and the range, then the line. Arrow keys move along the points once the plot has focus. `smoothPath(points)` from `@uisatin/ui/line-chart` returns the monotone curve the line is drawn with, as an SVG path, for custom charts and sparklines.',
     props: [
       { name: 'title', type: ['string'] },
       { name: 'range', type: ['string'] },
