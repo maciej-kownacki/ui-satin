@@ -1811,9 +1811,10 @@ export function CsvImport({
       </div>
       <div data-slot="csv-import-footer" className="flex h-[68px] shrink-0 items-start gap-3 px-4 pt-4 @max-[440px]:gap-2">
         {back}
-        {/* The reason stays in the Tooltip and aria-describedby where there is no room to show it. */}
+        {/* The reason stays in the Tooltip and aria-describedby where there is no room to show it,
+            and on Upload, where the drop zone already says what to do. */}
         <div className="flex min-h-9 min-w-0 flex-1 items-center">
-          <p id={reasonId} className="line-clamp-2 text-sm text-text-muted @max-[400px]:sr-only">
+          <p id={reasonId} className={cn('line-clamp-2 text-sm text-text-muted @max-[400px]:sr-only', view === 'upload' && 'sr-only')}>
             {reason}
           </p>
         </div>
