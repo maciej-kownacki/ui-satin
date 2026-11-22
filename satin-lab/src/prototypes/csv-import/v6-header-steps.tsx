@@ -231,7 +231,7 @@ export function CsvImportHeaderSteps({ onBrowse, dragging, ...props }: CsvImport
       />
       {/* Title, description and body scroll as one; only Review's and the result's tables keep their own scroll. */}
       <Stage partRef={partRef} className="overflow-y-auto px-4 pb-4">
-        {view === 'upload' && flow.parse.status !== 'reading' ? (
+        {view === 'upload' ? (
           <UploadBody flow={flow} words={words} inDialog={inDialog} onBrowse={onBrowse} dragging={dragging} />
         ) : (
           <>
@@ -391,6 +391,9 @@ function Dots() {
  * app; its title and first line say what to do, its second what it takes. Errors go above the
  * zone, the template link under it.
  */
+/** How long a read runs before the zone says it is reading (a short read never shows). */
+const READING_SHOWN_MS = 400
+
 function UploadBody({
   flow,
   words,
@@ -404,16 +407,28 @@ function UploadBody({
   onBrowse?: () => void
   dragging?: boolean
 }) {
-  const { n, parse, thing } = flow
+  const { n, noun, parse, thing } = flow
   const labels = useSatinLabels()
+  // Reading a file usually takes a moment too short to show: the zone stays as it is and Map
+  // follows. Only a read still going after READING_SHOWN_MS says so, in the zone itself.
+  const reading = parse.status === 'reading'
+  const [slow, setSlow] = React.useState(false)
+  React.useEffect(() => {
+    if (!reading) return setSlow(false)
+    const t = setTimeout(() => setSlow(true), READING_SHOWN_MS)
+    return () => clearTimeout(t)
+  }, [reading])
   const title = words.csvV6UploadTitle(thing.other)
   const limits = words.csvUploadHint(flow.maxRows != null ? n(flow.maxRows) : null, flow.maxSize != null ? formatBytes(flow.maxSize) : null)
-  const text = (
-    <>
-      <span className="block">{words.csvV6DropText}</span>
-      {limits && <span className="block">{limits}</span>}
-    </>
-  )
+  const text =
+    reading && slow ? (
+      <span className="block">{parse.read > 0 ? words.csvReading(n(parse.read), noun(parse.read)) : `${parse.file.name} · ${formatBytes(parse.file.size)}`}</span>
+    ) : (
+      <>
+        <span className="block">{words.csvV6DropText}</span>
+        {limits && <span className="block">{limits}</span>}
+      </>
+    )
   // In a Dialog the zone's title and lines are its name and description. Title and Description
   // sit in FileUpload's paragraphs as spans, in the paragraphs' own type.
   const asTitle = (t: React.ReactNode) =>
@@ -457,7 +472,17 @@ function UploadBody({
             </Tile>
           </span>
         }
-        title={asTitle(title)}
+        title={
+          reading && slow ? (
+            // The focus target while reading: the line that says what is happening.
+            <span data-csv-focus="reading" tabIndex={-1} className={cn('inline-flex items-center gap-2', focusTargetClass)}>
+              <Spinner label={null} />
+              {asTitle(words.csvReadingFile(parse.file.name))}
+            </span>
+          ) : (
+            asTitle(title)
+          )
+        }
         // The dialog keeps a name while files are dragged over.
         dropTitle={asTitle(labels.dropToUpload)}
         description={
