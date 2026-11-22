@@ -53,13 +53,17 @@ export function BarCard({
 }: BarCardProps) {
   const [hovered, setHovered] = React.useState<number | null>(null)
   const [byKey, setByKey] = React.useState(false)
-  const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
+  // The active bar's element, read when the tooltip measures: the old one has already left the page by then.
+  const anchorRef = React.useRef<HTMLElement | null>(null)
+  const setAnchor = React.useCallback((el: HTMLElement | null) => {
+    anchorRef.current = el
+  }, [])
   const active = (hovered != null && hovered < data.length ? hovered : null) ?? highlight ?? null
   // The tooltip points at the bar's value, drawn off it by the glide's offset while it moves.
   const plotRef = React.useRef<HTMLDivElement>(null)
   const offset = React.useRef<GlidePoint>({ x: 0, y: 0 })
   const updateTooltip = React.useRef<(() => void) | null>(null)
-  const tooltipAnchor = React.useMemo(() => (anchor ? glideAnchor(anchor, offset) : null), [anchor])
+  const tooltipAnchor = React.useMemo(() => glideAnchor(() => anchorRef.current, offset), [])
   useGlide(active, {
     measure: () => {
       const bar = active == null ? null : plotRef.current?.querySelectorAll('li')[active]

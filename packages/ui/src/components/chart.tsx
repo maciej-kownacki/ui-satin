@@ -151,13 +151,19 @@ export const glideTransform = ({ x, y }: GlidePoint) => (x || y ? `translate(${x
 
 /**
  * A stand-in anchor for a tooltip that glides: `element`'s box moved by the offset in `offset`.
- * For charts whose anchor can't be moved itself (a bar's value, a segment).
+ * For charts whose anchor can't be moved itself (a bar's value, a segment). Pass a getter when the
+ * element is swapped as the point changes, so the tooltip never measures one that has just left
+ * the page (its box is all zeros, and the tooltip would flash at the corner of the screen).
  */
-export function glideAnchor(element: Element, offset: React.RefObject<GlidePoint>) {
+export function glideAnchor(element: Element | (() => Element | null), offset: React.RefObject<GlidePoint>) {
+  const current = () => (typeof element === 'function' ? element() : element)
   return {
-    contextElement: element,
+    get contextElement() {
+      return current() ?? undefined
+    },
     getBoundingClientRect() {
-      const r = element.getBoundingClientRect()
+      const el = current()
+      const r = el ? el.getBoundingClientRect() : new DOMRect()
       const x = r.left + offset.current.x
       const y = r.top + offset.current.y
       return { x, y, left: x, top: y, right: x + r.width, bottom: y + r.height, width: r.width, height: r.height } as DOMRect
