@@ -27,6 +27,7 @@ function Failed() {
   return (
     <Comment
       author={MARTA}
+      own
       at="2026-11-16T11:00:00"
       body={pendingBody}
       state="failed"
@@ -50,7 +51,7 @@ function Failed() {
 
 const rows: { name: string; node: React.ReactNode }[] = [
   { name: 'Empty', node: <CommentsThread comments={[]} currentUser={MARTA} onReply={noop} resolvable /> },
-  { name: 'Sending', node: <Comment author={MARTA} at="2026-11-16T11:00:00" body={pendingBody} state="sending" /> },
+  { name: 'Sending', node: <Comment author={MARTA} own at="2026-11-16T11:00:00" body={pendingBody} state="sending" /> },
   { name: 'Failed, Retry', node: <Failed /> },
   { name: 'Resolved', node: <CommentsThread comments={comments} currentUser={MARTA} onReply={noop} resolvable defaultResolved resolvedBy={MARTA} /> },
   { name: 'Disabled', node: <CommentsThread comments={comments} currentUser={MARTA} onReply={noop} onEdit={noop} onDelete={noop} resolvable disabled /> },

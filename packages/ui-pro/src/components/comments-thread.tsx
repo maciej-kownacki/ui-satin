@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { ChatLines, Check, EditPencil, MoreHoriz, Trash, WarningCircle } from 'iconoir-react'
 import { Avatar, type AvatarTone } from '@uisatin/ui/avatar'
+import { Badge } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
 import { DropdownMenu, DropdownMenuItem } from '@uisatin/ui/dropdown'
 import { EmptyState } from '@uisatin/ui/empty-state'
@@ -26,8 +27,12 @@ import { toast } from '@uisatin/ui/toast'
  * - Each comment is an `<article>` named "Comment by Marta Nowak, {full date}": avatar (initials
  *   by default), name, the time relative today (Free's `RelativeTime`, the full date for screen
  *   readers), "(edited)", the body with its line breaks and its `mentions` drawn as `Mention`.
- * - The ⋯ menu ("Actions for comment by Marta Nowak") has Edit on your own comments (`onEdit`)
- *   and Delete on yours, or on anyone's with `moderator` (`onDelete`).
+ * - Your own comments say "(me)" after your name and show Edit next to Reply (`onEdit`). The ⋯
+ *   menu ("Actions for comment by Marta Nowak") holds Delete, on yours or on anyone's with
+ *   `moderator` (`onDelete`).
+ * - Replies hang off a thread line under the root's avatar.
+ * - `title` puts a heading over it with the count in a Badge ("Comments 5"); `variant="card"`
+ *   sets it on a card.
  * - Send is optimistic: while `onReply`'s promise runs, a row from `currentUser` shows dimmed with
  *   a Spinner. It goes when a new comment by `currentUser` with the same parent and body arrives
  *   in `comments`, which takes the row's place without fading in again. A row whose promise
@@ -92,6 +97,10 @@ export const commentsThreadLabels = {
   commentsHide: 'Hide comments',
   /** After the time of an edited comment. */
   commentsEdited: '(edited)',
+  /** After your own name on your comments. */
+  commentsMe: '(me)',
+  /** The count next to `title`, for screen readers: "5 comments". */
+  commentsCount: (count: number) => `${count} ${count === 1 ? 'comment' : 'comments'}`,
   /** The ⋯ button's name: "Actions for comment by Marta Nowak". */
   commentActionsFor: (name: string) => `Actions for comment by ${name}`,
   /** A comment's name for screen readers: "Comment by Marta Nowak, Monday, November 16, 2026 at 9:40 AM". */
@@ -254,6 +263,8 @@ export interface CommentProps extends Omit<React.ComponentProps<'article'>, 'chi
   mentions?: CommentMention[]
   /** Shows "(edited)" after the time. */
   edited?: boolean
+  /** The current user's comment: "(me)" follows the name. */
+  own?: boolean
   /** `sending`: the body dims and a Spinner says "Sending". `failed`: put "Not sent" and Retry in `footer`. */
   state?: 'sending' | 'failed'
   /** At the end of the author's line: a `CommentActions`. */
@@ -270,7 +281,8 @@ export interface CommentProps extends Omit<React.ComponentProps<'article'>, 'chi
  * One comment: an `<article tabIndex={-1}>` named "Comment by {name}, {full date}", so focus can
  * be moved to it. The avatar (initials in a tone picked from the author's id), the name in medium
  * 13px, `RelativeTime`, "(edited)" in text/muted, then the body in 14/21 text/default with its
- * line breaks. Other props, `ref` included, go to the `article`.
+ * line breaks. With `own`, "(me)" in text/muted follows the name. Other props, `ref` included,
+ * go to the `article`.
  */
 export function Comment({
   author,
@@ -278,6 +290,7 @@ export function Comment({
   body,
   mentions,
   edited = false,
+  own = false,
   state,
   actions,
   footer,
@@ -317,7 +330,10 @@ export function Comment({
       </span>
       <div className="min-w-0 flex-1">
         <div data-slot="comment-header" className="flex min-h-6 items-center gap-2">
-          <span className="min-w-0 truncate text-sm leading-5 font-medium text-text-default">{author.name}</span>
+          <span className="min-w-0 truncate text-sm leading-5 font-medium text-text-default">
+            {author.name}
+            {own && <span className="font-normal text-text-muted"> {labels.commentsMe}</span>}
+          </span>
           <RelativeTime at={time} />
           {edited && <span className="shrink-0 text-sm leading-5 text-text-muted">{labels.commentsEdited}</span>}
           {state === 'sending' && <Spinner size="xs" label={labels.sending} className="text-text-muted" />}
@@ -534,7 +550,7 @@ export function CommentComposer({
 
 /* ---------- CommentsThread ---------- */
 
-export interface CommentsThreadProps extends Omit<React.ComponentProps<'div'>, 'children'> {
+export interface CommentsThreadProps extends Omit<React.ComponentProps<'div'>, 'children' | 'title'> {
   /** Every comment, roots and replies, oldest first. */
   comments: CommentItem[]
   /** Who is writing: sends as them, and Edit and Delete show on their own comments. */
@@ -573,6 +589,15 @@ export interface CommentsThreadProps extends Omit<React.ComponentProps<'div'>, '
   disabled?: boolean
   /** In place of the default empty state ("No comments yet"). */
   empty?: React.ReactNode
+  /**
+   * A heading over the thread, "Comments", with the number of comments in a Badge next to it.
+   * It names the thread for screen readers.
+   */
+  title?: React.ReactNode
+  /** The heading's level. Defaults to `h3`. */
+  titleAs?: 'h2' | 'h3' | 'h4'
+  /** `card` puts the thread on a card: bg/card, a border/default edge, radius-xl, 16px in. Defaults to `plain`. */
+  variant?: 'plain' | 'card'
 }
 
 type Pending = {
@@ -617,6 +642,9 @@ export function CommentsThread({
   mentions,
   disabled = false,
   empty,
+  title,
+  titleAs: TitleTag = 'h3',
+  variant = 'plain',
   className,
   ref,
   ...props
@@ -803,7 +831,7 @@ export function CommentsThread({
   }
   const cancelEdit = (id: string) => {
     setEditing(null)
-    focusLater(() => article(id)?.querySelector<HTMLElement>('[data-part="comment-actions"]'))
+    focusLater(() => article(id)?.querySelector<HTMLElement>('[data-part="edit"]'))
   }
   const saveEdit = (c: CommentItem, body: string, found: CommentMention[]) => {
     const s = shown(c)
@@ -1000,28 +1028,29 @@ export function CommentsThread({
         body={s.body}
         mentions={s.mentions}
         edited={s.edited}
-        actions={
-          !isEditing && (canEdit || canDelete) ? (
-            <CommentActions
-              authorName={c.author.name}
-              onEdit={canEdit ? () => startEdit(c) : undefined}
-              onDelete={canDelete ? () => remove(c) : undefined}
-            />
-          ) : undefined
-        }
+        own={own}
+        actions={!isEditing && canDelete ? <CommentActions authorName={c.author.name} onDelete={() => remove(c)} /> : undefined}
         footer={
-          isRoot && canCompose && !isEditing ? (
-            <Button
-              variant="tertiary"
-              size="xs"
-              className="-ms-2"
-              data-part="reply"
-              data-key={c.id}
-              aria-label={labels.commentsReplyTo(c.author.name)}
-              onClick={() => openReply(c.id)}
-            >
-              {labels.commentsReply}
-            </Button>
+          !isEditing && ((isRoot && canCompose) || canEdit) ? (
+            <span className="-ms-2 flex items-center">
+              {isRoot && canCompose && (
+                <Button
+                  variant="tertiary"
+                  size="xs"
+                  data-part="reply"
+                  data-key={c.id}
+                  aria-label={labels.commentsReplyTo(c.author.name)}
+                  onClick={() => openReply(c.id)}
+                >
+                  {labels.commentsReply}
+                </Button>
+              )}
+              {canEdit && (
+                <Button variant="tertiary" size="xs" data-part="edit" data-key={c.id} onClick={() => startEdit(c)}>
+                  {labels.commentsEdit}
+                </Button>
+              )}
+            </span>
           ) : undefined
         }
       >
@@ -1053,6 +1082,7 @@ export function CommentsThread({
           ready={ready}
           data-comment-id={p.key}
           author={currentUser}
+          own
           at={p.at}
           body={p.body}
           mentions={p.mentions}
@@ -1087,9 +1117,35 @@ export function CommentsThread({
     ) : null
 
   const hasAny = visible.length > 0 || pendingRoots.length > 0
+  const count = visible.reduce((n, t) => n + 1 + t.replies.length, 0)
+  const titleId = `${uid}-title`
 
   return (
-    <div ref={setRoot} data-slot="comments-thread" data-resolved={isResolved || undefined} className={cn('flex flex-col gap-4', className)} {...props}>
+    <div
+      ref={setRoot}
+      data-slot="comments-thread"
+      data-resolved={isResolved || undefined}
+      data-variant={variant}
+      aria-labelledby={title != null ? titleId : undefined}
+      role={title != null ? 'region' : undefined}
+      className={cn(
+        'flex flex-col gap-4',
+        variant === 'card' && 'rounded-xl border border-border-default bg-bg-card p-4 [box-shadow:0_1px_2px_0_var(--effect-shadow-xs)]',
+        className,
+      )}
+      {...props}
+    >
+      {title != null && (
+        <div data-slot="comments-thread-header" className="flex min-h-6 items-center gap-2">
+          <TitleTag id={titleId} className="m-0 text-base leading-6 font-medium text-text-default">
+            {title}
+          </TitleTag>
+          <Badge size="sm">
+            <span aria-hidden>{new Intl.NumberFormat(labels.dateLocale).format(count)}</span>
+            <span className="sr-only">{labels.commentsCount(count)}</span>
+          </Badge>
+        </div>
+      )}
       {isResolved && (
         <div
           data-slot="comments-thread-resolved"
@@ -1134,23 +1190,26 @@ export function CommentsThread({
               return (
                 <li key={keyOf(root.id)} data-slot="comments-thread-item" className="flex flex-col gap-3">
                   {renderComment(root, true)}
-                  {(replies.length > 0 || pendingReplies.length > 0) && (
-                    <ul role="list" data-slot="comment-replies" className="m-0 flex list-none flex-col gap-3 p-0 ps-9">
-                      {/* One array, so a comment that replaces its pending row keeps the row's element. */}
-                      {[...replies.map((r) => <li key={keyOf(r.id)}>{renderComment(r, false)}</li>), ...pendingReplies.map(renderPending)]}
-                    </ul>
-                  )}
-                  {replyTo === root.id && canCompose && (
-                    <CommentComposer
-                      className="ps-9"
-                      data-key={`reply:${root.id}`}
-                      label={labels.commentsReplyTo(root.author.name)}
-                      placeholder={labels.commentsReplyPlaceholder}
-                      mentions={mentions}
-                      onSubmit={(body, found) => send(root.id, body, found)}
-                      onCancel={() => closeReply(root.id)}
-                      autoFocus
-                    />
+                  {(replies.length > 0 || pendingReplies.length > 0 || (replyTo === root.id && canCompose)) && (
+                    <div data-slot="comment-replies-thread" className="relative flex flex-col gap-3 ps-9">
+                      {(replies.length > 0 || pendingReplies.length > 0) && (
+                        <ul role="list" data-slot="comment-replies" className="m-0 flex list-none flex-col gap-3 p-0">
+                          {/* One array, so a comment that replaces its pending row keeps the row's element. */}
+                          {[...replies.map((r) => <li key={keyOf(r.id)}>{renderComment(r, false)}</li>), ...pendingReplies.map(renderPending)]}
+                        </ul>
+                      )}
+                      {replyTo === root.id && canCompose && (
+                        <CommentComposer
+                          data-key={`reply:${root.id}`}
+                          label={labels.commentsReplyTo(root.author.name)}
+                          placeholder={labels.commentsReplyPlaceholder}
+                          mentions={mentions}
+                          onSubmit={(body, found) => send(root.id, body, found)}
+                          onCancel={() => closeReply(root.id)}
+                          autoFocus
+                        />
+                      )}
+                    </div>
                   )}
                 </li>
               )

@@ -1,6 +1,4 @@
 import * as React from 'react'
-import { Avatar } from '@uisatin/ui/avatar'
-import { Badge } from '@uisatin/ui/badge'
 import { Toaster, toast } from '@uisatin/ui/toast'
 import {
   CommentsThread,
@@ -69,24 +67,6 @@ function useLiveComments(build: (c: Clock) => CommentItem[], me: CommentAuthor, 
     setComments((list) => (list ?? []).filter((c) => c.id !== id && c.parentId !== id))
   }
   return { comments, onReply, onEdit, onDelete, mentions: { search: searchIn(people) } }
-}
-
-/** The record the thread sits on, its comments on a lighter card inside, as on Activity timeline's page. */
-function Record({ title, meta, badge, children }: { title: React.ReactNode; meta: React.ReactNode; badge?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-bg-canvas p-3 [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)] dark:bg-bg-card dark:border-[color-mix(in_oklab,var(--border-subtle)_55%,var(--bg-card))]">
-      <div className="flex items-start gap-3 px-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">{title}</div>
-          <div className="mt-1 text-sm leading-5 text-text-muted">{meta}</div>
-        </div>
-        {badge}
-      </div>
-      <div className="rounded-xl border border-border-subtle bg-bg-card p-5 [box-shadow:0_1px_3px_0_var(--effect-shadow-sm),0_1px_2px_-1px_var(--effect-shadow-sm)] dark:bg-bg-popover dark:border-border-default">
-        {children}
-      </div>
-    </div>
-  )
 }
 
 /* ---------- HR: Tara Mendes's salary, the main demo ---------- */
@@ -175,10 +155,13 @@ const comments: CommentItem[] = [
   // …
 ]
 
-export function CandidateComments({ candidate }: { candidate: Candidate }) {
+export function Comments({ candidate }: { candidate: Candidate }) {
   return (
     <>
       <CommentsThread
+        // A heading with the count next to it, on a card.
+        title="Comments"
+        variant="card"
         comments={comments}
         currentUser={marta}${props}
       />
@@ -211,38 +194,21 @@ function Preview({ v, set }: { v: Record<string, string>; set: (id: string, valu
 
   return (
     <div className="relative w-[520px] max-w-full pb-16">
-      <Record
-        title={
-          <>
-            <Avatar initials="TM" tone="fuchsia" size={20} />
-            <span className="truncate text-base leading-5 font-medium text-text-default">Tara Mendes</span>
-          </>
-        }
-        meta={
-          <>
-            Senior product designer · Expects <span className="font-medium text-text-default tabular-nums">€8–10k</span>
-          </>
-        }
-        badge={
-          <Badge size="sm" tone="green">
-            Offer
-          </Badge>
-        }
-      >
-        {live.comments && (
-          <CommentsThread
-            comments={live.comments}
-            currentUser={MARTA}
-            onReply={live.onReply}
-            onEdit={live.onEdit}
-            onDelete={live.onDelete}
-            mentions={live.mentions}
-            resolvable
-            disabled={v.readonly === 'on'}
-          />
-        )}
-      </Record>
-      {/* Delete's Undo toast comes up inside the stage, under the record. */}
+      {live.comments && (
+        <CommentsThread
+          title="Comments"
+          variant="card"
+          comments={live.comments}
+          currentUser={MARTA}
+          onReply={live.onReply}
+          onEdit={live.onEdit}
+          onDelete={live.onDelete}
+          mentions={live.mentions}
+          resolvable
+          disabled={v.readonly === 'on'}
+        />
+      )}
+      {/* Delete's Undo toast comes up inside the stage, under the thread. */}
       <Toaster className="absolute inset-x-0 bottom-0 mx-auto w-[397px] max-w-full" />
     </div>
   )
@@ -287,9 +253,9 @@ const commerceThread = ({ ago }: Clock): CommentItem[] => [
 ]
 
 const teams = {
-  sales: { me: SOFIA, people: salesPeople, build: salesThread, title: 'Acme Corp', meta: '120 seats · Negotiation', badge: 'Deal' },
-  marketing: { me: LEO, people: marketingPeople, build: marketingThread, title: 'Spring launch email', meta: 'Draft · Sends March 3', badge: 'Campaign' },
-  commerce: { me: IRIS, people: commercePeople, build: commerceThread, title: 'Order #4821', meta: 'Ridge trail shoe · Internal notes', badge: 'Order' },
+  sales: { me: SOFIA, people: salesPeople, build: salesThread, title: 'Comments' },
+  marketing: { me: LEO, people: marketingPeople, build: marketingThread, title: 'Review comments' },
+  commerce: { me: IRIS, people: commercePeople, build: commerceThread, title: 'Internal notes' },
 } as const
 
 export const teamOptions: ShowcaseOption[] = [
@@ -300,6 +266,8 @@ export const teamOptions: ShowcaseOption[] = [
 
 // The discount on the Acme deal, with an @ of the account executive.
 <CommentsThread
+  title="Comments"
+  variant="card"
   comments={deal.comments}
   currentUser={me}
   onReply={(parentId, body, mentions) => crm.comment(deal.id, { parentId, body, mentions })}
@@ -315,6 +283,8 @@ export const teamOptions: ShowcaseOption[] = [
 
 // Review comments on a campaign draft.
 <CommentsThread
+  title="Review comments"
+  variant="card"
   comments={draft.comments}
   currentUser={me}
   onReply={(parentId, body, mentions) => campaigns.comment(draft.id, { parentId, body, mentions })}
@@ -330,6 +300,8 @@ export const teamOptions: ShowcaseOption[] = [
 
 // Notes for the team on an order. The customer never sees them: talking to them is a support inbox.
 <CommentsThread
+  title="Internal notes"
+  variant="card"
   comments={order.notes}
   currentUser={me}
   onReply={(parentId, body, mentions) => orders.note(order.id, { parentId, body, mentions })}
@@ -343,27 +315,19 @@ function TeamThread({ team }: { team: keyof typeof teams }) {
   const live = useLiveComments(t.build, t.me, t.people)
   return (
     <div className="w-[520px] max-w-full">
-      <Record
-        title={<span className="truncate text-base leading-5 font-medium text-text-default">{t.title}</span>}
-        meta={t.meta}
-        badge={
-          <Badge size="sm" tone="neutral">
-            {t.badge}
-          </Badge>
-        }
-      >
-        {live.comments && (
-          // No onDelete here: its Undo toast needs a Toaster, and the main demo above holds the page's one.
-          <CommentsThread
-            comments={live.comments}
-            currentUser={t.me}
-            onReply={live.onReply}
-            onEdit={live.onEdit}
-            mentions={live.mentions}
-            resolvable={team !== 'commerce'}
-          />
-        )}
-      </Record>
+      {live.comments && (
+        // No onDelete here: its Undo toast needs a Toaster, and the main demo above holds the page's one.
+        <CommentsThread
+          title={t.title}
+          variant="card"
+          comments={live.comments}
+          currentUser={t.me}
+          onReply={live.onReply}
+          onEdit={live.onEdit}
+          mentions={live.mentions}
+          resolvable={team !== 'commerce'}
+        />
+      )}
     </div>
   )
 }

@@ -2697,7 +2697,7 @@
   },
   "comments-thread": {
     "Comment": {
-      "description": "One comment: an `<article tabIndex={-1}>` named \"Comment by {name}, {full date}\", so focus can be moved to it. The avatar (initials in a tone picked from the author's id), the name in medium 13px, `RelativeTime`, \"(edited)\" in text/muted, then the body in 14/21 text/default with its line breaks. Other props, `ref` included, go to the `article`.",
+      "description": "One comment: an `<article tabIndex={-1}>` named \"Comment by {name}, {full date}\", so focus can be moved to it. The avatar (initials in a tone picked from the author's id), the name in medium 13px, `RelativeTime`, \"(edited)\" in text/muted, then the body in 14/21 text/default with its line breaks. With `own`, \"(me)\" in text/muted follows the name. Other props, `ref` included, go to the `article`.",
       "type": "CommentProps",
       "extends": [
         "Omit<React.ComponentProps<'article'>, 'children'>"
@@ -2732,6 +2732,13 @@
           "required": false,
           "default": "false",
           "description": "Shows \"(edited)\" after the time."
+        },
+        {
+          "name": "own",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The current user's comment: \"(me)\" follows the name."
         },
         {
           "name": "state",
@@ -2883,7 +2890,7 @@
     "CommentsThread": {
       "type": "CommentsThreadProps",
       "extends": [
-        "Omit<React.ComponentProps<'div'>, 'children'>"
+        "Omit<React.ComponentProps<'div'>, 'children' | 'title'>"
       ],
       "props": [
         {
@@ -2973,6 +2980,26 @@
           "type": "React.ReactNode",
           "required": false,
           "description": "In place of the default empty state (\"No comments yet\")."
+        },
+        {
+          "name": "title",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A heading over the thread, \"Comments\", with the number of comments in a Badge next to it. It names the thread for screen readers."
+        },
+        {
+          "name": "titleAs",
+          "type": "'h2' | 'h3' | 'h4'",
+          "required": false,
+          "default": "'h3'",
+          "description": "The heading's level. Defaults to `h3`."
+        },
+        {
+          "name": "variant",
+          "type": "'plain' | 'card'",
+          "required": false,
+          "default": "'plain'",
+          "description": "`card` puts the thread on a card: bg/card, a border/default edge, radius-xl, 16px in. Defaults to `plain`."
         }
       ]
     }

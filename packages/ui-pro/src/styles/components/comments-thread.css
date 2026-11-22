@@ -32,3 +32,17 @@
 [data-slot='comment-composer'] textarea[data-slot='textarea'] {
   height: 64px;
 }
+/*
+ * Replies hang off a thread line: border/strong at the default (decoration) width, centred under
+ * the root's 24px avatar (12px in from the start), from the first reply down to the reply composer.
+ * border/default at that width all but vanished on the card.
+ */
+[data-slot='comment-replies-thread']::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(12px - var(--border-width-default) / 2);
+  width: var(--border-width-default);
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+}

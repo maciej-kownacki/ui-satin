@@ -204,26 +204,22 @@ describe('CommentsThread', () => {
     const d = deferred()
     const onEdit = vi.fn(() => d.promise)
     const { user } = renderWithSatin(<Live onEdit={onEdit} />)
-    const actions = within(articleOf('Offer is out.')).getByRole('button', { name: 'Actions for comment by Marta Nowak' })
-    await user.click(actions)
-    await user.click(screen.getByRole('menuitem', { name: 'Edit' }))
+    await user.click(within(articleOf('Offer is out.')).getByRole('button', { name: 'Edit' }))
     const editor = field('Edit comment')
     expect(editor.value).toBe('Offer is out.')
     await waitFor(() => expect(document.activeElement).toBe(editor))
 
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('textbox', { name: 'Edit comment' })).toBeNull()
-    // The menu button comes back after the editor; focus lands on it.
-    const actionsOf = () => within(articleOf('Offer is out.')).getByRole('button', { name: 'Actions for comment by Marta Nowak' })
-    await waitFor(() => expect(document.activeElement).toBe(actionsOf()))
+    // Edit comes back after the editor; focus lands on it.
+    const editOf = () => within(articleOf('Offer is out.')).getByRole('button', { name: 'Edit' })
+    await waitFor(() => expect(document.activeElement).toBe(editOf()))
 
-    await user.click(actionsOf())
-    await user.click(screen.getByRole('menuitem', { name: 'Edit' }))
+    await user.click(editOf())
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
     expect(screen.queryByRole('textbox', { name: 'Edit comment' })).toBeNull()
 
-    await user.click(actionsOf())
-    await user.click(screen.getByRole('menuitem', { name: 'Edit' }))
+    await user.click(editOf())
     await user.type(field('Edit comment'), ' Signed.')
     await user.click(screen.getByRole('button', { name: 'Save' }))
     expect(onEdit).toHaveBeenCalledWith('c4', 'Offer is out. Signed.', [])
@@ -238,8 +234,7 @@ describe('CommentsThread', () => {
 
   it('puts the old text back and reopens the editor with an error when the edit fails', async () => {
     const { user } = renderWithSatin(<Live onEdit={() => Promise.reject(new Error('offline'))} />)
-    await user.click(within(articleOf('Offer is out.')).getByRole('button', { name: 'Actions for comment by Marta Nowak' }))
-    await user.click(screen.getByRole('menuitem', { name: 'Edit' }))
+    await user.click(within(articleOf('Offer is out.')).getByRole('button', { name: 'Edit' }))
     await user.clear(field('Edit comment'))
     await user.type(field('Edit comment'), 'Changed')
     await user.keyboard('{Control>}{Enter}{/Control}')
@@ -250,11 +245,31 @@ describe('CommentsThread', () => {
     expect(screen.queryByText('Changed', { selector: 'p' })).toBeNull()
   })
 
+  it('says (me) after your own name only', () => {
+    renderWithSatin(<CommentsThread comments={seed()} currentUser={you} />, { labels: { commentsMe: '(ja)' } })
+    expect(within(articleOf('Offer is out.')).getByText('(ja)')).toBeTruthy()
+    expect(within(articleOf('Tara asked for 9k. Can we go there?')).queryByText('(ja)')).toBeNull()
+  })
+
+  it('names itself with title and counts the comments next to it', () => {
+    const comments = seed()
+    renderWithSatin(<CommentsThread comments={comments} currentUser={you} title="Comments" variant="card" />, {
+      labels: { commentsCount: (n: number) => `${n} komentarzy` },
+    })
+    const region = screen.getByRole('region', { name: 'Comments' })
+    expect(region.getAttribute('data-variant')).toBe('card')
+    expect(screen.getByRole('heading', { level: 3, name: 'Comments' })).toBeTruthy()
+    expect(within(region).getByText(`${comments.length} komentarzy`)).toBeTruthy()
+  })
+
   it('offers Edit and Delete on your own comments only, Delete on anyone’s for a moderator', async () => {
     const { user, rerender } = renderWithSatin(<CommentsThread comments={seed()} currentUser={you} onEdit={() => {}} onDelete={() => {}} />)
     expect(within(articleOf('Tara asked for 9k. Can we go there?')).queryByRole('button', { name: /Actions/ })).toBeNull()
+    expect(within(articleOf('Tara asked for 9k. Can we go there?')).queryByRole('button', { name: 'Edit' })).toBeNull()
+    // Edit sits next to Reply on your own comment; the menu keeps Delete.
+    expect(within(articleOf('Offer is out.')).getByRole('button', { name: 'Edit' })).toBeTruthy()
     await user.click(within(articleOf('Offer is out.')).getByRole('button', { name: 'Actions for comment by Marta Nowak' }))
-    expect(screen.getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['Edit', 'Delete'])
+    expect(screen.getAllByRole('menuitem').map((i) => i.textContent)).toEqual(['Delete'])
     await user.keyboard('{Escape}')
 
     rerender(<CommentsThread comments={seed()} currentUser={you} onEdit={() => {}} onDelete={() => {}} moderator />)
@@ -523,15 +538,13 @@ describe('CommentsThread', () => {
         <Toaster />
       </>,
     )
-    await user.click(within(articleOf('Offer is out.')).getByRole('button', { name: /Actions/ }))
-    await user.click(screen.getByRole('menuitem', { name: 'Edit' }))
+    await user.click(within(articleOf('Offer is out.')).getByRole('button', { name: 'Edit' }))
     await user.clear(field('Edit comment'))
     await user.type(field('Edit comment'), 'Changed')
     await user.keyboard('{Control>}{Enter}{/Control}')
     expect(screen.getByText('Changed')).toBeTruthy()
 
-    await user.click(within(articleOf('Budget tops at 8.5k.')).getByRole('button', { name: /Actions/ }))
-    await user.click(screen.getByRole('menuitem', { name: 'Edit' }))
+    await user.click(within(articleOf('Budget tops at 8.5k.')).getByRole('button', { name: 'Edit' }))
     await user.type(field('Edit comment'), ' Firm.')
     await act(async () => d.reject(new Error('offline')))
     const editor = field('Edit comment')
