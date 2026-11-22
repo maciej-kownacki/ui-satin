@@ -106,3 +106,13 @@ export const wrongVariant = <RichTextSelectionToolbar variant="plain" />
 
 export const url: string | null = normalizeRichTextUrl('example.com')
 export const state: RichTextSelectionState['block'] = 'number'
+
+const asyncPeople = <RichTextEditor aria-label="Notes" mentions={{ trigger: '#', search: async () => people }} />
+export const root = (
+  <RichTextEditorRoot mentions={{ search: () => people }} commands={commands}>
+    <RichTextEditorContent aria-label="Notes" />
+  </RichTextEditorRoot>
+)
+// @ts-expect-error: a command's run gets insert and editor, not Prompt bar's args
+export const promptRun: RichTextCommand = { name: 'x', run: ({ args }: { args: string }) => void args }
+export { asyncPeople }

@@ -6892,6 +6892,18 @@
           "type": "React.Ref<RichTextEditorHandle>",
           "required": false,
           "description": "The editor's handle: focus, insert, insertText, getValue, getSelectionRect."
+        },
+        {
+          "name": "mentions",
+          "type": "RichTextMentions",
+          "required": false,
+          "description": "The `@` menu: `search` answers the text typed after the trigger. A pick goes in as a mention (\"@Tara Mendes\", one unit) followed by a space."
+        },
+        {
+          "name": "commands",
+          "type": "RichTextCommand[]",
+          "required": false,
+          "description": "The `/` menu: a pick takes \"/query\" out of the text and runs the command there."
         }
       ]
     },
@@ -7117,18 +7129,6 @@
           "required": false,
           "default": "true",
           "description": "The bubble over a pointer selection (bold, italic, strikethrough, link). On by default; never read-only."
-        },
-        {
-          "name": "mentions",
-          "type": "{ /** The character that opens the menu. Defaults to `@`. */ trigger?: string search: (query: string) => RichTextMention[] | Promise<RichTextMention[]> }",
-          "required": false,
-          "description": "The `@` menu: where mentions come from. Not wired yet; mentions in a value already load and round-trip."
-        },
-        {
-          "name": "commands",
-          "type": "RichTextCommand[]",
-          "required": false,
-          "description": "The `/` menu. Not wired yet."
         },
         {
           "name": "data-force",

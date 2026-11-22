@@ -3,6 +3,7 @@
 import * as React from 'react'
 import {
   $createParagraphNode,
+  $createRangeSelection,
   $createTextNode,
   $getNodeByKey,
   $getRoot,
@@ -12,14 +13,19 @@ import {
   $isParagraphNode,
   $isRangeSelection,
   $isRootOrShadowRoot,
+  $isLineBreakNode,
   $isTextNode,
   $setSelection,
   CLEAR_HISTORY_COMMAND,
   COMMAND_PRIORITY_EDITOR,
   COMMAND_PRIORITY_HIGH,
   FORMAT_TEXT_COMMAND,
+  KEY_ARROW_DOWN_COMMAND,
+  KEY_ARROW_UP_COMMAND,
   KEY_DOWN_COMMAND,
+  KEY_ENTER_COMMAND,
   KEY_ESCAPE_COMMAND,
+  KEY_TAB_COMMAND,
   TextNode,
   createEditor,
   mergeRegister,
@@ -88,7 +94,15 @@ import { Input } from '@uisatin/ui/input'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
 import { PopoverPanel } from '@uisatin/ui/popover'
-import type { PromptCommand, PromptMention } from '@uisatin/ui/prompt-mentions'
+import {
+  PromptMentionsMenu,
+  usePromptMenuState,
+  type PromptCommand,
+  type PromptMention,
+  type PromptMenuItem,
+  type PromptMenuQuery,
+  type PromptMenuState,
+} from '@uisatin/ui/prompt-mentions'
 import { CharacterCount } from '@uisatin/ui/textarea'
 import {
   Toolbar,
@@ -137,6 +151,15 @@ import {
  *   a pointer selection (`selectionToolbar`). Shortcuts: ⌘B, ⌘I, ⌘⇧X strikethrough, ⌘E code,
  *   ⌘⇧8 and ⌘⇧7 lists, ⌘K link (a popover under the selection), Ctrl for ⌘ off Apple. ⌥F10 in
  *   the text goes to the toolbar (or opens the bubble without one), Escape comes back.
+ * - Mentions and commands: Prompt bar's menu under the trigger character. `@` (or
+ *   `mentions.trigger`) at a block's start or after a space opens `mentions.search`'s answers; a
+ *   pick goes in as a mention, "@Tara Mendes", one unit (Backspace takes it whole), then a space.
+ *   `/` there opens `commands`; a pick takes "/query" out and runs the command, whose `insert`
+ *   puts markdown at the caret. ↑ ↓ move, Enter or Tab pick, Escape closes the menu until the
+ *   next trigger (and only then is taken, so a Dialog around it still closes on the next one).
+ *   The text points at the list with `aria-controls` and `aria-activedescendant`; a status
+ *   region says how many suggestions there are and which mention went in or out. An input
+ *   method's text never opens a menu.
  *
  * Parts, for an editor of your own: `RichTextEditorRoot` (the engine and the value) ›
  * `RichTextEditorContent` (the field and the editable area) › `RichTextToolbar` (inside it),
@@ -215,10 +238,21 @@ export interface RichTextMentionRef {
   trigger: string
 }
 
+/** Where the `@` menu's people and records come from: Prompt bar's `PromptMentions`, with `avatar`. */
+export interface RichTextMentions {
+  /** The character that opens the menu. One character, not `/`. Defaults to `@`. */
+  trigger?: string
+  /** What matches the text typed after the trigger ("" right after it). It can return a promise; a slow answer for an older query is dropped. */
+  search: (query: string) => RichTextMention[] | Promise<RichTextMention[]>
+}
+
 /** A slash command: Prompt bar's `PromptCommand`, run where it was typed. */
 export type RichTextCommand = Omit<PromptCommand, 'run'> & {
-  /** Runs when the command is picked; `insert` puts markdown (or JSON, by `format`) at the caret. */
-  run: (ctx: { insert: (value: RichTextDocument) => void; editor: RichTextEditorHandle }) => void
+  /**
+   * Runs when the command is picked, once "/query" is gone from the text. `insert` puts markdown
+   * at the caret (as `editorRef`'s `insert`, whatever the `format`); `editor` is the handle.
+   */
+  run: (ctx: { insert: (markdown: string) => void; editor: RichTextEditorHandle }) => void
 }
 
 export interface RichTextValueDetails {
@@ -700,6 +734,94 @@ interface LinkEditorState {
   opener: HTMLElement | null
 }
 
+/* ---------- the @ and / menus ---------- */
+
+/** A query as the menu state sees it, and where its trigger is: a text node and the offsets of the trigger and the caret. */
+interface MenuQuery {
+  query: PromptMenuQuery
+  key: NodeKey
+  offset: number
+  end: number
+}
+
+/** A mention's query stops this far back from the caret (Prompt bar's names fit). */
+const MAX_MENTION_QUERY = 50
+const SPACE = /\s/
+
+/** The character before `node` in its block, or null at the block's start (through links and other inline elements). */
+function $charBefore(node: TextNode): string | null {
+  let n: LexicalNode = node
+  for (;;) {
+    const prev = n.getPreviousSibling()
+    if (prev) return $isLineBreakNode(prev) ? '\n' : prev.getTextContent().slice(-1) || null
+    const parent: ElementNode | null = n.getParent()
+    if (!parent || !parent.isInline()) return null
+    n = parent
+  }
+}
+
+/** The nearest block around a node: a paragraph, a heading, a list item, a quote. */
+function $blockOf(node: LexicalNode): ElementNode | null {
+  let n: LexicalNode | null = node.getParent()
+  while (n && $isElementNode(n) && n.isInline()) n = n.getParent()
+  return $isElementNode(n) ? n : null
+}
+
+/**
+ * The trigger the caret is typing after, if any, in the caret's own text node: the mention
+ * trigger or `/` at the block's start or after whitespace, then the text up to the caret. A
+ * mention's query may hold single spaces (the menu closes once nothing matches after one), up to
+ * 50 characters; a command's ends at whitespace. Never in a mention or in inline code.
+ */
+function $findMenuQuery(trigger: string | null, commands: boolean): MenuQuery | null {
+  const selection = $getSelection()
+  if (!$isRangeSelection(selection) || !selection.isCollapsed() || selection.anchor.type !== 'text') return null
+  const node = selection.anchor.getNode()
+  if (!$isTextNode(node) || !node.isSimpleText() || node.hasFormat('code')) return null
+  const text = node.getTextContent()
+  const caret = selection.anchor.offset
+  for (let i = caret - 1; i >= Math.max(0, caret - 1 - MAX_MENTION_QUERY); i--) {
+    const ch = text[i]!
+    if (ch === '\n') return null
+    const kind = ch === trigger ? 'mention' : commands && ch === '/' ? 'command' : null
+    if (!kind) continue
+    const before = i > 0 ? text[i - 1]! : $charBefore(node)
+    if (before !== null && !SPACE.test(before)) return null
+    const query = text.slice(i + 1, caret)
+    if (kind === 'command' ? SPACE.test(query) : /^\s|\s\s/.test(query)) return null
+    // Same block and the same place in it: the same trigger, even when its text node is split or merged.
+    const block = $blockOf(node)
+    let at = i
+    for (const t of block?.getAllTextNodes() ?? []) {
+      if (t.is(node)) break
+      at += t.getTextContentSize()
+    }
+    const start = (Number(block?.getKey()) || 0) * 1e6 + at
+    return { query: { kind, trigger: ch, text: query, start }, key: node.getKey(), offset: i, end: caret }
+  }
+  return null
+}
+
+const sameQuery = (a: PromptMenuQuery, b: PromptMenuQuery) => a.kind === b.kind && a.start === b.start && a.text === b.text
+
+/** The trigger character's rectangle on screen, or its line's first rect; null when it isn't drawn (or has no layout). */
+function triggerRect(editor: LexicalEditor, key: NodeKey, offset: number): DOMRect | null {
+  const element = editor.getElementByKey(key)
+  if (!element) return null
+  const text = document.createTreeWalker(element, NodeFilter.SHOW_TEXT).nextNode() as Text | null
+  if (!text || text.length < offset + 1) return null
+  const range = document.createRange()
+  range.setStart(text, offset)
+  range.setEnd(text, offset + 1)
+  const rect = range.getBoundingClientRect?.()
+  if (rect && (rect.width || rect.height)) return rect
+  return range.getClientRects?.()[0] ?? null
+}
+
+/** RichTextMention's `avatar` as the menu's `icon`. */
+const asPromptMentions = (list: RichTextMention[]): PromptMention[] =>
+  list.map(({ avatar, ...mention }) => (avatar === undefined ? mention : { ...mention, icon: avatar }))
+
 /* ---------- context ---------- */
 
 interface RichTextEditorContextValue {
@@ -736,6 +858,8 @@ interface RichTextEditorContextValue {
   registerSelectionToolbar: (controller: SelectionToolbarController) => () => void
   /** Opens the link popover over the selection (or `opener` when the selection has no rect); a second call closes it. */
   openLinkEditor: (opener?: HTMLElement | null) => void
+  /** The @ or / menu: whether there is one (`aria-autocomplete`), its list's id and the highlighted row's while it lists rows. */
+  menu: { on: boolean; listId?: string; activeId?: string }
 }
 
 const RichTextEditorContext = React.createContext<RichTextEditorContextValue | null>(null)
@@ -776,6 +900,13 @@ export interface RichTextEditorRootProps extends Omit<React.ComponentProps<'div'
   name?: string
   /** The editor's handle: focus, insert, insertText, getValue, getSelectionRect. */
   editorRef?: React.Ref<RichTextEditorHandle>
+  /**
+   * The `@` menu: `search` answers the text typed after the trigger. A pick goes in as a mention
+   * ("@Tara Mendes", one unit) followed by a space.
+   */
+  mentions?: RichTextMentions
+  /** The `/` menu: a pick takes "/query" out of the text and runs the command there. */
+  commands?: RichTextCommand[]
 }
 
 /**
@@ -797,6 +928,8 @@ export function RichTextEditorRoot({
   required,
   name,
   editorRef,
+  mentions,
+  commands,
   className,
   children,
   ...props
@@ -941,6 +1074,141 @@ export function RichTextEditorRoot({
     closeLinkEditor({ restore: false, focus: true })
   }, [editor, closeLinkEditor])
 
+  const handle = React.useMemo((): RichTextEditorHandle => {
+    const $selectionOrEnd = () => {
+      const selection = $getSelection()
+      if ($isRangeSelection(selection)) return selection
+      $getRoot().selectEnd()
+      return $getSelection()
+    }
+    return {
+      focus: () => {
+        // Focus now (Lexical's focus restores the selection in an update, a moment later).
+        editor.getRootElement()?.focus({ preventScroll: true })
+        editor.focus()
+      },
+      insert: (markdown) =>
+        editor.update(
+          () => {
+            const selection = $selectionOrEnd()
+            if (!$isRangeSelection(selection)) return
+            $insertNodes($generateNodesFromMarkdownString(markdown, RICH_TEXT_TRANSFORMERS))
+          },
+          { discrete: true },
+        ),
+      insertText: (text) =>
+        editor.update(
+          () => {
+            const selection = $selectionOrEnd()
+            if ($isRangeSelection(selection)) selection.insertText(text)
+          },
+          { discrete: true },
+        ),
+      getValue: () => serialize(editor.getEditorState(), formatRef.current),
+      getSelectionRect: () => selectionRect(editor.getRootElement()),
+    }
+  }, [editor])
+
+  // The @ and / menus: Prompt bar's menu state and menu, on a query found in the editor's text.
+  const labels = useLabels()
+  const trigger = mentions ? (mentions.trigger ?? '@') : null
+  const commandsOn = !!commands?.length
+  const menuOn = trigger !== null || commandsOn
+  const [menuQuery, setMenuQuery] = React.useState<{ query: PromptMenuQuery; anchor: FloatingVirtualElement } | null>(null)
+  const found = React.useRef<MenuQuery | null>(null)
+  const promptCommands = React.useMemo(() => commands?.map(({ run: _run, ...command }) => command), [commands])
+  const menu = usePromptMenuState({
+    query: menuQuery?.query ?? null,
+    mentions: mentions && {
+      trigger: trigger ?? '@',
+      search: (query) => {
+        const answer = mentions.search(query)
+        return Array.isArray(answer) ? asPromptMentions(answer) : answer.then(asPromptMentions)
+      },
+    },
+    commands: promptCommands,
+    disabled: isDisabled || readOnly,
+  })
+  const menuRef = React.useRef<PromptMenuState>(menu)
+  menuRef.current = menu
+  const menuConfig = React.useRef({ trigger, commandsOn, commands, labels })
+  menuConfig.current = { trigger, commandsOn, commands, labels }
+
+  /** Sets the query; a new one (another trigger or other text) gets a new anchor, on its trigger character. */
+  const setQuery = React.useCallback(
+    (next: MenuQuery | null) => {
+      const prev = found.current
+      found.current = next
+      if (prev === next || (prev && next && sameQuery(prev.query, next.query))) return
+      if (!next) {
+        setMenuQuery(null)
+        return
+      }
+      const root = editor.getRootElement()
+      const captured = next
+      const anchor: FloatingVirtualElement = {
+        getBoundingClientRect: () => {
+          const at = found.current ?? captured
+          return triggerRect(editor, at.key, at.offset) ?? root?.getBoundingClientRect() ?? new DOMRect()
+        },
+        contextElement: root ?? undefined,
+      }
+      setMenuQuery({ query: next.query, anchor })
+    },
+    [editor],
+  )
+
+  /** Puts the picked row in: a mention for the trigger and the query, or runs a command where "/query" was. */
+  const pickItem = React.useCallback(
+    (item: PromptMenuItem) => {
+      const at = found.current
+      if (!at) return
+      setQuery(null)
+      const { query } = at
+      let done = false
+      // After the edit commits (from a key, this update runs inside Lexical's own, after it).
+      const then = () => {
+        if (!done) return
+        const { labels, commands } = menuConfig.current
+        if (item.kind === 'mention') menuRef.current.announce(labels.tokenAdded(query.trigger + item.mention.label))
+        else commands?.find((c) => c.name === item.command.name)?.run({ insert: handle.insert, editor: handle })
+      }
+      editor.update(
+        () => {
+          const node = $getNodeByKey(at.key)
+          if (!$isTextNode(node) || node.getTextContent().slice(at.offset, at.end) !== query.trigger + query.text) return
+          if (item.kind === 'command') {
+            const range = $createRangeSelection()
+            range.anchor.set(at.key, at.offset, 'text')
+            range.focus.set(at.key, at.end, 'text')
+            $setSelection(range)
+            range.removeText()
+            done = true
+            return
+          }
+          const parts = node.splitText(at.offset, at.end)
+          const typed = parts[at.offset === 0 ? 0 : 1]!
+          const mention = $createMentionNode({ id: item.mention.id, label: item.mention.label, trigger: query.trigger })
+          mention.setFormat(typed.getFormat())
+          typed.replace(mention)
+          // A space after it, unless one is there already; the caret goes after the space.
+          const next = mention.getNextSibling()
+          if ($isTextNode(next) && !$isMentionNode(next) && SPACE.test(next.getTextContent()[0] ?? '')) next.select(1, 1)
+          else {
+            const space = $createTextNode(' ').setFormat(typed.getFormat())
+            mention.insertAfter(space)
+            space.select(1, 1)
+          }
+          done = true
+        },
+        { discrete: true, onUpdate: then },
+      )
+    },
+    [editor, handle, setQuery],
+  )
+  const pickRef = React.useRef(pickItem)
+  pickRef.current = pickItem
+
   const onValueChangeRef = React.useRef(onValueChange)
   React.useEffect(() => {
     onValueChangeRef.current = onValueChange
@@ -1010,6 +1278,44 @@ export function RichTextEditorRoot({
       }
       return false
     }
+    // The menus. An input method's text never opens one; it only carries on a query that was open
+    // when composing started. Until the next key after it, the composed text is left alone.
+    let resume = false
+    let afterComposition = false
+    const findQuery = () => {
+      const { trigger, commandsOn } = menuConfig.current
+      if ((!trigger && !commandsOn) || !editor.isEditable() || editor.isComposing() || afterComposition) return setQuery(null)
+      // Leaving the text closes the menu without forgetting an Escape (onBlur below).
+      if (document.activeElement !== contentElement) return setQuery(null)
+      const next = editor.getEditorState().read(() => $findMenuQuery(trigger, commandsOn))
+      menuRef.current.release(next?.query ?? null)
+      setQuery(next)
+    }
+    const onCompositionStart = () => {
+      resume = menuRef.current.open
+      setQuery(null)
+    }
+    const onCompositionEnd = () => {
+      afterComposition = !resume
+      resume = false
+    }
+    const onKeyDownNative = (event: KeyboardEvent) => {
+      if (!event.isComposing && event.keyCode !== 229) afterComposition = false
+    }
+    const onBlurNative = () => setQuery(null)
+    contentElement.addEventListener('compositionstart', onCompositionStart)
+    contentElement.addEventListener('compositionend', onCompositionEnd)
+    contentElement.addEventListener('keydown', onKeyDownNative, true)
+    contentElement.addEventListener('blur', onBlurNative)
+    /** A key the open menu takes: never while composing; `run` returns whether it did. */
+    const menuKey = (run: (menu: PromptMenuState, event: KeyboardEvent | null) => boolean) => (event: KeyboardEvent | null) => {
+      if (editor.isComposing() || !menuRef.current.open) return false
+      if (!run(menuRef.current, event)) return false
+      event?.preventDefault()
+      return true
+    }
+    const plain = (event: KeyboardEvent | null) => !event || (!event.shiftKey && !event.altKey && !event.metaKey && !event.ctrlKey)
+
     const unregister = mergeRegister(
       registerRichText(editor),
       registerList(editor),
@@ -1031,6 +1337,50 @@ export function RichTextEditorRoot({
       editor.registerNodeTransform(TextNode, strip),
       editor.registerNodeTransform(MentionNode, strip),
       editor.registerCommand(KEY_DOWN_COMMAND, (event) => onShortcut(event), COMMAND_PRIORITY_HIGH),
+      editor.registerUpdateListener(findQuery),
+      editor.registerCommand(
+        KEY_ARROW_DOWN_COMMAND,
+        menuKey((menu) => !!menu.items?.length && (menu.move(1), true)),
+        COMMAND_PRIORITY_HIGH,
+      ),
+      editor.registerCommand(
+        KEY_ARROW_UP_COMMAND,
+        menuKey((menu) => !!menu.items?.length && (menu.move(-1), true)),
+        COMMAND_PRIORITY_HIGH,
+      ),
+      editor.registerCommand(
+        KEY_ENTER_COMMAND,
+        menuKey((menu, event) => !!menu.current && plain(event) && (pickRef.current(menu.current), true)),
+        COMMAND_PRIORITY_HIGH,
+      ),
+      // Tab only while there are rows: with "No results" it leaves the editor as usual.
+      editor.registerCommand(
+        KEY_TAB_COMMAND,
+        menuKey((menu, event) => menu.listed && !!menu.current && plain(event) && (pickRef.current(menu.current), true)),
+        COMMAND_PRIORITY_HIGH,
+      ),
+      // Taken only while the menu is open, so a Dialog around the editor still closes on the next one.
+      editor.registerCommand(
+        KEY_ESCAPE_COMMAND,
+        menuKey((menu) => (menu.dismiss(), true)),
+        COMMAND_PRIORITY_HIGH,
+      ),
+      // A mention that goes (Backspace takes it whole, a cut, an undo) is said in the status region.
+      editor.registerMutationListener(
+        MentionNode,
+        (mutations, { updateTags, prevEditorState }) => {
+          if (updateTags.has(EXTERNAL_TAG) || !menuConfig.current.trigger) return
+          const gone: string[] = []
+          prevEditorState.read(() => {
+            for (const [key, mutation] of mutations) {
+              const node = mutation === 'destroyed' ? $getNodeByKey(key) : null
+              if ($isMentionNode(node)) gone.push(node.getTextContent())
+            }
+          })
+          if (gone.length) menuRef.current.announce(gone.map(menuConfig.current.labels.tokenRemoved).join(', '))
+        },
+        { skipInitialization: true },
+      ),
       editor.registerUpdateListener(({ editorState }) => {
         const next = editorState.read($readSelectionState)
         if (!sameState(next, selectionRef.current)) {
@@ -1059,9 +1409,14 @@ export function RichTextEditorRoot({
     )
     return () => {
       unregister()
+      contentElement.removeEventListener('compositionstart', onCompositionStart)
+      contentElement.removeEventListener('compositionend', onCompositionEnd)
+      contentElement.removeEventListener('keydown', onKeyDownNative, true)
+      contentElement.removeEventListener('blur', onBlurNative)
+      setQuery(null)
       editor.setRootElement(null)
     }
-  }, [editor, contentElement])
+  }, [editor, contentElement, setQuery])
 
   // A `value` the editor sent itself is an echo: drop it and the older ones from the queue. Any
   // other value replaces the document (never compared with a re-serialisation, which may spell it
@@ -1082,44 +1437,7 @@ export function RichTextEditorRoot({
     editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined)
   }, [editor, value])
 
-  React.useImperativeHandle(
-    editorRef,
-    (): RichTextEditorHandle => {
-      const $selectionOrEnd = () => {
-        const selection = $getSelection()
-        if ($isRangeSelection(selection)) return selection
-        $getRoot().selectEnd()
-        return $getSelection()
-      }
-      return {
-        focus: () => {
-          // Focus now (Lexical's focus restores the selection in an update, a moment later).
-          editor.getRootElement()?.focus({ preventScroll: true })
-          editor.focus()
-        },
-        insert: (markdown) =>
-          editor.update(
-            () => {
-              const selection = $selectionOrEnd()
-              if (!$isRangeSelection(selection)) return
-              $insertNodes($generateNodesFromMarkdownString(markdown, RICH_TEXT_TRANSFORMERS))
-            },
-            { discrete: true },
-          ),
-        insertText: (text) =>
-          editor.update(
-            () => {
-              const selection = $selectionOrEnd()
-              if ($isRangeSelection(selection)) selection.insertText(text)
-            },
-            { discrete: true },
-          ),
-        getValue: () => serialize(editor.getEditorState(), formatRef.current),
-        getSelectionRect: () => selectionRect(editor.getRootElement()),
-      }
-    },
-    [editor],
-  )
+  React.useImperativeHandle(editorRef, () => handle, [handle])
 
   const context: RichTextEditorContextValue = {
     editor,
@@ -1143,7 +1461,14 @@ export function RichTextEditorRoot({
     registerToolbar,
     registerSelectionToolbar,
     openLinkEditor,
+    menu: { on: menuOn && !isDisabled && !readOnly, listId: menu.listed ? menu.listId : undefined, activeId: menu.activeId },
   }
+
+  // Without an anchor of its own Radix draws an empty anchor element; this one is never measured while shut.
+  const contentAnchor = React.useMemo<FloatingVirtualElement>(
+    () => ({ getBoundingClientRect: () => contentElement?.getBoundingClientRect() ?? new DOMRect(), contextElement: contentElement ?? undefined }),
+    [contentElement],
+  )
 
   return (
     <RichTextEditorContext.Provider value={context}>
@@ -1162,6 +1487,16 @@ export function RichTextEditorRoot({
             onApply={applyLink}
             onRemove={removeLink}
             onDismiss={(focus) => closeLinkEditor({ restore: focus, focus })}
+          />
+        )}
+        {menuOn && (
+          <PromptMentionsMenu
+            {...menu.menuProps}
+            virtualAnchor={menuQuery?.anchor ?? contentAnchor}
+            side="bottom"
+            align="start"
+            matchAnchorWidth={false}
+            onPick={pickItem}
           />
         )}
       </div>
@@ -1242,6 +1577,9 @@ export function RichTextEditorContent({
           aria-disabled={ctx.disabled || undefined}
           aria-placeholder={ctx.empty && ctx.placeholder ? ctx.placeholder : undefined}
           aria-keyshortcuts={editable && ctx.hasToolbar ? 'Alt+F10' : undefined}
+          aria-autocomplete={ctx.menu.on ? 'list' : undefined}
+          aria-controls={ctx.menu.listId}
+          aria-activedescendant={ctx.menu.activeId}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
@@ -1842,16 +2180,6 @@ export interface RichTextEditorProps extends Omit<RichTextEditorRootProps, 'chil
   toolbar?: boolean | 'minimal'
   /** The bubble over a pointer selection (bold, italic, strikethrough, link). On by default; never read-only. */
   selectionToolbar?: boolean
-  /** The `@` menu: where mentions come from. Not wired yet; mentions in a value already load and round-trip. */
-  // TODO(P2c): the mention menu, on Free's PromptMentionsMenu and usePromptMenuState.
-  mentions?: {
-    /** The character that opens the menu. Defaults to `@`. */
-    trigger?: string
-    search: (query: string) => RichTextMention[] | Promise<RichTextMention[]>
-  }
-  /** The `/` menu. Not wired yet. */
-  // TODO(P2c): the command menu.
-  commands?: RichTextCommand[]
   /** Show a state without interacting, for state sheets. */
   'data-force'?: 'hover' | 'focus'
 }
@@ -1875,11 +2203,8 @@ export function RichTextEditor({
   'aria-describedby': ariaDescribedBy,
   fieldClassName,
   className,
-  // TODO(P2c): the mention menu and the command menu.
   toolbar = true,
   selectionToolbar = true,
-  mentions: _mentions,
-  commands: _commands,
   'data-force': force,
   ...props
 }: RichTextEditorProps) {

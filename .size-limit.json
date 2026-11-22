@@ -376,6 +376,6 @@
       "@lexical/markdown",
       "@lexical/history"
     ],
-    "limit": "12.5 kB"
+    "limit": "14.5 kB"
   }
 ]

@@ -1,11 +1,12 @@
 import * as React from 'react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
-import { $getRoot, $isElementNode, $isTextNode, createEditor, type LexicalEditor, type LexicalNode } from 'lexical'
+import { $getRoot, $getSelection, $isElementNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_LOW, KEY_ESCAPE_COMMAND, createEditor, type LexicalEditor, type LexicalNode } from 'lexical'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { ListItemNode, ListNode } from '@lexical/list'
 import { LinkNode } from '@lexical/link'
 import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown'
+import { Dialog } from '@uisatin/ui/dialog'
 import { FormField } from '@uisatin/ui/form-field'
 import { ToolbarButton } from '@uisatin/ui/toolbar'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
@@ -20,7 +21,9 @@ import {
   RichTextToolbar,
   normalizeRichTextUrl,
   richTextMentions,
+  type RichTextCommand,
   type RichTextEditorHandle,
+  type RichTextMention,
 } from '../components/rich-text-editor'
 
 /*
@@ -669,6 +672,290 @@ describe('RichTextEditor toolbars', () => {
     select(0, 5)
     await user.keyboard('{Control>}k{/Control}')
     await screen.findByRole('dialog', { name: 'Add link' })
+    await expectNoAxeViolations()
+  })
+})
+
+/* ---------- @ mentions and / commands ---------- */
+
+const PEOPLE: RichTextMention[] = [
+  { id: 'tara', label: 'Tara Mendes', description: 'Recruiter' },
+  { id: 'marta', label: 'Marta Nowak', description: 'Hiring manager' },
+  { id: 'tom', label: 'Tom Okafor', description: 'Engineering manager' },
+]
+const searchPeople = (query: string) => PEOPLE.filter((p) => p.label.toLowerCase().includes(query.toLowerCase()))
+const SCORECARD = '- Communication\n- Craft\n- Culture\n- Hire'
+const scorecard = (): RichTextCommand & { run: ReturnType<typeof vi.fn> } => ({
+  name: 'scorecard',
+  description: 'Add the interview scorecard',
+  run: vi.fn(({ insert }: { insert: (markdown: string) => void }) => insert(SCORECARD)),
+})
+
+const options = () => screen.getAllByRole('option').map((o) => o.id)
+const statusText = () => screen.getAllByRole('status').map((s) => s.textContent).join(' | ')
+
+/** Focuses the editor and puts `text` in at the caret, as typing would. */
+function type(handle: () => RichTextEditorHandle, text: string) {
+  act(() => handle().focus())
+  act(() => handle().insertText(text))
+}
+
+describe('RichTextEditor mentions and commands', () => {
+  beforeAll(() => {
+    Range.prototype.getBoundingClientRect ??= () => new DOMRect(10, 10, 40, 16)
+    Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList
+  })
+
+  it('opens the @ menu on an async search and drops a stale answer', async () => {
+    const answers: Record<string, (list: RichTextMention[]) => void> = {}
+    const search = vi.fn((query: string) => new Promise<RichTextMention[]>((resolve) => (answers[query] = resolve)))
+    const { handle } = renderEditor(<RichTextEditor aria-label="Feedback" mentions={{ search }} />)
+    expect(textbox().getAttribute('aria-autocomplete')).toBe('list')
+    type(handle, '@')
+    expect(search).toHaveBeenCalledWith('')
+    // Shut until the first answer.
+    expect(screen.queryByRole('listbox')).toBeNull()
+    await act(async () => answers['']!(PEOPLE))
+    const list = screen.getByRole('listbox', { name: 'Mentions' })
+    expect(within(list).getAllByRole('option')).toHaveLength(3)
+    expect(textbox().getAttribute('aria-controls')).toBe(list.id)
+    expect(textbox().getAttribute('aria-activedescendant')).toBe(`${list.id}-0`)
+    expect(textbox().getAttribute('role')).toBe('textbox')
+    expect(textbox().hasAttribute('aria-expanded')).toBe(false)
+
+    act(() => handle().insertText('t'))
+    act(() => handle().insertText('a'))
+    await act(async () => answers['ta']!([PEOPLE[0]!]))
+    // The answer for "t" comes last: it's dropped.
+    await act(async () => answers['t']!(PEOPLE))
+    expect(within(screen.getByRole('listbox')).getAllByRole('option').map((o) => o.textContent)).toEqual(['TMTara MendesRecruiter'])
+  })
+
+  it('moves the highlight with the arrows and inserts a mention with Enter', async () => {
+    const onValueChange = vi.fn()
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Feedback" mentions={{ search: searchPeople }} onValueChange={onValueChange} />)
+    type(handle, 'Ask @')
+    const list = screen.getByRole('listbox')
+    expect(statusText()).toContain('3 suggestions')
+    await user.keyboard('{ArrowDown}')
+    expect(textbox().getAttribute('aria-activedescendant')).toBe(`${list.id}-1`)
+    await user.keyboard('{ArrowUp}{ArrowUp}')
+    expect(textbox().getAttribute('aria-activedescendant')).toBe(`${list.id}-2`)
+    await user.keyboard('{ArrowDown}')
+    expect(options()[0]).toBe(textbox().getAttribute('aria-activedescendant'))
+    await user.keyboard('{Enter}')
+
+    expect(screen.queryByRole('listbox')).toBeNull()
+    expect(textbox().hasAttribute('aria-controls')).toBe(false)
+    expect(textbox().hasAttribute('aria-activedescendant')).toBe(false)
+    const mention = textbox().querySelector('[data-slot="mention"]')
+    expect(mention?.textContent).toBe('@Tara Mendes')
+    expect(mention?.getAttribute('data-mention-id')).toBe('tara')
+    // One paragraph: Enter didn't add another.
+    expect(textbox().querySelectorAll('p')).toHaveLength(1)
+    expect(handle().getValue()).toBe('Ask [@Tara Mendes](mention:tara) ')
+    expect(onValueChange.mock.calls.at(-1)).toEqual(['Ask [@Tara Mendes](mention:tara) ', { mentions: [{ id: 'tara', label: 'Tara Mendes', trigger: '@' }] }])
+    expect(statusText()).toContain('@Tara Mendes added')
+    // Typing goes on after the space.
+    act(() => handle().insertText('today'))
+    expect(handle().getValue()).toBe('Ask [@Tara Mendes](mention:tara) today')
+  })
+
+  it('picks with Tab, keeps spaces in a mention query and uses avatar as the icon', async () => {
+    const { user, handle } = renderEditor(
+      <RichTextEditor
+        aria-label="Feedback"
+        mentions={{ search: (q) => searchPeople(q).map((p) => ({ ...p, avatar: <span data-testid={`avatar-${p.id}`} /> })) }}
+      />,
+    )
+    type(handle, '@Marta N')
+    expect(screen.getByTestId('avatar-marta')).toBeTruthy()
+    await user.keyboard('{Tab}')
+    expect(handle().getValue()).toBe('[@Marta Nowak](mention:marta) ')
+    expect(document.activeElement).toBe(textbox())
+  })
+
+  it('picks a row with the pointer', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Feedback" mentions={{ search: searchPeople }} />)
+    type(handle, 'cc @to')
+    await user.click(screen.getByRole('option', { name: /Tom Okafor/ }))
+    expect(handle().getValue()).toBe('cc [@Tom Okafor](mention:tom) ')
+  })
+
+  it('closes on Escape, which a Dialog around it gets the next time', async () => {
+    const onOpenChange = vi.fn()
+    const ref = React.createRef<RichTextEditorHandle>()
+    const handle = () => ref.current!
+    const { user } = renderWithSatin(
+      <Dialog defaultOpen onOpenChange={onOpenChange} title="Feedback">
+        <RichTextEditor aria-label="Feedback" mentions={{ search: searchPeople }} editorRef={ref} />
+      </Dialog>,
+    )
+    type(handle, '@')
+    expect(screen.getByRole('listbox')).toBeTruthy()
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('listbox')).toBeNull()
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(onOpenChange).not.toHaveBeenCalled()
+    // It stays shut while the query goes on, until the next trigger.
+    act(() => handle().insertText('t'))
+    expect(screen.queryByRole('listbox')).toBeNull()
+    await user.keyboard('{Escape}')
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it('takes Escape only while the menu is open', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Feedback" mentions={{ search: searchPeople }} />)
+    type(handle, '@')
+    const reached = vi.fn(() => false)
+    act(() => void lexical().registerCommand(KEY_ESCAPE_COMMAND, reached, COMMAND_PRIORITY_LOW))
+    await user.keyboard('{Escape}')
+    expect(document.activeElement).toBe(textbox())
+    expect(screen.queryByRole('listbox')).toBeNull()
+    expect(reached).not.toHaveBeenCalled()
+    await user.keyboard('{Escape}')
+    expect(reached).toHaveBeenCalledTimes(1)
+    // Not taken, it does what Escape does in the text (it leaves). Back in, a new trigger opens the menu again.
+    type(handle, ' @')
+    expect(screen.getByRole('listbox')).toBeTruthy()
+  })
+
+  it('says “No results” and leaves Enter and Tab alone then', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Feedback" mentions={{ search: searchPeople }} />)
+    type(handle, '@zz')
+    expect(screen.queryByRole('listbox')).toBeNull()
+    expect(screen.getByRole('dialog', { name: 'Mentions' }).textContent).toContain('No results for “@zz”')
+    expect(statusText()).toContain('No results for “@zz”')
+    expect(textbox().hasAttribute('aria-controls')).toBe(false)
+    await user.keyboard('{Enter}')
+    expect(textbox().querySelectorAll('p')).toHaveLength(2)
+    // A space after no match closes it.
+    type(handle, '@zz ')
+    expect(screen.queryByRole('dialog', { name: 'Mentions' })).toBeNull()
+  })
+
+  it('opens / commands; a pick removes the query and runs the command, whose insert adds markdown', async () => {
+    const command = scorecard()
+    const other: RichTextCommand = { name: 'summary', description: 'Add a summary heading', run: vi.fn() }
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Feedback" defaultValue="Great call." commands={[command, other]} />)
+    act(() => handle().focus())
+    act(() => lexical().update(() => $getRoot().selectEnd(), { discrete: true }))
+    await user.keyboard('{Enter}')
+    act(() => handle().insertText('/sc'))
+    const list = screen.getByRole('listbox', { name: 'Commands' })
+    expect(within(list).getAllByRole('option').map((o) => o.textContent)).toEqual(['/scorecardAdd the interview scorecard'])
+    await user.keyboard('{Enter}')
+    expect(command.run).toHaveBeenCalledTimes(1)
+    expect(command.run.mock.calls[0]![0].editor.getValue).toBeTypeOf('function')
+    expect(other.run).not.toHaveBeenCalled()
+    const value = handle().getValue()
+    expect(value).not.toContain('/sc')
+    expect(value).toContain(SCORECARD)
+    expect([...textbox().querySelectorAll('ul > li')].map((li) => li.textContent)).toEqual(['Communication', 'Craft', 'Culture', 'Hire'])
+  })
+
+  it('opens neither menu mid-word, in a URL or after the query ends', () => {
+    const { handle } = renderEditor(<RichTextEditor aria-label="Feedback" mentions={{ search: searchPeople }} commands={[scorecard()]} />)
+    type(handle, 'and/or')
+    expect(screen.queryByRole('listbox')).toBeNull()
+    act(() => handle().insertText(' mail tara@example.com https://x.io/sc'))
+    expect(screen.queryByRole('listbox')).toBeNull()
+    act(() => handle().insertText(' /scorecard now'))
+    expect(screen.queryByRole('listbox')).toBeNull()
+    act(() => handle().insertText(' /'))
+    expect(screen.getByRole('listbox', { name: 'Commands' })).toBeTruthy()
+  })
+
+  it('opens no menu while an input method is composing', () => {
+    const { handle } = renderEditor(<RichTextEditor aria-label="Feedback" mentions={{ search: searchPeople }} commands={[scorecard()]} />)
+    type(handle, 'Hi ')
+    act(() => {
+      textbox().dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true, data: '' }))
+    })
+    expect(lexical().isComposing()).toBe(true)
+    act(() =>
+      lexical().update(
+        () => {
+          const selection = $getSelection()
+          if ($isRangeSelection(selection)) selection.insertText('@')
+        },
+        { discrete: true },
+      ),
+    )
+    expect(screen.queryByRole('listbox')).toBeNull()
+    expect(screen.queryByRole('dialog', { name: 'Mentions' })).toBeNull()
+  })
+
+  it('removes a mention whole when an edit cuts into it, and says so', () => {
+    const { handle } = renderEditor(
+      <RichTextEditor aria-label="Feedback" defaultValue="Ask [@Tara Mendes](mention:tara) now" mentions={{ search: searchPeople }} />,
+    )
+    act(() => handle().focus())
+    // Backspace at its end is Lexical's token deletion, which steps with Selection.modify (not in
+    // jsdom; checked in a browser). An edit that takes part of it takes all of it.
+    act(() =>
+      lexical().update(
+        () => {
+          const mention = $getRoot().getAllTextNodes().find((n) => n instanceof MentionNode)!
+          expect(mention.isToken()).toBe(true)
+          mention.select(5, 12)
+          const selection = $getSelection()
+          if ($isRangeSelection(selection)) selection.removeText()
+        },
+        { discrete: true },
+      ),
+    )
+    expect(handle().getValue()).toBe('Ask  now')
+    expect(textbox().querySelector('[data-slot="mention"]')).toBeNull()
+    expect(statusText()).toContain('@Tara Mendes removed')
+  })
+
+  it('pastes markdown mention text as plain text and a mention span as a mention', async () => {
+    globalThis.DragEvent ??= class DragEvent extends Event {} as typeof globalThis.DragEvent
+    globalThis.ClipboardEvent ??= class ClipboardEvent extends Event {} as typeof globalThis.ClipboardEvent
+    const paste = async (data: Record<string, string>) =>
+      act(async () => {
+        const event = new Event('paste', { bubbles: true, cancelable: true })
+        Object.defineProperty(event, 'clipboardData', { value: { types: Object.keys(data), getData: (t: string) => data[t] ?? '' } })
+        textbox().dispatchEvent(event)
+      })
+    const { handle } = renderEditor(<RichTextEditor aria-label="Feedback" format="json" />)
+    act(() => handle().focus())
+    await paste({ 'text/plain': 'See [@Tara Mendes](mention:tara)' })
+    expect(textbox().querySelector('[data-mention-id]')).toBeNull()
+    expect(textbox().textContent).toBe('See [@Tara Mendes](mention:tara)')
+    await paste({ 'text/html': '<p>and <span data-slot="mention" data-mention-id="marta">@Marta Nowak</span></p>', 'text/plain': 'and @Marta Nowak' })
+    const mention = textbox().querySelector('[data-mention-id="marta"]')
+    expect(mention?.textContent).toBe('@Marta Nowak')
+    const types: string[] = []
+    const walk = (node: { type: string; children?: unknown[] }) => {
+      types.push(node.type)
+      ;(node.children as (typeof node)[] | undefined)?.forEach(walk)
+    }
+    walk(JSON.parse(handle().getValue()).root)
+    expect(types.filter((t) => t === 'mention')).toHaveLength(1)
+  })
+
+  it('says its menu words through SatinLabels', () => {
+    const { handle } = renderEditor(<RichTextEditor aria-label="Opinia" mentions={{ search: searchPeople }} />, {
+      labels: { mentions: 'Wzmianki', suggestionsCount: (n: number) => `Propozycje: ${n}`, noResultsFor: (q: string) => `Brak wyników dla ${q}` },
+    })
+    type(handle, '@')
+    expect(screen.getByRole('listbox', { name: 'Wzmianki' })).toBeTruthy()
+    expect(statusText()).toContain('Propozycje: 3')
+    act(() => handle().insertText('qq'))
+    expect(screen.getByRole('dialog', { name: 'Wzmianki' }).textContent).toContain('Brak wyników dla @qq')
+  })
+
+  it('has no menus when disabled or read-only', () => {
+    renderWithSatin(<RichTextEditor aria-label="Feedback" readOnly mentions={{ search: searchPeople }} />)
+    expect(textbox().hasAttribute('aria-autocomplete')).toBe(false)
+  })
+
+  it.each(['light', 'dark'] as const)('has no axe violations with the @ menu open in %s', async (theme) => {
+    const { handle } = renderEditor(<RichTextEditor label="Feedback" mentions={{ search: searchPeople }} />, { theme })
+    type(handle, '@')
+    expect(screen.getByRole('listbox')).toBeTruthy()
     await expectNoAxeViolations()
   })
 })

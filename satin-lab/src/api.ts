@@ -1511,7 +1511,7 @@ export const api: Record<string, Api> = {
   },
   'rich-text-editor': {
     description:
-      'The `RichTextEditor` component (Satin Pro, `@uisatin/pro/rich-text-editor`, on Lexical, an optional peer) is a field with Textarea\'s look whose editable area is a `role="textbox"` with `aria-multiline`. It edits headings, lists, quotes, links, bold, italic, strikethrough, inline code and mentions. `value` is markdown (`format="markdown"`) or Lexical\'s JSON (`format="json"`), controlled or not; a mention is written `[@Tara Mendes](mention:tara-id)`, and `onValueChange(value, { mentions })` lists them (`richTextMentions(value, format)` reads them from any value). The editor sends only edits, never on mount, and doesn\'t load back a value it sent itself. Underline and other marks it has no place for are dropped, from a paste too. With `maxLength` a count of the text shows in the `status` slot. `editorRef` has `focus`, `insert(markdown)`, `insertText`, `getValue` and `getSelectionRect`. Inside a FormField it takes the label, the error, `required` and `name`. Parts: `RichTextEditorRoot`, `RichTextEditorContent`.',
+      'The `RichTextEditor` component (Satin Pro, `@uisatin/pro/rich-text-editor`, on Lexical, an optional peer) is a field with Textarea\'s look whose editable area is a `role="textbox"` with `aria-multiline`. It edits headings, lists, quotes, links, bold, italic, strikethrough, inline code and mentions. `value` is markdown (`format="markdown"`) or Lexical\'s JSON (`format="json"`), controlled or not; a mention is written `[@Tara Mendes](mention:tara-id)`, and `onValueChange(value, { mentions })` lists them (`richTextMentions(value, format)` reads them from any value). The editor sends only edits, never on mount, and doesn\'t load back a value it sent itself. Underline and other marks it has no place for are dropped, from a paste too. With `maxLength` a count of the text shows in the `status` slot. `editorRef` has `focus`, `insert(markdown)`, `insertText`, `getValue` and `getSelectionRect`. Inside a FormField it takes the label, the error, `required` and `name`. `mentions` (`{ trigger, search }`, Prompt bar\'s with an `avatar`) opens a menu on `@` at a block\'s start or after a space; a pick goes in as a mention, one unit. `commands` opens on `/`; a pick takes "/query" out and calls the command\'s `run({ insert, editor })`, where `insert` puts markdown at the caret. Parts: `RichTextEditorRoot`, `RichTextEditorContent`.',
     props: [
       { name: 'value', type: ['string'] },
       { name: 'defaultValue', type: ['string'] },
@@ -1528,6 +1528,8 @@ export const api: Record<string, Api> = {
       { name: 'disabled', type: ['boolean'], default: 'false' },
       { name: 'name', type: ['string'] },
       { name: 'editorRef', type: ['Ref<RichTextEditorHandle>'] },
+      { name: 'mentions', type: ['{ trigger?: string; search: (query: string) => RichTextMention[] | Promise<RichTextMention[]> }'] },
+      { name: 'commands', type: ['RichTextCommand[]'] },
     ],
   },
   'date-availability': {

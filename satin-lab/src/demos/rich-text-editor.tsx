@@ -1,27 +1,64 @@
-import { RichTextEditor } from '@uisatin/pro/rich-text-editor'
+import { ClipboardCheck, Notes } from 'iconoir-react'
+import { Avatar } from '@uisatin/ui/avatar'
+import { RichTextEditor, type RichTextCommand, type RichTextMention } from '@uisatin/pro/rich-text-editor'
 import { Showcase, type ShowcaseOption } from '../components/Showcase'
+import { people as promptPeople } from './prompt-bar-data'
 
-// A stub: the editor with a markdown value, its formatting toolbar and the bubble over a
-// selection. The @ and / menus and the full scenarios come with the next steps.
-const feedback = `## Interview feedback
+// A recruiter writes interview feedback: @ mentions the panel (the Prompt bar demo's people and
+// Marta), / scorecard adds the scorecard. The scorecard is a list for now; a table comes later.
+const people: RichTextMention[] = [
+  { id: 'marta', label: 'Marta Nowak', description: 'Design lead, panel', avatar: <Avatar initials="MN" tone="fuchsia" size={20} aria-hidden /> },
+  ...promptPeople,
+]
 
-**Strong** craft and *clear* writing. Ask [@Marta Nowak](mention:marta) to check the take-home.
+/** `mentions.search`, slow as an API would be, so the menu shows how it waits for the first answer. */
+const search = (query: string) =>
+  new Promise<RichTextMention[]>((resolve) => {
+    const q = query.toLowerCase()
+    setTimeout(() => resolve(people.filter((p) => `${p.label} ${p.description}`.toLowerCase().includes(q)).slice(0, 5)), 120)
+  })
 
-- Communication
-- Craft`
+const commands: RichTextCommand[] = [
+  {
+    name: 'scorecard',
+    description: 'Add the interview scorecard',
+    icon: <ClipboardCheck />,
+    run: ({ insert }) => insert('- Communication\n- Craft\n- Culture\n- Hire'),
+  },
+  {
+    name: 'summary',
+    description: 'Start with a summary heading',
+    icon: <Notes />,
+    run: ({ insert }) => insert('## Summary'),
+  },
+]
+
+const feedback = `## Interview feedback: Priya Nair
+
+**Strong** craft and *clear* writing. Ask [@Marta Nowak](mention:marta) to check the take-home.`
 
 export const options: ShowcaseOption[] = [
   {
     id: 'default',
-    label: 'Default',
+    label: 'Interview feedback',
     code: `import { RichTextEditor } from '@uisatin/pro/rich-text-editor'
 
-// The toolbar is on by default (toolbar="minimal" or toolbar={false});
-// select text with the pointer for the bubble, ⌘K for a link.
+// @ mentions the panel, / scorecard adds the scorecard.
+// Select text with the pointer for the bubble, ⌘K for a link.
 <RichTextEditor
   label="Feedback"
-  hint="Shared with the hiring panel."
-  defaultValue={\`${feedback.replace(/`/g, '\\`')}\`}
+  hint="Shared with the hiring panel. Type @ to mention someone, / for commands."
+  defaultValue={feedback}
+  mentions={{ search: (query) => api.people(query) }}
+  commands={[
+    {
+      name: 'scorecard',
+      description: 'Add the interview scorecard',
+      icon: <ClipboardCheck />,
+      run: ({ insert }) => insert('- Communication\\n- Craft\\n- Culture\\n- Hire'),
+    },
+  ]}
+  onValueChange={(markdown, { mentions }) => save(markdown, mentions)}
 />`,
   },
   {
@@ -40,11 +77,17 @@ export default function RichTextEditorDemo({ codeHtml }: { codeHtml: Record<stri
       options={options}
       codeHtml={codeHtml}
       render={(option) => (
-        <div className="w-full max-w-[480px]">
+        <div className="w-full max-w-[520px]">
           {option === 'minimal' ? (
             <RichTextEditor label="Note" toolbar="minimal" placeholder="Add a note" />
           ) : (
-            <RichTextEditor label="Feedback" hint="Shared with the hiring panel." defaultValue={feedback} />
+            <RichTextEditor
+              label="Feedback"
+              hint="Shared with the hiring panel. Type @ to mention someone, / for commands."
+              defaultValue={feedback}
+              mentions={{ search }}
+              commands={commands}
+            />
           )}
         </div>
       )}

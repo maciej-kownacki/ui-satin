@@ -768,13 +768,18 @@ export const a11y: Record<string, A11y> = {
   },
   'rich-text-editor': {
     summary:
-      'The editable area is a `div` with `contenteditable`, `role="textbox"` and `aria-multiline`, named by the label through `aria-labelledby` (a FormField\'s label too; with neither, `aria-label` or "Text editor", `richTextEditor` in SatinLabels). Clicking the label focuses it. The hint or the error and the count describe it (`aria-describedby`); an error sets `aria-invalid`, a required FormField `aria-required`. The placeholder is its `aria-placeholder`, and the visible one is hidden from screen readers. Headings, lists, quotes and links are real elements, so a screen reader moves through them as on a page. A mention reads as its text, "@Tara Mendes". Read-only stays in the tab order with `aria-readonly`, and its text can be selected and copied; disabled leaves the tab order and is `aria-disabled`. The focus ring is drawn on the field while the editable area has focus.',
+      'The editable area is a `div` with `contenteditable`, `role="textbox"` and `aria-multiline`, named by the label through `aria-labelledby` (a FormField\'s label too; with neither, `aria-label` or "Text editor", `richTextEditor` in SatinLabels). Clicking the label focuses it. The hint or the error and the count describe it (`aria-describedby`); an error sets `aria-invalid`, a required FormField `aria-required`. The placeholder is its `aria-placeholder`, and the visible one is hidden from screen readers. Headings, lists, quotes and links are real elements, so a screen reader moves through them as on a page. A mention reads as its text, "@Tara Mendes". Read-only stays in the tab order with `aria-readonly`, and its text can be selected and copied; disabled leaves the tab order and is `aria-disabled`. The focus ring is drawn on the field while the editable area has focus. With `mentions` or `commands` the editable area has `aria-autocomplete="list"`; while the menu lists rows it points at the listbox with `aria-controls` and at the highlighted option with `aria-activedescendant`, and focus stays in the text. A polite status region says how many suggestions there are, "No results", and which mention went in or out. An input method\'s text never opens a menu.',
     keyboard: [
       { keys: ['Tab'], action: 'Moves focus into the editor and out of it; Tab never stays in the text.' },
       { keys: ['⌘B', '⌘I'], action: 'Bold, italic on the selection or what is typed next.' },
       { keys: ['⌘Z', '⌘⇧Z'], action: 'Undoes and redoes the last edits.' },
       { keys: ['Enter'], action: 'A new paragraph, or a new list item; on an empty list item, leaves the list.' },
       { keys: ['⇧Enter'], action: 'A line break in the same paragraph.' },
+      { keys: ['@', '/'], action: 'At a block\'s start or after a space: opens the mentions or the commands menu.' },
+      { keys: ['↑', '↓'], action: 'Menu open: moves the highlight, wrapping.' },
+      { keys: ['Enter', 'Tab'], action: 'Menu open: inserts the highlighted mention, or runs the highlighted command.' },
+      { keys: ['Esc'], action: 'Menu open: closes it until the next trigger. Otherwise it leaves the text (a Dialog around it closes).' },
+      { keys: ['⌫'], action: 'Right after a mention: removes all of it.' },
     ],
   },
   'date-availability': {
