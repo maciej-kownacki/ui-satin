@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import CsvImportDemo, { options } from '../../demos/csv-import'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="csv-import">
+  <DocSection item={page('csv-import')} api={api['csv-import']}>
+    <CsvImportDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

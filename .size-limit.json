@@ -118,6 +118,30 @@
     "limit": "3 kB"
   },
   {
+    "name": "CSV import (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/csv-import.js",
+    "import": "{ CsvImport }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "14 kB"
+  },
+  {
+    "name": "CSV import's plain functions (parseCsv, matchColumns, validateCsv, toCsv)",
+    "path": "packages/ui-pro/dist/components/csv-import-parse.js",
+    "import": "{ parseCsv, matchColumns, validateCsv, toCsv }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
     "name": "Data grid (Satin Pro, with Radix DropdownMenu; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/data-grid.js",
     "import": "{ DataGrid, DataGridColumnsMenu, DataGridViewMenu, DataGridToolbar }",

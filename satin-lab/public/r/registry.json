@@ -2547,6 +2547,71 @@
       ]
     },
     {
+      "name": "csv-import",
+      "type": "registry:ui",
+      "title": "CSV import",
+      "description": "Brings a CSV file into your records in three steps: upload, map its columns to your fields, review what will be skipped and why.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/alert.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/checkbox.json",
+        "https://uisatin.dev/r/csv-import-parse.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/file-upload.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/link.json",
+        "https://uisatin.dev/r/pagination.json",
+        "https://uisatin.dev/r/progress.json",
+        "https://uisatin.dev/r/segmented-control.json",
+        "https://uisatin.dev/r/select.json",
+        "https://uisatin.dev/r/spinner.json",
+        "https://uisatin.dev/r/step-slide.json",
+        "https://uisatin.dev/r/stepper.json",
+        "https://uisatin.dev/r/table.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "CSV import docs: https://uisatin.dev/components/csv-import",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/csv-import.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "csv-import-parse",
+      "type": "registry:ui",
+      "title": "Csv import parse",
+      "description": "The Satin Pro Csv import parse component.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json"
+      ],
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/csv-import-parse.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "data-grid",
       "type": "registry:ui",
       "title": "Data grid",
@@ -4127,6 +4192,21 @@
       "files": [
         {
           "path": "registry/satin/examples/command-pages-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "csv-import-demo",
+      "type": "registry:example",
+      "title": "CSV import example",
+      "description": "The shortest use of CSV import, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/csv-import.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/csv-import-demo.tsx",
           "type": "registry:example"
         }
       ]

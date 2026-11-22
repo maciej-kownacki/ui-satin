@@ -869,7 +869,7 @@ export const api: Record<string, Api> = {
     ],
   },
   table: {
-    description: 'The `Table` component is a wrapper around the `table` element with sortable headers, selection and horizontal scroll. `footer` takes rows for a `tfoot` (a totals row); `tableProps` reaches the `table` element itself, for a `role` or `aria-*`.',
+    description: 'The `Table` component is a wrapper around the `table` element with sortable headers, selection and horizontal scroll. `footer` takes rows for a `tfoot` (a totals row); `empty` fills the body while there are no rows (an EmptyState), centred in the visible width even with `overflow="scroll"`; `tableProps` reaches the `table` element itself, for a `role` or `aria-*`.',
     props: [
       { name: 'columns', type: ['Column[]'] },
       { name: 'rows', type: ['Row[]'] },
@@ -886,6 +886,7 @@ export const api: Record<string, Api> = {
       { name: 'renderCell', type: ['({ row, column, index, content }) => ReactNode'] },
       { name: 'renderRow', type: ['({ row, index, selected, rowProps, children }) => ReactNode'] },
       { name: 'footer', type: ['ReactNode'] },
+      { name: 'empty', type: ['ReactNode'] },
       { name: 'tableProps', type: ['ComponentProps<"table">'] },
     ],
   },
@@ -1361,6 +1362,29 @@ export const api: Record<string, Api> = {
       { name: 'onOpenChange', type: ['(open: boolean) => void'] },
       { name: 'name', type: ['string'] },
       { name: 'label / hint / error', type: ['ReactNode'] },
+    ],
+  },
+  'csv-import': {
+    description:
+      'The `CsvImport` component (Satin Pro, `@uisatin/pro/csv-import`) brings a CSV file into your records in three steps, Upload, Map columns and Review, in one panel whose frame never moves: a Stepper on top, a body of fixed height that scrolls inside, and a footer with Back, the reason the next action is blocked and the primary action. Upload takes one CSV by drop or browse (Excel files, `.xlsx` or old `.xls`, even renamed `.csv`, are turned away with a reason); `,` `;` or tab is sniffed, UTF-8 with or without a BOM, else Windows-1250. Map columns matches each column to a field by its `key`, `label` and `aliases`, ignoring case, diacritics, spaces, `-` and `_`; Next stays blocked while a required field has no column or a field has two. Review checks every row by its field\'s `type` (`email`, `number` as `dateLocale` writes it, `date` as dd.mm.yyyy, yyyy-mm-dd or `dateFormat`, `enum` against `options`), `required` and `validate`, groups the errors by field and shows the rows 100 a page. Nothing is sent before "Import 328 leads": `onImport` gets only the valid rows, keyed by field and normalised (text trimmed, an enum as its option\'s `value`, a number as "1234.5", a date as yyyy-mm-dd). Report progress with `onProgress`; with `cancelable`, Cancel aborts `signal`. The result is a table, `CsvImportResult`: a heading ("328 leads imported · 12 skipped") over Imported and Skipped segments (the Skipped rows with their Reason), "Download skipped rows" (the original columns plus `error`), 100 rows a page; "Import another file" takes Back\'s place and `onDone` adds Done. A rejected promise, or Cancel after some rows were saved, shows the result as stopped, with a Not imported segment and "Retry from row 121"; a failure before any row shows "No leads were imported" with Retry in the empty table; Cancel before any row goes back to Review. Import and Retry send only the rows after the last `onProgress` count, keeping the file and mapping. The root is 520px tall; in a Dialog or Sheet give it `className="h-auto flex-1"`. Start on `map` with `defaultStep="map"` and a `file`. Parts: `CsvImportMapping`, `CsvImportPreview`, `CsvImportProgress`, `CsvImportResult` (`fields`, `mapping`, `validation`, `imported`, `status: "done" | "stopped"`, `reason`, `onRetry`, `overLimit`, `noun`, `filter`/`defaultFilter`/`onFilterChange`, `headers`, `fileName`, `delimiter`); `parseCsv`, `matchColumns`, `validateCsv` and `toCsv` come from `@uisatin/pro/csv-import-parse` (a client entry, not for a Server Component). Its words (`csvImportRows`, `csvRequiredMissing`, `csvFieldErrors`…) are translated with SatinLabels.',
+    props: [
+      { name: 'fields', type: ['CsvImportField[]'] },
+      { name: 'onImport', type: ['(rows: Record<string, string>[], ctx: { signal, onProgress }) => void | Promise<void>'] },
+      { name: 'noun', type: ['{ one: string, other: string }'], default: '{ one: "row", other: "rows" }' },
+      { name: 'maxRows', type: ['number'] },
+      { name: 'maxSize', type: ['number'] },
+      { name: 'templateHref', type: ['string'] },
+      { name: 'step', type: ['"upload"', '"map"', '"review"'] },
+      { name: 'defaultStep', type: ['"upload"', '"map"', '"review"'], default: '"upload"' },
+      { name: 'onStepChange', type: ['(step: CsvImportStep) => void'] },
+      { name: 'file', type: ['File', 'null'] },
+      { name: 'onFileChange', type: ['(file: File | null) => void'] },
+      { name: 'mapping', type: ['CsvMapping'] },
+      { name: 'defaultMapping', type: ['CsvMapping'] },
+      { name: 'onMappingChange', type: ['(mapping: CsvMapping) => void'] },
+      { name: 'onDone', type: ['() => void'] },
+      { name: 'cancelable', type: ['boolean'], default: 'false' },
+      { name: 'disabled', type: ['boolean'], default: 'false' },
     ],
   },
   'filter-bar': {

@@ -1943,6 +1943,12 @@
           "required": false,
           "default": "false",
           "description": "Busy: a Spinner takes the middle and the label and icons turn invisible but keep their room, so the button doesn't change width. Clicks (and Enter in a form) do nothing; the button keeps its focus and looks, with `aria-busy` and `aria-disabled` for screen readers."
+        },
+        {
+          "name": "aria-disabled",
+          "type": "React.AriaAttributes['aria-disabled']",
+          "required": false,
+          "description": "`aria-disabled` (true) keeps the button focusable and hoverable but makes it look disabled and swallows its clicks: for an action that can't run yet and says why (a Tooltip, or a line it points to with `aria-describedby`). `disabled` takes it out of the tab order. The guard covers the `onClick` passed to Button only: with `asChild`, the child's own onClick still runs, and a trigger that opens on pointerdown (a Radix menu) still opens."
         }
       ]
     }
@@ -2850,6 +2856,354 @@
           "required": false,
           "default": "false",
           "description": "Fixed to the bottom of the viewport, centred, 16px up."
+        }
+      ]
+    }
+  },
+  "csv-import": {
+    "CsvImportMapping": {
+      "description": "The Map columns step on its own: a line for each required field still missing, and a Table with one row per column (its name, sample values, a \"Maps to\" Select, Auto-matched). From 520px wide the samples and the badge have their own columns; narrower, they fold under the name. A field picked by a second column shows an error there. Other props, `ref` included, go to its root.",
+      "type": "CsvImportMappingProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "fields",
+          "type": "CsvImportField[]",
+          "required": true
+        },
+        {
+          "name": "headers",
+          "type": "string[]",
+          "required": true,
+          "description": "The column names (csvHeaders)."
+        },
+        {
+          "name": "rows",
+          "type": "string[][]",
+          "required": true,
+          "description": "The data rows, for each column's sample values (the first few that aren't empty)."
+        },
+        {
+          "name": "mapping",
+          "type": "CsvMapping",
+          "required": true
+        },
+        {
+          "name": "onMappingChange",
+          "type": "(mapping: CsvMapping) => void",
+          "required": true
+        },
+        {
+          "name": "autoMapping",
+          "type": "CsvMapping",
+          "required": false,
+          "description": "What auto-match picked, for the Auto-matched badges. Defaults to matchColumns(headers, fields)."
+        },
+        {
+          "name": "header",
+          "type": "boolean",
+          "required": false,
+          "description": "Shows \"First row is a header\" with this value."
+        },
+        {
+          "name": "onHeaderChange",
+          "type": "(header: boolean) => void",
+          "required": false
+        },
+        {
+          "name": "meta",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A line at the start, above the table: \"leads.csv · 340 rows\"."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "CsvImportPreview": {
+      "description": "The Review step on its own: \"340 rows · 328 ready · 12 with errors\", an Alert grouping the errors by field (each group a link that turns on \"Show only errors\" and moves focus to its first cell), the checkbox, and a Table of the mapped fields, 100 rows a page with Pagination under it. An invalid cell is in the error colour with a warning mark and its reason (a Tooltip, and read out). Other props, `ref` included, go to its root.",
+      "type": "CsvImportPreviewProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "fields",
+          "type": "CsvImportField[]",
+          "required": true
+        },
+        {
+          "name": "mapping",
+          "type": "CsvMapping",
+          "required": true,
+          "description": "Which columns map to which fields: the table shows the mapped fields."
+        },
+        {
+          "name": "validation",
+          "type": "CsvValidation",
+          "required": true,
+          "description": "validateCsv's result."
+        },
+        {
+          "name": "overLimit",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "Rows past `maxRows`, in the summary."
+        },
+        {
+          "name": "errorsOnly",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultErrorsOnly",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "onErrorsOnlyChange",
+          "type": "(errorsOnly: boolean) => void",
+          "required": false
+        }
+      ]
+    },
+    "CsvImportProgress": {
+      "description": "\"Importing 120 of 328…\" over a Progress bar. Other props, `ref` included, go to its root.",
+      "type": "CsvImportProgressProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "done",
+          "type": "number",
+          "required": true,
+          "description": "Rows done."
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "required": true,
+          "description": "Rows to import."
+        }
+      ]
+    },
+    "CsvImportResult": {
+      "description": "The outcome of an import as a table: a heading that says it (\"328 leads imported · 12 skipped\", the focus target, `data-csv-focus=\"result\"`), a SegmentedControl of Imported and Skipped (and Not imported when a run stopped), \"Download skipped rows\" (a CSV with an `error` column; icon-only under 420px), and the segment's rows, 100 a page. Imported and Not imported show the normalised values sent; Skipped shows a Reason column and the source values, invalid cells marked as in the preview. An empty segment says why inside the table body. A stopped run adds a warning Alert with \"Retry from row 121\"; when nothing was saved, the empty Imported table carries the reason and Retry instead. Other props, `ref` included, go to its root.",
+      "type": "CsvImportResultProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "fields",
+          "type": "CsvImportField[]",
+          "required": true
+        },
+        {
+          "name": "mapping",
+          "type": "CsvMapping",
+          "required": true,
+          "description": "Which columns map to which fields: the tables show the mapped fields."
+        },
+        {
+          "name": "validation",
+          "type": "CsvValidation",
+          "required": true,
+          "description": "validateCsv's result."
+        },
+        {
+          "name": "imported",
+          "type": "number",
+          "required": true,
+          "description": "Valid rows saved: the first `imported` of them, in file order (onProgress counts them in order)."
+        },
+        {
+          "name": "status",
+          "type": "'done' | 'stopped'",
+          "required": false,
+          "default": "'done'",
+          "description": "`stopped` when the run failed or was cancelled before the last row: adds Not imported."
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "required": false,
+          "description": "Why a stopped run stopped (the rejected promise's message). Without it, it was cancelled."
+        },
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Adds Retry to a stopped result: \"Retry from row 121\", or Retry in the empty table when nothing was saved."
+        },
+        {
+          "name": "overLimit",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "Rows past `maxRows`: a muted line under the heading."
+        },
+        {
+          "name": "noun",
+          "type": "CsvNoun",
+          "required": false,
+          "description": "\"lead\" / \"leads\". Defaults to the `csvRowNoun` label."
+        },
+        {
+          "name": "filter",
+          "type": "CsvImportResultFilter",
+          "required": false
+        },
+        {
+          "name": "defaultFilter",
+          "type": "CsvImportResultFilter",
+          "required": false,
+          "default": "'imported'",
+          "description": "Defaults to `imported`."
+        },
+        {
+          "name": "onFilterChange",
+          "type": "(filter: CsvImportResultFilter) => void",
+          "required": false
+        },
+        {
+          "name": "headers",
+          "type": "string[]",
+          "required": false,
+          "description": "The file's column names, for the skipped rows file (csvHeaders). Defaults to \"Column 1\"…"
+        },
+        {
+          "name": "fileName",
+          "type": "string",
+          "required": false,
+          "description": "The file's name: the skipped rows file is `<name>-skipped.csv`."
+        },
+        {
+          "name": "delimiter",
+          "type": "CsvDelimiter",
+          "required": false,
+          "description": "The skipped rows file's delimiter: the source file's (CsvParseResult.delimiter)."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Disables Retry."
+        }
+      ]
+    },
+    "CsvImport": {
+      "type": "CsvImportProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children' | 'onChange'>"
+      ],
+      "props": [
+        {
+          "name": "fields",
+          "type": "CsvImportField[]",
+          "required": true
+        },
+        {
+          "name": "onImport",
+          "type": "(rows: Record<string, string>[], ctx: CsvImportContext) => void | Promise<void>",
+          "required": true,
+          "description": "Gets only the valid rows, keyed by field, normalised (text trimmed, an enum as its option's value, a number as \"1234.5\", a date as yyyy-mm-dd), once Import is pressed. Report progress with `onProgress` and honour `signal` for Cancel. A rejected promise shows its message with Retry in the result; void or a resolved promise is done. Retry resumes: it calls `onImport` again with only the rows after the last `onProgress(done)` count, so report a row done once it is saved. `onProgress` in that call counts from 0 again; the panel adds what was done before."
+        },
+        {
+          "name": "noun",
+          "type": "CsvNoun",
+          "required": false,
+          "description": "\"lead\" / \"leads\": used in \"Import 328 leads\". Defaults to the `csvRowNoun` label."
+        },
+        {
+          "name": "maxRows",
+          "type": "number",
+          "required": false,
+          "description": "Data rows to import at most. Rows past it are counted and reported, never imported."
+        },
+        {
+          "name": "maxSize",
+          "type": "number",
+          "required": false,
+          "description": "Largest file, in bytes."
+        },
+        {
+          "name": "templateHref",
+          "type": "string",
+          "required": false,
+          "description": "A template CSV to download, linked under the drop zone."
+        },
+        {
+          "name": "step",
+          "type": "CsvImportStep",
+          "required": false
+        },
+        {
+          "name": "defaultStep",
+          "type": "CsvImportStep",
+          "required": false,
+          "default": "'upload'",
+          "description": "Start on `map` with a `file` to skip Upload."
+        },
+        {
+          "name": "onStepChange",
+          "type": "(step: CsvImportStep) => void",
+          "required": false
+        },
+        {
+          "name": "file",
+          "type": "File | null",
+          "required": false
+        },
+        {
+          "name": "onFileChange",
+          "type": "(file: File | null) => void",
+          "required": false
+        },
+        {
+          "name": "mapping",
+          "type": "CsvMapping",
+          "required": false
+        },
+        {
+          "name": "defaultMapping",
+          "type": "CsvMapping",
+          "required": false,
+          "description": "Wins over auto-match for its columns."
+        },
+        {
+          "name": "onMappingChange",
+          "type": "(mapping: CsvMapping) => void",
+          "required": false,
+          "description": "Called with each change, and with the auto-matched mapping when a new file is read."
+        },
+        {
+          "name": "onDone",
+          "type": "() => void",
+          "required": false,
+          "description": "Adds Done to the footer of the result."
+        },
+        {
+          "name": "cancelable",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Shows Cancel while importing: `onImport` honours its `signal`."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
         }
       ]
     }
@@ -8159,6 +8513,12 @@
           "type": "React.ReactNode",
           "required": false,
           "description": "Rows for a `<tfoot>` under the body, such as a totals row: give `<tr>`s with one cell per column, plus one first for the checkbox column when `selectable`."
+        },
+        {
+          "name": "empty",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown in the body while `rows` is empty, such as an EmptyState: one row across every column, its content as wide as the visible part of the table and centred there, so it stays in view with overflow=\"scroll\". The header stays. Without it an empty table is just its header."
         },
         {
           "name": "tableProps",

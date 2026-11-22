@@ -212,6 +212,13 @@ export const allNav: NavGroup[] = [
         edition: 'pro',
       },
       { id: 'cookie-consent', title: 'Cookie consent', href: '/components/cookie-consent', description: 'Asks once what the site may store: Customize, Reject all or Accept all.' },
+      {
+        id: 'csv-import',
+        title: 'CSV import',
+        href: '/components/csv-import',
+        description: 'Brings a CSV file into your records in three steps: upload, map its columns to your fields, review what will be skipped and why.',
+        edition: 'pro',
+      },
       { id: 'dialog', title: 'Dialog', href: '/components/dialog', description: 'Asks for a decision or a short input before the user moves on.' },
       { id: 'dot', title: 'Dot', href: '/components/dot', description: 'A small status dot that marks state or category next to a label.' },
       {
@@ -354,7 +361,7 @@ export const allNav: NavGroup[] = [
  * preview builds show them. The one list to edit when a page is done.
  */
 export const unreleased = new Set<string>([
-  'command-pages', 'scheduler', 'stepper', 'review-queue',
+  'command-pages', 'scheduler', 'stepper', 'review-queue', 'csv-import',
 ])
 
 /**

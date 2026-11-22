@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every state of CSV import (Satin Pro), each in the same 640 × 520 frame. Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { CsvImportGrid } from '../../states/CsvImportGrid'
+---
+
+<Layout title="CSV import states · Satin" description="Every state of CSV import, side by side in the same frame.">
+  <main class="min-h-dvh bg-bg-card">
+    <CsvImportGrid client:load />
+  </main>
+</Layout>

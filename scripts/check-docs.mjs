@@ -33,6 +33,7 @@ const INTERNAL = {
   'rolling-number': 'the rolling count of Bulk action bar (Satin Pro)',
   'rolling-number': 'the rolling digits of the Satin Pro counts (Bulk action bar, Filter bar)',
   'rolling-number': 'the rolling count of Bulk action bar (Satin Pro)',
+  'csv-import-parse': 'the plain functions under CSV import (Satin Pro): parseCsv, matchColumns, validateCsv, toCsv',
 }
 // Pages whose component lives in another file (as in registry/build.mjs).
 const ALIASES = { 'area-chart': 'line-chart', 'prompt-bar-notice': 'prompt-bar' }
