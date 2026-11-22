@@ -6800,6 +6800,223 @@
       ]
     }
   },
+  "rich-text-editor": {
+    "RichTextEditorRoot": {
+      "description": "The engine and the value, with no look of its own: a `div` (`data-slot=\"rich-text-editor\"`) that holds the parts. Other props, `ref` included, go to the `div`.",
+      "type": "RichTextEditorRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange' | 'id'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "RichTextDocument",
+          "required": false,
+          "description": "The document (controlled). Markdown or JSON, by `format`."
+        },
+        {
+          "name": "defaultValue",
+          "type": "RichTextDocument",
+          "required": false,
+          "description": "The document to start with (uncontrolled)."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: RichTextDocument, details: RichTextValueDetails) => void",
+          "required": false,
+          "description": "Each edit that changes the value, with the mentions in it. Never on mount, never for a selection change."
+        },
+        {
+          "name": "format",
+          "type": "RichTextFormat",
+          "required": false,
+          "default": "'markdown'",
+          "description": "`'markdown'` (default) or `'json'` (Lexical's serialized editor state)."
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The editable area's id. A FormField's id, or generated, when left out."
+        },
+        {
+          "name": "labelledBy",
+          "type": "string",
+          "required": false,
+          "description": "The id of what names the editable area. A FormField's label when left out."
+        },
+        {
+          "name": "describedBy",
+          "type": "string",
+          "required": false,
+          "description": "Ids added to the editable area's `aria-describedby`, after a FormField's."
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Shown in the empty editor, and its `aria-placeholder`."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "description": "Not editable, out of the tab order, at 60%. A FormField's or Form's when left out."
+        },
+        {
+          "name": "readOnly",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Not editable, still focusable and selectable."
+        },
+        {
+          "name": "invalid",
+          "type": "boolean",
+          "required": false,
+          "description": "Marks the editor invalid. A FormField's error sets it too."
+        },
+        {
+          "name": "required",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Names a hidden input that carries the value in a native form submit. A FormField's `name` when left out."
+        },
+        {
+          "name": "editorRef",
+          "type": "React.Ref<RichTextEditorHandle>",
+          "required": false,
+          "description": "The editor's handle: focus, insert, insertText, getValue, getSelectionRect."
+        }
+      ]
+    },
+    "RichTextEditorContent": {
+      "description": "The field (`.satin-field`, Textarea's skin) with the editable area in it (`data-slot=\"rich-text-editor-content\"`, `role=\"textbox\"`), the placeholder and the resize grip. `className` and the field's other props go to the field; `id`, `aria-label`, `aria-labelledby`, `aria-describedby` and `autoFocus` to the editable area.",
+      "type": "RichTextEditorContentProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Drawn inside the field, before the editable area: where a toolbar goes."
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "required": false,
+          "description": "Focus the editor on mount."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    },
+    "RichTextEditor": {
+      "description": "The editor for the common case: `RichTextEditorRoot` and `RichTextEditorContent` with a label, the hint or the error, and the status row. Other props, `ref` included, go to the root `div`.",
+      "type": "RichTextEditorProps",
+      "extends": [
+        "Omit<RichTextEditorRootProps, 'children' | 'labelledBy' | 'describedBy' | 'invalid'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "optional",
+          "type": "boolean",
+          "required": false,
+          "description": "Adds a muted \"(Optional)\" after the label: the `optional` label."
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the editor invalid without one."
+        },
+        {
+          "name": "status",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Under the field on the right, like Textarea's counter: \"Saved\", a count of your own."
+        },
+        {
+          "name": "maxLength",
+          "type": "number",
+          "required": false,
+          "description": "Shows a `length/maxLength` count of the text (not the markdown) in the status slot. Not enforced."
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "required": false,
+          "description": "Focus the editor on mount."
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "fieldClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the field (the edge and the editable area). `className` styles the outer wrapper."
+        },
+        {
+          "name": "toolbar",
+          "type": "boolean | 'minimal'",
+          "required": false,
+          "description": "The formatting toolbar: `true` (default), `'minimal'` (bold, italic, list, link) or `false`. Not drawn yet."
+        },
+        {
+          "name": "mentions",
+          "type": "{ /** The character that opens the menu. Defaults to `@`. */ trigger?: string search: (query: string) => RichTextMention[] | Promise<RichTextMention[]> }",
+          "required": false,
+          "description": "The `@` menu: where mentions come from. Not wired yet; mentions in a value already load and round-trip."
+        },
+        {
+          "name": "commands",
+          "type": "RichTextCommand[]",
+          "required": false,
+          "description": "The `/` menu. Not wired yet."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    }
+  },
   "rolling-number": {
     "RollingNumber": {
       "type": "RollingNumberProps",

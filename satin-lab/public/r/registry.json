@@ -2772,6 +2772,40 @@
       ]
     },
     {
+      "name": "rich-text-editor",
+      "type": "registry:ui",
+      "title": "Rich text editor",
+      "description": "A field for notes, emails and briefs with headings, lists, links and @mentions, its value in markdown.",
+      "dependencies": [
+        "@lexical/history@~0.53.0",
+        "@lexical/link@~0.53.0",
+        "@lexical/list@~0.53.0",
+        "@lexical/markdown@~0.53.0",
+        "@lexical/rich-text@~0.53.0",
+        "lexical@~0.53.0"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/form-field.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/prompt-mentions.json",
+        "https://uisatin.dev/r/textarea.json"
+      ],
+      "docs": "Rich text editor docs: https://uisatin.dev/components/rich-text-editor",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/rich-text-editor.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "rolling-number",
       "type": "registry:ui",
       "title": "Rolling number",
@@ -4262,6 +4296,21 @@
       "files": [
         {
           "path": "registry/satin/examples/review-queue-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "rich-text-editor-demo",
+      "type": "registry:example",
+      "title": "Rich text editor example",
+      "description": "The shortest use of Rich text editor, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/rich-text-editor.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/rich-text-editor-demo.tsx",
           "type": "registry:example"
         }
       ]

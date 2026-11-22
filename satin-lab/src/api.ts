@@ -1509,6 +1509,27 @@ export const api: Record<string, Api> = {
       { name: 'wrapperClassName', type: ['string'] },
     ],
   },
+  'rich-text-editor': {
+    description:
+      'The `RichTextEditor` component (Satin Pro, `@uisatin/pro/rich-text-editor`, on Lexical, an optional peer) is a field with Textarea\'s look whose editable area is a `role="textbox"` with `aria-multiline`. It edits headings, lists, quotes, links, bold, italic, strikethrough, inline code and mentions. `value` is markdown (`format="markdown"`) or Lexical\'s JSON (`format="json"`), controlled or not; a mention is written `[@Tara Mendes](mention:tara-id)`, and `onValueChange(value, { mentions })` lists them (`richTextMentions(value, format)` reads them from any value). The editor sends only edits, never on mount, and doesn\'t load back a value it sent itself. Underline and other marks it has no place for are dropped, from a paste too. With `maxLength` a count of the text shows in the `status` slot. `editorRef` has `focus`, `insert(markdown)`, `insertText`, `getValue` and `getSelectionRect`. Inside a FormField it takes the label, the error, `required` and `name`. Parts: `RichTextEditorRoot`, `RichTextEditorContent`.',
+    props: [
+      { name: 'value', type: ['string'] },
+      { name: 'defaultValue', type: ['string'] },
+      { name: 'onValueChange', type: ['(value: string, details: { mentions }) => void'] },
+      { name: 'format', type: ['"markdown"', '"json"'], default: '"markdown"' },
+      { name: 'label', type: ['ReactNode'] },
+      { name: 'optional', type: ['boolean'], default: 'false' },
+      { name: 'hint', type: ['ReactNode'] },
+      { name: 'error', type: ['ReactNode', 'boolean'] },
+      { name: 'placeholder', type: ['string'] },
+      { name: 'status', type: ['ReactNode'] },
+      { name: 'maxLength', type: ['number'] },
+      { name: 'readOnly', type: ['boolean'], default: 'false' },
+      { name: 'disabled', type: ['boolean'], default: 'false' },
+      { name: 'name', type: ['string'] },
+      { name: 'editorRef', type: ['Ref<RichTextEditorHandle>'] },
+    ],
+  },
   'date-availability': {
     description:
       'The `AvailabilityCalendar` component (Satin Pro, `@uisatin/pro/date-availability`) is a `Calendar` whose days show their free slots: a green dot (a ring at `fewSlots` or fewer) and a Tooltip ("3 slots"), said in the day\'s name too. A day listed with 0 is fully booked: faded, not pickable, still reachable with the arrow keys, its reason in the tooltip and the name. A day left out has no slots. `availability` is keyed by ISO date; `isoDate(date)` makes the key. `AvailabilityDatePicker` is the same in a DatePicker field, and `useAvailability({ availability })` returns the `isDisabled` and `renderDay` to give any Calendar or picker. Every other Calendar prop (`month`, `min`, `max`, `today`, `header`, `weekStartsOn`) passes through, and AvailabilityDatePicker takes `presets`: one on a day without free slots is off.',

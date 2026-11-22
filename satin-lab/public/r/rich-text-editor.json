@@ -1,0 +1,253 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "rich-text-editor",
+  "type": "registry:ui",
+  "title": "Rich text editor",
+  "description": "A field for notes, emails and briefs with headings, lists, links and @mentions, its value in markdown.",
+  "dependencies": [
+    "@lexical/history@~0.53.0",
+    "@lexical/link@~0.53.0",
+    "@lexical/list@~0.53.0",
+    "@lexical/markdown@~0.53.0",
+    "@lexical/rich-text@~0.53.0",
+    "lexical@~0.53.0"
+  ],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/satin-pro-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/form-field.json",
+    "https://uisatin.dev/r/labels.json",
+    "https://uisatin.dev/r/prompt-mentions.json",
+    "https://uisatin.dev/r/textarea.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/rich-text-editor.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport {\n  $getRoot,\n  $getSelection,\n  $insertNodes,\n  $isParagraphNode,\n  $isRangeSelection,\n  CLEAR_HISTORY_COMMAND,\n  COMMAND_PRIORITY_EDITOR,\n  COMMAND_PRIORITY_HIGH,\n  FORMAT_TEXT_COMMAND,\n  TextNode,\n  createEditor,\n  mergeRegister,\n  type DOMConversionMap,\n  type DOMConversionOutput,\n  type DOMExportOutput,\n  type EditorConfig,\n  type EditorState,\n  type LexicalEditor,\n  type LexicalNode,\n  type NodeKey,\n  type SerializedTextNode,\n  type Spread,\n  type TextFormatType,\n} from 'lexical'\nimport { createEmptyHistoryState, registerHistory } from '@lexical/history'\nimport { $toggleLink, LinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link'\nimport { ListItemNode, ListNode, registerList } from '@lexical/list'\nimport {\n  $convertFromMarkdownString,\n  $convertToMarkdownString,\n  $generateNodesFromMarkdownString,\n  BOLD_ITALIC_STAR,\n  BOLD_ITALIC_UNDERSCORE,\n  BOLD_STAR,\n  BOLD_UNDERSCORE,\n  HEADING,\n  INLINE_CODE,\n  ITALIC_STAR,\n  ITALIC_UNDERSCORE,\n  LINK,\n  ORDERED_LIST,\n  QUOTE,\n  STRIKETHROUGH,\n  UNORDERED_LIST,\n  type TextMatchTransformer,\n  type Transformer,\n} from '@lexical/markdown'\nimport { HeadingNode, QuoteNode, registerRichText } from '@lexical/rich-text'\nimport { useFormField } from '@/registry/satin/ui/form-field'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\nimport { cn } from '@/lib/utils'\nimport type { PromptCommand, PromptMention } from '@/registry/satin/ui/prompt-mentions'\nimport { CharacterCount } from '@/registry/satin/ui/textarea'\n\n/**\n * RichTextEditor: a field for notes, emails and job descriptions with headings, lists, quotes,\n * links, bold, italic, strikethrough, inline code and @mentions. It wears Textarea's skin (the\n * `.satin-field` edge, fill and focus ring, at least 96px tall with a resize grip), with a label\n * above, and the hint or the error and a `status` slot (a character count with `maxLength`) under\n * it, so it sits next to Input and Textarea in a Form.\n *\n * The engine is Lexical (an optional peer of `@uisatin/pro`: install `lexical` and the\n * `@lexical/*` packages this entry imports). It's exported only as `@uisatin/pro/rich-text-editor`,\n * never from the package root, so an app that doesn't use it never loads Lexical.\n *\n * - `value` is markdown (`format=\"markdown\"`, the default) or Lexical's JSON (`format=\"json\"`,\n *   `JSON.stringify(editorState.toJSON())`). Controlled (`value`, `onValueChange`) or not\n *   (`defaultValue`).\n * - The markdown is the editor's own spelling: `**bold**`, `*italic*`, `~~struck~~`, `` `code` ``,\n *   `# ` to `### ` headings, `- ` and `1. ` lists (a list keeps the marker it came with, `*` or\n *   `+`), `> ` quotes, `[text](url)` links and `[@Tara Mendes](mention:tara-id)` mentions, one\n *   blank line between blocks. A value spelled another way (`__bold__`, blank lines between list\n *   items) reads the same and comes back in this spelling with the next edit. Nothing is sent on\n *   mount, or for a change of selection.\n * - `onValueChange(value, { mentions })` fires once per edit that changes the value. A `value`\n *   the editor sent itself is never loaded back (so a parent a render behind doesn't undo the\n *   typing); any other `value` replaces the document and clears undo.\n * - Underline, subscript, superscript and highlight aren't supported: pasted text (a Google Docs\n *   link arrives underlined) keeps its bold, italic, links and lists and drops those.\n * - Disabled: not editable, out of the tab order, the field at 60%. Read-only: not editable, but\n *   still focusable and selectable, with `aria-readonly`.\n * - The content is a `role=\"textbox\"` with `aria-multiline`, named by the label (or a FormField's\n *   label, or `aria-label`), described by the hint or the error and the count.\n *\n * Inside a FormField it takes the field's id, label, description, error, `disabled`, `required`\n * and `name`. With `name` a hidden input carries the value into a native form submit.\n *\n * Parts, for an editor of your own: `RichTextEditorRoot` (the engine and the value) ›\n * `RichTextEditorContent` (the field and the editable area). `editorRef` reaches the editor\n * (`focus`, `insert`, `insertText`, `getValue`, `getSelectionRect`). Other props, `ref` included,\n * go to the root `div`; `id`, `aria-label`, `aria-labelledby`, `aria-describedby` and `autoFocus`\n * go to the editable area.\n */\n\n/* ---------- words ---------- */\n\n/** The words the Rich text editor says on its own. They join SatinLabels, so the app translates them there. */\nexport const richTextEditorLabels = {\n  /** The editable area's name when it has no label, no FormField and no `aria-label`. */\n  richTextEditor: 'Text editor',\n}\n\ntype RichTextEditorLabels = typeof richTextEditorLabels\ndeclare module '@/components/ui/labels' {\n  interface SatinLabelSet extends RichTextEditorLabels {}\n}\n\nconst useLabels = () => {\n  const labels = useSatinLabels()\n  return React.useMemo(() => ({ ...richTextEditorLabels, ...labels }), [labels])\n}\n\n/* ---------- types ---------- */\n\n/** Markdown when `format` is `'markdown'`; Lexical's serialized editor state as a JSON string when `'json'`. */\nexport type RichTextDocument = string\n\nexport type RichTextFormat = 'markdown' | 'json'\n\n/** Someone (or something) to mention: Prompt bar's `PromptMention`, with `avatar` for its `icon`. */\nexport type RichTextMention = PromptMention & {\n  /** 20px, before the name in the menu. Wins over `icon`. */\n  avatar?: React.ReactNode\n}\n\n/** A mention as it sits in the document. */\nexport interface RichTextMentionRef {\n  id: string\n  label: string\n  /** The character it was typed with, `@` by default. */\n  trigger: string\n}\n\n/** A slash command: Prompt bar's `PromptCommand`, run where it was typed. */\nexport type RichTextCommand = Omit<PromptCommand, 'run'> & {\n  /** Runs when the command is picked; `insert` puts markdown (or JSON, by `format`) at the caret. */\n  run: (ctx: { insert: (value: RichTextDocument) => void; editor: RichTextEditorHandle }) => void\n}\n\nexport interface RichTextValueDetails {\n  /** The mentions in the new value, in order, each once. */\n  mentions: RichTextMentionRef[]\n}\n\n/** What `editorRef` reaches. */\nexport interface RichTextEditorHandle {\n  /** Focuses the editable area, keeping its selection. */\n  focus: () => void\n  /** Inserts markdown at the selection (at the end when there is none), parsed into blocks and marks. */\n  insert: (markdown: string) => void\n  /** Inserts plain text at the selection (at the end when there is none). */\n  insertText: (text: string) => void\n  /** The current value, in the editor's `format`. */\n  getValue: () => RichTextDocument\n  /** The selection's rectangle on screen, or null when the selection isn't in the editor. */\n  getSelectionRect: () => DOMRect | null\n}\n\n/* ---------- MentionNode ---------- */\n\nexport type SerializedMentionNode = Spread<{ type: 'mention'; id: string; label: string; trigger: string }, SerializedTextNode>\n\n/**\n * A mention in the document: a token-mode text node that reads \"@Tara Mendes\" (selected, deleted\n * and copied whole) and keeps the id. Its DOM is Free's `Mention` markup,\n * `<span data-slot=\"mention\" data-mention-id>`, so Free's mention.css styles it.\n */\nexport class MentionNode extends TextNode {\n  __id: string\n  __label: string\n  __trigger: string\n\n  static getType(): string {\n    return 'mention'\n  }\n\n  static clone(node: MentionNode): MentionNode {\n    return new MentionNode(node.__id, node.__label, node.__trigger, node.__text, node.__key)\n  }\n\n  constructor(id: string, label: string, trigger = '@', text?: string, key?: NodeKey) {\n    super(text ?? `${trigger}${label}`, key)\n    this.__id = id\n    this.__label = label\n    this.__trigger = trigger\n  }\n\n  getId(): string {\n    return this.getLatest().__id\n  }\n\n  getLabel(): string {\n    return this.getLatest().__label\n  }\n\n  getTrigger(): string {\n    return this.getLatest().__trigger\n  }\n\n  createDOM(config: EditorConfig, editor?: LexicalEditor): HTMLElement {\n    const dom = super.createDOM(config, editor)\n    dom.setAttribute('data-slot', 'mention')\n    dom.setAttribute('data-mention-id', this.__id)\n    return dom\n  }\n\n  exportDOM(): DOMExportOutput {\n    const element = document.createElement('span')\n    element.setAttribute('data-slot', 'mention')\n    element.setAttribute('data-mention-id', this.__id)\n    element.setAttribute('data-mention-label', this.__label)\n    element.textContent = this.getTextContent()\n    return { element }\n  }\n\n  static importDOM(): DOMConversionMap | null {\n    return {\n      span: (node: HTMLElement) =>\n        node.hasAttribute('data-mention-id') ? { conversion: $convertMentionElement, priority: 1 } : null,\n    }\n  }\n\n  static importJSON(json: SerializedMentionNode): MentionNode {\n    return $createMentionNode({ id: json.id, label: json.label, trigger: json.trigger }).updateFromJSON(json)\n  }\n\n  exportJSON(): SerializedMentionNode {\n    return { ...super.exportJSON(), type: 'mention', id: this.getId(), label: this.getLabel(), trigger: this.getTrigger() }\n  }\n\n  isTextEntity(): true {\n    return true\n  }\n\n  canInsertTextBefore(): boolean {\n    return false\n  }\n\n  canInsertTextAfter(): boolean {\n    return false\n  }\n}\n\nfunction $convertMentionElement(element: HTMLElement): DOMConversionOutput {\n  const id = element.getAttribute('data-mention-id') ?? ''\n  const text = element.textContent ?? ''\n  const trigger = text.charAt(0) || '@'\n  const label = element.getAttribute('data-mention-label') ?? text.slice(1)\n  return { node: $createMentionNode({ id, label, trigger }) }\n}\n\nexport function $createMentionNode({ id, label, trigger = '@' }: { id: string; label: string; trigger?: string }): MentionNode {\n  return new MentionNode(id, label, trigger).setMode('token')\n}\n\nexport function $isMentionNode(node: LexicalNode | null | undefined): node is MentionNode {\n  return node instanceof MentionNode\n}\n\n/* ---------- markdown ---------- */\n\n// A mention is a link to `mention:<id>` whose text is the trigger and the label:\n// [@Tara Mendes](mention:tara-id). Plain CommonMark, readable, and the id survives.\nconst MENTION_RE = /\\[([^\\s\\\\\\]])((?:\\\\.|[^\\\\\\]])*)\\]\\(mention:([^)\\s]*)\\)/\nconst escapeLabel = (label: string) => label.replace(/[\\\\[\\]]/g, '\\\\$&')\nconst unescapeLabel = (label: string) => label.replace(/\\\\(.)/g, '$1')\n\nconst decodeId = (id: string) => {\n  try {\n    return decodeURIComponent(id)\n  } catch {\n    return id\n  }\n}\n\n/** The markdown transformer for mentions. Listed before LINK, which would read it as a link. */\nexport const MENTION: TextMatchTransformer = {\n  dependencies: [MentionNode],\n  export: (node, _exportChildren, exportFormat) => {\n    if (!$isMentionNode(node)) return null\n    const link = `[${node.getTrigger()}${escapeLabel(node.getLabel())}](mention:${encodeURIComponent(node.getId())})`\n    // Bold, italic and the rest go around the whole link (**[@Tara](mention:tara)**): the\n    // placeholder gets the marks, then the link takes its place, unescaped.\n    return exportFormat(node, '\\u0000').replace('\\u0000', link)\n  },\n  importRegExp: MENTION_RE,\n  regExp: new RegExp(`${MENTION_RE.source}$`),\n  replace: (textNode, match) => {\n    const [, trigger, label, id] = match\n    const mention = $createMentionNode({ id: decodeId(id), label: unescapeLabel(label), trigger })\n    mention.setFormat(textNode.getFormat())\n    textNode.replace(mention)\n  },\n  trigger: ')',\n  type: 'text-match',\n}\n\n/**\n * The markdown the editor reads and writes. No fenced code and no highlight: the editor has no\n * block for the one and no mark for the other.\n */\nexport const RICH_TEXT_TRANSFORMERS: Transformer[] = [\n  HEADING,\n  QUOTE,\n  UNORDERED_LIST,\n  ORDERED_LIST,\n  INLINE_CODE,\n  BOLD_ITALIC_STAR,\n  BOLD_ITALIC_UNDERSCORE,\n  BOLD_STAR,\n  BOLD_UNDERSCORE,\n  ITALIC_STAR,\n  ITALIC_UNDERSCORE,\n  STRIKETHROUGH,\n  MENTION,\n  LINK,\n]\n\n/**\n * The mentions in a value, in order, each once (by id). For markdown it reads the\n * `[@Label](mention:id)` links; for JSON, the `mention` nodes.\n */\nexport function richTextMentions(value: RichTextDocument, format: RichTextFormat = 'markdown'): RichTextMentionRef[] {\n  const found: RichTextMentionRef[] = []\n  const seen = new Set<string>()\n  const add = (m: RichTextMentionRef) => {\n    if (seen.has(m.id)) return\n    seen.add(m.id)\n    found.push(m)\n  }\n  if (format === 'json') {\n    if (!value) return found\n    const walk = (node: unknown) => {\n      if (!node || typeof node !== 'object') return\n      const n = node as { type?: string; id?: string; label?: string; trigger?: string; children?: unknown[] }\n      if (n.type === 'mention' && typeof n.id === 'string') add({ id: n.id, label: n.label ?? '', trigger: n.trigger ?? '@' })\n      n.children?.forEach(walk)\n    }\n    try {\n      walk((JSON.parse(value) as { root?: unknown }).root)\n    } catch {\n      // Not JSON: no mentions.\n    }\n    return found\n  }\n  for (const m of value.matchAll(new RegExp(MENTION_RE.source, 'g'))) {\n    add({ id: decodeId(m[3]), label: unescapeLabel(m[2]), trigger: m[1] })\n  }\n  return found\n}\n\n/* ---------- the engine ---------- */\n\n/** An update that loads a value from outside: it isn't sent back through onValueChange. */\nconst EXTERNAL_TAG = 'satin-rte-external'\nconst UNSUPPORTED_FORMATS: TextFormatType[] = ['underline', 'subscript', 'superscript', 'highlight']\n\nconst THEME = {\n  // The one mark with no element of its own; the rest are styled by element in rich-text-editor.css.\n  text: { strikethrough: 'satin-rte-strike' },\n}\n\n/** Replaces the document with `value`. JSON goes through `setEditorState`, markdown through an update. */\nfunction loadValue(editor: LexicalEditor, value: string, format: RichTextFormat, tag?: string) {\n  if (format === 'json' && value) {\n    editor.setEditorState(editor.parseEditorState(value), tag ? { tag } : undefined)\n    return\n  }\n  editor.update(() => $convertFromMarkdownString(format === 'json' ? '' : value, RICH_TEXT_TRANSFORMERS), { discrete: true, tag })\n}\n\nfunction serialize(state: EditorState, format: RichTextFormat): string {\n  if (format === 'json') return JSON.stringify(state.toJSON())\n  return state.read(() => $convertToMarkdownString(RICH_TEXT_TRANSFORMERS))\n}\n\nfunction readDoc(state: EditorState) {\n  return state.read(() => {\n    const root = $getRoot()\n    const text = root.getTextContent()\n    const first = root.getFirstChild()\n    const empty = text === '' && root.getChildrenSize() <= 1 && (first === null || $isParagraphNode(first))\n    return { length: text.length, empty }\n  })\n}\n\nfunction selectionRect(root: HTMLElement | null): DOMRect | null {\n  const selection = typeof window === 'undefined' ? null : window.getSelection()\n  if (!root || !selection || selection.rangeCount === 0) return null\n  const range = selection.getRangeAt(0)\n  if (!root.contains(range.commonAncestorContainer)) return null\n  const rect = range.getBoundingClientRect?.()\n  if (rect && (rect.width || rect.height)) return rect\n  return range.getClientRects?.()[0] ?? root.getBoundingClientRect()\n}\n\n/* ---------- context ---------- */\n\ninterface RichTextEditorContextValue {\n  /** The Lexical editor. Internal: the parts in this file reach it, apps get `RichTextEditorHandle`. */\n  editor: LexicalEditor\n  format: RichTextFormat\n  /** The editable area's id. */\n  contentId: string\n  /** What names the editable area (a label's id), if anything. */\n  labelledBy?: string\n  describedBy?: string\n  placeholder?: string\n  disabled: boolean\n  readOnly: boolean\n  invalid: boolean\n  required: boolean\n  /** The document has no text and one empty paragraph: the placeholder shows. */\n  empty: boolean\n  /** Characters of text, for a count. */\n  length: number\n  /** The editable area has focus: the field draws its ring. */\n  focused: boolean\n  setFocused: (focused: boolean) => void\n  /** The editable area, once mounted. */\n  setContentElement: (element: HTMLElement | null) => void\n  contentElement: HTMLElement | null\n}\n\nconst RichTextEditorContext = React.createContext<RichTextEditorContextValue | null>(null)\n\nfunction useRichTextEditorContext(part: string) {\n  const context = React.useContext(RichTextEditorContext)\n  if (!context) throw new Error(`${part} must be inside RichTextEditorRoot (or RichTextEditor).`)\n  return context\n}\n\n/* ---------- Root ---------- */\n\nexport interface RichTextEditorRootProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange' | 'id'> {\n  /** The document (controlled). Markdown or JSON, by `format`. */\n  value?: RichTextDocument\n  /** The document to start with (uncontrolled). */\n  defaultValue?: RichTextDocument\n  /** Each edit that changes the value, with the mentions in it. Never on mount, never for a selection change. */\n  onValueChange?: (value: RichTextDocument, details: RichTextValueDetails) => void\n  /** `'markdown'` (default) or `'json'` (Lexical's serialized editor state). */\n  format?: RichTextFormat\n  /** The editable area's id. A FormField's id, or generated, when left out. */\n  id?: string\n  /** The id of what names the editable area. A FormField's label when left out. */\n  labelledBy?: string\n  /** Ids added to the editable area's `aria-describedby`, after a FormField's. */\n  describedBy?: string\n  /** Shown in the empty editor, and its `aria-placeholder`. */\n  placeholder?: string\n  /** Not editable, out of the tab order, at 60%. A FormField's or Form's when left out. */\n  disabled?: boolean\n  /** Not editable, still focusable and selectable. */\n  readOnly?: boolean\n  /** Marks the editor invalid. A FormField's error sets it too. */\n  invalid?: boolean\n  required?: boolean\n  /** Names a hidden input that carries the value in a native form submit. A FormField's `name` when left out. */\n  name?: string\n  /** The editor's handle: focus, insert, insertText, getValue, getSelectionRect. */\n  editorRef?: React.Ref<RichTextEditorHandle>\n}\n\n/**\n * The engine and the value, with no look of its own: a `div` (`data-slot=\"rich-text-editor\"`)\n * that holds the parts. Other props, `ref` included, go to the `div`.\n */\nexport function RichTextEditorRoot({\n  value,\n  defaultValue,\n  onValueChange,\n  format = 'markdown',\n  id,\n  labelledBy,\n  describedBy,\n  placeholder,\n  disabled,\n  readOnly = false,\n  invalid,\n  required,\n  name,\n  editorRef,\n  className,\n  children,\n  ...props\n}: RichTextEditorRootProps) {\n  const field = useFormField()\n  const autoId = React.useId()\n  const contentId = id ?? field?.id ?? autoId\n  const isDisabled = disabled ?? field?.disabled ?? false\n  const isInvalid = invalid ?? field?.invalid ?? false\n  const isRequired = required ?? field?.required ?? false\n  const fieldName = name ?? field?.name\n  const controlled = value !== undefined\n\n  // Created once (StrictMode runs this twice and keeps one), with the first value loaded in a\n  // discrete update: it commits before the root element is set, so it never reaches onValueChange.\n  const [editor] = React.useState(() => {\n    const instance = createEditor({\n      namespace: 'satin-rich-text-editor',\n      theme: THEME,\n      nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, MentionNode],\n      editable: !isDisabled && !readOnly,\n      onError: (error) => {\n        throw error\n      },\n    })\n    loadValue(instance, value ?? defaultValue ?? '', format)\n    return instance\n  })\n\n  const initial = value ?? defaultValue ?? ''\n  // The last value sent out or taken in, and the values sent out that `value` hasn't come back with yet.\n  const lastValue = React.useRef(initial)\n  const pending = React.useRef<string[]>([])\n  const [uncontrolled, setUncontrolled] = React.useState(initial)\n  const current = controlled ? value : uncontrolled\n  const [doc, setDoc] = React.useState(() => readDoc(editor.getEditorState()))\n  const docRef = React.useRef(doc)\n  // The document as last serialised, sent or not.\n  const shown = React.useRef('')\n  const [focused, setFocused] = React.useState(false)\n  const [contentElement, setContentElement] = React.useState<HTMLElement | null>(null)\n\n  const onValueChangeRef = React.useRef(onValueChange)\n  React.useEffect(() => {\n    onValueChangeRef.current = onValueChange\n  })\n  const formatRef = React.useRef(format)\n  formatRef.current = format\n  const controlledRef = React.useRef(controlled)\n  controlledRef.current = controlled\n\n  React.useEffect(() => {\n    editor.setEditable(!isDisabled && !readOnly)\n  }, [editor, isDisabled, readOnly])\n\n  // The root element and every registration in one effect, undone together.\n  React.useEffect(() => {\n    if (!contentElement) return\n    editor.setRootElement(contentElement)\n    shown.current = serialize(editor.getEditorState(), formatRef.current)\n    const strip = (node: TextNode) => {\n      for (const f of UNSUPPORTED_FORMATS) if (node.hasFormat(f)) node.toggleFormat(f)\n    }\n    const unregister = mergeRegister(\n      registerRichText(editor),\n      registerList(editor),\n      registerHistory(editor, createEmptyHistoryState(), 300),\n      editor.registerCommand(\n        TOGGLE_LINK_COMMAND,\n        (payload) => {\n          if (payload === null || typeof payload === 'string') $toggleLink(payload)\n          else {\n            const { url, ...attributes } = payload\n            $toggleLink(url, attributes)\n          }\n          return true\n        },\n        COMMAND_PRIORITY_EDITOR,\n      ),\n      // ⌘U and the rest of the unsupported marks do nothing; pasted ones are stripped below.\n      editor.registerCommand(FORMAT_TEXT_COMMAND, (f) => UNSUPPORTED_FORMATS.includes(f), COMMAND_PRIORITY_HIGH),\n      editor.registerNodeTransform(TextNode, strip),\n      editor.registerNodeTransform(MentionNode, strip),\n      editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }) => {\n        const next = readDoc(editorState)\n        if (next.empty !== docRef.current.empty || next.length !== docRef.current.length) {\n          docRef.current = next\n          setDoc(next)\n        }\n        if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return\n        // Registering transforms marks nodes dirty without changing them (and a mark that's\n        // stripped changes nothing): only a different serialisation is an edit.\n        const serialized = serialize(editorState, formatRef.current)\n        if (serialized === shown.current) return\n        shown.current = serialized\n        if (tags.has(EXTERNAL_TAG) || serialized === lastValue.current) return\n        lastValue.current = serialized\n        pending.current.push(serialized)\n        if (!controlledRef.current) setUncontrolled(serialized)\n        onValueChangeRef.current?.(serialized, { mentions: richTextMentions(serialized, formatRef.current) })\n      }),\n    )\n    return () => {\n      unregister()\n      editor.setRootElement(null)\n    }\n  }, [editor, contentElement])\n\n  // A `value` the editor sent itself is an echo: drop it and the older ones from the queue. Any\n  // other value replaces the document (never compared with a re-serialisation, which may spell it\n  // differently) and clears undo.\n  React.useEffect(() => {\n    if (value === undefined) return\n    const queue = pending.current\n    const echo = queue.indexOf(value)\n    if (echo !== -1) {\n      queue.splice(0, echo + 1)\n      return\n    }\n    if (value === lastValue.current) return\n    lastValue.current = value\n    queue.length = 0\n    loadValue(editor, value, formatRef.current, EXTERNAL_TAG)\n    shown.current = serialize(editor.getEditorState(), formatRef.current)\n    editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined)\n  }, [editor, value])\n\n  React.useImperativeHandle(\n    editorRef,\n    (): RichTextEditorHandle => {\n      const $selectionOrEnd = () => {\n        const selection = $getSelection()\n        if ($isRangeSelection(selection)) return selection\n        $getRoot().selectEnd()\n        return $getSelection()\n      }\n      return {\n        focus: () => {\n          // Focus now (Lexical's focus restores the selection in an update, a moment later).\n          editor.getRootElement()?.focus({ preventScroll: true })\n          editor.focus()\n        },\n        insert: (markdown) =>\n          editor.update(\n            () => {\n              const selection = $selectionOrEnd()\n              if (!$isRangeSelection(selection)) return\n              $insertNodes($generateNodesFromMarkdownString(markdown, RICH_TEXT_TRANSFORMERS))\n            },\n            { discrete: true },\n          ),\n        insertText: (text) =>\n          editor.update(\n            () => {\n              const selection = $selectionOrEnd()\n              if ($isRangeSelection(selection)) selection.insertText(text)\n            },\n            { discrete: true },\n          ),\n        getValue: () => serialize(editor.getEditorState(), formatRef.current),\n        getSelectionRect: () => selectionRect(editor.getRootElement()),\n      }\n    },\n    [editor],\n  )\n\n  const context: RichTextEditorContextValue = {\n    editor,\n    format,\n    contentId,\n    labelledBy: labelledBy ?? field?.labelId,\n    describedBy: [field?.describedBy, describedBy].filter(Boolean).join(' ') || undefined,\n    placeholder,\n    disabled: isDisabled,\n    readOnly,\n    invalid: isInvalid,\n    required: isRequired,\n    empty: doc.empty,\n    length: doc.length,\n    focused,\n    setFocused,\n    contentElement,\n    setContentElement,\n  }\n\n  return (\n    <RichTextEditorContext.Provider value={context}>\n      <div\n        data-slot=\"rich-text-editor\"\n        data-disabled={isDisabled || undefined}\n        data-readonly={readOnly || undefined}\n        className={cn('satin-rte-root', className)}\n        {...props}\n      >\n        {children}\n        {fieldName && <input type=\"hidden\" name={fieldName} value={current} disabled={isDisabled} />}\n      </div>\n    </RichTextEditorContext.Provider>\n  )\n}\n\n/* ---------- Content ---------- */\n\nexport interface RichTextEditorContentProps extends Omit<React.ComponentProps<'div'>, 'children'> {\n  /** Drawn inside the field, before the editable area: where a toolbar goes. */\n  // TODO(P2b): RichTextToolbar goes here.\n  children?: React.ReactNode\n  /** Focus the editor on mount. */\n  autoFocus?: boolean\n  /** Show a state without interacting, for state sheets. */\n  'data-force'?: 'hover' | 'focus'\n}\n\n/**\n * The field (`.satin-field`, Textarea's skin) with the editable area in it\n * (`data-slot=\"rich-text-editor-content\"`, `role=\"textbox\"`), the placeholder and the resize\n * grip. `className` and the field's other props go to the field; `id`, `aria-label`,\n * `aria-labelledby`, `aria-describedby` and `autoFocus` to the editable area.\n */\nexport function RichTextEditorContent({\n  children,\n  className,\n  id,\n  autoFocus,\n  'aria-label': ariaLabel,\n  'aria-labelledby': ariaLabelledBy,\n  'aria-describedby': ariaDescribedBy,\n  'data-force': force,\n  ...props\n}: RichTextEditorContentProps) {\n  const labels = useLabels()\n  const ctx = useRichTextEditorContext('RichTextEditorContent')\n  const { editor, setContentElement, setFocused } = ctx\n  const editable = !ctx.disabled && !ctx.readOnly\n  const labelledBy = ariaLabelledBy ?? (ariaLabel ? undefined : ctx.labelledBy)\n  const describedBy = [ariaDescribedBy, ctx.describedBy].filter(Boolean).join(' ') || undefined\n\n  React.useEffect(() => {\n    if (autoFocus && ctx.contentElement) editor.focus()\n    // Only on mount, once the editable area is there.\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [ctx.contentElement])\n\n  return (\n    <div\n      data-slot=\"rich-text-editor-field\"\n      data-invalid={ctx.invalid || undefined}\n      data-disabled={ctx.disabled || undefined}\n      data-filled={!ctx.empty || undefined}\n      data-focused={ctx.focused || undefined}\n      data-force={force ?? (ctx.focused ? 'focus' : undefined)}\n      className={cn('satin-field satin-rte', className)}\n      {...props}\n    >\n      {children}\n      <div className=\"satin-rte-scroll\">\n        <div\n          ref={setContentElement}\n          id={id ?? ctx.contentId}\n          data-slot=\"rich-text-editor-content\"\n          className=\"satin-rte-content\"\n          contentEditable={editable}\n          suppressContentEditableWarning\n          role=\"textbox\"\n          tabIndex={ctx.disabled ? undefined : 0}\n          aria-multiline\n          aria-label={ariaLabel ?? (labelledBy ? undefined : labels.richTextEditor)}\n          aria-labelledby={labelledBy}\n          aria-describedby={describedBy}\n          aria-invalid={ctx.invalid || undefined}\n          aria-required={ctx.required || undefined}\n          aria-readonly={ctx.readOnly || undefined}\n          aria-disabled={ctx.disabled || undefined}\n          aria-placeholder={ctx.empty && ctx.placeholder ? ctx.placeholder : undefined}\n          onFocus={() => setFocused(true)}\n          onBlur={() => setFocused(false)}\n        />\n        {ctx.empty && ctx.placeholder && (\n          <div className=\"satin-rte-placeholder\" aria-hidden>\n            {ctx.placeholder}\n          </div>\n        )}\n      </div>\n      {/* Textarea's grip, 7px at 1px in text/subtle. */}\n      <svg className=\"satin-rte-grip\" viewBox=\"0 0 7 7\" fill=\"none\" aria-hidden>\n        <path d=\"M6.5 0.5L0.5 6.5M6.5 4L4 6.5\" stroke=\"currentColor\" strokeLinecap=\"round\" />\n      </svg>\n    </div>\n  )\n}\n\n/* ---------- RichTextEditor ---------- */\n\nexport interface RichTextEditorProps extends Omit<RichTextEditorRootProps, 'children' | 'labelledBy' | 'describedBy' | 'invalid'> {\n  label?: React.ReactNode\n  /** Adds a muted \"(Optional)\" after the label: the `optional` label. */\n  optional?: boolean\n  hint?: React.ReactNode\n  /** An error message (replaces the hint), or `true` to mark the editor invalid without one. */\n  error?: React.ReactNode | boolean\n  /** Under the field on the right, like Textarea's counter: \"Saved\", a count of your own. */\n  status?: React.ReactNode\n  /** Shows a `length/maxLength` count of the text (not the markdown) in the status slot. Not enforced. */\n  maxLength?: number\n  /** Focus the editor on mount. */\n  autoFocus?: boolean\n  'aria-label'?: string\n  'aria-labelledby'?: string\n  'aria-describedby'?: string\n  /** Classes for the field (the edge and the editable area). `className` styles the outer wrapper. */\n  fieldClassName?: string\n  /** The formatting toolbar: `true` (default), `'minimal'` (bold, italic, list, link) or `false`. Not drawn yet. */\n  // TODO(P2b): the toolbar, the link popover and the selection bubble.\n  toolbar?: boolean | 'minimal'\n  /** The `@` menu: where mentions come from. Not wired yet; mentions in a value already load and round-trip. */\n  // TODO(P2c): the mention menu, on Free's PromptMentionsMenu and usePromptMenuState.\n  mentions?: {\n    /** The character that opens the menu. Defaults to `@`. */\n    trigger?: string\n    search: (query: string) => RichTextMention[] | Promise<RichTextMention[]>\n  }\n  /** The `/` menu. Not wired yet. */\n  // TODO(P2c): the command menu.\n  commands?: RichTextCommand[]\n  /** Show a state without interacting, for state sheets. */\n  'data-force'?: 'hover' | 'focus'\n}\n\n/**\n * The editor for the common case: `RichTextEditorRoot` and `RichTextEditorContent` with a label,\n * the hint or the error, and the status row. Other props, `ref` included, go to the root `div`.\n */\nexport function RichTextEditor({\n  label,\n  optional,\n  hint,\n  error,\n  status,\n  maxLength,\n  autoFocus,\n  id,\n  'aria-label': ariaLabel,\n  'aria-labelledby': ariaLabelledBy,\n  'aria-describedby': ariaDescribedBy,\n  fieldClassName,\n  className,\n  // TODO(P2b, P2c): the toolbar, the mention menu and the command menu.\n  toolbar: _toolbar,\n  mentions: _mentions,\n  commands: _commands,\n  'data-force': force,\n  ...props\n}: RichTextEditorProps) {\n  const labels = useLabels()\n  const field = useFormField()\n  const autoId = React.useId()\n  const contentId = id ?? field?.id ?? autoId\n  const hasMessage = typeof error === 'string' || React.isValidElement(error)\n  const message = hasMessage ? error : hint\n  const labelId = label ? `${contentId}-label` : undefined\n  const messageId = message ? `${contentId}-hint` : undefined\n  const counterId = maxLength != null ? `${contentId}-counter` : undefined\n  const statusId = status != null && status !== false ? `${contentId}-status` : undefined\n  const editorRef = React.useRef<RichTextEditorHandle>(null)\n  const outerEditorRef = props.editorRef\n  const editorRefs = React.useMemo(() => mergeRefs(outerEditorRef, editorRef), [outerEditorRef])\n\n  return (\n    <RichTextEditorRoot\n      {...props}\n      id={contentId}\n      labelledBy={labelId}\n      describedBy={[messageId, counterId, statusId].filter(Boolean).join(' ') || undefined}\n      invalid={Boolean(error) || (field?.invalid ?? false)}\n      editorRef={editorRefs}\n      className={cn('sa:grid sa:w-full sa:gap-2', className)}\n    >\n      {label && (\n        <div className=\"sa:flex sa:items-center sa:gap-1\">\n          <label\n            id={labelId}\n            onClick={(e) => {\n              // A label can't point at a contenteditable box: it focuses the editor itself.\n              e.preventDefault()\n              editorRef.current?.focus()\n            }}\n            className=\"sa:text-sm sa:leading-[18px] sa:font-medium sa:text-text-default\"\n          >\n            {label}\n          </label>\n          {optional && <span className=\"sa:text-sm sa:text-text-muted\">{labels.optional}</span>}\n        </div>\n      )}\n      <RichTextEditorContent\n        className={fieldClassName}\n        autoFocus={autoFocus}\n        aria-label={ariaLabel}\n        aria-labelledby={ariaLabelledBy}\n        aria-describedby={ariaDescribedBy}\n        data-force={force}\n      />\n      <StatusRow message={message} messageId={messageId} isError={hasMessage} status={status} statusId={statusId} maxLength={maxLength} counterId={counterId} />\n    </RichTextEditorRoot>\n  )\n}\n\nfunction StatusRow({\n  message,\n  messageId,\n  isError,\n  status,\n  statusId,\n  maxLength,\n  counterId,\n}: {\n  message: React.ReactNode\n  messageId?: string\n  isError: boolean\n  status: React.ReactNode\n  statusId?: string\n  maxLength?: number\n  counterId?: string\n}) {\n  const ctx = useRichTextEditorContext('RichTextEditor')\n  if (!message && !statusId && maxLength == null) return null\n  return (\n    <div className={cn('sa:flex sa:items-start sa:gap-2 sa:text-sm', isError ? 'sa:text-text-destructive' : 'sa:text-text-muted')}>\n      <p id={messageId} className=\"sa:min-w-0 sa:flex-1\">\n        {message}\n      </p>\n      {statusId && (\n        <div id={statusId} className=\"sa:shrink-0 sa:text-sm sa:whitespace-nowrap sa:text-text-muted\">\n          {status}\n        </div>\n      )}\n      {maxLength != null && (\n        <CharacterCount id={counterId} count={ctx.length} max={maxLength} className={isError ? 'sa:text-text-destructive' : undefined} />\n      )}\n    </div>\n  )\n}\n\nfunction mergeRefs<T>(...refs: (React.Ref<T> | undefined)[]): React.RefCallback<T> {\n  return (value) => {\n    const cleanups = refs.map((ref) => {\n      if (typeof ref === 'function') return ref(value)\n      if (ref) (ref as React.RefObject<T | null>).current = value\n    })\n    return () => {\n      refs.forEach((ref, i) => {\n        const cleanup = cleanups[i]\n        if (typeof cleanup === 'function') cleanup()\n        else if (typeof ref === 'function') ref(null)\n        else if (ref) (ref as React.RefObject<T | null>).current = null\n      })\n    }\n  }\n}\n"
+    }
+  ],
+  "docs": "Rich text editor docs: https://uisatin.dev/components/rich-text-editor",
+  "meta": {
+    "version": "0.7.1",
+    "edition": "pro",
+    "props": {
+      "RichTextEditorRoot": {
+        "description": "The engine and the value, with no look of its own: a `div` (`data-slot=\"rich-text-editor\"`) that holds the parts. Other props, `ref` included, go to the `div`.",
+        "type": "RichTextEditorRootProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange' | 'id'>"
+        ],
+        "props": [
+          {
+            "name": "value",
+            "type": "RichTextDocument",
+            "required": false,
+            "description": "The document (controlled). Markdown or JSON, by `format`."
+          },
+          {
+            "name": "defaultValue",
+            "type": "RichTextDocument",
+            "required": false,
+            "description": "The document to start with (uncontrolled)."
+          },
+          {
+            "name": "onValueChange",
+            "type": "(value: RichTextDocument, details: RichTextValueDetails) => void",
+            "required": false,
+            "description": "Each edit that changes the value, with the mentions in it. Never on mount, never for a selection change."
+          },
+          {
+            "name": "format",
+            "type": "RichTextFormat",
+            "required": false,
+            "default": "'markdown'",
+            "description": "`'markdown'` (default) or `'json'` (Lexical's serialized editor state)."
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "required": false,
+            "description": "The editable area's id. A FormField's id, or generated, when left out."
+          },
+          {
+            "name": "labelledBy",
+            "type": "string",
+            "required": false,
+            "description": "The id of what names the editable area. A FormField's label when left out."
+          },
+          {
+            "name": "describedBy",
+            "type": "string",
+            "required": false,
+            "description": "Ids added to the editable area's `aria-describedby`, after a FormField's."
+          },
+          {
+            "name": "placeholder",
+            "type": "string",
+            "required": false,
+            "description": "Shown in the empty editor, and its `aria-placeholder`."
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false,
+            "description": "Not editable, out of the tab order, at 60%. A FormField's or Form's when left out."
+          },
+          {
+            "name": "readOnly",
+            "type": "boolean",
+            "required": false,
+            "default": "false",
+            "description": "Not editable, still focusable and selectable."
+          },
+          {
+            "name": "invalid",
+            "type": "boolean",
+            "required": false,
+            "description": "Marks the editor invalid. A FormField's error sets it too."
+          },
+          {
+            "name": "required",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "Names a hidden input that carries the value in a native form submit. A FormField's `name` when left out."
+          },
+          {
+            "name": "editorRef",
+            "type": "React.Ref<RichTextEditorHandle>",
+            "required": false,
+            "description": "The editor's handle: focus, insert, insertText, getValue, getSelectionRect."
+          }
+        ]
+      },
+      "RichTextEditorContent": {
+        "description": "The field (`.satin-field`, Textarea's skin) with the editable area in it (`data-slot=\"rich-text-editor-content\"`, `role=\"textbox\"`), the placeholder and the resize grip. `className` and the field's other props go to the field; `id`, `aria-label`, `aria-labelledby`, `aria-describedby` and `autoFocus` to the editable area.",
+        "type": "RichTextEditorContentProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'children'>"
+        ],
+        "props": [
+          {
+            "name": "children",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "Drawn inside the field, before the editable area: where a toolbar goes."
+          },
+          {
+            "name": "autoFocus",
+            "type": "boolean",
+            "required": false,
+            "description": "Focus the editor on mount."
+          },
+          {
+            "name": "data-force",
+            "type": "'hover' | 'focus'",
+            "required": false,
+            "description": "Show a state without interacting, for state sheets."
+          }
+        ]
+      },
+      "RichTextEditor": {
+        "description": "The editor for the common case: `RichTextEditorRoot` and `RichTextEditorContent` with a label, the hint or the error, and the status row. Other props, `ref` included, go to the root `div`.",
+        "type": "RichTextEditorProps",
+        "extends": [
+          "Omit<RichTextEditorRootProps, 'children' | 'labelledBy' | 'describedBy' | 'invalid'>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "optional",
+            "type": "boolean",
+            "required": false,
+            "description": "Adds a muted \"(Optional)\" after the label: the `optional` label."
+          },
+          {
+            "name": "hint",
+            "type": "React.ReactNode",
+            "required": false
+          },
+          {
+            "name": "error",
+            "type": "React.ReactNode | boolean",
+            "required": false,
+            "description": "An error message (replaces the hint), or `true` to mark the editor invalid without one."
+          },
+          {
+            "name": "status",
+            "type": "React.ReactNode",
+            "required": false,
+            "description": "Under the field on the right, like Textarea's counter: \"Saved\", a count of your own."
+          },
+          {
+            "name": "maxLength",
+            "type": "number",
+            "required": false,
+            "description": "Shows a `length/maxLength` count of the text (not the markdown) in the status slot. Not enforced."
+          },
+          {
+            "name": "autoFocus",
+            "type": "boolean",
+            "required": false,
+            "description": "Focus the editor on mount."
+          },
+          {
+            "name": "aria-label",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "aria-labelledby",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "aria-describedby",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "fieldClassName",
+            "type": "string",
+            "required": false,
+            "description": "Classes for the field (the edge and the editable area). `className` styles the outer wrapper."
+          },
+          {
+            "name": "toolbar",
+            "type": "boolean | 'minimal'",
+            "required": false,
+            "description": "The formatting toolbar: `true` (default), `'minimal'` (bold, italic, list, link) or `false`. Not drawn yet."
+          },
+          {
+            "name": "mentions",
+            "type": "{ /** The character that opens the menu. Defaults to `@`. */ trigger?: string search: (query: string) => RichTextMention[] | Promise<RichTextMention[]> }",
+            "required": false,
+            "description": "The `@` menu: where mentions come from. Not wired yet; mentions in a value already load and round-trip."
+          },
+          {
+            "name": "commands",
+            "type": "RichTextCommand[]",
+            "required": false,
+            "description": "The `/` menu. Not wired yet."
+          },
+          {
+            "name": "data-force",
+            "type": "'hover' | 'focus'",
+            "required": false,
+            "description": "Show a state without interacting, for state sheets."
+          }
+        ]
+      }
+    }
+  }
+}

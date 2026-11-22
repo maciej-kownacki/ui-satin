@@ -295,6 +295,13 @@ export const allNav: NavGroup[] = [
         description: 'A day, week or month of events over time slots: drag to move or resize, pick free slots to book.',
         edition: 'pro',
       },
+      {
+        id: 'rich-text-editor',
+        title: 'Rich text editor',
+        href: '/components/rich-text-editor',
+        description: 'A field for notes, emails and briefs with headings, lists, links and @mentions, its value in markdown.',
+        edition: 'pro',
+      },
       { id: 'search-bar', title: 'Search bar', href: '/components/search-bar', description: 'A search field for the sidebar or a toolbar, with ⌘K to focus it from anywhere.' },
       { id: 'segmented-control', title: 'Segmented control', href: '/components/segmented-control', description: 'Switches between two to five views or filters in place.' },
       { id: 'select', title: 'Select', href: '/components/select', description: 'Picks one value from a list, with a label, a hint and an error like any field.' },
@@ -355,7 +362,7 @@ export const allNav: NavGroup[] = [
  * preview builds show them. The one list to edit when a page is done.
  */
 export const unreleased = new Set<string>([
-  'command-pages', 'scheduler', 'stepper', 'review-queue', 'toolbar',
+  'command-pages', 'scheduler', 'stepper', 'review-queue', 'toolbar', 'rich-text-editor',
 ])
 
 /**

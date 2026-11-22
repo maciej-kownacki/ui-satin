@@ -766,6 +766,17 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Tab'], action: 'Out of the field, through the chips\' remove buttons and the "+N" chip.' },
     ],
   },
+  'rich-text-editor': {
+    summary:
+      'The editable area is a `div` with `contenteditable`, `role="textbox"` and `aria-multiline`, named by the label through `aria-labelledby` (a FormField\'s label too; with neither, `aria-label` or "Text editor", `richTextEditor` in SatinLabels). Clicking the label focuses it. The hint or the error and the count describe it (`aria-describedby`); an error sets `aria-invalid`, a required FormField `aria-required`. The placeholder is its `aria-placeholder`, and the visible one is hidden from screen readers. Headings, lists, quotes and links are real elements, so a screen reader moves through them as on a page. A mention reads as its text, "@Tara Mendes". Read-only stays in the tab order with `aria-readonly`, and its text can be selected and copied; disabled leaves the tab order and is `aria-disabled`. The focus ring is drawn on the field while the editable area has focus.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves focus into the editor and out of it; Tab never stays in the text.' },
+      { keys: ['⌘B', '⌘I'], action: 'Bold, italic on the selection or what is typed next.' },
+      { keys: ['⌘Z', '⌘⇧Z'], action: 'Undoes and redoes the last edits.' },
+      { keys: ['Enter'], action: 'A new paragraph, or a new list item; on an empty list item, leaves the list.' },
+      { keys: ['⇧Enter'], action: 'A line break in the same paragraph.' },
+    ],
+  },
   'date-availability': {
     summary:
       'Calendar\'s grid, one tab stop, with each day a `button` named by its full date and what it offers: "Thursday, November 26, 2026, 3 free slots", or why it can\'t be picked ("…, Fully booked", or the app\'s `reason`). A full day has `aria-disabled` instead of `disabled`, so the arrow keys reach it and its tooltip opens there; Enter and clicks do nothing. The dots are hidden from screen readers, and the tooltip isn\'t added as a description, since the name already says it. Few slots read as a ring, not only a colour. Translate the words with `availabilitySlots`, `availabilityFreeSlots`, `availabilityFull` and `availabilityDay` in SatinLabels.',
