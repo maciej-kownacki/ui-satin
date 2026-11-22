@@ -707,6 +707,90 @@ describe('CommentsThread', () => {
     expect(field().value).toBe('Signed today')
   })
 
+  it('takes off only marks the body reads as a pair', async () => {
+    const { user } = renderWithSatin(<Live onReply={() => {}} />)
+    await user.click(field())
+    await user.keyboard('snake_case_name')
+    act(() => field().setSelectionRange(6, 10))
+    await user.keyboard('{Control>}i{/Control}')
+    // The underscores inside the word were never italic: the selection is wrapped, not unwrapped.
+    expect(field().value).toBe('snake__case__name')
+    act(() => fireEvent.change(field(), { target: { value: '**a** b **c**' } }))
+    act(() => field().setSelectionRange(5, 8))
+    await user.keyboard('{Control>}b{/Control}')
+    expect(field().value).toBe('**a** **b** **c**')
+    expect(field().value.slice(field().selectionStart, field().selectionEnd)).toBe('b')
+  })
+
+  it('trims the selection and marks each line on its own, and takes them all off again', async () => {
+    const { user } = renderWithSatin(<Live onReply={() => {}} />)
+    await user.click(field())
+    await user.keyboard('say hi there')
+    act(() => field().setSelectionRange(3, 7))
+    await user.keyboard('{Control>}b{/Control}')
+    expect(field().value).toBe('say **hi** there')
+    expect(field().value.slice(field().selectionStart, field().selectionEnd)).toBe('hi')
+    act(() => fireEvent.change(field(), { target: { value: 'one\n\n two \n' } }))
+    act(() => field().setSelectionRange(0, 11))
+    await user.keyboard('{Control>}i{/Control}')
+    expect(field().value).toBe('_one_\n\n _two_ \n')
+    expect(field().value.slice(field().selectionStart, field().selectionEnd)).toBe('one_\n\n _two')
+    act(() => field().setSelectionRange(0, 15))
+    await user.keyboard('{Control>}i{/Control}')
+    expect(field().value).toBe('one\n\n two \n')
+    expect(field().value.slice(field().selectionStart, field().selectionEnd)).toBe('one\n\n two')
+  })
+
+  it('takes a mark off through other marks round the selection', async () => {
+    const { user } = renderWithSatin(<Live onReply={() => {}} />)
+    await user.click(field())
+    act(() => fireEvent.change(field(), { target: { value: 'go **_`x`_** now' } }))
+    act(() => field().setSelectionRange(7, 8))
+    await user.keyboard('{Control>}b{/Control}')
+    expect(field().value).toBe('go _`x`_ now')
+    expect(field().value.slice(field().selectionStart, field().selectionEnd)).toBe('x')
+    await user.keyboard('{Control>}i{/Control}')
+    expect(field().value).toBe('go `x` now')
+    expect(field().value.slice(field().selectionStart, field().selectionEnd)).toBe('x')
+  })
+
+  it('leaves the selection where it is when the browser takes only part of a format', async () => {
+    const { user } = renderWithSatin(<Live onReply={() => {}} />)
+    await user.click(field())
+    await user.keyboard('Signed today')
+    let calls = 0
+    const exec = vi.fn((_command: string, _ui?: boolean, insert?: string) => {
+      if (calls++ > 0) return false
+      const el = field()
+      el.setRangeText(insert ?? '', el.selectionStart, el.selectionEnd, 'end')
+      el.dispatchEvent(new Event('input', { bubbles: true }))
+      return true
+    })
+    const had = Object.getOwnPropertyDescriptor(document, 'execCommand')
+    Object.defineProperty(document, 'execCommand', { configurable: true, value: exec })
+    try {
+      act(() => field().setSelectionRange(7, 12))
+      await user.keyboard('{Control>}b{/Control}')
+    } finally {
+      if (had) Object.defineProperty(document, 'execCommand', had)
+      else delete (document as { execCommand?: unknown }).execCommand
+    }
+    expect(exec).toHaveBeenCalledTimes(2)
+    expect(field().value).toBe('Signed today**')
+    // Not the [9, 14] the whole format would have selected.
+    expect([field().selectionStart, field().selectionEnd]).toEqual([7, 7])
+  })
+
+  it('keeps ⌘/Ctrl+B, I, E and K for the mentions menu while it is open', async () => {
+    const { user } = renderWithSatin(<Live onReply={() => {}} mentions={{ search: () => [tara] }} />)
+    await user.click(field())
+    await user.keyboard('@ta')
+    expect(screen.getByRole('listbox', { name: 'Mentions' })).toBeTruthy()
+    for (const key of ['b', 'i', 'e', 'k']) await user.keyboard(`{Control>}${key}{/Control}`)
+    expect(field().value).toBe('@ta')
+    expect(screen.getByRole('listbox', { name: 'Mentions' })).toBeTruthy()
+  })
+
   it('never splits a mention: a selection cutting into one takes all of it, and the mention moves', async () => {
     const onReply = vi.fn()
     const { user } = renderWithSatin(<Live onReply={onReply} mentions={{ search: () => [tara] }} />)
@@ -748,6 +832,30 @@ describe('CommentsThread', () => {
     const items = within(body.querySelector('ul')!).getAllByRole('listitem')
     expect(items.map((li) => li.textContent)).toEqual(['one', 'two'])
     expect(body.querySelectorAll('p')).toHaveLength(1)
+  })
+
+  it('reads mentions in a link as text, and in its address as written', () => {
+    renderWithSatin(
+      <CommentsThread
+        currentUser={you}
+        comments={[
+          {
+            id: 'ln',
+            author: tom,
+            body: '[ask **@Tara Mendes**](https://example.com) or [page](https://example.com/@Tom)',
+            at: at1,
+            mentions: [
+              { id: 'u-tara', label: 'Tara Mendes', start: 7, end: 19 },
+              { id: 'u-tom', label: 'Tom', start: 74, end: 78 },
+            ],
+          },
+        ]}
+      />,
+    )
+    const ask = screen.getByRole('link', { name: 'ask @Tara Mendes' })
+    expect(ask.querySelector('[data-slot="mention"]')).toBeNull()
+    expect(ask.querySelector('strong')!.textContent).toBe('@Tara Mendes')
+    expect(screen.getByRole('link', { name: 'page' }).getAttribute('href')).toBe('https://example.com/@Tom')
   })
 
   it('marks an agent’s comment: the agent mark and an Agent badge, no Edit', () => {

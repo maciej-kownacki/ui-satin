@@ -330,7 +330,8 @@ function renderBody(body: string, mentions: CommentMention[] | undefined): React
     if (run) out.push(run)
     return out
   }
-  const inline = (s: string): React.ReactNode[] => {
+  // `plain`: inside a link, where a mention reads as its text, never a focusable span inside the `<a>`.
+  const inline = (s: string, plain = false): React.ReactNode[] => {
     const out: React.ReactNode[] = []
     let rest = s
     while (rest) {
@@ -345,7 +346,7 @@ function renderBody(body: string, mentions: CommentMention[] | undefined): React
       }
       if (!best) break
       const { kind, match, index } = best
-      if (index > 0) out.push(...restore(rest.slice(0, index)))
+      if (index > 0) out.push(...restore(rest.slice(0, index), plain))
       const inner = (kind === 'italic' ? (match[2] ?? match[4]) : (match[1] ?? match[2])) ?? ''
       if (kind === 'code')
         out.push(
@@ -354,22 +355,23 @@ function renderBody(body: string, mentions: CommentMention[] | undefined): React
           </code>,
         )
       else if (kind === 'link') {
-        const url = match[2]!
+        // The address as written: a mention in it is its text again, and only then is it checked.
+        const url = restore(match[2]!, true).join('')
         out.push(
           SAFE_URL.test(url) ? (
             <Link key={key++} href={url}>
-              {inline(inner)}
+              {inline(inner, true)}
             </Link>
           ) : (
-            <React.Fragment key={key++}>{inline(inner)}</React.Fragment>
+            <React.Fragment key={key++}>{inline(inner, plain)}</React.Fragment>
           ),
         )
-      } else if (kind === 'bold') out.push(<strong key={key++} className="font-semibold">{inline(inner)}</strong>)
-      else if (kind === 'strike') out.push(<s key={key++}>{inline(inner)}</s>)
-      else out.push(<em key={key++} className="italic">{inline(inner)}</em>)
+      } else if (kind === 'bold') out.push(<strong key={key++} className="font-semibold">{inline(inner, plain)}</strong>)
+      else if (kind === 'strike') out.push(<s key={key++}>{inline(inner, plain)}</s>)
+      else out.push(<em key={key++} className="italic">{inline(inner, plain)}</em>)
       rest = rest.slice(match.index + match[0].length)
     }
-    if (rest) out.push(...restore(rest))
+    if (rest) out.push(...restore(rest, plain))
     return out
   }
 
@@ -618,8 +620,9 @@ function mapThrough(pos: number, edits: TextEdit[]) {
 }
 
 /**
- * The edits a format makes to the selection [a, b], and the selection after. Marks wrap the
- * selection (or go round the caret); a list puts "- " before each line it touches, or takes it
+ * The edits a format makes to the selection [a, b], and the selection after. Marks wrap each line
+ * of the selection, trimmed (or go round the caret), or come off where the parser reads them as a
+ * pair; a list puts "- " before each line it touches, or takes it
  * off when they all have it; a link wraps the text as `[text](url)` and selects `url`.
  */
 function formatEdits(text: string, a: number, b: number, format: Format): { edits: TextEdit[]; select: [number, number] } {
@@ -639,32 +642,95 @@ function formatEdits(text: string, a: number, b: number, format: Format): { edit
     ]
     return { edits, select: a === b ? [a + 1, a + 1] : [b + 3, b + 3 + LINK_URL.length] }
   }
-  const mark = format === 'bold' ? '**' : format === 'italic' ? '_' : '`'
+  const mark: Mark = format === 'bold' ? '**' : format === 'italic' ? '_' : '`'
   const m = mark.length
-  // Pressed again, a mark takes itself off: around the selection, or at its own ends.
-  if (text.slice(a - m, a) === mark && text.slice(b, b + m) === mark)
-    return {
-      edits: [
-        { at: b, remove: m, insert: '' },
-        { at: a - m, remove: m, insert: '' },
-      ],
-      select: [a - m, b - m],
-    }
-  if (b - a >= 2 * m && text.slice(a, a + m) === mark && text.slice(b - m, b) === mark)
-    return {
-      edits: [
-        { at: b - m, remove: m, insert: '' },
-        { at: a, remove: m, insert: '' },
-      ],
-      select: [a, b - 2 * m],
-    }
-  return {
-    edits: [
-      { at: b, remove: 0, insert: mark },
-      { at: a, remove: 0, insert: mark },
-    ],
-    select: [a + mark.length, b + mark.length],
+  // Each line the selection touches, trimmed: marks round whitespace or a line break don't render.
+  const lines: [number, number][] = []
+  for (let from = a, i = a; i <= b; i++) {
+    if (i < b && text[i] !== '\n') continue
+    let x = from
+    let y = i
+    while (x < y && /\s/.test(text[x]!)) x++
+    while (y > x && /\s/.test(text[y - 1]!)) y--
+    if (x < y) lines.push([x, y])
+    from = i + 1
   }
+  // A caret, or only whitespace: the marks go round the caret.
+  if (!lines.length) lines.push([a, a])
+  // Pressed again, a mark takes itself off, when every line has it; otherwise the lines without it get it.
+  const offs = lines.map(([x, y]) => markOff(text, x, y, mark))
+  const off = offs.every(Boolean)
+  const parts: MarkPart[] = lines.map(([x, y], i) => {
+    const found = offs[i]
+    if (found) return off ? found : { edits: [], inner: found.inner, open: 0, by: 0 }
+    return {
+      edits: [
+        { at: x, remove: 0, insert: mark },
+        { at: y, remove: 0, insert: mark },
+      ],
+      inner: [x, y],
+      open: m,
+      by: 2 * m,
+    }
+  })
+  // The selection after: from the first line's text to the last's, inside their marks.
+  let by = 0
+  const inner = parts.map((p) => {
+    const at: [number, number] = [p.inner[0] + by + p.open, p.inner[1] + by + p.open]
+    by += p.by
+    return at
+  })
+  return { edits: parts.flatMap((p) => p.edits), select: [inner[0]![0], inner[inner.length - 1]![1]] }
+}
+
+type Mark = '**' | '_' | '`'
+// Each mark's pattern in INLINE.
+const MARK_RE = { '**': 2, _: 4, '`': 0 } as const
+const MARKS = Object.keys(MARK_RE) as Mark[]
+/** A format's edits on one line: its text `inner`, which moves by `open` before it and `by` in all. */
+type MarkPart = { edits: TextEdit[]; inner: [number, number]; open: number; by: number }
+
+/**
+ * Whether `mark` at `s` and again at `e` is a pair the body renders: the text from one through the
+ * other is a whole match of the parser's own pattern (so `**a** b **c**` never pairs its middle
+ * marks), and an `_` pair isn't inside a word (`snake_case_name`).
+ */
+function isPair(text: string, s: number, e: number, mark: Mark) {
+  const m = mark.length
+  if (s < 0 || e < s + m || text.slice(s, s + m) !== mark || text.slice(e, e + m) !== mark) return false
+  const word = /\w/
+  if (mark === '_' && (word.test(text[s - 1] ?? '') || word.test(text[e + m] ?? ''))) return false
+  // Pressed twice at a caret: the empty pair the first press left.
+  if (e === s + m) return true
+  const whole = text.slice(s, e + m)
+  const match = INLINE[MARK_RE[mark]]!.re.exec(whole)
+  return match?.index === 0 && match[0] === whole
+}
+
+/**
+ * Taking `mark` off the text [a, b], when it has it: a pair round it, found through other marks
+ * round it too (Bold inside `**_x_**`), or a pair at its own ends. Null when it hasn't.
+ */
+function markOff(text: string, a: number, b: number, mark: Mark): MarkPart | null {
+  const m = mark.length
+  const off = (s: number, e: number, inner: [number, number]): MarkPart => ({
+    edits: [
+      { at: s, remove: m, insert: '' },
+      { at: e, remove: m, insert: '' },
+    ],
+    inner,
+    open: -m,
+    by: -2 * m,
+  })
+  for (let l = a, r = b; ; ) {
+    if (isPair(text, l - m, r, mark)) return off(l - m, r, [a, b])
+    const other = MARKS.find((o) => o !== mark && isPair(text, l - o.length, r, o))
+    if (!other) break
+    l -= other.length
+    r += other.length
+  }
+  if (b - a >= 2 * m && isPair(text, a, b - m, mark)) return off(a, b - m, [a + m, b - m])
+  return null
 }
 
 export interface CommentComposerProps extends Omit<React.ComponentProps<'div'>, 'onSubmit' | 'defaultValue'> {
@@ -815,8 +881,11 @@ export function CommentComposer({
       } catch {
         native = false
       }
-      // The browser took some of it and then refused: leave what it did.
-      if (!native && i > 0) return
+      // The browser took some of it and then refused: leave what it did, and the selection where it is.
+      if (!native && i > 0) {
+        nextSelection.current = null
+        return
+      }
     }
     if (!native) setValue(applyEdits(value, edits))
     el.setSelectionRange(select[0], select[1])
@@ -837,7 +906,8 @@ export function CommentComposer({
         onKeyDown={(event) => {
           onKeyDown(event)
           if (event.defaultPrevented || event.nativeEvent.isComposing) return
-          const shortcut = (apple ? event.metaKey : event.ctrlKey) && !event.altKey && !event.shiftKey && FORMAT_KEYS[event.key.toLowerCase()]
+          // Not while the mentions menu is open: the query is being typed.
+          const shortcut = !m.open && (apple ? event.metaKey : event.ctrlKey) && !event.altKey && !event.shiftKey && FORMAT_KEYS[event.key.toLowerCase()]
           if (shortcut) {
             event.preventDefault()
             format(shortcut)
