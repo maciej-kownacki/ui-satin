@@ -1,107 +1,130 @@
 import * as React from 'react'
-import { CsvImport, type CsvImportField, type CsvImportProps } from '@uisatin/pro/csv-import'
-import { leadsCsv } from '../demos/csv-import-data'
+import type { CsvImportField } from '@uisatin/pro/csv-import'
+import { candidatesCsv } from '../demos/csv-import-data'
+import { CsvImportHeaderSteps, type CsvImportHeaderStepsProps } from '../prototypes/csv-import'
 
 /**
- * Every state of CSV import side by side, each in the same 640 × 520 frame so the footer and
- * the panel can be compared across them. States that need a click (importing and the
- * results) press Import from here once the rows are checked: no prop of the component exists
- * for them.
+ * Every state of the CSV import the docs page shows (the header-steps prototype), with the docs'
+ * candidates, side by side in the same 640 × 600 frame on the dialog's surface, so the steps row
+ * and the footer can be compared across them. A file handed in starts on Map columns; states
+ * further on press Next, then Import, from here once they are there: no prop exists for them.
  */
 
 const fields: CsvImportField[] = [
-  { key: 'name', label: 'Name', aliases: ['Imię i nazwisko'] },
-  { key: 'email', label: 'Email', type: 'email', required: true },
-  { key: 'company', label: 'Company', required: true, aliases: ['Firma'] },
-  { key: 'phone', label: 'Phone', aliases: ['Telefon'] },
+  { key: 'name', label: 'Name', required: true },
+  {
+    key: 'stage',
+    label: 'Stage',
+    type: 'enum',
+    required: true,
+    options: [
+      { value: 'applied', label: 'Applied' },
+      { value: 'screening', label: 'Screening' },
+      { value: 'interview', label: 'Interview' },
+      { value: 'offer', label: 'Offer' },
+      { value: 'hired', label: 'Hired' },
+    ],
+  },
+  { key: 'source', label: 'Source' },
 ]
-const noun = { one: 'lead', other: 'leads' }
+const noun = { one: 'candidate', other: 'candidates' }
 
-const csvFile = (text: string, name = 'targi-poznan-leads.csv') => new File(['﻿' + text], name, { type: 'text/csv' })
-/** The sample file without its Firma column, so Company (required) has nothing to map. */
-const withoutCompany = () =>
-  leadsCsv()
-    .split('\r\n')
-    .map((line) => line.split(';').filter((_, i) => i !== 2).join(';'))
+const csvFile = (text: string) => new File([text], 'candidates.csv', { type: 'text/csv' })
+const rows = () => candidatesCsv().split('\r\n')
+/** The sample without its Stage column, so Stage (required) has nothing to map. */
+const withoutStage = () =>
+  rows()
+    .map((line) => line.split(',').filter((_, i) => i !== 1).join(','))
+    .join('\r\n')
+/** The sample without its 4 rows whose stage the ATS doesn't have: an import with nothing to skip. */
+const STAGES = ['applied', 'screening', 'interview', 'offer', 'hired']
+const withoutOffStage = () =>
+  rows()
+    .filter((line, i) => i === 0 || STAGES.includes((line.split(',')[1] ?? '').toLowerCase()))
     .join('\r\n')
 
-type State = { name: string; props: () => Partial<CsvImportProps>; press?: boolean }
-
 const never = () => new Promise<void>(() => {})
+const atsDown = () => Promise.reject(new Error('The ATS answered 503: try again in a minute.'))
+
+/** `next` presses Next (to Review) once it is there; `press` then presses Import once the rows are checked. */
+type State = { name: string; props: () => Partial<CsvImportHeaderStepsProps>; next?: boolean; press?: boolean }
 
 const states: State[] = [
-  { name: 'empty', props: () => ({}) },
-  {
-    name: 'rejected file (an Excel file renamed .csv)',
-    props: () => ({ file: new File([new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00])], 'leads.csv', { type: 'text/csv' }) }),
-  },
-  { name: 'map: missing required field', props: () => ({ file: csvFile(withoutCompany()), defaultStep: 'map' }) },
-  {
-    name: 'map: duplicate mapping (Telefon picked as Email)',
-    props: () => ({ file: csvFile(leadsCsv()), defaultStep: 'map', mapping: { 0: 'name', 1: 'email', 2: 'company', 3: 'email', 4: null } }),
-  },
-  { name: 'review with errors', props: () => ({ file: csvFile(leadsCsv()), defaultStep: 'review' }) },
+  { name: 'upload', props: () => ({}) },
+  { name: 'upload, the sample being dropped (drag-over look)', props: () => ({ dragging: true }) },
+  { name: 'map (auto-matched)', props: () => ({ file: csvFile(candidatesCsv()) }) },
+  { name: 'map blocked (Stage has no column)', props: () => ({ file: csvFile(withoutStage()) }) },
+  { name: 'review with errors', next: true, props: () => ({ file: csvFile(candidatesCsv()) }) },
   {
     name: 'importing (cancelable)',
+    next: true,
     press: true,
     props: () => ({
-      file: csvFile(leadsCsv()),
-      defaultStep: 'review',
+      file: csvFile(candidatesCsv()),
       cancelable: true,
       onImport: (_rows, { onProgress }) => {
-        onProgress(120)
+        onProgress(40)
         return never()
       },
     }),
   },
-  { name: 'result: done, 12 skipped', press: true, props: () => ({ file: csvFile(leadsCsv()), defaultStep: 'review', onImport: () => {}, onDone: () => {} }) },
+  { name: 'result: done, 4 skipped', next: true, press: true, props: () => ({ file: csvFile(candidatesCsv()), onImport: () => {}, onDone: () => {} }) },
+  { name: 'result: done, none skipped', next: true, press: true, props: () => ({ file: csvFile(withoutOffStage()), onImport: () => {}, onDone: () => {} }) },
+  { name: 'result: nothing imported (onImport rejects at once)', next: true, press: true, props: () => ({ file: csvFile(candidatesCsv()), onImport: atsDown }) },
   {
-    name: 'result: nothing imported (onImport rejects at once)',
+    name: 'result: stopped at 40',
+    next: true,
     press: true,
     props: () => ({
-      file: csvFile(leadsCsv()),
-      defaultStep: 'review',
-      onImport: () => Promise.reject(new Error('The CRM answered 503: try again in a minute.')),
-    }),
-  },
-  {
-    name: 'result: stopped at 200',
-    press: true,
-    props: () => ({
-      file: csvFile(leadsCsv()),
-      defaultStep: 'review',
+      file: csvFile(candidatesCsv()),
       onImport: (_rows, { onProgress }) => {
-        onProgress(200)
-        return Promise.reject(new Error('The CRM answered 503: try again in a minute.'))
+        onProgress(40)
+        return atsDown()
       },
     }),
   },
-  { name: 'parse error (a quote never closed)', props: () => ({ file: csvFile('Imię i nazwisko;E-mail;Firma\r\nAnna Nowak;anna@hydrobud.pl;"Hydrobud\r\nPiotr Mazur;piotr@pakmar.eu;Pakmar\r\n') }) },
 ]
 
-/** Presses Import once it is ready (the file read and the rows checked). */
-function usePressImport(frame: React.RefObject<HTMLDivElement | null>, press: boolean) {
+/** The footer's last button whose text passes `match`, once it is there and enabled. */
+const footerButton = (frame: HTMLElement, match: (text: string) => boolean) => {
+  const button = [...frame.querySelectorAll<HTMLButtonElement>('[data-slot="csv-import-footer"] button')].at(-1)
+  if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true' || !match(button.textContent ?? '')) return null
+  return button
+}
+
+/** Presses Next, then Import, as the state asks, each once it is ready. */
+function usePresses(frame: React.RefObject<HTMLDivElement | null>, state: State) {
   React.useEffect(() => {
-    if (!press) return
+    if (!state.next && !state.press) return
+    let next = !!state.next
     const timer = setInterval(() => {
-      const button = [...(frame.current?.querySelectorAll<HTMLButtonElement>('[data-slot="csv-import-footer"] button') ?? [])].at(-1)
-      if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true' || !button.textContent?.startsWith('Import')) return
+      if (!frame.current) return
+      if (next) {
+        const button = footerButton(frame.current, (t) => t === 'Next')
+        if (!button) return
+        next = false
+        button.click()
+        if (!state.press) clearInterval(timer)
+        return
+      }
+      const button = footerButton(frame.current, (t) => t.startsWith('Import'))
+      if (!button) return
       clearInterval(timer)
       button.click()
     }, 50)
     return () => clearInterval(timer)
-  }, [frame, press])
+  }, [frame, state])
 }
 
 function Frame({ state }: { state: State }) {
   const ref = React.useRef<HTMLDivElement>(null)
   const props = React.useMemo(state.props, [state])
-  usePressImport(ref, !!state.press)
+  usePresses(ref, state)
   return (
     <div className="flex flex-col gap-3">
       <span>{state.name}</span>
-      <div ref={ref} className="h-[520px] w-[640px] rounded-2xl border border-border-subtle bg-bg-card">
-        <CsvImport className="h-full" fields={fields} noun={noun} onImport={() => {}} {...props} />
+      <div ref={ref} className="h-[600px] w-[640px] rounded-2xl border border-border-subtle bg-bg-popover">
+        <CsvImportHeaderSteps className="h-full" fields={fields} noun={noun} onImport={() => {}} {...props} />
       </div>
     </div>
   )
