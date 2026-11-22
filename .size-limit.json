@@ -361,7 +361,7 @@
     "limit": "156 kB"
   },
   {
-    "name": "Rich text editor (Satin Pro), its own code only: Lexical and @uisatin/ui left out",
+    "name": "Rich text editor (Satin Pro), its own code only: Lexical and @uisatin/ui left out (its toolbar icons from iconoir-react, about 2.3 kB, counted)",
     "path": "packages/ui-pro/dist/components/rich-text-editor.js",
     "import": "{ RichTextEditor }",
     "gzip": true,
@@ -376,6 +376,6 @@
       "@lexical/markdown",
       "@lexical/history"
     ],
-    "limit": "5 kB"
+    "limit": "12.5 kB"
   }
 ]

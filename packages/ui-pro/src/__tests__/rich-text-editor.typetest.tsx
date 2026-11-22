@@ -1,11 +1,20 @@
 /* Type test, never run: RichTextEditor controlled and not, its parts, ref and editorRef, its words in SatinLabels. */
 import * as React from 'react'
 import { SatinLabels } from '@uisatin/ui/labels'
+import { ToolbarButton, ToolbarSeparator } from '@uisatin/ui/toolbar'
 import {
+  RichTextBlockToggle,
+  RichTextBlockTypeMenu,
   RichTextEditor,
   RichTextEditorContent,
   RichTextEditorRoot,
+  RichTextFormatToggle,
+  RichTextLinkButton,
+  RichTextSelectionToolbar,
+  RichTextToolbar,
+  normalizeRichTextUrl,
   richTextMentions,
+  type RichTextSelectionState,
   type RichTextCommand,
   type RichTextEditorHandle,
   type RichTextMention,
@@ -67,3 +76,33 @@ export function useHandle() {
   editorRef.current?.editor
   return { rect, ids }
 }
+
+export const toolbars = (
+  <SatinLabels labels={{ richTextToolbar: 'Formatowanie', richTextStyleOf: (style: string) => `Styl: ${style}` }}>
+    <RichTextEditor aria-label="Notes" toolbar={false} selectionToolbar={false} />
+    <RichTextEditorRoot>
+      <RichTextEditorContent aria-label="Notes">
+        <RichTextToolbar preset="minimal" size="md" aria-label="Format">
+          <RichTextBlockTypeMenu />
+          <ToolbarSeparator />
+          <RichTextFormatToggle format="code" label="Kod" />
+          <RichTextBlockToggle block="quote" />
+          <RichTextLinkButton shortcut="⌘L" />
+        </RichTextToolbar>
+      </RichTextEditorContent>
+      <RichTextSelectionToolbar actions={<ToolbarButton>Rewrite</ToolbarButton>} />
+    </RichTextEditorRoot>
+  </SatinLabels>
+)
+
+// @ts-expect-error: underline isn't a mark the editor keeps
+export const wrongMark = <RichTextFormatToggle format="underline" />
+
+// @ts-expect-error: headings go through the text style menu
+export const wrongBlock = <RichTextBlockToggle block="h1" />
+
+// @ts-expect-error: the selection toolbar is always floating
+export const wrongVariant = <RichTextSelectionToolbar variant="plain" />
+
+export const url: string | null = normalizeRichTextUrl('example.com')
+export const state: RichTextSelectionState['block'] = 'number'

@@ -2,33 +2,54 @@
 
 import * as React from 'react'
 import {
+  $createParagraphNode,
+  $createTextNode,
+  $getNodeByKey,
   $getRoot,
   $getSelection,
   $insertNodes,
+  $isElementNode,
   $isParagraphNode,
   $isRangeSelection,
+  $isRootOrShadowRoot,
+  $isTextNode,
+  $setSelection,
   CLEAR_HISTORY_COMMAND,
   COMMAND_PRIORITY_EDITOR,
   COMMAND_PRIORITY_HIGH,
   FORMAT_TEXT_COMMAND,
+  KEY_DOWN_COMMAND,
+  KEY_ESCAPE_COMMAND,
   TextNode,
   createEditor,
   mergeRegister,
+  type BaseSelection,
   type DOMConversionMap,
   type DOMConversionOutput,
   type DOMExportOutput,
   type EditorConfig,
   type EditorState,
+  type ElementNode,
   type LexicalEditor,
   type LexicalNode,
   type NodeKey,
+  type RangeSelection,
   type SerializedTextNode,
   type Spread,
   type TextFormatType,
 } from 'lexical'
 import { createEmptyHistoryState, registerHistory } from '@lexical/history'
-import { $toggleLink, LinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link'
-import { ListItemNode, ListNode, registerList } from '@lexical/list'
+import { $createLinkNode, $isLinkNode, $toggleLink, LinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link'
+import {
+  $isListItemNode,
+  $isListNode,
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+  ListItemNode,
+  ListNode,
+  REMOVE_LIST_COMMAND,
+  registerList,
+} from '@lexical/list'
 import {
   $convertFromMarkdownString,
   $convertToMarkdownString,
@@ -49,12 +70,35 @@ import {
   type TextMatchTransformer,
   type Transformer,
 } from '@lexical/markdown'
-import { HeadingNode, QuoteNode, registerRichText } from '@lexical/rich-text'
+import {
+  $createHeadingNode,
+  $createQuoteNode,
+  $isHeadingNode,
+  $isQuoteNode,
+  HeadingNode,
+  QuoteNode,
+  registerRichText,
+} from '@lexical/rich-text'
+import { Bold, Code, Italic, Link as LinkIcon, List, NavArrowDown, NumberedListLeft, NumberedListRight, Quote, Strikethrough } from 'iconoir-react'
+import { Button } from '@uisatin/ui/button'
+import { DropdownMenu, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@uisatin/ui/dropdown'
+import { Floating, type FloatingVirtualElement } from '@uisatin/ui/floating'
 import { useFormField } from '@uisatin/ui/form-field'
+import { Input } from '@uisatin/ui/input'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
+import { PopoverPanel } from '@uisatin/ui/popover'
 import type { PromptCommand, PromptMention } from '@uisatin/ui/prompt-mentions'
 import { CharacterCount } from '@uisatin/ui/textarea'
+import {
+  Toolbar,
+  ToolbarButton,
+  ToolbarSeparator,
+  ToolbarToggle,
+  type ToolbarButtonProps,
+  type ToolbarProps,
+  type ToolbarToggleProps,
+} from '@uisatin/ui/toolbar'
 
 /**
  * RichTextEditor: a field for notes, emails and job descriptions with headings, lists, quotes,
@@ -89,8 +133,15 @@ import { CharacterCount } from '@uisatin/ui/textarea'
  * Inside a FormField it takes the field's id, label, description, error, `disabled`, `required`
  * and `name`. With `name` a hidden input carries the value into a native form submit.
  *
+ * - Formatting: a toolbar inside the field (`toolbar`, `'minimal'` or `false`) and a bubble over
+ *   a pointer selection (`selectionToolbar`). Shortcuts: ⌘B, ⌘I, ⌘⇧X strikethrough, ⌘E code,
+ *   ⌘⇧8 and ⌘⇧7 lists, ⌘K link (a popover under the selection), Ctrl for ⌘ off Apple. ⌥F10 in
+ *   the text goes to the toolbar (or opens the bubble without one), Escape comes back.
+ *
  * Parts, for an editor of your own: `RichTextEditorRoot` (the engine and the value) ›
- * `RichTextEditorContent` (the field and the editable area). `editorRef` reaches the editor
+ * `RichTextEditorContent` (the field and the editable area) › `RichTextToolbar` (inside it),
+ * and `RichTextSelectionToolbar`; items for a toolbar of your own are `RichTextBlockTypeMenu`,
+ * `RichTextFormatToggle`, `RichTextBlockToggle` and `RichTextLinkButton`. `editorRef` reaches the editor
  * (`focus`, `insert`, `insertText`, `getValue`, `getSelectionRect`). Other props, `ref` included,
  * go to the root `div`; `id`, `aria-label`, `aria-labelledby`, `aria-describedby` and `autoFocus`
  * go to the editable area.
@@ -102,6 +153,35 @@ import { CharacterCount } from '@uisatin/ui/textarea'
 export const richTextEditorLabels = {
   /** The editable area's name when it has no label, no FormField and no `aria-label`. */
   richTextEditor: 'Text editor',
+  /** The formatting toolbar above the text. */
+  richTextToolbar: 'Formatting',
+  /** The bubble over a selection. */
+  richTextSelectionToolbar: 'Selection formatting',
+  /** The text style menu. */
+  richTextStyle: 'Text style',
+  /** The text style button's name: what it's for, then the style it shows (which is its text). */
+  richTextStyleOf: (style: string) => `Text style: ${style}`,
+  richTextParagraph: 'Paragraph',
+  richTextHeading1: 'Heading 1',
+  richTextHeading2: 'Heading 2',
+  richTextHeading3: 'Heading 3',
+  richTextBold: 'Bold',
+  richTextItalic: 'Italic',
+  richTextStrikethrough: 'Strikethrough',
+  richTextCode: 'Code',
+  richTextBulletList: 'Bullet list',
+  richTextNumberedList: 'Numbered list',
+  richTextQuote: 'Quote',
+  richTextLink: 'Link',
+  /** The link popover's title for a new link. */
+  richTextAddLink: 'Add link',
+  /** The link popover's title in a link. */
+  richTextEditLink: 'Edit link',
+  richTextRemoveLink: 'Remove link',
+  /** The address field's name in the link popover. */
+  richTextUrl: 'URL',
+  richTextUrlPlaceholder: 'Paste or type a link',
+  richTextUrlInvalid: 'Enter a web address, an email address or a path.',
 }
 
 type RichTextEditorLabels = typeof richTextEditorLabels
@@ -398,6 +478,228 @@ function selectionRect(root: HTMLElement | null): DOMRect | null {
   return range.getClientRects?.()[0] ?? root.getBoundingClientRect()
 }
 
+/* ---------- formatting ---------- */
+
+/** A mark the toolbars toggle. */
+export type RichTextMark = 'bold' | 'italic' | 'strikethrough' | 'code'
+
+/** The block the selection starts in, as the toolbars name it. Headings past h3 read as paragraphs. */
+export type RichTextBlockType = 'paragraph' | 'h1' | 'h2' | 'h3' | 'bullet' | 'number' | 'quote'
+
+/** What the selection is: its marks, its block, and whether it's in a link. The toolbars' pressed states. */
+export interface RichTextSelectionState {
+  bold: boolean
+  italic: boolean
+  strikethrough: boolean
+  code: boolean
+  block: RichTextBlockType
+  link: boolean
+}
+
+const NO_SELECTION: RichTextSelectionState = { bold: false, italic: false, strikethrough: false, code: false, block: 'paragraph', link: false }
+
+const sameState = (a: RichTextSelectionState, b: RichTextSelectionState) =>
+  (Object.keys(a) as (keyof RichTextSelectionState)[]).every((key) => a[key] === b[key])
+
+/** ⌘ on Apple platforms, Ctrl elsewhere, as Lexical reads ⌘B and ⌘I. */
+const isApple = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+const noop = () => () => {}
+/** Read after hydration, so the server's Ctrl and a Mac's ⌘ never disagree in the markup. */
+const useIsApple = () => React.useSyncExternalStore(noop, isApple, () => false)
+/** A shortcut as the tooltip shows it: "⌘⇧X" on a Mac, "Ctrl+Shift+X" elsewhere. */
+const shortcutOf = (apple: boolean, key: string, shift = false) => (apple ? `⌘${shift ? '⇧' : ''}${key}` : `Ctrl+${shift ? 'Shift+' : ''}${key}`)
+
+function $linkOf(node: LexicalNode | null): LinkNode | null {
+  for (let n = node; n; n = n.getParent()) if ($isLinkNode(n)) return n
+  return null
+}
+
+function $blockTypeOf(selection: RangeSelection): RichTextBlockType {
+  for (let n: LexicalNode | null = selection.anchor.getNode(); n; n = n.getParent()) {
+    if ($isListNode(n)) return n.getListType() === 'number' ? 'number' : 'bullet'
+    if ($isQuoteNode(n)) return 'quote'
+    if ($isHeadingNode(n)) {
+      const tag = n.getTag()
+      return tag === 'h1' || tag === 'h2' || tag === 'h3' ? tag : 'paragraph'
+    }
+  }
+  return 'paragraph'
+}
+
+/**
+ * Whether the selection has a mark: the caret's own format when collapsed, else every text node
+ * it covers (an edge node it only touches doesn't count). The selection's `format` follows only
+ * the browser's selection, not one set in an update.
+ */
+function $selectionHas(selection: RangeSelection, mark: RichTextMark) {
+  if (selection.isCollapsed()) return selection.hasFormat(mark)
+  const [start, end] = selection.isBackward() ? [selection.focus, selection.anchor] : [selection.anchor, selection.focus]
+  const covered = selection.getNodes().filter((node): node is TextNode => {
+    if (!$isTextNode(node)) return false
+    if (start.type === 'text' && node.getKey() === start.key && start.offset === node.getTextContentSize()) return false
+    if (end.type === 'text' && node.getKey() === end.key && end.offset === 0) return false
+    return true
+  })
+  return covered.length > 0 && covered.every((node) => node.hasFormat(mark))
+}
+
+function $readSelectionState(): RichTextSelectionState {
+  const selection = $getSelection()
+  if (!$isRangeSelection(selection)) return NO_SELECTION
+  return {
+    bold: $selectionHas(selection, 'bold'),
+    italic: $selectionHas(selection, 'italic'),
+    strikethrough: $selectionHas(selection, 'strikethrough'),
+    code: $selectionHas(selection, 'code'),
+    block: $blockTypeOf(selection),
+    link: $linkOf(selection.anchor.getNode()) !== null || $linkOf(selection.focus.getNode()) !== null,
+  }
+}
+
+/** The editor's selection, kept while focus is in a menu or the link popover. */
+const saveSelection = (editor: LexicalEditor) => editor.getEditorState().read(() => $getSelection()?.clone() ?? null)
+
+/** Puts a saved selection back, unless what it pointed at is gone. */
+function $restoreSelection(saved: BaseSelection | null) {
+  if (!saved) return
+  if ($isRangeSelection(saved) && (!$getNodeByKey(saved.anchor.key) || !$getNodeByKey(saved.focus.key))) return
+  $setSelection(saved.clone())
+}
+
+/** Focuses the editable area now and puts Lexical's selection back into it. */
+function focusEditor(editor: LexicalEditor) {
+  editor.getRootElement()?.focus({ preventScroll: true })
+  editor.focus()
+}
+
+/** Turns the blocks the selection touches into `create()`'s, keeping their text. */
+function $setBlocks(create: () => ElementNode) {
+  const selection = $getSelection()
+  if (!$isRangeSelection(selection)) return
+  const blocks = new Map<NodeKey, ElementNode>()
+  const add = (node: LexicalNode) => {
+    let n: LexicalNode | null = node
+    while (n && !($isElementNode(n) && !n.isInline())) n = n.getParent()
+    if (!n || $isRootOrShadowRoot(n) || $isListNode(n)) return
+    // A list item that only holds a nested list: its own items change instead.
+    if ($isListItemNode(n) && n.getChildren().some($isListNode)) return
+    blocks.set(n.getKey(), n)
+  }
+  add(selection.anchor.getNode())
+  selection.getNodes().forEach(add)
+  add(selection.focus.getNode())
+  for (const block of blocks.values()) {
+    const next = create()
+    next.setFormat(block.getFormatType())
+    block.replace(next, true)
+  }
+}
+
+/**
+ * Sets the selection's blocks to `block`. Lists toggle (a bullet list again goes back to
+ * paragraphs); with `toggle`, so does a quote. `saved` is put back first, for a menu that took focus.
+ */
+function setBlock(editor: LexicalEditor, block: RichTextBlockType, { saved, toggle = false }: { saved?: BaseSelection | null; toggle?: boolean } = {}) {
+  editor.update(() => {
+    if (saved) $restoreSelection(saved)
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection)) return
+    const current = $blockTypeOf(selection)
+    if (block === 'bullet' || block === 'number') {
+      if (current === block) editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined)
+      else editor.dispatchCommand(block === 'bullet' ? INSERT_UNORDERED_LIST_COMMAND : INSERT_ORDERED_LIST_COMMAND, undefined)
+      return
+    }
+    const target = toggle && current === block ? 'paragraph' : block
+    $setBlocks(() => (target === 'paragraph' ? $createParagraphNode() : target === 'quote' ? $createQuoteNode() : $createHeadingNode(target)))
+  })
+}
+
+/**
+ * A link as typed, made safe to keep, or null: http(s) and mailto as they are, a path or an
+ * anchor (`/jobs`, `#salary`) as it is, an email address as mailto, a bare domain
+ * (`example.com/brief`) with https:// before it. Any other scheme (`javascript:`) is refused.
+ */
+export function normalizeRichTextUrl(raw: string): string | null {
+  const value = raw.trim()
+  if (!value || /\s/.test(value)) return null
+  const parses = (url: string) => {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
+  }
+  if (/^https?:\/\//i.test(value)) return parses(value) ? value : null
+  if (/^mailto:/i.test(value)) return value.length > 7 ? value : null
+  if (/^(\/|#|\?|\.\.?\/)/.test(value)) return value
+  if (/^[^@/:]+@[^@/:]+\.[^@/:]+$/.test(value)) return `mailto:${value}`
+  if (/^[\p{L}\p{N}-]+(\.[\p{L}\p{N}-]+)+(:\d+)?([/?#]\S*)?$/u.test(value)) {
+    const url = `https://${value}`
+    return parses(url) ? url : null
+  }
+  return null
+}
+
+/** Points at the selection as it was when called (a live range), else at `fallback`. */
+function rangeAnchor(root: HTMLElement | null, fallback: Element | null): FloatingVirtualElement {
+  const selection = typeof window === 'undefined' ? null : window.getSelection()
+  const live = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null
+  const range = live && root?.contains(live.commonAncestorContainer) ? live.cloneRange() : null
+  return {
+    getBoundingClientRect: () => {
+      const rect = range?.getBoundingClientRect?.()
+      if (rect && (rect.width || rect.height)) return rect
+      const first = range?.getClientRects?.()[0]
+      if (first) return first
+      return (fallback ?? root)?.getBoundingClientRect() ?? new DOMRect()
+    },
+    contextElement: root ?? undefined,
+  }
+}
+
+const nextFrame = (fn: () => void) =>
+  typeof requestAnimationFrame === 'function' ? requestAnimationFrame(fn) : (setTimeout(fn, 16) as unknown as number)
+const cancelFrame = (id: number) => (typeof cancelAnimationFrame === 'function' ? cancelAnimationFrame(id) : clearTimeout(id))
+
+/**
+ * Focuses an element in a Floating layer once it can take focus: the layer mounts a render later
+ * and stays `visibility: hidden` until it's placed. Returns a cancel.
+ */
+function focusWhenShown(get: () => HTMLElement | null | undefined) {
+  let frames = 0
+  let id = 0
+  const attempt = () => {
+    const el = get()
+    if (el) {
+      el.focus({ preventScroll: true })
+      if (document.activeElement === el) return
+    }
+    if (++frames < 20) id = nextFrame(attempt)
+  }
+  attempt()
+  return () => cancelFrame(id)
+}
+
+/** The first item that takes focus in a toolbar. */
+const firstItem = (toolbar: HTMLElement | null) => toolbar?.querySelector<HTMLElement>('button:not(:disabled)') ?? null
+
+/** What `RichTextSelectionToolbar` lets the editor do: open it and focus it (⌥F10 with no fixed toolbar). */
+interface SelectionToolbarController {
+  open: () => void
+}
+
+/** The link popover's state while it's open. */
+interface LinkEditorState {
+  saved: BaseSelection | null
+  url: string
+  inLink: boolean
+  anchor: FloatingVirtualElement
+  /** The button that opened it: a press on it closes the popover instead of reopening it. */
+  opener: HTMLElement | null
+}
+
 /* ---------- context ---------- */
 
 interface RichTextEditorContextValue {
@@ -424,6 +726,16 @@ interface RichTextEditorContextValue {
   /** The editable area, once mounted. */
   setContentElement: (element: HTMLElement | null) => void
   contentElement: HTMLElement | null
+  /** The selection's marks, block and link: what the toolbars show pressed. */
+  selection: RichTextSelectionState
+  /** A fixed toolbar or a selection toolbar is there: ⌥F10 reaches it. */
+  hasToolbar: boolean
+  /** The fixed toolbar's element, for ⌥F10. Returns the unregister. */
+  registerToolbar: (element: HTMLElement | null) => () => void
+  /** The selection toolbar, for ⌥F10 when there's no fixed one. Returns the unregister. */
+  registerSelectionToolbar: (controller: SelectionToolbarController) => () => void
+  /** Opens the link popover over the selection (or `opener` when the selection has no rect); a second call closes it. */
+  openLinkEditor: (opener?: HTMLElement | null) => void
 }
 
 const RichTextEditorContext = React.createContext<RichTextEditorContextValue | null>(null)
@@ -526,6 +838,108 @@ export function RichTextEditorRoot({
   const shown = React.useRef('')
   const [focused, setFocused] = React.useState(false)
   const [contentElement, setContentElement] = React.useState<HTMLElement | null>(null)
+  const [selection, setSelection] = React.useState(NO_SELECTION)
+  const selectionRef = React.useRef(NO_SELECTION)
+
+  // The toolbars register themselves, so ⌥F10 knows where to go.
+  const [toolbarElement, setToolbarElement] = React.useState<HTMLElement | null>(null)
+  const [selectionToolbar, setSelectionToolbar] = React.useState<SelectionToolbarController | null>(null)
+  const parts = React.useRef({ toolbar: toolbarElement, bubble: selectionToolbar })
+  parts.current = { toolbar: toolbarElement, bubble: selectionToolbar }
+  const registerToolbar = React.useCallback((element: HTMLElement | null) => {
+    setToolbarElement(element)
+    return () => setToolbarElement((current) => (current === element ? null : current))
+  }, [])
+  const registerSelectionToolbar = React.useCallback((controller: SelectionToolbarController) => {
+    setSelectionToolbar(controller)
+    return () => setSelectionToolbar((current) => (current === controller ? null : current))
+  }, [])
+
+  // The link popover: the selection is saved when it opens and put back when it closes.
+  const [link, setLink] = React.useState<LinkEditorState | null>(null)
+  const linkRef = React.useRef(link)
+  const closeLinkEditor = React.useCallback(
+    ({ restore, focus }: { restore: boolean; focus: boolean }) => {
+      const current = linkRef.current
+      if (!current) return
+      linkRef.current = null
+      setLink(null)
+      if (restore) editor.update(() => $restoreSelection(current.saved), { discrete: true })
+      if (focus) focusEditor(editor)
+    },
+    [editor],
+  )
+  const openLinkEditor = React.useCallback(
+    (opener?: HTMLElement | null) => {
+      if (linkRef.current) {
+        closeLinkEditor({ restore: true, focus: true })
+        return
+      }
+      if (!editor.isEditable()) return
+      const info = editor.getEditorState().read(() => {
+        const current = $getSelection()
+        const node = $isRangeSelection(current) ? ($linkOf(current.anchor.getNode()) ?? $linkOf(current.focus.getNode())) : null
+        return { saved: current?.clone() ?? null, url: node?.getURL() ?? '', inLink: node !== null }
+      })
+      const root = editor.getRootElement()
+      const next = { ...info, opener: opener ?? null, anchor: rangeAnchor(root, opener ?? root) }
+      linkRef.current = next
+      setLink(next)
+    },
+    [editor, closeLinkEditor],
+  )
+  const openLinkRef = React.useRef(openLinkEditor)
+  openLinkRef.current = openLinkEditor
+
+  const applyLink = React.useCallback(
+    (url: string, text: string) => {
+      const current = linkRef.current
+      if (!current) return
+      editor.update(
+        () => {
+          $restoreSelection(current.saved)
+          if (!$isRangeSelection($getSelection())) $getRoot().selectEnd()
+          const range = $getSelection()
+          if (!$isRangeSelection(range)) return
+          const existing = $linkOf(range.anchor.getNode())
+          if (!range.isCollapsed()) $toggleLink(url)
+          else if (existing) existing.setURL(url)
+          else {
+            // Nothing selected: the address goes in as its own linked text.
+            const node = $createLinkNode(url)
+            node.append($createTextNode(text))
+            range.insertNodes([node])
+          }
+        },
+        { discrete: true },
+      )
+      closeLinkEditor({ restore: false, focus: true })
+    },
+    [editor, closeLinkEditor],
+  )
+  const removeLink = React.useCallback(() => {
+    const current = linkRef.current
+    if (!current) return
+    editor.update(
+      () => {
+        $restoreSelection(current.saved)
+        const range = $getSelection()
+        if (!$isRangeSelection(range)) return
+        // The whole of every link the selection touches, not only the selected part.
+        const links = new Map<NodeKey, LinkNode>()
+        for (const node of [range.anchor.getNode(), ...range.getNodes(), range.focus.getNode()]) {
+          const found = $linkOf(node)
+          if (found) links.set(found.getKey(), found)
+        }
+        for (const found of links.values()) {
+          for (const child of found.getChildren()) found.insertBefore(child)
+          found.remove()
+        }
+      },
+      { discrete: true },
+    )
+    closeLinkEditor({ restore: false, focus: true })
+  }, [editor, closeLinkEditor])
 
   const onValueChangeRef = React.useRef(onValueChange)
   React.useEffect(() => {
@@ -548,6 +962,54 @@ export function RichTextEditorRoot({
     const strip = (node: TextNode) => {
       for (const f of UNSUPPORTED_FORMATS) if (node.hasFormat(f)) node.toggleFormat(f)
     }
+    // ⌥F10 to the toolbar, and the shortcuts Lexical doesn't know: ⌘⇧X, ⌘E, ⌘⇧7, ⌘⇧8, ⌘K.
+    // (⌘B and ⌘I are Lexical's own.)
+    const onShortcut = (event: KeyboardEvent) => {
+      const handled = () => {
+        event.preventDefault()
+        return true
+      }
+      if (event.altKey && event.key === 'F10') {
+        const { toolbar, bubble } = parts.current
+        const item = firstItem(toolbar)
+        if (item) {
+          item.focus()
+          return handled()
+        }
+        if (bubble) {
+          bubble.open()
+          return handled()
+        }
+        return false
+      }
+      const mod = isApple() ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey
+      if (!mod || event.altKey) return false
+      const key = event.key.toLowerCase()
+      if (event.shiftKey) {
+        if (key === 'x' || event.code === 'KeyX') {
+          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')
+          return handled()
+        }
+        if (key === '7' || key === '&' || event.code === 'Digit7') {
+          setBlock(editor, 'number')
+          return handled()
+        }
+        if (key === '8' || key === '*' || event.code === 'Digit8') {
+          setBlock(editor, 'bullet')
+          return handled()
+        }
+        return false
+      }
+      if (key === 'e') {
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code')
+        return handled()
+      }
+      if (key === 'k') {
+        openLinkRef.current(null)
+        return handled()
+      }
+      return false
+    }
     const unregister = mergeRegister(
       registerRichText(editor),
       registerList(editor),
@@ -568,6 +1030,14 @@ export function RichTextEditorRoot({
       editor.registerCommand(FORMAT_TEXT_COMMAND, (f) => UNSUPPORTED_FORMATS.includes(f), COMMAND_PRIORITY_HIGH),
       editor.registerNodeTransform(TextNode, strip),
       editor.registerNodeTransform(MentionNode, strip),
+      editor.registerCommand(KEY_DOWN_COMMAND, (event) => onShortcut(event), COMMAND_PRIORITY_HIGH),
+      editor.registerUpdateListener(({ editorState }) => {
+        const next = editorState.read($readSelectionState)
+        if (!sameState(next, selectionRef.current)) {
+          selectionRef.current = next
+          setSelection(next)
+        }
+      }),
       editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }) => {
         const next = readDoc(editorState)
         if (next.empty !== docRef.current.empty || next.length !== docRef.current.length) {
@@ -668,6 +1138,11 @@ export function RichTextEditorRoot({
     setFocused,
     contentElement,
     setContentElement,
+    selection,
+    hasToolbar: toolbarElement !== null || selectionToolbar !== null,
+    registerToolbar,
+    registerSelectionToolbar,
+    openLinkEditor,
   }
 
   return (
@@ -681,6 +1156,14 @@ export function RichTextEditorRoot({
       >
         {children}
         {fieldName && <input type="hidden" name={fieldName} value={current} disabled={isDisabled} />}
+        {link && !isDisabled && !readOnly && (
+          <LinkEditor
+            state={link}
+            onApply={applyLink}
+            onRemove={removeLink}
+            onDismiss={(focus) => closeLinkEditor({ restore: focus, focus })}
+          />
+        )}
       </div>
     </RichTextEditorContext.Provider>
   )
@@ -689,8 +1172,7 @@ export function RichTextEditorRoot({
 /* ---------- Content ---------- */
 
 export interface RichTextEditorContentProps extends Omit<React.ComponentProps<'div'>, 'children'> {
-  /** Drawn inside the field, before the editable area: where a toolbar goes. */
-  // TODO(P2b): RichTextToolbar goes here.
+  /** Drawn inside the field, before the editable area: where `RichTextToolbar` goes. */
   children?: React.ReactNode
   /** Focus the editor on mount. */
   autoFocus?: boolean
@@ -759,6 +1241,7 @@ export function RichTextEditorContent({
           aria-readonly={ctx.readOnly || undefined}
           aria-disabled={ctx.disabled || undefined}
           aria-placeholder={ctx.empty && ctx.placeholder ? ctx.placeholder : undefined}
+          aria-keyshortcuts={editable && ctx.hasToolbar ? 'Alt+F10' : undefined}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
@@ -773,6 +1256,562 @@ export function RichTextEditorContent({
         <path d="M6.5 0.5L0.5 6.5M6.5 4L4 6.5" stroke="currentColor" strokeLinecap="round" />
       </svg>
     </div>
+  )
+}
+
+/* ---------- toolbar items ---------- */
+
+type LabelKey = { [K in keyof typeof richTextEditorLabels]: (typeof richTextEditorLabels)[K] extends string ? K : never }[keyof typeof richTextEditorLabels]
+
+const MARKS: Record<RichTextMark, { icon: React.ReactNode; label: LabelKey; key: string; shift?: boolean }> = {
+  bold: { icon: <Bold aria-hidden />, label: 'richTextBold', key: 'B' },
+  italic: { icon: <Italic aria-hidden />, label: 'richTextItalic', key: 'I' },
+  strikethrough: { icon: <Strikethrough aria-hidden />, label: 'richTextStrikethrough', key: 'X', shift: true },
+  code: { icon: <Code aria-hidden />, label: 'richTextCode', key: 'E' },
+}
+
+export interface RichTextFormatToggleProps
+  extends Omit<ToolbarToggleProps, 'pressed' | 'defaultPressed' | 'onPressedChange' | 'children' | 'icon' | 'label'> {
+  format: RichTextMark
+  /** Replaces the mark's own icon. */
+  icon?: React.ReactNode
+  /** Replaces the mark's own name (from SatinLabels). */
+  label?: string
+}
+
+/**
+ * A toolbar toggle for a mark (bold, italic, strikethrough, inline code): pressed while the
+ * selection has it, with the mark's icon, name and shortcut. For a toolbar of your own inside
+ * `RichTextToolbar` or `RichTextSelectionToolbar`. Other props, `ref` included, go to the `button`.
+ */
+export function RichTextFormatToggle({ format, icon, label, shortcut, disabled, ...props }: RichTextFormatToggleProps) {
+  const ctx = useRichTextEditorContext('RichTextFormatToggle')
+  const labels = useLabels()
+  const apple = useIsApple()
+  const mark = MARKS[format]
+  return (
+    <ToolbarToggle
+      icon={icon ?? mark.icon}
+      label={label ?? labels[mark.label]}
+      shortcut={shortcut ?? shortcutOf(apple, mark.key, mark.shift)}
+      pressed={ctx.selection[format]}
+      onPressedChange={() => ctx.editor.dispatchCommand(FORMAT_TEXT_COMMAND, format)}
+      disabled={disabled ?? ctx.disabled}
+      {...props}
+    />
+  )
+}
+
+const BLOCKS: Record<'bullet' | 'number' | 'quote', { icon: React.ReactNode; label: LabelKey; key?: string }> = {
+  bullet: { icon: <List aria-hidden className="satin-rte-icon-mirror" />, label: 'richTextBulletList', key: '8' },
+  number: {
+    // The numbers stay readable right to left: the icon with them on the right instead of a mirror.
+    icon: (
+      <>
+        <NumberedListLeft aria-hidden className="satin-rte-icon-ltr" />
+        <NumberedListRight aria-hidden className="satin-rte-icon-rtl" />
+      </>
+    ),
+    label: 'richTextNumberedList',
+    key: '7',
+  },
+  quote: { icon: <Quote aria-hidden />, label: 'richTextQuote' },
+}
+
+export interface RichTextBlockToggleProps
+  extends Omit<ToolbarToggleProps, 'pressed' | 'defaultPressed' | 'onPressedChange' | 'children' | 'icon' | 'label'> {
+  block: 'bullet' | 'number' | 'quote'
+  icon?: React.ReactNode
+  label?: string
+}
+
+/**
+ * A toolbar toggle for a bullet list, a numbered list or a quote: pressed while the selection is
+ * in one, and pressed again it turns the blocks back into paragraphs. Other props, `ref`
+ * included, go to the `button`.
+ */
+export function RichTextBlockToggle({ block, icon, label, shortcut, disabled, ...props }: RichTextBlockToggleProps) {
+  const ctx = useRichTextEditorContext('RichTextBlockToggle')
+  const labels = useLabels()
+  const apple = useIsApple()
+  const entry = BLOCKS[block]
+  return (
+    <ToolbarToggle
+      icon={icon ?? entry.icon}
+      label={label ?? labels[entry.label]}
+      shortcut={shortcut ?? (entry.key ? shortcutOf(apple, entry.key, true) : undefined)}
+      pressed={ctx.selection.block === block}
+      onPressedChange={() => setBlock(ctx.editor, block, { toggle: true })}
+      disabled={disabled ?? ctx.disabled}
+      {...props}
+    />
+  )
+}
+
+export interface RichTextLinkButtonProps extends Omit<ToolbarToggleProps, 'pressed' | 'defaultPressed' | 'onPressedChange' | 'children' | 'icon' | 'label'> {
+  icon?: React.ReactNode
+  label?: string
+}
+
+/**
+ * A toolbar toggle that opens the link popover (as ⌘K does): pressed while the selection is in a
+ * link. Other props, `ref` included, go to the `button`.
+ */
+export function RichTextLinkButton({ icon, label, shortcut, disabled, ref, ...props }: RichTextLinkButtonProps) {
+  const ctx = useRichTextEditorContext('RichTextLinkButton')
+  const labels = useLabels()
+  const apple = useIsApple()
+  const own = React.useRef<HTMLButtonElement | null>(null)
+  const refs = React.useMemo(() => mergeRefs(ref, own), [ref])
+  return (
+    <ToolbarToggle
+      ref={refs}
+      icon={icon ?? <LinkIcon aria-hidden />}
+      label={label ?? labels.richTextLink}
+      shortcut={shortcut ?? shortcutOf(apple, 'K')}
+      aria-haspopup="dialog"
+      pressed={ctx.selection.link}
+      onPressedChange={() => ctx.openLinkEditor(own.current)}
+      disabled={disabled ?? ctx.disabled}
+      {...props}
+    />
+  )
+}
+
+const STYLES = [
+  ['paragraph', 'richTextParagraph'],
+  ['h1', 'richTextHeading1'],
+  ['h2', 'richTextHeading2'],
+  ['h3', 'richTextHeading3'],
+] as const satisfies readonly (readonly [RichTextBlockType, LabelKey])[]
+
+export interface RichTextBlockTypeMenuProps extends Omit<ToolbarButtonProps, 'children' | 'icon' | 'label' | 'shortcut'> {}
+
+/**
+ * The text style menu: a toolbar button that shows the current style (Paragraph, Heading 1–3)
+ * and opens a menu of them as radio items. A list or a quote shows Paragraph with nothing
+ * checked. Other props, `ref` included, go to the button.
+ */
+export function RichTextBlockTypeMenu({ disabled, className, ref, ...props }: RichTextBlockTypeMenuProps) {
+  const ctx = useRichTextEditorContext('RichTextBlockTypeMenu')
+  const labels = useLabels()
+  const { editor } = ctx
+  const saved = React.useRef<BaseSelection | null>(null)
+  // Opened from the keyboard (the button had focus): focus goes back to it. From a press, to the text.
+  const fromKeyboard = React.useRef(false)
+  const own = React.useRef<HTMLButtonElement | null>(null)
+  const refs = React.useMemo(() => mergeRefs(ref, own), [ref])
+  const block = ctx.selection.block
+  const value = block === 'paragraph' || block === 'h1' || block === 'h2' || block === 'h3' ? block : ''
+  const current = labels[STYLES.find(([v]) => v === (value || 'paragraph'))![1]]
+  return (
+    <DropdownMenu
+      aria-label={labels.richTextStyle}
+      className="w-[200px]"
+      onOpenChange={(open) => {
+        if (!open) return
+        saved.current = saveSelection(editor)
+        fromKeyboard.current = document.activeElement === own.current
+      }}
+      onCloseAutoFocus={(event) => {
+        if (fromKeyboard.current) return
+        event.preventDefault()
+        focusEditor(editor)
+      }}
+      trigger={
+        <ToolbarButton
+          ref={refs}
+          aria-label={labels.richTextStyleOf(current)}
+          disabled={disabled ?? ctx.disabled}
+          className={cn('min-w-[7.5rem] justify-between', className)}
+          {...props}
+        >
+          {current}
+          <NavArrowDown aria-hidden />
+        </ToolbarButton>
+      }
+    >
+      <DropdownMenuRadioGroup value={value} onValueChange={(next) => setBlock(editor, next as RichTextBlockType, { saved: saved.current })}>
+        {STYLES.map(([v, key]) => (
+          <DropdownMenuRadioItem key={v} value={v} label={labels[key]} />
+        ))}
+      </DropdownMenuRadioGroup>
+    </DropdownMenu>
+  )
+}
+
+/* ---------- RichTextToolbar ---------- */
+
+export interface RichTextToolbarProps extends Omit<ToolbarProps, 'variant' | 'preventFocusOnPress'> {
+  /**
+   * `'default'`: text style | bold, italic, strikethrough, code | bullet list, numbered list,
+   * quote | link. `'minimal'`: bold, italic | bullet list | link. `children` replace either.
+   */
+  preset?: 'default' | 'minimal'
+}
+
+/**
+ * The formatting toolbar, inside the field above the text (`RichTextEditorContent`'s children),
+ * a subtle rule under it. Free's `Toolbar` with `preventFocusOnPress`, so a press keeps the
+ * selection; one tab stop, ← → between items, ⌥F10 from the text reaches its first item and
+ * Escape goes back to the text. Hidden when read-only; its items are disabled with the editor.
+ *
+ * `children` replace the preset: build one from `RichTextBlockTypeMenu`, `RichTextFormatToggle`,
+ * `RichTextBlockToggle`, `RichTextLinkButton` and Free's `ToolbarSeparator`, `ToolbarButton`.
+ * Other props, `ref` included, go to the toolbar `div`.
+ */
+export function RichTextToolbar({ preset = 'default', children, className, onKeyDown, onMouseDown, ref, 'aria-label': ariaLabel, ...props }: RichTextToolbarProps) {
+  const ctx = useRichTextEditorContext('RichTextToolbar')
+  const labels = useLabels()
+  const { registerToolbar, editor, readOnly } = ctx
+  const own = React.useRef<HTMLDivElement | null>(null)
+  const refs = React.useMemo(() => mergeRefs(ref, own), [ref])
+  React.useEffect(() => (readOnly ? undefined : registerToolbar(own.current)), [registerToolbar, readOnly])
+  if (readOnly) return null
+  return (
+    <Toolbar
+      ref={refs}
+      preventFocusOnPress
+      aria-label={ariaLabel ?? labels.richTextToolbar}
+      data-rich-text-toolbar=""
+      className={cn('satin-rte-toolbar w-full flex-wrap', className)}
+      onMouseDown={(event) => {
+        onMouseDown?.(event)
+        // A press between the items keeps focus (and the selection) in the text too.
+        if (event.target === event.currentTarget) event.preventDefault()
+      }}
+      onKeyDown={(event) => {
+        onKeyDown?.(event)
+        // Only from the toolbar's own items: an Escape in the text style menu (a portal) closes
+        // the menu. Not gated on defaultPrevented: an item's tooltip prevents it as it closes.
+        if (event.key === 'Escape' && event.currentTarget.contains(event.target as Node)) {
+          event.preventDefault()
+          focusEditor(editor)
+        }
+      }}
+      {...props}
+    >
+      {children ??
+        (preset === 'minimal' ? (
+          <>
+            <RichTextFormatToggle format="bold" />
+            <RichTextFormatToggle format="italic" />
+            <ToolbarSeparator />
+            <RichTextBlockToggle block="bullet" />
+            <ToolbarSeparator />
+            <RichTextLinkButton />
+          </>
+        ) : (
+          <>
+            <RichTextBlockTypeMenu />
+            <ToolbarSeparator />
+            <RichTextFormatToggle format="bold" />
+            <RichTextFormatToggle format="italic" />
+            <RichTextFormatToggle format="strikethrough" />
+            <RichTextFormatToggle format="code" />
+            <ToolbarSeparator />
+            <RichTextBlockToggle block="bullet" />
+            <RichTextBlockToggle block="number" />
+            <RichTextBlockToggle block="quote" />
+            <ToolbarSeparator />
+            <RichTextLinkButton />
+          </>
+        ))}
+    </Toolbar>
+  )
+}
+
+/* ---------- the link popover ---------- */
+
+/**
+ * A Popover panel under the selection with the address field, Apply and (in a link) Remove link.
+ * Enter applies, Escape and the close button go back to the text with the selection put back; a
+ * press or focus outside closes it where it is.
+ */
+function LinkEditor({
+  state,
+  onApply,
+  onRemove,
+  onDismiss,
+}: {
+  state: LinkEditorState
+  onApply: (url: string, text: string) => void
+  onRemove: () => void
+  onDismiss: (focusEditor: boolean) => void
+}) {
+  const labels = useLabels()
+  const [value, setValue] = React.useState(state.url)
+  const [invalid, setInvalid] = React.useState(false)
+  const panel = React.useRef<HTMLDivElement | null>(null)
+  const input = React.useRef<HTMLInputElement | null>(null)
+  const dismiss = React.useRef(onDismiss)
+  dismiss.current = onDismiss
+
+  React.useEffect(() => focusWhenShown(() => input.current), [])
+  React.useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node
+      if (panel.current?.contains(target) || state.opener?.contains(target)) return
+      dismiss.current(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () => document.removeEventListener('pointerdown', onPointerDown, true)
+  }, [state.opener])
+
+  return (
+    <Floating anchor={state.anchor} side="bottom" sideOffset={8}>
+      {() => (
+        <PopoverPanel
+          ref={panel}
+          title={state.inLink ? labels.richTextEditLink : labels.richTextAddLink}
+          className="satin-rte-link"
+          onClose={() => onDismiss(true)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Escape') return
+            event.preventDefault()
+            event.stopPropagation()
+            onDismiss(true)
+          }}
+          onBlur={(event) => {
+            // Focus left for something else on the page (not another window): close where it is.
+            const next = event.relatedTarget as Node | null
+            if (next && !event.currentTarget.contains(next)) onDismiss(false)
+          }}
+          body={
+            <form
+              className="flex flex-col gap-3"
+              noValidate
+              onSubmit={(event) => {
+                // Portaled, but still inside the editor in React: keep the submit from reaching a form around it.
+                event.preventDefault()
+                event.stopPropagation()
+                const url = normalizeRichTextUrl(value)
+                if (url) onApply(url, value.trim())
+                else setInvalid(true)
+              }}
+            >
+              <Input
+                ref={input}
+                type="url"
+                aria-label={labels.richTextUrl}
+                placeholder={labels.richTextUrlPlaceholder}
+                autoComplete="off"
+                spellCheck={false}
+                value={value}
+                onChange={(event) => {
+                  setValue(event.target.value)
+                  setInvalid(false)
+                }}
+                error={invalid ? labels.richTextUrlInvalid : undefined}
+              />
+              <div className="flex justify-end gap-2">
+                {state.inLink && (
+                  <Button type="button" variant="secondary" onClick={onRemove}>
+                    {labels.richTextRemoveLink}
+                  </Button>
+                )}
+                <Button type="submit">{labels.apply}</Button>
+              </div>
+            </form>
+          }
+        />
+      )}
+    </Floating>
+  )
+}
+
+/* ---------- RichTextSelectionToolbar ---------- */
+
+export interface RichTextSelectionToolbarProps extends Omit<ToolbarProps, 'variant' | 'preventFocusOnPress' | 'orientation'> {
+  /** Replaces the default items (bold, italic, strikethrough, link). */
+  children?: React.ReactNode
+  /**
+   * Added after the items, past a separator: actions on the selection (rewrite, translate,
+   * comment). They get the same context as the formatting items.
+   */
+  actions?: React.ReactNode
+}
+
+/**
+ * The bubble over a selection: Free's `Toolbar variant="floating"` placed by `Floating` above the
+ * selected text. It shows after a pointer selection (on release) or a double click, never for a
+ * selection made with the keyboard; it follows a selection changed while it's up, and goes with a
+ * collapsed selection, Escape, or focus leaving the text and the bubble. It doesn't take focus or
+ * sit in the tab order: ⌥F10 in the text reaches it when there's no fixed toolbar (and opens it on
+ * the caret), and Escape in it goes back to the text with the selection.
+ *
+ * `children` replace bold, italic, strikethrough and link; `actions` add to them after a
+ * separator. That's the place for actions on the selected text (an AI rewrite, a comment): any
+ * Toolbar item, with `editorRef`'s `getSelectionRect`, `insert` and `insertText` to act. Not drawn
+ * when the editor is read-only or disabled. Other props go to the toolbar `div`.
+ */
+export function RichTextSelectionToolbar({ children, actions, className, onKeyDown, onMouseDown, onBlur, ref, 'aria-label': ariaLabel, ...props }: RichTextSelectionToolbarProps) {
+  const ctx = useRichTextEditorContext('RichTextSelectionToolbar')
+  const labels = useLabels()
+  const { editor, contentElement, registerSelectionToolbar } = ctx
+  const enabled = !ctx.disabled && !ctx.readOnly && contentElement !== null
+  const [anchor, setAnchor] = React.useState<FloatingVirtualElement | null>(null)
+  const own = React.useRef<HTMLDivElement | null>(null)
+  const refs = React.useMemo(() => mergeRefs(ref, own), [ref])
+  const open = React.useRef(false)
+  // Opened with ⌥F10: stays on a collapsed selection, and its first item takes focus once shown.
+  const pinned = React.useRef(false)
+  const focusOnShow = React.useRef(false)
+
+  const anchorNow = React.useCallback((): FloatingVirtualElement | null => {
+    const root = editor.getRootElement()
+    if (!root) return null
+    const captured = selectionRect(root) ?? root.getBoundingClientRect()
+    return { getBoundingClientRect: () => selectionRect(root) ?? captured, contextElement: root }
+  }, [editor])
+  const hide = React.useCallback(() => {
+    open.current = false
+    pinned.current = false
+    setAnchor(null)
+  }, [])
+  const show = React.useCallback(() => {
+    const next = anchorNow()
+    open.current = next !== null
+    setAnchor(next)
+  }, [anchorNow])
+
+  React.useEffect(() => {
+    if (!enabled || !contentElement) return
+    const selected = () =>
+      editor.getEditorState().read(() => {
+        const range = $getSelection()
+        return $isRangeSelection(range) && !range.isCollapsed()
+      })
+    let pointer = false
+    let timer = 0
+    // A moment later: Lexical takes the browser's selection in on selectionchange.
+    const showIfSelected = () => {
+      clearTimeout(timer)
+      timer = window.setTimeout(() => {
+        if (selected()) show()
+      }, 0)
+    }
+    const onPointerDown = () => {
+      pointer = true
+      hide()
+    }
+    const onPointerUp = () => {
+      if (!pointer) return
+      pointer = false
+      showIfSelected()
+    }
+    const onContentBlur = (event: FocusEvent) => {
+      const next = event.relatedTarget as Node | null
+      if (next && own.current?.contains(next)) return
+      hide()
+    }
+    contentElement.addEventListener('pointerdown', onPointerDown)
+    contentElement.addEventListener('dblclick', showIfSelected)
+    contentElement.addEventListener('blur', onContentBlur)
+    document.addEventListener('pointerup', onPointerUp)
+    const unregister = mergeRegister(
+      editor.registerUpdateListener(({ editorState }) => {
+        if (!open.current) return
+        const keep = editorState.read(() => {
+          const range = $getSelection()
+          return $isRangeSelection(range) && (pinned.current || !range.isCollapsed())
+        })
+        if (!keep) hide()
+        // Follow the selection (Shift+arrows, a mark that changes its width), with no motion.
+        else if (!pinned.current) setAnchor(anchorNow())
+      }),
+      editor.registerCommand(
+        KEY_ESCAPE_COMMAND,
+        () => {
+          if (!open.current) return false
+          hide()
+          return true
+        },
+        COMMAND_PRIORITY_HIGH,
+      ),
+    )
+    return () => {
+      clearTimeout(timer)
+      contentElement.removeEventListener('pointerdown', onPointerDown)
+      contentElement.removeEventListener('dblclick', showIfSelected)
+      contentElement.removeEventListener('blur', onContentBlur)
+      document.removeEventListener('pointerup', onPointerUp)
+      unregister()
+    }
+  }, [enabled, contentElement, editor, show, hide, anchorNow])
+
+  React.useEffect(() => {
+    if (!enabled) return
+    return registerSelectionToolbar({
+      open: () => {
+        pinned.current = true
+        focusOnShow.current = true
+        open.current = true
+        setAnchor(anchorNow())
+      },
+    })
+  }, [enabled, registerSelectionToolbar, anchorNow])
+
+  React.useEffect(() => {
+    if (!anchor || !focusOnShow.current) return
+    focusOnShow.current = false
+    return focusWhenShown(() => firstItem(own.current))
+  }, [anchor])
+
+  React.useEffect(() => {
+    if (!enabled) hide()
+  }, [enabled, hide])
+
+  if (!enabled) return null
+  return (
+    <Floating anchor={anchor} side="top" sideOffset={8}>
+      {() => (
+        <Toolbar
+          ref={refs}
+          variant="floating"
+          preventFocusOnPress
+          // Out of the tab order: ⌥F10 or the pointer reach it.
+          tabIndex={-1}
+          aria-label={ariaLabel ?? labels.richTextSelectionToolbar}
+          data-rich-text-selection-toolbar=""
+          className={cn('satin-rte-bubble', className)}
+          onMouseDown={(event) => {
+            onMouseDown?.(event)
+            if (event.target === event.currentTarget) event.preventDefault()
+          }}
+          onKeyDown={(event) => {
+            onKeyDown?.(event)
+            if (event.key === 'Escape' && event.currentTarget.contains(event.target as Node)) {
+              event.preventDefault()
+              hide()
+              focusEditor(editor)
+            }
+          }}
+          onBlur={(event) => {
+            onBlur?.(event)
+            const next = event.relatedTarget as Node | null
+            if (next && (event.currentTarget.contains(next) || contentElement?.contains(next))) return
+            if (next) hide()
+          }}
+          {...props}
+        >
+          {children ?? (
+            <>
+              <RichTextFormatToggle format="bold" />
+              <RichTextFormatToggle format="italic" />
+              <RichTextFormatToggle format="strikethrough" />
+              <RichTextLinkButton />
+            </>
+          )}
+          {actions != null && actions !== false && (
+            <>
+              <ToolbarSeparator />
+              {actions}
+            </>
+          )}
+        </Toolbar>
+      )}
+    </Floating>
   )
 }
 
@@ -796,9 +1835,13 @@ export interface RichTextEditorProps extends Omit<RichTextEditorRootProps, 'chil
   'aria-describedby'?: string
   /** Classes for the field (the edge and the editable area). `className` styles the outer wrapper. */
   fieldClassName?: string
-  /** The formatting toolbar: `true` (default), `'minimal'` (bold, italic, list, link) or `false`. Not drawn yet. */
-  // TODO(P2b): the toolbar, the link popover and the selection bubble.
+  /**
+   * The formatting toolbar inside the field: `true` (default: text style, marks, lists, quote,
+   * link), `'minimal'` (bold, italic, bullet list, link) or `false`. Never drawn read-only.
+   */
   toolbar?: boolean | 'minimal'
+  /** The bubble over a pointer selection (bold, italic, strikethrough, link). On by default; never read-only. */
+  selectionToolbar?: boolean
   /** The `@` menu: where mentions come from. Not wired yet; mentions in a value already load and round-trip. */
   // TODO(P2c): the mention menu, on Free's PromptMentionsMenu and usePromptMenuState.
   mentions?: {
@@ -815,7 +1858,8 @@ export interface RichTextEditorProps extends Omit<RichTextEditorRootProps, 'chil
 
 /**
  * The editor for the common case: `RichTextEditorRoot` and `RichTextEditorContent` with a label,
- * the hint or the error, and the status row. Other props, `ref` included, go to the root `div`.
+ * the formatting toolbar, the selection bubble, the hint or the error, and the status row. Other
+ * props, `ref` included, go to the root `div`.
  */
 export function RichTextEditor({
   label,
@@ -831,8 +1875,9 @@ export function RichTextEditor({
   'aria-describedby': ariaDescribedBy,
   fieldClassName,
   className,
-  // TODO(P2b, P2c): the toolbar, the mention menu and the command menu.
-  toolbar: _toolbar,
+  // TODO(P2c): the mention menu and the command menu.
+  toolbar = true,
+  selectionToolbar = true,
   mentions: _mentions,
   commands: _commands,
   'data-force': force,
@@ -885,7 +1930,10 @@ export function RichTextEditor({
         aria-labelledby={ariaLabelledBy}
         aria-describedby={ariaDescribedBy}
         data-force={force}
-      />
+      >
+        {toolbar !== false && <RichTextToolbar preset={toolbar === 'minimal' ? 'minimal' : 'default'} />}
+      </RichTextEditorContent>
+      {selectionToolbar && <RichTextSelectionToolbar />}
       <StatusRow message={message} messageId={messageId} isError={hasMessage} status={status} statusId={statusId} maxLength={maxLength} counterId={counterId} />
     </RichTextEditorRoot>
   )

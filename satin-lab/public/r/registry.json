@@ -2782,16 +2782,23 @@
         "@lexical/list@~0.53.0",
         "@lexical/markdown@~0.53.0",
         "@lexical/rich-text@~0.53.0",
+        "iconoir-react@^7.12.2",
         "lexical@~0.53.0"
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
         "https://uisatin.dev/r/satin-pro-styles.json",
         "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/floating.json",
         "https://uisatin.dev/r/form-field.json",
+        "https://uisatin.dev/r/input.json",
         "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/popover.json",
         "https://uisatin.dev/r/prompt-mentions.json",
-        "https://uisatin.dev/r/textarea.json"
+        "https://uisatin.dev/r/textarea.json",
+        "https://uisatin.dev/r/toolbar.json"
       ],
       "docs": "Rich text editor docs: https://uisatin.dev/components/rich-text-editor",
       "meta": {

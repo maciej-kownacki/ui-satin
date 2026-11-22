@@ -1,12 +1,13 @@
 import * as React from 'react'
-import { describe, expect, it, vi } from 'vitest'
-import { act, screen } from '@testing-library/react'
-import { $getRoot, $isElementNode, $isTextNode, createEditor, type LexicalNode } from 'lexical'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { $getRoot, $isElementNode, $isTextNode, createEditor, type LexicalEditor, type LexicalNode } from 'lexical'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { ListItemNode, ListNode } from '@lexical/list'
 import { LinkNode } from '@lexical/link'
 import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown'
 import { FormField } from '@uisatin/ui/form-field'
+import { ToolbarButton } from '@uisatin/ui/toolbar'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import {
   MentionNode,
@@ -14,6 +15,10 @@ import {
   RichTextEditor,
   RichTextEditorContent,
   RichTextEditorRoot,
+  RichTextFormatToggle,
+  RichTextSelectionToolbar,
+  RichTextToolbar,
+  normalizeRichTextUrl,
   richTextMentions,
   type RichTextEditorHandle,
 } from '../components/rich-text-editor'
@@ -343,6 +348,327 @@ describe('RichTextEditor', () => {
       </>,
       { theme },
     )
+    await expectNoAxeViolations()
+  })
+})
+
+/* ---------- toolbars, shortcuts, links, the bubble ---------- */
+
+/** The Lexical editor behind the textbox (Lexical keeps it on its root element). */
+const lexical = () => (textbox() as unknown as { __lexicalEditor: LexicalEditor }).__lexicalEditor
+
+/** Selects `from`–`to` in the `nth` text node, as a drag would. */
+function select(from: number, to: number, nth = 0) {
+  act(() => lexical().update(() => $getRoot().getAllTextNodes()[nth].select(from, to), { discrete: true }))
+}
+
+const flush = () => act(async () => new Promise((resolve) => setTimeout(resolve, 0)))
+
+const button = (name: string, scope?: HTMLElement) => (scope ? within(scope) : screen).getByRole('button', { name })
+const pressed = (name: string, scope?: HTMLElement) => button(name, scope).getAttribute('aria-pressed')
+const names = (toolbar: HTMLElement) => within(toolbar).getAllByRole('button').map((b) => b.getAttribute('aria-label') ?? b.textContent)
+
+/** A pointer selection ending: the bubble checks the selection on release. */
+async function pointerSelect(from: number, to: number, nth = 0) {
+  fireEvent.pointerDown(textbox())
+  select(from, to, nth)
+  // jsdom sends selectionchange a tick later; Lexical reads the selection back from it.
+  await flush()
+  select(from, to, nth)
+  fireEvent.pointerUp(textbox())
+  return screen.findByRole('toolbar', { name: 'Selection formatting' })
+}
+
+describe('RichTextEditor toolbars', () => {
+  beforeAll(() => {
+    // jsdom's ranges have no rects; the bubble and the popover measure the selection.
+    Range.prototype.getBoundingClientRect ??= () => new DOMRect(10, 10, 40, 16)
+    Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList
+  })
+
+  it('draws the formatting toolbar inside the field: one tab stop, arrows between items', async () => {
+    const { user } = renderWithSatin(<RichTextEditor label="Notes" />)
+    const toolbar = screen.getByRole('toolbar', { name: 'Formatting' })
+    expect(toolbar.closest('[data-slot="rich-text-editor-field"]')).toBeTruthy()
+    expect(names(toolbar)).toEqual([
+      'Text style: Paragraph',
+      'Bold',
+      'Italic',
+      'Strikethrough',
+      'Code',
+      'Bullet list',
+      'Numbered list',
+      'Quote',
+      'Link',
+    ])
+    expect(within(toolbar).getAllByRole('separator')).toHaveLength(3)
+    expect(button('Bold').getAttribute('aria-keyshortcuts')).toBe('Control+B')
+    expect(button('Strikethrough').getAttribute('aria-keyshortcuts')).toBe('Control+Shift+X')
+    expect(button('Link').getAttribute('aria-keyshortcuts')).toBe('Control+K')
+    await user.tab()
+    expect(document.activeElement).toBe(button('Text style: Paragraph'))
+    await user.keyboard('{ArrowRight}')
+    expect(document.activeElement).toBe(button('Bold'))
+    await user.keyboard('{End}')
+    expect(document.activeElement).toBe(button('Link'))
+    await user.tab()
+    expect(document.activeElement).toBe(textbox())
+    expect(textbox().getAttribute('aria-keyshortcuts')).toBe('Alt+F10')
+  })
+
+  it('has a minimal preset, and none with toolbar={false} or read-only', () => {
+    const { unmount } = renderWithSatin(<RichTextEditor aria-label="Notes" toolbar="minimal" />)
+    expect(names(screen.getByRole('toolbar', { name: 'Formatting' }))).toEqual(['Bold', 'Italic', 'Bullet list', 'Link'])
+    unmount()
+    renderWithSatin(
+      <>
+        <RichTextEditor aria-label="A" toolbar={false} selectionToolbar={false} />
+        <RichTextEditor aria-label="B" readOnly />
+      </>,
+    )
+    expect(screen.queryByRole('toolbar')).toBeNull()
+    expect(screen.getByRole('textbox', { name: 'A' }).hasAttribute('aria-keyshortcuts')).toBe(false)
+  })
+
+  it('disables its items with the editor', () => {
+    renderWithSatin(<RichTextEditor aria-label="Notes" disabled />)
+    const toolbar = screen.getByRole('toolbar', { name: 'Formatting' })
+    expect(within(toolbar).getAllByRole('button').every((b) => (b as HTMLButtonElement).disabled)).toBe(true)
+  })
+
+  it('toggles bold on the selection and shows it pressed while the selection is bold', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" defaultValue="Hello world" />)
+    select(0, 5)
+    expect(pressed('Bold')).toBe('false')
+    await user.click(button('Bold'))
+    expect(handle().getValue()).toBe('**Hello** world')
+    expect(pressed('Bold')).toBe('true')
+    select(1, 3, 1)
+    expect(pressed('Bold')).toBe('false')
+    select(1, 3)
+    expect(pressed('Bold')).toBe('true')
+    await user.click(button('Italic'))
+    expect(handle().getValue()).toBe('**H*el*lo** world')
+  })
+
+  it('sets headings from the text style menu and lists and quotes from their toggles', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" defaultValue="Title" />)
+    select(0, 0)
+    await user.click(button('Text style: Paragraph'))
+    const item = await screen.findByRole('menuitemradio', { name: 'Heading 2' })
+    expect(screen.getByRole('menuitemradio', { name: 'Paragraph' }).getAttribute('aria-checked')).toBe('true')
+    await user.click(item)
+    expect(handle().getValue()).toBe('## Title')
+    expect(button('Text style: Heading 2')).toBeTruthy()
+    // A press gives focus back to the text.
+    await waitFor(() => expect(document.activeElement).toBe(textbox()))
+
+    await user.click(button('Bullet list'))
+    expect(handle().getValue()).toBe('- Title')
+    expect(pressed('Bullet list')).toBe('true')
+    await user.click(button('Bullet list'))
+    expect(handle().getValue()).toBe('Title')
+    await user.click(button('Quote'))
+    expect(handle().getValue()).toBe('> Title')
+    expect(pressed('Quote')).toBe('true')
+    await user.click(button('Quote'))
+    expect(handle().getValue()).toBe('Title')
+  })
+
+  it('answers ⌘⇧X, ⌘E, ⌘⇧8 and ⌘⇧7 (Ctrl off Apple)', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" defaultValue="Hello world" />)
+    act(() => handle().focus())
+    select(0, 5)
+    await user.keyboard('{Control>}{Shift>}x{/Shift}{/Control}')
+    expect(handle().getValue()).toBe('~~Hello~~ world')
+    select(1, 6, 1)
+    await user.keyboard('{Control>}e{/Control}')
+    expect(handle().getValue()).toBe('~~Hello~~ `world`')
+    await user.keyboard('{Control>}{Shift>}8{/Shift}{/Control}')
+    expect(handle().getValue()).toBe('- ~~Hello~~ `world`')
+    await user.keyboard('{Control>}{Shift>}7{/Shift}{/Control}')
+    expect(handle().getValue()).toBe('1. ~~Hello~~ `world`')
+  })
+
+  it('adds, edits and removes a link from the popover', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" defaultValue="Hello world" />)
+    act(() => handle().focus())
+    select(0, 5)
+    await user.keyboard('{Control>}k{/Control}')
+    const dialog = await screen.findByRole('dialog', { name: 'Add link' })
+    const url = within(dialog).getByRole('textbox', { name: 'URL' })
+    await waitFor(() => expect(document.activeElement).toBe(url))
+    expect(within(dialog).queryByRole('button', { name: 'Remove link' })).toBeNull()
+
+    // Refused: another scheme. The popover stays with the error.
+    await user.type(url, 'javascript:alert(1){Enter}')
+    expect(within(dialog).getByText('Enter a web address, an email address or a path.')).toBeTruthy()
+    expect(url.getAttribute('aria-invalid')).toBe('true')
+    expect(handle().getValue()).toBe('Hello world')
+
+    await user.clear(url)
+    await user.type(url, 'example.com/brief{Enter}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(handle().getValue()).toBe('[Hello](https://example.com/brief) world')
+    expect(document.activeElement).toBe(textbox())
+
+    // In the link: the button is pressed and opens Edit link with the address.
+    select(2, 2)
+    expect(pressed('Link')).toBe('true')
+    await user.click(button('Link'))
+    const edit = await screen.findByRole('dialog', { name: 'Edit link' })
+    expect((within(edit).getByRole('textbox', { name: 'URL' }) as HTMLInputElement).value).toBe('https://example.com/brief')
+    await user.click(within(edit).getByRole('button', { name: 'Remove link' }))
+    expect(handle().getValue()).toBe('Hello world')
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('inserts the address as linked text with nothing selected, and closes on Escape', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" defaultValue="See " />)
+    act(() => handle().focus())
+    select(4, 4)
+    await user.keyboard('{Control>}k{/Control}')
+    let url = await screen.findByRole('textbox', { name: 'URL' })
+    await waitFor(() => expect(document.activeElement).toBe(url))
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.activeElement).toBe(textbox())
+
+    await user.keyboard('{Control>}k{/Control}')
+    url = await screen.findByRole('textbox', { name: 'URL' })
+    await waitFor(() => expect(document.activeElement).toBe(url))
+    await user.type(url, 'mailto:hr@example.com{Enter}')
+    expect(handle().getValue()).toBe('See [mailto:hr@example.com](mailto:hr@example.com)')
+  })
+
+  it('keeps the link popover’s submit from a form around the editor', async () => {
+    const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault())
+    const ref = React.createRef<RichTextEditorHandle>()
+    const { user } = renderWithSatin(
+      <form onSubmit={onSubmit}>
+        <RichTextEditor aria-label="Notes" defaultValue="Hello" editorRef={ref} />
+      </form>,
+    )
+    act(() => ref.current!.focus())
+    select(0, 5)
+    await user.keyboard('{Control>}k{/Control}')
+    const url = await screen.findByRole('textbox', { name: 'URL' })
+    await waitFor(() => expect(document.activeElement).toBe(url))
+    await user.type(url, 'example.com{Enter}')
+    expect(ref.current!.getValue()).toBe('[Hello](https://example.com)')
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('normalises addresses', () => {
+    expect(normalizeRichTextUrl('example.com')).toBe('https://example.com')
+    expect(normalizeRichTextUrl(' https://a.io/x?y=1 ')).toBe('https://a.io/x?y=1')
+    expect(normalizeRichTextUrl('hr@example.com')).toBe('mailto:hr@example.com')
+    expect(normalizeRichTextUrl('/jobs/12')).toBe('/jobs/12')
+    expect(normalizeRichTextUrl('#salary')).toBe('#salary')
+    expect(normalizeRichTextUrl('javascript:alert(1)')).toBeNull()
+    expect(normalizeRichTextUrl('not a link')).toBeNull()
+    expect(normalizeRichTextUrl('')).toBeNull()
+  })
+
+  it('reaches the toolbar with Alt+F10 and comes back with Escape', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" defaultValue="Hello" />)
+    act(() => handle().focus())
+    await user.keyboard('{Alt>}{F10}{/Alt}')
+    expect(document.activeElement).toBe(button('Text style: Paragraph'))
+    await user.keyboard('{ArrowRight}')
+    expect(document.activeElement).toBe(button('Bold'))
+    await user.keyboard('{Escape}')
+    expect(document.activeElement).toBe(textbox())
+  })
+
+  it('shows the bubble after a pointer selection and hides it when the selection collapses', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" toolbar={false} defaultValue="Hello world" />)
+    act(() => handle().focus())
+    // A keyboard selection doesn't bring it.
+    select(0, 5)
+    await act(async () => new Promise((r) => setTimeout(r, 10)))
+    expect(screen.queryByRole('toolbar', { name: 'Selection formatting' })).toBeNull()
+
+    const bubble = await pointerSelect(0, 5)
+    expect(bubble.getAttribute('data-variant')).toBe('floating')
+    expect(names(bubble)).toEqual(['Bold', 'Italic', 'Strikethrough', 'Link'])
+    // Out of the tab order.
+    expect(bubble.getAttribute('tabindex')).toBe('-1')
+    expect(within(bubble).getAllByRole('button').every((b) => b.getAttribute('tabindex') === '-1')).toBe(true)
+
+    await user.click(button('Bold', bubble))
+    expect(handle().getValue()).toBe('**Hello** world')
+    expect(pressed('Bold', bubble)).toBe('true')
+
+    select(2, 2)
+    expect(screen.queryByRole('toolbar', { name: 'Selection formatting' })).toBeNull()
+
+    // Escape in the text puts it away.
+    await pointerSelect(1, 6, 1)
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('toolbar', { name: 'Selection formatting' })).toBeNull()
+  })
+
+  it('opens and focuses the bubble with Alt+F10 when there is no toolbar', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Notes" toolbar={false} defaultValue="Hello world" />)
+    act(() => handle().focus())
+    expect(textbox().getAttribute('aria-keyshortcuts')).toBe('Alt+F10')
+    await user.keyboard('{Alt>}{F10}{/Alt}')
+    const bubble = await screen.findByRole('toolbar', { name: 'Selection formatting' })
+    await waitFor(() => expect(document.activeElement).toBe(button('Bold', bubble)))
+    await user.keyboard('{Escape}')
+    expect(document.activeElement).toBe(textbox())
+    expect(screen.queryByRole('toolbar', { name: 'Selection formatting' })).toBeNull()
+  })
+
+  it('builds from parts, with actions after the bubble’s items', async () => {
+    renderWithSatin(
+      <RichTextEditorRoot defaultValue="Hello world">
+        <RichTextEditorContent aria-label="Notes">
+          <RichTextToolbar>
+            <RichTextFormatToggle format="bold" />
+          </RichTextToolbar>
+        </RichTextEditorContent>
+        <RichTextSelectionToolbar actions={<ToolbarButton>Rewrite</ToolbarButton>} />
+      </RichTextEditorRoot>,
+    )
+    expect(names(screen.getByRole('toolbar', { name: 'Formatting' }))).toEqual(['Bold'])
+    const bubble = await pointerSelect(0, 5)
+    expect(names(bubble)).toEqual(['Bold', 'Italic', 'Strikethrough', 'Link', 'Rewrite'])
+    expect(within(bubble).getAllByRole('separator')).toHaveLength(1)
+  })
+
+  it('says its toolbar words through SatinLabels', async () => {
+    const { user } = renderWithSatin(<RichTextEditor aria-label="Notatki" defaultValue="Tekst" />, {
+      labels: {
+        richTextToolbar: 'Formatowanie',
+        richTextStyleOf: (style: string) => `Styl tekstu: ${style}`,
+        richTextParagraph: 'Akapit',
+        richTextHeading1: 'Nagłówek 1',
+        richTextBold: 'Pogrubienie',
+        richTextLink: 'Odnośnik',
+      },
+    })
+    const toolbar = screen.getByRole('toolbar', { name: 'Formatowanie' })
+    expect(within(toolbar).getByRole('button', { name: 'Styl tekstu: Akapit' })).toBeTruthy()
+    expect(within(toolbar).getByRole('button', { name: 'Pogrubienie' })).toBeTruthy()
+    expect(within(toolbar).getByRole('button', { name: 'Odnośnik' })).toBeTruthy()
+    await user.click(within(toolbar).getByRole('button', { name: 'Styl tekstu: Akapit' }))
+    expect(await screen.findByRole('menuitemradio', { name: 'Nagłówek 1' })).toBeTruthy()
+  })
+
+  it.each(['light', 'dark'] as const)('has no axe violations with the bubble open in %s', async (theme) => {
+    renderEditor(<RichTextEditor label="Feedback" defaultValue="Hello world" />, { theme })
+    await pointerSelect(0, 5)
+    await expectNoAxeViolations()
+  })
+
+  it.each(['light', 'dark'] as const)('has no axe violations with the link popover open in %s', async (theme) => {
+    const { user, handle } = renderEditor(<RichTextEditor label="Feedback" defaultValue="Hello world" />, { theme })
+    act(() => handle().focus())
+    select(0, 5)
+    await user.keyboard('{Control>}k{/Control}')
+    await screen.findByRole('dialog', { name: 'Add link' })
     await expectNoAxeViolations()
   })
 })

@@ -6906,7 +6906,7 @@
           "name": "children",
           "type": "React.ReactNode",
           "required": false,
-          "description": "Drawn inside the field, before the editable area: where a toolbar goes."
+          "description": "Drawn inside the field, before the editable area: where `RichTextToolbar` goes."
         },
         {
           "name": "autoFocus",
@@ -6922,8 +6922,122 @@
         }
       ]
     },
+    "RichTextFormatToggle": {
+      "description": "A toolbar toggle for a mark (bold, italic, strikethrough, inline code): pressed while the selection has it, with the mark's icon, name and shortcut. For a toolbar of your own inside `RichTextToolbar` or `RichTextSelectionToolbar`. Other props, `ref` included, go to the `button`.",
+      "type": "RichTextFormatToggleProps",
+      "extends": [
+        "Omit<ToolbarToggleProps, 'pressed' | 'defaultPressed' | 'onPressedChange' | 'children' | 'icon' | 'label'>"
+      ],
+      "props": [
+        {
+          "name": "format",
+          "type": "RichTextMark",
+          "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Replaces the mark's own icon."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "Replaces the mark's own name (from SatinLabels)."
+        }
+      ]
+    },
+    "RichTextBlockToggle": {
+      "description": "A toolbar toggle for a bullet list, a numbered list or a quote: pressed while the selection is in one, and pressed again it turns the blocks back into paragraphs. Other props, `ref` included, go to the `button`.",
+      "type": "RichTextBlockToggleProps",
+      "extends": [
+        "Omit<ToolbarToggleProps, 'pressed' | 'defaultPressed' | 'onPressedChange' | 'children' | 'icon' | 'label'>"
+      ],
+      "props": [
+        {
+          "name": "block",
+          "type": "'bullet' | 'number' | 'quote'",
+          "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "RichTextLinkButton": {
+      "description": "A toolbar toggle that opens the link popover (as ⌘K does): pressed while the selection is in a link. Other props, `ref` included, go to the `button`.",
+      "type": "RichTextLinkButtonProps",
+      "extends": [
+        "Omit<ToolbarToggleProps, 'pressed' | 'defaultPressed' | 'onPressedChange' | 'children' | 'icon' | 'label'>"
+      ],
+      "props": [
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "RichTextBlockTypeMenu": {
+      "description": "The text style menu: a toolbar button that shows the current style (Paragraph, Heading 1–3) and opens a menu of them as radio items. A list or a quote shows Paragraph with nothing checked. Other props, `ref` included, go to the button.",
+      "type": "RichTextBlockTypeMenuProps",
+      "extends": [
+        "Omit<ToolbarButtonProps, 'children' | 'icon' | 'label' | 'shortcut'>"
+      ],
+      "props": []
+    },
+    "RichTextToolbar": {
+      "description": "The formatting toolbar, inside the field above the text (`RichTextEditorContent`'s children), a subtle rule under it. Free's `Toolbar` with `preventFocusOnPress`, so a press keeps the selection; one tab stop, ← → between items, ⌥F10 from the text reaches its first item and Escape goes back to the text. Hidden when read-only; its items are disabled with the editor. `children` replace the preset: build one from `RichTextBlockTypeMenu`, `RichTextFormatToggle`, `RichTextBlockToggle`, `RichTextLinkButton` and Free's `ToolbarSeparator`, `ToolbarButton`. Other props, `ref` included, go to the toolbar `div`.",
+      "type": "RichTextToolbarProps",
+      "extends": [
+        "Omit<ToolbarProps, 'variant' | 'preventFocusOnPress'>"
+      ],
+      "props": [
+        {
+          "name": "preset",
+          "type": "'default' | 'minimal'",
+          "required": false,
+          "default": "'default'",
+          "description": "`'default'`: text style | bold, italic, strikethrough, code | bullet list, numbered list, quote | link. `'minimal'`: bold, italic | bullet list | link. `children` replace either."
+        }
+      ]
+    },
+    "RichTextSelectionToolbar": {
+      "description": "The bubble over a selection: Free's `Toolbar variant=\"floating\"` placed by `Floating` above the selected text. It shows after a pointer selection (on release) or a double click, never for a selection made with the keyboard; it follows a selection changed while it's up, and goes with a collapsed selection, Escape, or focus leaving the text and the bubble. It doesn't take focus or sit in the tab order: ⌥F10 in the text reaches it when there's no fixed toolbar (and opens it on the caret), and Escape in it goes back to the text with the selection. `children` replace bold, italic, strikethrough and link; `actions` add to them after a separator. That's the place for actions on the selected text (an AI rewrite, a comment): any Toolbar item, with `editorRef`'s `getSelectionRect`, `insert` and `insertText` to act. Not drawn when the editor is read-only or disabled. Other props go to the toolbar `div`.",
+      "type": "RichTextSelectionToolbarProps",
+      "extends": [
+        "Omit<ToolbarProps, 'variant' | 'preventFocusOnPress' | 'orientation'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Replaces the default items (bold, italic, strikethrough, link)."
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Added after the items, past a separator: actions on the selection (rewrite, translate, comment). They get the same context as the formatting items."
+        }
+      ]
+    },
     "RichTextEditor": {
-      "description": "The editor for the common case: `RichTextEditorRoot` and `RichTextEditorContent` with a label, the hint or the error, and the status row. Other props, `ref` included, go to the root `div`.",
+      "description": "The editor for the common case: `RichTextEditorRoot` and `RichTextEditorContent` with a label, the formatting toolbar, the selection bubble, the hint or the error, and the status row. Other props, `ref` included, go to the root `div`.",
       "type": "RichTextEditorProps",
       "extends": [
         "Omit<RichTextEditorRootProps, 'children' | 'labelledBy' | 'describedBy' | 'invalid'>"
@@ -6994,7 +7108,15 @@
           "name": "toolbar",
           "type": "boolean | 'minimal'",
           "required": false,
-          "description": "The formatting toolbar: `true` (default), `'minimal'` (bold, italic, list, link) or `false`. Not drawn yet."
+          "default": "true",
+          "description": "The formatting toolbar inside the field: `true` (default: text style, marks, lists, quote, link), `'minimal'` (bold, italic, bullet list, link) or `false`. Never drawn read-only."
+        },
+        {
+          "name": "selectionToolbar",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "The bubble over a pointer selection (bold, italic, strikethrough, link). On by default; never read-only."
         },
         {
           "name": "mentions",

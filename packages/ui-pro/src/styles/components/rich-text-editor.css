@@ -172,3 +172,35 @@
 [data-slot="rich-text-editor-content"] .satin-rte-strike {
   text-decoration: line-through;
 }
+
+/* ---------- toolbars ---------- */
+
+/*
+ * The formatting toolbar sits inside the field, above the text, with a subtle rule under it
+ * (a separator: the default width). It shares the field's edge, fill, dimming and ring, so the
+ * editor reads as one control. The bubble and the link popover fade in from 4px off
+ * (satin-enter, as a popover opens); Satin's reduced-motion rule turns both off.
+ */
+.satin-rte-toolbar {
+  padding: 4px;
+  border-block-end: var(--border-width-default) solid var(--border-subtle);
+}
+.satin-rte-bubble,
+.satin-rte-link {
+  animation: satin-enter var(--duration-base) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .satin-rte-bubble,
+  .satin-rte-link {
+    animation: none;
+  }
+}
+
+/* Right to left: the bullet list icon mirrors; the numbered one swaps for its right-hand twin. */
+.satin-rte-icon-mirror:dir(rtl) {
+  transform: scaleX(-1);
+}
+.satin-rte-icon-ltr:dir(rtl),
+.satin-rte-icon-rtl:dir(ltr) {
+  display: none;
+}
