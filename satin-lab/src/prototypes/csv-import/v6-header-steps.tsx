@@ -261,8 +261,8 @@ export function CsvImportHeaderSteps({ onBrowse, dragging, ...props }: CsvImport
  * The steps as the header row: a numbered circle and a label each, a dot between. Upcoming steps
  * are muted on bg/muted; the current one is solid action/primary with its number in
  * action/primary fg, as Stepper draws its current step, and its label in text/default medium; a
- * done one shows a check. The row is centred on the panel, with the same inset at both ends so
- * the end stays free for the dialog's close button (36 at 7 from the corner: circles 13 from the top put both on one centre line, 25).
+ * done one shows a check. The row starts at the panel's start inset and leaves the end free for
+ * the dialog's close button (36 at 7 from the corner: circles 13 from the top put both on one centre line, 25).
  * Prototype-local: Free's Stepper draws its labels under the circles, or folds to a count.
  */
 function HeaderSteps({
@@ -284,7 +284,7 @@ function HeaderSteps({
   const current = complete ? -1 : STEPS.indexOf(view)
   const stepLabel = { upload: words.csvV6StepUpload, map: words.csvStepMap, review: words.csvStepReview }
   return (
-    <div data-slot="csv-import-header" className="flex h-[37px] shrink-0 items-end justify-center px-14">
+    <div data-slot="csv-import-header" className="flex h-[37px] shrink-0 items-end ps-4 pe-14">
       <ol aria-label={words.csvSteps} className="m-0 flex min-w-0 list-none items-center gap-3 p-0 @max-[479px]:gap-2">
         {STEPS.map((s, i) => {
           const state = complete || i < current ? 'complete' : i === current ? 'current' : 'upcoming'
@@ -770,7 +770,7 @@ function StepBody({ flow, view, words }: { flow: CsvFlow; view: Step; words: V6W
 }
 
 /*
- * Review: the counts as two tiles in one muted block (rows that will be imported, rows with
+ * Review: the counts as two separate muted tiles (rows that will be imported, rows with
  * errors), then CsvImportPreview's table. The errors tile is a toggle button for the preview's
  * errors-only filter; it replaces the preview's summary line, its errors Alert and its "Show only
  * errors" checkbox, which are hidden here by their data attributes. With no errors it is plain
@@ -780,11 +780,11 @@ function ReviewBody({ flow, words, validation }: { flow: CsvFlow; words: V6Words
   const { n, noun, thing } = flow
   const [errorsOnly, setErrorsOnly] = React.useState(false)
   const errors = validation.rows.length - validation.valid
-  const half = 'flex min-w-0 flex-col gap-0.5 rounded-lg px-4 py-3 text-start'
+  const half = 'flex min-w-0 flex-col gap-0.5 rounded-xl bg-bg-muted px-4 py-3 text-start'
   const count = 'text-2xl leading-8 font-semibold tabular-nums'
   return (
     <>
-      <div data-slot="csv-import-tiles" className="mb-4 grid shrink-0 grid-cols-2 gap-1 rounded-xl bg-bg-muted p-1 @max-[399px]:grid-cols-1">
+      <div data-slot="csv-import-tiles" className="mb-4 grid shrink-0 grid-cols-2 gap-3 @max-[399px]:grid-cols-1">
         {/* Focus lands here on entering Review: the count and its label are read as one. */}
         <div tabIndex={-1} data-csv-focus="tiles" className={cn(focusTargetClass, half)}>
           <span className={cn(count, 'text-text-default')}>{n(validation.valid)}</span>
