@@ -121,13 +121,48 @@ export function Textarea({
             {message}
           </p>
           {maxLength != null && (
-            <p id={counterId} className={cn('shrink-0 whitespace-nowrap', !hasMessage && 'text-text-muted')}>
-              <span className="sr-only">{labels.charactersUsed}: </span>
-              {text.length}/{maxLength}
-            </p>
+            <CharacterCount
+              id={counterId}
+              count={text.length}
+              max={maxLength}
+              className={hasMessage ? 'text-text-destructive' : undefined}
+            />
           )}
         </div>
       )}
     </div>
+  )
+}
+
+export interface CharacterCountProps extends React.ComponentProps<'p'> {
+  /** The characters so far. */
+  count: number
+  /** The limit. With it the count reads "134/120"; without it, "948 characters". */
+  max?: number
+}
+
+/**
+ * A character counter, the one under Textarea: "134/120" against a limit, in text/destructive
+ * once over it, with "Characters used:" before it for screen readers; or, with no limit, the
+ * count in words ("948 characters", the `characterCount` label, the number written in
+ * `dateLocale`). Muted 14px by default, set to stay on one line at the end of a hint row.
+ *
+ * It isn't a live region (it changes on every key); point the field's `aria-describedby` at its
+ * `id`. Other props, `ref` included, go to the `p`.
+ */
+export function CharacterCount({ count, max, className, ...props }: CharacterCountProps) {
+  const labels = useSatinLabels()
+  const over = max != null && count > max
+  return (
+    <p className={cn('shrink-0 text-sm whitespace-nowrap text-text-muted', className, over && 'text-text-destructive')} {...props}>
+      {max != null ? (
+        <>
+          <span className="sr-only">{labels.charactersUsed}: </span>
+          {count}/{max}
+        </>
+      ) : (
+        labels.characterCount(count, new Intl.NumberFormat(labels.dateLocale).format(count))
+      )}
+    </p>
   )
 }

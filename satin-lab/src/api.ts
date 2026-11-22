@@ -904,7 +904,7 @@ export const api: Record<string, Api> = {
     ],
   },
   textarea: {
-    description: 'The `Textarea` component is a wrapper around the `textarea` element with a label, hint and character counter. `maxLength` only drives the counter: it does not stop typing or pasting past it, so check the length in your form validation.',
+    description: 'The `Textarea` component is a wrapper around the `textarea` element with a label, hint and character counter. `maxLength` only drives the counter: it does not stop typing or pasting past it, so check the length in your form validation. The counter is `CharacterCount`, exported next to it for a field of your own: `count` and `max` ("134/120", red once over), or `count` alone ("948 characters", the `characterCount` label, the number written in `dateLocale`).',
     props: [
       { name: 'label', type: ['string'] },
       { name: 'optional', type: ['boolean'], default: 'false' },

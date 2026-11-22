@@ -4732,9 +4732,9 @@
       "props": [
         {
           "name": "anchor",
-          "type": "Element | null",
+          "type": "Element | FloatingVirtualElement | null",
           "required": true,
-          "description": "The element it points at. Nothing renders while it's null."
+          "description": "The element it points at, or a virtual one (a selection's rect, see FloatingVirtualElement). Nothing renders while it's null."
         },
         {
           "name": "side",
@@ -8293,6 +8293,27 @@
           "type": "'hover' | 'focus'",
           "required": false,
           "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    },
+    "CharacterCount": {
+      "description": "A character counter, the one under Textarea: \"134/120\" against a limit, in text/destructive once over it, with \"Characters used:\" before it for screen readers; or, with no limit, the count in words (\"948 characters\", the `characterCount` label, the number written in `dateLocale`). Muted 14px by default, set to stay on one line at the end of a hint row. It isn't a live region (it changes on every key); point the field's `aria-describedby` at its `id`. Other props, `ref` included, go to the `p`.",
+      "type": "CharacterCountProps",
+      "extends": [
+        "React.ComponentProps<'p'>"
+      ],
+      "props": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": true,
+          "description": "The characters so far."
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false,
+          "description": "The limit. With it the count reads \"134/120\"; without it, \"948 characters\"."
         }
       ]
     }
