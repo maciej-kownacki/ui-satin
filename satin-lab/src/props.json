@@ -8619,7 +8619,7 @@
           "name": "data",
           "type": "number[]",
           "required": true,
-          "description": "The values, oldest first. Fewer than two draw nothing."
+          "description": "The values, oldest first. Values that aren't finite are left out; fewer than two finite draw nothing."
         },
         {
           "name": "labels",
@@ -8671,13 +8671,13 @@
           "name": "label",
           "type": "React.ReactNode",
           "required": true,
-          "description": "What is measured: \"Signups\"."
+          "description": "What is measured: \"Signups\". Text or inline content (no links or buttons: with `href` the whole card is a link). A string is read in the card's name sentence; other content is read from the card, before the rest of the name."
         },
         {
           "name": "value",
           "type": "number | string | null",
           "required": true,
-          "description": "The value. A number goes through `format`; a string shows as given; `null` shows \"—\" (read \"No data\")."
+          "description": "The value. A number goes through `format`; a string shows as given; `null`, or a number that isn't finite, shows \"—\" (read \"No data\")."
         },
         {
           "name": "format",
@@ -8695,7 +8695,7 @@
           "name": "sparkline",
           "type": "number[]",
           "required": false,
-          "description": "The values for the sparkline, oldest first. Fewer than two draw nothing."
+          "description": "The values for the sparkline, oldest first. Values that aren't finite are left out; with fewer than two the row stays, empty."
         },
         {
           "name": "sparklineLabels",
@@ -8720,7 +8720,7 @@
           "name": "error",
           "type": "React.ReactNode | boolean",
           "required": false,
-          "description": "Shows the reason in place of the value and sparkline; `true` says \"Couldn't load\"."
+          "description": "Shows the reason in place of the value and sparkline, read out politely; `true` says \"Couldn't load\"."
         },
         {
           "name": "onRetry",
@@ -8740,7 +8740,7 @@
           "type": "boolean",
           "required": false,
           "default": "true",
-          "description": "Counts a number up the first time it appears. Default true; never under reduced motion."
+          "description": "Counts a number up the first time it appears on the client. Default true; never under reduced motion or on hydration."
         }
       ]
     }

@@ -1,6 +1,8 @@
 import * as React from 'react'
+import { hydrateRoot } from 'react-dom/client'
+import { renderToString } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin, setReducedMotion } from 'satin-test'
 import { StatCard, StatCardChange, type StatChange } from '../components/stat-card'
 
@@ -73,9 +75,13 @@ describe('StatCard', () => {
   it('shows the error and runs Retry from the keyboard', async () => {
     const onRetry = vi.fn()
     const { user } = renderWithSatin(<StatCard label="Revenue" value={null} error onRetry={onRetry} sparkline={points} />)
-    expect(card("Revenue, Couldn't load")).toBeTruthy()
+    // The name is the label and the error row, which is shown once and read politely.
+    const root = card("Revenue Couldn't load")
+    expect(screen.getByRole('status').textContent).toBe("Couldn't load")
     await user.tab()
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Retry' }))
+    const retry = screen.getByRole('button', { name: 'Retry', description: 'Revenue' })
+    expect(document.activeElement).toBe(retry)
+    expect(root.textContent!.split("Couldn't load")).toHaveLength(2)
     await user.keyboard('{Enter}')
     expect(onRetry).toHaveBeenCalledTimes(1)
   })
@@ -164,7 +170,7 @@ describe('StatCard', () => {
       },
     )
     expect(card('Rejestracje, 1284, wzrost o 12% r/r, źle')).toBeTruthy()
-    expect(card('Przychód, Nie udało się wczytać')).toBeTruthy()
+    expect(card('Przychód Nie udało się wczytać')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Ponów' })).toBeTruthy()
     await user.tab()
     const spark = screen.getByRole('group', { name: 'Rejestracje, 5 punktów' })
@@ -195,6 +201,100 @@ describe('StatCard', () => {
     expect(shownValue(card('Signups, 1,300'))).toBe('1,300')
   })
 
+  it('keeps the value on screen through hydration, with no count-up', async () => {
+    const ui = <StatCard label="Signups" value={1284} change={week} />
+    const container = document.createElement('div')
+    container.innerHTML = renderToString(ui)
+    document.body.appendChild(container)
+    expect(shownValue(container)).toBe('1,284')
+    const root = await act(async () => hydrateRoot(container, ui))
+    expect(shownValue(container)).toBe('1,284')
+    await new Promise((r) => setTimeout(r, 100))
+    expect(shownValue(container)).toBe('1,284')
+    act(() => root.unmount())
+    container.remove()
+  })
+
+  it('counts up under StrictMode too', async () => {
+    renderWithSatin(
+      <React.StrictMode>
+        <StatCard label="Signups" value={1284} />
+      </React.StrictMode>,
+    )
+    const root = card('Signups, 1,284')
+    expect(shownValue(root)).not.toBe('1,284')
+    await waitFor(() => expect(shownValue(root)).toBe('1,284'))
+  })
+
+  it('writes the value with all its decimals when not counting', async () => {
+    renderWithSatin(
+      <>
+        <StatCard label="Ratio" value={1.23456} format={(v) => String(v)} countUp={false} />
+        <StatCard label="Rate" value={1e-7} format={(v) => v.toExponential()} />
+      </>,
+    )
+    expect(shownValue(card('Ratio, 1.23456'))).toBe('1.23456')
+    // Counting, 1e-7 is rounded to its 7 decimals, not to 0 or to digits it doesn't have.
+    const rate = card('Rate, 1e-7')
+    await waitFor(() => expect(shownValue(rate)).toBe('1e-7'))
+  })
+
+  it('shows a non-finite value as no data, and leaves non-finite points out', () => {
+    renderWithSatin(
+      <StatCard label="Signups" value={Number.NaN} sparkline={[980, Number.NaN, 1040, Infinity, 1284]} sparklineLabels={weeks} />,
+    )
+    const root = card('Signups, No data')
+    expect(shownValue(root)).toBe('—')
+    const spark = screen.getByRole('group', { name: 'Signups, 3 points' })
+    expect(document.getElementById(spark.getAttribute('aria-describedby')!)!.textContent).toBe('Upward trend over 3 points, from 980 to 1,284')
+    expect(spark.querySelector('path')!.getAttribute('d')).not.toMatch(/NaN|Infinity/)
+  })
+
+  it('keeps the sparkline row when loading ends with too few points', () => {
+    const { rerender } = renderWithSatin(<StatCard label="Revenue" value={null} loading sparkline={[]} />)
+    rerender(<StatCard label="Revenue" value={null} sparkline={[]} />)
+    const row = card('Revenue, No data').querySelector('[data-slot="stat-card-sparkline-empty"]')!
+    expect(row.getAttribute('aria-hidden')).toBe('true')
+    expect(row.classList.contains('h-12')).toBe(true)
+  })
+
+  it('reads an error given as content once, from where it shows', async () => {
+    renderWithSatin(<StatCard label="Revenue" value={null} error={<>Quota <b>exceeded</b></>} onRetry={() => {}} />)
+    const root = card('Revenue Quota exceeded')
+    expect(root.textContent!.split('Quota')).toHaveLength(2)
+    expect(screen.getByRole('status').textContent).toBe('Quota exceeded')
+    await expectNoAxeViolations()
+  })
+
+  it('reads a label given as content from where it shows, not twice', () => {
+    renderWithSatin(
+      <>
+        <StatCard label={<em>Signups</em>} value={1284} change={week} countUp={false} />
+        <StatCard label={<em>Visits</em>} value={50} href="/visits" countUp={false} />
+      </>,
+    )
+    const root = card('Signups 1,284, up 12% vs last week')
+    expect(root.textContent!.split('Signups')).toHaveLength(2)
+    expect(screen.getByRole('link', { name: 'Visits 50' })).toBeTruthy()
+    expect(screen.getByRole('link').querySelector('em')).toBeNull()
+  })
+
+  it('writes the change and the name in the locale and its labels', () => {
+    renderWithSatin(<StatCard label="Inscriptions" value={1284} change={{ ...week, period: 'vs semaine dernière' }} countUp={false} />, {
+      labels: {
+        dateLocale: 'fr-FR',
+        statUp: (value, period) => `en hausse de ${value} ${period}`,
+        statName: (label, value, change) => [label, value, change].filter(Boolean).join(' ; '),
+      },
+    })
+    const pct = new Intl.NumberFormat('fr-FR', { style: 'percent', maximumFractionDigits: 1 }).format(0.12)
+    // A space before the sign, the narrow no-break space in current ICU.
+    expect(pct).toMatch(/^12[\u00a0\u202f]%$/)
+    const thousands = new Intl.NumberFormat('fr-FR').format(1284)
+    const root = card(`Inscriptions ; ${thousands} ; en hausse de ${pct} vs semaine dernière`)
+    expect(root.querySelector('[data-slot="badge"]')!.textContent).toBe(pct)
+  })
+
   it('reads the change in words on its own too', () => {
     renderWithSatin(<StatCardChange value={4} direction="down" good="down" period="vs last week" />)
     expect(screen.getByText('down 4% vs last week, good')).toBeTruthy()
@@ -210,6 +310,8 @@ describe('StatCard', () => {
         <StatCard label="Revenue" value={null} loading sparkline={[]} />
         <StatCard label="Revenue" value={null} error onRetry={() => {}} sparkline={[]} />
         <StatCard label="Win rate" value={31} sparkline={points} href="/win" disabled countUp={false} />
+        <StatCard label={<em>Visits</em>} value={50} sparkline={[]} countUp={false} />
+        <StatCard label={<em>Visits</em>} value={null} error={<>Quota <b>exceeded</b></>} onRetry={() => {}} />
       </div>,
       { theme },
     )
