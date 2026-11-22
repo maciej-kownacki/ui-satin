@@ -39,6 +39,8 @@ Pro components import Free's from `@uisatin/ui/<name>` (and `cn` from `@uisatin/
 4. Docs as for Free (page, demo, `api.ts`, `a11y.ts`), plus `edition: 'pro'` on the page's `nav.ts` entry: that gives the Pro badge (page header, sidebar, card), `(Pro)` in llms.txt and the Pro install text. `check:docs` fails if `edition` and the file's package disagree.
 5. Tests in `packages/ui-pro/src/__tests__/` (type test and runtime test, see `packages/ui/AGENTS.md`), a budget in `.size-limit.json` (Pro sizes leave `@uisatin/ui` out), a changeset for `@uisatin/pro`.
 
+One exception to step 1: `rich-text-editor` is not exported from `src/index.ts`. It imports Lexical, an optional peer of `@uisatin/pro` (`peerDependenciesMeta`, external in `tsup.config.ts`), so only an app that imports `@uisatin/pro/rich-text-editor` has to install it. Any other component on an optional peer follows the same rule.
+
 ## Conventions
 
 - Components take `ref` as a prop and spread the rest onto their main element; document where in the component's JSDoc ("Other props, `ref` included, go to …").

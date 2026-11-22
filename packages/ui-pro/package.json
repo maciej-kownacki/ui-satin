@@ -44,18 +44,57 @@
     "prepublishOnly": "node -e \"console.error('Satin Pro is not published yet: distribution and licensing are decided separately (see README).'); process.exit(1)\""
   },
   "peerDependencies": {
+    "@lexical/history": "~0.53.0",
+    "@lexical/link": "~0.53.0",
+    "@lexical/list": "~0.53.0",
+    "@lexical/markdown": "~0.53.0",
+    "@lexical/rich-text": "~0.53.0",
+    "@lexical/table": "~0.53.0",
     "@uisatin/ui": "0.7.1",
+    "lexical": "~0.53.0",
     "react": ">=19",
     "react-dom": ">=19"
+  },
+  "peerDependenciesMeta": {
+    "@lexical/history": {
+      "optional": true
+    },
+    "@lexical/link": {
+      "optional": true
+    },
+    "@lexical/list": {
+      "optional": true
+    },
+    "@lexical/markdown": {
+      "optional": true
+    },
+    "@lexical/rich-text": {
+      "optional": true
+    },
+    "@lexical/table": {
+      "optional": true
+    },
+    "lexical": {
+      "optional": true
+    }
   },
   "dependencies": {
     "iconoir-react": "^7.12.2",
     "radix-ui": "^1.8.1"
   },
   "devDependencies": {
+    "@lexical/history": "0.53.0",
+    "@lexical/html": "0.53.0",
+    "@lexical/link": "0.53.0",
+    "@lexical/list": "0.53.0",
+    "@lexical/markdown": "0.53.0",
+    "@lexical/rich-text": "0.53.0",
+    "@lexical/table": "0.53.0",
+    "@lexical/utils": "0.53.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@uisatin/ui": "0.7.1",
+    "lexical": "0.53.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tsup": "^9.0.0",

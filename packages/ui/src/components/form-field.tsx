@@ -12,7 +12,9 @@ import { cn } from '../lib/utils'
  *
  * The control is wired through context: Input and Textarea pick up the field's id (so the
  * label points at them), `aria-describedby` (description or error), `aria-invalid` and
- * `disabled`. Any other control can read the same values with `useFormField()`.
+ * `disabled`. Any other control can read the same values with `useFormField()`: one that isn't
+ * natively labelable (a contenteditable box) takes the field's `id` and names itself with
+ * `aria-labelledby={labelId}`, and a click on the label focuses it.
  *
  * Inside a `Form` (form.tsx) a field takes the form's layout and disabled state, and with a
  * `name` it shows the form's `errors[name]` and names its control, so the form's fields are
@@ -20,6 +22,11 @@ import { cn } from '../lib/utils'
  */
 export interface FormFieldContextValue {
   id: string
+  /**
+   * The label's id (`${id}-label`). A control that isn't natively labelable (a contenteditable
+   * box) points `aria-labelledby` at it; clicking the label focuses it.
+   */
+  labelId: string
   /** The field's `name`, given to Input, Textarea and Select for a native submit. */
   name?: string
   describedBy?: string
@@ -27,6 +34,9 @@ export interface FormFieldContextValue {
   disabled: boolean
   required: boolean
 }
+
+/** Elements a `<label for>` focuses on its own. */
+const LABELABLE = new Set(['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'METER', 'OUTPUT', 'PROGRESS'])
 
 const FormFieldContext = React.createContext<FormFieldContextValue | null>(null)
 
@@ -92,11 +102,12 @@ export function FormField({
   const autoId = React.useId()
   const id = htmlFor ?? autoId
   const invalid = Boolean(error)
+  const labelId = `${id}-label`
   const messageId = invalid ? `${id}-error` : description ? `${id}-description` : undefined
 
   const context = React.useMemo<FormFieldContextValue>(
-    () => ({ id, name, describedBy: messageId, invalid, disabled, required }),
-    [id, name, messageId, invalid, disabled, required],
+    () => ({ id, labelId, name, describedBy: messageId, invalid, disabled, required }),
+    [id, labelId, name, messageId, invalid, disabled, required],
   )
 
   return (
@@ -110,7 +121,15 @@ export function FormField({
         {...props}
       >
         <label
+          id={labelId}
           htmlFor={id}
+          onClick={(e) => {
+            // `for` only reaches labelable elements; focus anything else with the id (a contenteditable box).
+            const target = document.getElementById(id)
+            if (!target || LABELABLE.has(target.tagName) || e.defaultPrevented) return
+            e.preventDefault()
+            target.focus()
+          }}
           className={cn(
             'flex items-start gap-0.5 text-sm leading-[18px] font-medium text-text-default',
             layout === 'horizontal' && 'w-40 shrink-0',

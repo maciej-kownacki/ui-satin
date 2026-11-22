@@ -1,0 +1,245 @@
+/*
+ * Rich text editor (components/rich-text-editor.tsx). The field wears Textarea's skin
+ * (`.satin-field` from Free's input.css): the edge, the fill, the hover and the error. It rings on
+ * the editable area's focus (the component sets data-force="focus" while it has it), not on
+ * :focus-within, so a toolbar inside the field doesn't light it. The editable area is 96px tall
+ * at least, 12 / 8 padding, 14/21 text, and resizes vertically under Textarea's grip.
+ *
+ * Lexical draws plain elements (p, h1–h3, ul, ol, li, blockquote, code, a, strong, em, table,
+ * th, td), styled here by element under the content's data-slot; strikethrough has no element and
+ * takes the theme class `satin-rte-strike`, a selection across table cells the two
+ * `satin-rte-cell-selected` and `satin-rte-table-selection`. A mention is Free's
+ * `<span data-slot="mention">` (mention.css).
+ */
+.satin-field.satin-rte {
+  position: relative;
+  display: block;
+  height: auto;
+  padding: 0;
+}
+/* Focus inside the field but not in the editable area (a toolbar): no ring. */
+.satin-field.satin-rte:focus-within:not([data-force="focus"]) {
+  border-color: var(--border-default);
+  box-shadow: 0 1px 2px 0 var(--effect-shadow-xs);
+}
+.satin-field.satin-rte:not([data-disabled], [data-invalid]):focus-within:not([data-force="focus"]):hover {
+  border-color: var(--border-strong);
+}
+.satin-field.satin-rte[data-invalid]:focus-within:not([data-force="focus"]) {
+  border-color: var(--action-destructive-bg);
+}
+
+.satin-rte-scroll {
+  position: relative;
+}
+.satin-rte-content {
+  min-height: calc(96px - 2 * var(--border-width-strong));
+  padding: 8px 12px;
+  overflow-y: auto;
+  resize: vertical;
+  color: var(--text-default);
+  font-size: var(--text-base);
+  line-height: 21px;
+  letter-spacing: -0.015em;
+  overflow-wrap: break-word;
+  outline: none;
+}
+/* The ring is the field's (above), not the editable area's. */
+.satin-rte-content:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+/* Hide the browser's own resizer (WebKit/Blink); the grip stands in for it. */
+.satin-rte-content::-webkit-resizer {
+  background: transparent;
+}
+.satin-field.satin-rte[data-disabled] .satin-rte-content {
+  color: var(--text-subtle);
+  cursor: not-allowed;
+}
+.satin-rte-root[data-readonly] .satin-rte-content {
+  cursor: default;
+}
+.satin-rte-root[data-disabled] {
+  opacity: 0.6;
+}
+
+.satin-rte-placeholder {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  overflow: hidden;
+  padding: 8px 12px;
+  color: var(--text-muted);
+  font-size: var(--text-base);
+  line-height: 21px;
+  letter-spacing: -0.015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.satin-rte-grip {
+  position: absolute;
+  /* Logical: right to left the resizer is in the bottom-left corner, so the grip follows. */
+  inset-inline-end: 4px;
+  bottom: 4px;
+  width: 7px;
+  height: 7px;
+  color: var(--text-subtle);
+  pointer-events: none;
+}
+.satin-rte-grip:dir(rtl) {
+  transform: scaleX(-1);
+}
+
+/* ---------- typography ---------- */
+
+[data-slot="rich-text-editor-content"] > * {
+  margin: 0;
+}
+[data-slot="rich-text-editor-content"] > * + * {
+  margin-block-start: 8px;
+}
+[data-slot="rich-text-editor-content"] > :is(h1, h2, h3) {
+  color: var(--text-default);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.02em;
+}
+[data-slot="rich-text-editor-content"] > * + :is(h1, h2, h3) {
+  margin-block-start: 16px;
+}
+[data-slot="rich-text-editor-content"] > h1 {
+  font-size: var(--text-xl);
+  line-height: 28px;
+}
+[data-slot="rich-text-editor-content"] > h2 {
+  font-size: var(--text-lg);
+  line-height: 24px;
+}
+[data-slot="rich-text-editor-content"] > h3 {
+  font-size: var(--text-base);
+  line-height: 21px;
+}
+[data-slot="rich-text-editor-content"] :is(ul, ol) {
+  margin: 0;
+  padding-inline-start: 20px;
+}
+[data-slot="rich-text-editor-content"] ul {
+  list-style: disc;
+}
+[data-slot="rich-text-editor-content"] ol {
+  list-style: decimal;
+}
+[data-slot="rich-text-editor-content"] li > :is(ul, ol) {
+  margin-block-start: 2px;
+}
+[data-slot="rich-text-editor-content"] li + li {
+  margin-block-start: 2px;
+}
+/* A nested list sits in a list item of its own: that item shows no marker. */
+[data-slot="rich-text-editor-content"] li:has(> :is(ul, ol)) {
+  list-style: none;
+}
+[data-slot="rich-text-editor-content"] li::marker {
+  color: var(--text-muted);
+}
+[data-slot="rich-text-editor-content"] blockquote {
+  padding-inline-start: 12px;
+  /* exception: the quote bar is a mark in the text, like Thinking's rail, not an edge, so no
+     border-width token (tokens/SEMANTIC.md, "Not stroke widths"). 2px reads as a bar at 14px. */
+  border-inline-start: 2px solid var(--border-default);
+  color: var(--text-muted);
+}
+[data-slot="rich-text-editor-content"] strong {
+  font-weight: var(--font-weight-semibold);
+}
+[data-slot="rich-text-editor-content"] em {
+  font-style: italic;
+}
+[data-slot="rich-text-editor-content"] code {
+  padding: 1px 4px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-muted);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+[data-slot="rich-text-editor-content"] a {
+  color: var(--text-default);
+  font-weight: var(--font-weight-medium);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+[data-slot="rich-text-editor-content"] .satin-rte-strike {
+  text-decoration: line-through;
+}
+
+/*
+ * Tables (GFM, from markdown or a command): a surface, so the default-width edge in
+ * border/default; header cells medium on bg/muted. Text starts at the inline start in both
+ * directions (a th would centre it). A selection across cells shows as bg/selected on the cells,
+ * and the browser's own highlight steps aside while it lasts (the table carries the class).
+ */
+[data-slot="rich-text-editor-content"] table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: auto;
+}
+[data-slot="rich-text-editor-content"] :is(th, td) {
+  padding: 4px 8px;
+  border: var(--border-width-default) solid var(--border-default);
+  text-align: start;
+  vertical-align: top;
+}
+[data-slot="rich-text-editor-content"] th {
+  background: var(--bg-muted);
+  font-weight: var(--font-weight-medium);
+}
+[data-slot="rich-text-editor-content"] :is(th, td) > * {
+  margin: 0;
+}
+[data-slot="rich-text-editor-content"] :is(th, td) > * + * {
+  margin-block-start: 4px;
+}
+[data-slot="rich-text-editor-content"] :is(th, td).satin-rte-cell-selected {
+  background: var(--bg-selected);
+}
+[data-slot="rich-text-editor-content"] .satin-rte-table-selection ::selection {
+  background: transparent;
+}
+
+/* ---------- toolbars ---------- */
+
+/*
+ * The formatting toolbar sits inside the field, above the text, with a subtle rule under it
+ * (a separator: the default width). It shares the field's edge, fill, dimming and ring, so the
+ * editor reads as one control. The bubble and the link popover fade in from 4px off
+ * (satin-enter, as a popover opens); Satin's reduced-motion rule turns both off.
+ */
+.satin-rte-toolbar {
+  padding: 4px;
+  border-block-end: var(--border-width-default) solid var(--border-subtle);
+}
+.satin-rte-bubble,
+.satin-rte-link {
+  animation: satin-enter var(--duration-base) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .satin-rte-bubble,
+  .satin-rte-link {
+    animation: none;
+  }
+}
+
+/* Right to left: the bullet list icon mirrors; the numbered one swaps for its right-hand twin. */
+.satin-rte-icon-mirror:dir(rtl) {
+  transform: scaleX(-1);
+}
+.satin-rte-icon-ltr:dir(rtl),
+.satin-rte-icon-rtl:dir(ltr) {
+  display: none;
+}

@@ -317,6 +317,17 @@
     "limit": "14 kB"
   },
   {
+    "name": "Toolbar (Radix Toolbar and Toggle, Button, Tooltip with its popper)",
+    "path": "packages/ui/dist/components/toolbar.js",
+    "import": "{ Toolbar, ToolbarButton, ToolbarToggle, ToolbarSeparator }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "42 kB"
+  },
+  {
     "name": "Grouped table (Pro)",
     "path": "packages/ui-pro/dist/components/table-pro.js",
     "import": "{ TableGrouped }",
@@ -360,5 +371,36 @@
     ],
     "gzip": true,
     "limit": "21 kB"
+  },
+  {
+    "name": "Rich text editor (Satin Pro) with the Lexical engine, @lexical/table included (lexical, @lexical/*: an optional peer; @uisatin/ui left out), and Radix Popover with its positioning for the bubble and the link popover, which an app shares with Free. Lexical's entries carry its dev and prod builds and size-limit sets no NODE_ENV, so this counts both; the docs' size (scripts/sizes.mjs, a production build) counts the prod build only, about 157 kB",
+    "path": "packages/ui-pro/dist/components/rich-text-editor.js",
+    "import": "{ RichTextEditor }",
+    "gzip": true,
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "limit": "200 kB"
+  },
+  {
+    "name": "Rich text editor (Satin Pro), its own code: Lexical and @uisatin/ui left out (its toolbar icons from iconoir-react, about 2.3 kB, and Radix Popover with its positioning, about 22 kB, which an app shares with Free, counted)",
+    "path": "packages/ui-pro/dist/components/rich-text-editor.js",
+    "import": "{ RichTextEditor }",
+    "gzip": true,
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui",
+      "lexical",
+      "@lexical/rich-text",
+      "@lexical/list",
+      "@lexical/link",
+      "@lexical/markdown",
+      "@lexical/history",
+      "@lexical/table"
+    ],
+    "limit": "38 kB"
   }
 ]

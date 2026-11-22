@@ -7,3 +7,4 @@ Satin Pro adds larger components and AI patterns to Satin Free (`@uisatin/ui`). 
 - Import each Pro component from its own entry: `import { BulkActionBar } from '@uisatin/pro/bulk-action-bar'`. Free components still come from `@uisatin/ui/<name>`.
 - Translate Pro's built-in words with the same `SatinLabels` from `@uisatin/ui/labels`; its `labels` prop takes Pro's keys too.
 - Docs pages of Pro components carry a Pro badge, and their markdown twins (`https://uisatin.dev/components/<name>.md`) say `Edition: Pro`.
+- The rich text editor (`@uisatin/pro/rich-text-editor`) runs on Lexical, an optional peer that only it needs: `npm i lexical @lexical/rich-text @lexical/list @lexical/link @lexical/markdown @lexical/history @lexical/table` (0.53). It isn't exported from `@uisatin/pro` itself.

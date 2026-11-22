@@ -43,5 +43,6 @@ export default defineConfig({
   clean: true,
   dts: false,
   outDir: 'dist',
-  external: [/^@uisatin\/ui($|\/)/, /^react($|\/)/, /^react-dom($|\/)/, /^radix-ui($|\/)/, /^@radix-ui\//],
+  // Lexical is an optional peer, installed by the app that uses the rich text editor.
+  external: [/^@uisatin\/ui($|\/)/, /^react($|\/)/, /^react-dom($|\/)/, /^radix-ui($|\/)/, /^@radix-ui\//, /^lexical$/, /^@lexical\//],
 })

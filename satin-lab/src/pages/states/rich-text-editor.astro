@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every Rich text editor state. Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { RichTextEditorGrid } from '../../states/RichTextEditorGrid'
+---
+
+<Layout title="Rich text editor states · Satin" description="Every Rich text editor state: empty, focused with the mention menu, read-only, disabled and error.">
+  <main class="min-h-dvh bg-bg-card">
+    <RichTextEditorGrid client:load />
+  </main>
+</Layout>

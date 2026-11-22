@@ -189,8 +189,22 @@ export function toPromptValue(value: string | PromptValue | undefined, trigger =
   return typeof value === 'string' ? { text: value, mentions: [] } : settle(value, trigger)
 }
 
-type Query = { kind: 'mention' | 'command'; trigger: string; start: number; end: number; text: string }
-type Item = { kind: 'mention'; mention: PromptMention } | { kind: 'command'; command: PromptCommand }
+/** The trigger the caret is typing after, as a host finds it in its text. */
+export interface PromptMenuQuery {
+  kind: 'mention' | 'command'
+  /** The character typed: the mention trigger, or `/`. */
+  trigger: string
+  /** The text typed after the trigger ("" right after it). */
+  text: string
+  /** Where the trigger is in the host's text. Two queries with the same kind and start are the same trigger. */
+  start: number
+}
+
+type Query = PromptMenuQuery & { end: number }
+
+/** A row in the mentions or commands menu. */
+export type PromptMenuItem = { kind: 'mention'; mention: PromptMention } | { kind: 'command'; command: PromptCommand }
+type Item = PromptMenuItem
 
 /** The trigger the caret is typing after, if any: at the start or after a space, on the same line, outside tokens. */
 function findQuery(v: PromptValue, caret: number, trigger: string | null, commands: boolean, tokens: Token[]): Query | null {
@@ -260,6 +274,321 @@ const tokenClass = cn(
 const mentionTokenClass = 'bg-status-brand-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--status-brand-border)]'
 const commandTokenClass = 'bg-action-secondary-bg [box-shadow:inset_0_0_0_var(--border-width-default)_var(--border-default)]'
 
+/** Radix's anchor shape: anything with a rect. */
+interface PromptMenuMeasurable {
+  getBoundingClientRect(): DOMRect
+}
+
+export interface PromptMentionsMenuProps {
+  open: boolean
+  /** Names the menu: Mentions or Commands. */
+  kind: 'mention' | 'command'
+  /** The rows; null while the first answer to a mention search is coming. */
+  items: PromptMenuItem[] | null
+  /** The highlighted row. */
+  index: number
+  /** The highlight was moved with the keys (it draws the keyboard look). */
+  viaKeys: boolean
+  /** The trigger and the text after it ("@ta"), for "No results for “@ta”". */
+  query: string | null
+  /** The listbox's id; option `i` is `${listId}-${i}`, for the field's `aria-activedescendant`. */
+  listId: string
+  /** What the status region says: the number of suggestions, a token added or removed. */
+  message: string
+  onPick: (item: PromptMenuItem) => void
+  /** The pointer moved onto row `index`. */
+  onHighlight: (index: number) => void
+  /** Radix asked to close (Escape): keep it shut until the trigger changes. */
+  onDismiss: () => void
+  /** The element the menu opens next to. */
+  anchorRef?: React.RefObject<PromptMenuMeasurable | null>
+  /**
+   * A rect to open next to instead, such as the caret's or the trigger character's in a
+   * contenteditable. Pass a new object when it moves; it wins over `anchorRef`.
+   */
+  virtualAnchor?: PromptMenuMeasurable | null
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  align?: 'start' | 'center' | 'end'
+  sideOffset?: number
+  /** The menu is as wide as the anchor (PromptBar's). False gives it a fixed 288px. */
+  matchAnchorWidth?: boolean
+  /**
+   * Shows the group header (Mentions or Commands) above the rows. PromptBar's menu has it; next
+   * to the caret in an editor the `@` or `/` already says what the list is. The listbox keeps the
+   * name either way.
+   */
+  heading?: boolean
+}
+
+/**
+ * The mentions and commands menu by itself, with its status region, for a field that isn't a
+ * textarea (a contenteditable editor): drive it with `usePromptMenuState`, spread its
+ * `menuProps`, and add `onPick` and an anchor. Focus never moves into it: the field keeps focus
+ * and points at the list with `aria-controls` and `aria-activedescendant`.
+ */
+export function PromptMentionsMenu({
+  open,
+  kind,
+  items,
+  index,
+  viaKeys,
+  query,
+  listId,
+  message,
+  onPick,
+  onHighlight,
+  onDismiss,
+  anchorRef,
+  virtualAnchor,
+  side = 'top',
+  align = 'start',
+  sideOffset = 8,
+  matchAnchorWidth = true,
+  heading = true,
+}: PromptMentionsMenuProps) {
+  const labels = useSatinLabels()
+  const virtualRef = React.useRef<PromptMenuMeasurable | null>(null)
+  virtualRef.current = virtualAnchor ?? null
+  const name = kind === 'command' ? labels.commands : labels.mentions
+  const listed = open && items != null && items.length > 0
+  return (
+    <>
+      <span role="status" className="sr-only">
+        {message}
+      </span>
+      <Popover.Root
+        open={open}
+        onOpenChange={(next) => {
+          if (!next) onDismiss()
+        }}
+      >
+        <Popover.Anchor virtualRef={(virtualAnchor ? virtualRef : anchorRef) as React.RefObject<PromptMenuMeasurable>} />
+        <Popover.Portal>
+          <Popover.Content
+            data-slot="prompt-mentions"
+            side={side}
+            align={align}
+            sideOffset={sideOffset}
+            collisionPadding={8}
+            aria-label={name}
+            // Focus stays in the field: the list is driven from there.
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            // Only Escape dismisses it; leaving the field closes it (onBlur) without dismissing.
+            onInteractOutside={(e) => e.preventDefault()}
+            onMouseDown={(e) => e.preventDefault()}
+            className={cn(
+              'z-50 flex',
+              matchAnchorWidth ? 'w-(--radix-popper-anchor-width)' : 'w-72',
+              'flex-col overflow-hidden',
+              menuSurfaceClass,
+              'origin-(--radix-popper-transform-origin) outline-none',
+              'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
+            )}
+          >
+            <div className="flex flex-col p-1">
+              {heading && (
+                <div aria-hidden className={menuGroupLabelClass}>
+                  {name}
+                </div>
+              )}
+              {listed ? (
+                <div id={listId} role="listbox" aria-label={name} className="flex max-h-64 flex-col gap-0.5 overflow-y-auto">
+                  {items!.map((item, i) => (
+                    <div
+                      key={item.kind === 'mention' ? `@${item.mention.id}` : `/${item.command.name}`}
+                      id={`${listId}-${i}`}
+                      role="option"
+                      aria-selected={i === index}
+                      data-highlighted={i === index ? '' : undefined}
+                      data-keyboard={i === index && viaKeys ? '' : undefined}
+                      onPointerMove={() => {
+                        if (i !== index || viaKeys) onHighlight(i)
+                      }}
+                      onClick={() => onPick(item)}
+                      className={menuItemClass}
+                    >
+                      {item.kind === 'mention' ? (
+                        <MenuItemContent
+                          label={item.mention.label}
+                          description={item.mention.description}
+                          icon={item.mention.icon ?? <Avatar initials={initialsOf(item.mention.label)} size={20} aria-hidden />}
+                          iconSize={20}
+                          layout="inline"
+                        />
+                      ) : (
+                        <MenuItemContent
+                          label={`/${item.command.name}`}
+                          description={item.command.description}
+                          icon={item.command.icon}
+                          layout="inline"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="px-3 py-1.5 text-sm text-text-muted">{query != null ? labels.noResultsFor(query) : null}</p>
+              )}
+            </div>
+            <div aria-hidden className="flex items-center gap-3 border-t border-border-default px-3 py-1.5">
+              <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
+              <KbdHint keys={[<KbdReturn key="return" />]} label={labels.selectItem} />
+            </div>
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
+    </>
+  )
+}
+
+export interface UsePromptMenuStateOptions {
+  /** The trigger the caret is typing after, found by the host in its own text; null when there's none. */
+  query: PromptMenuQuery | null
+  mentions?: PromptMentions
+  commands?: PromptCommand[]
+  disabled?: boolean
+}
+
+export interface PromptMenuState {
+  /** The menu shows: a query, not disabled, not dismissed, and rows (or "No results" while the query has no space). */
+  open: boolean
+  /** Open with at least one row: the field points at the list (`aria-controls`, `aria-activedescendant`). */
+  listed: boolean
+  items: PromptMenuItem[] | null
+  /** The highlighted row. */
+  index: number
+  /** The highlighted row's item, what Enter or Tab picks. */
+  current: PromptMenuItem | undefined
+  listId: string
+  /** The highlighted option's id while listed, for `aria-activedescendant`. */
+  activeId: string | undefined
+  /** Moves the highlight down (1) or up (-1), wrapping, as the arrow keys do. */
+  move: (step: 1 | -1) => void
+  /** Highlights row `index` without the keyboard look, as the pointer does. */
+  highlight: (index: number) => void
+  /** Closes the menu until the trigger changes (Escape). */
+  dismiss: () => void
+  /**
+   * Call with the query found each time the caret moves or the text changes (not on blur): a
+   * dismissed menu stays shut only while the query is the same trigger.
+   */
+  release: (next: PromptMenuQuery | null) => void
+  /** Says something in the status region: `labels.tokenAdded(token)`, `labels.tokenRemoved(token)`. */
+  announce: (message: string) => void
+  /** Spread onto PromptMentionsMenu, with `onPick` and an anchor of your own. */
+  menuProps: Omit<
+    PromptMentionsMenuProps,
+    'onPick' | 'anchorRef' | 'virtualAnchor' | 'side' | 'align' | 'sideOffset' | 'matchAnchorWidth' | 'heading'
+  >
+}
+
+const keyOf = (q: PromptMenuQuery) => `${q.kind}:${q.start}`
+
+/**
+ * The state of the mentions and commands menu, apart from any field: it asks `mentions.search`
+ * (a slow answer for an older query is dropped; until the first answer the menu stays shut, then
+ * the last answer stays up while the next comes), filters and sorts `commands` (names that start
+ * with the query first), keeps the highlight, remembers an Escape until the trigger changes and
+ * says in the status region how many suggestions there are. The host finds the query in its text
+ * and inserts what is picked; `usePromptMentions` is this on a textarea.
+ */
+export function usePromptMenuState({ query, mentions, commands, disabled = false }: UsePromptMenuStateOptions): PromptMenuState {
+  const labels = useSatinLabels()
+  const id = React.useId()
+  const listId = `${id}-list`
+  const queryRef = React.useRef(query)
+  queryRef.current = query
+  const mentionsRef = React.useRef(mentions)
+  mentionsRef.current = mentions
+
+  // Escape closes the menu until the caret leaves this trigger.
+  const [dismissed, setDismissed] = React.useState<string | null>(null)
+  const [found, setFound] = React.useState<{ key: string; items: PromptMention[] } | null>(null)
+  const [highlight, setHighlight] = React.useState({ key: '', index: 0, viaKeys: false })
+  const [message, setMessage] = React.useState('')
+
+  const triggerKey = query ? keyOf(query) : null
+  const queryKey = query ? `${triggerKey}:${query.text}` : ''
+
+  // Mentions: ask the app. A slow answer for an older query is dropped; until the first answer,
+  // the menu stays shut, and after it the last answer stays up while the next one comes.
+  React.useEffect(() => {
+    const q = queryRef.current
+    const config = mentionsRef.current
+    if (!q || q.kind !== 'mention' || !config) return
+    let live = true
+    const key = queryKey
+    const answer = config.search(q.text)
+    if (Array.isArray(answer)) setFound({ key, items: answer })
+    else
+      answer.then(
+        (items) => live && setFound({ key, items }),
+        () => live && setFound({ key, items: [] }),
+      )
+    return () => {
+      live = false
+    }
+  }, [queryKey])
+
+  let items: Item[] | null = null
+  if (query?.kind === 'command' && commands) {
+    const q = query.text.toLowerCase()
+    items = commands
+      .filter((c) => c.name.toLowerCase().includes(q) || (c.description ?? '').toLowerCase().includes(q))
+      .sort((a, b) => Number(!a.name.toLowerCase().startsWith(q)) - Number(!b.name.toLowerCase().startsWith(q)))
+      .map((command) => ({ kind: 'command', command }))
+  } else if (query?.kind === 'mention' && found?.key.startsWith(`${triggerKey}:`)) {
+    items = found.items.map((mention) => ({ kind: 'mention', mention }))
+  }
+  const open = !!query && !disabled && dismissed !== triggerKey && items != null && (items.length > 0 || !space.test(query.text))
+  const index = highlight.key === queryKey && items ? Math.min(highlight.index, Math.max(items.length - 1, 0)) : 0
+  const viaKeys = highlight.key === queryKey && highlight.viaKeys
+  const listed = open && items != null && items.length > 0
+
+  // Say how many suggestions there are, or that there are none.
+  React.useEffect(() => {
+    if (!open || !query || !items) return
+    setMessage(items.length ? labels.suggestionsCount(items.length) : labels.noResultsFor(query.trigger + query.text))
+  }, [open, queryKey, items?.length, labels])
+
+  const dismiss = () => {
+    if (triggerKey) setDismissed(triggerKey)
+  }
+
+  return {
+    open,
+    listed,
+    items,
+    index,
+    current: items?.[index],
+    listId,
+    activeId: listed ? `${listId}-${index}` : undefined,
+    move: (step) => {
+      if (!items?.length) return
+      setHighlight({ key: queryKey, index: (index + step + items.length) % items.length, viaKeys: true })
+    },
+    highlight: (i) => setHighlight({ key: queryKey, index: i, viaKeys: false }),
+    dismiss,
+    release: (next) => {
+      if (!next || keyOf(next) !== dismissed) setDismissed(null)
+    },
+    announce: setMessage,
+    menuProps: {
+      open,
+      kind: query?.kind === 'command' ? 'command' : 'mention',
+      items,
+      index,
+      viaKeys,
+      query: query ? query.trigger + query.text : null,
+      listId,
+      message,
+      onHighlight: (i) => setHighlight({ key: queryKey, index: i, viaKeys: false }),
+      onDismiss: dismiss,
+    },
+  }
+}
+
 export interface UsePromptMentionsOptions {
   /** The textarea the prompt is typed in. */
   textareaRef: React.RefObject<HTMLTextAreaElement | null>
@@ -309,14 +638,10 @@ export function usePromptMentions({
   const trigger = mentions ? (mentions.trigger ?? '@') : null
   const commandsOn = !!commands?.length
   const on = !!mentions || commandsOn
-  const id = React.useId()
-  const listId = `${id}-list`
 
   // The newest value, ahead of the parent's render: handlers that run in a row read it.
   const latest = React.useRef(value)
   latest.current = value
-  const mentionsRef = React.useRef(mentions)
-  mentionsRef.current = mentions
   const tokens = React.useMemo(() => tokensOf(value, trigger ?? '@'), [value, trigger])
 
   const [query, setQueryState] = React.useState<Query | null>(null)
@@ -327,11 +652,8 @@ export function usePromptMentions({
     queryRef.current = q
     setQueryState(q)
   }
-  // Escape closes the menu until the caret leaves this trigger.
-  const [dismissed, setDismissed] = React.useState<string | null>(null)
-  const [found, setFound] = React.useState<{ key: string; items: PromptMention[] } | null>(null)
-  const [highlight, setHighlight] = React.useState({ key: '', index: 0, viaKeys: false })
-  const [message, setMessage] = React.useState('')
+  const menu = usePromptMenuState({ query, mentions, commands, disabled })
+  const { open, items, listed } = menu
 
   // An input method is composing. The menu was open when it started (its text then continues the
   // query); `composed` holds that answer from composition's end to the next key, since some
@@ -342,50 +664,6 @@ export function usePromptMentions({
   const lastCaret = React.useRef(0)
   const pendingCaret = React.useRef<number | null>(null)
   const mirrorRef = React.useRef<HTMLDivElement>(null)
-
-  const triggerKey = query ? `${query.kind}:${query.start}` : null
-  const queryKey = query ? `${triggerKey}:${query.text}` : ''
-
-  // Mentions: ask the app. A slow answer for an older query is dropped; until the first answer,
-  // the menu stays shut, and after it the last answer stays up while the next one comes.
-  React.useEffect(() => {
-    const q = queryRef.current
-    const config = mentionsRef.current
-    if (!q || q.kind !== 'mention' || !config) return
-    let live = true
-    const key = queryKey
-    const answer = config.search(q.text)
-    if (Array.isArray(answer)) setFound({ key, items: answer })
-    else
-      answer.then(
-        (items) => live && setFound({ key, items }),
-        () => live && setFound({ key, items: [] }),
-      )
-    return () => {
-      live = false
-    }
-  }, [queryKey])
-
-  let items: Item[] | null = null
-  if (query?.kind === 'command' && commands) {
-    const q = query.text.toLowerCase()
-    items = commands
-      .filter((c) => c.name.toLowerCase().includes(q) || (c.description ?? '').toLowerCase().includes(q))
-      .sort((a, b) => Number(!a.name.toLowerCase().startsWith(q)) - Number(!b.name.toLowerCase().startsWith(q)))
-      .map((command) => ({ kind: 'command', command }))
-  } else if (query?.kind === 'mention' && found?.key.startsWith(`${triggerKey}:`)) {
-    items = found.items.map((mention) => ({ kind: 'mention', mention }))
-  }
-  const open = !!query && !disabled && dismissed !== triggerKey && items != null && (items.length > 0 || !space.test(query.text))
-  const index = highlight.key === queryKey && items ? Math.min(highlight.index, Math.max(items.length - 1, 0)) : 0
-  const viaKeys = highlight.key === queryKey && highlight.viaKeys
-  const listed = open && items != null && items.length > 0
-
-  // Say how many suggestions there are, or that there are none.
-  React.useEffect(() => {
-    if (!open || !query || !items) return
-    setMessage(items.length ? labels.suggestionsCount(items.length) : labels.noResultsFor(query.trigger + query.text))
-  }, [open, queryKey, items?.length, labels])
 
   // Put the caret after an inserted token, once the textarea shows it; keep the fills scrolled with the text.
   React.useLayoutEffect(() => {
@@ -421,7 +699,7 @@ export function usePromptMentions({
   const evaluate = (v: PromptValue, caret: number | null) => {
     if (!on || disabled || caret == null) return setQuery(null)
     const q = findQuery(v, caret, trigger, commandsOn, tokensOf(v, trigger ?? '@'))
-    if (!q || `${q.kind}:${q.start}` !== dismissed) setDismissed(null)
+    menu.release(q)
     setQuery(q)
   }
 
@@ -441,7 +719,7 @@ export function usePromptMentions({
         ? { ...next, mentions: [...next.mentions, { ...item.mention, ...span }] }
         : { ...next, command: { name: item.command.name, ...span, args: '' } }
     commit(settle(next, trigger ?? '@'), span.end + 1)
-    setMessage(labels.tokenAdded(tokenText))
+    menu.announce(labels.tokenAdded(tokenText))
     setQuery(null)
   }
 
@@ -450,7 +728,7 @@ export function usePromptMentions({
     const v = latest.current
     const gone = tokensOf(v, trigger ?? '@').filter((t) => t.start < end && t.end > start)
     commit(cut(v, start, end, trigger ?? '@'), start)
-    if (gone.length) setMessage(gone.map((t) => labels.tokenRemoved(t.text)).join(', '))
+    if (gone.length) menu.announce(gone.map((t) => labels.tokenRemoved(t.text)).join(', '))
   }
 
   /** Widens a selection that cuts into a token to the whole token, before an edit replaces it. */
@@ -483,7 +761,7 @@ export function usePromptMentions({
         const start = caret - 2 - (typed?.[1]?.length ?? 0)
         if (command && !tokensOf(next, trigger ?? '@').some((t) => t.start < caret && t.end > start)) {
           next = settle({ ...next, command: { name: command.name, start, end: caret - 1, args: '' } }, trigger ?? '@')
-          setMessage(labels.tokenAdded(`/${command.name}`))
+          menu.announce(labels.tokenAdded(`/${command.name}`))
         }
       }
       commit(next)
@@ -499,14 +777,13 @@ export function usePromptMentions({
       if (open && items) {
         if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && items.length) {
           e.preventDefault()
-          const step = e.key === 'ArrowDown' ? 1 : -1
-          setHighlight({ key: queryKey, index: (index + step + items.length) % items.length, viaKeys: true })
+          menu.move(e.key === 'ArrowDown' ? 1 : -1)
           return
         }
         const plain = !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey
-        if ((e.key === 'Enter' || e.key === 'Tab') && plain && items[index]) {
+        if ((e.key === 'Enter' || e.key === 'Tab') && plain && menu.current) {
           e.preventDefault()
-          pick(items[index])
+          pick(menu.current)
           return
         }
       }
@@ -572,8 +849,8 @@ export function usePromptMentions({
       resume.current = false
     },
     'aria-autocomplete': on ? 'list' : undefined,
-    'aria-controls': listed ? listId : undefined,
-    'aria-activedescendant': listed ? `${listId}-${index}` : undefined,
+    'aria-controls': listed ? menu.listId : undefined,
+    'aria-activedescendant': menu.activeId,
   }
 
   if (!on) return { textareaProps, overlay: null, menu: null, open: false }
@@ -604,92 +881,34 @@ export function usePromptMentions({
     </div>
   )
 
-  const name = query?.kind === 'command' ? labels.commands : labels.mentions
-  const menu = (
-    <>
-      <span role="status" className="sr-only">
-        {message}
-      </span>
-      <Popover.Root
-        open={open}
-        onOpenChange={(next) => {
-          if (!next && triggerKey) setDismissed(triggerKey)
-        }}
-      >
-        <Popover.Anchor virtualRef={anchorRef ?? textareaRef} />
-        <Popover.Portal>
-          <Popover.Content
-            data-slot="prompt-mentions"
-            side="top"
-            align="start"
-            sideOffset={8}
-            collisionPadding={8}
-            aria-label={name}
-            // Focus stays in the field: the list is driven from there.
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            onCloseAutoFocus={(e) => e.preventDefault()}
-            // Only Escape dismisses it; leaving the field closes it (onBlur) without dismissing.
-            onInteractOutside={(e) => e.preventDefault()}
-            onMouseDown={(e) => e.preventDefault()}
-            className={cn(
-              'z-50 flex w-(--radix-popper-anchor-width) flex-col overflow-hidden',
-              menuSurfaceClass,
-              'origin-(--radix-popper-transform-origin) outline-none',
-              'data-[state=open]:animate-[satin-enter_var(--duration-base)_var(--ease-out)]',
-            )}
-          >
-            <div className="flex flex-col p-1">
-              <div aria-hidden className={menuGroupLabelClass}>
-                {name}
-              </div>
-              {listed ? (
-                <div id={listId} role="listbox" aria-label={name} className="flex max-h-64 flex-col gap-0.5 overflow-y-auto">
-                  {items!.map((item, i) => (
-                    <div
-                      key={item.kind === 'mention' ? `@${item.mention.id}` : `/${item.command.name}`}
-                      id={`${listId}-${i}`}
-                      role="option"
-                      aria-selected={i === index}
-                      data-highlighted={i === index ? '' : undefined}
-                      data-keyboard={i === index && viaKeys ? '' : undefined}
-                      onPointerMove={() => {
-                        if (i !== index || viaKeys) setHighlight({ key: queryKey, index: i, viaKeys: false })
-                      }}
-                      onClick={() => pick(item)}
-                      className={menuItemClass}
-                    >
-                      {item.kind === 'mention' ? (
-                        <MenuItemContent
-                          label={item.mention.label}
-                          description={item.mention.description}
-                          icon={item.mention.icon ?? <Avatar initials={initialsOf(item.mention.label)} size={20} aria-hidden />}
-                          iconSize={20}
-                          layout="inline"
-                        />
-                      ) : (
-                        <MenuItemContent
-                          label={`/${item.command.name}`}
-                          description={item.command.description}
-                          icon={item.command.icon}
-                          layout="inline"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="px-3 py-1.5 text-sm text-text-muted">{query ? labels.noResultsFor(query.trigger + query.text) : null}</p>
-              )}
-            </div>
-            <div aria-hidden className="flex items-center gap-3 border-t border-border-default px-3 py-1.5">
-              <KbdHint keys={[<KbdArrowUp key="up" />, <KbdArrowDown key="down" />]} label={labels.navigate} />
-              <KbdHint keys={[<KbdReturn key="return" />]} label={labels.selectItem} />
-            </div>
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
-    </>
-  )
+  const menuNode = <PromptMentionsMenu {...menu.menuProps} anchorRef={anchorRef ?? textareaRef} onPick={pick} />
 
-  return { textareaProps, overlay, menu, open }
+  return { textareaProps, overlay, menu: menuNode, open }
+}
+
+export interface MentionProps extends Omit<React.ComponentProps<'span'>, 'id' | 'children'> {
+  /** The name after the trigger: "Tara Mendes". */
+  label: string
+  /** Defaults to `@`. */
+  trigger?: string
+  /** Your id for the person or record, as `data-mention-id` (not the element's `id`). */
+  id?: string
+}
+
+/**
+ * A mention in text that isn't a field: a sent message, a rich text editor's content. It reads
+ * as what it says ("@Tara Mendes") and wears a mention token's look: status/brand-bg with a
+ * status/brand-border edge, radius-sm, 3px past the text on each side, in medium text/default.
+ * The look is plain CSS on `[data-slot="mention"]` (styles/components/mention.css), so an editor
+ * that builds the same `<span data-slot="mention">` without React gets it too.
+ *
+ * Other props, `ref` included, go to the `span`.
+ */
+export function Mention({ label, trigger = '@', id, ...props }: MentionProps) {
+  return (
+    <span data-slot="mention" data-mention-id={id} {...props}>
+      {trigger}
+      {label}
+    </span>
+  )
 }

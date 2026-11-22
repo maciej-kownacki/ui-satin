@@ -2211,6 +2211,36 @@
       ]
     },
     {
+      "name": "toolbar",
+      "type": "registry:ui",
+      "title": "Toolbar",
+      "description": "A row of buttons and toggles that is one tab stop, moved through with the arrow keys.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/button-group.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/toggle.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Toolbar docs: https://uisatin.dev/components/toolbar",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/toolbar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "tooltip",
       "type": "registry:ui",
       "title": "Tooltip",
@@ -2802,6 +2832,48 @@
       "files": [
         {
           "path": "registry/satin/ui/review-queue.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "rich-text-editor",
+      "type": "registry:ui",
+      "title": "Rich text editor",
+      "description": "A field for notes, emails and briefs with headings, lists, links and @mentions, its value in markdown.",
+      "dependencies": [
+        "@lexical/history@~0.53.0",
+        "@lexical/link@~0.53.0",
+        "@lexical/list@~0.53.0",
+        "@lexical/markdown@~0.53.0",
+        "@lexical/rich-text@~0.53.0",
+        "@lexical/table@~0.53.0",
+        "iconoir-react@^7.12.2",
+        "lexical@~0.53.0",
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/form-field.json",
+        "https://uisatin.dev/r/input.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/popover.json",
+        "https://uisatin.dev/r/prompt-mentions.json",
+        "https://uisatin.dev/r/textarea.json",
+        "https://uisatin.dev/r/toolbar.json"
+      ],
+      "docs": "Rich text editor docs: https://uisatin.dev/components/rich-text-editor",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/rich-text-editor.tsx",
           "type": "registry:ui"
         }
       ]
@@ -4062,6 +4134,21 @@
       ]
     },
     {
+      "name": "toolbar-demo",
+      "type": "registry:example",
+      "title": "Toolbar example",
+      "description": "The shortest use of Toolbar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/toolbar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/toolbar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "tooltip-demo",
       "type": "registry:example",
       "title": "Tooltip example",
@@ -4297,6 +4384,21 @@
       "files": [
         {
           "path": "registry/satin/examples/review-queue-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "rich-text-editor-demo",
+      "type": "registry:example",
+      "title": "Rich text editor example",
+      "description": "The shortest use of Rich text editor, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/rich-text-editor.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/rich-text-editor-demo.tsx",
           "type": "registry:example"
         }
       ]

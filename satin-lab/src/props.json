@@ -5097,9 +5097,9 @@
       "props": [
         {
           "name": "anchor",
-          "type": "Element | null",
+          "type": "Element | FloatingVirtualElement | null",
           "required": true,
-          "description": "The element it points at. Nothing renders while it's null."
+          "description": "The element it points at, or a virtual one (a selection's rect, see FloatingVirtualElement). Nothing renders while it's null."
         },
         {
           "name": "side",
@@ -6783,6 +6783,151 @@
       ]
     }
   },
+  "prompt-mentions": {
+    "PromptMentionsMenu": {
+      "description": "The mentions and commands menu by itself, with its status region, for a field that isn't a textarea (a contenteditable editor): drive it with `usePromptMenuState`, spread its `menuProps`, and add `onPick` and an anchor. Focus never moves into it: the field keeps focus and points at the list with `aria-controls` and `aria-activedescendant`.",
+      "type": "PromptMentionsMenuProps",
+      "extends": [],
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "'mention' | 'command'",
+          "required": true,
+          "description": "Names the menu: Mentions or Commands."
+        },
+        {
+          "name": "items",
+          "type": "PromptMenuItem[] | null",
+          "required": true,
+          "description": "The rows; null while the first answer to a mention search is coming."
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "required": true,
+          "description": "The highlighted row."
+        },
+        {
+          "name": "viaKeys",
+          "type": "boolean",
+          "required": true,
+          "description": "The highlight was moved with the keys (it draws the keyboard look)."
+        },
+        {
+          "name": "query",
+          "type": "string | null",
+          "required": true,
+          "description": "The trigger and the text after it (\"@ta\"), for \"No results for “@ta”\"."
+        },
+        {
+          "name": "listId",
+          "type": "string",
+          "required": true,
+          "description": "The listbox's id; option `i` is `${listId}-${i}`, for the field's `aria-activedescendant`."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": true,
+          "description": "What the status region says: the number of suggestions, a token added or removed."
+        },
+        {
+          "name": "onPick",
+          "type": "(item: PromptMenuItem) => void",
+          "required": true
+        },
+        {
+          "name": "onHighlight",
+          "type": "(index: number) => void",
+          "required": true,
+          "description": "The pointer moved onto row `index`."
+        },
+        {
+          "name": "onDismiss",
+          "type": "() => void",
+          "required": true,
+          "description": "Radix asked to close (Escape): keep it shut until the trigger changes."
+        },
+        {
+          "name": "anchorRef",
+          "type": "React.RefObject<PromptMenuMeasurable | null>",
+          "required": false,
+          "description": "The element the menu opens next to."
+        },
+        {
+          "name": "virtualAnchor",
+          "type": "PromptMenuMeasurable | null",
+          "required": false,
+          "description": "A rect to open next to instead, such as the caret's or the trigger character's in a contenteditable. Pass a new object when it moves; it wins over `anchorRef`."
+        },
+        {
+          "name": "side",
+          "type": "'top' | 'right' | 'bottom' | 'left'",
+          "required": false,
+          "default": "'top'"
+        },
+        {
+          "name": "align",
+          "type": "'start' | 'center' | 'end'",
+          "required": false,
+          "default": "'start'"
+        },
+        {
+          "name": "sideOffset",
+          "type": "number",
+          "required": false,
+          "default": "8"
+        },
+        {
+          "name": "matchAnchorWidth",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "The menu is as wide as the anchor (PromptBar's). False gives it a fixed 288px."
+        },
+        {
+          "name": "heading",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Shows the group header (Mentions or Commands) above the rows. PromptBar's menu has it; next to the caret in an editor the `@` or `/` already says what the list is. The listbox keeps the name either way."
+        }
+      ]
+    },
+    "Mention": {
+      "description": "A mention in text that isn't a field: a sent message, a rich text editor's content. It reads as what it says (\"@Tara Mendes\") and wears a mention token's look: status/brand-bg with a status/brand-border edge, radius-sm, 3px past the text on each side, in medium text/default. The look is plain CSS on `[data-slot=\"mention\"]` (styles/components/mention.css), so an editor that builds the same `<span data-slot=\"mention\">` without React gets it too. Other props, `ref` included, go to the `span`.",
+      "type": "MentionProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'id' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "description": "The name after the trigger: \"Tara Mendes\"."
+        },
+        {
+          "name": "trigger",
+          "type": "string",
+          "required": false,
+          "default": "'@'",
+          "description": "Defaults to `@`."
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Your id for the person or record, as `data-mention-id` (not the element's `id`)."
+        }
+      ]
+    }
+  },
   "radio": {
     "RadioGroup": {
       "type": "RadioGroupProps",
@@ -7023,6 +7168,345 @@
           "type": "React.ReactNode",
           "required": false,
           "description": "Buttons for the summary, after Review skipped."
+        }
+      ]
+    }
+  },
+  "rich-text-editor": {
+    "RichTextEditorRoot": {
+      "description": "The engine and the value, with no look of its own: a `div` (`data-slot=\"rich-text-editor\"`) that holds the parts. Other props, `ref` included, go to the `div`.",
+      "type": "RichTextEditorRootProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange' | 'id'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "RichTextDocument",
+          "required": false,
+          "description": "The document (controlled). Markdown or JSON, by `format`."
+        },
+        {
+          "name": "defaultValue",
+          "type": "RichTextDocument",
+          "required": false,
+          "description": "The document to start with (uncontrolled)."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: RichTextDocument, details: RichTextValueDetails) => void",
+          "required": false,
+          "description": "Each edit that changes the value, with the mentions in it. Never on mount, never for a selection change."
+        },
+        {
+          "name": "format",
+          "type": "RichTextFormat",
+          "required": false,
+          "default": "'markdown'",
+          "description": "`'markdown'` (default) or `'json'` (Lexical's serialized editor state)."
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The editable area's id. A FormField's id, or generated, when left out."
+        },
+        {
+          "name": "labelledBy",
+          "type": "string",
+          "required": false,
+          "description": "The id of what names the editable area. A FormField's label when left out."
+        },
+        {
+          "name": "describedBy",
+          "type": "string",
+          "required": false,
+          "description": "Ids added to the editable area's `aria-describedby`, after a FormField's."
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Shown in the empty editor, and its `aria-placeholder`."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "description": "Not editable, out of the tab order, at 60%. A FormField's or Form's when left out."
+        },
+        {
+          "name": "readOnly",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Not editable, still focusable and selectable."
+        },
+        {
+          "name": "invalid",
+          "type": "boolean",
+          "required": false,
+          "description": "Marks the editor invalid. A FormField's error sets it too."
+        },
+        {
+          "name": "required",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Names a hidden input that carries the value in a native form submit. A FormField's `name` when left out."
+        },
+        {
+          "name": "editorRef",
+          "type": "React.Ref<RichTextEditorHandle>",
+          "required": false,
+          "description": "The editor's handle: focus, insert, insertText, getValue, getSelectionRect."
+        },
+        {
+          "name": "mentions",
+          "type": "RichTextMentions",
+          "required": false,
+          "description": "The `@` menu: `search` answers the text typed after the trigger. A pick goes in as a mention (\"@Tara Mendes\", one unit) followed by a space."
+        },
+        {
+          "name": "commands",
+          "type": "RichTextCommand[]",
+          "required": false,
+          "description": "The `/` menu: a pick takes \"/query\" out of the text and runs the command there."
+        }
+      ]
+    },
+    "RichTextEditorContent": {
+      "description": "The field (`.satin-field`, Textarea's skin) with the editable area in it (`data-slot=\"rich-text-editor-content\"`, `role=\"textbox\"`), the placeholder and the resize grip. `className` and the field's other props go to the field; `id`, `aria-label`, `aria-labelledby`, `aria-describedby` and `autoFocus` to the editable area.",
+      "type": "RichTextEditorContentProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Drawn inside the field, before the editable area: where `RichTextToolbar` goes."
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "required": false,
+          "description": "Focus the editor on mount."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
+        }
+      ]
+    },
+    "RichTextFormatToggle": {
+      "description": "A toolbar toggle for a mark (bold, italic, strikethrough, inline code): pressed while the selection has it, with the mark's icon, name and shortcut. For a toolbar of your own inside `RichTextToolbar` or `RichTextSelectionToolbar`. Other props, `ref` included, go to the `button`.",
+      "type": "RichTextFormatToggleProps",
+      "extends": [
+        "Omit<ToolbarToggleProps, 'pressed' | 'defaultPressed' | 'onPressedChange' | 'children' | 'icon' | 'label'>"
+      ],
+      "props": [
+        {
+          "name": "format",
+          "type": "RichTextMark",
+          "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Replaces the mark's own icon."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "Replaces the mark's own name (from SatinLabels)."
+        }
+      ]
+    },
+    "RichTextBlockToggle": {
+      "description": "A toolbar toggle for a bullet list, a numbered list or a quote: pressed while the selection is in one, and pressed again it turns the blocks back into paragraphs. Other props, `ref` included, go to the `button`.",
+      "type": "RichTextBlockToggleProps",
+      "extends": [
+        "Omit<ToolbarToggleProps, 'pressed' | 'defaultPressed' | 'onPressedChange' | 'children' | 'icon' | 'label'>"
+      ],
+      "props": [
+        {
+          "name": "block",
+          "type": "'bullet' | 'number' | 'quote'",
+          "required": true
+        },
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "RichTextLinkButton": {
+      "description": "A toolbar toggle that opens the link popover (as ⌘K does): pressed while the selection is in a link. Other props, `ref` included, go to the `button`.",
+      "type": "RichTextLinkButtonProps",
+      "extends": [
+        "Omit<ToolbarToggleProps, 'pressed' | 'defaultPressed' | 'onPressedChange' | 'children' | 'icon' | 'label'>"
+      ],
+      "props": [
+        {
+          "name": "icon",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "RichTextBlockTypeMenu": {
+      "description": "The text style menu: a toolbar button that shows the current style (Paragraph, Heading 1–3) and opens a menu of them as radio items. A list or a quote shows Paragraph with nothing checked. Other props, `ref` included, go to the button.",
+      "type": "RichTextBlockTypeMenuProps",
+      "extends": [
+        "Omit<ToolbarButtonProps, 'children' | 'icon' | 'label' | 'shortcut'>"
+      ],
+      "props": []
+    },
+    "RichTextToolbar": {
+      "description": "The formatting toolbar, inside the field above the text (`RichTextEditorContent`'s children), a subtle rule under it. Free's `Toolbar` with `preventFocusOnPress`, so a press keeps the selection; one tab stop, ← → between items, ⌥F10 from the text reaches its first item and Escape goes back to the text. Hidden when read-only; its items are disabled with the editor. `children` replace the preset: build one from `RichTextBlockTypeMenu`, `RichTextFormatToggle`, `RichTextBlockToggle`, `RichTextLinkButton` and Free's `ToolbarSeparator`, `ToolbarButton`. Other props, `ref` included, go to the toolbar `div`.",
+      "type": "RichTextToolbarProps",
+      "extends": [
+        "Omit<ToolbarProps, 'variant' | 'preventFocusOnPress'>"
+      ],
+      "props": [
+        {
+          "name": "preset",
+          "type": "'default' | 'minimal'",
+          "required": false,
+          "default": "'default'",
+          "description": "`'default'`: text style | bold, italic, strikethrough, code | bullet list, numbered list, quote | link. `'minimal'`: bold, italic | bullet list | link. `children` replace either."
+        }
+      ]
+    },
+    "RichTextSelectionToolbar": {
+      "description": "The bubble over a selection: Free's `Toolbar variant=\"floating\"` in a Radix Popover layer (non-modal) above the selected text, so inside a modal Dialog it takes presses and Escape reaches it first. It shows after a pointer selection (on release) or a double click, never for a selection made with the keyboard; it follows a selection changed while it's up, and goes with a collapsed selection, Escape, or focus leaving the text and the bubble. It doesn't take focus or sit in the tab order: ⌥F10 in the text reaches it when there's no fixed toolbar (and opens it on the caret), and Escape in it goes back to the text with the selection. `children` replace bold, italic, strikethrough and link; `actions` add to them after a separator. That's the place for actions on the selected text (an AI rewrite, a comment): any Toolbar item, with `editorRef`'s `getSelectionRect`, `insert` and `insertText` to act. Not drawn when the editor is read-only or disabled. Other props go to the toolbar `div`.",
+      "type": "RichTextSelectionToolbarProps",
+      "extends": [
+        "Omit<ToolbarProps, 'variant' | 'preventFocusOnPress' | 'orientation'>"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Replaces the default items (bold, italic, strikethrough, link)."
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Added after the items, past a separator: actions on the selection (rewrite, translate, comment). They get the same context as the formatting items."
+        }
+      ]
+    },
+    "RichTextEditor": {
+      "description": "The editor for the common case: `RichTextEditorRoot` and `RichTextEditorContent` with a label, the formatting toolbar, the selection bubble, the hint or the error, and the status row. Other props, `ref` included, go to the root `div`.",
+      "type": "RichTextEditorProps",
+      "extends": [
+        "Omit<RichTextEditorRootProps, 'children' | 'labelledBy' | 'describedBy' | 'invalid'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "optional",
+          "type": "boolean",
+          "required": false,
+          "description": "Adds a muted \"(Optional)\" after the label: the `optional` label."
+        },
+        {
+          "name": "hint",
+          "type": "React.ReactNode",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "An error message (replaces the hint), or `true` to mark the editor invalid without one."
+        },
+        {
+          "name": "status",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Under the field on the right, like Textarea's counter: \"Saved\", a count of your own."
+        },
+        {
+          "name": "maxLength",
+          "type": "number",
+          "required": false,
+          "description": "Shows a `length/maxLength` count of the text (not the markdown) in the status slot. Not enforced."
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "required": false,
+          "description": "Focus the editor on mount."
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "fieldClassName",
+          "type": "string",
+          "required": false,
+          "description": "Classes for the field (the edge and the editable area). `className` styles the outer wrapper."
+        },
+        {
+          "name": "toolbar",
+          "type": "boolean | 'minimal'",
+          "required": false,
+          "default": "true",
+          "description": "The formatting toolbar inside the field: `true` (default: text style, marks, lists, quote, link), `'minimal'` (bold, italic, bullet list, link) or `false`. Never drawn read-only."
+        },
+        {
+          "name": "selectionToolbar",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "The bubble over a pointer selection (bold, italic, strikethrough, link). On by default; never read-only."
+        },
+        {
+          "name": "data-force",
+          "type": "'hover' | 'focus'",
+          "required": false,
+          "description": "Show a state without interacting, for state sheets."
         }
       ]
     }
@@ -8666,6 +9150,27 @@
           "description": "Show a state without interacting, for state sheets."
         }
       ]
+    },
+    "CharacterCount": {
+      "description": "A character counter, the one under Textarea: \"134/120\" against a limit, in text/destructive once over it, with \"Characters used:\" before it for screen readers; or, with no limit, the count in words (\"948 characters\", the `characterCount` label, the number written in `dateLocale`). Muted 14px by default, set to stay on one line at the end of a hint row. It isn't a live region (it changes on every key); point the field's `aria-describedby` at its `id`. Other props, `ref` included, go to the `p`.",
+      "type": "CharacterCountProps",
+      "extends": [
+        "React.ComponentProps<'p'>"
+      ],
+      "props": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": true,
+          "description": "The characters so far."
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false,
+          "description": "The limit. With it the count reads \"134/120\"; without it, \"948 characters\"."
+        }
+      ]
     }
   },
   "thinking": {
@@ -9315,6 +9820,58 @@
           "description": "JSON longer than this is cut at that line, with \"Show all N lines\" under it."
         }
       ]
+    }
+  },
+  "toolbar": {
+    "Toolbar": {
+      "type": "ToolbarProps",
+      "extends": [
+        "React.ComponentProps<typeof ToolbarPrimitive.Root>"
+      ],
+      "props": [
+        {
+          "name": "size",
+          "type": "'sm' | 'md'",
+          "required": false,
+          "default": "'sm'"
+        },
+        {
+          "name": "variant",
+          "type": "'plain' | 'floating'",
+          "required": false,
+          "default": "'plain'"
+        },
+        {
+          "name": "preventFocusOnPress",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Keep a press on an item from moving focus to it (an editor keeps its selection)."
+        }
+      ]
+    },
+    "ToolbarButton": {
+      "type": "ToolbarButtonProps",
+      "extends": [
+        "Omit<ButtonProps, 'size' | 'iconOnly' | 'asChild'>",
+        "ItemProps"
+      ],
+      "props": []
+    },
+    "ToolbarToggle": {
+      "type": "ToolbarToggleProps",
+      "extends": [
+        "Omit<ToggleProps, 'size' | 'variant' | 'iconOnly' | 'asChild' | 'icon'>",
+        "ItemProps"
+      ],
+      "props": []
+    },
+    "ToolbarSeparator": {
+      "description": "A thin rule between sets of items: the ButtonGroupSeparator look, a `separator` across the toolbar. Other props, `ref` included, go to its `div`.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
     }
   },
   "tooltip": {

@@ -45,7 +45,7 @@ export {
   type DialogAlertIntent,
 } from './components/dialog'
 export * from './components/dot'
-export { Floating, type FloatingProps, type FloatingSide } from './components/floating'
+export { Floating, type FloatingProps, type FloatingSide, type FloatingVirtualElement } from './components/floating'
 export { DropdownMenu, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, MenuItemContent, menuItemClass, menuSurfaceClass, menuGroupClass, menuGroupLabelClass, type DropdownMenuProps, type DropdownMenuGroupProps, type DropdownMenuItemProps, type DropdownMenuSubProps, type DropdownMenuSubTriggerProps, type DropdownMenuSubContentProps, type DropdownMenuCheckboxItemProps, type DropdownMenuRadioGroupProps, type DropdownMenuRadioItemProps, type MenuItemContentProps } from './components/dropdown'
 export { FormField, useFormField, useFormContext, FormContext, FieldSizeContext, FieldError, FieldDescription, RequiredMark, type FormFieldProps, type FormFieldContextValue, type FormContextValue } from './components/form-field'
 export { Form, FormSection, FormActions, formValues, type FormProps, type FormSectionProps, type FormActionsProps, type FormValues } from './components/form'
@@ -76,9 +76,10 @@ export { Stepper, StepperItem, type StepperProps, type StepperItemProps, type St
 export { Switch, type SwitchProps } from './components/switch'
 export { Table, type TableProps, type Column, type Row, type Sort } from './components/table'
 export { Tabs, TabsContent, type TabsProps, type TabItem } from './components/tabs'
-export { Textarea, type TextareaProps } from './components/textarea'
+export { Textarea, CharacterCount, type TextareaProps, type CharacterCountProps } from './components/textarea'
 export { Toast, Toaster, toast, type ToastProps, type ToasterProps, type ToastOptions, type ToastIntent, type ToastAction, type ToastText } from './components/toast'
 export { Toggle, toggleVariants, type ToggleProps } from './components/toggle'
+export { Toolbar, ToolbarButton, ToolbarToggle, ToolbarSeparator, type ToolbarProps, type ToolbarButtonProps, type ToolbarToggleProps } from './components/toolbar'
 export { Tooltip, TooltipBubble, type TooltipProps } from './components/tooltip'
 
 // AI patterns
@@ -89,7 +90,7 @@ export * from './components/empty-state'
 export { Message, type MessageProps, type MessageSource } from './components/message'
 export { MessageActions, type MessageActionsProps, type MessageFeedback } from './components/message-actions'
 export { PromptBar, defaultActions as promptBarDefaultActions, type PromptBarProps, type PromptBarModel, type PromptBarAction } from './components/prompt-bar'
-export { usePromptMentions, promptValue, type PromptMention, type PromptMentions, type PromptCommand, type PromptCommandInput, type PromptValue, type PromptMentionToken, type PromptCommandToken, type UsePromptMentionsOptions, type PromptMentionsHandle } from './components/prompt-mentions'
+export { usePromptMentions, usePromptMenuState, PromptMentionsMenu, Mention, promptValue, type PromptMention, type PromptMentions, type PromptCommand, type PromptCommandInput, type PromptValue, type PromptMentionToken, type PromptCommandToken, type UsePromptMentionsOptions, type PromptMentionsHandle, type PromptMenuQuery, type PromptMenuItem, type PromptMenuState, type UsePromptMenuStateOptions, type PromptMentionsMenuProps, type MentionProps } from './components/prompt-mentions'
 export { StreamingText, type StreamingTextProps } from './components/streaming-text'
 export { Thinking, type ThinkingProps, type ThinkingStep, type ThinkingState, type ThinkingIndicator } from './components/thinking'
 export {

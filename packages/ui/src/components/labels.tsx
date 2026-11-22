@@ -99,6 +99,8 @@ export const defaultLabels = {
   dismissAnnouncement: 'Dismiss announcement',
   optional: '(Optional)',
   charactersUsed: 'Characters used',
+  /** CharacterCount without a limit: "948 characters". `formatted` is the count written in `dateLocale`. */
+  characterCount: (count: number, formatted: string) => `${formatted} ${count === 1 ? 'character' : 'characters'}`,
   copied: 'Copied',
   added: 'added',
   removed: 'removed',

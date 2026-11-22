@@ -26,6 +26,10 @@ for (const { dist, file } of files.sort((a, b) => (a.file < b.file ? -1 : a.file
     minify: true,
     format: 'esm',
     platform: 'browser',
+    // An app's production build: Lexical (and anything else that ships a dev and a prod build
+    // behind NODE_ENV) counts its prod build only, as a bundler would ship it.
+    define: { 'process.env.NODE_ENV': '"production"' },
+    conditions: ['production'],
     write: false,
     external: ['react', 'react-dom', 'react/jsx-runtime', 'react-dom/client', '@uisatin/ui', '@uisatin/ui/*'],
     logLevel: 'silent',

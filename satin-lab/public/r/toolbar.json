@@ -1,0 +1,84 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "toolbar",
+  "type": "registry:ui",
+  "title": "Toolbar",
+  "description": "A row of buttons and toggles that is one tab stop, moved through with the arrow keys.",
+  "dependencies": [
+    "radix-ui@^1.8.1"
+  ],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/button.json",
+    "https://uisatin.dev/r/button-group.json",
+    "https://uisatin.dev/r/dropdown.json",
+    "https://uisatin.dev/r/kbd.json",
+    "https://uisatin.dev/r/toggle.json",
+    "https://uisatin.dev/r/tooltip.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/toolbar.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { Toolbar as ToolbarPrimitive } from 'radix-ui'\nimport { cn } from '@/lib/utils'\nimport { Button, type ButtonProps } from '@/registry/satin/ui/button'\nimport { ButtonGroupSeparator } from '@/registry/satin/ui/button-group'\nimport { menuSurfaceClass } from '@/registry/satin/ui/dropdown'\nimport { keysOf } from '@/registry/satin/ui/kbd'\nimport { Toggle, type ToggleProps } from '@/registry/satin/ui/toggle'\nimport { Tooltip } from '@/registry/satin/ui/tooltip'\n\n/**\n * Toolbar: a row of controls that is one tab stop, on the Radix toolbar. Tab enters it once and\n * leaves it; ← → (↑ ↓ when vertical) move between its items, Home and End jump to the ends, and\n * the arrows wrap around (`loop={false}` stops them at the ends). Right to left the arrows flip;\n * the direction is read from the page, a `dir` on the toolbar wins.\n *\n * Give it a name: `aria-label` (\"Formatting\"), or `aria-labelledby`.\n *\n * - `variant=\"plain\"` has no chrome, its items 2px apart; `variant=\"floating\"` sits on the menu\n *   surface (bg/popover, border/subtle, radius-xl, the float shadow) with 4px inside, for a\n *   bubble bar over a text selection. Place a floating one with `Floating`, which takes a\n *   virtual anchor (the selection's rect).\n * - `size` is the items' height: sm 28 (the default), md 32.\n * - `preventFocusOnPress` keeps a press on an item from taking focus, so a click on Bold doesn't\n *   take the selection from an editor. The keyboard still reaches the items.\n *\n * Items: `ToolbarButton` (a tertiary Button), `ToolbarToggle` (a ghost Toggle that stays\n * pressed) and `ToolbarSeparator`. An icon-only item is named by `label`, which its tooltip\n * shows with `shortcut` as keys.\n *\n * Other props, `ref` included, go to the toolbar `div`.\n */\nexport interface ToolbarProps extends React.ComponentProps<typeof ToolbarPrimitive.Root> {\n  size?: 'sm' | 'md'\n  variant?: 'plain' | 'floating'\n  /** Keep a press on an item from moving focus to it (an editor keeps its selection). */\n  preventFocusOnPress?: boolean\n}\n\ninterface ToolbarContextValue {\n  size: 'sm' | 'md'\n  orientation: 'horizontal' | 'vertical'\n  preventFocusOnPress: boolean\n}\n\nconst ToolbarContext = React.createContext<ToolbarContextValue>({ size: 'sm', orientation: 'horizontal', preventFocusOnPress: false })\n\ntype Dir = 'ltr' | 'rtl'\n\n/** The direction an element is laid out in: its `dir`, inherited, else the CSS `direction`. */\nfunction directionOf(el: Element): Dir {\n  const attr = el.closest('[dir]')?.getAttribute('dir')\n  if (attr === 'rtl' || attr === 'ltr') return attr\n  try {\n    return el.matches(':dir(rtl)') ? 'rtl' : 'ltr'\n  } catch {\n    return getComputedStyle(el).direction === 'rtl' ? 'rtl' : 'ltr'\n  }\n}\n\nexport function Toolbar({\n  size = 'sm',\n  variant = 'plain',\n  orientation = 'horizontal',\n  loop = true,\n  preventFocusOnPress = false,\n  dir: dirProp,\n  className,\n  ref,\n  ...props\n}: ToolbarProps) {\n  // Radix reads the direction from a DirectionProvider only and falls back to left to right, so\n  // in a right-to-left page → would still move forward. Read it from the toolbar's place instead.\n  const own = React.useRef<HTMLDivElement | null>(null)\n  const [pageDir, setPageDir] = React.useState<Dir>('ltr')\n  React.useLayoutEffect(() => {\n    // From the parent: Radix writes its own `dir` on the toolbar.\n    const parent = own.current?.parentElement\n    if (parent) setPageDir(directionOf(parent))\n  }, [])\n  const setRef = React.useCallback(\n    (node: HTMLDivElement | null) => {\n      own.current = node\n      if (typeof ref === 'function') ref(node)\n      else if (ref) ref.current = node\n    },\n    [ref],\n  )\n  const context = React.useMemo(() => ({ size, orientation, preventFocusOnPress }), [size, orientation, preventFocusOnPress])\n  return (\n    <ToolbarContext.Provider value={context}>\n      <ToolbarPrimitive.Root\n        ref={setRef}\n        data-slot=\"toolbar\"\n        data-variant={variant}\n        data-size={size}\n        orientation={orientation}\n        loop={loop}\n        dir={dirProp ?? pageDir}\n        className={cn(\n          'sa:flex sa:w-fit sa:gap-0.5',\n          orientation === 'horizontal' ? 'sa:flex-row sa:items-center' : 'sa:flex-col sa:items-stretch',\n          variant === 'floating' && [menuSurfaceClass, 'sa:p-1'],\n          className,\n        )}\n        {...props}\n      />\n    </ToolbarContext.Provider>\n  )\n}\n\n/** \"⌘⇧B\" as aria-keyshortcuts wants it: \"Meta+Shift+B\". */\nconst MODIFIERS: Record<string, string> = { '⌘': 'Meta', '⌃': 'Control', '⇧': 'Shift', '⌥': 'Alt', Cmd: 'Meta', Ctrl: 'Control', Option: 'Alt', Opt: 'Alt' }\nconst ariaShortcut = (shortcut: string) => keysOf(shortcut).map((k) => MODIFIERS[k] ?? k).join('+')\n\n/** The hover and focus tooltip of an item: its label and keys. Off, the item stands alone. */\nfunction ItemTooltip({ show, label, shortcut, children }: { show: boolean; label?: string; shortcut?: string; children: React.ReactElement }) {\n  if (!show || !label) return children\n  return (\n    <Tooltip label={label} shortcut={shortcut}>\n      {children}\n    </Tooltip>\n  )\n}\n\n/** Composes the caller's mousedown with the one that keeps focus where it is. */\nfunction useMouseDown<E extends HTMLElement>(onMouseDown?: React.MouseEventHandler<E>) {\n  const { preventFocusOnPress } = React.useContext(ToolbarContext)\n  if (!preventFocusOnPress) return onMouseDown\n  return (event: React.MouseEvent<E>) => {\n    onMouseDown?.(event)\n    event.preventDefault()\n  }\n}\n\ninterface ItemProps {\n  /** A 16px icon. Without children the item is icon-only, named by `label`. */\n  icon?: React.ReactNode\n  /** What the item does, in a word or two: the name of an icon-only item, and its tooltip. */\n  label?: string\n  /** Keys that run it, e.g. \"⌘B\": shown as keys in the tooltip and set as `aria-keyshortcuts`. */\n  shortcut?: string\n  /** Show the tooltip on hover and keyboard focus. On for icon-only items and items with a `shortcut`. */\n  tooltip?: boolean\n}\n\n/**\n * A toolbar button: a tertiary Button at the toolbar's size, icon-only when it has an `icon` and\n * no children. Other props, `ref` included, go to the `button`.\n */\nexport interface ToolbarButtonProps extends Omit<ButtonProps, 'size' | 'iconOnly' | 'asChild'>, ItemProps {}\n\nexport function ToolbarButton({ icon, label, shortcut, tooltip, variant = 'tertiary', disabled, children, onMouseDown, ...props }: ToolbarButtonProps) {\n  const { size } = React.useContext(ToolbarContext)\n  const iconOnly = !!icon && (children == null || children === false)\n  const mouseDown = useMouseDown(onMouseDown)\n  return (\n    <ItemTooltip show={tooltip ?? (iconOnly || !!shortcut)} label={label} shortcut={shortcut}>\n      <ToolbarPrimitive.Button asChild disabled={disabled}>\n        <Button\n          data-slot=\"toolbar-button\"\n          variant={variant}\n          size={size === 'md' ? 'lg' : 'md'}\n          iconOnly={iconOnly}\n          aria-label={iconOnly ? label : undefined}\n          aria-keyshortcuts={shortcut ? ariaShortcut(shortcut) : undefined}\n          disabled={disabled}\n          onMouseDown={mouseDown}\n          {...props}\n        >\n          {icon}\n          {children}\n        </Button>\n      </ToolbarPrimitive.Button>\n    </ItemTooltip>\n  )\n}\n\n/**\n * A toolbar toggle: a ghost Toggle at the toolbar's size that stays pressed (`aria-pressed`),\n * controlled with `pressed` / `onPressedChange` or not with `defaultPressed`. Icon-only when it\n * has an `icon` and no children; keep `label` the same pressed or not, since `aria-pressed`\n * says the state. Other props, `ref` included, go to the `button`.\n */\nexport interface ToolbarToggleProps extends Omit<ToggleProps, 'size' | 'variant' | 'iconOnly' | 'asChild' | 'icon'>, ItemProps {}\n\nexport function ToolbarToggle({\n  icon,\n  label,\n  shortcut,\n  tooltip,\n  pressed: pressedProp,\n  defaultPressed = false,\n  onPressedChange,\n  disabled,\n  children,\n  className,\n  onMouseDown,\n  ...props\n}: ToolbarToggleProps) {\n  const { size } = React.useContext(ToolbarContext)\n  const iconOnly = !!icon && (children == null || children === false)\n  const mouseDown = useMouseDown(onMouseDown)\n  const [inner, setInner] = React.useState(defaultPressed)\n  const pressed = pressedProp ?? inner\n  return (\n    <ItemTooltip show={tooltip ?? (iconOnly || !!shortcut)} label={label} shortcut={shortcut}>\n      <ToolbarPrimitive.Button asChild disabled={disabled}>\n        <Toggle\n          data-slot=\"toolbar-toggle\"\n          variant=\"ghost\"\n          size={size}\n          iconOnly={iconOnly}\n          icon={icon}\n          aria-label={iconOnly ? label : undefined}\n          aria-keyshortcuts={shortcut ? ariaShortcut(shortcut) : undefined}\n          pressed={pressed}\n          onPressedChange={(next) => {\n            setInner(next)\n            onPressedChange?.(next)\n          }}\n          // The tooltip's trigger sets its own data-state; the toggle's pressed look reads this one.\n          data-state={pressed ? 'on' : 'off'}\n          disabled={disabled}\n          onMouseDown={mouseDown}\n          className={cn(\n            // Focus as on the toolbar's buttons: the ring 2px off the item, in action/focus-ring,\n            // instead of the ghost toggle's primary edge, so the row has one focus look.\n            'sa:satin-focus:border-transparent sa:satin-focus:[box-shadow:none] sa:data-[state=on]:satin-focus:[box-shadow:none]',\n            'sa:focus-visible:outline-solid sa:satin-focus:outline-2 sa:satin-focus:outline-solid sa:satin-focus:outline-offset-2 sa:satin-focus:outline-action-focus-ring',\n            className,\n          )}\n          {...props}\n        >\n          {children}\n        </Toggle>\n      </ToolbarPrimitive.Button>\n    </ItemTooltip>\n  )\n}\n\n/**\n * A thin rule between sets of items: the ButtonGroupSeparator look, a `separator` across the\n * toolbar. Other props, `ref` included, go to its `div`.\n */\nexport function ToolbarSeparator({ className, ...props }: React.ComponentProps<'div'>) {\n  const { orientation } = React.useContext(ToolbarContext)\n  const across = orientation === 'horizontal' ? 'vertical' : 'horizontal'\n  return (\n    <ToolbarPrimitive.Separator asChild>\n      <ButtonGroupSeparator\n        data-slot=\"toolbar-separator\"\n        aria-orientation={across}\n        className={cn(orientation === 'horizontal' ? 'sa:mx-1' : 'sa:my-1', className)}\n        {...props}\n      />\n    </ToolbarPrimitive.Separator>\n  )\n}\n"
+    }
+  ],
+  "docs": "Toolbar docs: https://uisatin.dev/components/toolbar",
+  "meta": {
+    "version": "0.7.1",
+    "edition": "free",
+    "props": {
+      "Toolbar": {
+        "type": "ToolbarProps",
+        "extends": [
+          "React.ComponentProps<typeof ToolbarPrimitive.Root>"
+        ],
+        "props": [
+          {
+            "name": "size",
+            "type": "'sm' | 'md'",
+            "required": false,
+            "default": "'sm'"
+          },
+          {
+            "name": "variant",
+            "type": "'plain' | 'floating'",
+            "required": false,
+            "default": "'plain'"
+          },
+          {
+            "name": "preventFocusOnPress",
+            "type": "boolean",
+            "required": false,
+            "default": "false",
+            "description": "Keep a press on an item from moving focus to it (an editor keeps its selection)."
+          }
+        ]
+      },
+      "ToolbarButton": {
+        "type": "ToolbarButtonProps",
+        "extends": [
+          "Omit<ButtonProps, 'size' | 'iconOnly' | 'asChild'>",
+          "ItemProps"
+        ],
+        "props": []
+      },
+      "ToolbarToggle": {
+        "type": "ToolbarToggleProps",
+        "extends": [
+          "Omit<ToggleProps, 'size' | 'variant' | 'iconOnly' | 'asChild' | 'icon'>",
+          "ItemProps"
+        ],
+        "props": []
+      },
+      "ToolbarSeparator": {
+        "description": "A thin rule between sets of items: the ButtonGroupSeparator look, a `separator` across the toolbar. Other props, `ref` included, go to its `div`.",
+        "extends": [
+          "React.ComponentProps<'div'>"
+        ],
+        "props": []
+      }
+    }
+  }
+}

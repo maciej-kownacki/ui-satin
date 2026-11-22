@@ -1,0 +1,83 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import Chip from '../../components/Chip.astro'
+import DocSection from '../../components/DocSection.astro'
+import RichTextEditorDemo, {
+  RichTextEditorDialogDemo,
+  RichTextEditorFormDemo,
+  RichTextEditorSelectionDemo,
+  RichTextEditorTeamsDemo,
+  dialogOptions,
+  formOptions,
+  options,
+  selectionOptions,
+  teamOptions,
+} from '../../demos/rich-text-editor'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+const teamsHtml = await highlight(teamOptions)
+const dialogHtml = await highlight(dialogOptions)
+const selectionHtml = await highlight(selectionOptions)
+const formHtml = await highlight(formOptions)
+---
+
+<Docs current="rich-text-editor">
+  <DocSection item={page('rich-text-editor')} api={api['rich-text-editor']}>
+    <RichTextEditorDemo client:load codeHtml={codeHtml} />
+
+    <section aria-labelledby="engine-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="engine-title" class="text-lg font-medium text-text-default">Engine</h2>
+      <p class="text-base leading-6 text-text-muted">
+        The editor runs on Lexical, an optional peer of Satin Pro that only this entry imports. Install it next to
+        <Chip>@uisatin/pro</Chip>: <Chip>npm i lexical @lexical/rich-text @lexical/list @lexical/link @lexical/markdown @lexical/history @lexical/table</Chip>.
+        In an app's production build Lexical adds about 97 kB gzipped, and about 20 kB more for tables; the editor's own code is
+        about 14 kB, and Radix Popover (about 22 kB, which Satin Free's popovers load too) places its bubble and link popover. None of the rest is in the Satin Free bundle, and <Chip>@uisatin/pro</Chip> itself doesn't export the editor, so
+        only a page that imports <Chip>@uisatin/pro/rich-text-editor</Chip> loads it.
+      </p>
+    </section>
+
+    <section aria-labelledby="teams-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="teams-title" class="text-lg font-medium text-text-default">Other teams</h2>
+      <p class="text-base leading-6 text-text-muted">
+        A sales follow-up that mentions the account owner, a campaign brief with headings, a numbered list and a link, and a
+        product description pasted from Google Docs. A paste from Google Docs, Word or a web page keeps bold, italic, lists and
+        links; underline, highlight, subscript and superscript are dropped, since the markdown has no place for them (a Google
+        Docs link arrives underlined and keeps only its link).
+      </p>
+      <RichTextEditorTeamsDemo client:visible codeHtml={teamsHtml} />
+    </section>
+
+    <section aria-labelledby="dialog-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="dialog-title" class="text-lg font-medium text-text-default">In a dialog</h2>
+      <p class="text-base leading-6 text-text-muted">
+        With <Chip>maxLength</Chip> a count of the text, not the markdown, shows in the status slot under the field. It isn't
+        enforced. Escape closes the mention menu first, and only the next Escape closes the dialog.
+      </p>
+      <RichTextEditorDialogDemo client:visible codeHtml={dialogHtml} />
+    </section>
+
+    <section aria-labelledby="selection-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="selection-title" class="text-lg font-medium text-text-default">Selection actions</h2>
+      <p class="text-base leading-6 text-text-muted">
+        Build the editor from its parts to add actions to the bubble over a selection: <Chip>RichTextSelectionToolbar</Chip>'s
+        <Chip>actions</Chip> go after bold, italic, strikethrough and link, past a separator. Any Toolbar item works there, and
+        <Chip>editorRef</Chip>'s <Chip>insert</Chip>, <Chip>insertText</Chip> and <Chip>getSelectionRect</Chip> act on the text.
+        Here Comment keeps the selected words.
+      </p>
+      <RichTextEditorSelectionDemo client:visible codeHtml={selectionHtml} />
+    </section>
+
+    <section aria-labelledby="form-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="form-title" class="text-lg font-medium text-text-default">In a form</h2>
+      <p class="text-base leading-6 text-text-muted">
+        Inside a <Chip>FormField</Chip> the editor takes its label, description, error, <Chip>required</Chip> and
+        <Chip>name</Chip>; a hidden input carries the markdown into the form's values. Publish with the field empty shows the
+        error.
+      </p>
+      <RichTextEditorFormDemo client:visible codeHtml={formHtml} />
+    </section>
+  </DocSection>
+</Docs>

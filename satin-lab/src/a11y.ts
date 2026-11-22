@@ -487,6 +487,17 @@ export const a11y: Record<string, A11y> = {
       'A Radix toggle: a `button` with `aria-pressed`. An `iconOnly` toggle needs an `aria-label`; keep the label the same whether it is on or off, since `aria-pressed` carries the state.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Presses or releases the toggle.' }],
   },
+  toolbar: {
+    summary:
+      'A Radix toolbar: a `div` with `role="toolbar"` and `aria-orientation`; give it an `aria-label` ("Formatting"). It is one tab stop and remembers the item focused last. `ToolbarToggle` is a `button` with `aria-pressed`; keep its `label` the same pressed or not. An icon-only item is named by `label` and shows it in a tooltip on hover and keyboard focus, with `shortcut` as keys and as `aria-keyshortcuts`. `ToolbarSeparator` is a `separator` across the toolbar. Disabled items are skipped by the arrows. With `preventFocusOnPress`, a pointer press leaves focus (and an editor\'s selection) where it was; the keyboard still reaches every item.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves focus into the toolbar, to the item focused last, and out of it.' },
+      { keys: ['→', '←'], action: 'Moves to the next or previous item, wrapping at the ends; right to left, the arrows flip. ↓ and ↑ when vertical.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or last item.' },
+      { keys: ['Enter', 'Space'], action: 'Runs the focused button, or presses or releases the focused toggle.' },
+      { keys: ['Esc'], action: 'Closes an open tooltip.' },
+    ],
+  },
   tooltip: {
     summary:
       'A Radix tooltip. While open, the trigger is described by it (`aria-describedby`) and a hidden copy with `role="tooltip"` holds the label and the shortcut. It describes the trigger but doesn’t name it, so an icon-only trigger still needs an `aria-label`. The trigger must be focusable.',
@@ -763,6 +774,27 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'Picks the highlighted person and, with `multiple`, drops one already picked; a single pick closes the list.' },
       { keys: ['Esc'], action: 'Closes the list and returns focus to the field.' },
       { keys: ['Tab'], action: 'Out of the field, through the chips\' remove buttons and the "+N" chip.' },
+    ],
+  },
+  'rich-text-editor': {
+    summary:
+      'The editable area is a `div` with `contenteditable`, `role="textbox"` and `aria-multiline`, named by the label through `aria-labelledby` (a FormField\'s label too; with neither, `aria-label` or "Text editor", `richTextEditor` in SatinLabels). Clicking the label focuses it. The hint or the error and the count describe it (`aria-describedby`); an error sets `aria-invalid`, a required FormField `aria-required`. The placeholder is its `aria-placeholder`, and the visible one is hidden from screen readers. Headings, lists, quotes, tables and links are real elements, so a screen reader moves through them as on a page. A mention reads as its text, "@Tara Mendes". Read-only stays in the tab order with `aria-readonly`, and its text can be selected and copied; disabled leaves the tab order and is `aria-disabled`. The focus ring is drawn on the field while the editable area has focus. The formatting toolbar is Free\'s Toolbar (`role="toolbar"`, "Formatting"), one tab stop before the text, its toggles with `aria-pressed` that follow the selection; the text has `aria-keyshortcuts="Alt+F10"` to reach it. The bubble over a selection is a toolbar too, out of the tab order, shown for pointer selections; ⌥F10 opens it from the keyboard when there is no fixed toolbar. With `mentions` or `commands` the editable area has `aria-autocomplete="list"`; while the menu lists rows it points at the listbox with `aria-controls` and at the highlighted option with `aria-activedescendant`, and focus stays in the text. A polite status region says how many suggestions there are, "No results", and which mention went in or out. An input method\'s text (Japanese, Chinese, Korean) never opens a menu, and its Enter confirms the composition, not a pick. The bubble and the link popover are popover layers, so inside a modal Dialog they take presses and focus and Escape closes them first; the bubble never takes focus on its own, the link popover moves it to its address field. They fade in; reduced motion turns that off. Known gap: inside a table, Tab moves between cells, listed on the Accessibility page.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves focus to the toolbar, then the text, then out. In a table, moves to the next cell instead; ⇧Tab to the previous one.' },
+      { keys: ['⌥F10'], action: 'In the text: moves to the toolbar\'s first item, or opens the selection bubble when there is no toolbar.' },
+      { keys: ['→', '←', 'Home', 'End'], action: 'In a toolbar: ← and → move between its items, wrapping at the ends; Home and End go to the first and the last.' },
+      { keys: ['Esc'], action: 'In the bubble or the link popover, or with the bubble up: closes it and goes back to the text with its selection; a Dialog around the editor stays open. In the formatting toolbar: goes back to the text, except inside a Dialog, where it closes the Dialog as Escape does on any control in one.' },
+      { keys: ['⌘B', '⌘I', '⌘⇧X', '⌘E'], action: 'Bold, italic, strikethrough, inline code on the selection or what is typed next. Ctrl for ⌘ off Apple.' },
+      { keys: ['⌘⇧8', '⌘⇧7'], action: 'A bullet or a numbered list.' },
+      { keys: ['⌘K'], action: 'Opens the link popover under the selection; Enter applies the address.' },
+      { keys: ['⌘Z', '⌘⇧Z'], action: 'Undoes and redoes the last edits.' },
+      { keys: ['Enter'], action: 'A new paragraph, or a new list item; on an empty list item, leaves the list.' },
+      { keys: ['⇧Enter'], action: 'A line break in the same paragraph.' },
+      { keys: ['@', '/'], action: 'At a block\'s start or after a space: opens the mentions or the commands menu.' },
+      { keys: ['↑', '↓'], action: 'Menu open: moves the highlight, wrapping.' },
+      { keys: ['Enter', 'Tab'], action: 'Menu open: inserts the highlighted mention, or runs the highlighted command.' },
+      { keys: ['Esc'], action: 'Menu open: closes it until the next trigger. With no menu open the editor doesn\'t take it, so a Dialog around it closes.' },
+      { keys: ['⌫'], action: 'Right after a mention: removes all of it.' },
     ],
   },
   'date-availability': {

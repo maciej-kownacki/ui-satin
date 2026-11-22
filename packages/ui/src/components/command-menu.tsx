@@ -238,6 +238,8 @@ export function CommandMenu({
   React.useEffect(() => {
     if (!hotkey) return
     const onKey = (e: KeyboardEvent) => {
+      // A field that already used ⌘K for itself (a rich text editor's link) keeps it.
+      if (e.defaultPrevented) return
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
         setOpen(!open)

@@ -32,7 +32,8 @@ const url = (name) => `${base}/${name}.json`
 
 const pkg = JSON.parse(readFileSync(join(ui, 'package.json'), 'utf8'))
 const proPkg = JSON.parse(readFileSync(join(pro, 'package.json'), 'utf8'))
-const versions = { ...pkg.dependencies, ...proPkg.dependencies }
+// Peers too: Lexical is an optional peer of Pro, and the editor's registry item pins its range.
+const versions = { ...pkg.peerDependencies, ...pkg.dependencies, ...proPkg.peerDependencies, ...proPkg.dependencies }
 const pages = Object.fromEntries(nav.flatMap((g) => pagesOf(g.items).map((i) => [i.id, i])))
 
 const css = join(ui, 'dist/styles.css')
