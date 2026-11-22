@@ -6418,6 +6418,144 @@
       ]
     }
   },
+  "prompt-mentions": {
+    "PromptMentionsMenu": {
+      "description": "The mentions and commands menu by itself, with its status region, for a field that isn't a textarea (a contenteditable editor): drive it with `usePromptMenuState`, spread its `menuProps`, and add `onPick` and an anchor. Focus never moves into it: the field keeps focus and points at the list with `aria-controls` and `aria-activedescendant`.",
+      "type": "PromptMentionsMenuProps",
+      "extends": [],
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "'mention' | 'command'",
+          "required": true,
+          "description": "Names the menu: Mentions or Commands."
+        },
+        {
+          "name": "items",
+          "type": "PromptMenuItem[] | null",
+          "required": true,
+          "description": "The rows; null while the first answer to a mention search is coming."
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "required": true,
+          "description": "The highlighted row."
+        },
+        {
+          "name": "viaKeys",
+          "type": "boolean",
+          "required": true,
+          "description": "The highlight was moved with the keys (it draws the keyboard look)."
+        },
+        {
+          "name": "query",
+          "type": "string | null",
+          "required": true,
+          "description": "The trigger and the text after it (\"@ta\"), for \"No results for “@ta”\"."
+        },
+        {
+          "name": "listId",
+          "type": "string",
+          "required": true,
+          "description": "The listbox's id; option `i` is `${listId}-${i}`, for the field's `aria-activedescendant`."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": true,
+          "description": "What the status region says: the number of suggestions, a token added or removed."
+        },
+        {
+          "name": "onPick",
+          "type": "(item: PromptMenuItem) => void",
+          "required": true
+        },
+        {
+          "name": "onHighlight",
+          "type": "(index: number) => void",
+          "required": true,
+          "description": "The pointer moved onto row `index`."
+        },
+        {
+          "name": "onDismiss",
+          "type": "() => void",
+          "required": true,
+          "description": "Radix asked to close (Escape): keep it shut until the trigger changes."
+        },
+        {
+          "name": "anchorRef",
+          "type": "React.RefObject<PromptMenuMeasurable | null>",
+          "required": false,
+          "description": "The element the menu opens next to."
+        },
+        {
+          "name": "virtualAnchor",
+          "type": "PromptMenuMeasurable | null",
+          "required": false,
+          "description": "A rect to open next to instead, such as the caret's or the trigger character's in a contenteditable. Pass a new object when it moves; it wins over `anchorRef`."
+        },
+        {
+          "name": "side",
+          "type": "'top' | 'right' | 'bottom' | 'left'",
+          "required": false,
+          "default": "'top'"
+        },
+        {
+          "name": "align",
+          "type": "'start' | 'center' | 'end'",
+          "required": false,
+          "default": "'start'"
+        },
+        {
+          "name": "sideOffset",
+          "type": "number",
+          "required": false,
+          "default": "8"
+        },
+        {
+          "name": "matchAnchorWidth",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "The menu is as wide as the anchor (PromptBar's). False gives it a fixed 288px."
+        }
+      ]
+    },
+    "Mention": {
+      "description": "A mention in text that isn't a field: a sent message, a rich text editor's content. It reads as what it says (\"@Tara Mendes\") and wears a mention token's look: status/brand-bg with a status/brand-border edge, radius-sm, 3px past the text on each side, in medium text/default. The look is plain CSS on `[data-slot=\"mention\"]` (styles/components/mention.css), so an editor that builds the same `<span data-slot=\"mention\">` without React gets it too. Other props, `ref` included, go to the `span`.",
+      "type": "MentionProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'id' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "description": "The name after the trigger: \"Tara Mendes\"."
+        },
+        {
+          "name": "trigger",
+          "type": "string",
+          "required": false,
+          "default": "'@'",
+          "description": "Defaults to `@`."
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Your id for the person or record, as `data-mention-id` (not the element's `id`)."
+        }
+      ]
+    }
+  },
   "radio": {
     "RadioGroup": {
       "type": "RadioGroupProps",

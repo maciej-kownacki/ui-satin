@@ -89,7 +89,7 @@ export * from './components/empty-state'
 export { Message, type MessageProps, type MessageSource } from './components/message'
 export { MessageActions, type MessageActionsProps, type MessageFeedback } from './components/message-actions'
 export { PromptBar, defaultActions as promptBarDefaultActions, type PromptBarProps, type PromptBarModel, type PromptBarAction } from './components/prompt-bar'
-export { usePromptMentions, promptValue, type PromptMention, type PromptMentions, type PromptCommand, type PromptCommandInput, type PromptValue, type PromptMentionToken, type PromptCommandToken, type UsePromptMentionsOptions, type PromptMentionsHandle } from './components/prompt-mentions'
+export { usePromptMentions, usePromptMenuState, PromptMentionsMenu, Mention, promptValue, type PromptMention, type PromptMentions, type PromptCommand, type PromptCommandInput, type PromptValue, type PromptMentionToken, type PromptCommandToken, type UsePromptMentionsOptions, type PromptMentionsHandle, type PromptMenuQuery, type PromptMenuItem, type PromptMenuState, type UsePromptMenuStateOptions, type PromptMentionsMenuProps, type MentionProps } from './components/prompt-mentions'
 export { StreamingText, type StreamingTextProps } from './components/streaming-text'
 export { Thinking, type ThinkingProps, type ThinkingStep, type ThinkingState, type ThinkingIndicator } from './components/thinking'
 export {

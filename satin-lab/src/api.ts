@@ -1329,7 +1329,7 @@ export const api: Record<string, Api> = {
   },
   'prompt-mentions': {
     description:
-      'Mentions and commands are props on `PromptBar`, so any bar has them, in either shape, with its attachments, models, + menu and dictation. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`.',
+      'Mentions and commands are props on `PromptBar`, so any bar has them, in either shape, with its attachments, models, + menu and dictation. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`. On a field that isn’t a textarea (a contenteditable editor), find the trigger yourself and pass it to `usePromptMenuState({ query, mentions, commands })` (`query` is `{ kind, trigger, text, start }` or null): it searches, filters, keeps the highlight and the status message, and returns `open`, `items`, `current`, `move(±1)`, `dismiss()`, `release(query)`, `announce(text)`, `listId`, `activeId` and `menuProps`; render `<PromptMentionsMenu {...menuProps} onPick anchorRef />` or with `virtualAnchor` (a rect, such as the caret’s), `side`, `align`, `sideOffset` and `matchAnchorWidth={false}` for a fixed 288px. `Mention` shows a mention outside a field, “@Tara Mendes” in a token’s fill: `<Mention label="Tara Mendes" id="tara" />`, plain CSS on `[data-slot="mention"]`, so an editor’s own `<span data-slot="mention">` looks the same.',
     props: [
       { name: 'mentions', type: ['PromptMentions'] },
       { name: 'mentions.trigger', type: ['string'], default: '"@"' },
@@ -1340,6 +1340,13 @@ export const api: Record<string, Api> = {
       { name: 'defaultValue', type: ['string', 'PromptValue'], default: '""' },
       { name: 'onValueChange', type: ['(value: string, detail: PromptValue) => void'] },
       { name: 'onSubmit', type: ['(value: string, attachments: File[], detail: PromptValue) => void'] },
+      { name: 'PromptMentionsMenu.anchorRef', type: ['RefObject<HTMLElement>'] },
+      { name: 'PromptMentionsMenu.virtualAnchor', type: ['{ getBoundingClientRect(): DOMRect }'] },
+      { name: 'PromptMentionsMenu.side', type: ['"top"', '"right"', '"bottom"', '"left"'], default: '"top"' },
+      { name: 'PromptMentionsMenu.matchAnchorWidth', type: ['boolean'], default: 'true' },
+      { name: 'Mention.label', type: ['string'] },
+      { name: 'Mention.trigger', type: ['string'], default: '"@"' },
+      { name: 'Mention.id', type: ['string'] },
     ],
   },
   'time-picker': {
