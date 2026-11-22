@@ -2862,7 +2862,7 @@
   },
   "csv-import": {
     "CsvImportMapping": {
-      "description": "The Map columns step on its own: a line for each required field still missing, and a Table with one row per column (its name, sample values, a \"Maps to\" Select, Auto-matched). From 520px wide the samples and the badge have their own columns; narrower, they fold under the name. A field picked by a second column shows an error there. Other props, `ref` included, go to its root.",
+      "description": "The Map columns step on its own, one flat card: a heading row, \"Columns in your file → Lead fields\", then one row per column, rows divided by a line. A row is the column's name (a check when auto-matched) over its first values, an arrow, and the field's Select, each field led by its type's icon. A required field with no column says so under the heading; a field picked twice marks both Selects and says so in the row. Don't import reads muted, as a placeholder. It lays out by its container's width (`@container` on an ancestor). Other props, `ref` included, go to its root.",
       "type": "CsvImportMappingProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'children'>"
@@ -2883,7 +2883,7 @@
           "name": "rows",
           "type": "string[][]",
           "required": true,
-          "description": "The data rows, for each column's sample values (the first few that aren't empty)."
+          "description": "The data rows, for each column's first values (the first three that aren't empty)."
         },
         {
           "name": "mapping",
@@ -2899,24 +2899,19 @@
           "name": "autoMapping",
           "type": "CsvMapping",
           "required": false,
-          "description": "What auto-match picked, for the Auto-matched badges. Defaults to matchColumns(headers, fields)."
+          "description": "What auto-match picked, for the Auto-matched checks. Defaults to matchColumns(headers, fields)."
         },
         {
-          "name": "header",
-          "type": "boolean",
+          "name": "noun",
+          "type": "CsvNoun",
           "required": false,
-          "description": "Shows \"First row is a header\" with this value."
+          "description": "\"lead\" / \"leads\": the heading says \"Lead fields\". Defaults to the `csvRowNoun` label."
         },
         {
-          "name": "onHeaderChange",
-          "type": "(header: boolean) => void",
-          "required": false
-        },
-        {
-          "name": "meta",
+          "name": "appIcon",
           "type": "React.ReactNode",
           "required": false,
-          "description": "A line at the start, above the table: \"leads.csv · 340 rows\"."
+          "description": "Your app's mark beside that heading, 16px; give it `className=\"size-full\"`. Defaults to a database glyph."
         },
         {
           "name": "disabled",
@@ -2926,7 +2921,7 @@
       ]
     },
     "CsvImportPreview": {
-      "description": "The Review step on its own: \"340 rows · 328 ready · 12 with errors\", an Alert grouping the errors by field (each group a link that turns on \"Show only errors\" and moves focus to its first cell), the checkbox, and a Table of the mapped fields, 100 rows a page with Pagination under it. An invalid cell is in the error colour with a warning mark and its reason (a Tooltip, and read out). Other props, `ref` included, go to its root.",
+      "description": "The rows of the Review step on their own: \"340 rows · 328 ready · 12 with errors\", an Alert grouping the errors by field (each group a link that turns on \"Show only errors\" and moves focus to its first cell), the checkbox, and a Table of the mapped fields, 100 rows a page with Pagination under it. An invalid cell is in the error colour with a warning mark and its reason (a Tooltip, and read out). Other props, `ref` included, go to its root.",
       "type": "CsvImportPreviewProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'children'>"
@@ -2953,7 +2948,6 @@
           "name": "overLimit",
           "type": "number",
           "required": false,
-          "default": "0",
           "description": "Rows past `maxRows`, in the summary."
         },
         {
@@ -2964,8 +2958,7 @@
         {
           "name": "defaultErrorsOnly",
           "type": "boolean",
-          "required": false,
-          "default": "false"
+          "required": false
         },
         {
           "name": "onErrorsOnlyChange",
@@ -3029,7 +3022,6 @@
           "name": "status",
           "type": "'done' | 'stopped'",
           "required": false,
-          "default": "'done'",
           "description": "`stopped` when the run failed or was cancelled before the last row: adds Not imported."
         },
         {
@@ -3048,7 +3040,6 @@
           "name": "overLimit",
           "type": "number",
           "required": false,
-          "default": "0",
           "description": "Rows past `maxRows`: a muted line under the heading."
         },
         {
@@ -3066,7 +3057,6 @@
           "name": "defaultFilter",
           "type": "CsvImportResultFilter",
           "required": false,
-          "default": "'imported'",
           "description": "Defaults to `imported`."
         },
         {
@@ -3096,7 +3086,6 @@
           "name": "disabled",
           "type": "boolean",
           "required": false,
-          "default": "false",
           "description": "Disables Retry."
         }
       ]
@@ -3116,7 +3105,7 @@
           "name": "onImport",
           "type": "(rows: Record<string, string>[], ctx: CsvImportContext) => void | Promise<void>",
           "required": true,
-          "description": "Gets only the valid rows, keyed by field, normalised (text trimmed, an enum as its option's value, a number as \"1234.5\", a date as yyyy-mm-dd), once Import is pressed. Report progress with `onProgress` and honour `signal` for Cancel. A rejected promise shows its message with Retry in the result; void or a resolved promise is done. Retry resumes: it calls `onImport` again with only the rows after the last `onProgress(done)` count, so report a row done once it is saved. `onProgress` in that call counts from 0 again; the panel adds what was done before."
+          "description": "Gets only the valid rows, keyed by field, normalised (text trimmed, an enum as its option's value, a number as \"1234.5\", a date as yyyy-mm-dd), once Import is pressed. Report progress with `onProgress` and honour `signal` for Cancel. A rejected promise shows its message with Retry in the result; void or a resolved promise is done. Retry resumes: it calls `onImport` again with only the rows after the last `onProgress(done)` count, so report a row done once it is saved. `onProgress` in that call counts from 0 again; the panel adds what was done before. After Cancel, `onProgress` still counts (the screen keeps what it showed at Cancel), so a request already in flight that commits is not sent again by the next Import or Retry."
         },
         {
           "name": "noun",
@@ -3143,31 +3132,21 @@
           "description": "A template CSV to download, linked under the drop zone."
         },
         {
-          "name": "step",
-          "type": "CsvImportStep",
-          "required": false
-        },
-        {
-          "name": "defaultStep",
-          "type": "CsvImportStep",
-          "required": false,
-          "default": "'upload'",
-          "description": "Start on `map` with a `file` to skip Upload."
-        },
-        {
-          "name": "onStepChange",
-          "type": "(step: CsvImportStep) => void",
-          "required": false
-        },
-        {
           "name": "file",
           "type": "File | null",
-          "required": false
+          "required": false,
+          "description": "A file given from the start is read at once and opens on Map columns. A new one given later starts on Upload, as an added file does, and ends an import of the old one."
         },
         {
           "name": "onFileChange",
           "type": "(file: File | null) => void",
           "required": false
+        },
+        {
+          "name": "onStepChange",
+          "type": "(step: CsvImportStep) => void",
+          "required": false,
+          "description": "Called with the step on screen as it changes."
         },
         {
           "name": "mapping",
@@ -3204,6 +3183,32 @@
           "type": "boolean",
           "required": false,
           "default": "false"
+        },
+        {
+          "name": "appIcon",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Your app's mark, where the file goes: in the drop zone's picture (a 24px box on a 40px muted tile) and the mapping card's heading (16px). Give it `className=\"size-full\"`. Defaults to a database glyph."
+        },
+        {
+          "name": "inDialog",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Inside a Dialog with no header of its own: each step's title and description become the dialog's DialogTitle and DialogDescription, its name and description."
+        },
+        {
+          "name": "onBrowse",
+          "type": "() => void",
+          "required": false,
+          "description": "Called in place of the file picker, from Browse files and from a click on the drop zone (a demo can drop a sample file with it). Left out, both open the picker."
+        },
+        {
+          "name": "dragging",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Shows the drop zone as files dragged over it would (state sheets, docs)."
         }
       ]
     }

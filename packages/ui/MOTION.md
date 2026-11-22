@@ -66,7 +66,7 @@ The tokens live in `src/styles/motion.css`.
      nobody waits for it. Under reduced motion it doesn't show; the card's status and an announcement still say it.
 
    Loops that show something is going on (Spinner, the shimmer, Skeleton, Progress without a value, Prompt bar's
-   recording wave) aren't transitions and keep their own pace.
+   recording wave, the dotted arrow in CSV import's drop zone in Satin Pro, opacity and colour only) aren't transitions and keep their own pace.
 4. **Pressing gives feedback.** Buttons scale to 0.97 while held (`active:scale-[0.97]`).
 5. **Nothing grows from zero.** Elements that appear start from opacity 0 and a few pixels of offset (or scale 0.95),
    never from `scale(0)`. Collapsible content fades and settles in; where its height moves, it moves through rule

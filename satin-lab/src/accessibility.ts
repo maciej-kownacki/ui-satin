@@ -151,6 +151,16 @@ export const knownIssues: KnownIssue[] = [
     wcag: ['2.2.2'],
   },
   {
+    id: 'csv-import-arrow-loop',
+    components: ['csv-import'],
+    title: 'The upload arrow pulses with no pause',
+    problem:
+      'On CSV import\'s Upload file step, the dotted arrow from the file to the app pulses every 1.4 seconds for as long as the step is open. It stops under reduced motion, but nothing pauses it otherwise.',
+    affects: 'People who are distracted by movement.',
+    workaround: 'Turn on reduced motion in the system settings, or pass a file from the start (`file`) so the panel opens on Map columns.',
+    wcag: ['2.2.2'],
+  },
+  {
     id: 'reflow-unmeasured',
     components: ['table', 'sidebar', 'list', 'select', 'date-picker'],
     title: 'Zoom, reflow and text spacing not measured',

@@ -44,7 +44,6 @@ export const wrongValidate: CsvImportField = { key: 'x', label: 'X', validate: (
 const rootRef = React.createRef<HTMLDivElement>()
 const file = new File([''], 'leads.csv')
 const mapping: CsvMapping = { 0: 'name', 1: null }
-const step: CsvImportStep = 'map'
 const leads: CsvNoun = { one: 'lead', other: 'leads' }
 const polish: CsvNoun = { one: 'lead', few: 'leady', many: 'leadów', other: 'leada' }
 
@@ -61,28 +60,33 @@ export const full = (
     maxRows={10_000}
     maxSize={5 * 1024 * 1024}
     templateHref="/leads-template.csv"
-    step={step}
-    onStepChange={(s: CsvImportStep) => s}
     file={file}
+    onStepChange={(s: CsvImportStep) => s}
     onFileChange={(f: File | null) => f}
     mapping={mapping}
     onMappingChange={(m: CsvMapping) => m}
     onDone={() => {}}
     cancelable
     disabled={false}
+    appIcon={<img src="/logo.png" alt="" className="size-full" />}
+    inDialog
+    onBrowse={() => {}}
+    dragging={false}
     className="h-auto flex-1"
   />
 )
-export const uncontrolled = <CsvImport fields={fields} onImport={() => {}} defaultStep="map" file={file} defaultMapping={{ 2: 'stage' }} noun={polish} />
+export const uncontrolled = <CsvImport fields={fields} onImport={() => {}} file={file} defaultMapping={{ 2: 'stage' }} noun={polish} />
 
 // @ts-expect-error: fields are required
 export const noFields = <CsvImport onImport={() => {}} />
 // @ts-expect-error: onImport is required
 export const noImport = <CsvImport fields={fields} />
-// @ts-expect-error: no such step
-export const wrongStep = <CsvImport fields={fields} onImport={() => {}} step="done" />
-// @ts-expect-error: no startAt; use defaultStep="map" with a file
-export const startAt = <CsvImport fields={fields} onImport={() => {}} startAt="map" />
+// @ts-expect-error: the step isn't controlled; a file given from the start opens on Map columns
+export const controlledStep = <CsvImport fields={fields} onImport={() => {}} step="map" />
+// @ts-expect-error: no defaultStep either
+export const defaultStep = <CsvImport fields={fields} onImport={() => {}} defaultStep="map" />
+// @ts-expect-error: onStepChange gets a step, not a number
+export const wrongStepChange = <CsvImport fields={fields} onImport={() => {}} onStepChange={(s: number) => s} />
 // @ts-expect-error: the mapping is by column index
 export const byName = <CsvImport fields={fields} onImport={() => {}} mapping={{ Firma: 'company' }} />
 
@@ -95,9 +99,10 @@ export const parts = (
       rows={[['Anna', 'anna@firma.pl']]}
       mapping={mapping}
       onMappingChange={(m) => m}
-      header
-      onHeaderChange={(h: boolean) => h}
-      meta="leads.csv · 340 rows"
+      autoMapping={mapping}
+      noun={{ one: 'lead', other: 'leads' }}
+      appIcon={<svg className="size-full" />}
+      disabled={false}
       ref={React.createRef<HTMLDivElement>()}
     />
     <CsvImportPreview fields={fields} mapping={mapping} validation={validation} overLimit={20} defaultErrorsOnly ref={React.createRef<HTMLDivElement>()} />
@@ -125,6 +130,8 @@ export const parts = (
 export const noImported = <CsvImportResult fields={fields} mapping={mapping} validation={validation} />
 // @ts-expect-error: a segment the result doesn't have
 export const wrongFilter = <CsvImportResult fields={fields} mapping={mapping} validation={validation} imported={0} filter="all" />
+// @ts-expect-error: the mapping card has no header-row checkbox
+export const headerRow = <CsvImportMapping fields={fields} headers={[]} rows={[]} mapping={mapping} onMappingChange={() => {}} header />
 // @ts-expect-error: the mapping part needs its headers
 export const noHeaders = <CsvImportMapping fields={fields} rows={[]} mapping={mapping} onMappingChange={() => {}} />
 
@@ -148,6 +155,9 @@ export const translated = (
     labels={{
       close: 'Zamknij',
       csvStepUpload: 'Plik',
+      csvUploadTitle: (noun) => `Importuj ${noun}`,
+      csvWillImport: (noun) => `${noun} do importu`,
+      csvDoneTitle: 'Import zakończony',
       csvRowNoun: { one: 'wiersz', few: 'wiersze', many: 'wierszy', other: 'wiersza' },
       csvImportRows: (count, noun) => `Importuj ${count} ${noun}`,
       csvMapsToColumn: (column) => `Pole dla kolumny ${column}`,

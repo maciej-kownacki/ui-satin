@@ -1,0 +1,27 @@
+/*
+ * CSV import (components/csv-import.tsx): the dotted arrow in the drop zone, from the file's tile
+ * to the app's. Every dot rests dim (its own opacity class); a pulse runs column by column from
+ * the file side, each column's delay set inline, every dot flaring to text/default at full
+ * opacity and settling back, the head's branches with their column. A loop that says where the
+ * file goes, not a transition: opacity and colour only. Off under reduced motion, where the
+ * dots hold a still fade toward the app (their motion-reduce opacity classes).
+ */
+[data-slot='csv-import-arrow'] > [data-dot] {
+  animation: satin-csv-arrow-pulse 1400ms ease-in-out infinite;
+}
+@keyframes satin-csv-arrow-pulse {
+  0%,
+  55%,
+  100% {
+    opacity: 0.25;
+  }
+  18% {
+    opacity: 1;
+    background-color: var(--text-default);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='csv-import-arrow'] > [data-dot] {
+    animation: none;
+  }
+}

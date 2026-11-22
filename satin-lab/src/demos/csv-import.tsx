@@ -1,6 +1,5 @@
 import * as React from 'react'
-import type { CsvImportField } from '@uisatin/pro/csv-import'
-import { CsvImportHeaderSteps } from '../prototypes/csv-import'
+import { CsvImport, type CsvImportField } from '@uisatin/pro/csv-import'
 import { Showcase, type ShowcaseOption } from '../components/Showcase'
 import { candidatesFile } from './csv-import-data'
 
@@ -81,6 +80,15 @@ export function ImportCandidates() {
 
 export const options: ShowcaseOption[] = [{ id: 'hr', label: 'Candidates', code: hrCode }]
 
+/** Satin's logo as the docs' top bar draws it (the PNG carries its own shadow), as the app's mark. */
+export function SatinMark() {
+  return (
+    <span className="relative block size-full">
+      <img src="/figma/satin-logo.png" alt="" className="absolute inset-[-4.29%_-7.86%_-11.43%_-7.86%] block size-[calc(100%+15.72%)] max-w-none" />
+    </span>
+  )
+}
+
 /** How long the zone shows files dragged over it before the sample lands. */
 const SAMPLE_DRAG_MS = 500
 
@@ -101,7 +109,7 @@ function ImportCandidates() {
     }, SAMPLE_DRAG_MS)
   }
   return (
-    <CsvImportHeaderSteps
+    <CsvImport
       // The dialog's surface (DialogContent: border/subtle edge, bg/popover), here on the page.
       className="w-[640px] max-w-full rounded-2xl border border-border-subtle bg-bg-popover"
       fields={candidateFields}
@@ -110,6 +118,7 @@ function ImportCandidates() {
       noun={{ one: 'candidate', other: 'candidates' }}
       cancelable
       onImport={save}
+      appIcon={<SatinMark />}
       onBrowse={browse}
       dragging={dragging}
     />

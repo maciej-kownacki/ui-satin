@@ -1,10 +1,10 @@
 import * as React from 'react'
-import type { CsvImportField } from '@uisatin/pro/csv-import'
+import { CsvImport, type CsvImportField, type CsvImportProps } from '@uisatin/pro/csv-import'
+import { SatinMark } from '../demos/csv-import'
 import { candidatesCsv } from '../demos/csv-import-data'
-import { CsvImportHeaderSteps, type CsvImportHeaderStepsProps } from '../prototypes/csv-import'
 
 /**
- * Every state of the CSV import the docs page shows (the header-steps prototype), with the docs'
+ * Every state of the CSV import the docs page shows (Satin Pro's CsvImport), with the docs'
  * candidates, side by side in the same 640 × 600 frame on the dialog's surface, so the steps row
  * and the footer can be compared across them. A file handed in starts on Map columns; states
  * further on press Next, then Import, from here once they are there: no prop exists for them.
@@ -47,7 +47,7 @@ const never = () => new Promise<void>(() => {})
 const atsDown = () => Promise.reject(new Error('The ATS answered 503: try again in a minute.'))
 
 /** `next` presses Next (to Review) once it is there; `press` then presses Import once the rows are checked. */
-type State = { name: string; props: () => Partial<CsvImportHeaderStepsProps>; next?: boolean; press?: boolean }
+type State = { name: string; props: () => Partial<CsvImportProps>; next?: boolean; press?: boolean }
 
 const states: State[] = [
   { name: 'upload', props: () => ({}) },
@@ -124,7 +124,7 @@ function Frame({ state }: { state: State }) {
     <div className="flex flex-col gap-3">
       <span>{state.name}</span>
       <div ref={ref} className="h-[600px] w-[640px] rounded-2xl border border-border-subtle bg-bg-popover">
-        <CsvImportHeaderSteps className="h-full" fields={fields} noun={noun} onImport={() => {}} {...props} />
+        <CsvImport className="h-full" fields={fields} noun={noun} appIcon={<SatinMark />} onImport={() => {}} {...props} />
       </div>
     </div>
   )
