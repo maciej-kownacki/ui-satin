@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ArrowRight, Calendar, Check, Download, Hashtag, List, Mail, Text, WarningCircle } from 'iconoir-react'
+import { ArrowRight, Calendar, Check, Download, Filter, Hashtag, List, Mail, Text, WarningCircle } from 'iconoir-react'
 import { Alert } from '@uisatin/ui/alert'
 import { FileIcon } from '@uisatin/ui/attachment'
 import { Button } from '@uisatin/ui/button'
@@ -53,6 +53,12 @@ export const v6Words = {
   csvV6UploadTitle: (noun: string) => `Import ${noun}`,
   csvV6ReviewTitle: 'Review rows',
   csvV6ReviewText: 'Rows with errors are skipped. The rest are imported.',
+  /** Review's left tile, under the count; `noun` is picked for the count: "Candidates will be imported". */
+  csvV6WillImport: (noun: string) => `${noun.charAt(0).toUpperCase()}${noun.slice(1)} will be imported`,
+  /** Review's right tile, under the count; `noun` is the row noun picked for it: "Rows with errors". */
+  csvV6RowsWithErrors: (noun: string) => `${noun.charAt(0).toUpperCase()}${noun.slice(1)} with errors`,
+  /** Under the tiles when the file is longer than `maxRows`. */
+  csvV6OverLimit: (count: string, noun: string) => `${count} more ${noun} are over the limit and won’t be imported.`,
   csvV6DoneTitle: 'Import complete',
   csvV6NothingTitle: 'Nothing was imported',
   csvV6StoppedTitle: 'Import stopped',
@@ -139,7 +145,8 @@ export function CsvImportHeaderSteps({ onBrowse, dragging, ...props }: CsvImport
       return q('[data-slot="select-trigger"]')
     }
     if (!flow.validation) return null
-    return q('[data-csv-focus="errors"]') ?? q('[data-csv-focus="summary"]')
+    // Review: the tile that says how many rows will be imported.
+    return q('[data-csv-focus="tiles"]')
   })
 
   const go = (next: Step) => {
@@ -759,5 +766,69 @@ function StepBody({ flow, view, words }: { flow: CsvFlow; view: Step; words: V6W
       </div>
     )
   }
-  return <CsvImportPreview fields={flow.fields} mapping={flow.mapping} validation={validation} overLimit={flow.overLimit} />
+  return <ReviewBody flow={flow} words={words} validation={validation} />
+}
+
+/*
+ * Review: the counts as two tiles in one muted block (rows that will be imported, rows with
+ * errors), then CsvImportPreview's table. The errors tile is a toggle button for the preview's
+ * errors-only filter; it replaces the preview's summary line, its errors Alert and its "Show only
+ * errors" checkbox, which are hidden here by their data attributes. With no errors it is plain
+ * muted text. Its own component, so the filter starts off on every visit to Review.
+ */
+function ReviewBody({ flow, words, validation }: { flow: CsvFlow; words: V6Words; validation: NonNullable<CsvFlow['validation']> }) {
+  const { n, noun, thing } = flow
+  const [errorsOnly, setErrorsOnly] = React.useState(false)
+  const errors = validation.rows.length - validation.valid
+  const half = 'flex min-w-0 flex-col gap-0.5 rounded-lg px-4 py-3 text-start'
+  const count = 'text-2xl leading-8 font-semibold tabular-nums'
+  return (
+    <>
+      <div data-slot="csv-import-tiles" className="mb-4 grid shrink-0 grid-cols-2 gap-1 rounded-xl bg-bg-muted p-1 @max-[399px]:grid-cols-1">
+        {/* Focus lands here on entering Review: the count and its label are read as one. */}
+        <div tabIndex={-1} data-csv-focus="tiles" className={cn(focusTargetClass, half)}>
+          <span className={cn(count, 'text-text-default')}>{n(validation.valid)}</span>
+          {/* A space, so the count and its label are read as two words (here and below). */}
+          {' '}
+          <span className="truncate text-sm text-text-default">{words.csvV6WillImport(noun(validation.valid, thing))}</span>
+        </div>
+        {errors > 0 ? (
+          <button
+            type="button"
+            aria-pressed={errorsOnly}
+            onClick={() => setErrorsOnly(!errorsOnly)}
+            className={cn(
+              half,
+              'relative cursor-pointer outline-offset-2 transition-[background-color,box-shadow] duration-(--duration-fast) ease-(--ease-out) focus-visible:outline-2 focus-visible:outline-(--action-focus-ring)',
+              // Pressed: the status red fill with a 1px inset edge of its foreground, as a selected card's edge.
+              errorsOnly ? 'bg-status-red-bg shadow-[inset_0_0_0_var(--border-width-strong)_var(--status-red-fg)]' : 'satin-hover:bg-bg-selected',
+            )}
+          >
+            <span className={cn(count, 'text-status-red-fg')}>{n(errors)}</span>
+            {' '}
+            <span className="truncate text-sm text-text-default">{words.csvV6RowsWithErrors(noun(errors))}</span>
+            {/* Says the tile filters, on the count's centre line; red while the filter is on. */}
+            <Filter aria-hidden className={cn('absolute end-4 top-5 size-4 [stroke-width:1.875]', errorsOnly ? 'text-status-red-fg' : 'text-text-muted')} />
+          </button>
+        ) : (
+          <div className={half}>
+            <span className={cn(count, 'text-text-muted')}>{n(0)}</span>
+            {' '}
+            <span className="truncate text-sm text-text-muted">{words.csvV6RowsWithErrors(noun(0))}</span>
+          </div>
+        )}
+      </div>
+      {flow.overLimit > 0 && <p className="-mt-2 mb-4 text-sm text-text-muted">{words.csvV6OverLimit(n(flow.overLimit), noun(flow.overLimit, thing))}</p>}
+      <CsvImportPreview
+        fields={flow.fields}
+        mapping={flow.mapping}
+        validation={validation}
+        errorsOnly={errorsOnly}
+        onErrorsOnlyChange={setErrorsOnly}
+        // The tiles say the counts and filter the rows: hide the summary line, the errors Alert
+        // and the checkbox.
+        className="[&>[data-csv-focus=errors]]:hidden [&>[data-csv-focus=summary]]:hidden [&>[data-slot=checkbox-field]]:hidden"
+      />
+    </>
+  )
 }
