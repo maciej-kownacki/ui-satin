@@ -2604,7 +2604,7 @@
       "name": "comments-thread",
       "type": "registry:ui",
       "title": "Comments thread",
-      "description": "The Satin Pro Comments thread component.",
+      "description": "A discussion on a record: replies one level deep, @mentions, sending with Retry, delete with Undo, and resolve.",
       "dependencies": [
         "iconoir-react@^7.12.2"
       ],
@@ -2624,6 +2624,7 @@
         "https://uisatin.dev/r/textarea.json",
         "https://uisatin.dev/r/toast.json"
       ],
+      "docs": "Comments thread docs: https://uisatin.dev/components/comments-thread",
       "meta": {
         "version": "0.7.1",
         "edition": "pro"
@@ -4353,6 +4354,21 @@
       "files": [
         {
           "path": "registry/satin/examples/command-pages-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "comments-thread-demo",
+      "type": "registry:example",
+      "title": "Comments thread example",
+      "description": "The shortest use of Comments thread, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/comments-thread.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/comments-thread-demo.tsx",
           "type": "registry:example"
         }
       ]

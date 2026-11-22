@@ -768,6 +768,22 @@ export const a11y: Record<string, A11y> = {
       { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
     ],
   },
+  'comments-thread': {
+    summary:
+      'The threads are a list named "Comments" (`comments` in SatinLabels), replies a nested list under their root. Each comment is an `<article>` with `tabIndex={-1}`, named by its author and full date, "Comment by Marta Nowak, Monday, November 16, 2026 at 9:40 AM"; the visible time is Free\'s RelativeTime, whose short text is hidden from screen readers. Avatars are hidden; the name says who. The ⋯ button is named "Actions for comment by Marta Nowak" and opens a menu with Edit and Delete. The composer\'s field is named "Comment" (a reply\'s "Reply to Jon Park"); Send stays `aria-disabled` while it is blank. Its @ menu is the Prompt bar\'s: focus stays in the field, which has `aria-autocomplete="list"`, `aria-controls` and `aria-activedescendant` while rows show, and a status region counts the suggestions. A comment being sent is `aria-busy`, with a Spinner named "Sending". After a failed send focus moves to Retry, described by "Not sent"; after Discard it goes back to the composer. After Delete focus moves to the next comment, or the composer; the toast with Undo is read out like any toast, and Undo puts focus on the restored comment. A failed edit reopens the field with its error, `aria-invalid`. After Resolve focus goes to Reopen on the resolved bar; Show comments has `aria-expanded` and `aria-controls`; after Reopen focus goes back to Resolve. New comments fade in 4px; reduced motion turns it off. New comments are not announced; when others\' comments arrive live, say so from your own status region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through Reply, the ⋯ buttons, Retry and Discard, Resolve, the composer and Send.' },
+      { keys: ['Ctrl+Enter', '⌘Enter'], action: 'In a composer or the edit field: sends, or saves the edit.' },
+      { keys: ['Enter'], action: 'In a composer: a new line. With the @ menu open: inserts the highlighted person.' },
+      { keys: ['@'], action: 'At the start or after a space: opens the mentions menu; the text typed after it filters it.' },
+      { keys: ['↑', '↓'], action: 'In the @ menu: moves the highlight, wrapping at the ends.' },
+      { keys: ['Tab'], action: 'In the @ menu: inserts the highlighted person.' },
+      { keys: ['Backspace'], action: 'Right after a mention: removes all of it.' },
+      { keys: ['Esc'], action: 'Closes the @ menu first; then closes a reply composer (focus back on Reply) or cancels an edit.' },
+      { keys: ['Enter', 'Space'], action: 'On the ⋯ button: opens the menu; ↑ and ↓ move through Edit and Delete, Enter picks.' },
+      { keys: ['F8'], action: 'Moves to the toast after a delete, to reach Undo (the Toaster\'s hotkey).' },
+    ],
+  },
   'people-picker': {
     summary:
       'Combobox\'s roles, with people in them: each option is named by the person and their role, "Marta Nowak, Hiring manager" (a hidden comma joins them; the avatar is hidden). Recent and every titled group are `group`s named by their headers. While a search runs the last results stay, narrowed by the query; one that takes longer than 300 ms marks the list `aria-busy`. "Searching…", "No one matches" or a failed search are read out from a `status` region. A disabled person is `aria-disabled`. Each chip has a "Remove <name>" button; after a removal focus moves to the chip that takes its place, or to the field. The "+N" chip is a button named "Show N more"; it shows the rest and moves focus to the first of them.',

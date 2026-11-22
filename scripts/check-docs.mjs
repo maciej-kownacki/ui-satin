@@ -21,7 +21,6 @@ import { allNav as nav, pagesOf, unreleased } from '../satin-lab/src/nav.ts'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 // Entries (Free's or Pro's) that are parts of other components, documented on their pages.
 const INTERNAL = {
-  'comments-thread': 'TEMPORARY: Satin Pro Comments thread, its docs page comes in the next step (remove this line then)',
   'banner-mesh': 'the Banner and Announcement bar glows',
   chart: 'ChartCard, the frame every chart page uses',
   floating: 'positioning shared by the overlays',

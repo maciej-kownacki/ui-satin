@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every Comments thread state. Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { CommentsThreadGrid } from '../../states/CommentsThreadGrid'
+---
+
+<Layout title="Comments thread states · Satin" description="Every Comments thread state: empty, sending, failed with Retry, resolved and disabled.">
+  <main class="min-h-dvh bg-bg-card">
+    <CommentsThreadGrid client:load />
+  </main>
+</Layout>
