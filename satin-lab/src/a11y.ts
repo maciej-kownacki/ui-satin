@@ -136,6 +136,15 @@ export const a11y: Record<string, A11y> = {
       'The card is `role="figure"` labelled by its title. The ring is hidden. The legend is a list named after the title; each pill is a tab stop named "label: value, share%". The middle of the ring is a polite live region, so moving to a part reads its value and share.',
     keyboard: [{ keys: ['Tab', 'Shift+Tab'], action: 'Moves from part to part and shows its value in the middle.' }],
   },
+  'stat-card': {
+    summary:
+      'Without `href` the card is a `group` named in words: "Signups, 1,284, up 12% vs last week" (`statUp`, `statDown`, `statFlat`), so the change is heard with the value and colour is never the only signal; on screen the arrow carries the direction. Only a metric where down is good (`good: "down"`) adds ", good" or ", bad": for the rest up is good and the words already say it. That is deliberate, so the common case stays short. A `null` value is read "No data", a loading card "Revenue, Loading" with `aria-busy`, a failed one with its reason; Retry is a button in the tab order. The visible label, value and Badge are hidden, since the name already says them. The sparkline\'s drawing is hidden; a sentence sums it up ("Upward trend over 12 points, from 980 to 1,284", `statTrend`). Without `href` the sparkline is one tab stop, a `group` named "Signups, 12 points" (`chartPoints`) and described by that sentence; focusing it picks the last point, and a polite live region reads the picked point as "Week 12: 1,284". With `href` the card is one link with the same name, described by the sentence; the sparkline has no tab stop or tooltip, and the focus ring is drawn around the card. A disabled card\'s link has no `href` and `aria-disabled`. The count-up is hidden from screen readers, which get the final value at once.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Without `href`: focuses the sparkline and picks its last point, then Retry on a failed card. With `href`: focuses the card\'s link.' },
+      { keys: ['←', '→'], action: 'On the sparkline: picks the previous or next point; stops at the ends. The drawing runs left to right in right-to-left pages too, so → is always the next point.' },
+      { keys: ['Enter'], action: 'On the card\'s link: opens it. On Retry: runs `onRetry`.' },
+    ],
+  },
   checkbox: {
     summary:
       'A Radix checkbox: a `button` with `role="checkbox"` and `aria-checked` (`mixed` when indeterminate). `label` names it with `aria-labelledby` and `description` adds `aria-describedby`; without a label, pass `aria-label`. Inside a `form` it also renders a hidden input, so the value submits.',

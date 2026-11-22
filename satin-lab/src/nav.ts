@@ -190,6 +190,13 @@ export const allNav: NavGroup[] = [
           { id: 'line-chart', title: 'Line chart', href: '/components/line-chart', description: 'One metric over a period as a smooth line, with the value of the hovered point.' },
           { id: 'area-chart', title: 'Area chart', href: '/components/area-chart', description: 'The line chart with its area filled down to the baseline in a fading gradient.' },
           { id: 'donut-chart', title: 'Donut chart', href: '/components/donut-chart', description: 'How a total splits into a few parts, as a ring with the sum in the middle.' },
+          {
+            id: 'stat-card',
+            title: 'Stat card',
+            href: '/components/stat-card',
+            description: 'A dashboard tile: a metric, its change against the previous period in words and colour, and a sparkline.',
+            edition: 'pro',
+          },
         ],
       },
       { id: 'checkbox', title: 'Checkbox', href: '/components/checkbox', description: 'Turns an option on or off as part of a form.' },
@@ -369,7 +376,7 @@ export const allNav: NavGroup[] = [
  * preview builds show them. The one list to edit when a page is done.
  */
 export const unreleased = new Set<string>([
-  'command-pages', 'scheduler', 'stepper', 'review-queue',
+  'command-pages', 'scheduler', 'stepper', 'review-queue', 'stat-card',
 ])
 
 /**

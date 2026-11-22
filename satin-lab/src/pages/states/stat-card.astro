@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every Stat card state at the four-up row's 240px, rows of four to compare heights. Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { StatCardGrid } from '../../states/StatCardGrid'
+---
+
+<Layout title="Stat card states · Satin" description="Every state of Stat card, side by side at 240px.">
+  <main class="min-h-dvh bg-bg-card">
+    <StatCardGrid client:load />
+  </main>
+</Layout>

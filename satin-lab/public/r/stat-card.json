@@ -1,0 +1,188 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "stat-card",
+  "type": "registry:ui",
+  "title": "Stat card",
+  "description": "A dashboard tile: a metric, its change against the previous period in words and colour, and a sparkline.",
+  "dependencies": [
+    "iconoir-react@^7.12.2"
+  ],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/satin-pro-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/badge.json",
+    "https://uisatin.dev/r/button.json",
+    "https://uisatin.dev/r/chart.json",
+    "https://uisatin.dev/r/labels.json",
+    "https://uisatin.dev/r/line-chart.json",
+    "https://uisatin.dev/r/rolling-number.json",
+    "https://uisatin.dev/r/skeleton.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/stat-card.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { ArrowDown, ArrowUp, Minus, WarningCircle } from 'iconoir-react'\nimport { Badge } from '@/registry/satin/ui/badge'\nimport { Button } from '@/registry/satin/ui/button'\nimport { ChartTooltip } from '@/registry/satin/ui/chart'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\nimport { smoothPath } from '@/registry/satin/ui/line-chart'\nimport { cn } from '@/lib/utils'\nimport { Skeleton } from '@/registry/satin/ui/skeleton'\nimport { useReducedMotion } from '@/registry/satin/ui/rolling-number'\n\n/**\n * StatCard: the first tile on a dashboard, 1:1 with the uiKit `stat` card (4093:4955). A label,\n * a value, its change against the previous period and a sparkline, in a 4-up row at 240px.\n *\n * - The shell is the chart card's (bg/card, a border-default edge, radius-2xl, 16px in, 12\n *   between rows), drawn here: Card and ChartCard carry a title row the tile has no room for.\n * - Row one: the label in text/muted, cut with an ellipsis, and the change's period (\"vs last\n *   week\") at the row's end, never cut. Row two: the value (text/xl semibold, tabular) and the\n *   change as a small Badge with an arrow: green when it moved the way that is good, red when\n *   not, grey when flat. `good: 'down'` is for CAC, refund rate, time to hire. Row three: the\n *   sparkline, a 2px chart/3 line over a chart/3 gradient (28% to nothing), 48px tall.\n * - The accessible name says it all in words: \"Signups, 1,284, up 12% vs last week\"; for a\n *   metric where down is good it adds \", good\" or \", bad\". Colour is never the only signal: the\n *   arrow and the words carry the direction.\n * - Without `href` the card is a `group` and the sparkline one tab stop: arrow keys move along\n *   its points, the dot and a tooltip show the value, a polite live region reads it. With\n *   `href` the whole card is one link (focus ring on the card) and the sparkline only a picture\n *   with its text summary.\n * - `loading` shows Skeletons in boxes of the loaded rows' heights, so a row of tiles never\n *   jumps; the sparkline's row is kept when `sparkline` is given, even empty. `error` keeps the\n *   label and puts the reason (and Retry, with `onRetry`) where the value and sparkline were,\n *   at the same height.\n * - Motion: a number counts up once, the first time it appears (250 ms, ease-out); the\n *   sparkline fades in when it is drawn. Neither under reduced motion. No motion on arrow keys.\n *\n * Parts: `StatCardChange` (the badge with its words) and `StatCardSparkline`, for tiles of your\n * own. Other props, `ref` included, go to the card's root `div`.\n */\n\n/** The words the Stat card says on its own. They join SatinLabels, so the app translates them there. */\nexport const statCardLabels = {\n  /** The change in words: \"up 12% vs last week\". `value` is the change as shown, `period` as given. */\n  statUp: (value: string, period: string) => `up ${value} ${period}`.trim(),\n  statDown: (value: string, period: string) => `down ${value} ${period}`.trim(),\n  /** A flat change: \"unchanged vs last week\". */\n  statFlat: (_value: string, period: string) => `unchanged ${period}`.trim(),\n  /** Added after the change when down is the good way (`good: 'down'`). */\n  statGood: 'good',\n  statBad: 'bad',\n  /** Read for a `null` value, shown as \"—\". */\n  statNoValue: 'No data',\n  /** Read after the label while the card loads. */\n  statLoading: 'Loading',\n  /** Shown for `error={true}`. */\n  statError: \"Couldn't load\",\n  statRetry: 'Retry',\n  /**\n   * The sparkline's summary: \"Upward trend over 12 points, from 980 to 1,284\". `from` and `to`\n   * are the first and last values as shown.\n   */\n  statTrend: (trend: 'up' | 'down' | 'flat', count: number, from: string, to: string) =>\n    `${trend === 'up' ? 'Upward' : trend === 'down' ? 'Downward' : 'Flat'} trend over ${count} points, from ${from} to ${to}`,\n  /** The sparkline's name when it has no `title`: \"12 points\". */\n  statPoints: (count: number) => `${count} ${count === 1 ? 'point' : 'points'}`,\n  /** A point read out when the sparkline has no `labels`: \"3 of 12\". */\n  statPoint: (index: number, count: number) => `${index} of ${count}`,\n}\n\ntype StatCardLabels = typeof statCardLabels\ndeclare module '@/components/ui/labels' {\n  interface SatinLabelSet extends StatCardLabels {}\n}\n\nconst useLabels = () => {\n  const labels = useSatinLabels()\n  return React.useMemo(() => ({ ...statCardLabels, ...labels }), [labels])\n}\n\n/* ---------- change ---------- */\n\nexport type StatDirection = 'up' | 'down' | 'flat'\n\nexport type StatChange = {\n  /** The change in percent, 12 for \"12%\". Shown without a sign: the arrow carries it. */\n  value: number\n  /** \"vs last week\", already in the app's words. */\n  period: string\n  direction: StatDirection\n  /** Which way is desirable. Default 'up'. CAC, refund rate and time to hire pass 'down'. */\n  good?: 'up' | 'down'\n  /** Writes the change in another unit (\"3 pp\"). Default: the number in `dateLocale` and \"%\". */\n  format?: (value: number) => string\n}\n\ntype Labels = ReturnType<typeof useLabels>\n\nconst percent = (labels: Labels, change: Pick<StatChange, 'value' | 'format'>) =>\n  change.format\n    ? change.format(Math.abs(change.value))\n    : `${new Intl.NumberFormat(labels.dateLocale, { maximumFractionDigits: 1 }).format(Math.abs(change.value))}%`\n\nconst toneOf = (change: Pick<StatChange, 'direction' | 'good'>) =>\n  change.direction === 'flat' ? 'neutral' : change.direction === (change.good ?? 'up') ? 'green' : 'red'\n\n/** The change in words: \"up 12% vs last week\", plus \", good\" / \", bad\" when down is good. */\nfunction changeWords(labels: Labels, change: Omit<StatChange, 'period'> & { period?: string }) {\n  const value = percent(labels, change)\n  const period = change.period ?? ''\n  const words =\n    change.direction === 'up' ? labels.statUp(value, period) : change.direction === 'down' ? labels.statDown(value, period) : labels.statFlat(value, period)\n  if (change.good !== 'down' || change.direction === 'flat') return words\n  return `${words}, ${change.direction === 'down' ? labels.statGood : labels.statBad}`\n}\n\nexport interface StatCardChangeProps extends Omit<React.ComponentProps<'span'>, 'children'>, Omit<StatChange, 'period'> {\n  /** Read with the change (\"up 12% vs last week\"); not shown. The card shows it in its label row. */\n  period?: string\n}\n\n/**\n * The change as a small Badge: an arrow (a dash when flat) and the value, green when it moved\n * the good way, red when not, grey when flat (`data-tone`). Screen readers get it in words.\n * Other props, `ref` included, go to its `span`.\n */\nexport function StatCardChange({ value, direction, good, format, period, className, ...props }: StatCardChangeProps) {\n  const labels = useLabels()\n  const Icon = direction === 'up' ? ArrowUp : direction === 'down' ? ArrowDown : Minus\n  return (\n    <span data-slot=\"stat-card-change\" className={cn('sa:inline-flex sa:shrink-0', className)} {...props}>\n      <Badge\n        aria-hidden\n        tone={toneOf({ direction, good })}\n        size=\"sm\"\n        className=\"sa:[box-shadow:inset_0_0_0_var(--sa-border-width-default)_var(--sa-tone-border)]\"\n      >\n        <Icon />\n        {percent(labels, { value, format })}\n      </Badge>\n      <span className=\"sa:sr-only\">{changeWords(labels, { value, direction, good, format, period })}</span>\n    </span>\n  )\n}\n\n/* ---------- sparkline ---------- */\n\nconst SPARK = 48\n// Room above the highest point and under the lowest, so the 2px stroke isn't cut.\nconst SPARK_TOP = 4\nconst SPARK_BOTTOM = 1\n\nexport interface StatCardSparklineProps extends Omit<React.ComponentProps<'div'>, 'title' | 'children'> {\n  /** The values, oldest first. Fewer than two draw nothing. */\n  data: number[]\n  /** The tooltip's title per point (\"Week 3\"). Without it the tooltip shows the value alone. */\n  labels?: string[]\n  /** Writes a value in the tooltip, the live region and the summary. Default: `dateLocale`. */\n  format?: (value: number) => string\n  /** Index of the point shown as picked (state sheets, docs). */\n  highlight?: number\n  /** A tab stop whose arrow keys move along the points, with a tooltip on hover. Default true. */\n  interactive?: boolean\n  /** Names the points' group: \"Signups, 12 points\". */\n  title?: string\n  /** The id of its text summary, for an element to be described by it (a card's link). */\n  summaryId?: string\n}\n\n/**\n * The sparkline alone: the line and its gradient, no axes. The drawing is hidden; a sentence\n * sums it up (\"Upward trend over 12 points, from 980 to 1,284\"). Interactive, it is one tab stop:\n * focus picks the last point, ← → move along them, a pointer picks the nearest. The drawing keeps\n * time running left to right in right-to-left pages too, as the Line chart does, so → is always\n * the next point. Other props, `ref` included, go to its `div`.\n */\nexport function StatCardSparkline({\n  data,\n  labels: pointLabels,\n  format,\n  highlight,\n  interactive = true,\n  title,\n  summaryId,\n  className,\n  onPointerMove,\n  onPointerLeave,\n  onFocus,\n  onBlur,\n  onKeyDown,\n  ...props\n}: StatCardSparklineProps) {\n  const labels = useLabels()\n  const reduced = useReducedMotion()\n  const gradientId = React.useId()\n  const ownSummaryId = React.useId()\n  const descId = summaryId ?? ownSummaryId\n  const [hovered, setHovered] = React.useState<number | null>(null)\n  const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)\n  const n = data.length\n\n  // A new set of points draws afresh, with the fade.\n  const signature = data.join('|')\n  const [redraw, setRedraw] = React.useState({ signature, n: 0 })\n  if (redraw.signature !== signature) setRedraw({ signature, n: redraw.n + 1 })\n\n  const fmt = React.useMemo(() => format ?? ((v: number) => new Intl.NumberFormat(labels.dateLocale).format(v)), [format, labels.dateLocale])\n\n  if (n < 2) return null\n\n  const active = (interactive && hovered != null && hovered < n ? hovered : null) ?? (highlight != null && highlight < n ? highlight : null)\n  const min = Math.min(...data)\n  const max = Math.max(...data)\n  const x = (i: number) => (i / (n - 1)) * 100\n  const y = (v: number) => (max === min ? SPARK / 2 : SPARK_TOP + (1 - (v - min) / (max - min)) * (SPARK - SPARK_TOP - SPARK_BOTTOM))\n  const line = smoothPath(data.map((v, i) => [x(i), y(v)]))\n  const first = data[0]\n  const last = data[n - 1]\n  const trend = last > first ? 'up' : last < first ? 'down' : 'flat'\n  const pointName = (i: number) => pointLabels?.[i] ?? labels.statPoint(i + 1, n)\n\n  const pick = (e: React.PointerEvent<HTMLDivElement>) => {\n    const r = e.currentTarget.getBoundingClientRect()\n    if (!r.width) return\n    const f = (e.clientX - r.left) / r.width\n    setHovered(Math.max(0, Math.min(n - 1, Math.round(f * (n - 1)))))\n  }\n\n  return (\n    <div\n      data-slot=\"stat-card-sparkline\"\n      role={interactive ? 'group' : undefined}\n      aria-label={interactive ? (title ? labels.chartPoints(title, n) : labels.statPoints(n)) : undefined}\n      aria-describedby={interactive ? descId : undefined}\n      tabIndex={interactive ? 0 : undefined}\n      className={cn(\n        'sa:relative sa:h-12 sa:w-full sa:shrink-0 sa:rounded-md',\n        interactive && 'sa:outline-none sa:focus-visible:[box-shadow:0_0_0_2px_var(--sa-action-focus-ring)]',\n        className,\n      )}\n      onPointerMove={(e) => {\n        onPointerMove?.(e)\n        if (interactive) pick(e)\n      }}\n      onPointerLeave={(e) => {\n        onPointerLeave?.(e)\n        setHovered(null)\n      }}\n      onFocus={(e) => {\n        onFocus?.(e)\n        if (interactive && e.target === e.currentTarget) setHovered((h) => h ?? n - 1)\n      }}\n      onBlur={(e) => {\n        onBlur?.(e)\n        setHovered(null)\n      }}\n      onKeyDown={(e) => {\n        onKeyDown?.(e)\n        if (!interactive || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return\n        e.preventDefault()\n        // The drawing isn't mirrored right to left, so → is the next point in either direction.\n        setHovered((h) => Math.max(0, Math.min(n - 1, (h ?? n - 1) + (e.key === 'ArrowRight' ? 1 : -1))))\n      }}\n      {...props}\n    >\n      <svg\n        key={redraw.n}\n        aria-hidden\n        viewBox={`0 0 100 ${SPARK}`}\n        preserveAspectRatio=\"none\"\n        className={cn('sa:absolute sa:inset-0 sa:size-full sa:overflow-visible', !reduced && 'sa:animate-[satin-fade-in_var(--sa-duration-base)_var(--sa-ease-out)]')}\n      >\n        <defs>\n          <linearGradient id={gradientId} x1=\"0\" x2=\"0\" y1=\"0\" y2=\"1\">\n            <stop offset=\"0\" stopColor=\"var(--sa-chart-3)\" stopOpacity=\"0.28\" />\n            <stop offset=\"1\" stopColor=\"var(--sa-chart-3)\" stopOpacity=\"0\" />\n          </linearGradient>\n        </defs>\n        <path d={`${line} L 100 ${SPARK} L 0 ${SPARK} Z`} fill={`url(#${gradientId})`} />\n        <path\n          d={line}\n          fill=\"none\"\n          stroke=\"var(--sa-chart-3)\"\n          strokeWidth={2}\n          strokeLinecap=\"round\"\n          strokeLinejoin=\"round\"\n          vectorEffect=\"non-scaling-stroke\"\n        />\n      </svg>\n      {active != null && (\n        <>\n          <span\n            ref={setAnchor}\n            aria-hidden\n            data-slot=\"stat-card-sparkline-dot\"\n            className=\"sa:pointer-events-none sa:absolute sa:size-2 sa:-translate-1/2 sa:rounded-full sa:border-2 sa:border-chart-3 sa:bg-bg-card\"\n            style={{ left: `${x(active)}%`, top: y(data[active]) }}\n          />\n          <ChartTooltip\n            anchor={anchor}\n            sideOffset={6}\n            // Without a title the value stands alone: the empty title span takes no room.\n            className=\"sa:[&_span:empty]:hidden\"\n            label={pointLabels?.[active] ?? ''}\n            value={fmt(data[active])}\n          />\n        </>\n      )}\n      {interactive && (\n        <span className=\"sa:sr-only\" aria-live=\"polite\">\n          {active != null ? `${pointName(active)}: ${fmt(data[active])}` : ''}\n        </span>\n      )}\n      <span id={descId} className=\"sa:sr-only\">\n        {labels.statTrend(trend, n, fmt(first), fmt(last))}\n      </span>\n    </div>\n  )\n}\n\n/* ---------- count-up ---------- */\n\nconst COUNT_MS = 250\nconst REDUCED = '(prefers-reduced-motion: reduce)'\n// --sa-ease-out (cubic-bezier(0.23, 1, 0.32, 1)) is close to an ease-out quint.\nconst easeOut = (t: number) => 1 - (1 - t) ** 5\n\n/**\n * The number to show: the first number that appears counts up from 0 over 250 ms; after that\n * (and with `enabled` off or reduced motion) it is the value itself. The server and the first\n * client render show the value, so nothing differs on hydration.\n */\nfunction useCountUp(target: number | null, enabled: boolean) {\n  const [shown, setShown] = React.useState(target)\n  const counted = React.useRef(false)\n  React.useLayoutEffect(() => {\n    if (target == null) return\n    const reduced = typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia(REDUCED).matches\n    if (counted.current || !enabled || reduced) {\n      counted.current = true\n      setShown(target)\n      return\n    }\n    counted.current = true\n    const start = performance.now()\n    let frame = 0\n    const tick = (now: number) => {\n      const t = Math.min(1, (now - start) / COUNT_MS)\n      setShown(t === 1 ? target : target * easeOut(t))\n      if (t < 1) frame = requestAnimationFrame(tick)\n    }\n    setShown(0)\n    frame = requestAnimationFrame(tick)\n    return () => {\n      cancelAnimationFrame(frame)\n      setShown(target)\n    }\n  }, [target, enabled])\n  return target == null ? null : (shown ?? target)\n}\n\nconst decimals = (v: number) => Math.min(4, (String(v).split('.')[1] ?? '').length)\n\n/* ---------- card ---------- */\n\nexport interface StatCardProps extends Omit<React.ComponentProps<'div'>, 'children'> {\n  /** What is measured: \"Signups\". */\n  label: React.ReactNode\n  /** The value. A number goes through `format`; a string shows as given; `null` shows \"—\" (read \"No data\"). */\n  value: number | string | null\n  /** Writes a number value, and the sparkline's points (\"38 €\"). Default: the number in `dateLocale`. */\n  format?: (value: number) => string\n  /** The change against the previous period. Left out or `null` (no previous period): no badge, no period. */\n  change?: StatChange | null\n  /** The values for the sparkline, oldest first. Fewer than two draw nothing. */\n  sparkline?: number[]\n  /** The tooltip's title per sparkline point (\"Week 3\"). */\n  sparklineLabels?: string[]\n  /** Makes the whole card one link. */\n  href?: string\n  /** Skeletons at the loaded card's height. Give `sparkline` (even `[]`) to keep its row. */\n  loading?: boolean\n  /** Shows the reason in place of the value and sparkline; `true` says \"Couldn't load\". */\n  error?: React.ReactNode | boolean\n  /** Adds Retry to the error. */\n  onRetry?: () => void\n  /** Fades the content; a link loses its `href`, the sparkline its tab stop. */\n  disabled?: boolean\n  /** Counts a number up the first time it appears. Default true; never under reduced motion. */\n  countUp?: boolean\n}\n\n/**\n * The stat tile. See the block comment above for the anatomy, states and keys. Other props,\n * `ref` included, go to the root `div`.\n */\nexport function StatCard({\n  label,\n  value,\n  format,\n  change,\n  sparkline,\n  sparklineLabels,\n  href,\n  loading = false,\n  error,\n  onRetry,\n  disabled = false,\n  countUp = true,\n  className,\n  ...props\n}: StatCardProps) {\n  const labels = useLabels()\n  const nameId = React.useId()\n  const summaryId = React.useId()\n  const failed = !loading && error != null && error !== false\n  const ready = !loading && !failed\n\n  const numeric = ready && typeof value === 'number' ? value : null\n  const counting = useCountUp(numeric, countUp)\n  const fmt = React.useCallback(\n    (v: number) => (format ? format(v) : new Intl.NumberFormat(labels.dateLocale).format(v)),\n    [format, labels.dateLocale],\n  )\n  const finalText = value == null ? null : typeof value === 'number' ? fmt(value) : value\n  const shownText =\n    value == null ? '—' : typeof value === 'number' ? fmt(counting == null ? value : Number(counting.toFixed(decimals(value)))) : value\n\n  const spark = sparkline && sparkline.length >= 2 ? sparkline : null\n  const link = ready && href != null\n  const title = typeof label === 'string' ? label : undefined\n\n  const name = loading ? (\n    <>\n      {label}, {labels.statLoading}\n    </>\n  ) : failed ? (\n    <>\n      {label}, {error === true ? labels.statError : error}\n    </>\n  ) : (\n    <>\n      {label}, {finalText ?? labels.statNoValue}\n      {change && `, ${changeWords(labels, change)}`}\n    </>\n  )\n\n  return (\n    <div\n      data-slot=\"stat-card\"\n      data-state={loading ? 'loading' : failed ? 'error' : undefined}\n      data-disabled={disabled || undefined}\n      role={link ? undefined : 'group'}\n      aria-labelledby={link ? undefined : nameId}\n      aria-busy={loading || undefined}\n      aria-disabled={!link && disabled ? true : undefined}\n      className={cn(\n        'sa:@container sa:relative sa:flex sa:min-w-0 sa:flex-col sa:gap-3 sa:overflow-hidden sa:rounded-2xl sa:border sa:border-border-default sa:bg-bg-card sa:p-4',\n        disabled && 'sa:*:opacity-50',\n        link &&\n          !disabled &&\n          'sa:transition-colors sa:duration-(--sa-duration-fast) sa:ease-(--sa-ease-out) sa:has-[a:hover]:bg-bg-hover sa:has-[a:focus-visible]:outline-2 sa:has-[a:focus-visible]:outline-offset-2 sa:has-[a:focus-visible]:outline-action-focus-ring sa:has-[a:focus-visible]:outline-solid',\n        className,\n      )}\n      {...props}\n    >\n      {!link && (\n        <span id={nameId} className=\"sa:sr-only\">\n          {name}\n        </span>\n      )}\n\n      {loading ? (\n        <>\n          <div aria-hidden className=\"sa:flex sa:h-5 sa:items-center\">\n            <Skeleton animated width={96} />\n          </div>\n          <div aria-hidden className=\"sa:flex sa:h-7.5 sa:items-center\">\n            <Skeleton animated width={140} height={28} />\n          </div>\n          {sparkline !== undefined && <Skeleton animated shape=\"rect\" className=\"sa:h-12 sa:w-full sa:rounded-md\" />}\n        </>\n      ) : (\n        <>\n          <div aria-hidden className=\"sa:flex sa:h-5 sa:min-w-0 sa:items-center sa:gap-2\">\n            <p className=\"sa:min-w-0 sa:flex-1 sa:truncate sa:text-sm sa:leading-(--sa-text-sm--line-height) sa:text-text-muted\">{label}</p>\n            {ready && change && (\n              <span className=\"sa:shrink-0 sa:text-sm sa:leading-(--sa-text-sm--line-height) sa:whitespace-nowrap sa:text-text-muted\">{change.period}</span>\n            )}\n          </div>\n          {failed ? (\n            <div className={cn('sa:flex sa:flex-wrap sa:content-start sa:items-center sa:gap-2', sparkline !== undefined ? 'sa:min-h-[90px]' : 'sa:min-h-7.5')}>\n              <p aria-hidden className=\"sa:flex sa:min-h-7.5 sa:min-w-0 sa:items-center sa:gap-1.5 sa:text-sm sa:leading-(--sa-text-sm--line-height) sa:text-text-muted\">\n                <WarningCircle className=\"sa:size-icon-size-sm sa:shrink-0\" />\n                <span className=\"sa:min-w-0\">{error === true ? labels.statError : error}</span>\n              </p>\n              {onRetry && (\n                <Button size=\"xs\" variant=\"secondary\" disabled={disabled} onClick={onRetry}>\n                  {labels.statRetry}\n                </Button>\n              )}\n            </div>\n          ) : (\n            <>\n              <div aria-hidden className=\"sa:flex sa:h-7.5 sa:min-w-0 sa:items-center sa:gap-2\">\n                <span\n                  data-slot=\"stat-card-value\"\n                  className={cn(\n                    'sa:shrink-0 sa:text-xl sa:leading-(--sa-text-xl--line-height) sa:font-semibold sa:whitespace-nowrap sa:tabular-nums',\n                    value == null ? 'sa:text-text-muted' : 'sa:text-text-default',\n                  )}\n                >\n                  {shownText}\n                </span>\n                {change && <StatCardChange value={change.value} direction={change.direction} good={change.good} format={change.format} />}\n              </div>\n              {spark && (\n                <StatCardSparkline\n                  data={spark}\n                  labels={sparklineLabels}\n                  format={format}\n                  title={title}\n                  interactive={!link && !disabled}\n                  summaryId={summaryId}\n                  aria-hidden={link || undefined}\n                  className={link ? 'sa:pointer-events-none' : undefined}\n                />\n              )}\n            </>\n          )}\n        </>\n      )}\n\n      {link && (\n        <a\n          href={disabled ? undefined : href}\n          role={disabled ? 'link' : undefined}\n          aria-disabled={disabled || undefined}\n          aria-describedby={spark ? summaryId : undefined}\n          className=\"sa:absolute sa:inset-0 sa:rounded-2xl sa:outline-none\"\n        >\n          <span className=\"sa:sr-only\">{name}</span>\n        </a>\n      )}\n    </div>\n  )\n}\n"
+    }
+  ],
+  "docs": "Stat card docs: https://uisatin.dev/components/stat-card",
+  "meta": {
+    "version": "0.7.1",
+    "edition": "pro",
+    "props": {
+      "StatCardChange": {
+        "description": "The change as a small Badge: an arrow (a dash when flat) and the value, green when it moved the good way, red when not, grey when flat (`data-tone`). Screen readers get it in words. Other props, `ref` included, go to its `span`.",
+        "type": "StatCardChangeProps",
+        "extends": [
+          "Omit<React.ComponentProps<'span'>, 'children'>",
+          "Omit<StatChange, 'period'>"
+        ],
+        "props": [
+          {
+            "name": "period",
+            "type": "string",
+            "required": false,
+            "description": "Read with the change (\"up 12% vs last week\"); not shown. The card shows it in its label row."
+          }
+        ]
+      },
+      "StatCardSparkline": {
+        "description": "The sparkline alone: the line and its gradient, no axes. The drawing is hidden; a sentence sums it up (\"Upward trend over 12 points, from 980 to 1,284\"). Interactive, it is one tab stop: focus picks the last point, ← → move along them, a pointer picks the nearest. The drawing keeps time running left to right in right-to-left pages too, as the Line chart does, so → is always the next point. Other props, `ref` included, go to its `div`.",
+        "type": "StatCardSparklineProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'title' | 'children'>"
+        ],
+        "props": [
+          {
+            "name": "data",
+            "type": "number[]",
+            "required": true,
+            "description": "The values, oldest first. Fewer than two draw nothing."
+          },
+          {
+            "name": "labels",
+            "type": "string[]",
+            "required": false,
+            "description": "The tooltip's title per point (\"Week 3\"). Without it the tooltip shows the value alone."
+          },
+          {
+            "name": "format",
+            "type": "(value: number) => string",
+            "required": false,
+            "description": "Writes a value in the tooltip, the live region and the summary. Default: `dateLocale`."
+          },
+          {
+            "name": "highlight",
+            "type": "number",
+            "required": false,
+            "description": "Index of the point shown as picked (state sheets, docs)."
+          },
+          {
+            "name": "interactive",
+            "type": "boolean",
+            "required": false,
+            "default": "true",
+            "description": "A tab stop whose arrow keys move along the points, with a tooltip on hover. Default true."
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "required": false,
+            "description": "Names the points' group: \"Signups, 12 points\"."
+          },
+          {
+            "name": "summaryId",
+            "type": "string",
+            "required": false,
+            "description": "The id of its text summary, for an element to be described by it (a card's link)."
+          }
+        ]
+      },
+      "StatCard": {
+        "description": "The stat tile. See the block comment above for the anatomy, states and keys. Other props, `ref` included, go to the root `div`.",
+        "type": "StatCardProps",
+        "extends": [
+          "Omit<React.ComponentProps<'div'>, 'children'>"
+        ],
+        "props": [
+          {
+            "name": "label",
+            "type": "React.ReactNode",
+            "required": true,
+            "description": "What is measured: \"Signups\"."
+          },
+          {
+            "name": "value",
+            "type": "number | string | null",
+            "required": true,
+            "description": "The value. A number goes through `format`; a string shows as given; `null` shows \"—\" (read \"No data\")."
+          },
+          {
+            "name": "format",
+            "type": "(value: number) => string",
+            "required": false,
+            "description": "Writes a number value, and the sparkline's points (\"38 €\"). Default: the number in `dateLocale`."
+          },
+          {
+            "name": "change",
+            "type": "StatChange | null",
+            "required": false,
+            "description": "The change against the previous period. Left out or `null` (no previous period): no badge, no period."
+          },
+          {
+            "name": "sparkline",
+            "type": "number[]",
+            "required": false,
+            "description": "The values for the sparkline, oldest first. Fewer than two draw nothing."
+          },
+          {
+            "name": "sparklineLabels",
+            "type": "string[]",
+            "required": false,
+            "description": "The tooltip's title per sparkline point (\"Week 3\")."
+          },
+          {
+            "name": "href",
+            "type": "string",
+            "required": false,
+            "description": "Makes the whole card one link."
+          },
+          {
+            "name": "loading",
+            "type": "boolean",
+            "required": false,
+            "default": "false",
+            "description": "Skeletons at the loaded card's height. Give `sparkline` (even `[]`) to keep its row."
+          },
+          {
+            "name": "error",
+            "type": "React.ReactNode | boolean",
+            "required": false,
+            "description": "Shows the reason in place of the value and sparkline; `true` says \"Couldn't load\"."
+          },
+          {
+            "name": "onRetry",
+            "type": "() => void",
+            "required": false,
+            "description": "Adds Retry to the error."
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false,
+            "default": "false",
+            "description": "Fades the content; a link loses its `href`, the sparkline its tab stop."
+          },
+          {
+            "name": "countUp",
+            "type": "boolean",
+            "required": false,
+            "default": "true",
+            "description": "Counts a number up the first time it appears. Default true; never under reduced motion."
+          }
+        ]
+      }
+    }
+  }
+}

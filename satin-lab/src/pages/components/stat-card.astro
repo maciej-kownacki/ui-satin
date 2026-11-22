@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import StatCardDemo, { options } from '../../demos/stat-card'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="stat-card">
+  <DocSection item={page('stat-card')} api={api['stat-card']}>
+    <StatCardDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

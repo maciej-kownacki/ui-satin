@@ -717,6 +717,25 @@ export const api: Record<string, Api> = {
       { name: 'highlight', type: ['number'] },
     ],
   },
+  'stat-card': {
+    description:
+      'The `StatCard` component (Satin Pro, `@uisatin/pro/stat-card`) is the first tile on a dashboard, small enough for a four-up row at 240px: the label with the change\'s period at the row\'s end, the value with its change as a small Badge, and a 48px sparkline. It is not a Line chart: no period Select, no axes. The shell matches the chart cards (bg/card, border/default, radius-2xl, 16px in). `change` is `{ value, period, direction, good, format }`: `value` is a percent shown without its sign, since the arrow carries it (↑, ↓ or a dash for `"flat"`); the Badge is green when the change went the `good` way (`"up"` by default), red when not, grey when flat. CAC, refund rate and time to hire pass `good: "down"`. `change.format` writes another unit ("0.3 pp"). Leave `change` out (or `null`) when there is no previous period: no Badge, no period. `value` is a number written by `format` (the sparkline\'s points too), a string shown as given, or `null` for no data ("—"). A number counts up from 0 once, the first time it shows (250 ms, also when loading ends); `countUp={false}` and reduced motion show it at once. The sparkline needs two points or more; `sparklineLabels` titles its tooltip ("Week 3"). Without `href` the card is a group and the sparkline a tab stop: hover or the arrow keys pick a point, which shows a dot and the value. With `href` the whole card is one link and the sparkline only a picture. `loading` shows Skeletons at the loaded card\'s height (pass `sparkline`, even `[]`, to keep its row); `error` (`true` or the reason) keeps the label and puts the reason, with Retry when `onRetry` is set, where the value was; `disabled` fades the content and takes the link and the sparkline out of the tab order. The same tile fits Sales (pipeline value, win rate), HR (time to hire, 28 days, where down is good) and Commerce (today\'s revenue; refund rate, where up is bad): pick them from Dashboard above. Parts: `StatCardChange` (the Badge with its words, `period` read, not shown) and `StatCardSparkline` (`data`, `labels`, `format`, `highlight`, `interactive`, `title`). Its words (`statUp`, `statDown`, `statFlat`, `statGood`, `statBad`, `statNoValue`, `statLoading`, `statError`, `statRetry`, `statTrend`…) are translated with SatinLabels; numbers are written in `dateLocale`.',
+    props: [
+      { name: 'label', type: ['ReactNode'] },
+      { name: 'value', type: ['number', 'string', 'null'] },
+      { name: 'format', type: ['(value: number) => string'], default: 'the number in dateLocale' },
+      { name: 'change', type: ['StatChange', 'null'] },
+      { name: 'change.good', type: ['"up"', '"down"'], default: '"up"' },
+      { name: 'sparkline', type: ['number[]'] },
+      { name: 'sparklineLabels', type: ['string[]'] },
+      { name: 'href', type: ['string'] },
+      { name: 'loading', type: ['boolean'], default: 'false' },
+      { name: 'error', type: ['ReactNode', 'boolean'] },
+      { name: 'onRetry', type: ['() => void'] },
+      { name: 'disabled', type: ['boolean'], default: 'false' },
+      { name: 'countUp', type: ['boolean'], default: 'true' },
+    ],
+  },
   'number-input': {
     description: 'The `NumberInput` component is a spinbutton: arrow keys step, Page Up / Down step ten times, Home / End jump to the limits; a typed value is clamped and snapped on Enter or blur.',
     props: [
