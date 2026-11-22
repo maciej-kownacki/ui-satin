@@ -83,6 +83,18 @@
     "limit": "6 kB"
   },
   {
+    "name": "Comments thread (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/comments-thread.js",
+    "import": "{ CommentsThread }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "8 kB"
+  },
+  {
     "name": "Agent presence (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/agent-presence.js",
     "import": "{ AgentPresence, useAgentPresence }",

@@ -2601,6 +2601,41 @@
       ]
     },
     {
+      "name": "comments-thread",
+      "type": "registry:ui",
+      "title": "Comments thread",
+      "description": "The Satin Pro Comments thread component.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/list.json",
+        "https://uisatin.dev/r/prompt-mentions.json",
+        "https://uisatin.dev/r/relative-time.json",
+        "https://uisatin.dev/r/spinner.json",
+        "https://uisatin.dev/r/textarea.json",
+        "https://uisatin.dev/r/toast.json"
+      ],
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/comments-thread.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "csv-import",
       "type": "registry:ui",
       "title": "CSV import",

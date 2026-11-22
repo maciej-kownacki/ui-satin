@@ -2695,6 +2695,288 @@
       ]
     }
   },
+  "comments-thread": {
+    "Comment": {
+      "description": "One comment: an `<article tabIndex={-1}>` named \"Comment by {name}, {full date}\", so focus can be moved to it. The avatar (initials in a tone picked from the author's id), the name in medium 13px, `RelativeTime`, \"(edited)\" in text/muted, then the body in 14/21 text/default with its line breaks. Other props, `ref` included, go to the `article`.",
+      "type": "CommentProps",
+      "extends": [
+        "Omit<React.ComponentProps<'article'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "author",
+          "type": "CommentAuthor",
+          "required": true
+        },
+        {
+          "name": "at",
+          "type": "Date | string",
+          "required": true,
+          "description": "When: a Date or an ISO string. Shown relative today; the full date goes into the article's name."
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": true,
+          "description": "Plain text; line breaks are kept."
+        },
+        {
+          "name": "mentions",
+          "type": "CommentMention[]",
+          "required": false,
+          "description": "Drawn as `Mention` where the body reads \"@\" and the label."
+        },
+        {
+          "name": "edited",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Shows \"(edited)\" after the time."
+        },
+        {
+          "name": "state",
+          "type": "'sending' | 'failed'",
+          "required": false,
+          "description": "`sending`: the body dims and a Spinner says \"Sending\". `failed`: put \"Not sent\" and Retry in `footer`."
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "At the end of the author's line: a `CommentActions`."
+        },
+        {
+          "name": "footer",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Under the body: Reply, or Retry and Discard."
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "In place of the body: an edit `CommentComposer`."
+        },
+        {
+          "name": "animateIn",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Fades in 4px up as it mounts, for a comment that arrives after the thread showed."
+        }
+      ]
+    },
+    "CommentActions": {
+      "description": "The ⋯ menu of a comment: a tertiary icon-only Button that opens a DropdownMenu with Edit and Delete, as far as they're given. Nothing renders without either. Other props, `ref` included, go to the button.",
+      "type": "CommentActionsProps",
+      "extends": [
+        "Omit<React.ComponentProps<'button'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "authorName",
+          "type": "string",
+          "required": true,
+          "description": "The comment's author, for the button's name: \"Actions for comment by Marta Nowak\"."
+        },
+        {
+          "name": "onEdit",
+          "type": "() => void",
+          "required": false,
+          "description": "Adds Edit. It moves focus itself (into the editor); the menu doesn't put it back on the button."
+        },
+        {
+          "name": "onDelete",
+          "type": "() => void",
+          "required": false,
+          "description": "Adds Delete. It moves focus itself; the menu doesn't put it back on the button."
+        }
+      ]
+    },
+    "CommentComposer": {
+      "description": "The field and Send: a Satin Textarea (64px, resizable) with @mentions from `usePromptMentions`, and the button row under it. Ctrl/⌘+Enter sends, Enter alone is a new line, Escape cancels when `onCancel` is given (after the mentions menu, which takes Enter and Escape while open). Send stays `aria-disabled` while the text is blank. Other props, `ref` included, go to the root `div`.",
+      "type": "CommentComposerProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'onSubmit' | 'defaultValue'>"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "type": "PromptValue",
+          "required": false,
+          "description": "The draft, controlled: its text and mentions. The composer doesn't clear a controlled draft on submit."
+        },
+        {
+          "name": "defaultValue",
+          "type": "PromptValue | string",
+          "required": false,
+          "description": "The first draft, uncontrolled. It clears after each submit."
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: PromptValue) => void",
+          "required": false
+        },
+        {
+          "name": "onSubmit",
+          "type": "(body: string, mentions: CommentMention[]) => void",
+          "required": true,
+          "description": "Send (or Save) and Ctrl/⌘+Enter: the text trimmed, and its mentions moved to match. Not called while it's blank."
+        },
+        {
+          "name": "onCancel",
+          "type": "() => void",
+          "required": false,
+          "description": "Adds Cancel, which Escape presses too."
+        },
+        {
+          "name": "submitLabel",
+          "type": "string",
+          "required": false,
+          "description": "The submit button's word. Defaults to Free's `send`."
+        },
+        {
+          "name": "mentions",
+          "type": "CommentsMentions",
+          "required": false,
+          "description": "@mentions: \"@\" opens a menu of the people `search` finds (Free's Prompt bar mentions)."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "The field's name for screen readers. Defaults to \"Comment\"."
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Defaults to \"Write a comment…\"."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false"
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Under the field, in text/destructive; the field is marked invalid."
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Focus the field when it mounts, with the caret at the end."
+        },
+        {
+          "name": "start",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "At the start of the button row, away from Send: the thread puts Resolve here."
+        }
+      ]
+    },
+    "CommentsThread": {
+      "type": "CommentsThreadProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "comments",
+          "type": "CommentItem[]",
+          "required": true,
+          "description": "Every comment, roots and replies, oldest first."
+        },
+        {
+          "name": "currentUser",
+          "type": "CommentAuthor",
+          "required": true,
+          "description": "Who is writing: sends as them, and Edit and Delete show on their own comments."
+        },
+        {
+          "name": "onReply",
+          "type": "(parentId: string | null, body: string, mentions: CommentMention[]) => void | Promise<void>",
+          "required": false,
+          "description": "A new comment (`parentId` null) or a reply to a root. Return a promise to send optimistically: a dimmed row shows until the comment arrives in `comments`, and a rejection leaves it with Retry. Without `onReply` there is no composer."
+        },
+        {
+          "name": "onEdit",
+          "type": "(id: string, body: string, mentions: CommentMention[]) => void | Promise<void>",
+          "required": false,
+          "description": "Adds Edit to your own comments. A rejected promise puts the old text back and reopens the editor."
+        },
+        {
+          "name": "onDelete",
+          "type": "(id: string) => void | Promise<void>",
+          "required": false,
+          "description": "Adds Delete to your own comments (anyone's with `moderator`). Called when the Undo toast closes without Undo, or at once if the thread unmounts or the page is left first. A rejected promise brings the comment back with an error toast."
+        },
+        {
+          "name": "onResolve",
+          "type": "(resolved: boolean) => void | Promise<void>",
+          "required": false,
+          "description": "Resolve and Reopen. A promise is optimistic; a rejection undoes the change."
+        },
+        {
+          "name": "resolved",
+          "type": "boolean",
+          "required": false,
+          "description": "Resolved, controlled: the thread folds to one line."
+        },
+        {
+          "name": "defaultResolved",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Resolved at first, uncontrolled."
+        },
+        {
+          "name": "resolvedBy",
+          "type": "CommentAuthor",
+          "required": false,
+          "description": "Named on the resolved bar (\"Resolved by Marta Nowak\"). Uncontrolled, resolving sets it to `currentUser`."
+        },
+        {
+          "name": "resolvable",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Adds Resolve to the thread and Reopen to the resolved bar."
+        },
+        {
+          "name": "moderator",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Delete on everyone's comments, not only your own. Edit stays on your own."
+        },
+        {
+          "name": "mentions",
+          "type": "CommentsMentions",
+          "required": false,
+          "description": "@mentions in the composers: \"@\" opens a menu of the people `search` finds."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Read only: no composer, menu, Reply, Resolve or Reopen."
+        },
+        {
+          "name": "empty",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "In place of the default empty state (\"No comments yet\")."
+        }
+      ]
+    }
+  },
   "context-menu": {
     "ContextMenu": {
       "type": "ContextMenuProps",

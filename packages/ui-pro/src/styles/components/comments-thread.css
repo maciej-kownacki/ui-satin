@@ -1,0 +1,34 @@
+/*
+ * Comments thread (components/comments-thread.tsx).
+ *
+ * A comment that arrives after the thread first showed (a new one, a reply, one back from Undo)
+ * fades in and settles 4px up over --duration-base on --ease-out. A comment being sent shows its
+ * body in text/muted, which still reads 4.5:1, rather than at a lower opacity. Resolving and
+ * reopening swap the resolved bar and the comments with opacity only, never height
+ * (MOTION.md rule 5). Satin's reduced-motion rule turns all of it off.
+ */
+@keyframes satin-comment-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes satin-comments-swap {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+[data-slot='comment'][data-enter] {
+  animation: satin-comment-enter var(--duration-base) var(--ease-out);
+}
+[data-slot='comments-thread-resolved'][data-enter],
+[data-slot='comments-thread-body'][data-enter] {
+  animation: satin-comments-swap var(--duration-base) var(--ease-out);
+}
+[data-slot='comment-body'] {
+  transition: color var(--duration-fast) var(--ease-out);
+}
+[data-slot='comment'][data-state='sending'] [data-slot='comment-body'] {
+  color: var(--text-muted);
+}
+/* The composer's field is two lines tall (Textarea's own is 96px); it still resizes. */
+[data-slot='comment-composer'] textarea[data-slot='textarea'] {
+  height: 64px;
+}
