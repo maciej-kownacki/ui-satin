@@ -13,7 +13,8 @@ import { Spinner } from './spinner'
  * Solid styles (primary, destructive, inverse) are a border in the style's `border`
  * token, an outer ring of the same width in the current background and a 0 3 6 drop shadow (gone when
  * pressed); no inner glow. Focus adds a 2px `action/focus-ring` spread; disabled
- * is the default look at 50% opacity. Icons take the label colour on solid styles and
+ * is the default look at 50% opacity, and so is `aria-disabled` (still focusable, no hover or
+ * press, clicks swallowed). Icons take the label colour on solid styles and
  * text/muted on secondary and tertiary.
  *
  * Shadows are written as plain box-shadow, not Tailwind's shadow utilities: those compose
@@ -30,8 +31,11 @@ const buttonVariants = cva(
     'transition-[background-color,border-color,color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out)',
     // A menu or popover trigger snaps back to full size the moment it opens (no scale, no
     // transform transition), so the menu measures the button's real edge and never jumps.
-    'not-aria-expanded:active:scale-[0.97] aria-expanded:[transition-property:background-color,border-color,color,box-shadow]',
+    'not-aria-expanded:not-data-disabled:active:scale-[0.97] aria-expanded:[transition-property:background-color,border-color,color,box-shadow]',
     'disabled:pointer-events-none disabled:opacity-50',
+    // aria-disabled (not while loading): the disabled look, but it keeps its focus and its pointer
+    // events, so a Tooltip can say why. satin-hover and satin-pressed skip [data-disabled].
+    'data-disabled:cursor-not-allowed data-disabled:opacity-50',
     // Focus: the ring 2px off the button, so it reads against the page whatever the fill.
     // (outline-solid too: the base focus rule sets the outline style to none.)
     'satin-focus:outline-2 satin-focus:outline-solid satin-focus:outline-offset-2 satin-focus:outline-action-focus-ring',
@@ -69,6 +73,7 @@ const buttonVariants = cva(
           'border border-strong border-transparent bg-bg-popover text-text-default [&_svg]:text-text-muted',
           '[box-shadow:0_0_0_var(--border-width-strong)_var(--border-default),0_1px_2px_1px_var(--effect-shadow-xs)]',
           'disabled:[box-shadow:0_0_0_var(--border-width-strong)_var(--border-strong)]',
+          'data-disabled:[box-shadow:0_0_0_var(--border-width-strong)_var(--border-strong)]',
           'satin-hover:bg-action-secondary-bg-hover satin-hover:[box-shadow:0_0_0_var(--border-width-strong)_var(--border-strong),0_1px_2px_1px_var(--effect-shadow-xs)]',
           'satin-focus:bg-bg-popover satin-focus:[box-shadow:0_0_0_var(--border-width-strong)_var(--border-strong),0_1px_2px_1px_var(--effect-shadow-xs)]',
           'satin-pressed:bg-action-secondary-bg-pressed satin-pressed:[box-shadow:0_0_0_var(--border-width-strong)_var(--border-strong)]',
@@ -121,6 +126,14 @@ export interface ButtonProps
    * keeps its focus and looks, with `aria-busy` and `aria-disabled` for screen readers.
    */
   loading?: boolean
+  /**
+   * `aria-disabled` (true) keeps the button focusable and hoverable but makes it look disabled
+   * and swallows its clicks: for an action that can't run yet and says why (a Tooltip, or a
+   * line it points to with `aria-describedby`). `disabled` takes it out of the tab order.
+   * The guard covers the `onClick` passed to Button only: with `asChild`, the child's own
+   * onClick still runs, and a trigger that opens on pointerdown (a Radix menu) still opens.
+   */
+  'aria-disabled'?: React.AriaAttributes['aria-disabled']
 }
 
 /**
@@ -135,6 +148,8 @@ export function Button({ className, variant, size, shape, iconOnly, asChild = fa
   const Comp = asChild ? Slot.Root : 'button'
   const group = React.useContext(ButtonDefaultsContext)
   const resolved = variant ?? group?.variant ?? 'primary'
+  // Blocked: aria-disabled without loading, which has a look of its own.
+  const blocked = !loading && (ariaDisabled === true || ariaDisabled === 'true')
   return (
     <Comp
       data-slot="button"
@@ -143,13 +158,14 @@ export function Button({ className, variant, size, shape, iconOnly, asChild = fa
       aria-busy={loading || undefined}
       aria-disabled={loading || ariaDisabled || undefined}
       data-loading={loading || undefined}
+      data-disabled={blocked || undefined}
       className={cn(
         buttonVariants({ variant: resolved, size: size ?? group?.size, shape: shape ?? group?.shape, iconOnly }),
         loading && 'relative cursor-progress',
         className,
       )}
       onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-        if (loading) {
+        if (loading || blocked) {
           event.preventDefault()
           return
         }

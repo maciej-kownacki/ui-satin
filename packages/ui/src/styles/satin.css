@@ -18,10 +18,12 @@
  * every state at once (like a Figma variants frame). Declared in this order so pressed
  * wins over focus, and focus over hover.
  */
-@custom-variant satin-hover (&:hover, &[data-force="hover"]);
+/* Something marked data-disabled (a Button with aria-disabled, Radix's disabled parts) neither
+   hovers nor presses. In :where(), so the order above still decides between the states. */
+@custom-variant satin-hover (&:hover:not(:where([data-disabled])), &[data-force="hover"]);
 @custom-variant satin-focus (&:focus-visible, &[data-force="focus"]);
 /* A trigger stays pressed while the menu or popover it opened is open. */
-@custom-variant satin-pressed (&:active, &[data-force="pressed"], &[aria-haspopup][aria-expanded="true"]);
+@custom-variant satin-pressed (&:active:not(:where([data-disabled])), &[data-force="pressed"], &[aria-haspopup][aria-expanded="true"]);
 
 /* After a pointer press (data-satin-pointer, components/pointer-modality.tsx) the focus Radix moves
    from script is not the keyboard's: no ring on a tab, a menu row or the trigger a menu hands
