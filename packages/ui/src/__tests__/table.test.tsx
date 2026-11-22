@@ -48,6 +48,21 @@ describe('Table', () => {
     expect(screen.getByRole('checkbox', { name: 'Zaznacz wszystkie' })).toBeTruthy()
   })
 
+  it('shows `empty` in one cell across the columns while there are no rows', () => {
+    const { rerender } = renderWithSatin(<Table label="Invoices" columns={columns} rows={[]} selectable overflow="scroll" empty={<p>No invoices yet</p>} />)
+    const cell = screen.getByText('No invoices yet').closest('td')
+    expect(cell?.getAttribute('colspan')).toBe('3')
+    // The header stays.
+    expect(screen.getByRole('columnheader', { name: 'Customer' })).toBeTruthy()
+    rerender(<Table label="Invoices" columns={columns} rows={rows} selectable overflow="scroll" empty={<p>No invoices yet</p>} />)
+    expect(screen.queryByText('No invoices yet')).toBeNull()
+  })
+
+  it.each(['light', 'dark'] as const)('has no axe violations with an empty state in %s', async (theme) => {
+    renderWithSatin(<Table label="Invoices" columns={columns} rows={[]} empty={<p>No invoices yet</p>} />, { theme })
+    await expectNoAxeViolations()
+  })
+
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
     renderWithSatin(<Table label="Invoices" columns={columns} rows={rows} selectable footer={footer} />, { theme })
     await expectNoAxeViolations()

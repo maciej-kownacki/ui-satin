@@ -29,7 +29,9 @@ import { useSatinLabels } from './labels'
  * border radius. `data-force="hover"` on a `<tr>` shows the hover state.
  *
  * `footer` puts rows of your own in a `<tfoot>` (a totals row), and `tableProps` reaches the
- * `<table>` itself (a `role`, `aria-*`). Other props, `ref` included, go to the frame.
+ * `<table>` itself (a `role`, `aria-*`). `empty` fills the body while there are no rows (an
+ * EmptyState), centred in the visible width however far the columns scroll. Other props, `ref`
+ * included, go to the frame.
  */
 
 export type Sort = { key: string; direction: 'asc' | 'desc' } | null
@@ -95,6 +97,12 @@ export interface TableProps<R extends Row = Row> extends Omit<React.ComponentPro
    * column, plus one first for the checkbox column when `selectable`.
    */
   footer?: React.ReactNode
+  /**
+   * Shown in the body while `rows` is empty, such as an EmptyState: one row across every column,
+   * its content as wide as the visible part of the table and centred there, so it stays in view
+   * with overflow="scroll". The header stays. Without it an empty table is just its header.
+   */
+  empty?: React.ReactNode
   /**
    * Props for the `<table>` element itself (the rest go to the frame around it): a `role` such as
    * `"treegrid"` when rows expand, `aria-*`, handlers. `className` and `style` add to the table's own.
@@ -175,6 +183,7 @@ export function Table<R extends Row = Row>({
   renderCell,
   renderRow,
   footer,
+  empty,
   tableProps,
   className,
   ...props
@@ -232,6 +241,19 @@ export function Table<R extends Row = Row>({
       ro.disconnect()
     }
   }, [scroll, columns, rows])
+
+  // The empty state is as wide as the visible part of the table, measured before paint.
+  const showEmpty = rows.length === 0 && empty != null
+  const [viewWidth, setViewWidth] = React.useState(0)
+  React.useLayoutEffect(() => {
+    const el = viewport.current
+    if (!showEmpty || !el) return
+    const update = () => setViewWidth(el.clientWidth)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [showEmpty, scroll])
 
   // The leading column(s) stay put while the rest scroll, at the start side.
   const stickyFirst = (bg: string) => (scroll ? cn('sticky z-[1]', bg) : '')
@@ -365,6 +387,17 @@ export function Table<R extends Row = Row>({
             </tr>
           )
         })}
+        {showEmpty && (
+          <tr data-slot="table-empty" className="bg-bg-card">
+            <td colSpan={cellCount} className="p-0">
+              {/* Sticky at the start and as wide as the viewport: centred in what is on screen,
+                  and it stays put while the columns scroll under the header. */}
+              <div className="sticky start-0 flex items-center justify-center px-4 py-8" style={{ width: viewWidth || '100%' }}>
+                {empty}
+              </div>
+            </td>
+          </tr>
+        )}
       </tbody>
       {footer != null && <tfoot>{footer}</tfoot>}
     </table>
@@ -413,7 +446,9 @@ export function Table<R extends Row = Row>({
           </div>
         </>
       ) : (
-        <div className="overflow-x-auto overscroll-x-contain">{table}</div>
+        <div ref={viewport} className="overflow-x-auto overscroll-x-contain">
+          {table}
+        </div>
       )}
     </div>
   )
