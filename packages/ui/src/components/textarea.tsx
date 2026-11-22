@@ -17,6 +17,12 @@ import { useSatinLabels } from './labels'
  * `maxLength` drives the counter and is not enforced, so a pasted text can run over and show
  * it (134/120); pair it with `error` to say what to fix. The look is styles/components/
  * input.css (`.satin-field`) plus textarea.css.
+ *
+ * `underlay` is drawn under the text, inside the field: `usePromptMentions().overlay`, the fills
+ * of @mention tokens. With it the field's fill moves to a layer of its own under the underlay and
+ * the textarea turns transparent; its border, focus ring and shadow stay on the textarea.
+ *
+ * Other props, `ref` included, go to the `textarea`.
  */
 export interface TextareaProps extends Omit<React.ComponentProps<'textarea'>, 'onChange' | 'maxLength'> {
   label?: React.ReactNode
@@ -27,7 +33,13 @@ export interface TextareaProps extends Omit<React.ComponentProps<'textarea'>, 'o
   error?: React.ReactNode | boolean
   /** Shows a `length/maxLength` counter. */
   maxLength?: number
-  onChange?: (value: string) => void
+  /** The new text, and the change event for code that needs the caret or input method state (`usePromptMentions`). */
+  onChange?: (value: string, event: React.ChangeEvent<HTMLTextAreaElement>) => void
+  /**
+   * Drawn under the text, inside the field and unclipped: `usePromptMentions().overlay`. The
+   * field's fill moves to a layer under it and the textarea turns transparent.
+   */
+  underlay?: React.ReactNode
   /** Classes for the outer wrapper (label + field + hint row). `className` styles the field. */
   wrapperClassName?: string
   /** Show a state without interacting, for state sheets. */
@@ -48,6 +60,7 @@ export function Textarea({
   value,
   defaultValue,
   onChange,
+  underlay,
   'aria-describedby': ariaDescribedBy,
   'data-force': force,
   ...props
@@ -84,6 +97,17 @@ export function Textarea({
         </div>
       )}
       <div className="relative flex">
+        {underlay != null && (
+          <>
+            {/* The field's fill, under the underlay; the textarea over both is transparent. */}
+            <span
+              aria-hidden
+              data-slot="textarea-fill"
+              data-disabled={isDisabled || undefined}
+            />
+            {underlay}
+          </>
+        )}
         <textarea
           id={textareaId}
           data-slot="textarea"
@@ -91,6 +115,7 @@ export function Textarea({
           data-invalid={invalid || undefined}
           data-disabled={isDisabled || undefined}
           data-force={force}
+          data-underlay={underlay != null || undefined}
           className={cn('satin-field satin-textarea', className)}
           disabled={isDisabled}
           required={required ?? field?.required}
@@ -100,7 +125,7 @@ export function Textarea({
           defaultValue={defaultValue}
           onChange={(e) => {
             if (value == null) setUncontrolled(e.target.value)
-            onChange?.(e.target.value)
+            onChange?.(e.target.value, e)
           }}
           {...props}
           name={props.name ?? field?.name}

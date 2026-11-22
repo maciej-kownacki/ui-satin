@@ -44,6 +44,28 @@
 .satin-textarea-grip:dir(rtl) {
   transform: scaleX(-1);
 }
+/*
+ * With an underlay (the fills of @mention tokens) the field's fill is a layer of its own, first
+ * in the box, so the underlay sits between it and the text. The textarea is transparent and
+ * positioned, so it paints over both; border, focus ring, hover, error and shadow stay on it.
+ */
+.satin-field.satin-textarea[data-underlay] {
+  position: relative;
+  background: transparent;
+}
+[data-slot="textarea-fill"] {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: var(--bg-field);
+  pointer-events: none;
+  transition-property: background-color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+[data-slot="textarea-fill"][data-disabled] {
+  background: var(--bg-muted);
+}
 .satin-textarea-root[data-disabled] {
   opacity: 0.6;
 }

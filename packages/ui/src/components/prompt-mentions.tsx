@@ -665,15 +665,10 @@ export function usePromptMentions({
   const pendingCaret = React.useRef<number | null>(null)
   const mirrorRef = React.useRef<HTMLDivElement>(null)
 
-  // Put the caret after an inserted token, once the textarea shows it; keep the fills scrolled with the text.
-  React.useLayoutEffect(() => {
+  // Copies the textarea's type, box and scroll onto the mirror, so the fills sit under its glyphs.
+  const syncMirror = () => {
     const el = textareaRef.current
     const mirror = mirrorRef.current
-    if (el && pendingCaret.current != null && el.value === latest.current.text) {
-      el.setSelectionRange(pendingCaret.current, pendingCaret.current)
-      lastCaret.current = pendingCaret.current
-      pendingCaret.current = null
-    }
     if (!el || !mirror) return
     const style = getComputedStyle(el)
     for (const prop of MIRRORED) mirror.style[prop] = style[prop]
@@ -688,7 +683,29 @@ export function usePromptMentions({
     mirror.style.paddingLeft = `${parseFloat(style.paddingLeft) + BLEED + (end === 'paddingLeft' ? bar : 0)}px`
     mirror.style.paddingRight = `${parseFloat(style.paddingRight) + BLEED + (end === 'paddingRight' ? bar : 0)}px`
     mirror.scrollTop = el.scrollTop
+  }
+  const syncRef = React.useRef(syncMirror)
+  syncRef.current = syncMirror
+
+  // Put the caret after an inserted token, once the textarea shows it; keep the fills scrolled with the text.
+  React.useLayoutEffect(() => {
+    const el = textareaRef.current
+    if (el && pendingCaret.current != null && el.value === latest.current.text) {
+      el.setSelectionRange(pendingCaret.current, pendingCaret.current)
+      lastCaret.current = pendingCaret.current
+      pendingCaret.current = null
+    }
+    syncMirror()
   })
+
+  // A resize that doesn't render (the grip dragged, the box narrowed) rewraps the text: follow it.
+  React.useEffect(() => {
+    const el = textareaRef.current
+    if (!on || !el) return
+    const observer = new ResizeObserver(() => syncRef.current())
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [on, textareaRef])
 
   const commit = (next: PromptValue, caret?: number) => {
     latest.current = next

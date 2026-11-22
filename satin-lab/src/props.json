@@ -9134,8 +9134,15 @@
         },
         {
           "name": "onChange",
-          "type": "(value: string) => void",
-          "required": false
+          "type": "(value: string, event: React.ChangeEvent<HTMLTextAreaElement>) => void",
+          "required": false,
+          "description": "The new text, and the change event for code that needs the caret or input method state (`usePromptMentions`)."
+        },
+        {
+          "name": "underlay",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Drawn under the text, inside the field and unclipped: `usePromptMentions().overlay`. The field's fill moves to a layer under it and the textarea turns transparent."
         },
         {
           "name": "wrapperClassName",
