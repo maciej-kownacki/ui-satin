@@ -118,6 +118,18 @@
     "limit": "3 kB"
   },
   {
+    "name": "Stat card (Satin Pro; Badge, Button, ChartTooltip, Skeleton and smoothPath come from @uisatin/ui, the peer, left out)",
+    "path": "packages/ui-pro/dist/components/stat-card.js",
+    "import": "{ StatCard }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
     "name": "CSV import (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/csv-import.js",
     "import": "{ CsvImport }",
