@@ -3,10 +3,11 @@
  * installs the tarballs into a throwaway project, and type-checks an import of every entry point
  * (each root and each component) under moduleResolution node16, nodenext and bundler, strictly,
  * with skipLibCheck off. A `@ts-expect-error` line makes sure the types are real, not `any`.
- * Run `npm run build:ui` and `npm run build:pro` first (CI does).
+ * Pro's optional peers (the Lexical packages behind Rich text editor) are installed too, the way an
+ * app that uses that component has them, with `esnext.disposable` in lib, which Lexical's types need. Run `npm run build:ui` and `npm run build:pro` first (CI does).
  */
 import { execSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readdirSync, writeFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -17,8 +18,12 @@ try {
   const pack = (folder) => run(`npm pack ${join(root, folder)} --pack-destination ${dir}`, root).trim().split('\n').pop()
   const tgz = pack('packages/ui/dist')
   const proTgz = existsSync(join(root, 'packages/ui-pro/dist/package.json')) ? pack('packages/ui-pro/dist') : null
+  const proPkg = proTgz ? JSON.parse(readFileSync(join(root, 'packages/ui-pro/dist/package.json'), 'utf8')) : {}
+  const optionalPeers = Object.entries(proPkg.peerDependenciesMeta ?? {})
+    .filter(([, meta]) => meta.optional)
+    .map(([name]) => `"${name}@${proPkg.peerDependencies[name]}"`)
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'satin-types-check', private: true, type: 'module' }))
-  run(`npm i --no-audit --no-fund typescript react@19 react-dom@19 @types/react@19 @types/react-dom@19 ./${tgz}${proTgz ? ` ./${proTgz}` : ''}`, dir)
+  run(`npm i --no-audit --no-fund typescript react@19 react-dom@19 @types/react@19 @types/react-dom@19 ./${tgz}${proTgz ? ` ./${proTgz}` : ''} ${optionalPeers.join(' ')}`, dir)
 
   const entriesOf = (pkg) =>
     existsSync(join(dir, 'node_modules', pkg, 'components'))
@@ -52,7 +57,7 @@ try {
     writeFileSync(
       join(dir, config),
       JSON.stringify({
-        compilerOptions: { strict: true, skipLibCheck: false, noEmit: true, jsx: 'react-jsx', target: 'es2022', lib: ['dom', 'es2022'], module, moduleResolution, types: [] },
+        compilerOptions: { strict: true, skipLibCheck: false, noEmit: true, jsx: 'react-jsx', target: 'es2022', lib: ['dom', 'es2022', 'esnext.disposable'], module, moduleResolution, types: [] },
         files: ['entries.tsx'],
       }),
     )
