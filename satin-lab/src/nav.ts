@@ -295,6 +295,7 @@ export const allNav: NavGroup[] = [
         ],
       },      { id: 'progress', title: 'Progress', href: '/components/progress', description: 'Shows how far a task has got, or that it is still running.' },
       { id: 'radio', title: 'Radio', href: '/components/radio', description: 'Lets people pick exactly one option from a short list.' },
+      { id: 'relative-time', title: 'Relative time', href: '/components/relative-time', description: 'When something happened, as "5 min ago" today and the clock time before, kept current.' },
       {
         id: 'scheduler',
         title: 'Scheduler',
@@ -369,7 +370,7 @@ export const allNav: NavGroup[] = [
  * preview builds show them. The one list to edit when a page is done.
  */
 export const unreleased = new Set<string>([
-  'command-pages', 'scheduler', 'stepper', 'review-queue',
+  'command-pages', 'scheduler', 'stepper', 'review-queue', 'relative-time',
 ])
 
 /**

@@ -306,6 +306,17 @@
     "limit": "6 kB"
   },
   {
+    "name": "Relative time (RelativeTime and useRelativeClock, with cn and tailwind-merge)",
+    "path": "packages/ui/dist/components/relative-time.js",
+    "import": "{ RelativeTime, useRelativeClock }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "12.5 kB"
+  },
+  {
     "name": "Stepper (with Progress, cn and the check icon)",
     "path": "packages/ui/dist/components/stepper.js",
     "import": "{ Stepper, StepperItem }",

@@ -777,6 +777,13 @@ export const api: Record<string, Api> = {
       { name: 'formatValue', type: ['(value: number, max: number) => string'] },
     ],
   },
+  'relative-time': {
+    description: 'The `RelativeTime` component renders a `time` element with `dateTime` set: relative today ("now", "5 min ago", "2 hr ago"), the clock time before that, and the date too with `withDate`. Every RelativeTime on the page reads one clock that ticks every 30 seconds while any is mounted, and only the ones whose text changed render. Words and formats follow `dateLocale` in SatinLabels. `useRelativeClock(text)` gives your own text from the same clock (`text` gets the time in ms), and `dateTimeFormat` and `relativeTimeFormat` hand out shared `Intl` formatters.',
+    props: [
+      { name: 'at', type: ['Date', 'string', 'number'] },
+      { name: 'withDate', type: ['boolean'], default: 'false' },
+    ],
+  },
   radio: {
     description: 'The `Radio` component is a Radix radio item with a label and optional description. Put it in a `RadioGroup`: its `value` decides which radio is `checked`.',
     props: [

@@ -1563,6 +1563,29 @@
       ]
     },
     {
+      "name": "relative-time",
+      "type": "registry:ui",
+      "title": "Relative time",
+      "description": "When something happened, as \"5 min ago\" today and the clock time before, kept current.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Relative time docs: https://uisatin.dev/components/relative-time",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/relative-time.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "search-bar",
       "type": "registry:ui",
       "title": "Search bar",
@@ -3784,6 +3807,21 @@
       "files": [
         {
           "path": "registry/satin/examples/radio-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "relative-time-demo",
+      "type": "registry:example",
+      "title": "Relative time example",
+      "description": "The shortest use of Relative time, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/relative-time.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/relative-time-demo.tsx",
           "type": "registry:example"
         }
       ]

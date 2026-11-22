@@ -6968,6 +6968,30 @@
       ]
     }
   },
+  "relative-time": {
+    "RelativeTime": {
+      "description": "A moment as people read it in a feed: relative today (\"now\", \"5 min ago\", \"2 hr ago\"), the clock time before that, with the date too under `withDate` (and the year when it isn't this one). It stays current on one clock shared by every time on the page, which renders only the times whose text changed. English short units lose their dot (\"5 min ago\"); other languages keep their own spelling. Words and formats follow `dateLocale` in SatinLabels. A `<time dateTime>` in muted 13px with tabular figures. Screen readers hear the full date and time from a visually hidden span; the short text is `aria-hidden`. Other props, `ref` included, go to the `time` element.",
+      "type": "RelativeTimeProps",
+      "extends": [
+        "Omit<React.ComponentProps<'time'>, 'children' | 'dateTime'>"
+      ],
+      "props": [
+        {
+          "name": "at",
+          "type": "Date | string | number",
+          "required": true,
+          "description": "When: a Date, an ISO string or a timestamp."
+        },
+        {
+          "name": "withDate",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Past today, show the date before the clock time, for a list not grouped by day."
+        }
+      ]
+    }
+  },
   "review-queue": {
     "ReviewQueueRoot": {
       "description": "The queue's state, keys and editor; the parts go inside.",

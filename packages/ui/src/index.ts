@@ -60,6 +60,7 @@ export { Notification, NotificationStack, type NotificationProps, type Notificat
 export { Pagination, paginationRange, type PaginationProps } from './components/pagination'
 export { Popover, PopoverClose, PopoverPanel, type PopoverProps } from './components/popover'
 export { Progress, type ProgressProps } from './components/progress'
+export { RelativeTime, useRelativeClock, dateTimeFormat, relativeTimeFormat, type RelativeTimeProps } from './components/relative-time'
 export { Radio, RadioGroup, type RadioProps, type RadioGroupProps } from './components/radio'
 export { SearchBar, type SearchBarProps } from './components/search-bar'
 export { Select, FieldChrome, useFieldChrome, SelectChevron, type SelectProps, type SelectOption, type SelectGroup } from './components/select'

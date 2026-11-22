@@ -344,6 +344,10 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A `div` with `role="progressbar"`, named by `label` (or `aria-label`), with `aria-valuemin`, `aria-valuemax` and `aria-valuetext` from `formatValue`. `aria-valuenow` is set only while the amount is known, so a bar without `value` reads as indeterminate. The percentage text is hidden, since `aria-valuetext` says it. Progress is not a live region; announce the end of a long task yourself.',
   },
+  'relative-time': {
+    summary:
+      'A native `time` element with a machine-readable `dateTime`. The short text ("5 min ago") is `aria-hidden`; screen readers hear the full date and time from a visually hidden span instead ("Monday, November 16, 2026 at 9:40 AM"), which doesn’t change while the page is open. It isn’t a live region: a tick that changes the short text announces nothing.',
+  },
   radio: {
     summary:
       'A Radix radio group: `RadioGroup` is a `radiogroup` (name it with `aria-label` or `aria-labelledby`, or put it in a FieldGroup), each Radio a `button` with `role="radio"` and `aria-checked`. `label` names a Radio with `aria-labelledby` and `description` adds `aria-describedby`. The group is one tab stop. Inside a `form` it also renders hidden inputs, so the value submits.',
