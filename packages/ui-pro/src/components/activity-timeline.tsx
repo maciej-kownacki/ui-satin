@@ -7,6 +7,7 @@ import { Avatar } from '@uisatin/ui/avatar'
 import { Button } from '@uisatin/ui/button'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
+import { RelativeTime, dateTimeFormat, relativeTimeFormat, useRelativeClock, type RelativeTimeProps } from '@uisatin/ui/relative-time'
 import { Skeleton } from '@uisatin/ui/skeleton'
 import { toast } from '@uisatin/ui/toast'
 
@@ -117,63 +118,9 @@ export interface ActivityItem {
 
 export type ActivityGroupBy = 'day' | 'none'
 
-/* ---------- one clock for every time on the page ---------- */
-
-/** How often relative times are worked out again. They count in minutes, so twice a minute is enough. */
-const TICK_MS = 30_000
-
-const clock = { now: Date.now() }
-const ticks = new Set<() => void>()
-let timer: ReturnType<typeof setInterval> | undefined
-
-function subscribeClock(listener: () => void) {
-  if (!ticks.size) {
-    clock.now = Date.now()
-    timer = setInterval(() => {
-      clock.now = Date.now()
-      for (const tick of ticks) tick()
-    }, TICK_MS)
-  }
-  ticks.add(listener)
-  return () => {
-    ticks.delete(listener)
-    if (!ticks.size) {
-      clearInterval(timer)
-      timer = undefined
-    }
-  }
-}
-
-/**
- * A text worked out from the clock. Each subscriber's snapshot is its own string, so a tick
- * renders only the components whose text changed: fifty entries cost fifty string compares,
- * not fifty renders.
- */
-function useClockText(text: (now: number) => string) {
-  return React.useSyncExternalStore(
-    subscribeClock,
-    () => text(clock.now),
-    // Server and hydration: the time now. The client's first tick puts it right if it differs.
-    () => text(Date.now()),
-  )
-}
+/* ---------- days and times, on Free's shared clock ---------- */
 
 const toDate = (at: ActivityItem['at']) => (at instanceof Date ? at : new Date(at))
-
-// Formatters are slow to build and every time on the page asks for the same few: one each.
-const formatters = new Map<string, Intl.DateTimeFormat | Intl.RelativeTimeFormat>()
-function dateFormat(locale: string, options: Intl.DateTimeFormatOptions) {
-  const key = `d|${locale}|${JSON.stringify(options)}`
-  let f = formatters.get(key) as Intl.DateTimeFormat | undefined
-  if (!f) formatters.set(key, (f = new Intl.DateTimeFormat(locale, options)))
-  return f
-}
-function relativeFormat(locale: string, options: Intl.RelativeTimeFormatOptions) {
-  const key = `r|${locale}|${JSON.stringify(options)}`
-  let f = formatters.get(key) as Intl.RelativeTimeFormat | undefined
-  if (!f) formatters.set(key, (f = new Intl.RelativeTimeFormat(locale, options)))
-  return f
-}
 
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
 
@@ -183,45 +130,15 @@ function daysBetween(a: Date, b: Date) {
   return Math.round((start(b) - start(a)) / 86_400_000)
 }
 
-/*
- * English short units end in a dot ("5 min. ago", "1 hr. ago"); Satin writes them without, as en-GB
- * does. Only English: elsewhere the dot can be the language's own spelling ("1 godz. temu",
- * "vor 1 Std."). The narrow style isn't the fix: in English it says "5m ago".
- */
-const isEnglish = (locale: string) => /^en(?:-|$)/i.test(locale)
-const undot = (text: string) => text.replace(/\.(?=\s|$)/g, '')
-
-/** Today's times relative ("5 min ago"), older ones as the clock time, with the date when `withDate`. */
-function shortTime(at: Date, now: number, locale: string, withDate: boolean) {
-  const nowDate = new Date(now)
-  if (daysBetween(at, nowDate) === 0) {
-    const rtf = relativeFormat(locale, { style: 'short', numeric: 'auto' })
-    const minutes = Math.floor(Math.max(0, now - at.getTime()) / 60_000)
-    const text =
-      minutes < 1
-        ? rtf.format(0, 'second')
-        : minutes < 60
-          ? rtf.format(-minutes, 'minute')
-          : rtf.format(-Math.floor(minutes / 60), 'hour')
-    return isEnglish(locale) ? undot(text) : text
-  }
-  const sameYear = at.getFullYear() === nowDate.getFullYear()
-  return dateFormat(locale, {
-    hour: 'numeric',
-    minute: '2-digit',
-    ...(withDate && { month: 'short', day: 'numeric', ...(!sameYear && { year: 'numeric' }) }),
-  }).format(at)
-}
-
 /** "Today", "Yesterday", then "Monday, November 16" (with the year when it isn't this one). */
 function dayName(day: Date, now: number, locale: string) {
   const nowDate = new Date(now)
   const ago = daysBetween(day, nowDate)
   if (ago === 0 || ago === 1) {
-    const word = relativeFormat(locale, { numeric: 'auto' }).format(-ago, 'day')
+    const word = relativeTimeFormat(locale, { numeric: 'auto' }).format(-ago, 'day')
     return word.charAt(0).toLocaleUpperCase(locale) + word.slice(1)
   }
-  return dateFormat(locale, {
+  return dateTimeFormat(locale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -231,7 +148,7 @@ function dayName(day: Date, now: number, locale: string) {
 
 /* ---------- the time ---------- */
 
-export interface ActivityTimelineTimeProps extends Omit<React.ComponentProps<'time'>, 'children' | 'dateTime'> {
+export interface ActivityTimelineTimeProps extends RelativeTimeProps {
   at: ActivityItem['at']
   /** Past today, show the date before the clock time (for a timeline not grouped by day). */
   withDate?: boolean
@@ -239,31 +156,12 @@ export interface ActivityTimelineTimeProps extends Omit<React.ComponentProps<'ti
 
 /**
  * A `<time>`: relative today ("5 min ago"), the clock time before that, kept current by the
- * shared clock. Screen readers hear the full date and time instead. Other props, `ref` included,
- * go to the `time` element.
+ * shared clock. Screen readers hear the full date and time instead. It's Free's RelativeTime
+ * (`@uisatin/ui/relative-time`), so a timeline and the times around it tick together. Other
+ * props, `ref` included, go to the `time` element.
  */
-export function ActivityTimelineTime({ at, withDate = false, className, ...props }: ActivityTimelineTimeProps) {
-  const labels = useLabels()
-  const locale = labels.dateLocale
-  const date = toDate(at)
-  const time = date.getTime()
-  const text = useClockText((now) => shortTime(new Date(time), now, locale, withDate))
-  const full = React.useMemo(() => dateFormat(locale, { dateStyle: 'full', timeStyle: 'short' }).format(time), [locale, time])
-  return (
-    <time
-      data-slot="activity-timeline-time"
-      dateTime={date.toISOString()}
-      className={cn('shrink-0 text-sm leading-5 whitespace-nowrap text-text-muted tabular-nums', className)}
-      {...props}
-    >
-      <span aria-hidden suppressHydrationWarning>
-        {text}
-      </span>
-      <span className="sr-only" suppressHydrationWarning>
-        {full}
-      </span>
-    </time>
-  )
+export function ActivityTimelineTime({ withDate = false, ...props }: ActivityTimelineTimeProps) {
+  return <RelativeTime data-slot="activity-timeline-time" withDate={withDate} {...props} />
 }
 
 /* ---------- the root: revert and motion for the parts inside ---------- */
@@ -396,7 +294,7 @@ export function ActivityTimelineDay({ day, className, ...props }: ActivityTimeli
 function DayName({ day }: { day: Date }) {
   const locale = useLabels().dateLocale
   const time = day.getTime()
-  return <span suppressHydrationWarning>{useClockText((now) => dayName(new Date(time), now, locale))}</span>
+  return <span suppressHydrationWarning>{useRelativeClock((now) => dayName(new Date(time), now, locale))}</span>
 }
 
 /* ---------- the marker on the rail ---------- */
