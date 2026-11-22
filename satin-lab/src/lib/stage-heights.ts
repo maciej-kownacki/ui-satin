@@ -100,5 +100,6 @@ export const stageHeights: Record<string, [number, number]> = {
   'Toast': [312, 312],
   'Undo countdown': [368, 368],
   'Toggle': [280, 280],
+  'Toolbar': [280, 280],
   'Tooltip': [280, 280],
 }

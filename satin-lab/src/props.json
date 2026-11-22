@@ -9105,6 +9105,58 @@
       ]
     }
   },
+  "toolbar": {
+    "Toolbar": {
+      "type": "ToolbarProps",
+      "extends": [
+        "React.ComponentProps<typeof ToolbarPrimitive.Root>"
+      ],
+      "props": [
+        {
+          "name": "size",
+          "type": "'sm' | 'md'",
+          "required": false,
+          "default": "'sm'"
+        },
+        {
+          "name": "variant",
+          "type": "'plain' | 'floating'",
+          "required": false,
+          "default": "'plain'"
+        },
+        {
+          "name": "preventFocusOnPress",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Keep a press on an item from moving focus to it (an editor keeps its selection)."
+        }
+      ]
+    },
+    "ToolbarButton": {
+      "type": "ToolbarButtonProps",
+      "extends": [
+        "Omit<ButtonProps, 'size' | 'iconOnly' | 'asChild'>",
+        "ItemProps"
+      ],
+      "props": []
+    },
+    "ToolbarToggle": {
+      "type": "ToolbarToggleProps",
+      "extends": [
+        "Omit<ToggleProps, 'size' | 'variant' | 'iconOnly' | 'asChild' | 'icon'>",
+        "ItemProps"
+      ],
+      "props": []
+    },
+    "ToolbarSeparator": {
+      "description": "A thin rule between sets of items: the ButtonGroupSeparator look, a `separator` across the toolbar. Other props, `ref` included, go to its `div`.",
+      "extends": [
+        "React.ComponentProps<'div'>"
+      ],
+      "props": []
+    }
+  },
   "tooltip": {
     "TooltipBubble": {
       "extends": [

@@ -487,6 +487,17 @@ export const a11y: Record<string, A11y> = {
       'A Radix toggle: a `button` with `aria-pressed`. An `iconOnly` toggle needs an `aria-label`; keep the label the same whether it is on or off, since `aria-pressed` carries the state.',
     keyboard: [{ keys: ['Enter', 'Space'], action: 'Presses or releases the toggle.' }],
   },
+  toolbar: {
+    summary:
+      'A Radix toolbar: a `div` with `role="toolbar"` and `aria-orientation`; give it an `aria-label` ("Formatting"). It is one tab stop and remembers the item focused last. `ToolbarToggle` is a `button` with `aria-pressed`; keep its `label` the same pressed or not. An icon-only item is named by `label` and shows it in a tooltip on hover and keyboard focus, with `shortcut` as keys and as `aria-keyshortcuts`. `ToolbarSeparator` is a `separator` across the toolbar. Disabled items are skipped by the arrows. With `preventFocusOnPress`, a pointer press leaves focus (and an editor\'s selection) where it was; the keyboard still reaches every item.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves focus into the toolbar, to the item focused last, and out of it.' },
+      { keys: ['→', '←'], action: 'Moves to the next or previous item, wrapping at the ends; right to left, the arrows flip. ↓ and ↑ when vertical.' },
+      { keys: ['Home', 'End'], action: 'Moves to the first or last item.' },
+      { keys: ['Enter', 'Space'], action: 'Runs the focused button, or presses or releases the focused toggle.' },
+      { keys: ['Esc'], action: 'Closes an open tooltip.' },
+    ],
+  },
   tooltip: {
     summary:
       'A Radix tooltip. While open, the trigger is described by it (`aria-describedby`) and a hidden copy with `role="tooltip"` holds the label and the shortcut. It describes the trigger but doesn’t name it, so an icon-only trigger still needs an `aria-label`. The trigger must be focusable.',

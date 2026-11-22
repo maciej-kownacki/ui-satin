@@ -343,6 +343,7 @@ export const allNav: NavGroup[] = [
       { id: 'textarea', title: 'Textarea', href: '/components/textarea', description: 'Multi-line text input for notes, requests and longer answers.' },
       { id: 'toast', title: 'Toast', href: '/components/toast', description: 'A short, passing message about something that just happened.' },
       { id: 'toggle', title: 'Toggle', href: '/components/toggle', description: 'A button that stays pressed to switch an option on or off.' },
+      { id: 'toolbar', title: 'Toolbar', href: '/components/toolbar', description: 'A row of buttons and toggles that is one tab stop, moved through with the arrow keys.' },
       { id: 'tooltip', title: 'Tooltip', href: '/components/tooltip', description: 'Names an icon-only control and shows the shortcut that runs it.' },
     ],
   },
@@ -354,7 +355,7 @@ export const allNav: NavGroup[] = [
  * preview builds show them. The one list to edit when a page is done.
  */
 export const unreleased = new Set<string>([
-  'command-pages', 'scheduler', 'stepper', 'review-queue',
+  'command-pages', 'scheduler', 'stepper', 'review-queue', 'toolbar',
 ])
 
 /**

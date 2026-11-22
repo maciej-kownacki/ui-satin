@@ -956,6 +956,19 @@ export const api: Record<string, Api> = {
       { name: 'disabled', type: ['boolean'], default: 'false' },
     ],
   },
+  toolbar: {
+    description:
+      'The `Toolbar` component is a `div` with `role="toolbar"` on the Radix toolbar: one tab stop, the arrow keys move between its items. Name it with `aria-label`. `ToolbarButton` is a tertiary Button and `ToolbarToggle` a ghost Toggle (`pressed` / `defaultPressed` / `onPressedChange`), both at the toolbar\'s size; with an `icon` and no children they are icon-only, named by `label`, which their tooltip shows with `shortcut` as keys. `ToolbarSeparator` is a rule between sets. `variant="floating"` puts it on the menu surface, for a bubble bar placed with `Floating` over a selection; `preventFocusOnPress` keeps a press from taking focus from an editor.',
+    props: [
+      { name: 'aria-label', type: ['string'] },
+      { name: 'variant', type: ['"plain"', '"floating"'], default: '"plain"' },
+      { name: 'size', type: ['"sm"', '"md"'], default: '"sm"' },
+      { name: 'orientation', type: ['"horizontal"', '"vertical"'], default: '"horizontal"' },
+      { name: 'loop', type: ['boolean'], default: 'true' },
+      { name: 'dir', type: ['"ltr"', '"rtl"'] },
+      { name: 'preventFocusOnPress', type: ['boolean'], default: 'false' },
+    ],
+  },
   tooltip: {
     description: 'The `Tooltip` component is a wrapper around the `div` element with role="tooltip", linked to its trigger.',
     props: [

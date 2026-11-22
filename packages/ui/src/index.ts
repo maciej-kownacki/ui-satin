@@ -79,6 +79,7 @@ export { Tabs, TabsContent, type TabsProps, type TabItem } from './components/ta
 export { Textarea, CharacterCount, type TextareaProps, type CharacterCountProps } from './components/textarea'
 export { Toast, Toaster, toast, type ToastProps, type ToasterProps, type ToastOptions, type ToastIntent, type ToastAction, type ToastText } from './components/toast'
 export { Toggle, toggleVariants, type ToggleProps } from './components/toggle'
+export { Toolbar, ToolbarButton, ToolbarToggle, ToolbarSeparator, type ToolbarProps, type ToolbarButtonProps, type ToolbarToggleProps } from './components/toolbar'
 export { Tooltip, TooltipBubble, type TooltipProps } from './components/tooltip'
 
 // AI patterns

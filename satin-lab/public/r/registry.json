@@ -2211,6 +2211,36 @@
       ]
     },
     {
+      "name": "toolbar",
+      "type": "registry:ui",
+      "title": "Toolbar",
+      "description": "A row of buttons and toggles that is one tab stop, moved through with the arrow keys.",
+      "dependencies": [
+        "radix-ui@^1.8.1"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/button-group.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/kbd.json",
+        "https://uisatin.dev/r/toggle.json",
+        "https://uisatin.dev/r/tooltip.json"
+      ],
+      "docs": "Toolbar docs: https://uisatin.dev/components/toolbar",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/toolbar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "tooltip",
       "type": "registry:ui",
       "title": "Tooltip",
@@ -3992,6 +4022,21 @@
       "files": [
         {
           "path": "registry/satin/examples/tool-call-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "toolbar-demo",
+      "type": "registry:example",
+      "title": "Toolbar example",
+      "description": "The shortest use of Toolbar, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/toolbar.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/toolbar-demo.tsx",
           "type": "registry:example"
         }
       ]

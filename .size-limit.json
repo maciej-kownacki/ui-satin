@@ -293,6 +293,17 @@
     "limit": "14 kB"
   },
   {
+    "name": "Toolbar (Radix Toolbar and Toggle, Button, Tooltip with its popper)",
+    "path": "packages/ui/dist/components/toolbar.js",
+    "import": "{ Toolbar, ToolbarButton, ToolbarToggle, ToolbarSeparator }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "42 kB"
+  },
+  {
     "name": "Grouped table (Pro)",
     "path": "packages/ui-pro/dist/components/table-pro.js",
     "import": "{ TableGrouped }",
