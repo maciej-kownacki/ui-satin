@@ -312,6 +312,12 @@ export interface PromptMentionsMenuProps {
   sideOffset?: number
   /** The menu is as wide as the anchor (PromptBar's). False gives it a fixed 288px. */
   matchAnchorWidth?: boolean
+  /**
+   * Shows the group header (Mentions or Commands) above the rows. PromptBar's menu has it; next
+   * to the caret in an editor the `@` or `/` already says what the list is. The listbox keeps the
+   * name either way.
+   */
+  heading?: boolean
 }
 
 /**
@@ -338,6 +344,7 @@ export function PromptMentionsMenu({
   align = 'start',
   sideOffset = 8,
   matchAnchorWidth = true,
+  heading = true,
 }: PromptMentionsMenuProps) {
   const labels = useSatinLabels()
   const virtualRef = React.useRef<PromptMenuMeasurable | null>(null)
@@ -380,9 +387,11 @@ export function PromptMentionsMenu({
             )}
           >
             <div className="flex flex-col p-1">
-              <div aria-hidden className={menuGroupLabelClass}>
-                {name}
-              </div>
+              {heading && (
+                <div aria-hidden className={menuGroupLabelClass}>
+                  {name}
+                </div>
+              )}
               {listed ? (
                 <div id={listId} role="listbox" aria-label={name} className="flex max-h-64 flex-col gap-0.5 overflow-y-auto">
                   {items!.map((item, i) => (
@@ -470,7 +479,7 @@ export interface PromptMenuState {
   /** Spread onto PromptMentionsMenu, with `onPick` and an anchor of your own. */
   menuProps: Omit<
     PromptMentionsMenuProps,
-    'onPick' | 'anchorRef' | 'virtualAnchor' | 'side' | 'align' | 'sideOffset' | 'matchAnchorWidth'
+    'onPick' | 'anchorRef' | 'virtualAnchor' | 'side' | 'align' | 'sideOffset' | 'matchAnchorWidth' | 'heading'
   >
 }
 

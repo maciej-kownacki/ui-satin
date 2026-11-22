@@ -16,10 +16,8 @@ import {
   RichTextEditorRoot,
   RichTextSelectionToolbar,
   RichTextToolbar,
-  richTextMentions,
   type RichTextCommand,
   type RichTextMention,
-  type RichTextMentionRef,
 } from '@uisatin/pro/rich-text-editor'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 import { people as promptPeople } from './prompt-bar-data'
@@ -173,31 +171,9 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   code: code(v),
 }))
 
-/** The value as the app gets it, under the editor: markdown as is, JSON indented. */
-function ValuePanel({ value, format, mentions }: { value: string; format: string; mentions: RichTextMentionRef[] }) {
-  const shown = format === 'json' ? JSON.stringify(JSON.parse(value), null, 2) : value
-  return (
-    <div className="grid gap-1.5">
-      <div className="flex items-baseline justify-between gap-3 text-sm text-text-muted">
-        <span>Value ({format === 'json' ? 'JSON' : 'markdown'})</span>
-        <span className="truncate">{mentions.length ? `Mentions: ${mentions.map((m) => `@${m.label}`).join(', ')}` : 'No mentions'}</span>
-      </div>
-      <pre
-        tabIndex={0}
-        aria-label="Value"
-        className="max-h-36 overflow-auto rounded-md bg-bg-muted p-3 font-mono text-xs leading-5 whitespace-pre-wrap text-text-default focus-visible:shadow-border-focus focus-visible:outline-none"
-      >
-        {shown}
-      </pre>
-    </div>
-  )
-}
-
 function FeedbackPreview({ v }: { v: Record<string, string> }) {
   const format = v.format === 'json' ? 'json' : 'markdown'
   const initial = React.useMemo(() => (format === 'json' ? toJson(feedback) : feedback), [format])
-  const [value, setValue] = React.useState(initial)
-  const [mentions, setMentions] = React.useState(() => richTextMentions(initial, format))
   return (
     <div className="grid w-[520px] max-w-full gap-4">
       <RichTextEditor
@@ -211,12 +187,7 @@ function FeedbackPreview({ v }: { v: Record<string, string> }) {
         disabled={on(v, 'disabled')}
         mentions={{ search }}
         commands={commands}
-        onValueChange={(next, details) => {
-          setValue(next)
-          setMentions(details.mentions)
-        }}
       />
-      <ValuePanel value={value} format={format} mentions={mentions} />
     </div>
   )
 }

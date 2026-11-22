@@ -31,6 +31,7 @@ function MenuOpen() {
       </div>
       <PromptMentionsMenu
         open
+        heading={false}
         kind="mention"
         items={items}
         index={0}

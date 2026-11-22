@@ -118,3 +118,35 @@ describe('usePromptMenuState with PromptMentionsMenu', () => {
     await expectNoAxeViolations()
   })
 })
+
+describe('PromptMentionsMenu heading', () => {
+  const items: PromptMenuItem[] = [{ kind: 'command', command: { name: 'scorecard', description: 'Insert a scorecard' } }]
+  const menu = (heading?: boolean) => (
+    <PromptMentionsMenu
+      open
+      kind="command"
+      items={items}
+      index={0}
+      viaKeys={false}
+      query="/"
+      listId="menu"
+      message=""
+      onPick={() => {}}
+      onHighlight={() => {}}
+      onDismiss={() => {}}
+      virtualAnchor={{ getBoundingClientRect: () => new DOMRect(10, 10, 0, 16) }}
+      heading={heading}
+    />
+  )
+
+  it('shows the group header by default, as PromptBar has it', () => {
+    renderWithSatin(menu())
+    expect(screen.getByText('Commands')).toBeTruthy()
+  })
+
+  it('leaves it out with heading={false}; the listbox keeps its name', () => {
+    renderWithSatin(menu(false))
+    expect(screen.queryByText('Commands')).toBeNull()
+    expect(screen.getByRole('listbox', { name: 'Commands' })).toBeTruthy()
+  })
+})

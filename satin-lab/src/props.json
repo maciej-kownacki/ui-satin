@@ -6524,6 +6524,13 @@
           "required": false,
           "default": "true",
           "description": "The menu is as wide as the anchor (PromptBar's). False gives it a fixed 288px."
+        },
+        {
+          "name": "heading",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Shows the group header (Mentions or Commands) above the rows. PromptBar's menu has it; next to the caret in an editor the `@` or `/` already says what the list is. The listbox keeps the name either way."
         }
       ]
     },

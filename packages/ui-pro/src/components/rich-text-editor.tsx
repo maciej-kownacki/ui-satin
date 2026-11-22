@@ -1742,6 +1742,7 @@ export function RichTextEditorRoot({
             side="bottom"
             align="start"
             matchAnchorWidth={false}
+            heading={false}
             onPick={pickItem}
           />
         )}
