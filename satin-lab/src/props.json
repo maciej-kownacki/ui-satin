@@ -4889,6 +4889,12 @@
           "default": "false"
         },
         {
+          "name": "media",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "Shown as it is in place of the upload mark above the title, as List's `media` takes the place of its icon tile. Decorative: hide it from screen readers (`aria-hidden`) unless it says something the title doesn't."
+        },
+        {
           "name": "title",
           "type": "React.ReactNode",
           "required": false,

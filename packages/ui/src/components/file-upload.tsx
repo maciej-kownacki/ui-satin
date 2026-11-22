@@ -16,7 +16,8 @@ import { useSatinLabels } from './labels'
  * arrow, the title (text/base medium), what it takes (Body/md, text/muted) and Browse files
  * (secondary), 16 apart, 32 / 24 in, radius-2xl. While files are dragged over it the zone fills
  * bg/hover with a status/brand dashed border, the tile turns bg/card, the title says "Drop to
- * upload" and Browse files is disabled.
+ * upload" and Browse files is disabled. `media` takes the tile's place, shown as it is (an app's
+ * own picture of what the upload does); the title still swaps while files are dragged over.
  *
  * Under the zone, 8 apart, one row per file the app is handling (`files`):
  * - uploading: the type icon on a 36px tile, the name and "1.0 of 2.4 MB · 40%" over a small
@@ -59,6 +60,12 @@ export interface FileUploadProps extends Omit<React.ComponentProps<'div'>, 'titl
   maxSize?: number
   multiple?: boolean
   disabled?: boolean
+  /**
+   * Shown as it is in place of the upload mark above the title, as List's `media` takes the place
+   * of its icon tile. Decorative: hide it from screen readers (`aria-hidden`) unless it says
+   * something the title doesn't.
+   */
+  media?: React.ReactNode
   /** Defaults to the `dropFilesHere` label. */
   title?: React.ReactNode
   /** Shown while files are dragged over the zone. Defaults to the `dropToUpload` label. */
@@ -123,6 +130,7 @@ export function FileUpload({
   maxSize,
   multiple = true,
   disabled = false,
+  media,
   title,
   dropTitle,
   description,
@@ -197,7 +205,7 @@ export function FileUpload({
           'data-[disabled]:opacity-50',
         )}
       >
-        <UploadMark over={over} />
+        {media ?? <UploadMark over={over} />}
         <div className="flex w-full flex-col items-center gap-1">
           <p className="text-base font-medium text-text-default">{over ? (dropTitle ?? labels.dropToUpload) : (title ?? labels.dropFilesHere)}</p>
           {description && (
