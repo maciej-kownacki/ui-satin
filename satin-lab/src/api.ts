@@ -932,7 +932,7 @@ export const api: Record<string, Api> = {
     ],
   },
   toast: {
-    description: 'The `Toast` component wraps the Radix toast in an `li` element rendered by the `toast()` function. Mount `Toaster` once; then call `toast()`, `toast.info()`, `toast.success()`, `toast.warning()` or `toast.error()` with a title and these options. An action\'s `label` and `altText` can be functions of the labels, `(labels) => labels.undo`, so code outside React still uses the words SatinLabels sets. `countdown` draws a bar along the bottom that drains over `duration` and pauses with the timer.',
+    description: 'The `Toast` component wraps the Radix toast in an `li` element rendered by the `toast()` function. Mount `Toaster` once; then call `toast()`, `toast.info()`, `toast.success()`, `toast.warning()` or `toast.error()` with a title and these options. An action\'s `label` and `altText` can be functions of the labels, `(labels) => labels.undo`, so code outside React still uses the words SatinLabels sets. `countdown` draws a bar along the bottom that drains over `duration` and pauses with the timer. `onClose(reason)` is called once as the toast leaves: `"action"` (its action), `"close"` (the close button, Escape, a swipe, `toast.dismiss`, or a new toast under the same `id`) or `"expire"` (its time ran out). It\'s how to commit something when an Undo window ends: hide the item at once and delete it unless the reason is `"action"`. Without a mounted `Toaster` it warns and calls back with `"expire"`.',
     props: [
       { name: 'intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"neutral"' },
       { name: 'icon', type: ['boolean'], default: 'true' },
@@ -942,6 +942,7 @@ export const api: Record<string, Api> = {
       { name: 'closeButton', type: ['boolean'], default: 'true' },
       { name: 'duration', type: ['number'], default: '5000' },
       { name: 'countdown', type: ['boolean'], default: 'false' },
+      { name: 'onClose', type: ['(reason: "action" | "close" | "expire") => void'] },
       { name: 'title', type: ['string'] },
       { name: 'id', type: ['string'] },
     ],

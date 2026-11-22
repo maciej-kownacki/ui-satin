@@ -248,3 +248,107 @@ describe('Toast countdown, by keyboard and on the real clock', () => {
     await expectNoAxeViolations()
   })
 })
+
+/* ---------- onClose: why it left, once ---------- */
+
+describe('Toast onClose', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    act(() => toast.dismiss())
+    tick(600)
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  it('says "action" when its action is taken, once', () => {
+    const onClose = vi.fn()
+    renderWithSatin(<Toaster />)
+    act(() => {
+      rejected({ onClose })
+    })
+    act(() => void fireEvent.click(screen.getByRole('button', { name: 'Undo' })))
+    expect(onClose).toHaveBeenCalledExactlyOnceWith('action')
+    tick(600)
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('says "close" for the close button, Escape and toast.dismiss', () => {
+    const onClose = vi.fn()
+    renderWithSatin(<Toaster />)
+    act(() => {
+      toast('Saved', { duration: Infinity, onClose })
+    })
+    act(() => void fireEvent.click(screen.getByRole('button', { name: 'Close' })))
+    expect(onClose).toHaveBeenCalledExactlyOnceWith('close')
+    tick(600)
+
+    const onEscape = vi.fn()
+    act(() => {
+      toast('Moved', { duration: Infinity, onClose: onEscape })
+    })
+    const close = screen.getByRole('button', { name: 'Close' })
+    act(() => close.focus())
+    act(() => void fireEvent.keyDown(close, { key: 'Escape', code: 'Escape' }))
+    expect(onEscape).toHaveBeenCalledExactlyOnceWith('close')
+    tick(600)
+
+    const onDismiss = vi.fn()
+    let id = ''
+    act(() => {
+      id = toast('Archived', { duration: Infinity, onClose: onDismiss })
+    })
+    act(() => toast.dismiss(id))
+    act(() => toast.dismiss(id))
+    expect(onDismiss).toHaveBeenCalledExactlyOnceWith('close')
+  })
+
+  it('says "expire" when its time runs out', () => {
+    const onClose = vi.fn()
+    renderWithSatin(<Toaster />)
+    act(() => {
+      rejected({ onClose })
+    })
+    tick(399)
+    expect(onClose).not.toHaveBeenCalled()
+    tick(1)
+    expect(onClose).toHaveBeenCalledExactlyOnceWith('expire')
+    tick(600)
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('tells the toast a new one replaces under the same id that it closed', () => {
+    const first = vi.fn()
+    const second = vi.fn()
+    renderWithSatin(<Toaster />)
+    act(() => {
+      rejected({ id: 'reject-maya', onClose: first })
+    })
+    act(() => {
+      rejected({ id: 'reject-maya', onClose: second })
+    })
+    expect(first).toHaveBeenCalledExactlyOnceWith('close')
+    expect(second).not.toHaveBeenCalled()
+    tick(400)
+    expect(second).toHaveBeenCalledExactlyOnceWith('expire')
+    expect(first).toHaveBeenCalledOnce()
+  })
+
+  it('warns and calls back with "expire" when no Toaster is mounted', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const order: string[] = []
+    const onClose = vi.fn(() => order.push('onClose'))
+    toast('Comment deleted', { onClose })
+    order.push('after toast()')
+    expect(onClose).not.toHaveBeenCalled()
+    await Promise.resolve()
+    expect(onClose).toHaveBeenCalledExactlyOnceWith('expire')
+    expect(order).toEqual(['after toast()', 'onClose'])
+    expect(warn).toHaveBeenCalledOnce()
+    // A Toaster mounted later shows it, but doesn't call back a second time.
+    renderWithSatin(<Toaster />)
+    act(() => toast.dismiss())
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+})

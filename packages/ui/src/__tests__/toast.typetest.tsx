@@ -3,7 +3,7 @@
  * a controlled and an uncontrolled `<Toast>` with a `ref` on its `<li>`.
  */
 import * as React from 'react'
-import { Toast, Toaster, toast, type ToastOptions } from '../components/toast'
+import { Toast, Toaster, toast, type ToastCloseReason, type ToastOptions } from '../components/toast'
 
 const undo: ToastOptions = {
   description: 'Maya Chen · Product designer',
@@ -14,6 +14,10 @@ const undo: ToastOptions = {
 export const id: string = toast('Candidate rejected', undo)
 toast.success('Saved', { countdown: false, duration: Infinity })
 toast('Saved', { id, duration: Infinity })
+
+toast('Comment deleted', { countdown: true, onClose: (reason: ToastCloseReason) => void (reason === 'action' || reason === 'expire') })
+// @ts-expect-error the reasons are action, close and expire
+toast('Comment deleted', { onClose: (reason) => reason === 'timeout' })
 
 // @ts-expect-error countdown is on or off
 toast('Saved', { countdown: 'on' })
