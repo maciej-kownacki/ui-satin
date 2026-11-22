@@ -36,6 +36,8 @@ const manifest = {
   // Pro's stylesheet leaves out what Free's has, and its JS imports Free's components, so the two
   // go together at one version.
   peerDependencies: pkg.peerDependencies,
+  // Lexical is optional: only the rich text editor (`@uisatin/pro/rich-text-editor`) imports it.
+  peerDependenciesMeta: pkg.peerDependenciesMeta,
   dependencies: pkg.dependencies,
 }
 for (const k of Object.keys(manifest)) if (manifest[k] === undefined) delete manifest[k]
