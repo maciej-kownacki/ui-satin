@@ -3,12 +3,12 @@
 import * as React from 'react'
 import { ArrowRight, Calendar, Check, Database, Download, Filter, Hashtag, List, Mail, Text, WarningCircle } from 'iconoir-react'
 import { Alert } from '@uisatin/ui/alert'
-import { FileIcon } from '@uisatin/ui/attachment'
+import { Attachment, FileIcon } from '@uisatin/ui/attachment'
 import { Button } from '@uisatin/ui/button'
 import { Checkbox } from '@uisatin/ui/checkbox'
 import { DialogDescription, DialogTitle } from '@uisatin/ui/dialog'
 import { EmptyState } from '@uisatin/ui/empty-state'
-import { FileUpload, formatBytes, type FileUploadRejection } from '@uisatin/ui/file-upload'
+import { FileUpload, FileUploadItem, formatBytes, type FileUploadFile, type FileUploadRejection } from '@uisatin/ui/file-upload'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
 import { Link } from '@uisatin/ui/link'
@@ -1958,8 +1958,13 @@ function UploadBody({
       t
     )
   const browsing = !!onBrowse && !disabled
+  const satin = useSatinLabels()
+  const attachment: FileUploadFile | null =
+    parse.status === 'reading' || parse.status === 'ready'
+      ? { id: 'csv', name: parse.file.name, size: parse.file.size, status: loaded ? 'done' : 'uploading', progress }
+      : null
   return (
-    <div className="flex flex-1 flex-col gap-3 pt-8">
+    <div className="flex flex-1 flex-col gap-3 pt-4">
       {parse.status === 'error' && (
         <Alert
           intent="error"
@@ -1976,6 +1981,8 @@ function UploadBody({
         />
       )}
       {flow.rejection && <Alert intent="error" title={labels.csvRejected(flow.rejection.name)} description={flow.rejection.reason} />}
+      {/* The attachment lands inside the zone, at its foot, so the zone keeps its size. */}
+      <div className="relative flex min-h-0 flex-1 flex-col">
       <FileUpload
         accept=".csv,text/csv,text/plain"
         multiple={false}
@@ -2004,11 +2011,7 @@ function UploadBody({
             text
           )
         }
-        files={
-          parse.status === 'reading' || parse.status === 'ready'
-            ? [{ id: 'csv', name: parse.file.name, size: parse.file.size, status: loaded ? 'done' : 'uploading', progress }]
-            : []
-        }
+        files={[]}
         onFilesAdded={flow.addFiles}
         onFilesRejected={flow.rejectFiles}
         onRemove={flow.removeFile}
@@ -2030,6 +2033,29 @@ function UploadBody({
           browsing && '[&>[data-slot=file-upload-zone]:not([data-dragging])]:cursor-pointer',
         )}
       />
+      {/* As FileUpload lists its files: an uploading row while the file is read, then the
+          attachment. Here they sit inside the zone, at its foot, so the zone keeps its size. */}
+      {attachment && (
+        <ul
+          className="absolute inset-x-4 bottom-4 m-0 list-none p-0"
+          aria-label={attachment.status === 'done' ? satin.attachedFiles : satin.files}
+        >
+          <li>
+            {attachment.status === 'done' ? (
+              <Attachment
+                name={attachment.name}
+                meta={`CSV · ${formatBytes(attachment.size ?? 0)}`}
+                icon={<FileIcon type="xlsx" />}
+                onRemove={flow.removeFile}
+                className="flex w-full [&_[data-attachment-main]]:flex-1 [&_[data-attachment-name]]:max-w-none"
+              />
+            ) : (
+              <FileUploadItem file={attachment} />
+            )}
+          </li>
+        </ul>
+      )}
+      </div>
       {templateHref && (
         <Link href={templateHref} download variant="muted" className="inline-flex items-center gap-1 self-start text-sm">
           <Download aria-hidden className="size-3.5 [stroke-width:1.875]" />
