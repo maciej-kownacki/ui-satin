@@ -1,10 +1,8 @@
 import * as React from 'react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
-import { $getRoot, $getSelection, $isElementNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_LOW, KEY_ESCAPE_COMMAND, createEditor, type LexicalEditor, type LexicalNode } from 'lexical'
-import { HeadingNode, QuoteNode } from '@lexical/rich-text'
-import { ListItemNode, ListNode } from '@lexical/list'
-import { LinkNode } from '@lexical/link'
+import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_LOW, KEY_ESCAPE_COMMAND, createEditor, type LexicalEditor, type LexicalNode } from 'lexical'
+import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
 import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown'
 import { Dialog } from '@uisatin/ui/dialog'
 import { FormField } from '@uisatin/ui/form-field'
@@ -12,6 +10,7 @@ import { ToolbarButton } from '@uisatin/ui/toolbar'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import {
   MentionNode,
+  RICH_TEXT_NODES,
   RICH_TEXT_TRANSFORMERS,
   RichTextEditor,
   RichTextEditorContent,
@@ -42,6 +41,13 @@ const DOC = [
   'Ask [@Tara Mendes](mention:tara-id) and read [the brief](https://example.com/brief).',
 ].join('\n\n')
 
+/** The demo's scorecard: a header row and four rows with empty ratings and notes. */
+const SCORECARD = [
+  '| Area | Rating | Notes |',
+  '| --- | --- | --- |',
+  ...['Communication', 'Craft', 'Culture', 'Hire'].map((area) => `| ${area} |  |  |`),
+].join('\n')
+
 const textbox = () => screen.getByRole('textbox')
 
 function renderEditor(ui: React.ReactElement<{ editorRef?: React.Ref<RichTextEditorHandle> }>, options?: Parameters<typeof renderWithSatin>[1]) {
@@ -52,7 +58,7 @@ function renderEditor(ui: React.ReactElement<{ editorRef?: React.Ref<RichTextEdi
 
 /** The document's nodes as `type` (and `type:tag` for headings and lists), depth first. */
 function nodeTypes(markdown: string) {
-  const editor = createEditor({ nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, MentionNode], onError: (e) => { throw e } })
+  const editor = createEditor({ nodes: RICH_TEXT_NODES, onError: (e) => { throw e } })
   editor.update(() => $convertFromMarkdownString(markdown, RICH_TEXT_TRANSFORMERS), { discrete: true })
   const types: string[] = []
   const walk = (node: LexicalNode) => {
@@ -340,10 +346,71 @@ describe('RichTextEditor', () => {
     expect(screen.getByText(/Użyto znaków/)).toBeTruthy()
   })
 
+  it('reads and writes a GFM table, its cells through the same transformers', () => {
+    const md = [
+      'Scores:',
+      '| Area | Rating | Notes |\n| --- | --- | --- |\n| **Craft** | 4 | Ask [@Tara Mendes](mention:tara-id) |\n| Culture |  | *fine* |',
+      'After.',
+    ].join('\n\n')
+    const { types, mention, back } = nodeTypes(md)
+    expect(types).toEqual([
+      'paragraph', 'text',
+      'table',
+      'tablerow', 'tablecell:th', 'paragraph', 'text', 'tablecell:th', 'paragraph', 'text', 'tablecell:th', 'paragraph', 'text',
+      'tablerow', 'tablecell:td', 'paragraph', 'text', 'tablecell:td', 'paragraph', 'text', 'tablecell:td', 'paragraph', 'text', 'mention',
+      'tablerow', 'tablecell:td', 'paragraph', 'text', 'tablecell:td', 'paragraph', 'tablecell:td', 'paragraph', 'text',
+      'paragraph', 'text',
+    ])
+    expect(mention).toEqual({ id: 'tara-id', label: 'Tara Mendes', bold: false })
+    expect(back).toBe(md)
+    const { editor } = nodeTypes(md)
+    editor.getEditorState().read(() => {
+      const table = $getRoot().getChildAtIndex(1)
+      expect(table).toBeInstanceOf(TableNode)
+      const [header, row] = (table as TableNode).getChildren() as TableRowNode[]
+      expect(header!.getChildren().every((cell) => (cell as TableCellNode).hasHeader())).toBe(true)
+      expect(row!.getChildren().some((cell) => (cell as TableCellNode).hasHeader())).toBe(false)
+      expect((row!.getChildren()[0] as TableCellNode).getAllTextNodes()[0]!.hasFormat('bold')).toBe(true)
+    })
+  })
+
+  it('escapes pipes in a cell, fills a short row and needs the divider', () => {
+    const { types, editor, back } = nodeTypes('| Area | Notes |\n| :-- | --: |\n| a \\| b | `x \\| y` |\n| short |')
+    editor.getEditorState().read(() => {
+      expect($getRoot().getTextContent()).toContain('a | b')
+      expect($getRoot().getTextContent()).toContain('x | y')
+    })
+    expect(back).toBe('| Area | Notes |\n| --- | --- |\n| a \\| b | `x \\| y` |\n| short |  |')
+    expect(types.filter((t) => t.startsWith('tablecell'))).toHaveLength(6)
+    // No divider: not a table, just text.
+    expect(nodeTypes('| a | b |\n| c | d |').types).not.toContain('table')
+  })
+
+  it('keeps text that reads like a mention as text across export and import', () => {
+    const literal = 'See [@Tara Mendes](mention:tara) and \\[@Ana](mention:ana)'
+    const code = '[@Marta](mention:marta)'
+    const editor = createEditor({ nodes: RICH_TEXT_NODES, onError: (e) => { throw e } })
+    editor.update(() => {
+      const paragraph = $createParagraphNode().append($createTextNode(literal), $createTextNode(' '), $createTextNode(code).toggleFormat('code'))
+      $getRoot().clear().append(paragraph)
+    }, { discrete: true })
+    const md = editor.getEditorState().read(() => $convertToMarkdownString(RICH_TEXT_TRANSFORMERS))
+    expect(richTextMentions(md)).toEqual([])
+    const { types, mention, back, editor: again } = nodeTypes(md)
+    expect(types).toEqual(['paragraph', 'text', 'text'])
+    expect(mention).toBeNull()
+    expect(back).toBe(md)
+    again.getEditorState().read(() => {
+      expect($getRoot().getTextContent()).toBe(`${literal} ${code}`)
+      expect($getRoot().getAllTextNodes()[1]!.hasFormat('code')).toBe(true)
+    })
+  })
+
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
     renderWithSatin(
       <>
         <RichTextEditor label="Feedback" hint="Shared with the panel." placeholder="Write your feedback" maxLength={500} />
+        <RichTextEditor label="Scorecard" defaultValue={SCORECARD} />
         <RichTextEditor label="Notes" defaultValue={DOC} readOnly />
         <FormField label="Summary" error="Required.">
           <RichTextEditor disabled />
@@ -684,7 +751,6 @@ const PEOPLE: RichTextMention[] = [
   { id: 'tom', label: 'Tom Okafor', description: 'Engineering manager' },
 ]
 const searchPeople = (query: string) => PEOPLE.filter((p) => p.label.toLowerCase().includes(query.toLowerCase()))
-const SCORECARD = '- Communication\n- Craft\n- Culture\n- Hire'
 const scorecard = (): RichTextCommand & { run: ReturnType<typeof vi.fn> } => ({
   name: 'scorecard',
   description: 'Add the interview scorecard',
@@ -851,7 +917,36 @@ describe('RichTextEditor mentions and commands', () => {
     const value = handle().getValue()
     expect(value).not.toContain('/sc')
     expect(value).toContain(SCORECARD)
-    expect([...textbox().querySelectorAll('ul > li')].map((li) => li.textContent)).toEqual(['Communication', 'Craft', 'Culture', 'Hire'])
+    lexical().getEditorState().read(() => expect($getRoot().getChildren().some((n) => n instanceof TableNode)).toBe(true))
+    const rows = [...textbox().querySelectorAll('table tr')].map((tr) => [...tr.children].map((cell) => `${cell.tagName}:${cell.textContent}`))
+    expect(rows).toEqual([
+      ['TH:Area', 'TH:Rating', 'TH:Notes'],
+      ...['Communication', 'Craft', 'Culture', 'Hire'].map((area) => [`TD:${area}`, 'TD:', 'TD:']),
+    ])
+  })
+
+  it('moves between table cells with Tab and Shift+Tab, and leaves Tab alone outside a table', async () => {
+    const { user, handle } = renderEditor(<RichTextEditor aria-label="Feedback" defaultValue={`Intro\n\n${SCORECARD}`} />)
+    act(() => handle().focus())
+    // The cell the caret is in, as "row,column", or null outside a table.
+    const caretCell = () => lexical().getEditorState().read(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return null
+      let node: LexicalNode | null = selection.anchor.getNode()
+      while (node && !(node instanceof TableCellNode)) node = node.getParent()
+      return node ? `${node.getParentOrThrow().getIndexWithinParent()},${node.getIndexWithinParent()}` : null
+    })
+    // In the Communication cell: Tab goes to its rating, Shift+Tab back.
+    act(() => lexical().update(() => $getRoot().getAllTextNodes().find((t) => t.getTextContent() === 'Communication')!.select(0, 0), { discrete: true }))
+    await user.keyboard('{Tab}')
+    expect(document.activeElement).toBe(textbox())
+    expect(caretCell()).toBe('1,1')
+    await user.keyboard('{Shift>}{Tab}{/Shift}')
+    expect(caretCell()).toBe('1,0')
+    // In the paragraph above, Tab leaves the editor.
+    act(() => lexical().update(() => $getRoot().getFirstChildOrThrow().selectEnd(), { discrete: true }))
+    await user.keyboard('{Tab}')
+    expect(document.activeElement).not.toBe(textbox())
   })
 
   it('opens neither menu mid-word, in a URL or after the query ends', () => {

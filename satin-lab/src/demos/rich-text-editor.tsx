@@ -5,7 +5,7 @@ import { Showcase, type ShowcaseOption } from '../components/Showcase'
 import { people as promptPeople } from './prompt-bar-data'
 
 // A recruiter writes interview feedback: @ mentions the panel (the Prompt bar demo's people and
-// Marta), / scorecard adds the scorecard. The scorecard is a list for now; a table comes later.
+// Marta), / scorecard adds the scorecard, a table to fill in (Tab moves between its cells).
 const people: RichTextMention[] = [
   { id: 'marta', label: 'Marta Nowak', description: 'Design lead, panel', avatar: <Avatar initials="MN" tone="fuchsia" size={20} aria-hidden /> },
   ...promptPeople,
@@ -18,12 +18,22 @@ const search = (query: string) =>
     setTimeout(() => resolve(people.filter((p) => `${p.label} ${p.description}`.toLowerCase().includes(q)).slice(0, 5)), 120)
   })
 
+/** The scorecard as markdown: a GFM table with a header row, ratings and notes left empty. */
+const scorecard = [
+  '| Area | Rating | Notes |',
+  '| --- | --- | --- |',
+  '| Communication |  |  |',
+  '| Craft |  |  |',
+  '| Culture |  |  |',
+  '| Hire |  |  |',
+].join('\n')
+
 const commands: RichTextCommand[] = [
   {
     name: 'scorecard',
     description: 'Add the interview scorecard',
     icon: <ClipboardCheck />,
-    run: ({ insert }) => insert('- Communication\n- Craft\n- Culture\n- Hire'),
+    run: ({ insert }) => insert(scorecard),
   },
   {
     name: 'summary',
@@ -43,8 +53,18 @@ export const options: ShowcaseOption[] = [
     label: 'Interview feedback',
     code: `import { RichTextEditor } from '@uisatin/pro/rich-text-editor'
 
-// @ mentions the panel, / scorecard adds the scorecard.
-// Select text with the pointer for the bubble, ⌘K for a link.
+// @ mentions the panel, / scorecard adds the scorecard (a table:
+// Tab moves between its cells). Select text with the pointer for
+// the bubble, ⌘K for a link.
+const scorecard = [
+  '| Area | Rating | Notes |',
+  '| --- | --- | --- |',
+  '| Communication |  |  |',
+  '| Craft |  |  |',
+  '| Culture |  |  |',
+  '| Hire |  |  |',
+].join('\\n')
+
 <RichTextEditor
   label="Feedback"
   hint="Shared with the hiring panel. Type @ to mention someone, / for commands."
@@ -55,7 +75,7 @@ export const options: ShowcaseOption[] = [
       name: 'scorecard',
       description: 'Add the interview scorecard',
       icon: <ClipboardCheck />,
-      run: ({ insert }) => insert('- Communication\\n- Craft\\n- Culture\\n- Hire'),
+      run: ({ insert }) => insert(scorecard),
     },
   ]}
   onValueChange={(markdown, { mentions }) => save(markdown, mentions)}

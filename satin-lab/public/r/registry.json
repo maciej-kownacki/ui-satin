@@ -2782,6 +2782,7 @@
         "@lexical/list@~0.53.0",
         "@lexical/markdown@~0.53.0",
         "@lexical/rich-text@~0.53.0",
+        "@lexical/table@~0.53.0",
         "iconoir-react@^7.12.2",
         "lexical@~0.53.0"
       ],

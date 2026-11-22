@@ -5,9 +5,11 @@
  * :focus-within, so a toolbar inside the field doesn't light it. The editable area is 96px tall
  * at least, 12 / 8 padding, 14/21 text, and resizes vertically under Textarea's grip.
  *
- * Lexical draws plain elements (p, h1–h3, ul, ol, li, blockquote, code, a, strong, em), styled
- * here by element under the content's data-slot; strikethrough has no element and takes the one
- * theme class, `satin-rte-strike`. A mention is Free's `<span data-slot="mention">` (mention.css).
+ * Lexical draws plain elements (p, h1–h3, ul, ol, li, blockquote, code, a, strong, em, table,
+ * th, td), styled here by element under the content's data-slot; strikethrough has no element and
+ * takes the theme class `satin-rte-strike`, a selection across table cells the two
+ * `satin-rte-cell-selected` and `satin-rte-table-selection`. A mention is Free's
+ * `<span data-slot="mention">` (mention.css).
  */
 .satin-field.satin-rte {
   position: relative;
@@ -171,6 +173,41 @@
 }
 [data-slot="rich-text-editor-content"] .satin-rte-strike {
   text-decoration: line-through;
+}
+
+/*
+ * Tables (GFM, from markdown or a command): a surface, so the default-width edge in
+ * border/default; header cells medium on bg/muted. Text starts at the inline start in both
+ * directions (a th would centre it). A selection across cells shows as bg/selected on the cells,
+ * and the browser's own highlight steps aside while it lasts (the table carries the class).
+ */
+[data-slot="rich-text-editor-content"] table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: auto;
+}
+[data-slot="rich-text-editor-content"] :is(th, td) {
+  padding: 4px 8px;
+  border: var(--border-width-default) solid var(--border-default);
+  text-align: start;
+  vertical-align: top;
+}
+[data-slot="rich-text-editor-content"] th {
+  background: var(--bg-muted);
+  font-weight: var(--font-weight-medium);
+}
+[data-slot="rich-text-editor-content"] :is(th, td) > * {
+  margin: 0;
+}
+[data-slot="rich-text-editor-content"] :is(th, td) > * + * {
+  margin-block-start: 4px;
+}
+[data-slot="rich-text-editor-content"] :is(th, td).satin-rte-cell-selected {
+  background: var(--bg-selected);
+}
+[data-slot="rich-text-editor-content"] .satin-rte-table-selection ::selection {
+  background: transparent;
 }
 
 /* ---------- toolbars ---------- */

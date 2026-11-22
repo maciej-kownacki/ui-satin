@@ -349,7 +349,7 @@
     "limit": "21 kB"
   },
   {
-    "name": "Rich text editor (Satin Pro) with the Lexical engine (lexical, @lexical/*: an optional peer; @uisatin/ui left out). Lexical's entries carry its dev and prod builds and size-limit sets no NODE_ENV, so this counts both; an app's production build is about 97 kB",
+    "name": "Rich text editor (Satin Pro) with the Lexical engine, @lexical/table included (lexical, @lexical/*: an optional peer; @uisatin/ui left out). Lexical's entries carry its dev and prod builds and size-limit sets no NODE_ENV, so this counts both (151 kB before @lexical/table); in an app's production build @lexical/table adds about 20 kB to the 97 kB",
     "path": "packages/ui-pro/dist/components/rich-text-editor.js",
     "import": "{ RichTextEditor }",
     "gzip": true,
@@ -358,7 +358,7 @@
       "react-dom",
       "@uisatin/ui"
     ],
-    "limit": "156 kB"
+    "limit": "190 kB"
   },
   {
     "name": "Rich text editor (Satin Pro), its own code only: Lexical and @uisatin/ui left out (its toolbar icons from iconoir-react, about 2.3 kB, counted)",
@@ -374,7 +374,8 @@
       "@lexical/list",
       "@lexical/link",
       "@lexical/markdown",
-      "@lexical/history"
+      "@lexical/history",
+      "@lexical/table"
     ],
     "limit": "14.5 kB"
   }

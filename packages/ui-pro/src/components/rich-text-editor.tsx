@@ -17,6 +17,7 @@ import {
   $isTextNode,
   $setSelection,
   CLEAR_HISTORY_COMMAND,
+  COMMAND_PRIORITY_CRITICAL,
   COMMAND_PRIORITY_EDITOR,
   COMMAND_PRIORITY_HIGH,
   FORMAT_TEXT_COMMAND,
@@ -73,6 +74,7 @@ import {
   QUOTE,
   STRIKETHROUGH,
   UNORDERED_LIST,
+  type MultilineElementTransformer,
   type TextMatchTransformer,
   type Transformer,
 } from '@lexical/markdown'
@@ -85,6 +87,21 @@ import {
   QuoteNode,
   registerRichText,
 } from '@lexical/rich-text'
+import {
+  $createTableCellNode,
+  $createTableNode,
+  $createTableRowNode,
+  $isTableCellNode,
+  $isTableNode,
+  $isTableRowNode,
+  TableCellHeaderStates,
+  TableCellNode,
+  TableNode,
+  TableRowNode,
+  registerTableCellUnmergeTransform,
+  registerTablePlugin,
+  registerTableSelectionObserver,
+} from '@lexical/table'
 import { Bold, Code, Italic, Link as LinkIcon, List, NavArrowDown, NumberedListLeft, NumberedListRight, Quote, Strikethrough } from 'iconoir-react'
 import { Button } from '@uisatin/ui/button'
 import { DropdownMenu, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@uisatin/ui/dropdown'
@@ -116,7 +133,7 @@ import {
 
 /**
  * RichTextEditor: a field for notes, emails and job descriptions with headings, lists, quotes,
- * links, bold, italic, strikethrough, inline code and @mentions. It wears Textarea's skin (the
+ * tables, links, bold, italic, strikethrough, inline code and @mentions. It wears Textarea's skin (the
  * `.satin-field` edge, fill and focus ring, at least 96px tall with a resize grip), with a label
  * above, and the hint or the error and a `status` slot (a character count with `maxLength`) under
  * it, so it sits next to Input and Textarea in a Form.
@@ -130,13 +147,17 @@ import {
  *   (`defaultValue`).
  * - The markdown is the editor's own spelling: `**bold**`, `*italic*`, `~~struck~~`, `` `code` ``,
  *   `# ` to `### ` headings, `- ` and `1. ` lists (a list keeps the marker it came with, `*` or
- *   `+`), `> ` quotes, `[text](url)` links and `[@Tara Mendes](mention:tara-id)` mentions, one
- *   blank line between blocks. A value spelled another way (`__bold__`, blank lines between list
- *   items) reads the same and comes back in this spelling with the next edit. Nothing is sent on
- *   mount, or for a change of selection.
+ *   `+`), `> ` quotes, `[text](url)` links, `[@Tara Mendes](mention:tara-id)` mentions and GFM
+ *   tables (`| a | b |` rows, a `| --- | --- |` divider under the header row, `\|` for a pipe in
+ *   a cell, `<br>` between a cell's paragraphs), one blank line between blocks. A value spelled
+ *   another way (`__bold__`, blank lines between list items) reads the same and comes back in
+ *   this spelling with the next edit. Nothing is sent on mount, or for a change of selection.
  * - `onValueChange(value, { mentions })` fires once per edit that changes the value. A `value`
  *   the editor sent itself is never loaded back (so a parent a render behind doesn't undo the
  *   typing); any other `value` replaces the document and clears undo.
+ * - Tables come in through markdown (a command's `insert`, a value) or a pasted HTML table,
+ *   whose merged cells are split (markdown has none); there are no controls to add rows or
+ *   columns. Tab and Shift+Tab move between cells; outside a table Tab leaves the editor.
  * - Underline, subscript, superscript and highlight aren't supported: pasted text (a Google Docs
  *   link arrives underlined) keeps its bold, italic, links and lists and drops those.
  * - Disabled: not editable, out of the tab order, the field at 60%. Read-only: not editable, but
@@ -391,7 +412,11 @@ const decodeId = (id: string) => {
   }
 }
 
-/** The markdown transformer for mentions. Listed before LINK, which would read it as a link. */
+/**
+ * The markdown transformer for mentions. Listed before LINK, which would read it as a link.
+ * Plain text that reads like a mention (typed or pasted `[@Tara](mention:tara)`) needs nothing
+ * here: Lexical writes its brackets as `&#91;` and `&#93;`, so it comes back as text.
+ */
 export const MENTION: TextMatchTransformer = {
   dependencies: [MentionNode],
   export: (node, _exportChildren, exportFormat) => {
@@ -413,11 +438,100 @@ export const MENTION: TextMatchTransformer = {
   type: 'text-match',
 }
 
+/* GFM tables: `| a | b |` rows, a `| --- | --- |` divider under the header row. */
+const TABLE_ROW_RE = /^\s*\|.*\|\s*$/
+const TABLE_DIVIDER_RE = /^\s*\|(?:\s*:?-+:?\s*\|)+\s*$/
+/** A line break inside a cell, which a row can't hold as a newline. */
+const CELL_BREAK_RE = /<br\s*\/?>/i
+
+/**
+ * A row's cells: split on the pipes that aren't escaped, with `\|` read back as `|` (a GFM
+ * escape that belongs to the table, not to the cell's markdown). Other escapes stay for the
+ * cell's own reading.
+ */
+function splitTableRow(line: string): string[] {
+  const inner = line.trim().slice(1)
+  const cells: string[] = []
+  let cell = ''
+  for (let i = 0; i < inner.length; i++) {
+    const ch = inner[i]!
+    const next = inner[i + 1]
+    if (ch === '\\' && next !== undefined) {
+      cell += next === '|' ? '|' : ch + next
+      i++
+    } else if (ch === '|') {
+      cells.push(cell.trim())
+      cell = ''
+    } else cell += ch
+  }
+  return cells
+}
+
+/** A cell from its markdown: inline marks, links and mentions, `<br>` between paragraphs. */
+function $createTableCell(markdown: string, header: boolean): TableCellNode {
+  const cell = $createTableCellNode(header ? TableCellHeaderStates.ROW : TableCellHeaderStates.NO_STATUS)
+  const blocks = markdown.split(CELL_BREAK_RE).join('\n\n')
+  const nodes = blocks.trim() ? $generateNodesFromMarkdownString(blocks, RICH_TEXT_TRANSFORMERS) : []
+  cell.append(...(nodes.length ? nodes : [$createParagraphNode()]))
+  return cell
+}
+
+/**
+ * The markdown transformer for tables (GFM). The first row is the header; a row with fewer
+ * cells is filled with empty ones, one with more loses the rest. A cell's text goes through the
+ * same transformers (marks, links, mentions), with `|` escaped as `\|` and its paragraphs joined
+ * by `<br>`. A table always goes out with a header row: GFM has no table without one.
+ */
+export const TABLE: MultilineElementTransformer = {
+  dependencies: [TableNode, TableRowNode, TableCellNode],
+  export: (node) => {
+    if (!$isTableNode(node)) return null
+    const rows: string[] = []
+    for (const row of node.getChildren()) {
+      if (!$isTableRowNode(row)) continue
+      const cells = row.getChildren().filter($isTableCellNode).map((cell) =>
+        $convertToMarkdownString(RICH_TEXT_TRANSFORMERS, cell)
+          .trim()
+          .replace(/\n+/g, '<br>')
+          .replace(/\|/g, '\\|'),
+      )
+      rows.push(`| ${cells.join(' | ')} |`)
+      if (rows.length === 1) rows.push(`| ${cells.map(() => '---').join(' | ')} |`)
+    }
+    return rows.length ? rows.join('\n') : null
+  },
+  regExpStart: TABLE_ROW_RE,
+  handleImportAfterStartMatch: ({ lines, rootNode, startLineIndex }) => {
+    const divider = lines[startLineIndex + 1]
+    if (divider === undefined || !TABLE_DIVIDER_RE.test(divider)) return null
+    const header = splitTableRow(lines[startLineIndex]!)
+    if (splitTableRow(divider).length !== header.length) return null
+    const rows = [header]
+    let end = startLineIndex + 1
+    while (end + 1 < lines.length && TABLE_ROW_RE.test(lines[end + 1]!)) rows.push(splitTableRow(lines[++end]!))
+    const table = $createTableNode()
+    rows.forEach((cells, index) => {
+      const row = $createTableRowNode()
+      for (let column = 0; column < header.length; column++) row.append($createTableCell(cells[column] ?? '', index === 0))
+      table.append(row)
+    })
+    rootNode.append(table)
+    return [true, end]
+  },
+  // Only read through handleImportAfterStartMatch (the editor has no markdown shortcuts).
+  replace: () => false,
+  type: 'multiline-element',
+}
+
+/** The nodes the editor (and a headless editor reading its value) needs. */
+export const RICH_TEXT_NODES = [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, MentionNode, TableNode, TableRowNode, TableCellNode]
+
 /**
  * The markdown the editor reads and writes. No fenced code and no highlight: the editor has no
  * block for the one and no mark for the other.
  */
 export const RICH_TEXT_TRANSFORMERS: Transformer[] = [
+  TABLE,
   HEADING,
   QUOTE,
   UNORDERED_LIST,
@@ -436,7 +550,7 @@ export const RICH_TEXT_TRANSFORMERS: Transformer[] = [
 
 /**
  * The mentions in a value, in order, each once (by id). For markdown it reads the
- * `[@Label](mention:id)` links; for JSON, the `mention` nodes.
+ * `[@Label](mention:id)` links outside code spans; for JSON, the `mention` nodes.
  */
 export function richTextMentions(value: RichTextDocument, format: RichTextFormat = 'markdown'): RichTextMentionRef[] {
   const found: RichTextMentionRef[] = []
@@ -461,7 +575,10 @@ export function richTextMentions(value: RichTextDocument, format: RichTextFormat
     }
     return found
   }
-  for (const m of value.matchAll(new RegExp(MENTION_RE.source, 'g'))) {
+  // A code span's text and an escaped bracket are text, not mentions, as the editor reads them.
+  const text = value.replace(/(`+)(?!`)[\s\S]*?[^`]\1(?!`)/g, (span) => ' '.repeat(span.length))
+  for (const m of text.matchAll(new RegExp(MENTION_RE.source, 'g'))) {
+    if (/(^|[^\\])(\\\\)*\\$/.test(text.slice(0, m.index))) continue
     add({ id: decodeId(m[3]), label: unescapeLabel(m[2]), trigger: m[1] })
   }
   return found
@@ -476,6 +593,9 @@ const UNSUPPORTED_FORMATS: TextFormatType[] = ['underline', 'subscript', 'supers
 const THEME = {
   // The one mark with no element of its own; the rest are styled by element in rich-text-editor.css.
   text: { strikethrough: 'satin-rte-strike' },
+  // A selection across table cells: the cells it covers, and the table while it has one.
+  tableCellSelected: 'satin-rte-cell-selected',
+  tableSelection: 'satin-rte-table-selection',
 }
 
 /** Replaces the document with `value`. JSON goes through `setEditorState`, markdown through an update. */
@@ -949,7 +1069,7 @@ export function RichTextEditorRoot({
     const instance = createEditor({
       namespace: 'satin-rich-text-editor',
       theme: THEME,
-      nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, MentionNode],
+      nodes: RICH_TEXT_NODES,
       editable: !isDisabled && !readOnly,
       onError: (error) => {
         throw error
@@ -1319,6 +1439,12 @@ export function RichTextEditorRoot({
     const unregister = mergeRegister(
       registerRichText(editor),
       registerList(editor),
+      // Tables: their integrity transforms, then Tab and Shift+Tab between cells and the cell
+      // selection (a Tab outside a table still leaves the editor), and merged cells split, as
+      // markdown has none.
+      registerTablePlugin(editor),
+      registerTableSelectionObserver(editor),
+      registerTableCellUnmergeTransform(editor),
       registerHistory(editor, createEmptyHistoryState(), 300),
       editor.registerCommand(
         TOGGLE_LINK_COMMAND,
@@ -1338,32 +1464,33 @@ export function RichTextEditorRoot({
       editor.registerNodeTransform(MentionNode, strip),
       editor.registerCommand(KEY_DOWN_COMMAND, (event) => onShortcut(event), COMMAND_PRIORITY_HIGH),
       editor.registerUpdateListener(findQuery),
+      // The open menu's keys come first: in a table, the table's own arrows and Tab (high) follow.
       editor.registerCommand(
         KEY_ARROW_DOWN_COMMAND,
         menuKey((menu) => !!menu.items?.length && (menu.move(1), true)),
-        COMMAND_PRIORITY_HIGH,
+        COMMAND_PRIORITY_CRITICAL,
       ),
       editor.registerCommand(
         KEY_ARROW_UP_COMMAND,
         menuKey((menu) => !!menu.items?.length && (menu.move(-1), true)),
-        COMMAND_PRIORITY_HIGH,
+        COMMAND_PRIORITY_CRITICAL,
       ),
       editor.registerCommand(
         KEY_ENTER_COMMAND,
         menuKey((menu, event) => !!menu.current && plain(event) && (pickRef.current(menu.current), true)),
-        COMMAND_PRIORITY_HIGH,
+        COMMAND_PRIORITY_CRITICAL,
       ),
       // Tab only while there are rows: with "No results" it leaves the editor as usual.
       editor.registerCommand(
         KEY_TAB_COMMAND,
         menuKey((menu, event) => menu.listed && !!menu.current && plain(event) && (pickRef.current(menu.current), true)),
-        COMMAND_PRIORITY_HIGH,
+        COMMAND_PRIORITY_CRITICAL,
       ),
       // Taken only while the menu is open, so a Dialog around the editor still closes on the next one.
       editor.registerCommand(
         KEY_ESCAPE_COMMAND,
         menuKey((menu) => (menu.dismiss(), true)),
-        COMMAND_PRIORITY_HIGH,
+        COMMAND_PRIORITY_CRITICAL,
       ),
       // A mention that goes (Backspace takes it whole, a cut, an undo) is said in the status region.
       editor.registerMutationListener(
