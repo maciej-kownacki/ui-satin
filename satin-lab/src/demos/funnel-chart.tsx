@@ -2,11 +2,11 @@ import { FunnelChart, type FunnelConversion, type FunnelStage } from '@uisatin/p
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
 /**
- * Funnel chart (Satin Pro): a quarter of hiring, Applied 240 down to Hired 3, as rows the page
- * opens on or as columns. The controls set the orientation, which conversions each stage says
- * and whether the data table shows under the bars. Three of the four steps lose half or more,
+ * Funnel chart (Satin Pro): a quarter of hiring, Applied 240 down to Hired 3, flowing left to
+ * right as the page opens, or top to bottom. The controls set the orientation, which conversions each stage says
+ * and whether the data table shows under the funnel. Three of the four steps lose half or more,
  * so they carry the amber drop-off Badge. The second demo is a sales pipeline in euros, as
- * columns, with a stricter `dropOffWarning`.
+ * a funnel flowing top to bottom, with a stricter `dropOffWarning`.
  *
  * The stage is pinned to the top at the tallest combination's height (rows with the table), so
  * switching the props never moves the controls under it.
@@ -45,7 +45,7 @@ const underscored = (v: number) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '_
 /* ---------- hiring ---------- */
 
 export const controls: ShowcaseControl[] = [
-  { id: 'orientation', label: 'Orientation', items: [{ value: 'horizontal', label: 'Rows' }, { value: 'vertical', label: 'Columns' }] },
+  { id: 'orientation', label: 'Orientation', items: [{ value: 'horizontal', label: 'Left to right' }, { value: 'vertical', label: 'Top to bottom' }] },
   { id: 'conversion', label: 'Conversion', type: 'menu', default: 'both', items: CONVERSIONS },
   { id: 'table', label: 'Table', type: 'switch', default: 'off' },
 ]
@@ -76,7 +76,7 @@ ${attrs.map((a) => `      ${a}`).join('\n')}
 export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   id: comboId(controls, v),
   label: [
-    v.orientation === 'vertical' ? 'Columns' : 'Rows',
+    v.orientation === 'vertical' ? 'Top to bottom' : 'Left to right',
     CONVERSIONS.find((c) => c.value === v.conversion)?.label ?? '',
     v.table === 'on' ? 'Table shown' : 'Table hidden',
   ].join(' · '),

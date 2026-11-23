@@ -2,7 +2,7 @@ import * as React from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin, setReducedMotion } from 'satin-test'
-import { FunnelChart, FunnelTable, funnelRows, type FunnelStage } from '../components/funnel-chart'
+import { FunnelChart, FunnelTable, funnelRows, funnelShapePath, type FunnelStage } from '../components/funnel-chart'
 
 const hiring: FunnelStage[] = [
   { label: 'Applied', value: 240 },
@@ -12,7 +12,7 @@ const hiring: FunnelStage[] = [
   { label: 'Hired', value: 3 },
 ]
 
-const bars = (root: ParentNode = document) => [...root.querySelectorAll<HTMLElement>('[data-slot="funnel-chart-bar"]')]
+const bars = (root: ParentNode = document) => [...root.querySelectorAll<SVGSVGElement>('[data-slot="funnel-chart-shape"]')]
 
 afterEach(() => {
   setReducedMotion(false)
@@ -56,9 +56,19 @@ describe('FunnelChart', () => {
     ])
   })
 
-  it('draws each bar as its share of the first stage', () => {
+  it('draws each stage as thick as its share of the first, easing to the next', () => {
     renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
-    expect(bars().map((b) => b.style.width)).toEqual(['100%', '25%', '7.5%', '1.66667%', '1.25%'])
+    const paths = bars().map((b) => b.querySelector('path')!.getAttribute('d'))
+    expect(paths[0]).toBe(funnelShapePath(1, 0.25))
+    expect(paths[0]).toBe('M 0 0 C 50 0 50 37.5 100 37.5 L 100 62.5 C 50 62.5 50 100 0 100 Z')
+    // The last stage stays flat.
+    expect(paths[4]).toBe(funnelShapePath(0.0125, 0.0125))
+    // A small stage keeps 3% of the height.
+    expect(paths[4]).toBe('M 0 48.5 C 50 48.5 50 48.5 100 48.5 L 100 51.5 C 50 51.5 50 51.5 0 51.5 Z')
+  })
+
+  it('flows top to bottom when vertical', () => {
+    expect(funnelShapePath(1, 0.5, true)).toBe('M 0 0 C 0 50 25 50 25 100 L 75 100 C 75 50 100 50 100 0 Z')
   })
 
   it('marks a big drop-off with an icon and words, not colour alone', () => {
@@ -85,7 +95,8 @@ describe('FunnelChart', () => {
       />,
     )
     expect(screen.getAllByRole('listitem')).toHaveLength(2)
-    expect(bars(container)[1].style.width).toBe('0%')
+    // The flow narrows to nothing; the stage keeps its column.
+    expect(bars(container)[1].querySelector('path')!.getAttribute('d')).toBe(funnelShapePath(0, 0))
     expect(screen.getAllByRole('listitem')[1].getAttribute('aria-label')).toBe('Payment: 0, 0% of Cart, drop-off 50, big drop-off')
   })
 
@@ -114,7 +125,7 @@ describe('FunnelChart', () => {
     const tooltip = document.querySelector('[data-slot="chart-tooltip"]')!
     expect(tooltip.textContent).toContain('Interview')
     expect(tooltip.textContent).toContain('18 · 30% of Screening')
-    expect(tooltip.textContent).not.toContain('drop-off')
+    expect(tooltip.textContent).toContain('18 · 30% of Screening · drop-off 42')
   })
 
   it('moves the other way under right to left in reading order', async () => {
@@ -162,7 +173,7 @@ describe('FunnelChart', () => {
   it('is busy while loading, at the height of five stages', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={[]} loading />)
     expect(screen.getByRole('figure', { name: 'Hiring' }).getAttribute('aria-busy')).toBe('true')
-    expect(container.querySelector('[data-slot="funnel-chart"] > .min-h-\\[332px\\]')).not.toBeNull()
+    expect(container.querySelector('[data-slot="funnel-chart"] > .min-h-\\[300px\\]')).not.toBeNull()
     expect(screen.queryByRole('table')).toBeNull()
   })
 
@@ -170,7 +181,7 @@ describe('FunnelChart', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={[]} empty="No applicants yet" />)
     expect(screen.getByText('No applicants yet')).not.toBeNull()
     expect(container.querySelector('[data-slot="funnel-chart"]')!.getAttribute('data-state')).toBe('empty')
-    expect(container.querySelector('.min-h-\\[332px\\]')).not.toBeNull()
+    expect(container.querySelector('.min-h-\\[300px\\]')).not.toBeNull()
   })
 
   it('shows the error politely with Retry', async () => {

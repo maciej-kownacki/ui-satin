@@ -27,16 +27,16 @@ const salesHtml = await highlight(salesOptions)
       </p>
       <p class="text-base leading-6 text-text-muted">
         A table with the same numbers (stage, count, from previous, from first, drop-off) is always in the page for screen
-        readers; <Chip>showTable</Chip> shows it under the bars. It is also exported as <Chip>FunnelTable</Chip>, and
+        readers; <Chip>showTable</Chip> shows it under the funnel. It is also exported as <Chip>FunnelTable</Chip>, and
         <Chip>funnelRows</Chip> returns the numbers both read, for a funnel drawn your own way.
       </p>
     </section>
 
     <section aria-labelledby="sales-title" class="flex flex-col gap-3 pt-8">
-      <h2 id="sales-title" class="text-lg font-medium text-text-default">Sales pipeline, in columns</h2>
+      <h2 id="sales-title" class="text-lg font-medium text-text-default">Sales pipeline, top to bottom</h2>
       <p class="text-base leading-6 text-text-muted">
-        <Chip>orientation="vertical"</Chip> draws one column per stage, rising from a shared baseline, with the label and the
-        conversion under it. Here the stages are the pipeline's value in euros, so <Chip>format</Chip> writes every amount,
+        <Chip>orientation="vertical"</Chip> turns the flow to run top to bottom, one row per stage with its words at the
+        start. Here the stages are the pipeline's value in euros, so <Chip>format</Chip> writes every amount,
         drop-offs included, as currency. With <Chip>dropOffWarning={'{0.55}'}</Chip> only the two steps that lose 60% or more are
         flagged. A checkout funnel (Cart, Checkout, Payment, Paid) is the same component again.
       </p>
@@ -48,10 +48,10 @@ const salesHtml = await highlight(salesOptions)
       <p class="text-base leading-6 text-text-muted">
         <Chip>loading</Chip> shows Skeleton rows, empty <Chip>stages</Chip> an EmptyState titled by <Chip>empty</Chip> ("No
         applicants yet"), and <Chip>error</Chip> the reason with Retry when <Chip>onRetry</Chip> is set. Loading, empty and error keep the
-        height of a five-stage funnel, so a dashboard doesn't jump when the data arrives. A stage of 0 keeps its row with an empty track.
+        height of a five-stage funnel, so a dashboard doesn't jump when the data arrives. A stage of 0 keeps its column; the flow narrows to nothing there.
       </p>
       <p class="text-base leading-6 text-text-muted">
-        On first appearance the bars fade in from 95% of their length, 25 ms apart (the fifth and any after it together), never growing from zero; new values swap in
+        On first appearance each stage's piece of the flow fades in from 95% of its thickness, 25 ms apart (the fifth and any after it together), never growing from zero; new values swap in
         place. Under reduced motion, or with <Chip>reducedMotion</Chip>, there is no entrance.
       </p>
     </section>

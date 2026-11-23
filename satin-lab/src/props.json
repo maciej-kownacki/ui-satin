@@ -5598,7 +5598,7 @@
   },
   "funnel-chart": {
     "FunnelChartStage": {
-      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). Horizontal: the conversion line (from the second stage on), the label and the count, then the track with its bar. Vertical: the count, the bar rising in its 160px track, the label, then the conversion and drop-off. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, at the bar's end. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
+      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The words on top (horizontal) or at the start (vertical): the label, the count with its share of the first, the conversion from the previous stage, the drop-off with its warning Badge. Then its piece of the funnel: a chart/3 shape as thick as its share of the first, easing to the next stage's. A hairline in border-subtle parts it from the stage before. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, on the shape's edge mid-stage. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
       "type": "FunnelChartStageProps",
       "extends": [
         "Omit<React.ComponentProps<'span'>, 'children'>"
@@ -5608,6 +5608,12 @@
           "name": "row",
           "type": "FunnelRow",
           "required": true
+        },
+        {
+          "name": "nextShare",
+          "type": "number",
+          "required": false,
+          "description": "The next stage's share of the first (0–1): the shape eases to it across the stage. Default: the stage's own, flat."
         },
         {
           "name": "orientation",
@@ -5632,14 +5638,14 @@
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "Another stage is on show: this one's bar fades back."
+          "description": "Another stage is on show: this one's shape fades back."
         },
         {
           "name": "enter",
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "Fades the bar in from 95% of its length, once, when it mounts."
+          "description": "Fades the shape in from 95% of its thickness, once, when it mounts."
         }
       ]
     },
@@ -5733,7 +5739,7 @@
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "Shows the data table under the bars; it is always in the DOM for screen readers."
+          "description": "Shows the data table under the funnel; it is always in the DOM for screen readers."
         },
         {
           "name": "loading",
@@ -5752,7 +5758,7 @@
           "name": "error",
           "type": "React.ReactNode | boolean",
           "required": false,
-          "description": "Shows the reason in place of the bars, read out politely; `true` says \"Couldn't load\"."
+          "description": "Shows the reason in place of the funnel, read out politely; `true` says \"Couldn't load\"."
         },
         {
           "name": "onRetry",

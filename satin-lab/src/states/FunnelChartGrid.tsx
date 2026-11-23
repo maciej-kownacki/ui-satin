@@ -1,8 +1,8 @@
 import { FunnelChart, type FunnelChartProps, type FunnelStage } from '@uisatin/pro/funnel-chart'
 
 /**
- * Every state of Satin Pro's FunnelChart, each card 440px wide on the page's bg/card, rows as
- * rows of three and columns below, so heights can be compared across a row: loading, empty and
+ * Every state of Satin Pro's FunnelChart, each card 440px wide on the page's bg/card, flowing
+ * left to right in rows of three, then top to bottom below, so heights can be compared across a row: loading, empty and
  * error have to stand exactly as tall as a loaded five-stage funnel. No entrance
  * (`reducedMotion`), so screenshots are stable.
  */

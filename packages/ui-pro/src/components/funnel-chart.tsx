@@ -14,19 +14,19 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  * FunnelChart: a conversion funnel through stages (recruiting, sales, checkout), in the chart
  * card frame (Free's `ChartCard`: title, range, an optional KPI and period Select).
  *
- * - Horizontal (default): one full-width row per stage, the label and the count on top and a
- *   20px track under them whose chart/3 bar is the stage's share of the first stage. Between two
- *   stages a line says the conversion from the previous one and the drop-off ("25% of Applied ·
- *   drop-off 180"); the count row adds the share of the first stage. A drop-off of at least
- *   `dropOffWarning` (default half the previous stage) earns an amber Badge with a warning icon
- *   and the share lost ("−75%"), and the words "big drop-off" in the stage's name: never colour
- *   alone. A stage of 0 keeps its row with an empty track, so nothing jumps.
- * - Vertical: one column per stage, the bars rising from a 160px baseline, the label under and
- *   the conversion and drop-off under that.
- * - Calm bars, no trapezoids. On first appearance they fade in from 95% of their length (opacity
- *   and transform, 250 ms on ease-out, 25 ms apart top to bottom), never from zero; none under
+ * - The shape: one chart/3 flow, as thick as each stage's share of the first stage, centred,
+ *   easing on an S-curve from one stage's thickness to the next's across the stage. Horizontal
+ *   (default) flows left to right, one column per stage, its words on top (the label, the count
+ *   with its share of the first, the conversion from the previous stage, the drop-off). Vertical
+ *   flows top to bottom, one row per stage, its words at the start. A hairline in
+ *   border-subtle parts the stages, with 2px either side, so they read as steps of one flow.
+ * - A drop-off of at least `dropOffWarning` (default half the previous stage) earns an amber
+ *   Badge with a warning icon and the share lost ("−75%"), and the words "big drop-off" in the
+ *   stage's name: never colour alone. A stage of 0 keeps its column; the flow narrows to nothing.
+ * - On first appearance each stage's shape fades in from 95% of its thickness (opacity and
+ *   transform, 250 ms on ease-out, 25 ms apart, at most four steps), never from zero; none under
  *   reduced motion or with `reducedMotion`. New values swap in place.
- * - Hover and keyboard focus show the same words in a ChartTooltip at the bar's end; after the
+ * - Hover and keyboard focus show the stage in a ChartTooltip on the shape's edge; after the
  *   pointer it glides from stage to stage (`useGlide`), under the keyboard it jumps. The funnel
  *   is one tab stop (roving tab index): ↑ ↓ (and ← → in reading order) move between stages,
  *   Home and End jump. With `onStageSelect` every stage is a button (Enter, Space); without, a
@@ -39,8 +39,8 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  * - Counts and percentages are written with `Intl.NumberFormat` in the labels' `dateLocale`;
  *   `format` writes counts another way (currency).
  *
- * Parts: `FunnelChartStage` (one stage's drawing), `FunnelTable`, and `funnelRows` (the numbers
- * both read). Other props, `ref` included, go to the card's root `div`.
+ * Parts: `FunnelChartStage` (one stage's drawing), `FunnelTable`, `funnelRows` (the numbers both
+ * read) and `funnelShapePath`. Other props, `ref` included, go to the card's root `div`.
  */
 
 /** The words the Funnel chart says on its own. They join SatinLabels, so the app translates them there. */
@@ -162,6 +162,16 @@ function stageDetails(row: FunnelRow, labels: Labels, fmt: Formatters, conversio
   return details
 }
 
+/**
+ * The tooltip's line: the count, one conversion, and the drop-off when it is big (the column
+ * shows only its Badge then). Short, so it fits a phone; the name and the table say the rest.
+ */
+function tooltipValue(row: FunnelRow, labels: Labels, fmt: Formatters, conversion: FunnelConversion) {
+  const drop = row.dropOff != null ? labels.funnelDropOff(fmt.count(row.dropOff)) : null
+  const conversionText = stageDetails(row, labels, fmt, conversion).find((d) => d !== drop && d !== labels.funnelBigDropOff)
+  return [fmt.count(row.value), conversionText, row.bigDropOff ? drop : null].filter(Boolean).join(' · ')
+}
+
 /** The amber Badge for a big drop-off: a warning icon and the share lost ("−75%"). */
 function DropOffBadge({ row, fmt }: { row: FunnelRow; fmt: Formatters }) {
   if (!row.bigDropOff || row.dropOffShare == null) return null
@@ -182,25 +192,52 @@ function DropOffBadge({ row, fmt }: { row: FunnelRow; fmt: Formatters }) {
 
 export interface FunnelChartStageProps extends Omit<React.ComponentProps<'span'>, 'children'> {
   row: FunnelRow
+  /** The next stage's share of the first (0–1): the shape eases to it across the stage. Default: the stage's own, flat. */
+  nextShare?: number
   orientation?: 'horizontal' | 'vertical'
   showConversion?: FunnelConversion
   /** Writes the count. Default: the number in `dateLocale`. */
   format?: (value: number) => string
-  /** Another stage is on show: this one's bar fades back. */
+  /** Another stage is on show: this one's shape fades back. */
   dimmed?: boolean
-  /** Fades the bar in from 95% of its length, once, when it mounts. */
+  /** Fades the shape in from 95% of its thickness, once, when it mounts. */
   enter?: boolean
 }
 
+// A stage that isn't 0 stays at least this thick (3%, 6px of the 200px shape), so a long tail
+// of small stages still shows; its words and the table give the true share.
+const MIN_SHARE = 0.03
+const thick = (share: number) => (share > 0 ? Math.max(share, MIN_SHARE) : 0)
+// The shape's edges, in a 0–100 box: centred on the flow's axis, `share` thick.
+const near = (share: number) => 50 - thick(share) * 50
+const far = (share: number) => 50 + thick(share) * 50
+const n2 = (v: number) => Math.round(v * 100) / 100
+
 /**
- * One stage's drawing, hidden from screen readers (the stage that holds it carries its name).
- * Horizontal: the conversion line (from the second stage on), the label and the count, then the
- * track with its bar. Vertical: the count, the bar rising in its 160px track, the label, then
- * the conversion and drop-off. The tooltip points at `[data-slot="funnel-chart-marker"]`, at the
- * bar's end. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.
+ * The shape for one stage, in a 100 × 100 box drawn to its cell: the stage's share of the first
+ * as its thickness (at least 3% when it isn't 0), centred, easing on an S-curve to the next
+ * stage's by the cell's far end.
+ * Cells side by side join into one flowing funnel. `vertical` flows top to bottom.
+ */
+export function funnelShapePath(share: number, nextShare: number, vertical = false) {
+  const [a1, a2, b1, b2] = [near(share), far(share), near(nextShare), far(nextShare)].map(n2)
+  return vertical
+    ? `M ${a1} 0 C ${a1} 50 ${b1} 50 ${b1} 100 L ${b2} 100 C ${b2} 50 ${a2} 50 ${a2} 0 Z`
+    : `M 0 ${a1} C 50 ${a1} 50 ${b1} 100 ${b1} L 100 ${b2} C 50 ${b2} 50 ${a2} 0 ${a2} Z`
+}
+
+/**
+ * One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The
+ * words on top (horizontal) or at the start (vertical): the label, the count with its share of
+ * the first, the conversion from the previous stage, the drop-off with its warning Badge. Then
+ * its piece of the funnel: a chart/3 shape as thick as its share of the first, easing to the next
+ * stage's. A hairline in border-subtle parts it from the stage before. The tooltip points at
+ * `[data-slot="funnel-chart-marker"]`, on the shape's edge mid-stage. Spans only, so it can sit
+ * in a button. Other props, `ref` included, go to its root `span`.
  */
 export function FunnelChartStage({
   row,
+  nextShare,
   orientation = 'horizontal',
   showConversion = 'both',
   format,
@@ -212,6 +249,7 @@ export function FunnelChartStage({
   const labels = useLabels()
   const fmt = useFormatters(labels, format)
   const vertical = orientation === 'vertical'
+  const next = nextShare ?? row.share
   // The second stage's share of the first is its conversion from the previous: said once.
   const first =
     showsFirst(showConversion) && row.fromFirst != null && !(row.index === 1 && showsPrevious(showConversion)) ? fmt.percent(row.fromFirst) : null
@@ -222,81 +260,66 @@ export function FunnelChartStage({
         : '—'
       : null
   const drop = row.dropOff != null ? labels.funnelDropOff(fmt.count(row.dropOff)) : null
+  const edge = (near(row.share) + near(next)) / 2
 
-  const count = (
-    <span className="flex max-w-full min-w-0 shrink-0 items-baseline gap-1.5 overflow-hidden whitespace-nowrap tabular-nums">
-      <span className="font-medium text-text-default">{fmt.count(row.value)}</span>
-      {/* In a narrow column the share of the first is cut before the count. */}
-      {first && <span className="min-w-0 truncate text-text-muted">{first}</span>}
-    </span>
-  )
-  const bar = (
-    <span
-      data-slot="funnel-chart-bar"
-      data-orientation={orientation}
-      data-tone={row.tone}
-      data-enter={enter || undefined}
-      className={cn(
-        'absolute rounded-md transition-opacity duration-(--duration-fast) ease-(--ease-out)',
-        vertical ? 'inset-x-0 bottom-0' : 'inset-y-0 start-0',
-        row.tone ? 'bg-tone-fg' : 'bg-chart-3',
-        dimmed && 'opacity-45',
-      )}
-      style={{
-        [vertical ? 'height' : 'width']: `${row.share * 100}%`,
-        // Five steps at most, so a long funnel doesn't keep its last bars waiting.
-        animationDelay: enter ? `${Math.min(row.index, 4) * 25}ms` : undefined,
-      }}
-    >
-      <span
-        data-slot="funnel-chart-marker"
-        className={cn('absolute size-0', vertical ? 'start-1/2 top-0' : 'end-0 top-0')}
-      />
-    </span>
-  )
-
-  if (vertical)
-    return (
-      <span
-        aria-hidden
-        data-slot="funnel-chart-stage"
-        data-orientation="vertical"
-        className={cn('flex min-w-0 flex-col gap-2 text-sm leading-(--text-sm--line-height)', className)}
-        {...props}
-      >
-        <span className="flex h-5 justify-center">{count}</span>
-        <span className="relative block h-40 rounded-md bg-bg-muted">{bar}</span>
-        <span className="block h-5 truncate text-center font-medium text-text-default">{row.label}</span>
-        <span className="flex h-10 flex-col items-center gap-0.5 text-text-muted">
-          {previous && <span className="max-w-full truncate">{previous}</span>}
-          <span className="flex max-w-full min-w-0 items-center justify-center gap-1">
-            {drop && <span className="min-w-0 truncate">{drop}</span>}
-            <DropOffBadge row={row} fmt={fmt} />
-          </span>
-        </span>
+  const words = (
+    <span className={cn('flex min-w-0 flex-col text-sm leading-(--text-sm--line-height)', vertical ? 'w-36 shrink-0 py-1' : 'px-3 pb-3')}>
+      <span className="block h-5 truncate text-text-muted">{row.label}</span>
+      <span className="flex h-7 min-w-0 items-baseline gap-1.5 overflow-hidden whitespace-nowrap tabular-nums">
+        <span className="text-lg leading-7 font-semibold text-text-default">{fmt.count(row.value)}</span>
+        {first && <span className="min-w-0 truncate text-text-muted">{first}</span>}
       </span>
-    )
+      <span title={previous ?? undefined} className="block h-5 truncate text-text-muted">
+        {previous}
+      </span>
+      {/* A big drop-off is its Badge alone, so neither is cut; the count is in the tooltip and the table. */}
+      <span className="flex h-5 min-w-0 items-center text-text-muted">
+        {row.bigDropOff ? <DropOffBadge row={row} fmt={fmt} /> : drop && <span className="min-w-0 truncate">{drop}</span>}
+      </span>
+    </span>
+  )
 
   return (
     <span
       aria-hidden
       data-slot="funnel-chart-stage"
-      data-orientation="horizontal"
-      className={cn('flex min-w-0 flex-col text-sm leading-(--text-sm--line-height)', className)}
+      data-orientation={orientation}
+      className={cn(
+        'flex min-w-0',
+        vertical ? 'gap-4' : 'flex-col',
+        // The hairline between stages, across words and shape.
+        row.index > 0 && (vertical ? 'border-t border-border-subtle' : 'border-s border-border-subtle'),
+        className,
+      )}
       {...props}
     >
-      {/* 28px with the text centred, so it keeps 4px off the track above and reads with the stage below. */}
-      {row.index > 0 && (
-        <span data-slot="funnel-chart-conversion" className="flex h-7 min-w-0 items-center gap-2 pt-1 text-text-muted">
-          <span className="min-w-0 truncate">{[previous, drop].filter(Boolean).join(' · ')}</span>
-          <DropOffBadge row={row} fmt={fmt} />
-        </span>
-      )}
-      <span className="flex h-5 min-w-0 items-center gap-3">
-        <span className="min-w-0 flex-1 truncate text-text-default">{row.label}</span>
-        {count}
+      {words}
+      <span className={cn('relative block', vertical ? 'h-22 min-w-0 flex-1' : 'h-50')}>
+        <svg
+          data-slot="funnel-chart-shape"
+          data-orientation={orientation}
+          data-tone={row.tone}
+          data-enter={enter || undefined}
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className={cn(
+            'absolute block overflow-visible transition-opacity duration-(--duration-fast) ease-(--ease-out)',
+            // 2px off the hairline on either side, so the stages read as steps of one flow.
+            vertical ? 'inset-x-0 top-0.5 bottom-0.5 h-[calc(100%-4px)] w-full' : 'inset-y-0 start-0.5 end-0.5 h-full w-[calc(100%-4px)] rtl:-scale-x-100',
+            row.tone ? 'text-tone-fg' : 'text-chart-3',
+            dimmed && 'opacity-45',
+          )}
+          // Five steps at most, so a long funnel doesn't keep its last stages waiting.
+          style={{ animationDelay: enter ? `${Math.min(row.index, 4) * 25}ms` : undefined }}
+        >
+          <path d={funnelShapePath(row.share, next, vertical)} fill="currentColor" />
+        </svg>
+        <span
+          data-slot="funnel-chart-marker"
+          className="absolute start-1/2 size-0"
+          style={vertical ? { top: 0 } : { top: `${edge}%` }}
+        />
       </span>
-      <span className="relative mt-1 block h-5 rounded-md bg-bg-muted">{bar}</span>
     </span>
   )
 }
@@ -377,13 +400,13 @@ export interface FunnelChartProps extends Omit<ChartCardBaseProps, 'data' | 'for
   orientation?: 'horizontal' | 'vertical'
   /** Share of the previous stage lost (0–1) that earns the warning Badge and "big drop-off". Default 0.5. */
   dropOffWarning?: number
-  /** Shows the data table under the bars; it is always in the DOM for screen readers. */
+  /** Shows the data table under the funnel; it is always in the DOM for screen readers. */
   showTable?: boolean
   /** Skeleton rows at the height of five stages. */
   loading?: boolean
   /** The empty state's title when `stages` is empty. Default "No data". */
   empty?: React.ReactNode
-  /** Shows the reason in place of the bars, read out politely; `true` says "Couldn't load". */
+  /** Shows the reason in place of the funnel, read out politely; `true` says "Couldn't load". */
   error?: React.ReactNode | boolean
   /** Adds Retry to the error. */
   onRetry?: () => void
@@ -395,10 +418,10 @@ export interface FunnelChartProps extends Omit<ChartCardBaseProps, 'data' | 'for
   reducedMotion?: boolean
 }
 
-// Five stages, so loading, empty and error keep the loaded funnel's height: horizontal, a first
-// stage of 44px and four of 72 (28 conversion line + 20 label + 4 + 20 track); vertical, the column.
-const HORIZONTAL_BODY = 'min-h-[332px]'
-const VERTICAL_BODY = 'min-h-[264px]'
+// Loading, empty and error keep the loaded funnel's height: horizontal, 88px of words, 12 and a
+// 200px shape; vertical, five rows of 88 and their hairlines.
+const HORIZONTAL_BODY = 'min-h-[300px]'
+const VERTICAL_BODY = 'min-h-[444px]'
 
 /**
  * The funnel in its card. See the block comment above for the anatomy, states and keys. Other
@@ -473,7 +496,7 @@ export function FunnelChart({
     immediate: pointer == null,
   })
 
-  // A bar fades in when it mounts (the CSS plays once per element), so new values swap in place.
+  // A shape fades in when it mounts (the CSS plays once per element), so new values swap in place.
   const enter = !reducedMotion
 
   const move = (to: number) => {
@@ -509,25 +532,33 @@ export function FunnelChart({
           {failed ? (error === true ? labels.funnelError : error) : ''}
         </span>
         {loading ? (
-          <div className={cn('flex', vertical ? 'gap-3' : 'flex-col', body)}>
+          <div className={cn('flex', vertical ? 'flex-col' : '', body)}>
             <span className="sr-only">{labels.funnelLoading}</span>
-            {[0, 1, 2, 3, 4].map((i) =>
-              vertical ? (
-                <div key={i} aria-hidden className="flex min-w-0 flex-1 flex-col gap-2">
-                  <Skeleton animated className="mx-auto mt-1 w-10" />
-                  <Skeleton animated shape="rect" className="mt-1 h-40 w-full rounded-md" />
-                  <Skeleton animated className="mx-auto mt-1 w-16" />
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                aria-hidden
+                className={cn(
+                  'flex min-w-0 flex-1',
+                  vertical ? 'h-22 items-center gap-4' : 'flex-col',
+                  i > 0 && (vertical ? 'border-t border-border-subtle' : 'border-s border-border-subtle'),
+                )}
+              >
+                <div className={cn('flex flex-col gap-2', vertical ? 'w-36 shrink-0' : 'h-[100px] px-3 pt-1')}>
+                  <Skeleton animated className="w-16 max-w-full" />
+                  <Skeleton animated height={20} className="w-12 max-w-full" />
                 </div>
-              ) : (
-                <div key={i} aria-hidden className={cn('flex flex-col', i > 0 && 'pt-7')}>
-                  <div className="flex h-5 items-center justify-between">
-                    <Skeleton animated width={96} />
-                    <Skeleton animated width={40} />
-                  </div>
-                  <Skeleton animated shape="rect" className="mt-1 h-5 w-full rounded-md" style={{ maxWidth: `${100 - i * 18}%` }} />
+                <div className={cn('flex items-center justify-center', vertical ? 'h-full flex-1' : 'h-50 px-0.5')}>
+                  {/* The funnel's narrowing, roughly, so the skeleton already reads as one. */}
+                  <Skeleton
+                    animated
+                    shape="rect"
+                    className="rounded-none"
+                    style={vertical ? { width: `${100 - i * 18}%`, height: '100%' } : { height: `${100 - i * 18}%`, width: '100%' }}
+                  />
                 </div>
-              ),
-            )}
+              </div>
+            ))}
           </div>
         ) : failed ? (
           <div className={cn('flex flex-wrap items-center justify-center gap-2', body)}>
@@ -551,7 +582,7 @@ export function FunnelChart({
               ref={listRef}
               data-slot="funnel-chart-stages"
               aria-label={title}
-              className={cn('relative', vertical ? 'grid auto-cols-fr grid-flow-col gap-3' : 'flex flex-col')}
+              className={cn('relative', vertical ? 'flex flex-col' : 'grid auto-cols-fr grid-flow-col')}
               onKeyDown={onKeyDown}
               onPointerLeave={() => setHovered(null)}
             >
@@ -561,6 +592,7 @@ export function FunnelChart({
                 const stage = (
                   <FunnelChartStage
                     row={row}
+                    nextShare={rows[i + 1]?.share}
                     orientation={orientation}
                     showConversion={showConversion}
                     format={format}
@@ -569,7 +601,7 @@ export function FunnelChart({
                   />
                 )
                 const focusRing =
-                  'rounded-md outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action-focus-ring focus-visible:outline-solid'
+                  'rounded-md outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-action-focus-ring focus-visible:outline-solid'
                 const focusProps = {
                   ref: (el: HTMLElement | null) => {
                     items.current[i] = el
@@ -605,8 +637,7 @@ export function FunnelChart({
                 anchor={anchor}
                 updateRef={updateTooltip}
                 label={activeRow.label}
-                // The count and one conversion keep it to a short line; the name and the table say the rest.
-                value={[fmt.count(activeRow.value), ...stageDetails(activeRow, labels, fmt, showConversion).slice(0, 1)].join(' · ')}
+                value={tooltipValue(activeRow, labels, fmt, showConversion)}
               />
             )}
           </>
