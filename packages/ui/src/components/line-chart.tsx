@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { cn } from '../lib/utils'
 import { niceMax } from './bar-chart'
-import { ChartCard, ChartTooltip, defaultFormat, type ChartCardBaseProps } from './chart'
+import { ChartCard, ChartTooltip, defaultFormat, glideTransform, useGlide, type ChartCardBaseProps, type GlidePoint } from './chart'
 import { useSatinLabels } from './labels'
 
 /**
@@ -17,11 +17,16 @@ import { useSatinLabels } from './labels'
  * the line with chart/3 fading from 28% to nothing at the baseline. No legend: the title says
  * what is plotted and the KPI above gives its total.
  *
- * Hover (or `highlight`) picks the point nearest the cursor, so with a point per day the tooltip
+ * Hover (or `highlight`) picks the point nearest the cursor's x, anywhere from 16px above the plot
+ * to 16px under it (the hit area in chart.tsx), so with a point per day the tooltip
  * follows the cursor along the line, its date and value changing as it goes: a dashed
- * border-strong drop line from the point to the baseline, an 8px dot ringed in chart/3 on bg/card,
- * the tooltip above it and its x label in text/default when that label is shown. Every point is also reachable with the keyboard (arrow keys on the
- * focused plot). When the data changes the plot fades in on its new scale, unless motion is
+ * text/default drop line from the point to the baseline (near white in dark, near black in light), a
+ * 10px dot ringed in a lighter chart/3 (mixed 15% toward white in light, keeping 3:1 on the card, 25%
+ * in dark) on bg/card,
+ * the tooltip above it and its x label in text/default when that label is shown. The dot, the
+ * drop line and the tooltip glide from point to point after the pointer (`useGlide`); the x label
+ * and the live text change at once. Every point is also reachable with the keyboard (arrow keys on
+ * the focused plot), where they jump. When the data changes the plot fades in on its new scale, unless motion is
  * reduced.
  */
 export interface LineCardProps extends ChartCardBaseProps {
@@ -38,8 +43,12 @@ export interface LineCardProps extends ChartCardBaseProps {
 
 const TRACK = 180
 
-/** Monotone cubic (Fritsch–Carlson) through the points, as an SVG path. */
-function smoothPath(pts: [number, number][]) {
+/**
+ * Monotone cubic (Fritsch–Carlson) through the points, as an SVG path: the curve the Line and
+ * Area chart draw, which never overshoots a point. Exported for custom charts and sparklines that
+ * should draw the same line (Satin Pro's Stat card uses it).
+ */
+export function smoothPath(pts: [number, number][]) {
   const n = pts.length
   if (n === 0) return ''
   if (n === 1) return `M ${pts[0][0]} ${pts[0][1]}`
@@ -86,7 +95,12 @@ export function LineCard({
   const labels = useSatinLabels()
   const gradientId = React.useId()
   const [hovered, setHovered] = React.useState<number | null>(null)
+  // Whether the point on show was picked with the keyboard: those moves jump, the pointer's glide.
+  const [byKey, setByKey] = React.useState(false)
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
+  const plotRef = React.useRef<HTMLDivElement>(null)
+  const lineRef = React.useRef<HTMLSpanElement>(null)
+  const updateTooltip = React.useRef<(() => void) | null>(null)
   const n = data.length
   const active = (hovered != null && hovered < n ? hovered : null) ?? highlight ?? null
 
@@ -112,8 +126,24 @@ export function LineCard({
   const pick = (e: React.PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     const f = (e.clientX - r.left) / r.width
+    setByKey(false)
     setHovered(Math.max(0, Math.min(n - 1, Math.round(f * (n - 1)))))
   }
+
+  useGlide(active, {
+    measure: () => (active == null || !plotRef.current ? null : { x: (x(active) / 100) * plotRef.current.clientWidth, y: y(data[active].value) }),
+    apply: (offset: GlidePoint) => {
+      if (anchor) anchor.style.transform = glideTransform(offset)
+      // The drop line's box moves across; its line moves down inside it, so its foot stays on the baseline.
+      if (lineRef.current) {
+        lineRef.current.style.transform = glideTransform({ x: offset.x, y: 0 })
+        const inner = lineRef.current.firstElementChild as SVGElement | null
+        if (inner) inner.style.transform = glideTransform({ x: 0, y: offset.y })
+      }
+      updateTooltip.current?.()
+    },
+    immediate: byKey,
+  })
   const fmt = (v: number) => `${formatValue(v)}${unit ? ` ${unit}` : ''}`
 
   return (
@@ -142,18 +172,27 @@ export function LineCard({
           role="group"
           aria-label={labels.chartPoints(props.title, n)}
           tabIndex={0}
+          ref={plotRef}
           className="relative rounded-md outline-none focus-visible:[box-shadow:0_0_0_2px_var(--action-focus-ring)]"
           style={{ height: TRACK }}
           onPointerMove={pick}
           onPointerLeave={() => setHovered(null)}
-          onFocus={() => setHovered((h) => h ?? n - 1)}
+          onFocus={() => {
+            setByKey(true)
+            setHovered((h) => h ?? n - 1)
+          }}
           onBlur={() => setHovered(null)}
           onKeyDown={(e) => {
             if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
             e.preventDefault()
+            setByKey(true)
             setHovered((h) => Math.max(0, Math.min(n - 1, (h ?? n - 1) + (e.key === 'ArrowRight' ? 1 : -1))))
           }}
         >
+          {/* The hit area: the plot and 16px above and below it, so a point at the top or the
+              bottom keeps its tooltip while the cursor strays off the line (only the cursor's x
+              picks the point). */}
+          <span aria-hidden className="absolute inset-x-0 -inset-y-4" />
           <svg
             key={redraw.n}
             aria-hidden
@@ -172,17 +211,6 @@ export function LineCard({
                 <path d={`${line} L 100 ${TRACK} L 0 ${TRACK} Z`} fill={`url(#${gradientId})`} />
               </>
             )}
-            {active != null && (
-              <line
-                x1={x(active)}
-                x2={x(active)}
-                y1={y(data[active].value) + 4}
-                y2={TRACK}
-                stroke="var(--border-strong)"
-                strokeDasharray="4 4"
-                vectorEffect="non-scaling-stroke"
-              />
-            )}
             <path
               d={line}
               fill="none"
@@ -195,20 +223,39 @@ export function LineCard({
           </svg>
           {active != null && (
             <>
+              {/* The dashed drop line from the dot to the baseline: a 1px column the plot's height,
+                  its line starting 5px under the dot and cut at the baseline. */}
+              <span
+                ref={lineRef}
+                aria-hidden
+                className="pointer-events-none absolute top-0 w-px overflow-hidden"
+                style={{ left: `calc(${x(active)}% - 0.5px)`, height: TRACK }}
+              >
+                <svg width="1" height={TRACK} className="absolute left-0 block" style={{ top: y(data[active].value) + 5 }}>
+                  <line x1="0.5" x2="0.5" y1="0" y2={TRACK} stroke="var(--text-default)" strokeDasharray="4 4" />
+                </svg>
+              </span>
               <span
                 ref={setAnchor}
                 aria-hidden
-                className="pointer-events-none absolute size-2 -translate-1/2 rounded-full border-2 border-chart-3 bg-bg-card"
+                className="pointer-events-none absolute size-2.5 -translate-1/2 rounded-full border-2 border-[color-mix(in_oklab,var(--chart-3)_85%,var(--text-on-solid))] bg-bg-card dark:border-[color-mix(in_oklab,var(--chart-3)_75%,var(--text-on-solid))]"
                 style={{ left: `${x(active)}%`, top: y(data[active].value) }}
               />
-              <ChartTooltip anchor={anchor} sideOffset={6} label={data[active].tooltipLabel ?? data[active].label} value={fmt(data[active].value)} />
+              <ChartTooltip
+                anchor={anchor}
+                sideOffset={6}
+                updateRef={updateTooltip}
+                label={data[active].tooltipLabel ?? data[active].label}
+                value={fmt(data[active].value)}
+              />
               <span className="sr-only" aria-live="polite">
                 {`${data[active].tooltipLabel ?? data[active].label}: ${fmt(data[active].value)}`}
               </span>
             </>
           )}
         </div>
-        <div aria-hidden className="relative mt-1.5 h-5">
+        {/* Under the plot's hit area, so the cursor over a label still picks the point. */}
+        <div aria-hidden className="pointer-events-none relative mt-1.5 h-5">
           {data.map((d, i) =>
             showLabel(i) ? (
               <span

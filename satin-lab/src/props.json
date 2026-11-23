@@ -2049,7 +2049,7 @@
       ]
     },
     "ChartTooltip": {
-      "description": "The chart tooltip pill with its pointer. Exported for custom charts. With `anchor` it floats over the page (see Floating): it never gets cut off by the card, flips below when there's no room above, slides in from the screen edge, and its pointer keeps pointing at the anchor. Without it, it renders in place.",
+      "description": "The chart tooltip pill with its pointer. Exported for custom charts. With `anchor` it floats over the page (see Floating): it never gets cut off by the card, flips below when there's no room above, slides in from the screen edge, and its pointer keeps pointing at the anchor. Without it, it renders in place. A chart whose tooltip follows the pointer from point to point moves it with `useGlide`.",
       "extends": [
         "React.ComponentProps<'div'>",
         "React.ComponentProps<'div'>"
@@ -2067,9 +2067,15 @@
         },
         {
           "name": "anchor",
-          "type": "Element | null",
+          "type": "Element | FloatingVirtualElement | null",
           "required": false,
-          "description": "The element it points at."
+          "description": "What it points at: an element, or a stand-in (`glideAnchor`)."
+        },
+        {
+          "name": "updateRef",
+          "type": "React.RefObject<(() => void) | null>",
+          "required": false,
+          "description": "Gets a function that moves it to the anchor within the frame, for an anchor that glides (see Floating)."
         },
         {
           "name": "sideOffset",
@@ -5131,6 +5137,12 @@
           "name": "className",
           "type": "string",
           "required": false
+        },
+        {
+          "name": "updateRef",
+          "type": "React.RefObject<(() => void) | null>",
+          "required": false,
+          "description": "Gets a function that measures the anchor again and moves the layer within the same frame. For an anchor moved by a transform (a chart's gliding dot), which nothing else notices."
         },
         {
           "name": "children",
@@ -8593,6 +8605,160 @@
           "type": "string",
           "required": false,
           "description": "Class names for the group around both halves."
+        }
+      ]
+    }
+  },
+  "stat-card": {
+    "StatCardChange": {
+      "description": "The change as a small Badge: an arrow (a dash when flat) and the value, green when it moved the good way, red when not, grey when flat (`data-tone`). Screen readers get it in words. Other props, `ref` included, go to its `span`.",
+      "type": "StatCardChangeProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>",
+        "Omit<StatChange, 'period'>"
+      ],
+      "props": [
+        {
+          "name": "period",
+          "type": "string",
+          "required": false,
+          "description": "Read with the change (\"up 12% vs last week\"); not shown. The card shows it in its label row."
+        }
+      ]
+    },
+    "StatCardSparkline": {
+      "description": "The sparkline alone: the line and its gradient, no axes, 64px tall and drawn to the bottom of a card: the line's ends sit on its left and right edges, and its focus ring is drawn inside, with the bottom corners of a radius-2xl card. Hover glides the dot and the tooltip from point to point; the arrow keys move them at once. The drawing is hidden; a sentence sums it up (\"Upward trend over 12 points, from 980 to 1,284\"). Interactive, it is one tab stop: focus picks the last point, ← → move along them, a pointer picks the nearest. The drawing keeps time running left to right in right-to-left pages too, as the Line chart does, so → is always the next point. Other props, `ref` included, go to its `div`.",
+      "type": "StatCardSparklineProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'title' | 'children'>"
+      ],
+      "props": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": "The values, oldest first. Values that aren't finite are left out; fewer than two finite draw nothing."
+        },
+        {
+          "name": "labels",
+          "type": "string[]",
+          "required": false,
+          "description": "The tooltip's title per point (\"Week 3\"). Without it the tooltip shows the value alone."
+        },
+        {
+          "name": "format",
+          "type": "(value: number) => string",
+          "required": false,
+          "description": "Writes a value in the tooltip, the live region and the summary. Default: `dateLocale`."
+        },
+        {
+          "name": "highlight",
+          "type": "number",
+          "required": false,
+          "description": "Index of the point shown as picked (state sheets, docs)."
+        },
+        {
+          "name": "interactive",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "A tab stop whose arrow keys move along the points, with a tooltip on hover. Default true."
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "Names the points' group: \"Signups, 12 points\"."
+        },
+        {
+          "name": "summaryId",
+          "type": "string",
+          "required": false,
+          "description": "The id of its text summary, for an element to be described by it (a card's link)."
+        }
+      ]
+    },
+    "StatCard": {
+      "description": "The stat tile. See the block comment above for the anatomy, states and keys. Other props, `ref` included, go to the root `div`.",
+      "type": "StatCardProps",
+      "extends": [
+        "Omit<React.ComponentProps<'div'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "type": "React.ReactNode",
+          "required": true,
+          "description": "What is measured: \"Signups\". Text or inline content (no links or buttons: with `href` the whole card is a link). A string is read in the card's name sentence; other content is read from the card, before the rest of the name."
+        },
+        {
+          "name": "value",
+          "type": "number | string | null",
+          "required": true,
+          "description": "The value. A number goes through `format`; a string shows as given; `null`, or a number that isn't finite, shows \"—\" (read \"No data\")."
+        },
+        {
+          "name": "format",
+          "type": "(value: number) => string",
+          "required": false,
+          "description": "Writes a number value, and the sparkline's points (\"38 €\"). Default: the number in `dateLocale`."
+        },
+        {
+          "name": "change",
+          "type": "StatChange | null",
+          "required": false,
+          "description": "The change against the previous period. Left out or `null` (no previous period): no badge, no period."
+        },
+        {
+          "name": "sparkline",
+          "type": "number[]",
+          "required": false,
+          "description": "The values for the sparkline, oldest first. Values that aren't finite are left out; with fewer than two the row stays, empty."
+        },
+        {
+          "name": "sparklineLabels",
+          "type": "string[]",
+          "required": false,
+          "description": "The tooltip's title per sparkline point (\"Week 3\")."
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "Makes the whole card one link."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Skeletons at the loaded card's height. Give `sparkline` (even `[]`) to keep its row."
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "Shows the reason in place of the value and sparkline, read out politely; `true` says \"Couldn't load\"."
+        },
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Adds Retry to the error."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Fades the content; a link loses its `href`, the sparkline its tab stop."
+        },
+        {
+          "name": "countUp",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "Counts a number up the first time it appears on the client. Default true; never under reduced motion or on hydration."
         }
       ]
     }

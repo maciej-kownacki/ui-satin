@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { cn } from '../lib/utils'
-import { ChartCard, ChartLegendRow, ChartTooltip, defaultFormat, type ChartCardBaseProps } from './chart'
+import { ChartCard, ChartLegendRow, ChartTooltip, defaultFormat, glideAnchor, useGlide, type ChartCardBaseProps, type GlidePoint } from './chart'
 
 /**
  * Bar chart, 1:1 with the uiKit `chart/barCard` (3607:18253) and its `chart/barColumn`
@@ -13,6 +13,7 @@ import { ChartCard, ChartLegendRow, ChartTooltip, defaultFormat, type ChartCardB
  * in chart/3 and day labels medium 13 text-muted 6px below. Hover (or `highlight`) keeps the
  * hovered bar, outlines it 2px out in chart/3, shows its value above and bolds its day; the
  * other bars dim to a 30% tint of chart/3 on bg/card, so they follow the bar, not the brand.
+ * Moving along the bars, the tooltip glides from one to the next (`useGlide`); from the keyboard it jumps.
  * The KPI above defaults to the sum, in full (formatValue is for the axis); an optional legend row can sit under the plot.
  *
  * When the data changes (a new period, say) the bars regrow from the baseline in 250 ms on
@@ -51,8 +52,31 @@ export function BarCard({
   ...props
 }: BarCardProps) {
   const [hovered, setHovered] = React.useState<number | null>(null)
-  const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
+  const [byKey, setByKey] = React.useState(false)
+  // The active bar's element, read when the tooltip measures: the old one has already left the page by then.
+  const anchorRef = React.useRef<HTMLElement | null>(null)
+  const setAnchor = React.useCallback((el: HTMLElement | null) => {
+    anchorRef.current = el
+  }, [])
   const active = (hovered != null && hovered < data.length ? hovered : null) ?? highlight ?? null
+  // The tooltip points at the bar's value, drawn off it by the glide's offset while it moves.
+  const plotRef = React.useRef<HTMLDivElement>(null)
+  const offset = React.useRef<GlidePoint>({ x: 0, y: 0 })
+  const updateTooltip = React.useRef<(() => void) | null>(null)
+  const tooltipAnchor = React.useMemo(() => glideAnchor(() => anchorRef.current, offset), [])
+  useGlide(active, {
+    measure: () => {
+      const bar = active == null ? null : plotRef.current?.querySelectorAll('li')[active]
+      if (!bar || !plotRef.current) return null
+      const r = bar.getBoundingClientRect()
+      return { x: r.left + r.width / 2 - plotRef.current.getBoundingClientRect().left, y: TRACK - (data[active!].value / max) * TRACK }
+    },
+    apply: (o) => {
+      offset.current = o
+      updateTooltip.current?.()
+    },
+    immediate: byKey,
+  })
   // Counts real changes to the data (not a new array with the same values), so the bars
   // remount and regrow; zero until the first change.
   const signature = data.map((d) => `${d.label}:${d.value}`).join('|')
@@ -67,7 +91,7 @@ export function BarCard({
     <ChartCard total={total ?? defaultFormat(sum)} {...props}>
       <div className="pt-2">
         {/* Time runs left to right in any page, as on the line chart, with the scale on the left. */}
-        <div dir="ltr" className="relative flex h-[206px] items-end gap-2 pl-8" onPointerLeave={() => setHovered(null)}>
+        <div ref={plotRef} dir="ltr" className="relative flex h-[206px] items-end gap-2 pl-8" onPointerLeave={() => setHovered(null)}>
           {/* Gridlines at each tick but zero, dashed border-subtle. */}
           {ticks.slice(0, 4).map((_, i) => (
             <span
@@ -100,24 +124,27 @@ export function BarCard({
                   key={d.label}
                   tabIndex={0}
                   aria-label={`${d.tooltipLabel ?? d.label}: ${formatValue(d.value)}${unit ? ` ${unit}` : ''}`}
-                  onPointerEnter={() => setHovered(i)}
-                  onFocus={() => setHovered(i)}
+                  onPointerEnter={() => {
+                    setByKey(false)
+                    setHovered(i)
+                  }}
+                  onFocus={() => {
+                    setByKey(true)
+                    setHovered(i)
+                  }}
                   onBlur={() => setHovered(null)}
-                  className="relative flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-md focus-visible:outline-none"
+                  className={cn(
+                    'relative flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-md focus-visible:outline-none',
+                    // The hit area runs 16px above the column too (the hit area in chart.tsx), so the tallest
+                    // bar keeps its tooltip while the cursor strays over its top.
+                    'before:absolute before:inset-x-0 before:-top-4 before:h-4',
+                  )}
                 >
                   <div className="relative flex w-full flex-col items-center justify-end gap-1.5" style={{ height: TRACK }}>
                     {isActive && (
-                      <>
-                        {/* The tooltip floats 4px above the value. */}
-                        <ChartTooltip
-                          anchor={anchor}
-                          label={d.tooltipLabel ?? d.label}
-                          value={`${formatValue(d.value)}${unit ? ` ${unit}` : ''}`}
-                        />
-                        <span ref={setAnchor} className="text-sm leading-(--text-sm--line-height) font-medium text-text-default">
-                          {formatValue(d.value)}
-                        </span>
-                      </>
+                      <span ref={setAnchor} className="text-sm leading-(--text-sm--line-height) font-medium text-text-default">
+                        {formatValue(d.value)}
+                      </span>
                     )}
                     <span
                       aria-hidden
@@ -144,6 +171,15 @@ export function BarCard({
               )
             })}
           </ul>
+          {/* One tooltip for the plot, 4px above the active bar's value, so it can glide from bar to bar. */}
+          {active != null && (
+            <ChartTooltip
+              anchor={tooltipAnchor}
+              updateRef={updateTooltip}
+              label={data[active].tooltipLabel ?? data[active].label}
+              value={`${formatValue(data[active].value)}${unit ? ` ${unit}` : ''}`}
+            />
+          )}
         </div>
       </div>
       {legend && (

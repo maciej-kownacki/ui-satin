@@ -15,7 +15,7 @@ export { ButtonGroup, ButtonGroupSeparator, type ButtonGroupProps } from './comp
 export { SplitButton, type SplitButtonProps } from './components/split-button'
 export * from './components/card'
 export { ChartCard, ChartTooltip, ChartLegendRow, ChartLegendPill, type ChartDatum, type ChartCardBaseProps } from './components/chart'
-export { LineCard, AreaCard, type LineCardProps } from './components/line-chart'
+export { LineCard, AreaCard, smoothPath, type LineCardProps } from './components/line-chart'
 export { DonutCard, type DonutCardProps } from './components/donut-chart'
 export { BarCard, type BarCardProps } from './components/bar-chart'
 export { ChannelCard, type ChannelCardProps } from './components/channel-chart'

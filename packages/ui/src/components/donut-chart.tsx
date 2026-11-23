@@ -54,7 +54,7 @@ export function DonutCard({ data, formatValue = defaultFormat, highlight, center
         onPointerLeave={() => setHovered(null)}
       >
         <div className="relative shrink-0 py-2" style={{ width: SIZE }}>
-          <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} aria-hidden className="block -rotate-90">
+          <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} aria-hidden className="block -rotate-90 overflow-visible">
             {arcs.map(({ i, start, len }) => (
               <circle
                 key={data[i].label}
@@ -66,9 +66,24 @@ export function DonutCard({ data, formatValue = defaultFormat, highlight, center
                 strokeWidth={STROKE}
                 strokeDasharray={`${len} ${C - len}`}
                 strokeDashoffset={-start}
-                onPointerEnter={() => setHovered(i)}
-                className="transition-opacity duration-(--duration-fast) ease-(--ease-out)"
+                className="pointer-events-none transition-opacity duration-(--duration-fast) ease-(--ease-out)"
                 style={{ opacity: active !== null && active !== i ? 0.15 : 1 }}
+              />
+            ))}
+            {/* The hit areas: each segment's arc, gap included, 8px wider either side than the
+                ring (the hit area in chart.tsx). */}
+            {arcs.map(({ i, start, len }) => (
+              <circle
+                key={`hit-${data[i].label}`}
+                cx={SIZE / 2}
+                cy={SIZE / 2}
+                r={R}
+                fill="none"
+                stroke="transparent"
+                strokeWidth={STROKE + 16}
+                strokeDasharray={`${len + GAP} ${C - len - GAP}`}
+                strokeDashoffset={-start}
+                onPointerEnter={() => setHovered(i)}
               />
             ))}
           </svg>

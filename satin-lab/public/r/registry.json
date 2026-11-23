@@ -2938,6 +2938,38 @@
       ]
     },
     {
+      "name": "stat-card",
+      "type": "registry:ui",
+      "title": "Stat card",
+      "description": "A dashboard tile: a metric, its change against the previous period in words and colour, and a sparkline.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/chart.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/line-chart.json",
+        "https://uisatin.dev/r/rolling-number.json",
+        "https://uisatin.dev/r/skeleton.json"
+      ],
+      "docs": "Stat card docs: https://uisatin.dev/components/stat-card",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/stat-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "table-pro",
       "type": "registry:ui",
       "title": "Grouped table",
@@ -4416,6 +4448,21 @@
       "files": [
         {
           "path": "registry/satin/examples/scheduler-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "stat-card-demo",
+      "type": "registry:example",
+      "title": "Stat card example",
+      "description": "The shortest use of Stat card, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/stat-card.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/stat-card-demo.tsx",
           "type": "registry:example"
         }
       ]

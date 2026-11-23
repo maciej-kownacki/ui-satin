@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { cn } from '../lib/utils'
 import { Badge } from './badge'
-import { Floating } from './floating'
+import { Floating, type FloatingVirtualElement } from './floating'
 import { Select } from './select'
 import { useSatinLabels } from './labels'
 
@@ -49,6 +49,136 @@ export interface ChartCardBaseProps extends Omit<React.ComponentProps<'div'>, 't
 }
 
 export const defaultFormat = (n: number) => n.toLocaleString('en-US')
+
+/* ---------- glide ---------- */
+
+export type GlidePoint = { x: number; y: number }
+
+export interface GlideOptions {
+  /** Where the point on show is, in px, in a box the glide doesn't move (the plot's). Read once per change of point. */
+  measure: () => GlidePoint | null
+  /**
+   * Draws the glide: `offset` is how far from the point's own place to draw it, in px. Write it
+   * as a transform (`glideTransform`) on what marks the point (the dot, the drop line) and move
+   * the tooltip with it (ChartTooltip's `updateRef`). `{ x: 0, y: 0 }` at rest.
+   */
+  apply: (offset: GlidePoint) => void
+  /** Jump instead of gliding: for a move made with the keyboard (MOTION.md, rule 6). */
+  immediate?: boolean
+}
+
+// A critically damped spring that looks settled in about 200 ms (motion's visualDuration 0.2,
+// bounce 0): ω = 2π / 0.24 s, so stiffness ω² ≈ 685 and damping 2ω ≈ 52.
+const OMEGA = (2 * Math.PI) / 0.24
+// It snaps onto the point once it is this close (px) and this slow (px/s).
+const REST = 0.25
+const REST_SPEED = 10
+const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+/*
+ * Hit areas. A chart's marks are thin (a 2px line, a 14px bar), so what picks a point reaches
+ * 16px (`-inset-y-4`) past them up and down, as a button's tap target reaches past what is drawn:
+ * the cursor's height only counts that much, its x still picks the point. 16px makes the 14px
+ * Channel bar a 46px target, past the 44px touch minimum, and fits the 16px gaps around the plots,
+ * so it never reaches another control. The donut's ring takes 8px either side instead (a 36px
+ * ring), as 16px would reach the total in its centre.
+ */
+
+/**
+ * The glide a chart's tooltip makes after the pointer. When the point on show changes, what
+ * marks it (dot, drop line, tooltip) moves from where it is drawn to the new point on a
+ * critically damped spring instead of jumping, and catches up smoothly when the pointer moves
+ * fast. Transform only, stepped on requestAnimationFrame with the real frame time, ending
+ * exactly on the point, with no React render per frame.
+ *
+ * `point` names the point on show (its index), `null` when none is. Appearing from nothing, with
+ * `immediate`, and under prefers-reduced-motion it jumps. Exported for custom charts.
+ */
+export function useGlide(point: React.Key | null, { measure, apply, immediate = false }: GlideOptions) {
+  const callbacks = React.useRef({ measure, apply })
+  React.useLayoutEffect(() => {
+    callbacks.current = { measure, apply }
+  })
+  const state = React.useRef({ pos: null as GlidePoint | null, vel: { x: 0, y: 0 }, frame: 0 })
+
+  React.useLayoutEffect(() => {
+    const s = state.current
+    cancelAnimationFrame(s.frame)
+    const target = point == null ? null : callbacks.current.measure()
+    if (!target) {
+      s.pos = null
+      s.vel = { x: 0, y: 0 }
+      return
+    }
+    const to = { ...target }
+    if (!s.pos || immediate || reducedMotion()) {
+      s.pos = to
+      s.vel = { x: 0, y: 0 }
+      callbacks.current.apply({ x: 0, y: 0 })
+      return
+    }
+    const pos = s.pos
+    const vel = s.vel
+    // Drawn where it was, before the first paint at the new point's place.
+    callbacks.current.apply({ x: pos.x - to.x, y: pos.y - to.y })
+    let last = performance.now()
+    const step = (now: number) => {
+      // A frame's timestamp can come before the change that started the glide: count a frame.
+      const t = now > last ? (now - last) / 1000 : 1 / 60
+      last = Math.max(last, now)
+      // The spring solved exactly over the frame, per axis: d(t) = (d + (v + ωd)t)e^(−ωt).
+      const decay = Math.exp(-OMEGA * t)
+      let settled = true
+      for (const axis of ['x', 'y'] as const) {
+        const d = pos[axis] - to[axis]
+        const c = vel[axis] + OMEGA * d
+        const next = (d + c * t) * decay
+        vel[axis] = (vel[axis] - OMEGA * c * t) * decay
+        pos[axis] = to[axis] + next
+        if (Math.abs(next) > REST || Math.abs(vel[axis]) > REST_SPEED) settled = false
+      }
+      if (settled) {
+        s.pos = to
+        s.vel = { x: 0, y: 0 }
+        callbacks.current.apply({ x: 0, y: 0 })
+        return
+      }
+      callbacks.current.apply({ x: pos.x - to.x, y: pos.y - to.y })
+      s.frame = requestAnimationFrame(step)
+    }
+    s.frame = requestAnimationFrame(step)
+  }, [point, immediate])
+
+  React.useEffect(() => {
+    const s = state.current
+    return () => cancelAnimationFrame(s.frame)
+  }, [])
+}
+
+/** The transform that draws a glide offset; none at rest. */
+export const glideTransform = ({ x, y }: GlidePoint) => (x || y ? `translate(${x}px, ${y}px)` : '')
+
+/**
+ * A stand-in anchor for a tooltip that glides: `element`'s box moved by the offset in `offset`.
+ * For charts whose anchor can't be moved itself (a bar's value, a segment). Pass a getter when the
+ * element is swapped as the point changes, so the tooltip never measures one that has just left
+ * the page (its box is all zeros, and the tooltip would flash at the corner of the screen).
+ */
+export function glideAnchor(element: Element | (() => Element | null), offset: React.RefObject<GlidePoint>) {
+  const current = () => (typeof element === 'function' ? element() : element)
+  return {
+    get contextElement() {
+      return current() ?? undefined
+    },
+    getBoundingClientRect() {
+      const el = current()
+      const r = el ? el.getBoundingClientRect() : new DOMRect()
+      const x = r.left + offset.current.x
+      const y = r.top + offset.current.y
+      return { x, y, left: x, top: y, right: x + r.width, bottom: y + r.height, width: r.width, height: r.height } as DOMRect
+    },
+  }
+}
 
 /* ---------- shared parts ---------- */
 
@@ -201,27 +331,31 @@ function TooltipPill({ label, value }: { label: React.ReactNode; value: React.Re
  * The chart tooltip pill with its pointer. Exported for custom charts.
  * With `anchor` it floats over the page (see Floating): it never gets cut off by the card,
  * flips below when there's no room above, slides in from the screen edge, and its pointer
- * keeps pointing at the anchor. Without it, it renders in place.
+ * keeps pointing at the anchor. Without it, it renders in place. A chart whose tooltip follows the
+ * pointer from point to point moves it with `useGlide`.
  */
 export function ChartTooltip({
   label,
   value,
   anchor,
   sideOffset = 4,
+  updateRef,
   className,
   ...props
 }: {
   label: React.ReactNode
   value: React.ReactNode
-  /** The element it points at. */
-  anchor?: Element | null
+  /** What it points at: an element, or a stand-in (`glideAnchor`). */
+  anchor?: Element | FloatingVirtualElement | null
+  /** Gets a function that moves it to the anchor within the frame, for an anchor that glides (see Floating). */
+  updateRef?: React.RefObject<(() => void) | null>
   /** Gap between the anchor and the pointer's tip. */
   sideOffset?: number
 } & React.ComponentProps<'div'>) {
   if (anchor !== undefined) {
     // The pointer is 6 high and overlaps the pill by 1px.
     return (
-      <Floating anchor={anchor} side="top" sideOffset={sideOffset + 5} className="pointer-events-none">
+      <Floating anchor={anchor} side="top" sideOffset={sideOffset + 5} updateRef={updateRef} className="pointer-events-none">
         {({ side, arrowRef, arrowStyle }) => (
           <div data-slot="chart-tooltip" className={cn('relative', tooltipShadow, className)} {...props}>
             <TooltipPill label={label} value={value} />
