@@ -75,6 +75,15 @@ const REST = 0.25
 const REST_SPEED = 10
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
+/*
+ * Hit areas. A chart's marks are thin (a 2px line, a 14px bar), so what picks a point reaches
+ * 16px (`-inset-y-4`) past them up and down, as a button's tap target reaches past what is drawn:
+ * the cursor's height only counts that much, its x still picks the point. 16px makes the 14px
+ * Channel bar a 46px target, past the 44px touch minimum, and fits the 16px gaps around the plots,
+ * so it never reaches another control. The donut's ring takes 8px either side instead (a 36px
+ * ring), as 16px would reach the total in its centre.
+ */
+
 /**
  * The glide a chart's tooltip makes after the pointer. When the point on show changes, what
  * marks it (dot, drop line, tooltip) moves from where it is drawn to the new point on a

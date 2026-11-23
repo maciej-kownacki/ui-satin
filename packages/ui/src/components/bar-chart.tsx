@@ -133,7 +133,12 @@ export function BarCard({
                     setHovered(i)
                   }}
                   onBlur={() => setHovered(null)}
-                  className="relative flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-md focus-visible:outline-none"
+                  className={cn(
+                    'relative flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-md focus-visible:outline-none',
+                    // The hit area runs 16px above the column too (the hit area in chart.tsx), so the tallest
+                    // bar keeps its tooltip while the cursor strays over its top.
+                    'before:absolute before:inset-x-0 before:-top-4 before:h-4',
+                  )}
                 >
                   <div className="relative flex w-full flex-col items-center justify-end gap-1.5" style={{ height: TRACK }}>
                     {isActive && (

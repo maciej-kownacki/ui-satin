@@ -76,6 +76,8 @@ export function ChannelCard({
               onPointerEnter={() => hover(i)}
               className={cn(
                 'relative rounded-[1.5px] transition-opacity duration-(--duration-fast) ease-(--ease-out)',
+                // The 14px bar is hit 16px above and below it too (the hit area in chart.tsx): a 46px target.
+                'before:absolute before:inset-x-0 before:-inset-y-4',
                 // The shares read from the start side, so the outer corners are logical.
                 i === 0 && 'rounded-s-[4px]',
                 i === last && 'rounded-e-[4px]',

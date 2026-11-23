@@ -17,7 +17,8 @@ import { useSatinLabels } from './labels'
  * the line with chart/3 fading from 28% to nothing at the baseline. No legend: the title says
  * what is plotted and the KPI above gives its total.
  *
- * Hover (or `highlight`) picks the point nearest the cursor, so with a point per day the tooltip
+ * Hover (or `highlight`) picks the point nearest the cursor's x, anywhere from 16px above the plot
+ * to 16px under it (the hit area in chart.tsx), so with a point per day the tooltip
  * follows the cursor along the line, its date and value changing as it goes: a dashed
  * border-strong drop line from the point to the baseline, an 8px dot ringed in chart/3 on bg/card,
  * the tooltip above it and its x label in text/default when that label is shown. The dot, the
@@ -186,6 +187,10 @@ export function LineCard({
             setHovered((h) => Math.max(0, Math.min(n - 1, (h ?? n - 1) + (e.key === 'ArrowRight' ? 1 : -1))))
           }}
         >
+          {/* The hit area: the plot and 16px above and below it, so a point at the top or the
+              bottom keeps its tooltip while the cursor strays off the line (only the cursor's x
+              picks the point). */}
+          <span aria-hidden className="absolute inset-x-0 -inset-y-4" />
           <svg
             key={redraw.n}
             aria-hidden
@@ -247,7 +252,8 @@ export function LineCard({
             </>
           )}
         </div>
-        <div aria-hidden className="relative mt-1.5 h-5">
+        {/* Under the plot's hit area, so the cursor over a label still picks the point. */}
+        <div aria-hidden className="pointer-events-none relative mt-1.5 h-5">
           {data.map((d, i) =>
             showLabel(i) ? (
               <span
