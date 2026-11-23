@@ -1,13 +1,16 @@
 /*
  * Kanban board (components/kanban-board.tsx). The board sets data-flip on a card for the length
- * of one move; everything else is a Tailwind class in the component.
+ * of one move; everything else is a Tailwind class in the component. The lean and the drop's
+ * spring are drag.css's, shared with Agent plan.
  *
  * - Lifted (the keyboard's pick-up, and the card under the pointer): scale 1.02 and the toast's
  *   shadow, eased in over --duration-fast.
  * - The card under the pointer follows it with `translate` set from script on every move: no
- *   easing there, only its scale and shadow ease in when it lifts.
+ *   easing there, only its scale, shadow and 1° lean (drag.css) ease in when it lifts. The
+ *   keyboard's pick-up doesn't lean.
  * - Cards making room shift to their new place with --ease-in-out (data-flip="shift"); a dropped
- *   card settles into its place with --ease-out over --duration-base (data-flip="settle").
+ *   card springs into its place over --duration-base (data-flip="settle", data-drag="settle":
+ *   drag.css).
  * - Inactive states, by opacity: the cards of a column the lifted card can't go to (data-refused
  *   on the column, for the whole drag; no dashed edge, which means "lands here"), and a card
  *   waiting for its confirmation (data-pending).
@@ -38,11 +41,13 @@
 .satin-kanban-overlay {
   transition:
     scale var(--duration-fast) var(--ease-out),
+    rotate var(--duration-fast) var(--ease-out),
     box-shadow var(--duration-fast) var(--ease-out);
 }
 @starting-style {
   .satin-kanban-overlay {
     scale: 1;
+    rotate: none;
     box-shadow:
       0 0 0 0 transparent,
       0 0 0 0 transparent;
@@ -57,12 +62,9 @@
 .satin-kanban-item[data-flip='shift'] {
   transition: translate var(--duration-base) var(--ease-in-out);
 }
+/* Its transition is drag.css's spring. */
 .satin-kanban-item[data-flip='settle'] {
   z-index: 1;
-  transition:
-    translate var(--duration-base) var(--ease-out),
-    scale var(--duration-base) var(--ease-out),
-    box-shadow var(--duration-base) var(--ease-out);
 }
 
 /* Inactive: a column that won't take the lifted card, and a move waiting for its confirmation. */

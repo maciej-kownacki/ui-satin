@@ -21,10 +21,11 @@ import { toast } from '@uisatin/ui/toast'
  * `onMove` is the one source of truth; `moveKanbanItem()` does the splice.
  *
  * - Pointer: press a card and move 4px (touch: hold it 250 ms, so a swipe still scrolls). The
- *   card lifts (scale 1.02, the toast's shadow) and follows the pointer without easing; a dashed
- *   gap opens where it would land and the cards around it shift on --ease-in-out. Near the
- *   edge of a column or of the board, they scroll. Dropped, it settles into place on --ease-out
- *   over 200 ms; Escape puts it back. A collapsed column takes a card at its end.
+ *   card lifts (scale 1.02, the toast's shadow, a 1° lean to the left, to the right in RTL) and
+ *   follows the pointer without easing; a dashed gap opens where it would land and the cards
+ *   around it shift on --ease-in-out. Near the edge of a column or of the board, they scroll.
+ *   Dropped, it springs into place over 200 ms (--ease-spring, about 3% past and back; the
+ *   same drop as Agent plan's steps); Escape puts it back. A collapsed column takes a card at its end.
  * - Keyboard: Space picks the focused card up; ↑ ↓ move it within its column, ← → to the next
  *   column (mirrored right to left), Home and End to the top or bottom; Space drops it and
  *   Escape puts it back. Every step is read out from a polite live region: "Moved Lumen Bank
@@ -303,15 +304,24 @@ const edgeSpeed = (p: number, start: number, end: number) => {
 }
 
 const flipTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>()
-/** Sets a FLIP phase on a card and clears it once the motion is over. */
+/**
+ * Sets a FLIP phase on a card and clears it once the motion is over. The dropped card's two
+ * phases also set drag.css's data-drag: `lift` leans it as the overlay was, `settle` springs it
+ * into place.
+ */
 function setFlip(el: HTMLElement, phase: 'invert' | 'shift' | 'lift' | 'settle') {
   clearTimeout(flipTimers.get(el))
   el.dataset.flip = phase
+  if (phase === 'lift') el.dataset.drag = 'lifted'
+  else if (phase === 'settle') el.dataset.drag = 'settle'
+  else delete el.dataset.drag
   if (phase === 'shift' || phase === 'settle') {
     flipTimers.set(
       el,
       setTimeout(() => {
-        if (el.dataset.flip === phase) delete el.dataset.flip
+        if (el.dataset.flip !== phase) return
+        delete el.dataset.flip
+        delete el.dataset.drag
       }, MOTION_MS),
     )
   }
@@ -998,7 +1008,7 @@ export function KanbanBoard<T>({
     }
     const el = settling && itemEls.current.get(settling.id)
     if (settling && el) {
-      // From the lifted card's centre, scaled, down into its place.
+      // From the lifted card's centre, scaled and leaning, down into its place on the spring.
       el.style.removeProperty('translate')
       const b = el.getBoundingClientRect()
       const a = settling.rect
@@ -1063,7 +1073,7 @@ export function KanbanBoard<T>({
           if (press.current || dragRef.current) e.preventDefault()
         }}
         className={cn(
-          'satin-kanban-item group/kanban-item relative cursor-grab touch-manipulation rounded-xl select-none [-webkit-touch-callout:none]',
+          'satin-kanban-item satin-drag group/kanban-item relative cursor-grab touch-manipulation rounded-xl select-none [-webkit-touch-callout:none]',
           'satin-focus:outline-2 satin-focus:outline-solid satin-focus:outline-offset-2 satin-focus:outline-action-focus-ring',
           // The card under the pointer leaves its place but stays in the document, so the
           // browser keeps sending its pointer and touch events.
@@ -1271,7 +1281,8 @@ export function KanbanBoard<T>({
               aria-hidden
               inert
               data-slot="kanban-overlay"
-              className="satin-kanban-overlay pointer-events-none fixed top-0 left-0 z-50 cursor-grabbing rounded-xl"
+              data-drag="lifted"
+              className="satin-kanban-overlay satin-drag pointer-events-none fixed top-0 left-0 z-50 cursor-grabbing rounded-xl"
               style={{ width: drag.width }}
             >
               <ItemContext.Provider

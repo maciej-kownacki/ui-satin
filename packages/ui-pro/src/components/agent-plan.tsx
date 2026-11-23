@@ -18,8 +18,10 @@ import { cn } from '@uisatin/ui/lib/utils'
  * - `draft`: each step is its number in a Badge, its label, and its tool (the app's logo and
  *   name) and detail in one muted line under the label. Nothing sits on the right. Drag the
  *   number, or press Alt+↑ / Alt+↓ anywhere in the step, to move it; its new place is read out.
- *   The number shows a grip on hover or keyboard focus, and a dragged step lifts while the others
- *   make room. Pressing a step opens Rename and Remove under it, one step at a time; Esc closes
+ *   The number shows a grip on hover or keyboard focus, and a dragged step lifts, leaning 1° to
+ *   the left (to the right in RTL), while the others make room; let go, it springs into its
+ *   slot (--ease-spring, about 3% past and back, the same drop as Kanban's cards). Alt+↑/↓
+ *   moves are instant. Pressing a step opens Rename and Remove under it, one step at a time; Esc closes
  *   them. Rename turns the label into a field. Run plan is disabled while the plan is empty.
  * - `running`, `failed`, `done`: read-only, drawn like Thinking's open steps: a rail, then each
  *   step 8px apart with a 14px icon, the label in text/default and the tool and detail muted.
@@ -375,8 +377,11 @@ interface Drag {
   slot: number
 }
 
-/** A row's transitions without transform: the step under the pointer, or every row the moment a drag lands. */
-const STILL: React.CSSProperties = { transitionProperty: 'background-color, border-color, box-shadow' }
+/**
+ * A row's transitions without transform: the step under the pointer (its lean still eases in),
+ * or every row the moment a drag lands.
+ */
+const STILL: React.CSSProperties = { transitionProperty: 'background-color, border-color, box-shadow, rotate' }
 
 export interface AgentPlanStepsProps extends React.ComponentProps<'div'> {}
 
@@ -549,29 +554,35 @@ export function AgentPlanSteps({ className, ...props }: AgentPlanStepsProps) {
     }
   }, [dragId, listRef])
 
-  // The release, FLIP: the rows stand still in their new order, and the step slides from where it
-  // was let go into its slot, still lifted until it lands.
+  // The release, FLIP: the rows stand still in their new order, and the step springs from where it
+  // was let go, still leaning, into its slot (drag.css's data-drag="settle"), lifted until it lands.
   React.useLayoutEffect(() => {
     if (!drop) return
     const row = rowOf(drop.id)
+    // Still leaning: put it back before anything reads the styles, so the lean doesn't start
+    // easing out on the row's own curve.
+    if (row) row.dataset.drag = 'lifted'
     // Lay out the new order with no transform moving, before the rows get their transitions back.
     listRef.current?.getBoundingClientRect()
     if (row) {
       const offset = drop.top - row.getBoundingClientRect().top
       // It stays lifted (data-dragging) until it lands.
-      const land = () => {
+      let timer: ReturnType<typeof setTimeout> | undefined
+      const land = (e?: TransitionEvent) => {
+        if (e && e.target !== row) return
+        clearTimeout(timer)
         delete row.dataset.dragging
+        delete row.dataset.drag
         row.removeEventListener('transitionend', land)
       }
-      if (Math.abs(offset) >= 0.5) {
-        row.style.transform = `translateY(${offset}px)`
-        row.getBoundingClientRect()
-        row.dataset.dragging = ''
-        row.style.transitionProperty = ''
-        row.style.transform = ''
-        row.addEventListener('transitionend', land)
-        setTimeout(land, 500)
-      }
+      if (Math.abs(offset) >= 0.5) row.style.transform = `translateY(${offset}px)`
+      row.getBoundingClientRect()
+      row.dataset.dragging = ''
+      row.dataset.drag = 'settle'
+      row.style.transitionProperty = ''
+      row.style.transform = ''
+      row.addEventListener('transitionend', land)
+      timer = setTimeout(land, 500)
     }
     setDrop(null)
   }, [drop])
@@ -764,13 +775,15 @@ function DraftStep({
       data-state="draft"
       data-step-id={step.id}
       data-dragging={dragging || undefined}
+      data-drag={dragging ? 'lifted' : undefined}
       data-skipped={step.skipped || undefined}
       data-open={open || undefined}
       onKeyDownCapture={onKeyDown}
       style={style}
       className={cn(
-        'group/step flex items-start gap-2 rounded-md border border-strong border-transparent p-1',
-        'transition-[background-color,border-color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out)',
+        // satin-drag (drag.css): the dragged step leans 1° and springs into place when let go.
+        'satin-drag group/step flex items-start gap-2 rounded-md border border-strong border-transparent p-1',
+        'transition-[background-color,border-color,box-shadow,transform,rotate] duration-(--duration-fast) ease-(--ease-out)',
         // Making room for a dragged step, and landing one, take the calmer base duration.
         moving && 'duration-(--duration-base)',
         'data-dragging:duration-(--duration-base)',
