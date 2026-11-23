@@ -90,3 +90,10 @@ export const FoundationsIcon = ({ className }: IconProps) => (
     <circle cx="8.75" cy="4.38" r="0.6" fill="currentColor" />
   </svg>
 )
+
+/** Exit full screen: iconoir's Maximize turned inward, four corners pointing at the centre. */
+export const ExitFullscreenIcon = ({ className }: IconProps) => (
+  <svg width="1.5em" height="1.5em" viewBox="0 0 24 24" fill="none" strokeWidth={1.5} aria-hidden className={className}>
+    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" d="M4 7H7V4M20 7H17V4M4 17H7V20M20 17H17V20" />
+  </svg>
+)

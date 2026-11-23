@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { Button, SegmentedControl, Switch, cn } from '@uisatin/ui'
 import { DropdownMenu, DropdownMenuItem } from '@uisatin/ui/dropdown'
-import { Check, Collapse, Copy, Expand, NavArrowDown } from 'iconoir-react'
-import { CodeIcon, PreviewIcon } from './icons'
+import { Check, Copy, Maximize, NavArrowDown } from 'iconoir-react'
+import { CodeIcon, ExitFullscreenIcon, PreviewIcon } from './icons'
 import { stageHeights } from '../lib/stage-heights'
 
 /**
@@ -239,7 +239,7 @@ function ShowcaseFull({ name, options, codeHtml, controls, render, align = 'cent
       onClick={() => setFullscreen((v) => !v)}
       className="text-text-muted hover:text-text-default"
     >
-      {fullscreen ? <Collapse /> : <Expand />}
+      {fullscreen ? <ExitFullscreenIcon /> : <Maximize />}
     </Button>
   )
 
