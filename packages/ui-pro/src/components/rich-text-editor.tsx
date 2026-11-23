@@ -135,9 +135,10 @@ import {
 /**
  * RichTextEditor: a field for notes, emails and job descriptions with headings, lists, quotes,
  * tables, links, bold, italic, strikethrough, inline code and @mentions. It wears Textarea's skin (the
- * `.satin-field` edge, fill and focus ring, at least 96px tall with a resize grip), with a label
- * above, and the hint or the error and a `status` slot (a character count with `maxLength`) under
- * it, so it sits next to Input and Textarea in a Form.
+ * `.satin-field` edge, fill and focus ring and a resize grip; the editable area is at least 178px
+ * tall, which `[data-slot="rich-text-editor-content"]` overrides), with a label above, and the
+ * hint or the error and a `status` slot (a character count with `maxLength`) under it, so it sits
+ * next to Input and Textarea in a Form.
  *
  * The engine is Lexical (an optional peer of `@uisatin/pro`: install `lexical` and the
  * `@lexical/*` packages this entry imports). It's exported only as `@uisatin/pro/rich-text-editor`,
