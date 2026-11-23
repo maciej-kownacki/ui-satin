@@ -1,0 +1,11 @@
+---
+/** Hidden QA page: every Funnel chart state at 440px, rows of three to compare heights. Not in the nav. */
+import Layout from '../../layouts/Layout.astro'
+import { FunnelChartGrid } from '../../states/FunnelChartGrid'
+---
+
+<Layout title="Funnel chart states · Satin" description="Every state of Funnel chart, side by side at 440px.">
+  <main class="min-h-dvh bg-bg-card">
+    <FunnelChartGrid client:load />
+  </main>
+</Layout>

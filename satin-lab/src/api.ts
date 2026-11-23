@@ -736,6 +736,32 @@ export const api: Record<string, Api> = {
       { name: 'countUp', type: ['boolean'], default: 'true' },
     ],
   },
+  'funnel-chart': {
+    description:
+      'The `FunnelChart` component (Satin Pro, `@uisatin/pro/funnel-chart`) is a conversion funnel in the chart card frame (`ChartCard`: title, range, an optional KPI and period Select), for hiring, a sales pipeline or a checkout. `stages` is `{ label, value, tone }[]`, first to last. Horizontal (the default) gives one full-width row per stage: the label and the count, then a 20px track whose bar is the stage\'s share of the first stage. Between two stages a line gives the conversion from the previous stage and the drop-off ("25% of Applied · drop-off 180"); the count adds the share of the first. `showConversion` picks `"previous"`, `"first"` or `"both"` (default). `orientation="vertical"` draws one column per stage rising from a 160px baseline, with the label and the conversion under it. A step that loses at least `dropOffWarning` of the previous stage (0–1, default 0.5, half) gets an amber Badge with a warning icon and the share lost ("−75%"), and "big drop-off" in its name, never colour alone. Bars are calm rectangles, not trapezoids; `tone` (one of Badge\'s tones) colours one stage\'s bar for emphasis. A stage of 0 keeps its row with an empty track. Hover and keyboard focus show a tooltip at the bar\'s end with the count and one conversion (the stage\'s name and the table say the rest): after the pointer it glides from stage to stage, under the keyboard it jumps. `highlight` holds one stage in that look (state sheets, docs). The funnel is one tab stop; with `onStageSelect` every stage is a button. A table with the same rows (`FunnelTable`) is always in the DOM, visually hidden, and `showTable` shows it under the bars. `loading` (Skeleton rows), empty `stages` (an EmptyState titled `empty`, default "No data") and `error` (`true` or the reason, with Retry when `onRetry` is set) keep the height of a five-stage funnel, so nothing under the card moves when the data arrives. On first appearance the bars fade in from 95% of their length (opacity and transform, 250 ms ease-out, 25 ms apart and at most 100 ms late), never from zero; new values swap in place; there is no entrance under reduced motion or with `reducedMotion`. Counts and percentages are written in the `dateLocale` label\'s locale; `format` writes counts another way (currency). Parts: `FunnelChartStage` (one stage\'s drawing), `FunnelTable` (`stages`, `caption`, `format`, `visible`, `dropOffWarning`) and `funnelRows(stages, dropOffWarning)` (the numbers both read, for funnels of your own). Its words (`funnelOf`, `funnelDropOff`, `funnelBigDropOff`, `funnelStageName`, `funnelNoData`, `funnelLoading`, `funnelError`, `funnelRetry`, and the table heads) are translated with SatinLabels.',
+    props: [
+      { name: 'title', type: ['string'] },
+      { name: 'range', type: ['string'] },
+      { name: 'stages', type: ['FunnelStage[]'] },
+      { name: 'format', type: ['(value: number) => string'], default: 'the number in dateLocale' },
+      { name: 'showConversion', type: ['"previous"', '"first"', '"both"'], default: '"both"' },
+      { name: 'orientation', type: ['"horizontal"', '"vertical"'], default: '"horizontal"' },
+      { name: 'dropOffWarning', type: ['number'], default: '0.5' },
+      { name: 'showTable', type: ['boolean'], default: 'false' },
+      { name: 'loading', type: ['boolean'], default: 'false' },
+      { name: 'empty', type: ['ReactNode'], default: '"No data"' },
+      { name: 'error', type: ['ReactNode', 'boolean'] },
+      { name: 'onRetry', type: ['() => void'] },
+      { name: 'onStageSelect', type: ['(index: number, stage: FunnelStage) => void'] },
+      { name: 'highlight', type: ['number'] },
+      { name: 'reducedMotion', type: ['boolean'], default: 'false' },
+      { name: 'total', type: ['string'] },
+      { name: 'change', type: ['string'] },
+      { name: 'periods', type: ['string[]', 'string[][]'] },
+      { name: 'value', type: ['string'] },
+      { name: 'onPeriodChange', type: ['(period) => void'] },
+    ],
+  },
   'number-input': {
     description: 'The `NumberInput` component is a spinbutton: arrow keys step, Page Up / Down step ten times, Home / End jump to the limits; a typed value is clamped and snapped on Enter or blur.',
     props: [

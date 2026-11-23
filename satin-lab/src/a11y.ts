@@ -145,6 +145,17 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Enter'], action: 'On the card\'s link: opens it. On Retry: runs `onRetry`.' },
     ],
   },
+  'funnel-chart': {
+    summary:
+      'The card is `role="figure"` labelled by its title. The stages are an ordered list named by the title, and each stage is named in words: "Interview: 18, 30% of Screening, 7.5% of Applied, drop-off 42" (`funnelStageName`), with ", big drop-off" after a step that lost at least `dropOffWarning`, so the warning is heard and never rests on the amber colour alone. The drawing of each stage is hidden, since its name says it all. With `onStageSelect` each stage is a `button`; without, a focusable list item. A table with the same numbers (stage, count, from previous, from first, drop-off), captioned by the title, is always in the DOM, visually hidden unless `showTable`, for anyone who reads a table more easily than a list. A loading funnel has `aria-busy` and reads "Loading"; the error is read from a polite `status` region that is in the page before the error comes, so it is announced when loading ends, and Retry is a button in the tab order. The tooltip (the count and one conversion) is hidden from screen readers; the stage\'s name already says more.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Focuses the funnel at the last stage it was on (the first at start): it is one tab stop.' },
+      { keys: ['↓', '↑'], action: 'Moves to the next or previous stage and shows its tooltip; stops at the ends. With Alt, Ctrl or ⌘ held the funnel leaves the key to the browser (Alt+← is Back).' },
+      { keys: ['→', '←'], action: 'The same in reading order: → is the next stage, ← the previous (swapped in right-to-left pages).' },
+      { keys: ['Home', 'End'], action: 'Jumps to the first or last stage.' },
+      { keys: ['Enter', 'Space'], action: 'With `onStageSelect`: selects the focused stage. On Retry: runs `onRetry`.' },
+    ],
+  },
   checkbox: {
     summary:
       'A Radix checkbox: a `button` with `role="checkbox"` and `aria-checked` (`mixed` when indeterminate). `label` names it with `aria-labelledby` and `description` adds `aria-describedby`; without a label, pass `aria-label`. Inside a `form` it also renders a hidden input, so the value submits.',

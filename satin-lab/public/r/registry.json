@@ -2810,6 +2810,37 @@
       ]
     },
     {
+      "name": "funnel-chart",
+      "type": "registry:ui",
+      "title": "Funnel chart",
+      "description": "How many make it through each stage, with the conversion and the drop-off between stages in words.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/chart.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/skeleton.json"
+      ],
+      "docs": "Funnel chart docs: https://uisatin.dev/components/funnel-chart",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/funnel-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "kanban-board",
       "type": "registry:ui",
       "title": "Kanban board",
@@ -4468,6 +4499,21 @@
       "files": [
         {
           "path": "registry/satin/examples/filter-bar-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "funnel-chart-demo",
+      "type": "registry:example",
+      "title": "Funnel chart example",
+      "description": "The shortest use of Funnel chart, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/funnel-chart.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/funnel-chart-demo.tsx",
           "type": "registry:example"
         }
       ]

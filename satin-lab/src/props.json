@@ -5596,6 +5596,192 @@
       ]
     }
   },
+  "funnel-chart": {
+    "FunnelChartStage": {
+      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). Horizontal: the conversion line (from the second stage on), the label and the count, then the track with its bar. Vertical: the count, the bar rising in its 160px track, the label, then the conversion and drop-off. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, at the bar's end. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
+      "type": "FunnelChartStageProps",
+      "extends": [
+        "Omit<React.ComponentProps<'span'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "row",
+          "type": "FunnelRow",
+          "required": true
+        },
+        {
+          "name": "orientation",
+          "type": "'horizontal' | 'vertical'",
+          "required": false,
+          "default": "'horizontal'"
+        },
+        {
+          "name": "showConversion",
+          "type": "FunnelConversion",
+          "required": false,
+          "default": "'both'"
+        },
+        {
+          "name": "format",
+          "type": "(value: number) => string",
+          "required": false,
+          "description": "Writes the count. Default: the number in `dateLocale`."
+        },
+        {
+          "name": "dimmed",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Another stage is on show: this one's bar fades back."
+        },
+        {
+          "name": "enter",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Fades the bar in from 95% of its length, once, when it mounts."
+        }
+      ]
+    },
+    "FunnelTable": {
+      "description": "The funnel as a table: stage, count, from previous, from first, drop-off. The Funnel chart renders one, visually hidden unless `showTable`. Other props, `ref` included, go to the `table`.",
+      "type": "FunnelTableProps",
+      "extends": [
+        "Omit<React.ComponentProps<'table'>, 'children'>"
+      ],
+      "props": [
+        {
+          "name": "stages",
+          "type": "FunnelStage[]",
+          "required": true
+        },
+        {
+          "name": "caption",
+          "type": "string",
+          "required": false,
+          "description": "The table's caption, the chart's title."
+        },
+        {
+          "name": "format",
+          "type": "(value: number) => string",
+          "required": false
+        },
+        {
+          "name": "visible",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Shown on the page; otherwise only screen readers get it."
+        },
+        {
+          "name": "dropOffWarning",
+          "type": "number",
+          "required": false,
+          "default": "0.5",
+          "description": "Share of the previous stage lost that marks a big drop-off. Default 0.5."
+        }
+      ]
+    },
+    "FunnelChart": {
+      "description": "The funnel in its card. See the block comment above for the anatomy, states and keys. Other props, `ref` included, go to the card's root `div`.",
+      "type": "FunnelChartProps",
+      "extends": [
+        "Omit<ChartCardBaseProps, 'data' | 'formatValue' | 'highlight' | 'range'>"
+      ],
+      "props": [
+        {
+          "name": "stages",
+          "type": "FunnelStage[]",
+          "required": true
+        },
+        {
+          "name": "range",
+          "type": "string",
+          "required": false,
+          "default": "''",
+          "description": "The dates the funnel covers, under the title (or the KPI)."
+        },
+        {
+          "name": "format",
+          "type": "(value: number) => string",
+          "required": false,
+          "description": "Writes the counts (\"€48,000\"). Default: the number in `dateLocale`."
+        },
+        {
+          "name": "showConversion",
+          "type": "FunnelConversion",
+          "required": false,
+          "default": "'both'",
+          "description": "Which conversions to show: from the previous stage, from the first, or both. Default 'both'."
+        },
+        {
+          "name": "orientation",
+          "type": "'horizontal' | 'vertical'",
+          "required": false,
+          "default": "'horizontal'",
+          "description": "Rows (default) or columns."
+        },
+        {
+          "name": "dropOffWarning",
+          "type": "number",
+          "required": false,
+          "default": "0.5",
+          "description": "Share of the previous stage lost (0–1) that earns the warning Badge and \"big drop-off\". Default 0.5."
+        },
+        {
+          "name": "showTable",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Shows the data table under the bars; it is always in the DOM for screen readers."
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Skeleton rows at the height of five stages."
+        },
+        {
+          "name": "empty",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "The empty state's title when `stages` is empty. Default \"No data\"."
+        },
+        {
+          "name": "error",
+          "type": "React.ReactNode | boolean",
+          "required": false,
+          "description": "Shows the reason in place of the bars, read out politely; `true` says \"Couldn't load\"."
+        },
+        {
+          "name": "onRetry",
+          "type": "() => void",
+          "required": false,
+          "description": "Adds Retry to the error."
+        },
+        {
+          "name": "onStageSelect",
+          "type": "(index: number, stage: FunnelStage) => void",
+          "required": false,
+          "description": "Makes every stage a button."
+        },
+        {
+          "name": "highlight",
+          "type": "number",
+          "required": false,
+          "description": "Index of the stage shown as hovered (state sheets, docs)."
+        },
+        {
+          "name": "reducedMotion",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "No entrance, as under prefers-reduced-motion."
+        }
+      ]
+    }
+  },
   "hover-card": {
     "HoverCard": {
       "type": "HoverCardProps",

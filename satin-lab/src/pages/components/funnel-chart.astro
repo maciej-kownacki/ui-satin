@@ -1,0 +1,59 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import Chip from '../../components/Chip.astro'
+import DocSection from '../../components/DocSection.astro'
+import FunnelChartDemo, { FunnelChartSalesDemo, options, salesOptions } from '../../demos/funnel-chart'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+const salesHtml = await highlight(salesOptions)
+---
+
+<Docs current="funnel-chart">
+  <DocSection item={page('funnel-chart')} api={api['funnel-chart']}>
+    <FunnelChartDemo client:load codeHtml={codeHtml} />
+
+    <section aria-labelledby="drop-off-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="drop-off-title" class="text-lg font-medium text-text-default">Conversion and drop-off</h2>
+      <p class="text-base leading-6 text-text-muted">
+        Every stage after the first says how many it kept and how many it lost: "25% of Applied · drop-off 180". Its count adds the
+        share of the first stage. <Chip>showConversion</Chip> picks <Chip>"previous"</Chip>, <Chip>"first"</Chip> or
+        <Chip>"both"</Chip> (the default). A step that loses at least <Chip>dropOffWarning</Chip> of the previous stage, half by
+        default (<Chip>0.5</Chip>), gets an amber Badge with a warning icon and the share lost ("−75%"), and its name says "big
+        drop-off", so the warning never rests on colour alone. Lower it to catch smaller losses, raise it where steep steps are
+        normal.
+      </p>
+      <p class="text-base leading-6 text-text-muted">
+        A table with the same numbers (stage, count, from previous, from first, drop-off) is always in the page for screen
+        readers; <Chip>showTable</Chip> shows it under the bars. It is also exported as <Chip>FunnelTable</Chip>, and
+        <Chip>funnelRows</Chip> returns the numbers both read, for a funnel drawn your own way.
+      </p>
+    </section>
+
+    <section aria-labelledby="sales-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="sales-title" class="text-lg font-medium text-text-default">Sales pipeline, in columns</h2>
+      <p class="text-base leading-6 text-text-muted">
+        <Chip>orientation="vertical"</Chip> draws one column per stage, rising from a shared baseline, with the label and the
+        conversion under it. Here the stages are the pipeline's value in euros, so <Chip>format</Chip> writes every amount,
+        drop-offs included, as currency. With <Chip>dropOffWarning={'{0.55}'}</Chip> only the two steps that lose 60% or more are
+        flagged. A checkout funnel (Cart, Checkout, Payment, Paid) is the same component again.
+      </p>
+      <FunnelChartSalesDemo client:visible codeHtml={salesHtml} />
+    </section>
+
+    <section aria-labelledby="states-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="states-title" class="text-lg font-medium text-text-default">States and motion</h2>
+      <p class="text-base leading-6 text-text-muted">
+        <Chip>loading</Chip> shows Skeleton rows, empty <Chip>stages</Chip> an EmptyState titled by <Chip>empty</Chip> ("No
+        applicants yet"), and <Chip>error</Chip> the reason with Retry when <Chip>onRetry</Chip> is set. Loading, empty and error keep the
+        height of a five-stage funnel, so a dashboard doesn't jump when the data arrives. A stage of 0 keeps its row with an empty track.
+      </p>
+      <p class="text-base leading-6 text-text-muted">
+        On first appearance the bars fade in from 95% of their length, 25 ms apart (the fifth and any after it together), never growing from zero; new values swap in
+        place. Under reduced motion, or with <Chip>reducedMotion</Chip>, there is no entrance.
+      </p>
+    </section>
+  </DocSection>
+</Docs>

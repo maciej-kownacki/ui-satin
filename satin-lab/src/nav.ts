@@ -197,6 +197,13 @@ export const allNav: NavGroup[] = [
             description: 'A dashboard tile: a metric, its change against the previous period in words and colour, and a sparkline.',
             edition: 'pro',
           },
+          {
+            id: 'funnel-chart',
+            title: 'Funnel chart',
+            href: '/components/funnel-chart',
+            description: 'How many make it through each stage, with the conversion and the drop-off between stages in words.',
+            edition: 'pro',
+          },
         ],
       },
       { id: 'checkbox', title: 'Checkbox', href: '/components/checkbox', description: 'Turns an option on or off as part of a form.' },
@@ -384,7 +391,7 @@ export const allNav: NavGroup[] = [
  * preview builds show them. The one list to edit when a page is done.
  */
 export const unreleased = new Set<string>([
-  'scheduler', 'review-queue',
+  'scheduler', 'review-queue', 'funnel-chart',
 ])
 
 /**
