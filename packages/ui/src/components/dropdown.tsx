@@ -49,16 +49,20 @@ export const menuSurfaceClass = cn(
 /** @internal Shared by Satin's own components; not part of the public API and may change in any release. */
 export const menuGroupClass = 'flex flex-col gap-1 not-last:after:block not-last:after:h-(--border-width-default) not-last:after:bg-bg-muted'
 /**
- * The 24px group header: 12px regular text/muted, in line with the rows' labels, its text
- * nearer the rows below than the edge above (in a Dropdown, 12px over it and 8px under it).
+ * The 24px group header: 12px medium text/muted, as in the Command menu, in line with the rows'
+ * labels (or their avatars), its text nearer the rows below than the edge above (in a Dropdown,
+ * 12px over it and 8px under it).
  */
 // text/muted: a group's name is read to find a row, so it needs 4.5:1 (subtle is 2.6:1).
 // The start inset follows the rows after it: past a leading checkbox or 16px icon (12 + 16 + 8),
-// a 20px icon (12 + 20 + 8), or both a checkbox and an icon (12 + 16 + 8 + 16 + 8).
+// a 20px icon (12 + 20 + 8), or both a checkbox and an icon (12 + 16 + 8 + 16 + 8). Rows led by
+// a picture (an Avatar or an img) are people or things, not actions: the header starts at the
+// picture's edge instead.
 export const menuGroupLabelClass = cn(
-  'flex h-6 items-center px-3 pt-1 text-xs leading-3 font-normal tracking-normal text-text-muted',
+  'flex h-6 items-center px-3 pt-1 text-xs leading-3 font-medium tracking-normal text-text-muted',
   '[&:has(~[role=menuitemcheckbox])]:ps-9 [&:has(~*_[data-slot=menu-item-icon])]:ps-9',
   '[&:has(~*_[data-slot=menu-item-icon][data-large])]:ps-10 [&:has(~[role=menuitemcheckbox]_[data-slot=menu-item-icon])]:ps-15',
+  '[&:has(~*_[data-slot=menu-item-icon]>:is([data-slot=avatar],img))]:ps-3!',
 )
 
 export interface DropdownMenuProps
