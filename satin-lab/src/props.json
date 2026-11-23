@@ -2921,7 +2921,7 @@
       ]
     },
     "CsvImportPreview": {
-      "description": "The rows of the Review step on their own: \"340 rows · 328 ready · 12 with errors\", an Alert grouping the errors by field (each group a link that turns on \"Show only errors\" and moves focus to its first cell), the checkbox, and a Table of the mapped fields, 100 rows a page with Pagination under it. An invalid cell is in the error colour with a warning mark and its reason (a Tooltip, and read out). Other props, `ref` included, go to its root.",
+      "description": "The rows of the Review step on their own: \"340 rows · 328 ready · 12 with errors\", an Alert grouping the errors by field (each group a link that turns on \"Show only errors\" and moves focus to its first cell), the checkbox, and a Table of the mapped fields, 100 rows a page with Pagination under it. An invalid cell is in the error colour with a warning mark and its reason (a Tooltip, and read out); with `onCellEdit` it is a button that fixes it in place. Other props, `ref` included, go to its root.",
       "type": "CsvImportPreviewProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'children'>"
@@ -2964,6 +2964,12 @@
           "name": "onErrorsOnlyChange",
           "type": "(errorsOnly: boolean) => void",
           "required": false
+        },
+        {
+          "name": "onCellEdit",
+          "type": "(row: number, column: number, value: string) => void",
+          "required": false,
+          "description": "Makes every invalid cell a button that opens a field to fix its value (Enter, a click or F2; Enter or leaving the field commits, Escape cancels). Called with the row's number among the data rows (`CsvCheckedRow.n`), the source column's index and the new value: check the rows again with it and pass the new `validation`. Focus then stays on the cell while it is still invalid, or moves to the next invalid cell once the row passes. Without it, nothing is editable."
         }
       ]
     },

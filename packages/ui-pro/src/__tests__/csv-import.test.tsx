@@ -46,7 +46,7 @@ const steps = () => within(screen.getByRole('list', { name: 'Import steps' }))
 async function toReview(user: ReturnType<typeof renderImport>['user']) {
   await mapsTo('Firma')
   await user.click(footerButton('Next'))
-  await waitFor(() => expect(document.querySelector('[data-csv-focus="tiles"]')).toBeTruthy())
+  await waitFor(() => expect(document.querySelector('[data-csv-focus="tabs"]')).toBeTruthy())
 }
 
 describe('CsvImportPreview', () => {
@@ -61,6 +61,103 @@ describe('CsvImportPreview', () => {
     // Page 2 of the full list: rows 101 to 150.
     expect(screen.queryByText('p0@firma.pl')).toBeNull()
     expect(screen.getByText('p100@firma.pl')).toBeTruthy()
+  })
+
+  it('makes invalid cells editable with onCellEdit, and reports the row, the column and the value', async () => {
+    const own: CsvImportField[] = [{ key: 'email', label: 'Email', type: 'email' }]
+    const first = await validateCsv([['a@firma.pl'], ['broken']], { 0: 'email' }, own, { header: false })
+    const fixed = await validateCsv([['a@firma.pl'], ['b@firma.pl']], { 0: 'email' }, own, { header: false })
+    const edits: [number, number, string][] = []
+    function App() {
+      const [validation, setValidation] = React.useState(first)
+      return (
+        <CsvImportPreview
+          fields={own}
+          mapping={{ 0: 'email' }}
+          validation={validation}
+          onCellEdit={(row, column, value) => {
+            edits.push([row, column, value])
+            setValidation(fixed)
+          }}
+        />
+      )
+    }
+    const { user } = renderWithSatin(<App />)
+    await user.click(screen.getByRole('button', { name: 'broken, Not an email address, Edit' }))
+    const field = screen.getByRole('textbox', { name: 'Email, row 2' })
+    await user.clear(field)
+    await user.type(field, 'b@firma.pl{Enter}')
+    expect(edits).toEqual([[2, 0, 'b@firma.pl']])
+    expect(screen.getByText('2 rows · 2 ready')).toBeTruthy()
+    expect(said()).toBe('Row 2 is ready to import')
+    // No invalid cell left: focus on the summary.
+    expect(document.activeElement).toBe(screen.getByText('2 rows · 2 ready'))
+  })
+
+  it('keeps fixes pending until a validation has them, showing their values, and reads out every row that passes', async () => {
+    const own: CsvImportField[] = [{ key: 'email', label: 'Email', type: 'email' }]
+    const check = (...emails: string[]) => validateCsv(emails.map((e) => [e]), { 0: 'email' }, own, { header: false })
+    const first = await check('bad1', 'bad2', 'bad3')
+    // A check that has only the first fix: the others stay pending.
+    const one = await check('a@firma.pl', 'bad2', 'bad3')
+    const all = await check('a@firma.pl', 'b@firma.pl', 'c@firma.pl')
+    let set: (v: typeof first) => void = () => {}
+    function App() {
+      const [validation, setValidation] = React.useState(first)
+      set = setValidation
+      return <CsvImportPreview fields={own} mapping={{ 0: 'email' }} validation={validation} onCellEdit={() => {}} />
+    }
+    const { user } = renderWithSatin(<App />)
+    const fix = async (row: number, from: string, to: string) => {
+      await user.click(screen.getByRole('button', { name: `${from}, Not an email address, Edit` }))
+      const field = screen.getByRole('textbox', { name: `Email, row ${row}` })
+      await user.clear(field)
+      await user.type(field, `${to}{Enter}`)
+    }
+    await fix(1, 'bad1', 'a@firma.pl')
+    // Pending: the cell shows the new value, and opening it again starts from it.
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'a@firma.pl, Not an email address, Edit' }))
+    await user.keyboard('{Enter}')
+    expect((screen.getByRole('textbox', { name: 'Email, row 1' }) as HTMLInputElement).value).toBe('a@firma.pl')
+    await user.keyboard('{Escape}')
+    await fix(2, 'bad2', 'b@firma.pl')
+    await fix(3, 'bad3', 'c@firma.pl')
+    // A copy of the first validation settles nothing.
+    act(() => set({ ...first }))
+    expect(screen.getByRole('button', { name: 'c@firma.pl, Not an email address, Edit' })).toBeTruthy()
+    act(() => set(one))
+    expect(said()).toBe('Row 1 is ready to import')
+    expect(screen.getByRole('button', { name: 'b@firma.pl, Not an email address, Edit' })).toBeTruthy()
+    act(() => set(all))
+    expect(said()).toBe('Row 2 is ready to import. Row 3 is ready to import')
+  })
+
+  it('leaves focus where it went after a fix committed by leaving the field', async () => {
+    const own: CsvImportField[] = [
+      { key: 'email', label: 'Email', type: 'email' },
+      { key: 'other', label: 'Other', type: 'email' },
+    ]
+    const first = await validateCsv([['broken', 'bad']], { 0: 'email', 1: 'other' }, own, { header: false })
+    const still = await validateCsv([['wrong', 'bad']], { 0: 'email', 1: 'other' }, own, { header: false })
+    function App() {
+      const [validation, setValidation] = React.useState(first)
+      return <CsvImportPreview fields={own} mapping={{ 0: 'email', 1: 'other' }} validation={validation} onCellEdit={() => setValidation(still)} />
+    }
+    const { user } = renderWithSatin(<App />)
+    await user.click(screen.getByRole('button', { name: 'broken, Not an email address, Edit' }))
+    await user.clear(screen.getByRole('textbox', { name: 'Email, row 1' }))
+    await user.type(screen.getByRole('textbox', { name: 'Email, row 1' }), 'wrong')
+    // Tab leaves the field for the row's other invalid cell: focus stays there.
+    await user.tab()
+    await waitFor(() => expect(screen.getByRole('button', { name: 'wrong, Not an email address, Edit' })).toBeTruthy())
+    expect((document.activeElement as HTMLElement).dataset.csvCell).toBe('1:other')
+  })
+
+  it('keeps invalid cells plain without onCellEdit', async () => {
+    const own: CsvImportField[] = [{ key: 'email', label: 'Email', type: 'email' }]
+    const validation = await validateCsv([['broken']], { 0: 'email' }, own, { header: false })
+    renderWithSatin(<CsvImportPreview fields={own} mapping={{ 0: 'email' }} validation={validation} />)
+    expect(screen.queryByRole('button', { name: /Edit/ })).toBeNull()
   })
 })
 
@@ -148,7 +245,7 @@ describe('CsvImport', () => {
     expect(steps().queryByRole('button', { name: /Review/ })).toBeNull()
     await user.click(next)
     expect(screen.getByRole('combobox', { name: 'Maps to, CSV column E-mail' })).toBeTruthy()
-    expect(document.querySelector('[data-csv-focus="tiles"]')).toBeNull()
+    expect(document.querySelector('[data-csv-focus="tabs"]')).toBeNull()
   })
 
   it('marks a field mapped twice on both columns and blocks Next', async () => {
@@ -172,7 +269,7 @@ describe('CsvImport', () => {
     // The file waits there, loaded; Map and Review are both reachable.
     expect(footerButton('Next').hasAttribute('aria-disabled')).toBe(false)
     await user.click(steps().getByRole('button', { name: 'Review' }))
-    await waitFor(() => expect(document.querySelector('[data-csv-focus="tiles"]')).toBeTruthy())
+    await waitFor(() => expect(document.querySelector('[data-csv-focus="tabs"]')).toBeTruthy())
     expect(steps().getByText('Review').closest('li')?.getAttribute('aria-current')).toBe('step')
     await user.click(steps().getByRole('button', { name: 'Map columns, Completed' }))
     expect(await mapsTo('Firma')).toBeTruthy()
@@ -183,26 +280,103 @@ describe('CsvImport', () => {
     expect(steps().getByRole('button', { name: 'Upload file, Completed' })).toBeTruthy()
   })
 
-  it('counts the rows in two tiles on Review, the errors tile filtering the table', async () => {
+  it('counts the rows in two tabs on Review, opening on the errors, arrow keys moving between them', async () => {
     const { user } = renderImport()
     await toReview(user)
     expect(screen.getByRole('heading', { name: 'Review rows' })).toBeTruthy()
-    const ready = document.querySelector<HTMLElement>('[data-csv-focus="tiles"]')!
-    expect(ready.textContent).toBe('3 Leads will be imported')
-    await waitFor(() => expect(document.activeElement).toBe(ready))
-    const errors = screen.getByRole('button', { name: '1 Row with errors' })
-    expect(errors.getAttribute('aria-pressed')).toBe('false')
-    const table = screen.getByRole('table', { name: 'Rows to import' })
-    expect(within(table).getByText('Anna Nowak')).toBeTruthy()
-    await user.click(errors)
-    expect(errors.getAttribute('aria-pressed')).toBe('true')
-    expect(within(table).queryByText('Anna Nowak')).toBeNull()
+    const tabs = screen.getByRole('tablist', { name: 'Rows to show' })
+    const ready = within(tabs).getByRole('tab', { name: '3 Leads will be imported' })
+    const errors = within(tabs).getByRole('tab', { name: '1 Row with errors' })
+    // Errors first, and focus on the selected tab.
+    expect(errors.getAttribute('aria-selected')).toBe('true')
+    await waitFor(() => expect(document.activeElement).toBe(errors))
+    const panel = screen.getByRole('tabpanel', { name: '1 Row with errors' })
+    const table = within(panel).getByRole('table', { name: 'Rows with errors' })
     expect(within(table).getByText('Jan Kowalski')).toBeTruthy()
-    await user.click(errors)
-    expect(errors.getAttribute('aria-pressed')).toBe('false')
-    expect(within(table).getByText('Anna Nowak')).toBeTruthy()
-    // The preview's own summary, Alert and checkbox stay out: the tiles say them.
+    expect(within(table).queryByText('Anna Nowak')).toBeNull()
+    // Arrow keys select as they move (automatic activation), Home and End too.
+    await user.keyboard('{ArrowLeft}')
+    expect(document.activeElement).toBe(ready)
+    expect(ready.getAttribute('aria-selected')).toBe('true')
+    const readyTable = within(screen.getByRole('tabpanel', { name: '3 Leads will be imported' })).getByRole('table', { name: 'Rows to import' })
+    expect(within(readyTable).getByText('Anna Nowak')).toBeTruthy()
+    expect(within(readyTable).queryByText('Jan Kowalski')).toBeNull()
+    await user.keyboard('{End}')
+    expect(document.activeElement).toBe(errors)
+    expect(errors.getAttribute('aria-selected')).toBe('true')
+    // The preview's own summary, Alert and checkbox stay out: the tabs say them.
     expect(screen.queryByRole('checkbox', { name: 'Show only errors' })).toBeNull()
+  })
+
+  it('gives the selected tab the tab stop from the first render', async () => {
+    const { user } = renderImport()
+    await toReview(user)
+    const ready = screen.getByRole('tab', { name: '3 Leads will be imported' })
+    const errors = screen.getByRole('tab', { name: '1 Row with errors' })
+    expect(errors.tabIndex).toBe(0)
+    expect(ready.tabIndex).toBe(-1)
+    expect(screen.getByRole('tablist').tabIndex).toBe(-1)
+    await user.keyboard('{ArrowLeft}')
+    expect(ready.tabIndex).toBe(0)
+    expect(errors.tabIndex).toBe(-1)
+  })
+
+  it('opens on the import tab with no errors, the errors tab empty', async () => {
+    const { user } = renderImport({ file: csv('Imię i nazwisko;E-mail;Firma\nAnna;anna@firma.pl;Nowak') })
+    await toReview(user)
+    const ready = screen.getByRole('tab', { name: '1 Lead will be imported' })
+    expect(ready.getAttribute('aria-selected')).toBe('true')
+    await user.click(screen.getByRole('tab', { name: '0 Rows with errors' }))
+    expect(screen.getByText('No rows with errors')).toBeTruthy()
+  })
+
+  it('fixes an invalid cell in place: the row moves to the import tab, focus to the next invalid cell', async () => {
+    const file = csv(['Imię i nazwisko;E-mail;Firma', 'Anna;anna@firma;Nowak', 'Jan;jan@firma;Kowalski', 'Ola;ola@firma.pl;Wiśnia'].join('\n'))
+    const onImport = vi.fn()
+    const { user } = renderImport({ file, onImport })
+    await toReview(user)
+    const table = () => screen.getByRole('table', { name: 'Rows with errors' })
+    const cell = within(table()).getByRole('button', { name: 'anna@firma, Not an email address, Edit' })
+    expect(cell.getAttribute('data-csv-cell')).toBe('1:email')
+    cell.focus()
+    await user.keyboard('{Enter}')
+    const field = screen.getByRole('textbox', { name: 'Email, row 1' }) as HTMLInputElement
+    expect(document.activeElement).toBe(field)
+    expect(field.value).toBe('anna@firma')
+    await user.clear(field)
+    await user.type(field, 'anna@firma.pl{Enter}')
+    // Checked again: Anna is ready, focus on Jan's email, and it is read out.
+    await waitFor(() => expect(screen.getByRole('tab', { name: '2 Leads will be imported' })).toBeTruthy())
+    expect(screen.getByRole('tab', { name: '1 Row with errors' }).getAttribute('aria-selected')).toBe('true')
+    await waitFor(() => expect((document.activeElement as HTMLElement).dataset.csvCell).toBe('2:email'))
+    expect(said()).toBe('Row 1 is ready to import')
+    expect(within(table()).queryByText('Anna')).toBeNull()
+    // The last one: the errors tab stays, empty, and takes focus.
+    await user.keyboard('{F2}')
+    const jan = screen.getByRole('textbox', { name: 'Email, row 2' })
+    await user.clear(jan)
+    await user.type(jan, 'jan@firma.pl{Enter}')
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('tab', { name: '0 Rows with errors' })))
+    expect(screen.getByText('No rows with errors')).toBeTruthy()
+    await user.click(footerButton('Import 3 leads'))
+    expect((onImport.mock.calls[0][0] as Record<string, string>[]).map((r) => r.email)).toEqual(['anna@firma.pl', 'jan@firma.pl', 'ola@firma.pl'])
+  })
+
+  it('keeps a fix that still fails on its cell with the new reason, and Escape cancels', async () => {
+    const { user } = renderImport()
+    await toReview(user)
+    await user.click(screen.getByRole('button', { name: 'jan@firma, Not an email address, Edit' }))
+    const field = screen.getByRole('textbox', { name: 'Email, row 2' })
+    await user.type(field, 'x{Escape}')
+    const cell = screen.getByRole('button', { name: 'jan@firma, Not an email address, Edit' })
+    expect(document.activeElement).toBe(cell)
+    expect(screen.queryByRole('textbox', { name: 'Email, row 2' })).toBeNull()
+    await user.keyboard('{Enter}')
+    const again = screen.getByRole('textbox', { name: 'Email, row 2' })
+    await user.clear(again)
+    await user.type(again, 'still wrong{Enter}')
+    await waitFor(() => expect(document.activeElement?.textContent).toBe('still wrong, Not an email address, Edit'))
+    expect(screen.getByRole('tab', { name: '1 Row with errors' })).toBeTruthy()
   })
 
   it('imports nothing before the click, then only the valid rows, normalised, with progress', async () => {
@@ -271,7 +445,7 @@ describe('CsvImport', () => {
     await user.click(footerButton('Cancel'))
     expect(signal?.aborted).toBe(true)
     expect(await screen.findByRole('heading', { name: 'Review rows' })).toBeTruthy()
-    await waitFor(() => expect(document.activeElement?.getAttribute('data-csv-focus')).toBe('tiles'))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('tab', { name: '1 Row with errors' })))
     expect(footerButton('Import 3 leads')).toBeTruthy()
   })
 
@@ -299,6 +473,45 @@ describe('CsvImport', () => {
     expect(resent.map((r) => r.name)).toEqual(['Ola Wiśniewska', 'Piotr Zieliński'])
     expect(await screen.findByRole('heading', { name: 'Import complete' })).toBeTruthy()
     expect(part().getByText('3 leads imported · 1 skipped')).toBeTruthy()
+  })
+
+  it('lists exactly the rows sent after a resume, with a row fixed before the saved ones', async () => {
+    const file = csv(['Imię i nazwisko;E-mail;Firma', 'Anna;anna@firma;Nowak', 'Jan;jan@firma.pl;Kowalski', 'Ola;ola@firma.pl;Wiśnia'].join('\n'))
+    let late = (_n: number) => {}
+    const onImport = vi
+      .fn()
+      .mockImplementationOnce((_rows: Record<string, string>[], ctx: { onProgress: (n: number) => void }) => {
+        late = ctx.onProgress
+        return new Promise<void>(() => {})
+      })
+      .mockImplementationOnce((_rows: Record<string, string>[], ctx: { onProgress: (n: number) => void }) => {
+        ctx.onProgress(1)
+        return Promise.reject(new Error('Down'))
+      })
+    const { user } = renderImport({ file, onImport, cancelable: true })
+    await toReview(user)
+    // Cancel before any row is reported, then the request in flight still saves Jan.
+    await user.click(footerButton('Import 2 leads'))
+    await user.click(footerButton('Cancel'))
+    await screen.findByRole('heading', { name: 'Review rows' })
+    act(() => late(1))
+    // Anna, before Jan in the file, is fixed: editing stays on with a saved row.
+    await user.click(screen.getByRole('button', { name: 'anna@firma, Not an email address, Edit' }))
+    await user.clear(screen.getByRole('textbox', { name: 'Email, row 1' }))
+    await user.type(screen.getByRole('textbox', { name: 'Email, row 1' }), 'anna@firma.pl{Enter}')
+    await waitFor(() => expect(screen.getByRole('tab', { name: '3 Leads will be imported' })).toBeTruthy())
+    await user.click(footerButton('Import 3 leads'))
+    // Jan is not sent again; Anna is, and saved; Ola is not.
+    expect((onImport.mock.calls[1][0] as Record<string, string>[]).map((r) => r.name)).toEqual(['Anna', 'Ola'])
+    await screen.findByRole('heading', { name: 'Import stopped' })
+    const imported = screen.getByRole('table', { name: 'Imported rows' })
+    expect(within(imported).getByText('Jan')).toBeTruthy()
+    expect(within(imported).getByText('Anna')).toBeTruthy()
+    expect(within(imported).queryByText('Ola')).toBeNull()
+    await user.click(screen.getByRole('radio', { name: 'Not imported 1' }))
+    const rest = screen.getByRole('table', { name: 'Rows not imported' })
+    expect(within(rest).getByText('Ola')).toBeTruthy()
+    expect(within(rest).queryByText('Anna')).toBeNull()
   })
 
   it('shows an import that saves nothing in the table body, with Retry in the footer', async () => {
@@ -361,7 +574,7 @@ describe('CsvImport', () => {
     await mapsTo('Firma')
     footerButton('Next').focus()
     await user.keyboard('{Enter}')
-    await waitFor(() => expect(document.querySelector('[data-csv-focus="tiles"]')).toBeTruthy())
+    await waitFor(() => expect(document.querySelector('[data-csv-focus="tabs"]')).toBeTruthy())
     const importButton = footerButton('Import 3 leads')
     importButton.focus()
     await user.tab({ shift: true })
@@ -409,8 +622,8 @@ describe('CsvImport', () => {
     )
     const { user } = renderImport({ fields: own })
     await toReview(user)
-    expect(document.querySelector('[data-csv-focus="tiles"]')?.textContent).toBe('2 Leads will be imported')
-    await user.click(screen.getByRole('button', { name: '2 Rows with errors' }))
+    expect(screen.getByRole('tab', { name: '2 Leads will be imported' })).toBeTruthy()
+    expect(screen.getByRole('tab', { name: '2 Rows with errors' }).getAttribute('aria-selected')).toBe('true')
     expect(screen.getByText('Lookup failed', { exact: false })).toBeTruthy()
   })
 
@@ -431,13 +644,13 @@ describe('CsvImport', () => {
     expect(screen.queryByText('Checking rows…')).toBeNull()
     broken = false
     await user.click(part().getByRole('button', { name: 'Retry' }))
-    await waitFor(() => expect(document.querySelector('[data-csv-focus="tiles"]')?.textContent).toBe('1 Lead will be imported'))
+    await waitFor(() => expect(screen.getByRole('tab', { name: '1 Lead will be imported' })).toBeTruthy())
   })
 
   it('leaves out mapped columns the file doesn’t have', async () => {
     const { user } = renderImport({ mapping: { 0: 'name', 1: 'email', 2: 'company', 9: 'name' } })
     await toReview(user)
-    expect(document.querySelector('[data-csv-focus="tiles"]')?.textContent).toBe('3 Leads will be imported')
+    expect(screen.getByRole('tab', { name: '3 Leads will be imported' })).toBeTruthy()
   })
 
   it('retries a failed import from the first row not done', async () => {
@@ -634,7 +847,7 @@ describe('CsvImport', () => {
     await mapsTo('Firma')
     await expectNoAxeViolations()
     await user.click(footerButton('Next'))
-    await waitFor(() => expect(document.querySelector('[data-csv-focus="tiles"]')).toBeTruthy())
+    await waitFor(() => expect(document.querySelector('[data-csv-focus="tabs"]')).toBeTruthy())
     await expectNoAxeViolations()
   })
 
@@ -643,7 +856,7 @@ describe('CsvImport', () => {
     const { user } = renderWithSatin(<CsvImport fields={fields} noun={noun} onImport={onImport} file={csv(leads)} />, { theme })
     await mapsTo('Firma')
     await user.click(footerButton('Next'))
-    await waitFor(() => expect(document.querySelector('[data-csv-focus="tiles"]')).toBeTruthy())
+    await waitFor(() => expect(document.querySelector('[data-csv-focus="tabs"]')).toBeTruthy())
     await user.click(footerButton('Import 3 leads'))
     await screen.findByRole('heading', { name: 'Nothing was imported' })
     await expectNoAxeViolations()

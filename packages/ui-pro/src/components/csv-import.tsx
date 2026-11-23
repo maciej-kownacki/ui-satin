@@ -1,7 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { ArrowRight, Calendar, Check, Database, Download, Filter, Hashtag, List, Mail, Text, WarningCircle } from 'iconoir-react'
+import { ArrowRight, Calendar, Check, Database, Download, Hashtag, List, Mail, Text, WarningCircle } from 'iconoir-react'
+import { Tabs as TabsPrimitive } from 'radix-ui'
 import { Alert } from '@uisatin/ui/alert'
 import { Attachment, FileIcon } from '@uisatin/ui/attachment'
 import { Button } from '@uisatin/ui/button'
@@ -9,6 +10,7 @@ import { Checkbox } from '@uisatin/ui/checkbox'
 import { DialogDescription, DialogTitle } from '@uisatin/ui/dialog'
 import { EmptyState } from '@uisatin/ui/empty-state'
 import { FileUpload, FileUploadItem, formatBytes, type FileUploadFile, type FileUploadRejection } from '@uisatin/ui/file-upload'
+import { Input } from '@uisatin/ui/input'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
 import { Link } from '@uisatin/ui/link'
@@ -44,9 +46,10 @@ export type { CsvFieldType, CsvImportField, CsvMapping } from './csv-import-pars
  * CsvImport: a CSV file into your records in three steps, Upload file › Map columns › Review, in
  * one panel whose frame never moves. On top, the steps in a row: the current one on the primary
  * action's fill, done ones with a check, and each one a button back, or forward as far as Next
- * would go. In the middle, the step, which slides (useStepSlide) and scrolls as one. At the
- * bottom, 68px: Back, the reason the primary is blocked (visible text, also its Tooltip and
- * `aria-describedby`), and the primary.
+ * would go. In the middle, the step, which slides (useStepSlide) and scrolls as one, on to the
+ * panel's foot. Over its foot, the footer: Back, the reason the primary is blocked (visible text,
+ * also its Tooltip and `aria-describedby`), and the primary, 16 from the edges as the steps are
+ * from the top, on the panel's fill with a 24px fade above into the rows scrolling under it.
  *
  * - Upload file: the drop zone fills the step. Its picture is the file going into the app: the
  *   file's tile, a dotted arrow that pulses toward the app (`appIcon`), the app's tile. Excel
@@ -57,9 +60,11 @@ export type { CsvFieldType, CsvImportField, CsvMapping } from './csv-import-pars
  *   first values, and a Select of the fields (each with its type's icon) plus "Don't import".
  *   Columns auto-match by key, label and `aliases`, ignoring case, diacritics, spaces, `-` and
  *   `_`. Next stays blocked while a required field has no column or a field has two.
- * - Review: two tiles, "328 leads will be imported" and "12 rows with errors" (a toggle that
- *   shows only those rows), then the rows, 100 a page. Nothing is sent before "Import 328
- *   leads". Importing and its result are states of Review: Progress while `onImport` runs, then
+ * - Review: two tabs drawn as tiles, "328 leads will be imported" and "12 rows with errors"
+ *   (open first while there are errors), over the tab's rows, 100 a page. An invalid cell is fixed
+ *   in place (Enter, a click or F2; Enter or leaving keeps it, Escape drops it): the rows are
+ *   checked again and a row that passes joins the import. Fixes hold through mapping changes and
+ *   go with a new file. Nothing is sent before "Import 328 leads". Importing and its result are states of Review: Progress while `onImport` runs, then
  *   CsvImportResult's table of what was imported and skipped. "Import another file" takes
  *   Back's place. It never closes by itself; `onDone` adds Done.
  *
@@ -150,11 +155,13 @@ export const csvImportLabels = {
   /* Review */
   csvReviewTitle: 'Review rows',
   csvReviewText: 'Rows with errors are skipped. The rest are imported.',
-  /** Review's first tile, under the count; `noun` is picked for the count: "Candidates will be imported". */
+  /** The name of Review's two tabs. */
+  csvReviewTabs: 'Rows to show',
+  /** Review's first tab, under the count; `noun` is picked for the count: "Candidates will be imported". */
   csvWillImport: (noun: string) => `${noun.charAt(0).toUpperCase()}${noun.slice(1)} will be imported`,
-  /** Review's second tile, under the count; `noun` is the row noun picked for it: "Rows with errors". */
+  /** Review's second tab, under the count; `noun` is the row noun picked for it: "Rows with errors". */
   csvRowsWithErrors: (noun: string) => `${noun.charAt(0).toUpperCase()}${noun.slice(1)} with errors`,
-  /** Under the tiles when the file is longer than `maxRows`. */
+  /** Under the tabs when the file is longer than `maxRows`. */
   csvOverLimitText: (count: string, noun: string) => `${count} more ${noun} are over the limit and won’t be imported.`,
   csvChecking: 'Checking rows…',
   csvReady: (count: string) => `${count} ready`,
@@ -168,6 +175,20 @@ export const csvImportLabels = {
   csvShowErrors: 'Show only errors',
   /** The preview table's name. */
   csvPreview: 'Rows to import',
+  /** The table's name on Review's errors tab. */
+  csvErrorsTable: 'Rows with errors',
+  /** The errors tab's empty table. */
+  csvNoErrors: 'No rows with errors',
+  csvNoErrorsHint: 'Every row passed its checks.',
+  /** The import tab's empty table, while every row has an error. */
+  csvNoneReady: 'No rows to import yet',
+  csvNoneReadyHint: 'Fix the rows with errors to import them.',
+  /** Read after an invalid cell's value and reason: it opens a field to fix the value. */
+  csvEditCell: 'Edit',
+  /** That field's name: the column's field and the row's number, formatted: "Email, row 17". */
+  csvCellLabel: (field: string, row: string) => `${field}, row ${row}`,
+  /** Read out when a fixed row passes its checks; `row` is formatted. */
+  csvRowFixed: (row: string) => `Row ${row} is ready to import`,
   /** The row number column's header. */
   csvRowNumber: '#',
   csvErrorRequired: 'Required',
@@ -413,28 +434,109 @@ const focusTargetClass = 'rounded-xs outline-none focus-visible:[box-shadow:0_0_
 /** A row as the tables take it. */
 type TableRow = { id: string; n: number; cells: CsvCheckedRow }
 
-/** A source value as the preview shows it: plain, or in the error colour with a mark and its reason. */
-function sourceCell(row: TableRow, field: CsvImportField, index: number, labels: Labels) {
-  const text = (row.cells.source[index] ?? '').trim()
+/**
+ * A source value as the preview shows it: plain, or in the error colour with a mark and its
+ * reason. With `onEdit` an invalid value is a button (a tab stop) that opens a field to fix it;
+ * `text` stands in for the value while a fix is being checked.
+ */
+function sourceCell(row: TableRow, field: CsvImportField, index: number, labels: Labels, edit?: { onEdit: () => void; text?: string }) {
+  const text = (edit?.text ?? row.cells.source[index] ?? '').trim()
   const error = row.cells.errors?.[field.key]
   if (!error) return text
   const reason = reasonOf(error, field, labels)
+  const className = cn(
+    'inline-flex max-w-full min-w-0 items-center gap-1 rounded-xs text-text-destructive outline-none',
+    // An inset ring, so the cell's clip never cuts it; the sticky # column never covers it.
+    'focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)] [scroll-margin-inline-start:56px]',
+  )
+  const content = (
+    <>
+      {text && <span className="truncate">{text}</span>}
+      <WarningCircle aria-hidden className="size-3.5 shrink-0 [stroke-width:1.875]" />
+      <span className="sr-only">, {reason}</span>
+    </>
+  )
   return (
     <Tooltip label={reason}>
-      <span
-        tabIndex={-1}
-        data-csv-cell={`${row.n}:${field.key}`}
-        className={cn(
-          'inline-flex max-w-full min-w-0 items-center gap-1 rounded-xs text-text-destructive outline-none',
-          // An inset ring, so the cell's clip never cuts it; the sticky # column never covers it.
-          'focus-visible:[box-shadow:inset_0_0_0_2px_var(--action-focus-ring)] [scroll-margin-inline-start:56px]',
-        )}
-      >
-        {text && <span className="truncate">{text}</span>}
-        <WarningCircle aria-hidden className="size-3.5 shrink-0 [stroke-width:1.875]" />
-        <span className="sr-only">, {reason}</span>
-      </span>
+      {edit ? (
+        <button
+          type="button"
+          data-csv-cell={`${row.n}:${field.key}`}
+          onClick={edit.onEdit}
+          // F2 edits a cell, as in a spreadsheet; Enter and Space are the button's own.
+          onKeyDown={(e) => {
+            if (e.key === 'F2') {
+              e.preventDefault()
+              edit.onEdit()
+            }
+          }}
+          className={cn(className, 'cursor-pointer text-start')}
+        >
+          {content}
+          <span className="sr-only">, {labels.csvEditCell}</span>
+        </button>
+      ) : (
+        <span tabIndex={-1} data-csv-cell={`${row.n}:${field.key}`} className={className}>
+          {content}
+        </span>
+      )}
     </Tooltip>
+  )
+}
+
+/**
+ * The field that fixes an invalid cell, in place of its button: Input sm, the value selected.
+ * Enter or leaving it commits (not leaving the window); Escape cancels; neither while an IME
+ * composes. The row keeps its height (csv-import.css).
+ */
+function CellEditor({ value, label, onCommit, onCancel }: { value: string; label: string; onCommit: (value: string, how: 'enter' | 'blur') => void; onCancel: () => void }) {
+  const ref = React.useRef<HTMLInputElement>(null)
+  // Once: Enter commits and then the field goes, which may also blur it.
+  const done = React.useRef(false)
+  const finish = (how: 'enter' | 'blur' | 'cancel') => {
+    if (done.current) return
+    done.current = true
+    if (how === 'cancel') onCancel()
+    else onCommit(ref.current?.value ?? value, how)
+  }
+  const finishRef = React.useRef(finish)
+  finishRef.current = finish
+  React.useLayoutEffect(() => {
+    ref.current?.focus({ preventScroll: true })
+    ref.current?.select()
+  }, [])
+  React.useEffect(() => {
+    // Escape cancels the edit only. A Dialog listens on the document in the capture phase; this
+    // listener on the window runs first and stops it there, so the dialog stays open.
+    const onKey = (e: KeyboardEvent) => {
+      // Escape while an IME composes ends the composition, not the edit.
+      if (e.key !== 'Escape' || e.isComposing || e.keyCode === 229 || e.target !== ref.current) return
+      e.stopPropagation()
+      e.preventDefault()
+      finishRef.current('cancel')
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [])
+  return (
+    <Input
+      ref={ref}
+      size="sm"
+      defaultValue={value}
+      aria-label={label}
+      data-csv-editor=""
+      wrapperClassName="min-w-0 flex-1"
+      onKeyDown={(e) => {
+        // Enter while an IME composes picks a candidate, not the value.
+        if (e.key !== 'Enter' || e.nativeEvent.isComposing || e.keyCode === 229) return
+        e.preventDefault()
+        finish('enter')
+      }}
+      // Switching to another window blurs the field too; it stays open for the return.
+      onBlur={() => {
+        if (document.hasFocus()) finish('blur')
+      }}
+    />
   )
 }
 
@@ -730,6 +832,14 @@ export interface CsvImportPreviewProps extends Omit<React.ComponentProps<'div'>,
   errorsOnly?: boolean
   defaultErrorsOnly?: boolean
   onErrorsOnlyChange?: (errorsOnly: boolean) => void
+  /**
+   * Makes every invalid cell a button that opens a field to fix its value (Enter, a click or F2;
+   * Enter or leaving the field commits, Escape cancels). Called with the row's number among the
+   * data rows (`CsvCheckedRow.n`), the source column's index and the new value: check the rows
+   * again with it and pass the new `validation`. Focus then stays on the cell while it is still
+   * invalid, or moves to the next invalid cell once the row passes. Without it, nothing is editable.
+   */
+  onCellEdit?: (row: number, column: number, value: string) => void
 }
 
 /**
@@ -737,13 +847,30 @@ export interface CsvImportPreviewProps extends Omit<React.ComponentProps<'div'>,
  * grouping the errors by field (each group a link that turns on "Show only errors" and moves
  * focus to its first cell), the checkbox, and a Table of the mapped fields, 100 rows a page with
  * Pagination under it. An invalid cell is in the error colour with a warning mark and its reason
- * (a Tooltip, and read out). Other props, `ref` included, go to its root.
+ * (a Tooltip, and read out); with `onCellEdit` it is a button that fixes it in place. Other
+ * props, `ref` included, go to its root.
  */
 export function CsvImportPreview(props: CsvImportPreviewProps) {
   return <Preview {...props} />
 }
 
-/** CsvImportPreview; `bare` leaves out the summary, the Alert and the checkbox (CsvImport's tiles say them). */
+/** Which rows CsvImport's Review shows: the tab's. */
+type PreviewShow = 'ready' | 'errors'
+
+/** A cell to focus after the next commit, and how far to scroll to it. */
+type Pending = { n: number; key: string; block: ScrollLogicalPosition }
+
+/**
+ * A fix sent with onCellEdit, waiting for a `validation` whose row has it; kept by `n:index`.
+ * `pos` is the row's place among the invalid rows shown, `how` how the field was left.
+ */
+type Fix = { n: number; key: string; index: number; value: string; pos: number; how: 'enter' | 'blur' }
+
+/**
+ * CsvImportPreview. `bare` leaves out the summary, the Alert and the checkbox (CsvImport's tabs
+ * say them); `show` picks the tab's rows in place of errorsOnly, with an empty state; `announce`
+ * speaks through CsvImport's live region; `onErrorsCleared` takes focus once no invalid cell is left.
+ */
 function Preview({
   fields,
   mapping,
@@ -752,40 +879,131 @@ function Preview({
   errorsOnly: errorsOnlyProp,
   defaultErrorsOnly = false,
   onErrorsOnlyChange,
+  onCellEdit,
   bare = false,
+  show: showProp,
+  announce: announceProp,
+  onErrorsCleared,
   className,
   ...props
-}: CsvImportPreviewProps & { bare?: boolean }) {
+}: CsvImportPreviewProps & { bare?: boolean; show?: PreviewShow; announce?: (text: string) => void; onErrorsCleared?: () => void }) {
   const labels = useLabels()
   const { n, noun } = useCounts(labels)
   const [errorsOnly, setErrorsOnlyState] = useControllable(errorsOnlyProp, defaultErrorsOnly, onErrorsOnlyChange)
   const [page, setPage] = React.useState(1)
-  const [pending, setPending] = React.useState<{ n: number; key: string } | null>(null)
+  const [pending, setPending] = React.useState<Pending | null>(null)
+  const [editing, setEditing] = React.useState<{ n: number; index: number } | null>(null)
+  const [fixes, setFixes] = React.useState<ReadonlyMap<string, Fix>>(() => new Map())
+  // Without CsvImport's live region, a fixed row is read out from one of its own.
+  const [said, setSaid] = React.useState({ text: '', n: 0 })
+  const announce = announceProp ?? ((text: string) => setSaid((s) => ({ text, n: s.n + 1 })))
   const tableRef = React.useRef<HTMLDivElement>(null)
+  const summaryRef = React.useRef<HTMLParagraphElement>(null)
   // Page numbers need about 360px; narrower, Pagination shows "Page 2 of 4" between its arrows.
   const compact = useNarrower(tableRef, 360)
 
   const { rows, valid, errorCounts } = validation
   const errors = rows.length - valid
-  const shown = React.useMemo(() => (errorsOnly && errors > 0 ? rows.filter((r) => r.errors) : rows), [rows, errorsOnly, errors])
+  const show: PreviewShow | 'all' = showProp ?? (errorsOnly && errors > 0 ? 'errors' : 'all')
+  const shown = React.useMemo(() => (show === 'errors' ? rows.filter((r) => r.errors) : show === 'ready' ? rows.filter((r) => !r.errors) : rows), [rows, show])
   const pageCount = Math.max(1, Math.ceil(shown.length / PAGE_SIZE))
   // While a jump is pending, the page is the one with its cell in the list actually shown: with
   // a controlled errorsOnly the app may keep every row.
   const pendingAt = pending ? shown.findIndex((r) => r.n === pending.n) : -1
   const current = pendingAt >= 0 ? Math.floor(pendingAt / PAGE_SIZE) + 1 : Math.min(page, pageCount)
 
-  // Back to the first page whenever the filter changes, from here or from the app.
-  const [seenFilter, setSeenFilter] = React.useState(errorsOnly)
-  if (seenFilter !== errorsOnly) {
-    setSeenFilter(errorsOnly)
+  // Back to the first page whenever the rows shown change, from here or from the app.
+  const [seenShow, setSeenShow] = React.useState(show)
+  if (seenShow !== show) {
+    setSeenShow(show)
     setPage(1)
   }
 
   const mapped = mappedFields(fields, mapping)
+  /** A row's first invalid cell, in the table's order. */
+  const firstError = (r: CsvCheckedRow) => mapped.find((m) => r.errors?.[m.field.key])?.field.key
+
+  const commit = (row: TableRow, field: CsvImportField, index: number, value: string, how: 'enter' | 'blur') => {
+    setEditing(null)
+    // Enter keeps focus on the cell while it is checked again; leaving the field leaves it where it went.
+    if (how === 'enter') setPending({ n: row.n, key: field.key, block: 'nearest' })
+    if (!onCellEdit) return
+    const at = `${row.n}:${index}`
+    // Unchanged from what the cell shows: nothing to send.
+    if (value === (fixes.get(at)?.value ?? row.cells.source[index] ?? '')) return
+    const next = new Map(fixes)
+    // Back to the value the check already has: nothing to wait for, but the app hears of it.
+    if (value === (row.cells.source[index] ?? '')) next.delete(at)
+    else next.set(at, { n: row.n, key: field.key, index, value, pos: shown.filter((r) => r.errors).findIndex((r) => r.n === row.n), how })
+    setFixes(next)
+    onCellEdit(row.n, index, value)
+  }
+
+  // A check is in. Each fix it has (its row with the fix's value, or the row gone) settles; the
+  // others wait for a later one, whatever object it comes as. Every row that passed is read out.
+  // The last fix settled decides focus: its cell while the row is still invalid (the new reason
+  // shows); once it passed, the next invalid cell, else the one before, else out of the table.
+  // Focus moves only from where the fix left it: after Enter, the row's cell; after leaving the
+  // field, only when it is lost (on the body), never back from where the user went.
+  React.useLayoutEffect(() => {
+    if (fixes.size === 0) return
+    const left = new Map(fixes)
+    const passed: number[] = []
+    let last: { fix: Fix; row?: CsvCheckedRow } | null = null
+    for (const [at, fix] of fixes) {
+      const row = validation.rows.find((r) => r.n === fix.n)
+      if (row && (row.source[fix.index] ?? '') !== fix.value) continue
+      left.delete(at)
+      if (row && !row.errors && !passed.includes(row.n)) passed.push(row.n)
+      last = { fix, row }
+    }
+    if (!last) return
+    setFixes(left)
+    if (passed.length) announce(passed.map((r) => labels.csvRowFixed(n(r))).join('. '))
+    const { fix, row } = last
+    const active = document.activeElement as HTMLElement | null
+    const lost = !active || active === document.body || !active.isConnected
+    const mayFocus = lost || (fix.how === 'enter' && !!active.dataset?.csvCell?.startsWith(`${fix.n}:`))
+    if (!mayFocus) return
+    if (row?.errors) {
+      const key = row.errors[fix.key] ? fix.key : firstError(row)
+      if (key) setPending({ n: row.n, key, block: 'nearest' })
+      return
+    }
+    const invalid = shown.filter((r) => r.errors)
+    const next = invalid[fix.pos] ?? (fix.pos > 0 ? invalid[fix.pos - 1] : undefined)
+    const key = next && firstError(next)
+    if (next && key) setPending({ n: next.n, key, block: 'nearest' })
+    else if (onErrorsCleared) onErrorsCleared()
+    else summaryRef.current?.focus({ preventScroll: true })
+    // Only a new validation settles a fix.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validation])
 
   const columns: Column<TableRow>[] = [
     { key: ROW_KEY, header: labels.csvRowNumber, width: 56, cell: (row) => <span className="text-text-muted tabular-nums">{n(row.n)}</span> },
-    ...mapped.map(({ field, index }) => ({ key: field.key, header: field.label, width: 160, cell: (row: TableRow) => sourceCell(row, field, index, labels) })),
+    ...mapped.map(({ field, index }) => ({
+      key: field.key,
+      header: field.label,
+      width: 160,
+      cell: (row: TableRow) => {
+        // A fix still being checked shows its value, here and in the field opened again.
+        const fixing = fixes.get(`${row.n}:${index}`)?.value
+        if (onCellEdit && editing?.n === row.n && editing.index === index && row.cells.errors?.[field.key])
+          return (
+            <CellEditor
+              value={fixing ?? row.cells.source[index] ?? ''}
+              label={labels.csvCellLabel(field.label, n(row.n))}
+              onCommit={(value, how) => commit(row, field, index, value, how)}
+              onCancel={() => {
+                setEditing(null)
+                setPending({ n: row.n, key: field.key, block: 'nearest' })
+              }}
+            />
+          )
+        return sourceCell(row, field, index, labels, onCellEdit ? { onEdit: () => setEditing({ n: row.n, index }), text: fixing } : undefined)
+      },
+    })),
   ]
   const tableRows: TableRow[] = shown.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE).map((r) => ({ id: String(r.n), n: r.n, cells: r }))
 
@@ -794,7 +1012,7 @@ function Preview({
     const first = rows.find((r) => r.errors?.[key])
     if (!first) return
     setErrorsOnlyState(true)
-    setPending({ n: first.n, key })
+    setPending({ n: first.n, key, block: 'center' })
   }
   // One commit after the jump: keep its page, focus the cell if it is there, and forget it either way.
   React.useLayoutEffect(() => {
@@ -805,7 +1023,7 @@ function Preview({
     const target = [...(tableRef.current?.querySelectorAll<HTMLElement>('[data-csv-cell]') ?? [])].find((el) => el.dataset.csvCell === name)
     if (!target) return
     target.focus({ preventScroll: true })
-    target.scrollIntoView?.({ block: 'center', inline: 'center' })
+    target.scrollIntoView?.({ block: pending.block, inline: pending.block })
   })
 
   // Paging by hand brings the table's top into view.
@@ -822,10 +1040,14 @@ function Preview({
     overLimit > 0 && labels.csvOverLimit(n(overLimit)),
   ].filter(Boolean)
 
+  let empty: React.ReactNode
+  if (show === 'errors') empty = <EmptyState icon={<Check />} title={labels.csvNoErrors} description={labels.csvNoErrorsHint} />
+  else if (show === 'ready') empty = <EmptyState title={labels.csvNoneReady} description={labels.csvNoneReadyHint} />
+
   return (
     <div data-slot="csv-import-preview" className={cn('flex flex-col gap-3', className)} {...props}>
       {!bare && (
-        <p data-csv-focus="summary" tabIndex={-1} className={cn('text-base leading-5 font-medium text-text-default', focusTargetClass)}>
+        <p ref={summaryRef} data-csv-focus="summary" tabIndex={-1} className={cn('text-base leading-5 font-medium text-text-default', focusTargetClass)}>
           {summary.join(' · ')}
         </p>
       )}
@@ -854,10 +1076,11 @@ function Preview({
       )}
       <Table<TableRow>
         ref={tableRef}
-        label={labels.csvPreview}
+        label={show === 'errors' ? labels.csvErrorsTable : labels.csvPreview}
         overflow="scroll"
         columns={columns}
         rows={tableRows}
+        empty={empty}
         renderRow={({ row, children }) => (
           <tr key={row.id} className="bg-bg-card">
             {children}
@@ -865,6 +1088,11 @@ function Preview({
         )}
       />
       {pageCount > 1 && <Pagination className="self-center" layout={compact ? 'compact' : 'full'} pageCount={pageCount} page={current} onPageChange={turnPage} />}
+      {onCellEdit && !announceProp && (
+        <div role="status" aria-live="polite" className="sr-only">
+          <span key={said.n}>{said.text}</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -941,7 +1169,10 @@ export function CsvImportResult(props: CsvImportResultProps) {
   return <Result {...props} />
 }
 
-/** CsvImportResult; `bare` leaves out the heading and the stopped Alert (CsvImport's step title and footer say them). */
+/**
+ * CsvImportResult; `bare` leaves out the heading and the stopped Alert (CsvImport's step title and
+ * footer say them); `sent` lists the rows saved by `n`, in place of the first `imported`.
+ */
 function Result({
   fields,
   mapping,
@@ -960,10 +1191,11 @@ function Result({
   delimiter,
   disabled = false,
   bare = false,
+  sent,
   className,
   ref,
   ...props
-}: CsvImportResultProps & { bare?: boolean }) {
+}: CsvImportResultProps & { bare?: boolean; sent?: readonly number[] }) {
   const labels = useLabels()
   const { n, noun } = useCounts(labels)
   const thing = nounProp ?? labels.csvRowNoun
@@ -981,13 +1213,15 @@ function Result({
 
   const { skipped, imported, notImported } = React.useMemo(() => {
     const valid = validation.rows.filter((r) => !r.errors)
-    const count = Math.max(0, Math.min(valid.length, importedProp))
-    return {
-      skipped: validation.rows.filter((r) => r.errors),
-      imported: valid.slice(0, count),
-      notImported: stopped ? valid.slice(count) : [],
+    const skipped = validation.rows.filter((r) => r.errors)
+    // CsvImport knows the rows it sent by number (a resumed run may not have sent the first ones).
+    if (sent) {
+      const set = new Set(sent)
+      return { skipped, imported: valid.filter((r) => set.has(r.n)), notImported: stopped ? valid.filter((r) => !set.has(r.n)) : [] }
     }
-  }, [validation, importedProp, stopped])
+    const count = Math.max(0, Math.min(valid.length, importedProp))
+    return { skipped, imported: valid.slice(0, count), notImported: stopped ? valid.slice(count) : [] }
+  }, [validation, importedProp, sent, stopped])
 
   const shown = filter === 'skipped' ? skipped : filter === 'notImported' ? notImported : imported
   const pageCount = Math.max(1, Math.ceil(shown.length / PAGE_SIZE))
@@ -1174,8 +1408,11 @@ type ParseState =
 type ImportState =
   | { status: 'idle' }
   | { status: 'importing'; done: number; total: number }
-  /** `imported` valid rows saved; `stopped` with a `reason` failed, without one was cancelled. */
-  | { status: 'result'; result: 'done' | 'stopped'; imported: number; reason?: string }
+  /**
+   * `imported` valid rows saved, `sent` their numbers (`n`); `stopped` with a `reason` failed,
+   * without one was cancelled.
+   */
+  | { status: 'result'; result: 'done' | 'stopped'; imported: number; sent: number[]; reason?: string }
 
 /** Why Next or Import can't run, in order of what to fix first. */
 type Block =
@@ -1186,15 +1423,18 @@ type Block =
 
 /**
  * Where focus goes after the next commit: `error` on a read that failed, `step` into the step
- * that opened (or back into Upload when a failed read is retried), `tiles` after a cancel before
- * any row was saved, `title` on the outcome.
+ * that opened (or back into Upload when a failed read is retried), `tabs` (Review's selected
+ * tab) after a cancel before any row was saved, `title` on the outcome.
  */
-type FocusWant = 'error' | 'step' | 'tiles' | 'title'
+type FocusWant = 'error' | 'step' | 'tabs' | 'title'
 
 type Checked = { input: object; result: CsvValidation | null; failed?: { error: unknown } }
 
-/** An import run: what it sent (the read, and fields and mapping by content), its check, and the valid rows saved. */
-type SavedRun = { id: number; result: CsvParseResult; key: string; validation: CsvValidation; done: number }
+/**
+ * An import run: what it sent (the read, and fields and mapping by content), its check, the
+ * valid rows it counts in the order they were sent (their `n`), and how many of them are saved.
+ */
+type SavedRun = { id: number; result: CsvParseResult; key: string; validation: CsvValidation; order: number[]; done: number }
 
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now())
 
@@ -1249,6 +1489,8 @@ function useCsvFlow({
   const [checked, setChecked] = React.useState<Checked | null>(null)
   const [recheck, setRecheck] = React.useState(0)
   const [imp, setImp] = React.useState<ImportState>({ status: 'idle' })
+  // Values fixed by hand on Review, by record index and source column: `${record}:${column}`.
+  const [edits, setEdits] = React.useState<ReadonlyMap<string, string>>(() => new Map())
 
   // One polite region for reading, importing and how they ended; a new key makes it speak again.
   const [said, setSaid] = React.useState({ text: '', n: 0 })
@@ -1283,6 +1525,8 @@ function useCsvFlow({
     setParse({ status: 'reading', file })
     setChecked(null)
     setImp({ status: 'idle' })
+    // Fixes belong to the read they were made on.
+    setEdits(new Map())
     announce(labels.csvReadingFile(file.name))
     parseCsv(file, { maxRows, signal: ac.signal }).then(
       (result) => {
@@ -1337,7 +1581,21 @@ function useCsvFlow({
     () => stableFields.map((f) => (issues.missing.includes(f) ? { ...f, required: false } : f)),
     [stableFields, missingKeys], // eslint-disable-line react-hooks/exhaustive-deps
   )
-  const input = React.useMemo(() => ({ result, header, mapping: fileMapping, checkFields }), [result, header, fileMapping, checkFields])
+  // The records with the fixes made on Review: a copy of only the rows changed. The source
+  // columns are fixed, not fields, so a fix holds through mapping changes. Map columns' samples
+  // (`dataRows`) keep the file as read.
+  const records = React.useMemo(() => {
+    if (!result || edits.size === 0) return result?.records ?? null
+    const out = result.records.slice()
+    for (const [at, value] of edits) {
+      const [record, column] = at.split(':').map(Number)
+      if (!out[record]) continue
+      if (out[record] === result.records[record]) out[record] = out[record].slice()
+      out[record][column] = value
+    }
+    return out
+  }, [result, edits])
+  const input = React.useMemo(() => ({ result, records, header, mapping: fileMapping, checkFields }), [result, records, header, fileMapping, checkFields])
   const checkedRef = React.useRef(checked)
   checkedRef.current = checked
   React.useLayoutEffect(() => {
@@ -1350,7 +1608,7 @@ function useCsvFlow({
     }
     const run = () => {
       try {
-        const job = validationJob(input.result!.records, input.mapping, input.checkFields, { header: input.header, locale: labels.dateLocale, maxRows })
+        const job = validationJob(input.records!, input.mapping, input.checkFields, { header: input.header, locale: labels.dateLocale, maxRows })
         // Most files are checked in the first slice, before the next paint.
         if (job.advance(now() + 8)) {
           setChecked({ input, result: job.result() })
@@ -1405,21 +1663,30 @@ function useCsvFlow({
   // and fields by content), so a row is never sent twice, whatever ended the run before.
   const saved = React.useRef<SavedRun | null>(null)
   const runKey = `${fieldsKey}|${mappingKey}|${missingKeys}`
+  /** The rows the last run of this read and mapping saved, by `n`; null when there is none. */
+  const savedRows = () => {
+    const last = saved.current
+    return last && last.result === result && last.key === runKey ? last.order.slice(0, last.done) : null
+  }
   const startImport = () => {
     // Blockable is only aria-disabled, so a click still lands here.
     if (!result || !validation || !fresh || block) return
-    const last = saved.current
-    const from = last && last.result === result && last.key === runKey ? last.done : 0
-    const rows = validation.rows.filter((r) => !r.errors).map((r) => r.values)
-    if (rows.length === 0) return
-    const skipped = validation.rows.length - rows.length
+    const valid = validation.rows.filter((r) => !r.errors)
+    if (valid.length === 0) return
+    // The rows already saved are left out by their number, not by a count: a row fixed on Review
+    // after a run joins the valid rows wherever it is in the file.
+    const before = savedRows() ?? []
+    const savedSet = new Set(before)
+    const rest = valid.filter((r) => !savedSet.has(r.n))
+    const rows = rest.map((r) => r.values)
+    const skipped = validation.rows.length - valid.length
     const id = ++run.current
     const ac = new AbortController()
     abort.current = ac
-    const total = rows.length
-    const start = Math.max(0, Math.min(total, from))
+    const total = valid.length
+    const start = total - rest.length
     let done = start
-    const own: SavedRun = { id, result, key: runKey, validation, done }
+    const own: SavedRun = { id, result, key: runKey, validation, order: [...valid.filter((r) => savedSet.has(r.n)).map((r) => r.n), ...rest.map((r) => r.n)], done }
     saved.current = own
     let shown = 0
     let milestone = Math.floor((start / Math.max(total, 1)) * 4)
@@ -1447,19 +1714,19 @@ function useCsvFlow({
     const finish = () => {
       if (!live()) return
       own.done = total
-      setImp({ status: 'result', result: 'done', imported: total })
+      setImp({ status: 'result', result: 'done', imported: total, sent: own.order })
       announce(labels.csvImported(n(total), noun(total, thing), skipped ? n(skipped) : null))
       focusNext.current = 'title'
     }
     const fail = (error: unknown) => {
       if (!live()) return
       const reason = error instanceof Error && error.message ? error.message : typeof error === 'string' && error ? error : labels.csvImportFailedReason
-      setImp({ status: 'result', result: 'stopped', imported: done, reason })
+      setImp({ status: 'result', result: 'stopped', imported: done, sent: own.order.slice(0, done), reason })
       announce(`${labels.csvImportFailed(done > 0 ? n(done) : null)}. ${reason}`)
       focusNext.current = 'title'
     }
     try {
-      const out = onImport(start > 0 ? rows.slice(start) : rows, { signal: ac.signal, onProgress })
+      const out = onImport(rows, { signal: ac.signal, onProgress })
       if (out && typeof (out as Promise<void>).then === 'function') (out as Promise<void>).then(finish, fail)
       else finish()
     } catch (error) {
@@ -1473,13 +1740,13 @@ function useCsvFlow({
     abort.current?.abort()
     if (own && own.done > 0) {
       const { done, validation } = own
-      setImp({ status: 'result', result: 'stopped', imported: done })
+      setImp({ status: 'result', result: 'stopped', imported: done, sent: own.order.slice(0, done) })
       const skipped = validation.rows.length - validation.valid
       announce(labels.csvImportStopped(n(done), noun(done, thing), n(validation.valid - done), skipped ? n(skipped) : null))
       focusNext.current = 'title'
     } else {
       setImp({ status: 'idle' })
-      focusNext.current = 'tiles'
+      focusNext.current = 'tabs'
     }
   }
   const importAnother = () => {
@@ -1487,7 +1754,15 @@ function useCsvFlow({
     setImp({ status: 'idle' })
     setRejection(null)
     setChecked(null)
+    setEdits(new Map())
     setFile(null)
+  }
+
+  /* fixing a value on Review */
+  // `row` is the data row's number (CsvCheckedRow.n, from 1), `column` the source column.
+  const editCell = (row: number, column: number, value: string) => {
+    const record = row - 1 + (header ? 1 : 0)
+    setEdits((e) => new Map(e).set(`${record}:${column}`, value))
   }
 
   /* files */
@@ -1534,10 +1809,12 @@ function useCsvFlow({
     importing: imp.status === 'importing',
     finished: imp.status === 'result',
     readyCount,
+    editCell,
     startImport,
     cancelImport,
     importAnother,
     said,
+    announce,
     focusNext,
   }
 }
@@ -1665,7 +1942,7 @@ export function CsvImport({
     let target: HTMLElement | null = null
     if (want === 'error') target = q('[data-csv-focus="error"]')
     else if (want === 'title') target = q('[data-csv-focus="title"]')
-    else if (want === 'tiles') target = q('[data-csv-focus="tiles"]')
+    else if (want === 'tabs') target = q('[data-csv-focus="tabs"] [role="tab"][aria-selected="true"]')
     else if (view === 'upload') target = q('button:not([disabled]), a[href], [tabindex="0"]')
     else if (view === 'map') {
       // The column to fix first: a duplicate, else the first on Don't import while a required
@@ -1674,7 +1951,7 @@ export function CsvImport({
       if (block?.kind === 'duplicate') target = q(`[data-csv-col="${block.columns[0]}"] [data-slot="select-trigger"]`)
       else if (block?.kind === 'missing') target = q('[data-csv-skip] [data-slot="select-trigger"]') ?? q('[data-slot="select-trigger"]')
       else target = q('[data-slot="select-trigger"]')
-    } else if (flow.validation) target = q('[data-csv-focus="tiles"]')
+    } else if (flow.validation) target = q('[data-csv-focus="tabs"] [role="tab"][aria-selected="true"]')
     if (!target) return
     flow.focusNext.current = null
     target.focus({ preventScroll: true })
@@ -1769,7 +2046,7 @@ export function CsvImport({
       // width. Tables and cards inside sit on the panel's fill, one fill throughout, so their
       // edges carry the shape: border/default for the outline and every rule, 1px.
       className={cn(
-        '@container flex h-[600px] min-h-0 shrink flex-col [--bg-card:var(--bg-popover)] [--component-table-header:var(--bg-popover)] [&_[data-slot=table]]:border-border-default [&_[data-slot=table]]:[--border-subtle:var(--border-default)]',
+        '@container isolate flex h-[600px] min-h-0 shrink flex-col [--bg-card:var(--bg-popover)] [--component-table-header:var(--bg-popover)] [&_[data-slot=table]]:border-border-default [&_[data-slot=table]]:[--border-subtle:var(--border-default)]',
         className,
       )}
       {...props}
@@ -1784,9 +2061,14 @@ export function CsvImport({
         reachable={(s) => !disabled && !flow.importing && !flow.finished && (s === 'upload' || (loaded && (s === 'map' || !mapBlock)))}
         onGo={go}
       />
-      <div data-slot="csv-import-body" className="relative min-h-0 flex-1 overflow-clip">
-        {/* Title, description and body scroll as one. */}
-        <div ref={partRef} data-slot="csv-import-step" className="absolute inset-0 flex flex-col overflow-y-auto px-4 pb-4">
+      {/* Its own stacking context, so nothing sticky in a table rises over the footer. The footer
+          stays in the column, so the panel's height holds as before (h-auto flex-1 in a Dialog
+          too). Clipped sideways only, for the step slide, so the step can reach under the footer. */}
+      <div data-slot="csv-import-body" className="relative isolate min-h-0 flex-1 overflow-x-clip">
+        {/* Title, description and body scroll as one, 60 past the body, under the footer, to the
+            panel's foot. The bottom padding, the footer's 60 and its 24px fade, lets the last row
+            scroll clear of both, and keeps a step's own content (the drop zone, the card) above them. */}
+        <div ref={partRef} data-slot="csv-import-step" className="absolute inset-x-0 top-0 -bottom-[60px] flex scroll-pb-[84px] flex-col overflow-y-auto px-4 pb-[84px]">
           {view === 'upload' ? (
             <UploadBody
               flow={flow}
@@ -1809,16 +2091,22 @@ export function CsvImport({
           )}
         </div>
       </div>
-      <div data-slot="csv-import-footer" className="flex h-[68px] shrink-0 items-start gap-3 px-4 pt-4 @max-[440px]:gap-2">
-        {back}
-        {/* The reason stays in the Tooltip and aria-describedby where there is no room to show it,
-            and on Upload, where the drop zone already says what to do. */}
-        <div className="flex min-h-9 min-w-0 flex-1 items-center">
-          <p id={reasonId} className={cn('line-clamp-2 text-sm text-text-muted @max-[400px]:sr-only', view === 'upload' && 'sr-only')}>
-            {reason}
-          </p>
+      {/* In the column, over the step's foot: 16, the buttons and 16 on the panel's solid fill,
+          which takes every click (none reaches a row hidden under it), and a 24px fade above it
+          that lets clicks through (csv-import.css). */}
+      <div data-slot="csv-import-footer" className="relative z-[1] h-[60px] shrink-0 px-4 py-4">
+        <div className="flex h-7 items-center gap-3 @max-[440px]:gap-2">
+          {back}
+          {/* The reason stays in the Tooltip and aria-describedby where there is no room to show it,
+              and on Upload, where the drop zone already says what to do. Two lines of it overflow
+              the row evenly, into the padding, so the buttons never move. */}
+          <div className="flex min-w-0 flex-1 items-center">
+            <p id={reasonId} className={cn('line-clamp-2 text-sm text-text-muted @max-[400px]:sr-only', view === 'upload' && 'sr-only')}>
+              {reason}
+            </p>
+          </div>
+          {primary}
         </div>
-        {primary}
       </div>
       <div role="status" aria-live="polite" className="sr-only">
         <span key={flow.said.n}>{flow.said.text}</span>
@@ -1833,9 +2121,10 @@ export function CsvImport({
  * The steps as the header row: a numbered circle and a label each, a dot between. Upcoming steps
  * are muted on bg/muted; the current one is solid action/primary with its number in
  * action/primary fg, as Stepper draws its current step, and its label in text/default medium; a
- * done one shows a check. The row is 37 high with the circles at its bottom, 13 from the top, so a
- * dialog's close button (36 at 7 from the corner) sits on their centre line; the end stays free
- * for it. Under 480 wide only the current step keeps its label (the others keep theirs for screen
+ * done one shows a check. The row is 40 high with the circles at its bottom, 16 from the top, as
+ * the panel's sides and foot. Their centre line (28) is no longer a dialog close button's (36 at
+ * 7 from the corner, so 25): 3px apart, kept for the even padding. The end stays free for the
+ * button. Under 480 wide only the current step keeps its label (the others keep theirs for screen
  * readers); under 360 the dots between them go too. Free's Stepper draws its labels under the
  * circles, or folds to a count, so the row is drawn here.
  */
@@ -1857,7 +2146,7 @@ function HeaderSteps({
   const current = complete ? -1 : STEPS.indexOf(view)
   const stepLabel = { upload: labels.csvStepUpload, map: labels.csvStepMap, review: labels.csvStepReview }
   return (
-    <div data-slot="csv-import-steps" className="flex h-[37px] shrink-0 items-end ps-4 pe-14">
+    <div data-slot="csv-import-steps" className="flex h-10 shrink-0 items-end ps-4 pe-14">
       <ol aria-label={labels.csvSteps} className="m-0 flex min-w-0 list-none items-center gap-3 p-0 @max-[479px]:gap-2">
         {STEPS.map((s, i) => {
           const state = complete || i < current ? 'complete' : i === current ? 'current' : 'upcoming'
@@ -2161,6 +2450,7 @@ function StepBody({ flow, view, appIcon, disabled }: { flow: CsvFlow; view: CsvI
         mapping={flow.mapping}
         validation={validation}
         imported={imp.imported}
+        sent={imp.sent}
         status={imp.result}
         reason={imp.reason}
         overLimit={flow.overLimit}
@@ -2219,57 +2509,91 @@ function StepBody({ flow, view, appIcon, disabled }: { flow: CsvFlow; view: CsvI
       </div>
     )
   }
-  return <ReviewBody flow={flow} validation={validation} />
+  return <ReviewBody flow={flow} validation={validation} disabled={disabled} />
 }
 
 /*
- * Review: the counts as two separate muted tiles (rows that will be imported, rows with
- * errors), then the preview's table. The errors tile is a toggle for the errors-only filter; it
- * stands for the preview's summary line, its errors Alert and its "Show only errors" checkbox.
- * With no errors it is plain muted text. Its own component, so the filter starts off on every
- * visit to Review.
+ * Review: the counts as two tabs drawn as muted tiles, "328 Leads will be imported" and "12 Rows
+ * with errors" (a warning mark at its end), over the tab's rows: the valid ones, or the invalid
+ * ones, whose cells can be fixed in place. They stand for the preview's summary line, its errors
+ * Alert and its checkbox. The errors tab opens when there are errors; with none it stays, muted,
+ * and its table says so. A tab is selected with an edge of its foreground on a fill (red on the
+ * errors tab, neutral on the other). Its own component, so every visit to Review opens on the
+ * errors again.
  */
-function ReviewBody({ flow, validation }: { flow: CsvFlow; validation: CsvValidation }) {
+function ReviewBody({ flow, validation, disabled }: { flow: CsvFlow; validation: CsvValidation; disabled: boolean }) {
   const { labels, n, noun, thing } = flow
-  const [errorsOnly, setErrorsOnly] = React.useState(false)
   const errors = validation.rows.length - validation.valid
-  const half = 'flex min-w-0 flex-col gap-0.5 rounded-xl bg-bg-muted px-4 py-3 text-start'
+  const [show, setShow] = React.useState<PreviewShow>(() => (errors > 0 ? 'errors' : 'ready'))
+  const errorsTab = React.useRef<HTMLButtonElement>(null)
+  const tab = cn(
+    'relative flex min-w-0 cursor-pointer flex-col gap-0.5 rounded-xl bg-bg-muted px-4 py-3 text-start outline-offset-2',
+    'transition-[background-color,box-shadow] duration-(--duration-fast) ease-(--ease-out) focus-visible:outline-2 focus-visible:outline-(--action-focus-ring)',
+  )
   const count = 'text-2xl leading-8 font-semibold tabular-nums'
+  const label = 'truncate text-sm'
+  // The errors tab is red only while there are errors; with none it is muted, and selected like the other.
+  const red = errors > 0
   return (
-    <>
-      <div data-slot="csv-import-tiles" className="mb-4 grid shrink-0 grid-cols-2 gap-3 @max-[399px]:grid-cols-1">
-        {/* Focus lands here on entering Review: the count and its label are read as one. */}
-        <div tabIndex={-1} data-csv-focus="tiles" className={cn(focusTargetClass, half)}>
+    <TabsPrimitive.Root data-slot="csv-import-tabs" value={show} onValueChange={(v) => setShow(v as PreviewShow)} className="flex flex-col">
+      {/* Radix's roving focus gives no tab its tab stop until one is focused, leaning on the list
+          (tabIndex 0) to pass focus on. The selected tab holds the stop from the first render
+          instead, and the list is out of the order, so Tab reaches the selected tab directly. */}
+      <TabsPrimitive.List
+        aria-label={labels.csvReviewTabs}
+        data-csv-focus="tabs"
+        tabIndex={-1}
+        className="mb-4 grid shrink-0 grid-cols-2 gap-3 @max-[399px]:grid-cols-1"
+      >
+        {/* Focus lands on the selected tab on entering Review: the count and its label are read as one. */}
+        <TabsPrimitive.Trigger
+          value="ready"
+          data-slot="csv-import-tab"
+          tabIndex={show === 'ready' ? 0 : -1}
+          className={cn(
+            tab,
+            'data-[state=active]:bg-bg-selected data-[state=active]:shadow-[inset_0_0_0_var(--border-width-strong)_var(--text-default)] data-[state=inactive]:satin-hover:bg-bg-selected',
+          )}
+        >
           <span className={cn(count, 'text-text-default')}>{n(validation.valid)}</span>
           {/* A space, so the count and its label are read as two words (here and below). */}{' '}
-          <span className="truncate text-sm text-text-default">{labels.csvWillImport(noun(validation.valid, thing))}</span>
-        </div>
-        {errors > 0 ? (
-          <button
-            type="button"
-            aria-pressed={errorsOnly}
-            onClick={() => setErrorsOnly(!errorsOnly)}
-            className={cn(
-              half,
-              'relative cursor-pointer outline-offset-2 transition-[background-color,box-shadow] duration-(--duration-fast) ease-(--ease-out) focus-visible:outline-2 focus-visible:outline-(--action-focus-ring)',
-              // Pressed: the status red fill with a 1px inset edge of its foreground, as a selected card's edge.
-              errorsOnly ? 'bg-status-red-bg shadow-[inset_0_0_0_var(--border-width-strong)_var(--status-red-fg)]' : 'satin-hover:bg-bg-selected',
-            )}
-          >
-            <span className={cn(count, 'text-status-red-fg')}>{n(errors)}</span>{' '}
-            <span className="truncate text-sm text-text-default">{labels.csvRowsWithErrors(noun(errors))}</span>
-            {/* Says the tile filters, on the count's centre line; red while the filter is on. */}
-            <Filter aria-hidden className={cn('absolute end-4 top-5 size-4 [stroke-width:1.875]', errorsOnly ? 'text-status-red-fg' : 'text-text-muted')} />
-          </button>
-        ) : (
-          <div className={half}>
-            <span className={cn(count, 'text-text-muted')}>{n(0)}</span>{' '}
-            <span className="truncate text-sm text-text-muted">{labels.csvRowsWithErrors(noun(0))}</span>
-          </div>
-        )}
-      </div>
+          <span className={cn(label, 'text-text-default')}>{labels.csvWillImport(noun(validation.valid, thing))}</span>
+        </TabsPrimitive.Trigger>
+        <TabsPrimitive.Trigger
+          ref={errorsTab}
+          value="errors"
+          data-slot="csv-import-tab"
+          tabIndex={show === 'errors' ? 0 : -1}
+          className={cn(
+            tab,
+            red
+              ? 'data-[state=active]:bg-status-red-bg data-[state=active]:shadow-[inset_0_0_0_var(--border-width-strong)_var(--status-red-fg)]'
+              : 'data-[state=active]:bg-bg-selected data-[state=active]:shadow-[inset_0_0_0_var(--border-width-strong)_var(--text-default)]',
+            'data-[state=inactive]:satin-hover:bg-bg-selected',
+          )}
+        >
+          <span className={cn(count, red ? 'text-status-red-fg' : 'text-text-muted')}>{n(errors)}</span>{' '}
+          <span className={cn(label, red ? 'text-text-default' : 'text-text-muted')}>{labels.csvRowsWithErrors(noun(errors))}</span>
+          {/* The error cells' mark, on the count's centre line. */}
+          {red && <WarningCircle aria-hidden className="absolute end-4 top-5 size-4 text-status-red-fg [stroke-width:1.875]" />}
+        </TabsPrimitive.Trigger>
+      </TabsPrimitive.List>
       {flow.overLimit > 0 && <p className="-mt-2 mb-4 text-sm text-text-muted">{labels.csvOverLimitText(n(flow.overLimit), noun(flow.overLimit, thing))}</p>}
-      <Preview bare fields={flow.fields} mapping={flow.mapping} validation={validation} errorsOnly={errorsOnly} onErrorsOnlyChange={setErrorsOnly} />
-    </>
+      {(['ready', 'errors'] as const).map((value) => (
+        <TabsPrimitive.Content key={value} value={value} data-slot="csv-import-tab-panel" className="rounded-xs outline-offset-2 focus-visible:outline-2 focus-visible:outline-(--action-focus-ring)">
+          <Preview
+            bare
+            show={value}
+            fields={flow.fields}
+            mapping={flow.mapping}
+            validation={validation}
+            onCellEdit={disabled ? undefined : flow.editCell}
+            announce={flow.announce}
+            // The last error fixed: the errors tab stays, its table empty, and takes focus.
+            onErrorsCleared={() => errorsTab.current?.focus()}
+          />
+        </TabsPrimitive.Content>
+      ))}
+    </TabsPrimitive.Root>
   )
 }

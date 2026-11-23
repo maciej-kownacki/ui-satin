@@ -25,3 +25,32 @@
     animation: none;
   }
 }
+
+/*
+ * The footer sits over the step's foot, which scrolls under it: solid panel fill (--bg-card, which
+ * the panel sets to the popover's) behind the buttons, taking every click, and above it a 24px
+ * fade from clear into that fill, which takes none, so the rows under it stay clickable.
+ */
+[data-slot='csv-import-footer'] {
+  background-color: var(--bg-card);
+}
+[data-slot='csv-import-footer']::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 100%;
+  height: 24px;
+  pointer-events: none;
+  background-image: linear-gradient(to bottom, transparent, var(--bg-card));
+}
+
+/*
+ * An invalid cell being fixed: the 28px field takes the 40px row's height less 6 above and below,
+ * so the row keeps its height, and 4 at the sides; its focus edge is let out of the cell's clip.
+ */
+[data-slot='csv-import-preview'] td:has([data-csv-editor]) {
+  padding: 6px 4px;
+}
+[data-slot='csv-import-preview'] td:has([data-csv-editor]) > div {
+  overflow: visible;
+}

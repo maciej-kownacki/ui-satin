@@ -2582,7 +2582,8 @@
       "title": "CSV import",
       "description": "Brings a CSV file into your records in three steps: upload, map its columns to your fields, review what will be skipped and why.",
       "dependencies": [
-        "iconoir-react@^7.12.2"
+        "iconoir-react@^7.12.2",
+        "radix-ui@^1.8.1"
       ],
       "registryDependencies": [
         "https://uisatin.dev/r/satin-styles.json",
@@ -2596,6 +2597,7 @@
         "https://uisatin.dev/r/dialog.json",
         "https://uisatin.dev/r/empty-state.json",
         "https://uisatin.dev/r/file-upload.json",
+        "https://uisatin.dev/r/input.json",
         "https://uisatin.dev/r/labels.json",
         "https://uisatin.dev/r/link.json",
         "https://uisatin.dev/r/pagination.json",

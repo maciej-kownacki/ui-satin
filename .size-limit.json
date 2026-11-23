@@ -118,7 +118,7 @@
     "limit": "3 kB"
   },
   {
-    "name": "CSV import (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "name": "CSV import (Satin Pro, with Radix Tabs, which an app shares with Free; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/csv-import.js",
     "import": "{ CsvImport }",
     "ignore": [
@@ -127,7 +127,7 @@
       "@uisatin/ui"
     ],
     "gzip": true,
-    "limit": "18.5 kB"
+    "limit": "28.5 kB"
   },
   {
     "name": "CSV import's plain functions (parseCsv, matchColumns, validateCsv, toCsv)",

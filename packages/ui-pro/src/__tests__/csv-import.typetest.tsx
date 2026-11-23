@@ -106,6 +106,9 @@ export const parts = (
       ref={React.createRef<HTMLDivElement>()}
     />
     <CsvImportPreview fields={fields} mapping={mapping} validation={validation} overLimit={20} defaultErrorsOnly ref={React.createRef<HTMLDivElement>()} />
+    <CsvImportPreview fields={fields} mapping={mapping} validation={validation} onCellEdit={(row: number, column: number, value: string) => void [row, column, value]} />
+    {/* @ts-expect-error the value is a string */}
+    <CsvImportPreview fields={fields} mapping={mapping} validation={validation} onCellEdit={(_row: number, _column: number, _value: number) => {}} />
     <CsvImportProgress done={120} total={328} ref={React.createRef<HTMLDivElement>()} />
     <CsvImportResult
       fields={fields}
