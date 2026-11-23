@@ -971,6 +971,31 @@ export function KanbanBoard<T>({
 
   React.useEffect(() => () => endPress(), [])
 
+  // Columns past either edge of the board fade out there (kanban-board.css), so it's plain that
+  // the board scrolls on. The side is physical: the scroller's direction decides which one is the start.
+  React.useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const update = () => {
+      const max = el.scrollWidth - el.clientWidth
+      const pos = Math.abs(el.scrollLeft)
+      const before = pos > 1
+      const after = pos < max - 1
+      const rtl = isRtl(el)
+      el.toggleAttribute('data-fade-left', rtl ? after : before)
+      el.toggleAttribute('data-fade-right', rtl ? before : after)
+    }
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update)
+    ro?.observe(el)
+    for (const child of Array.from(el.children)) ro?.observe(child)
+    return () => {
+      el.removeEventListener('scroll', update)
+      ro?.disconnect()
+    }
+  }, [columns.length])
+
   /* ----- after each render: the overlay, focus, FLIP ----- */
 
   React.useLayoutEffect(() => {
@@ -1264,7 +1289,7 @@ export function KanbanBoard<T>({
         className={cn('relative flex min-h-0 flex-col', className)}
         {...props}
       >
-        <div ref={scrollerRef} data-slot="kanban-board-scroller" className="flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto">
+        <div ref={scrollerRef} data-slot="kanban-board-scroller" className="satin-kanban-scroller flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto">
           {columns.map(column)}
         </div>
         <span id={hintId} hidden>

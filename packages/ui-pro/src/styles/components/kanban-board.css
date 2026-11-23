@@ -99,3 +99,28 @@
     opacity: 0;
   }
 }
+
+/* The board's horizontal scroll: a column cut by either edge fades out over 32px there, so the
+   board reads as going on. The component sets data-fade-left / -right only on a side with more
+   to scroll; the mask follows the scroll position, so there is no motion of its own. */
+.satin-kanban-scroller:is([data-fade-left], [data-fade-right]) {
+  --satin-kanban-left: black;
+  --satin-kanban-right: black;
+  --satin-kanban-left-width: 0px;
+  --satin-kanban-right-width: 0px;
+  mask-image: linear-gradient(
+    to right,
+    var(--satin-kanban-left),
+    black var(--satin-kanban-left-width),
+    black calc(100% - var(--satin-kanban-right-width)),
+    var(--satin-kanban-right)
+  );
+}
+.satin-kanban-scroller[data-fade-left] {
+  --satin-kanban-left: transparent;
+  --satin-kanban-left-width: 32px;
+}
+.satin-kanban-scroller[data-fade-right] {
+  --satin-kanban-right: transparent;
+  --satin-kanban-right-width: 32px;
+}
