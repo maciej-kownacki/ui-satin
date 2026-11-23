@@ -42,10 +42,11 @@ const state = (value: string) => (value === 'cv' && cvFailed ? 'error' : done.in
   <StepperItem value="cv" label="CV" description={cvFailed ? '${CV_FAILED}' : 'A PDF, up to 10 MB'} state={state('cv')} />
   <StepperItem value="questions" label="Questions" description="Three short answers" state={state('questions')}>
     <Textarea label="Why this role?" rows={2} />
-    <Button onClick={next}>Continue</Button>
   </StepperItem>
   <StepperItem value="review" label="Review" description="Check and send" state={state('review')} />
-</Stepper>`
+</Stepper>
+<Button variant="secondary" onClick={back}>Back</Button>
+<Button onClick={next}>Continue</Button>`
   return `${head}
 <Stepper
   ${attrs.join('\n  ')}
@@ -113,33 +114,36 @@ function Preview({ v }: { v: Record<string, string> }) {
     </div>
   )
 
+  // The buttons sit under a box as tall as the tallest step (Questions: 122px across, 374px down),
+  // so they stay put from step to step.
   if (vertical)
     return (
       <div className={v.width === 'narrow' ? 'w-[320px] max-w-full' : 'w-[440px] max-w-full'}>
-        <Stepper value={step} onValueChange={setStep} orientation="vertical" linear={linear} aria-label="Job application">
-          {steps.map((s) => (
-            <StepperItem key={s.value} {...s}>
-              <div className="flex flex-col gap-3">
+        <div className="min-h-[374px]">
+          <Stepper value={step} onValueChange={setStep} orientation="vertical" linear={linear} aria-label="Job application">
+            {steps.map((s) => (
+              <StepperItem key={s.value} {...s}>
                 {body}
-                {footer}
-              </div>
-            </StepperItem>
-          ))}
-        </Stepper>
+              </StepperItem>
+            ))}
+          </Stepper>
+        </div>
+        <div className="mt-5 border-t border-border-subtle pt-4">{footer}</div>
       </div>
     )
 
   return (
     <div className={v.width === 'narrow' ? 'w-[320px] max-w-full' : 'w-[600px] max-w-full'}>
       <Stepper value={step} onValueChange={setStep} steps={steps} linear={linear} aria-label="Job application" />
-      <div className="mt-6 flex min-h-[132px] flex-col gap-4 border-t border-border-subtle pt-5">
-        <div className="flex-1">{body}</div>
-        {footer}
+      <div className="mt-6 border-t border-border-subtle pt-5">
+        <div className="min-h-[122px]">{body}</div>
+        <div className="mt-4">{footer}</div>
       </div>
     </div>
   )
 }
 
 export default function StepperDemo({ codeHtml }: { codeHtml: Record<string, string> }) {
-  return <Showcase name="Stepper" options={options} codeHtml={codeHtml} controls={controls} render={(id, v) => <Preview key={id} v={v} />} />
+  // Pinned to the top: each step's content has its own height, and the steps must not move with it.
+  return <Showcase name="Stepper" options={options} codeHtml={codeHtml} controls={controls} align="top" render={(id, v) => <Preview key={id} v={v} />} />
 }

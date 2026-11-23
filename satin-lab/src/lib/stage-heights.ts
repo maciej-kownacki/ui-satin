@@ -20,7 +20,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Selectable checkbox': [320, 320],
   'Action button': [280, 280],
   'Spinner': [280, 280],
-  'Stepper': [458, 458],
+  'Stepper': [483, 483],
   'Separator': [280, 280],
   'Link': [280, 280],
   'Input group': [280, 280],
