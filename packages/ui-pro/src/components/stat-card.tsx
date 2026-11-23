@@ -367,7 +367,7 @@ export function StatCardSparkline({
             ref={setAnchor}
             aria-hidden
             data-slot="stat-card-sparkline-dot"
-            className="pointer-events-none absolute size-2 -translate-1/2 rounded-full border-2 border-chart-3 bg-bg-card"
+            className="pointer-events-none absolute size-2.5 -translate-1/2 rounded-full border-2 border-[color-mix(in_oklab,var(--chart-3)_85%,var(--text-on-solid))] bg-bg-card dark:border-[color-mix(in_oklab,var(--chart-3)_75%,var(--text-on-solid))]"
             style={{ left: `${x(active)}%`, top: y(values[active]) }}
           />
           <ChartTooltip
