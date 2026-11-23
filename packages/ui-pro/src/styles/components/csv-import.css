@@ -31,8 +31,11 @@
  * the panel sets to the popover's) behind the buttons, taking every click, and above it a 24px
  * fade from clear into that fill, which takes none, so the rows under it stay clickable.
  */
+/* The panel's bottom corners: a square fill would paint over a rounded root's edge there. */
 [data-slot='csv-import-footer'] {
   background-color: var(--bg-card);
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
 }
 [data-slot='csv-import-footer']::before {
   content: '';

@@ -131,6 +131,10 @@
 .satin-combobox {
   cursor: pointer;
 }
+/* Select opens a list, it takes no typing: the pointer, as on a Button, not the field's caret. */
+.satin-select {
+  cursor: pointer;
+}
 .satin-combobox[data-multiple] {
   height: auto;
   align-items: flex-start;
