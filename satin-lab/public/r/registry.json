@@ -2605,7 +2605,7 @@
       "name": "comments-thread",
       "type": "registry:ui",
       "title": "Comments thread",
-      "description": "A discussion on a record: replies one level deep, @mentions, sending with Retry, delete with Undo, and resolve.",
+      "description": "A discussion on a record: replies one level deep, @mentions, sending with Retry and delete with Undo.",
       "dependencies": [
         "iconoir-react@^7.12.2"
       ],
