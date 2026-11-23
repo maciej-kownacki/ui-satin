@@ -1524,7 +1524,8 @@
         "https://uisatin.dev/r/avatar.json",
         "https://uisatin.dev/r/dropdown.json",
         "https://uisatin.dev/r/kbd.json",
-        "https://uisatin.dev/r/labels.json"
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/tooltip.json"
       ],
       "docs": "Mentions and commands docs: https://uisatin.dev/ai-patterns/prompt-mentions",
       "meta": {
@@ -1558,6 +1559,29 @@
       "files": [
         {
           "path": "registry/satin/ui/radio.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "relative-time",
+      "type": "registry:ui",
+      "title": "Relative time",
+      "description": "When something happened, as \"5 min ago\" today and the clock time before, kept current.",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/labels.json"
+      ],
+      "docs": "Relative time docs: https://uisatin.dev/components/relative-time",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "free"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/relative-time.tsx",
           "type": "registry:ui"
         }
       ]
@@ -2354,6 +2378,7 @@
         "https://uisatin.dev/r/avatar.json",
         "https://uisatin.dev/r/button.json",
         "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/relative-time.json",
         "https://uisatin.dev/r/skeleton.json",
         "https://uisatin.dev/r/toast.json"
       ],
@@ -2572,6 +2597,47 @@
       "files": [
         {
           "path": "registry/satin/ui/command-pages.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "comments-thread",
+      "type": "registry:ui",
+      "title": "Comments thread",
+      "description": "A discussion on a record: replies one level deep, @mentions, sending with Retry, delete with Undo, and resolve.",
+      "dependencies": [
+        "iconoir-react@^7.12.2"
+      ],
+      "registryDependencies": [
+        "https://uisatin.dev/r/satin-styles.json",
+        "https://uisatin.dev/r/satin-pro-styles.json",
+        "https://uisatin.dev/r/utils.json",
+        "https://uisatin.dev/r/agent-loading.json",
+        "https://uisatin.dev/r/avatar.json",
+        "https://uisatin.dev/r/badge.json",
+        "https://uisatin.dev/r/button.json",
+        "https://uisatin.dev/r/button-group.json",
+        "https://uisatin.dev/r/dropdown.json",
+        "https://uisatin.dev/r/empty-state.json",
+        "https://uisatin.dev/r/labels.json",
+        "https://uisatin.dev/r/link.json",
+        "https://uisatin.dev/r/list.json",
+        "https://uisatin.dev/r/prompt-mentions.json",
+        "https://uisatin.dev/r/relative-time.json",
+        "https://uisatin.dev/r/spinner.json",
+        "https://uisatin.dev/r/textarea.json",
+        "https://uisatin.dev/r/toast.json",
+        "https://uisatin.dev/r/toolbar.json"
+      ],
+      "docs": "Comments thread docs: https://uisatin.dev/components/comments-thread",
+      "meta": {
+        "version": "0.7.1",
+        "edition": "pro"
+      },
+      "files": [
+        {
+          "path": "registry/satin/ui/comments-thread.tsx",
           "type": "registry:ui"
         }
       ]
@@ -3823,6 +3889,21 @@
       ]
     },
     {
+      "name": "relative-time-demo",
+      "type": "registry:example",
+      "title": "Relative time example",
+      "description": "The shortest use of Relative time, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/relative-time.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/relative-time-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
       "name": "search-bar-demo",
       "type": "registry:example",
       "title": "Search bar example",
@@ -4313,6 +4394,21 @@
       "files": [
         {
           "path": "registry/satin/examples/command-pages-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "comments-thread-demo",
+      "type": "registry:example",
+      "title": "Comments thread example",
+      "description": "The shortest use of Comments thread, from its docs page.",
+      "registryDependencies": [
+        "https://uisatin.dev/r/comments-thread.json"
+      ],
+      "files": [
+        {
+          "path": "registry/satin/examples/comments-thread-demo.tsx",
           "type": "registry:example"
         }
       ]

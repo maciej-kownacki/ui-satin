@@ -1,0 +1,49 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "relative-time",
+  "type": "registry:ui",
+  "title": "Relative time",
+  "description": "When something happened, as \"5 min ago\" today and the clock time before, kept current.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://uisatin.dev/r/satin-styles.json",
+    "https://uisatin.dev/r/utils.json",
+    "https://uisatin.dev/r/labels.json"
+  ],
+  "files": [
+    {
+      "path": "registry/satin/ui/relative-time.tsx",
+      "type": "registry:ui",
+      "content": "'use client'\n\nimport * as React from 'react'\nimport { cn } from '@/lib/utils'\nimport { useSatinLabels } from '@/registry/satin/ui/labels'\n\n/* ---------- one clock for every time on the page ---------- */\n\n/** How often relative times are worked out again. They count in minutes, so twice a minute is enough. */\nconst TICK_MS = 30_000\n\nconst clock = { now: Date.now() }\nconst ticks = new Set<() => void>()\nlet timer: ReturnType<typeof setInterval> | undefined\n\nfunction subscribeClock(listener: () => void) {\n  if (!ticks.size) {\n    clock.now = Date.now()\n    timer = setInterval(() => {\n      clock.now = Date.now()\n      for (const tick of ticks) tick()\n    }, TICK_MS)\n  }\n  ticks.add(listener)\n  return () => {\n    ticks.delete(listener)\n    if (!ticks.size) {\n      clearInterval(timer)\n      timer = undefined\n    }\n  }\n}\n\n/**\n * A text worked out from the page's one clock, which ticks every 30 seconds while anything\n * listens and stops when nothing does. Each caller's snapshot is its own string, so a tick\n * renders only the components whose text changed: fifty times on a page cost fifty string\n * compares, not fifty renders. `text` gets the clock's time in ms; keep it cheap and pure.\n */\nexport function useRelativeClock(text: (now: number) => string): string {\n  return React.useSyncExternalStore(\n    subscribeClock,\n    () => text(clock.now),\n    // Server and hydration: the time now. The client's first tick puts it right if it differs.\n    () => text(Date.now()),\n  )\n}\n\n/* ---------- formatters ---------- */\n\n// Formatters are slow to build and every time on the page asks for the same few: one each.\nconst formatters = new Map<string, Intl.DateTimeFormat | Intl.RelativeTimeFormat>()\n\n/** An `Intl.DateTimeFormat`, built once per locale and options and shared. */\nexport function dateTimeFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {\n  const key = `d|${locale}|${JSON.stringify(options)}`\n  let f = formatters.get(key) as Intl.DateTimeFormat | undefined\n  if (!f) formatters.set(key, (f = new Intl.DateTimeFormat(locale, options)))\n  return f\n}\n\n/** An `Intl.RelativeTimeFormat`, built once per locale and options and shared. */\nexport function relativeTimeFormat(locale: string, options: Intl.RelativeTimeFormatOptions): Intl.RelativeTimeFormat {\n  const key = `r|${locale}|${JSON.stringify(options)}`\n  let f = formatters.get(key) as Intl.RelativeTimeFormat | undefined\n  if (!f) formatters.set(key, (f = new Intl.RelativeTimeFormat(locale, options)))\n  return f\n}\n\n/** Whole days from `a` to `b`, by the calendar (not 24-hour spans). */\nconst daysBetween = (a: Date, b: Date) => {\n  const start = (d: Date) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())\n  return Math.round((start(b) - start(a)) / 86_400_000)\n}\n\n/*\n * English short units end in a dot (\"5 min. ago\", \"1 hr. ago\"); Satin writes them without, as en-GB\n * does. Only English: elsewhere the dot can be the language's own spelling (\"1 godz. temu\",\n * \"vor 1 Std.\"). The narrow style isn't the fix: in English it says \"5m ago\".\n */\nconst isEnglish = (locale: string) => /^en(?:-|$)/i.test(locale)\nconst undot = (text: string) => text.replace(/\\.(?=\\s|$)/g, '')\n\n/** Today's times relative (\"5 min ago\"), older ones as the clock time, with the date when `withDate`. */\nfunction shortTime(at: Date, now: number, locale: string, withDate: boolean) {\n  const nowDate = new Date(now)\n  if (daysBetween(at, nowDate) === 0) {\n    const rtf = relativeTimeFormat(locale, { style: 'short', numeric: 'auto' })\n    const minutes = Math.floor(Math.max(0, now - at.getTime()) / 60_000)\n    const text =\n      minutes < 1\n        ? rtf.format(0, 'second')\n        : minutes < 60\n          ? rtf.format(-minutes, 'minute')\n          : rtf.format(-Math.floor(minutes / 60), 'hour')\n    return isEnglish(locale) ? undot(text) : text\n  }\n  const sameYear = at.getFullYear() === nowDate.getFullYear()\n  return dateTimeFormat(locale, {\n    hour: 'numeric',\n    minute: '2-digit',\n    ...(withDate && { month: 'short', day: 'numeric', ...(!sameYear && { year: 'numeric' }) }),\n  }).format(at)\n}\n\n/* ---------- the time ---------- */\n\nexport interface RelativeTimeProps extends Omit<React.ComponentProps<'time'>, 'children' | 'dateTime'> {\n  /** When: a Date, an ISO string or a timestamp. */\n  at: Date | string | number\n  /** Past today, show the date before the clock time (\"Nov 16, 9:40 AM\"), for a list not grouped by day. */\n  withDate?: boolean\n}\n\n/**\n * A moment as people read it in a feed: relative today (\"now\", \"5 min ago\", \"2 hr ago\"), the\n * clock time before that (\"9:40 AM\"), with the date too under `withDate` (and the year when it\n * isn't this one). It stays current on one clock shared by every time on the page, which renders\n * only the times whose text changed. English short units lose their dot (\"5 min ago\"); other\n * languages keep their own spelling. Words and formats follow `dateLocale` in SatinLabels.\n *\n * A `<time dateTime>` in muted 13px with tabular figures. Screen readers hear the full date and\n * time (\"Monday, November 16, 2026 at 9:40 AM\") from a visually hidden span; the short text is\n * `aria-hidden`. Other props, `ref` included, go to the `time` element.\n */\nexport function RelativeTime({ at, withDate = false, className, ...props }: RelativeTimeProps) {\n  const locale = useSatinLabels().dateLocale\n  const date = at instanceof Date ? at : new Date(at)\n  const time = date.getTime()\n  const text = useRelativeClock((now) => shortTime(new Date(time), now, locale, withDate))\n  const full = React.useMemo(() => dateTimeFormat(locale, { dateStyle: 'full', timeStyle: 'short' }).format(time), [locale, time])\n  return (\n    <time\n      data-slot=\"relative-time\"\n      dateTime={date.toISOString()}\n      className={cn('sa:shrink-0 sa:text-sm sa:leading-5 sa:whitespace-nowrap sa:text-text-muted sa:tabular-nums', className)}\n      {...props}\n    >\n      <span aria-hidden suppressHydrationWarning>\n        {text}\n      </span>\n      <span className=\"sa:sr-only\" suppressHydrationWarning>\n        {full}\n      </span>\n    </time>\n  )\n}\n"
+    }
+  ],
+  "docs": "Relative time docs: https://uisatin.dev/components/relative-time",
+  "meta": {
+    "version": "0.7.1",
+    "edition": "free",
+    "props": {
+      "RelativeTime": {
+        "description": "A moment as people read it in a feed: relative today (\"now\", \"5 min ago\", \"2 hr ago\"), the clock time before that, with the date too under `withDate` (and the year when it isn't this one). It stays current on one clock shared by every time on the page, which renders only the times whose text changed. English short units lose their dot (\"5 min ago\"); other languages keep their own spelling. Words and formats follow `dateLocale` in SatinLabels. A `<time dateTime>` in muted 13px with tabular figures. Screen readers hear the full date and time from a visually hidden span; the short text is `aria-hidden`. Other props, `ref` included, go to the `time` element.",
+        "type": "RelativeTimeProps",
+        "extends": [
+          "Omit<React.ComponentProps<'time'>, 'children' | 'dateTime'>"
+        ],
+        "props": [
+          {
+            "name": "at",
+            "type": "Date | string | number",
+            "required": true,
+            "description": "When: a Date, an ISO string or a timestamp."
+          },
+          {
+            "name": "withDate",
+            "type": "boolean",
+            "required": false,
+            "default": "false",
+            "description": "Past today, show the date before the clock time, for a list not grouped by day."
+          }
+        ]
+      }
+    }
+  }
+}

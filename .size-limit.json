@@ -83,6 +83,18 @@
     "limit": "6 kB"
   },
   {
+    "name": "Comments thread (Satin Pro; @uisatin/ui left out, it is the peer)",
+    "path": "packages/ui-pro/dist/components/comments-thread.js",
+    "import": "{ CommentsThread }",
+    "ignore": [
+      "react",
+      "react-dom",
+      "@uisatin/ui"
+    ],
+    "gzip": true,
+    "limit": "13 kB"
+  },
+  {
     "name": "Agent presence (Satin Pro; @uisatin/ui left out, it is the peer)",
     "path": "packages/ui-pro/dist/components/agent-presence.js",
     "import": "{ AgentPresence, useAgentPresence }",
@@ -316,6 +328,17 @@
     ],
     "gzip": true,
     "limit": "6 kB"
+  },
+  {
+    "name": "Relative time (RelativeTime and useRelativeClock, with cn and tailwind-merge)",
+    "path": "packages/ui/dist/components/relative-time.js",
+    "import": "{ RelativeTime, useRelativeClock }",
+    "ignore": [
+      "react",
+      "react-dom"
+    ],
+    "gzip": true,
+    "limit": "12.5 kB"
   },
   {
     "name": "Stepper (with Progress, cn and the check icon)",

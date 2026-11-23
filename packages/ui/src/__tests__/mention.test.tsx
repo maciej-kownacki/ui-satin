@@ -45,6 +45,46 @@ describe('Mention', () => {
   })
 })
 
+describe('Mention preview', () => {
+  const avatar = <span data-testid="pic">TM</span>
+
+  it('without avatar or name: not focusable, no tooltip', () => {
+    renderWithSatin(<Mention label="Tara Mendes" data-testid="m" />)
+    expect(screen.getByTestId('m').hasAttribute('tabindex')).toBe(false)
+  })
+
+  it('shows the avatar and the full name on focus', async () => {
+    const { user } = renderWithSatin(<Mention label="Tara" name="Tara Mendes" avatar={avatar} data-testid="m" />)
+    await user.tab()
+    const el = screen.getByTestId('m')
+    expect(document.activeElement).toBe(el)
+    expect(el.getAttribute('tabindex')).toBe('0')
+    expect(el.textContent).toBe('@Tara')
+    const tip = await screen.findByRole('tooltip')
+    // The avatar sits in an aria-hidden wrapper: the tooltip reads as the name alone.
+    expect(tip.textContent).toBe('TMTara Mendes')
+    for (const pic of screen.getAllByTestId('pic')) expect(pic.closest('[aria-hidden="true"]')).toBeTruthy()
+  })
+
+  it('shows the label as the name on hover when only an avatar is given', async () => {
+    const { user } = renderWithSatin(<Mention label="Tara Mendes" avatar={avatar} data-testid="m" />)
+    await user.hover(screen.getByTestId('m'))
+    expect((await screen.findByRole('tooltip')).textContent).toBe('TMTara Mendes')
+  })
+
+  it.each(['light', 'dark'] as const)('has no axe violations with the tooltip open in %s', async (theme) => {
+    const { user } = renderWithSatin(
+      <p>
+        Ask <Mention label="Tara Mendes" id="tara" avatar={avatar} /> about it.
+      </p>,
+      { theme },
+    )
+    await user.tab()
+    await screen.findByRole('tooltip')
+    await expectNoAxeViolations()
+  })
+})
+
 /** A host that isn't a textarea: it sets the query itself and anchors the menu to a rect. */
 function Host({ onPick, query: initial }: { onPick: (item: PromptMenuItem) => void; query: PromptMenuQuery | null }) {
   const [query, setQuery] = React.useState(initial)

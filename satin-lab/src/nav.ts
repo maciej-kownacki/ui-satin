@@ -218,6 +218,13 @@ export const allNav: NavGroup[] = [
         description: 'The ⌘K palette with sub-pages (Move deal to… › Negotiation), and what no command matches handed to an agent.',
         edition: 'pro',
       },
+      {
+        id: 'comments-thread',
+        title: 'Comments thread',
+        href: '/components/comments-thread',
+        description: 'A discussion on a record: replies one level deep, @mentions, sending with Retry, delete with Undo, and resolve.',
+        edition: 'pro',
+      },
       { id: 'cookie-consent', title: 'Cookie consent', href: '/components/cookie-consent', description: 'Asks once what the site may store: Customize, Reject all or Accept all.' },
       {
         id: 'csv-import',
@@ -302,6 +309,7 @@ export const allNav: NavGroup[] = [
         ],
       },      { id: 'progress', title: 'Progress', href: '/components/progress', description: 'Shows how far a task has got, or that it is still running.' },
       { id: 'radio', title: 'Radio', href: '/components/radio', description: 'Lets people pick exactly one option from a short list.' },
+      { id: 'relative-time', title: 'Relative time', href: '/components/relative-time', description: 'When something happened, as "5 min ago" today and the clock time before, kept current.' },
       {
         id: 'scheduler',
         title: 'Scheduler',
@@ -376,7 +384,7 @@ export const allNav: NavGroup[] = [
  * preview builds show them. The one list to edit when a page is done.
  */
 export const unreleased = new Set<string>([
-  'command-pages', 'scheduler', 'stepper', 'review-queue', 'stat-card',
+  'command-pages', 'scheduler', 'stepper', 'review-queue',
 ])
 
 /**

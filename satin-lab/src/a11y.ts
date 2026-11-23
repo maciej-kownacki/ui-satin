@@ -353,6 +353,10 @@ export const a11y: Record<string, A11y> = {
     summary:
       'A `div` with `role="progressbar"`, named by `label` (or `aria-label`), with `aria-valuemin`, `aria-valuemax` and `aria-valuetext` from `formatValue`. `aria-valuenow` is set only while the amount is known, so a bar without `value` reads as indeterminate. The percentage text is hidden, since `aria-valuetext` says it. Progress is not a live region; announce the end of a long task yourself.',
   },
+  'relative-time': {
+    summary:
+      'A native `time` element with a machine-readable `dateTime`. The short text ("5 min ago") is `aria-hidden`; screen readers hear the full date and time from a visually hidden span instead ("Monday, November 16, 2026 at 9:40 AM"), which doesn’t change while the page is open. It isn’t a live region: a tick that changes the short text announces nothing.',
+  },
   radio: {
     summary:
       'A Radix radio group: `RadioGroup` is a `radiogroup` (name it with `aria-label` or `aria-labelledby`, or put it in a FieldGroup), each Radio a `button` with `role="radio"` and `aria-checked`. `label` names a Radio with `aria-labelledby` and `description` adds `aria-describedby`. The group is one tab stop. Inside a `form` it also renders hidden inputs, so the value submits.',
@@ -680,7 +684,7 @@ export const a11y: Record<string, A11y> = {
   },
   'prompt-mentions': {
     summary:
-      'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list. The menu lives only while focus is in the field: the + button, the model menu, dictation or Send take focus and close it, and @ or / typed in the + panel’s search is that search’s text. Escape closes the menu alone, not a dialog the bar sits in.',
+      'Focus stays in the "Message" `textarea`, which follows the combobox pattern without its role (HTML allows no role on a textarea): it has `aria-autocomplete="list"`, and while the menu shows rows, `aria-controls` names the `listbox` ("Mentions" or "Commands") and `aria-activedescendant` names the highlighted `option`. The text is the field’s own, so a token reads as what it says, "@Tara Mendes", and spelling, selection and input methods work as in any field; the tokens’ fills are a hidden layer under it. A `status` region says how many suggestions there are, "No results for “@zz”", and "@Tara Mendes added" or "removed". While an input method composes, no menu opens and no key is taken. The menu’s rows are hidden from the tab order; the panel is named like its list. The menu lives only while focus is in the field: the + button, the model menu, dictation or Send take focus and close it, and @ or / typed in the + panel’s search is that search’s text. Escape closes the menu alone, not a dialog the bar sits in. A `Mention` with a preview (`avatar` or `name`) is a tab stop with the focus ring; its Tooltip opens on focus and hover and describes it (`aria-describedby`) with the full name, the avatar hidden.',
     keyboard: [
       { keys: ['@', '/'], action: 'At the start or after a space: opens the mentions or the commands. The text typed after it filters them.' },
       { keys: ['↑', '↓'], action: 'In the open menu: moves the highlight, wrapping at the ends.' },
@@ -775,6 +779,24 @@ export const a11y: Record<string, A11y> = {
       { keys: ['Tab'], action: 'Moves through the run buttons and Revert buttons, newest first.' },
       { keys: ['Enter', 'Space'], action: 'On a run: opens or folds its entries. On Revert: reverts the change.' },
       { keys: ['F8'], action: 'Moves to the toast after a revert, to reach Undo (the Toaster\'s hotkey).' },
+    ],
+  },
+  'comments-thread': {
+    summary:
+      'The threads are a list named "Comments" (`comments` in SatinLabels), replies a nested list under their root. Each comment is an `<article>` with `tabIndex={-1}`, named by its author and full date, "Comment by Marta Nowak, Monday, November 16, 2026 at 9:40 AM"; the visible time is Free\'s RelativeTime, whose short text is hidden from screen readers. Avatars are hidden; the name says who. An agent\'s "Agent" badge is text, read after its name. A mention is a tab stop; its tooltip, opened on focus or hover, describes it with the full name (the avatar in it hidden). Edit is a button next to Reply on your own comments, and "(me)" after your name is read with it. The ⋯ button is named "Actions for comment by Marta Nowak" and opens a menu with Delete. With `title` the thread is a region named by its heading, and the count in the Badge is read as "5 comments". The composer\'s field is named "Comment" (a reply\'s "Reply to Jon Park"); Send stays `aria-disabled` while it is blank. Under it the formatting toolbar is Free\'s Toolbar (`role="toolbar"`, "Formatting"), one tab stop; its icon buttons are named Bold, Italic, Code, Bulleted list and Link, with `aria-keyshortcuts` and a tooltip with the keys, and a press keeps focus and the selection in the field. Formatting is markdown in the text, so a screen reader reads the marks as written. Its @ menu is the Prompt bar\'s: focus stays in the field, which has `aria-autocomplete="list"`, `aria-controls` and `aria-activedescendant` while rows show, and a status region counts the suggestions. A comment being sent is `aria-busy`, with a Spinner named "Sending". After a failed send focus moves to Retry, described by "Not sent"; after Discard it goes back to the composer. After Delete focus moves to the next comment, or the composer; the toast with Undo is read out like any toast, and Undo puts focus on the restored comment. A failed edit reopens the field with its error, `aria-invalid`. After Resolve focus goes to Reopen on the resolved bar; Show comments has `aria-expanded` and `aria-controls`; after Reopen focus goes back to Resolve. New comments fade in 4px; reduced motion turns it off. New comments are not announced; when others\' comments arrive live, say so from your own status region.',
+    keyboard: [
+      { keys: ['Tab'], action: 'Moves through mentions, Reply and Edit, the ⋯ buttons, Retry and Discard, the composer, its formatting toolbar, Resolve and Send.' },
+      { keys: ['Ctrl+Enter', '⌘Enter'], action: 'In a composer or the edit field: sends, or saves the edit.' },
+      { keys: ['⌘B', '⌘I', '⌘E', '⌘K'], action: 'In a composer: wraps the selection in bold, italic or code marks, or as a link with its address selected (Ctrl off Apple).' },
+      { keys: ['←', '→'], action: 'In the formatting toolbar: moves between its buttons.' },
+      { keys: ['Enter'], action: 'In a composer: a new line. With the @ menu open: inserts the highlighted person.' },
+      { keys: ['@'], action: 'At the start or after a space: opens the mentions menu; the text typed after it filters it.' },
+      { keys: ['↑', '↓'], action: 'In the @ menu: moves the highlight, wrapping at the ends.' },
+      { keys: ['Tab'], action: 'In the @ menu: inserts the highlighted person.' },
+      { keys: ['Backspace'], action: 'Right after a mention: removes all of it.' },
+      { keys: ['Esc'], action: 'Closes the @ menu first; then closes a reply composer (focus back on Reply) or cancels an edit.' },
+      { keys: ['Enter', 'Space'], action: 'On the ⋯ button: opens the menu with Delete; Enter picks it.' },
+      { keys: ['F8'], action: 'Moves to the toast after a delete, to reach Undo (the Toaster\'s hotkey).' },
     ],
   },
   'people-picker': {

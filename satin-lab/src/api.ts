@@ -796,6 +796,13 @@ export const api: Record<string, Api> = {
       { name: 'formatValue', type: ['(value: number, max: number) => string'] },
     ],
   },
+  'relative-time': {
+    description: 'The `RelativeTime` component renders a `time` element with `dateTime` set: relative today ("now", "5 min ago", "2 hr ago"), the clock time before that, and the date too with `withDate`. Every RelativeTime on the page reads one clock that ticks every 30 seconds while any is mounted, and only the ones whose text changed render. Words and formats follow `dateLocale` in SatinLabels. `useRelativeClock(text)` gives your own text from the same clock (`text` gets the time in ms), and `dateTimeFormat` and `relativeTimeFormat` hand out shared `Intl` formatters.',
+    props: [
+      { name: 'at', type: ['Date', 'string', 'number'] },
+      { name: 'withDate', type: ['boolean'], default: 'false' },
+    ],
+  },
   radio: {
     description: 'The `Radio` component is a Radix radio item with a label and optional description. Put it in a `RadioGroup`: its `value` decides which radio is `checked`.',
     props: [
@@ -924,7 +931,7 @@ export const api: Record<string, Api> = {
     ],
   },
   textarea: {
-    description: 'The `Textarea` component is a wrapper around the `textarea` element with a label, hint and character counter. `maxLength` only drives the counter: it does not stop typing or pasting past it, so check the length in your form validation. The counter is `CharacterCount`, exported next to it for a field of your own: `count` and `max` ("134/120", red once over), or `count` alone ("948 characters", the `characterCount` label, the number written in `dateLocale`).',
+    description: 'The `Textarea` component is a wrapper around the `textarea` element with a label, hint and character counter. `maxLength` only drives the counter: it does not stop typing or pasting past it, so check the length in your form validation. The counter is `CharacterCount`, exported next to it for a field of your own: `count` and `max` ("134/120", red once over), or `count` alone ("948 characters", the `characterCount` label, the number written in `dateLocale`). `onChange` gets the text and then the change event. `underlay` is drawn under the text, inside the field: pass `usePromptMentions().overlay` (from `@uisatin/ui/prompt-mentions`) with its `textareaProps` on the field, calling its `onChange` with the event, and the Textarea takes @mentions as PromptBar does. With an underlay the field\'s fill moves to a layer of its own under it.',
     props: [
       { name: 'label', type: ['string'] },
       { name: 'optional', type: ['boolean'], default: 'false' },
@@ -933,7 +940,8 @@ export const api: Record<string, Api> = {
       { name: 'error', type: ['boolean', 'string'], default: 'false' },
       { name: 'disabled', type: ['boolean'], default: 'false' },
       { name: 'value', type: ['string'] },
-      { name: 'onChange', type: ['(value: string) => void'] },
+      { name: 'onChange', type: ['(value: string, event: ChangeEvent) => void'] },
+      { name: 'underlay', type: ['ReactNode'] },
       { name: 'placeholder', type: ['string'] },
     ],
   },
@@ -950,7 +958,7 @@ export const api: Record<string, Api> = {
     ],
   },
   toast: {
-    description: 'The `Toast` component wraps the Radix toast in an `li` element rendered by the `toast()` function. Mount `Toaster` once; then call `toast()`, `toast.info()`, `toast.success()`, `toast.warning()` or `toast.error()` with a title and these options. An action\'s `label` and `altText` can be functions of the labels, `(labels) => labels.undo`, so code outside React still uses the words SatinLabels sets. `countdown` draws a bar along the bottom that drains over `duration` and pauses with the timer.',
+    description: 'The `Toast` component wraps the Radix toast in an `li` element rendered by the `toast()` function. Mount `Toaster` once; then call `toast()`, `toast.info()`, `toast.success()`, `toast.warning()` or `toast.error()` with a title and these options. An action\'s `label` and `altText` can be functions of the labels, `(labels) => labels.undo`, so code outside React still uses the words SatinLabels sets. `countdown` draws a bar along the bottom that drains over `duration` and pauses with the timer. `onClose(reason)` is called once as the toast leaves: `"action"` (its action), `"close"` (the close button, Escape, a swipe, `toast.dismiss`, or a new toast under the same `id`) or `"expire"` (its time ran out). It\'s how to commit something when an Undo window ends: hide the item at once and delete it unless the reason is `"action"`. Without a mounted `Toaster` it warns and calls back with `"expire"`.',
     props: [
       { name: 'intent', type: ['"neutral"', '"info"', '"success"', '"warning"', '"error"'], default: '"neutral"' },
       { name: 'icon', type: ['boolean'], default: 'true' },
@@ -960,6 +968,7 @@ export const api: Record<string, Api> = {
       { name: 'closeButton', type: ['boolean'], default: 'true' },
       { name: 'duration', type: ['number'], default: '5000' },
       { name: 'countdown', type: ['boolean'], default: 'false' },
+      { name: 'onClose', type: ['(reason: "action" | "close" | "expire") => void'] },
       { name: 'title', type: ['string'] },
       { name: 'id', type: ['string'] },
     ],
@@ -1362,7 +1371,7 @@ export const api: Record<string, Api> = {
   },
   'prompt-mentions': {
     description:
-      'Mentions and commands are props on `PromptBar`, so any bar has them, in either shape, with its attachments, models, + menu and dictation. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`. On a field that isn’t a textarea (a contenteditable editor), find the trigger yourself and pass it to `usePromptMenuState({ query, mentions, commands })` (`query` is `{ kind, trigger, text, start }` or null): it searches, filters, keeps the highlight and the status message, and returns `open`, `items`, `current`, `move(±1)`, `dismiss()`, `release(query)`, `announce(text)`, `listId`, `activeId` and `menuProps`; render `<PromptMentionsMenu {...menuProps} onPick anchorRef />` or with `virtualAnchor` (a rect, such as the caret’s), `side`, `align`, `sideOffset` and `matchAnchorWidth={false}` for a fixed 288px. `Mention` shows a mention outside a field, “@Tara Mendes” in a token’s fill: `<Mention label="Tara Mendes" id="tara" />`, plain CSS on `[data-slot="mention"]`, so an editor’s own `<span data-slot="mention">` looks the same.',
+      'Mentions and commands are props on `PromptBar`, so any bar has them, in either shape, with its attachments, models, + menu and dictation. `mentions` is `{ trigger, search }`: `search(query)` returns `PromptMention[]` (`{ id, label, description, icon }`), or a promise of them. `commands` is `PromptCommand[]` (`{ name, description, icon, run }`). A pick goes into the text as a token, and the value is a `PromptValue`, `{ text, mentions, command }`, each token with its `start` and `end`; `command.args` is the text after it. Send calls the command’s `run({ args, value, attachments })` if it has one, `onSubmit` otherwise. Build a starting value with `promptValue([tara, " ", schedule, " interview next week"])`. On a textarea of your own, `usePromptMentions({ textareaRef, value, onValueChange, mentions, commands })` returns `textareaProps`, `overlay` (the tokens’ fills, under the textarea) and `menu`. On a field that isn’t a textarea (a contenteditable editor), find the trigger yourself and pass it to `usePromptMenuState({ query, mentions, commands })` (`query` is `{ kind, trigger, text, start }` or null): it searches, filters, keeps the highlight and the status message, and returns `open`, `items`, `current`, `move(±1)`, `dismiss()`, `release(query)`, `announce(text)`, `listId`, `activeId` and `menuProps`; render `<PromptMentionsMenu {...menuProps} onPick anchorRef />` or with `virtualAnchor` (a rect, such as the caret’s), `side`, `align`, `sideOffset` and `matchAnchorWidth={false}` for a fixed 288px. `Mention` shows a mention outside a field, “@Tara Mendes” in a token’s fill: `<Mention label="Tara Mendes" id="tara" />`, plain CSS on `[data-slot="mention"]`, so an editor’s own `<span data-slot="mention">` looks the same. Give it `avatar` (20px) or `name` (the full name, `label` by default) and it has a preview: a Tooltip with the avatar and the full name opens on hover and on keyboard focus, so the mention becomes a tab stop with the focus ring.',
     props: [
       { name: 'mentions', type: ['PromptMentions'] },
       { name: 'mentions.trigger', type: ['string'], default: '"@"' },
@@ -1380,6 +1389,8 @@ export const api: Record<string, Api> = {
       { name: 'Mention.label', type: ['string'] },
       { name: 'Mention.trigger', type: ['string'], default: '"@"' },
       { name: 'Mention.id', type: ['string'] },
+      { name: 'Mention.avatar', type: ['ReactNode'] },
+      { name: 'Mention.name', type: ['string'] },
     ],
   },
   'time-picker': {
@@ -1529,6 +1540,38 @@ export const api: Record<string, Api> = {
       { name: 'onExpandedChange', type: ['(expanded: string[]) => void'] },
       { name: 'loading', type: ['boolean'], default: 'false' },
       { name: 'empty', type: ['ReactNode'], default: '"No activity yet"' },
+    ],
+  },
+  'comments-thread': {
+    description:
+      'The `CommentsThread` component (Satin Pro, `@uisatin/pro/comments-thread`) is a discussion on a record (a candidate, a deal, a campaign, an order), not a support inbox and not a change history. It is a `div` holding a List (`ul`, named "Comments") of threads: each root comment with its replies one level deep under it, then the composer. Each item of `comments` is `{ id, author: { id, name, avatar, kind }, body, at, edited, parentId, mentions }`, oldest first; a reply to a reply joins its root and a reply whose parent is missing becomes a root. A comment is an `<article>` named "Comment by Marta Nowak, {full date}": avatar (initials in a tone from the author\'s id, or `author.avatar`; with `kind: \'agent\'` the agent mark in a circle and an "Agent" Badge after the name), name, Free\'s `RelativeTime`, "(edited)", and the body with its line breaks, its `mentions` (`{ id, label, start, end, avatar, kind }`, where `body.slice(start, end)` is "@" and the label) drawn as Free\'s `Mention` with a tooltip of the avatar and full name on hover and focus (the mention\'s `avatar`, else that of an author with its id, else initials). The body is markdown-lite: `**bold**` or `__bold__`, `_italic_` or `*italic*`, `~~struck~~`, `` `code` ``, `[text](url)` (http, https and mailto only; any other shows its text) and lines starting `- ` or `* ` as a bulleted list; no HTML is ever rendered. Only roots have Reply; replies hang off a thread line under the root\'s avatar. Your own comments say "(me)" after your name and show Edit next to Reply. `title` puts a heading over the thread ("Comments") with the number of comments in a Badge, and names the thread as a region (`titleAs` sets the level, `h3` by default); `variant="card"` sets it on a card. The composer is a 72px Satin Textarea with the Prompt bar\'s @ menu in its `underlay` (`mentions.search`, which can return a promise; a person found with an `avatar` sends it on the mention) and a formatting toolbar (Bold, Italic, Code, Bulleted list, Link; ⌘/Ctrl+B, I, E, K in the field) that writes those marks round the selection through the field\'s own undo, never splitting a mention; Ctrl/⌘+Enter sends and Enter is a new line. `onReply(parentId, body, mentions)` returning a promise sends optimistically: a dimmed row with a Spinner until a comment by `currentUser` with the same parent and body arrives in `comments`, which takes the row\'s place; a rejection leaves "Not sent" with Retry and Discard. Edit (`onEdit`) edits in place, optimistic until the body changes; a rejection reopens the editor with an error. The ⋯ menu holds Delete, on yours or anyone\'s with `moderator`. Delete never asks: the comment goes at once and a toast offers Undo with a countdown; `onDelete(id)` runs when the toast closes without Undo, or at once on unmount or `pagehide`, and a rejection brings the comment back with an error toast, so the app needs a `<Toaster />`. `resolvable` adds Resolve at the start of the composer\'s row; a resolved thread folds to one line ("Resolved by …", Show comments, Reopen), opacity only, controlled (`resolved`, `onResolve`, `resolvedBy`) or not (`defaultResolved`; the resolver is `currentUser`). `disabled` reads only. Its words are the `comments…` and `comment…` keys of `commentsThreadLabels` in SatinLabels (Send, Cancel and Sending are Free\'s `send`, `cancel` and `sending`). Parts: `Comment` (`state="sending" | "failed"`, `actions`, `footer`), `CommentComposer` and `CommentActions`.',
+    props: [
+      { name: 'comments', type: ['CommentItem[]'] },
+      { name: 'currentUser', type: ['CommentAuthor'] },
+      { name: 'CommentAuthor.kind', type: ['"person"', '"agent"'], default: '"person"' },
+      { name: 'CommentMention.avatar', type: ['ReactNode'] },
+      { name: 'CommentMention.kind', type: ['"person"', '"agent"'] },
+      { name: 'onReply', type: ['(parentId: string | null, body: string, mentions: CommentMention[]) => void | Promise<void>'] },
+      { name: 'onEdit', type: ['(id: string, body: string, mentions: CommentMention[]) => void | Promise<void>'] },
+      { name: 'onDelete', type: ['(id: string) => void | Promise<void>'] },
+      { name: 'resolvable', type: ['boolean'], default: 'false' },
+      { name: 'resolved', type: ['boolean'] },
+      { name: 'defaultResolved', type: ['boolean'], default: 'false' },
+      { name: 'onResolve', type: ['(resolved: boolean) => void | Promise<void>'] },
+      { name: 'resolvedBy', type: ['CommentAuthor'] },
+      { name: 'moderator', type: ['boolean'], default: 'false' },
+      { name: 'mentions', type: ['{ search: (query: string) => CommentAuthor[] | Promise<CommentAuthor[]> }'] },
+      { name: 'disabled', type: ['boolean'], default: 'false' },
+      { name: 'empty', type: ['ReactNode'], default: '"No comments yet"' },
+      { name: 'Comment.state', type: ['"sending"', '"failed"'] },
+      { name: 'Comment.actions / footer', type: ['ReactNode'] },
+      { name: 'Comment.animateIn', type: ['boolean'], default: 'false' },
+      { name: 'CommentComposer.onSubmit', type: ['(body: string, mentions: CommentMention[]) => void'] },
+      { name: 'CommentComposer.value / defaultValue', type: ['PromptValue'] },
+      { name: 'CommentComposer.onCancel', type: ['() => void'] },
+      { name: 'CommentComposer.start', type: ['ReactNode'] },
+      { name: 'CommentActions.authorName', type: ['string'] },
+      { name: 'CommentActions.onEdit / onDelete', type: ['() => void'] },
     ],
   },
   'people-picker': {

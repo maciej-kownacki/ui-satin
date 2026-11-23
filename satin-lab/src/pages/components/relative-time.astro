@@ -1,0 +1,16 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import DocSection from '../../components/DocSection.astro'
+import RelativeTimeDemo, { options } from '../../demos/relative-time'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+---
+
+<Docs current="relative-time">
+  <DocSection item={page('relative-time')} api={api['relative-time']}>
+    <RelativeTimeDemo client:load codeHtml={codeHtml} />
+  </DocSection>
+</Docs>

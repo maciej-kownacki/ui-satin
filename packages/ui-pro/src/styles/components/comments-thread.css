@@ -1,0 +1,49 @@
+/*
+ * Comments thread (components/comments-thread.tsx).
+ *
+ * A comment that arrives after the thread first showed (a new one, a reply, one back from Undo)
+ * fades in and settles 4px up over --duration-base on --ease-out. A comment being sent shows its
+ * body in text/muted, which still reads 4.5:1, rather than at a lower opacity. Resolving and
+ * reopening swap the resolved bar and the comments with opacity only, never height
+ * (MOTION.md rule 5). Satin's reduced-motion rule turns all of it off.
+ */
+@keyframes satin-comment-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes satin-comments-swap {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+[data-slot='comment'][data-enter] {
+  animation: satin-comment-enter var(--duration-base) var(--ease-out);
+}
+[data-slot='comments-thread-resolved'][data-enter],
+[data-slot='comments-thread-body'][data-enter] {
+  animation: satin-comments-swap var(--duration-base) var(--ease-out);
+}
+[data-slot='comment-body'] {
+  transition: color var(--duration-fast) var(--ease-out);
+}
+[data-slot='comment'][data-state='sending'] [data-slot='comment-body'] {
+  color: var(--text-muted);
+}
+/* The composer's field is 72px, a little over two lines (Textarea's own is 96px); it still resizes. */
+[data-slot='comment-composer'] textarea[data-slot='textarea'] {
+  height: 72px;
+}
+/*
+ * Replies hang off a thread line: border/strong at the default (decoration) width, centred under
+ * the root's 24px avatar (12px in from the start), from the first reply down to the reply composer.
+ * It fades in over its first quarter and out over its last, so it hangs off the root and trails
+ * off rather than ending in a cut. border/default at that width all but vanished on the card.
+ */
+[data-slot='comment-replies-thread']::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(12px - var(--border-width-default) / 2);
+  width: var(--border-width-default);
+  border-radius: var(--radius-full);
+  background: linear-gradient(to bottom, transparent, var(--border-strong) 24%, var(--border-strong) 76%, transparent);
+}

@@ -79,10 +79,19 @@ export interface ToastOptions {
    */
   countdown?: boolean
   id?: string
+  /**
+   * Called once, when the toast starts to leave, with why: `'action'` (its action button),
+   * `'close'` (the close button, Escape, a swipe, `toast.dismiss`, or a new toast under the same
+   * `id`) or `'expire'` (its time ran out). The way to commit something when an Undo window ends:
+   * hide the item at once, then delete it for real unless the reason is `'action'`. With no
+   * Toaster mounted it warns and calls back with `'expire'` on the next microtask.
+   */
+  onClose?: (reason: ToastCloseReason) => void
 }
 
-/** Why a toast left: its close button or Escape or a swipe, its action, or its time ran out. */
-type ExitReason = 'close' | 'action' | 'expire'
+/** Why a toast left: its action, its close button or Escape or a swipe or a dismiss, or its time ran out. */
+export type ToastCloseReason = 'action' | 'close' | 'expire'
+type ExitReason = ToastCloseReason
 type ToastRecord = ToastOptions & { id: string; title: React.ReactNode; open: boolean; exit?: ExitReason }
 
 /** Enter, exit and re-stack, ms. A closed toast stays this long to play out. */
@@ -107,9 +116,20 @@ function snapshot() {
 
 function show(title: React.ReactNode, options: ToastOptions = {}) {
   const id = options.id ?? `toast-${++counter}`
-  const next: ToastRecord = { ...options, id, title, open: true }
-  records = records.some((r) => r.id === id) ? records.map((r) => (r.id === id ? next : r)) : [...records, next]
+  const alone = listeners.size === 0
+  // With no Toaster it's answered below, once; a Toaster mounted later shows it without calling back.
+  const next: ToastRecord = { ...options, id, title, open: true, onClose: alone ? undefined : options.onClose }
+  const replaced = records.find((r) => r.id === id)
+  records = replaced ? records.map((r) => (r.id === id ? next : r)) : [...records, next]
   emit()
+  // The toast it replaces never closes on its own, so it's told here.
+  if (replaced?.open) replaced.onClose?.('close')
+  if (options.onClose && alone) {
+    console.warn('toast(): no <Toaster /> is mounted, so the toast is not shown and onClose gets "expire".')
+    const { onClose } = options
+    // After toast() returns, so the caller's state is set first.
+    queueMicrotask(() => onClose('expire'))
+  }
   return id
 }
 
@@ -125,6 +145,7 @@ function close(id: string, reason: ExitReason = 'close') {
   records = records.map((r) => (r.id === id ? { ...r, open: false, exit: reason } : r))
   emit()
   setTimeout(() => remove(id), MOTION_MS)
+  r.onClose?.(reason)
 }
 
 type Shortcut = (title: React.ReactNode, options?: Omit<ToastOptions, 'intent'>) => string
@@ -412,7 +433,7 @@ interface StackedToastProps {
  * the `li` (the Radix root) takes its place in the stack, the card inside slides in and out.
  */
 function StackedToast({ record, index, paused, y, scale, height, beyond, contentVisible, onMeasure, onForget }: StackedToastProps) {
-  const { id, title, open, duration: given, exit, intent = 'neutral', icon = true, closeButton = true, details, countdown, ...options } = record
+  const { id, title, open, duration: given, exit, intent = 'neutral', icon = true, closeButton = true, details, countdown, onClose: _onClose, ...options } = record
   const duration = given || DEFAULT_DURATION
   const running = open && !paused
 

@@ -1,0 +1,104 @@
+---
+import Docs from '../../layouts/Docs.astro'
+import Chip from '../../components/Chip.astro'
+import DocSection from '../../components/DocSection.astro'
+import CommentsThreadDemo, { CommentsThreadTeamsDemo, options, teamOptions } from '../../demos/comments-thread'
+import { api } from '../../api'
+import { page } from '../../nav'
+import { highlight } from '../../lib/highlight'
+
+const codeHtml = await highlight(options)
+const teamsHtml = await highlight(teamOptions)
+---
+
+<Docs current="comments-thread">
+  <DocSection item={page('comments-thread')} api={api['comments-thread']}>
+    <CommentsThreadDemo client:load codeHtml={codeHtml} />
+
+    <section aria-labelledby="sending-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="sending-title" class="text-lg font-medium text-text-default">Sending and Retry</h2>
+      <p class="text-base leading-6 text-text-muted">
+        Return a promise from <Chip>onReply</Chip> and the comment shows at once, dimmed with a spinner, until it arrives in
+        <Chip>comments</Chip> (same author, parent and text); then it takes the row's place without fading in again. A rejection
+        leaves it with "Not sent", Retry, which gets focus, and Discard. In the demo, turn on Fail next send, then send a comment:
+        it fails once, and Retry goes through.
+      </p>
+    </section>
+
+    <section aria-labelledby="teams-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="teams-title" class="text-lg font-medium text-text-default">Other teams</h2>
+      <p class="text-base leading-6 text-text-muted">
+        Any record can carry a thread: a sales director agrees a discount on a deal and @mentions the account executive, a
+        designer and a copywriter go over a campaign draft, and customer care leaves the warehouse an internal note on an order.
+        That note is for the team only; a conversation with the customer is a support inbox, not this component.
+      </p>
+      <CommentsThreadTeamsDemo client:visible codeHtml={teamsHtml} />
+    </section>
+
+    <section aria-labelledby="delete-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="delete-title" class="text-lg font-medium text-text-default">Deleting with Undo</h2>
+      <p class="text-base leading-6 text-text-muted">
+        Delete never asks. The comment goes at once (a root with its replies), focus moves to the next comment or the composer,
+        and a toast offers Undo with a countdown. <Chip>onDelete</Chip> runs only when that toast closes without Undo, or at once
+        if the thread unmounts or the page is left first, so your API never deletes what was undone. Undo puts the comment back
+        with focus on it; a rejected <Chip>onDelete</Chip> brings it back with an error toast. The toasts need the app's
+        <Chip>&lt;Toaster /&gt;</Chip>. Delete shows on your own comments, and on everyone's with <Chip>moderator</Chip>, in the ⋯ menu. Edit
+        sits next to Reply on your own comments, which say "(me)" after your name.
+      </p>
+    </section>
+
+    <section aria-labelledby="mentions-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="mentions-title" class="text-lg font-medium text-text-default">Mentions</h2>
+      <p class="text-base leading-6 text-text-muted">
+        With <Chip>mentions</Chip>, "@" in the composer opens the Prompt bar's menu of the people <Chip>search</Chip> finds; it
+        can return a promise. The composer is a Satin Textarea that takes that menu through its <Chip>underlay</Chip>, so a
+        mention is a token in the text, removed whole with Backspace. <Chip>onReply</Chip> and <Chip>onEdit</Chip> get the
+        mentions with their place in the body, and a comment's <Chip>mentions</Chip> are drawn as Free's Mention where the body
+        reads "@" and the name. Hover or focus one and a tooltip shows the person's avatar and full name: the mention's
+        <Chip>avatar</Chip>, else that of an author with the same id in <Chip>comments</Chip>, else their initials. A person
+        picked from <Chip>search</Chip> with an <Chip>avatar</Chip> sends it with the mention.
+      </p>
+    </section>
+
+    <section aria-labelledby="formatting-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="formatting-title" class="text-lg font-medium text-text-default">Formatting</h2>
+      <p class="text-base leading-6 text-text-muted">
+        A comment's <Chip>body</Chip> is markdown-lite: <Chip>**bold**</Chip>, <Chip>_italic_</Chip>,
+        <Chip>~~struck~~</Chip>, <Chip>`code`</Chip>, <Chip>[text](https://…)</Chip> and lines starting
+        <Chip>- </Chip> as a bulleted list. Links go only to http, https and mailto addresses; any other shows its text alone,
+        and no HTML is ever drawn from a body. The composer's toolbar (Bold, Italic, Code, Bulleted list, Link, and ⌘B, ⌘I,
+        ⌘E, ⌘K in the field, Ctrl off Apple) writes those marks round the selection with the field's own editing, so undo takes
+        them back and a mention is never split. The text stays plain, so <Chip>onReply</Chip> stores it as it is, mentions
+        and all.
+      </p>
+    </section>
+
+    <section aria-labelledby="agents-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="agents-title" class="text-lg font-medium text-text-default">Agents</h2>
+      <p class="text-base leading-6 text-text-muted">
+        An author with <Chip>kind: 'agent'</Chip> takes the agent mark at rest in a circle, as in the Activity timeline, and
+        an "Agent" badge after the name, so it is both seen and said. In the demo the hiring assistant drafts the offer letter
+        and the recruiter answers it; in Sales, a deal assistant flags the discount policy.
+      </p>
+    </section>
+
+    <section aria-labelledby="resolve-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="resolve-title" class="text-lg font-medium text-text-default">Resolve</h2>
+      <p class="text-base leading-6 text-text-muted">
+        <Chip>resolvable</Chip> puts Resolve at the start of the composer's row, away from Send. A resolved thread folds to one
+        line, "Resolved by Marta Nowak", with Show comments and Reopen; it fades, it doesn't change height. Leave it uncontrolled
+        (<Chip>defaultResolved</Chip>, and the resolver is <Chip>currentUser</Chip>) or control it with <Chip>resolved</Chip>,
+        <Chip>onResolve</Chip> and <Chip>resolvedBy</Chip>. In the demo, resolve the thread once the offer is accepted.
+      </p>
+    </section>
+
+    <section aria-labelledby="parts-title" class="flex flex-col gap-3 pt-8">
+      <h2 id="parts-title" class="text-lg font-medium text-text-default">Parts</h2>
+      <p class="text-base leading-6 text-text-muted">
+        For a thread of your own, the pieces are exported: <Chip>Comment</Chip> (one article, with <Chip>state="sending"</Chip>
+        or <Chip>"failed"</Chip>, <Chip>actions</Chip> and <Chip>footer</Chip>), <Chip>CommentComposer</Chip> (the field and
+        Send, with mentions) and <Chip>CommentActions</Chip> (the ⋯ menu; the thread puts only Delete in it).
+      </p>
+    </section>
+  </DocSection>
+</Docs>
