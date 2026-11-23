@@ -24,13 +24,10 @@ export function Uncontrolled() {
       ref={ref}
       comments={comments}
       currentUser={me}
-      defaultResolved
-      resolvable
       moderator
       onReply={async (parentId: string | null, body: string, mentions: CommentMention[]) => void [parentId, body, mentions]}
       onEdit={(id, body, mentions) => void [id, body, mentions]}
       onDelete={async (id) => void id}
-      onResolve={(resolved: boolean) => void resolved}
       mentions={{ search: async (q) => [me].filter((p) => p.name.includes(q)) }}
       empty={<p>Nothing yet</p>}
       aria-describedby="x"
@@ -39,8 +36,8 @@ export function Uncontrolled() {
 }
 
 export function Controlled() {
-  const [resolved, setResolved] = React.useState(false)
-  return <CommentsThread comments={comments} currentUser={me} resolvable resolved={resolved} resolvedBy={me} onResolve={setResolved} disabled={false} />
+  const [disabled, setDisabled] = React.useState(false)
+  return <CommentsThread comments={comments} currentUser={me} onReply={() => setDisabled(true)} disabled={disabled} />
 }
 
 export function Parts() {
@@ -52,7 +49,7 @@ export function Parts() {
     <>
       <Comment ref={article} author={me} at={new Date()} body="Hi" state="sending" animateIn actions={<CommentActions ref={button} authorName="Marta Nowak" onEdit={() => {}} onDelete={() => {}} />} footer={<span />} />
       <CommentComposer ref={composer} value={value} onValueChange={setValue} onSubmit={(body: string, mentions: CommentMention[]) => void [body, mentions]} onCancel={() => {}} submitLabel="Save" />
-      <CommentComposer defaultValue="Draft" onSubmit={() => {}} mentions={{ search: () => [me] }} start={<span />} error="Failed" autoFocus />
+      <CommentComposer defaultValue="Draft" onSubmit={() => {}} mentions={{ search: () => [me] }} error="Failed" autoFocus />
     </>
   )
 }
@@ -66,5 +63,8 @@ export const NoUser = () => <CommentsThread comments={comments} />
 // @ts-expect-error a mention needs its offsets
 export const BadMention: CommentMention = { id: 'x', label: 'X' }
 
-// @ts-expect-error resolved is a boolean
-export const BadResolved = () => <CommentsThread comments={comments} currentUser={me} resolved="yes" />
+// @ts-expect-error resolve is gone from the thread
+export const NoResolve = () => <CommentsThread comments={comments} currentUser={me} resolvable />
+
+// @ts-expect-error start is gone from the composer
+export const NoStart = () => <CommentComposer onSubmit={() => {}} start={<span />} />

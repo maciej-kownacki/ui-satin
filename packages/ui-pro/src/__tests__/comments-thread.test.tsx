@@ -4,6 +4,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { expectNoAxeViolations, renderWithSatin } from 'satin-test'
 import { Toaster, toast } from '@uisatin/ui/toast'
 import {
+  CommentComposer,
   CommentsThread,
   type CommentAuthor,
   type CommentItem,
@@ -367,52 +368,33 @@ describe('CommentsThread', () => {
     expect(screen.getByText('Couldn’t delete the comment')).toBeTruthy()
   })
 
-  it('resolves and reopens, uncontrolled: one line with who, Show comments, focus moves', async () => {
-    const onResolve = vi.fn()
-    const { user } = renderWithSatin(<Live onReply={() => {}} resolvable onResolve={onResolve} />)
-    await user.click(screen.getByRole('button', { name: 'Resolve' }))
-    expect(onResolve).toHaveBeenLastCalledWith(true)
-    expect(screen.getByText('Resolved by Marta Nowak')).toBeTruthy()
-    expect(screen.queryByRole('list', { name: 'Comments' })).toBeNull()
+  it('reads only when disabled: no composer, menu or Reply', () => {
+    renderWithSatin(<CommentsThread comments={seed()} currentUser={you} onReply={() => {}} onEdit={() => {}} onDelete={() => {}} disabled />)
     expect(screen.queryByRole('textbox')).toBeNull()
-    const reopen = screen.getByRole('button', { name: 'Reopen' })
-    expect(document.activeElement).toBe(reopen)
-
-    const show = screen.getByRole('button', { name: 'Show comments' })
-    expect(show.getAttribute('aria-expanded')).toBe('false')
-    expect(document.getElementById(show.getAttribute('aria-controls')!)!.hidden).toBe(true)
-    await user.click(show)
+    expect(screen.queryByRole('button', { name: /Actions|Reply/ })).toBeNull()
     expect(screen.getByRole('list', { name: 'Comments' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Hide comments' }).getAttribute('aria-expanded')).toBe('true')
-
-    await user.click(reopen)
-    expect(onResolve).toHaveBeenLastCalledWith(false)
-    expect(screen.queryByText('Resolved by Marta Nowak')).toBeNull()
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Resolve' }))
   })
 
-  it('resolves controlled, optimistic while onResolve runs, undone when it fails', async () => {
-    const d = deferred()
-    const { user, rerender } = renderWithSatin(<CommentsThread comments={seed()} currentUser={you} resolvable resolved resolvedBy={tom} onResolve={() => d.promise} />)
-    expect(screen.getByText('Resolved by Tom Okafor')).toBeTruthy()
-    await user.click(screen.getByRole('button', { name: 'Reopen' }))
-    expect(screen.queryByText('Resolved by Tom Okafor')).toBeNull()
-    // No composer: Resolve sits in a footer of its own.
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Resolve' }))
-    await act(async () => d.reject(new Error('offline')))
-    expect(screen.getByText('Resolved by Tom Okafor')).toBeTruthy()
-    // Resolve went with the rollback: focus moves to Reopen, which came back.
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Reopen' }))
-
-    rerender(<CommentsThread comments={seed()} currentUser={you} resolvable resolved />)
-    expect(screen.getByText('Resolved')).toBeTruthy()
+  it('keeps the formatting toolbar and Send inside the field, and focuses the text from its empty space', async () => {
+    const { user } = renderWithSatin(<Live onReply={() => {}} />)
+    const box = field().closest<HTMLElement>('[data-slot="comment-composer-field"]')!
+    expect(box.classList.contains('satin-field')).toBe(true)
+    expect(within(box).getByRole('toolbar', { name: 'Formatting' })).toBeTruthy()
+    expect(within(box).getByRole('button', { name: 'Send' })).toBeTruthy()
+    expect(document.activeElement).not.toBe(field())
+    await user.click(box.querySelector<HTMLElement>('[data-slot="comment-composer-actions"]')!)
+    expect(document.activeElement).toBe(field())
   })
 
-  it('reads only when disabled: no composer, menu, Reply, Resolve or Reopen', () => {
-    renderWithSatin(<CommentsThread comments={seed()} currentUser={you} onReply={() => {}} onEdit={() => {}} onDelete={() => {}} resolvable disabled defaultResolved />)
-    expect(screen.queryByRole('textbox')).toBeNull()
-    expect(screen.queryByRole('button', { name: /Actions|Reply|Resolve|Reopen/ })).toBeNull()
-    expect(screen.getByRole('button', { name: 'Show comments' })).toBeTruthy()
+  it('marks the whole field invalid and puts the error under it, describing the text', () => {
+    renderWithSatin(<CommentComposer onSubmit={() => {}} error="Too long" />)
+    const text = screen.getByRole('textbox', { name: 'Comment' })
+    const box = text.closest<HTMLElement>('[data-slot="comment-composer-field"]')!
+    expect(box.hasAttribute('data-invalid')).toBe(true)
+    expect(text.getAttribute('aria-invalid')).toBe('true')
+    const message = screen.getByText('Too long')
+    expect(box.contains(message)).toBe(false)
+    expect(text.getAttribute('aria-describedby')?.split(' ')).toContain(message.id)
   })
 
   it('shows the empty state with the composer, or `empty`', () => {
@@ -440,13 +422,12 @@ describe('CommentsThread', () => {
   })
 
   it('takes its words from SatinLabels', () => {
-    renderWithSatin(<Live onReply={() => {}} resolvable />, {
+    renderWithSatin(<Live onReply={() => {}} />, {
       labels: {
         comments: 'Komentarze',
         commentsReply: 'Odpowiedz',
         commentsReplyTo: (name) => `Odpowiedz: ${name}`,
         commentsField: 'Komentarz',
-        commentsResolve: 'Rozwiąż',
         commentsEdited: '(edytowany)',
         commentBy: (name, date) => `Komentarz: ${name}, ${date}`,
         send: 'Wyślij',
@@ -455,7 +436,6 @@ describe('CommentsThread', () => {
     expect(screen.getByRole('list', { name: 'Komentarze' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Odpowiedz: Tom Okafor' }).textContent).toBe('Odpowiedz')
     expect(screen.getByRole('textbox', { name: 'Komentarz' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Rozwiąż' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Wyślij' })).toBeTruthy()
     expect(screen.getByText('(edytowany)')).toBeTruthy()
     expect(screen.getByRole('article', { name: `Komentarz: Tom Okafor, ${full(at1)}` })).toBeTruthy()
@@ -880,7 +860,7 @@ describe('CommentsThread', () => {
   it.each(['light', 'dark'] as const)('has no axe violations in %s', async (theme) => {
     const { user } = renderWithSatin(
       <>
-        <Live onReply={() => Promise.reject(new Error('offline'))} onEdit={() => {}} onDelete={() => {}} resolvable mentions={{ search: () => [tara] }} />
+        <Live onReply={() => Promise.reject(new Error('offline'))} onEdit={() => {}} onDelete={() => {}} mentions={{ search: () => [tara] }} />
         <Toaster />
       </>,
       { theme },
@@ -889,9 +869,6 @@ describe('CommentsThread', () => {
     await user.keyboard('{Control>}{Enter}{/Control}')
     await screen.findByRole('button', { name: 'Retry' })
     await user.click(screen.getByRole('button', { name: 'Reply to Tom Okafor' }))
-    await expectNoAxeViolations()
-    await user.keyboard('{Escape}')
-    await user.click(screen.getByRole('button', { name: 'Resolve' }))
     await expectNoAxeViolations()
   })
 })

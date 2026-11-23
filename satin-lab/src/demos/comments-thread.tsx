@@ -123,7 +123,7 @@ function code(v: Record<string, string>) {
   const props =
     v.readonly === 'on'
       ? `
-      // Read only: no composer, menu, Reply, Resolve or Reopen.
+      // Read only: no composer, menu or Reply.
       disabled`
       : `${failing}
       // Return the request: a dimmed row with a Spinner shows until the comment is in \`comments\`.
@@ -131,9 +131,7 @@ function code(v: Record<string, string>) {
       onEdit={(id, body, mentions) => api.edit(id, { body, mentions })}
       // Runs when the Undo toast closes without Undo.
       onDelete={(id) => api.remove(id)}
-      mentions={{ search: (query) => api.teammates(query) }}
-      resolvable
-      onResolve={(resolved) => api.setResolved(candidate.id, resolved)}`
+      mentions={{ search: (query) => api.teammates(query) }}`
   return `import { CommentsThread, type CommentItem } from '@uisatin/pro/comments-thread'
 import { Toaster } from '@uisatin/ui/toast'
 
@@ -194,7 +192,7 @@ export const options: ShowcaseOption[] = combos(controls).map((v) => ({
   code: code(v),
 }))
 
-/** The HR scenario: a hiring manager and a recruiter settle Tara Mendes's salary; resolve it once the offer is in. */
+/** The HR scenario: a hiring manager and a recruiter settle Tara Mendes's salary up to the signed offer. */
 function Preview({ v, set }: { v: Record<string, string>; set: (id: string, value: string) => void }) {
   // Read when a send settles, so the switch can be turned on while a comment is on its way.
   const fail = React.useRef(v.fail === 'on')
@@ -220,7 +218,6 @@ function Preview({ v, set }: { v: Record<string, string>; set: (id: string, valu
           onEdit={live.onEdit}
           onDelete={live.onDelete}
           mentions={live.mentions}
-          resolvable
           disabled={v.readonly === 'on'}
         />
       )}
@@ -291,8 +288,6 @@ export const teamOptions: ShowcaseOption[] = [
   currentUser={me}
   onReply={(parentId, body, mentions) => crm.comment(deal.id, { parentId, body, mentions })}
   mentions={{ search: (query) => crm.teammates(query) }}
-  resolvable
-  onResolve={(resolved) => crm.setResolved(deal.id, resolved)}
 />`,
   },
   {
@@ -309,7 +304,6 @@ export const teamOptions: ShowcaseOption[] = [
   onReply={(parentId, body, mentions) => campaigns.comment(draft.id, { parentId, body, mentions })}
   onEdit={(id, body, mentions) => campaigns.edit(id, { body, mentions })}
   mentions={{ search: (query) => team.search(query) }}
-  resolvable
 />`,
   },
   {
@@ -344,7 +338,6 @@ function TeamThread({ team }: { team: keyof typeof teams }) {
           onReply={live.onReply}
           onEdit={live.onEdit}
           mentions={live.mentions}
-          resolvable={team !== 'commerce'}
         />
       )}
     </div>

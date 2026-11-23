@@ -66,9 +66,9 @@ const teamsHtml = await highlight(teamOptions)
         A comment's <Chip>body</Chip> is markdown-lite: <Chip>**bold**</Chip>, <Chip>_italic_</Chip>,
         <Chip>~~struck~~</Chip>, <Chip>`code`</Chip>, <Chip>[text](https://…)</Chip> and lines starting
         <Chip>- </Chip> as a bulleted list. Links go only to http, https and mailto addresses; any other shows its text alone,
-        and no HTML is ever drawn from a body. The composer's toolbar (Bold, Italic, Code, Bulleted list, Link, and ⌘B, ⌘I,
-        ⌘E, ⌘K in the field, Ctrl off Apple) writes those marks round the selection with the field's own editing, so undo takes
-        them back and a mention is never split. The text stays plain, so <Chip>onReply</Chip> stores it as it is, mentions
+        and no HTML is ever drawn from a body. The composer is one field: its toolbar (Bold, Italic, Code, Bulleted list, Link,
+        and ⌘B, ⌘I, ⌘E, ⌘K in the field, Ctrl off Apple) sits inside it at the bottom, with Send at the other end, and writes
+        those marks round the selection with the field's own editing, so undo takes them back and a mention is never split. The text stays plain, so <Chip>onReply</Chip> stores it as it is, mentions
         and all.
       </p>
     </section>
@@ -82,22 +82,12 @@ const teamsHtml = await highlight(teamOptions)
       </p>
     </section>
 
-    <section aria-labelledby="resolve-title" class="flex flex-col gap-3 pt-8">
-      <h2 id="resolve-title" class="text-lg font-medium text-text-default">Resolve</h2>
-      <p class="text-base leading-6 text-text-muted">
-        <Chip>resolvable</Chip> puts Resolve at the start of the composer's row, away from Send. A resolved thread folds to one
-        line, "Resolved by Marta Nowak", with Show comments and Reopen; it fades, it doesn't change height. Leave it uncontrolled
-        (<Chip>defaultResolved</Chip>, and the resolver is <Chip>currentUser</Chip>) or control it with <Chip>resolved</Chip>,
-        <Chip>onResolve</Chip> and <Chip>resolvedBy</Chip>. In the demo, resolve the thread once the offer is accepted.
-      </p>
-    </section>
-
     <section aria-labelledby="parts-title" class="flex flex-col gap-3 pt-8">
       <h2 id="parts-title" class="text-lg font-medium text-text-default">Parts</h2>
       <p class="text-base leading-6 text-text-muted">
         For a thread of your own, the pieces are exported: <Chip>Comment</Chip> (one article, with <Chip>state="sending"</Chip>
-        or <Chip>"failed"</Chip>, <Chip>actions</Chip> and <Chip>footer</Chip>), <Chip>CommentComposer</Chip> (the field and
-        Send, with mentions) and <Chip>CommentActions</Chip> (the ⋯ menu; the thread puts only Delete in it).
+        or <Chip>"failed"</Chip>, <Chip>actions</Chip> and <Chip>footer</Chip>), <Chip>CommentComposer</Chip> (one field
+        with the text, the formatting toolbar and Send, with mentions) and <Chip>CommentActions</Chip> (the ⋯ menu; the thread puts only Delete in it).
       </p>
     </section>
   </DocSection>

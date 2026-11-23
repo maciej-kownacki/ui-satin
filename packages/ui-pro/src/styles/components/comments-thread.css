@@ -3,24 +3,15 @@
  *
  * A comment that arrives after the thread first showed (a new one, a reply, one back from Undo)
  * fades in and settles 4px up over --duration-base on --ease-out. A comment being sent shows its
- * body in text/muted, which still reads 4.5:1, rather than at a lower opacity. Resolving and
- * reopening swap the resolved bar and the comments with opacity only, never height
- * (MOTION.md rule 5). Satin's reduced-motion rule turns all of it off.
+ * body in text/muted, which still reads 4.5:1, rather than at a lower opacity. Satin's
+ * reduced-motion rule turns it off.
  */
 @keyframes satin-comment-enter {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
 }
-@keyframes satin-comments-swap {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 [data-slot='comment'][data-enter] {
   animation: satin-comment-enter var(--duration-base) var(--ease-out);
-}
-[data-slot='comments-thread-resolved'][data-enter],
-[data-slot='comments-thread-body'][data-enter] {
-  animation: satin-comments-swap var(--duration-base) var(--ease-out);
 }
 [data-slot='comment-body'] {
   transition: color var(--duration-fast) var(--ease-out);
@@ -28,9 +19,46 @@
 [data-slot='comment'][data-state='sending'] [data-slot='comment-body'] {
   color: var(--text-muted);
 }
-/* The composer's field is 72px, a little over two lines (Textarea's own is 96px); it still resizes. */
-[data-slot='comment-composer'] textarea[data-slot='textarea'] {
+/*
+ * The composer is one field: `.satin-field` on the box draws the border, hover, focus, error and
+ * disabled states, and holds the text and, under it inside the same border, the action row.
+ */
+.satin-field[data-slot='comment-composer-field'] {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+}
+/*
+ * The Textarea in it has no skin of its own: no border (zero wide, so the @mention fills, which
+ * copy its border and padding, still sit under the text), fill, shadow, focus edge or grip. The
+ * selector outranks every state rule of `.satin-field` (focus with an error is four parts).
+ * It starts at 72px, a little over two lines, and grows with the text to 240px, then scrolls;
+ * where field-sizing isn't supported it stays 72px and scrolls. Its bottom padding is 4px: the
+ * action row under it brings its own room.
+ */
+[data-slot='comment-composer-field'] textarea.satin-field.satin-textarea[data-slot='textarea'] {
   height: 72px;
+  min-height: 72px;
+  max-height: 240px;
+  padding-bottom: 4px;
+  border-width: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+}
+@supports (field-sizing: content) {
+  [data-slot='comment-composer-field'] textarea.satin-field.satin-textarea[data-slot='textarea'] {
+    field-sizing: content;
+    height: auto;
+  }
+}
+[data-slot='comment-composer-field'] [data-slot='textarea-fill'] {
+  background: transparent;
+}
+[data-slot='comment-composer-field'] .satin-textarea-grip {
+  display: none;
 }
 /*
  * Replies hang off a thread line: border/strong at the default (decoration) width, centred under

@@ -222,7 +222,7 @@ export const allNav: NavGroup[] = [
         id: 'comments-thread',
         title: 'Comments thread',
         href: '/components/comments-thread',
-        description: 'A discussion on a record: replies one level deep, @mentions, sending with Retry, delete with Undo, and resolve.',
+        description: 'A discussion on a record: replies one level deep, @mentions, sending with Retry and delete with Undo.',
         edition: 'pro',
       },
       { id: 'cookie-consent', title: 'Cookie consent', href: '/components/cookie-consent', description: 'Asks once what the site may store: Customize, Reject all or Accept all.' },
