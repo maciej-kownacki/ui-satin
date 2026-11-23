@@ -10,6 +10,7 @@
 @import "./components/table-pro.css";
 @import "./components/agent-changes-review.css";
 @import "./components/agent-undo-log.css";
+@import "./components/drag.css";
 @import "./components/agent-plan.css";
 @import "./components/review-queue.css";
 @import "./components/date-availability.css";

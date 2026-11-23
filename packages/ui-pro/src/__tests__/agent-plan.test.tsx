@@ -182,6 +182,10 @@ describe('AgentPlan, draft', () => {
     const [first, second, third] = rows()
     fireEvent.pointerDown(first.querySelector('[data-part="number"]')!, { button: 0, clientY: 10 })
     expect(first.hasAttribute('data-dragging')).toBe(true)
+    // It leans while it's carried (drag.css), the others don't.
+    expect(first.classList.contains('satin-drag')).toBe(true)
+    expect(first.getAttribute('data-drag')).toBe('lifted')
+    expect(second.hasAttribute('data-drag')).toBe(false)
 
     // Past the middle of the second row: the first follows the pointer, the second makes room.
     fireEvent.pointerMove(window, { clientY: 55 })
@@ -197,9 +201,37 @@ describe('AgentPlan, draft', () => {
     expect(first.style.transform).toBe('translateY(80px)')
     fireEvent.pointerUp(window)
     expect(labelsInOrder()).toEqual(['Draft invites', 'Send invites', 'Find open slots'])
-    expect(list().querySelector('[data-dragging]')).toBeNull()
     expect(rows().every((row) => !row.style.transform || row.style.transform === 'none')).toBe(true)
     expect(status().textContent).toBe('Find open slots, position 3 of 3')
+    // Let go, it springs into its slot, still lifted, and lands when its own transition ends:
+    // one from inside it doesn't count.
+    expect(first.getAttribute('data-drag')).toBe('settle')
+    expect(first.hasAttribute('data-dragging')).toBe(true)
+    fireEvent.transitionEnd(first.querySelector('[data-part="number"]')!)
+    expect(first.getAttribute('data-drag')).toBe('settle')
+    fireEvent.transitionEnd(first)
+    expect(list().querySelector('[data-dragging]')).toBeNull()
+    expect(list().querySelector('[data-drag]')).toBeNull()
+  })
+
+  it('lands a dropped step after the spring even when no transition ends, and never leans on Alt+arrows', async () => {
+    vi.useFakeTimers()
+    try {
+      renderWithSatin(<Plan />)
+      const first = rows()[0]
+      fireEvent.pointerDown(first.querySelector('[data-part="number"]')!, { button: 0, clientY: 10 })
+      fireEvent.pointerUp(window)
+      expect(first.getAttribute('data-drag')).toBe('settle')
+      vi.advanceTimersByTime(500)
+      expect(first.hasAttribute('data-drag')).toBe(false)
+      expect(first.hasAttribute('data-dragging')).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+    stepButton('Find open slots').focus()
+    fireEvent.keyDown(stepButton('Find open slots'), { key: 'ArrowDown', altKey: true })
+    expect(labelsInOrder()).toEqual(['Draft invites', 'Find open slots', 'Send invites'])
+    expect(list().querySelector('[data-drag]')).toBeNull()
   })
 
   /** Lays the rows out as they stand now, `heights` tall, 4px apart (jsdom lays nothing out). */

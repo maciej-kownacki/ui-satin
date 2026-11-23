@@ -99,6 +99,8 @@ describe('KanbanBoard', () => {
     await user.keyboard(' ')
     expect(status().textContent).toBe('Picked up Tara Mendes. Screening, position 1 of 3.')
     expect(card('Tara Mendes').hasAttribute('data-lifted')).toBe(true)
+    // The keyboard's pick-up doesn't lean, and its moves don't spring.
+    expect(card('Tara Mendes').hasAttribute('data-drag')).toBe(false)
 
     await user.keyboard('{ArrowDown}')
     expect(status().textContent).toBe('Screening, position 2 of 3')
@@ -117,6 +119,7 @@ describe('KanbanBoard', () => {
     expect(names('Interview')).toEqual(['Tara Mendes', 'Emma Laurent', 'Kenji Mori'])
     expect(document.activeElement).toBe(card('Tara Mendes'))
     expect(card('Tara Mendes').hasAttribute('data-lifted')).toBe(false)
+    expect(document.querySelector('[data-slot="kanban-item"][data-drag]')).toBeNull()
   })
 
   it('puts the card back with Escape', async () => {
@@ -546,7 +549,11 @@ describe('KanbanBoard with a pointer', () => {
     pointer('pointerdown', card('Tara Mendes'), 40, 20)
     pointer('pointermove', window, 46, 22)
     expect(document.querySelector('[data-slot="kanban-board"]')?.getAttribute('data-dragging')).toBe('pointer')
-    expect(document.querySelector('[data-slot="kanban-overlay"]')).toBeTruthy()
+    // The card the pointer carries leans (drag.css).
+    const overlay = document.querySelector('[data-slot="kanban-overlay"]') as HTMLElement
+    expect(overlay).toBeTruthy()
+    expect(overlay.classList.contains('satin-drag')).toBe(true)
+    expect(overlay.getAttribute('data-drag')).toBe('lifted')
     pointer('pointermove', window, 340, 500)
     expect(document.querySelector('[data-column="interview"]')?.hasAttribute('data-over')).toBe(true)
     expect(document.querySelector('[data-column="interview"] [data-slot="kanban-gap"]')).toBeTruthy()
@@ -554,6 +561,9 @@ describe('KanbanBoard with a pointer', () => {
     expect(onMove).toHaveBeenCalledExactlyOnceWith('tara-mendes', 'interview', 2)
     expect(names('Interview')).toEqual(['Emma Laurent', 'Kenji Mori', 'Tara Mendes'])
     expect(document.querySelector('[data-slot="kanban-overlay"]')).toBeNull()
+    // Dropped, it springs into its place from where it was let go.
+    expect(card('Tara Mendes').getAttribute('data-flip')).toBe('settle')
+    expect(card('Tara Mendes').getAttribute('data-drag')).toBe('settle')
     expect(screen.getByText('Moved to Interview')).toBeTruthy()
     rects.mockRestore()
   })

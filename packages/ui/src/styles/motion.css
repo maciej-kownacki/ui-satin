@@ -6,6 +6,9 @@
 @theme static {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  /* A dragged card dropping into place, and nothing else (MOTION.md, rule 2): a damped spring
+     (damping 0.85, launched at the speed it was let go) that passes its end by about 3% and comes back. */
+  --ease-spring: linear(0, 0.4, 0.67, 0.84, 0.94, 0.994, 1.019, 1.027, 1.027, 1.022, 1.017, 1.012, 1.008, 1.005, 1);
   --duration-fast: 150ms;
   --duration-base: 200ms;
   --duration-slow: 250ms;
