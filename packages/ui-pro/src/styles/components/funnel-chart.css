@@ -1,0 +1,28 @@
+/*
+ * Funnel chart (components/funnel-chart.tsx): a bar's first appearance. It fades in from 95% of
+ * its length, from the inline start (rows) or the baseline (columns): opacity and transform,
+ * 250 ms on ease-out, the component staggers the delay 25 ms per stage. Never from zero. Off
+ * under reduced motion, and the component leaves data-enter off with `reducedMotion`.
+ */
+[data-slot='funnel-chart-bar'][data-enter] {
+  animation: satin-funnel-in-x var(--duration-slow) var(--ease-out) backwards;
+  transform-origin: left center;
+}
+[data-slot='funnel-chart-bar'][data-enter]:dir(rtl) {
+  transform-origin: right center;
+}
+[data-slot='funnel-chart-bar'][data-enter][data-orientation='vertical'] {
+  animation-name: satin-funnel-in-y;
+  transform-origin: center bottom;
+}
+@keyframes satin-funnel-in-x {
+  from { opacity: 0; transform: scaleX(0.95); }
+}
+@keyframes satin-funnel-in-y {
+  from { opacity: 0; transform: scaleY(0.95); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='funnel-chart-bar'][data-enter] {
+    animation: none;
+  }
+}
