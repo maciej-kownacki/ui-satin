@@ -8,6 +8,7 @@ The tokens live in `src/styles/motion.css`.
 |---|---|---|
 | `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Everything the user triggers: press, open, select, enter |
 | `--ease-in-out` | `cubic-bezier(0.77, 0, 0.175, 1)` | Something already on screen moving to a new place |
+| `--ease-spring` | `linear(0, 0.4, 0.67, …, 1.027, …, 1)` | A dragged card dropping into its place; nothing else |
 | `--duration-fast` | 150 ms | Hover, press, colour changes |
 | `--duration-base` | 200 ms | Toggles, a section opening, a code block swapping its content |
 | `--duration-slow` | 250 ms | Sheets, popovers; the upper limit for anything else |
@@ -44,6 +45,11 @@ The tokens live in `src/styles/motion.css`.
      edge can't be scaled without stretching its line and corners. Not yet on the pixel grid; to revisit.
 2. **Ease-out for anything the user starts.** It moves fast at first, so the interface answers the click at once.
    Never use ease-in for UI: it starts slowly and feels late.
+   No springs and no overshoot, with one exception: a card dropped from a pointer drag (Satin Pro's Agent plan
+   steps and Kanban cards) lands on `--ease-spring` over `--duration-base`, passing its place by about 3% and
+   coming back, transform only (translate, rotate, scale). It still starts fast; a drop is the one moment the hand
+   lets go of something, and the short spring makes it land rather than stop. Keyboard moves stay instant (rule 6),
+   and under reduced motion it doesn't play.
 3. **Stay under 250 ms.** Most transitions are 150–200 ms. Anything longer starts to feel like waiting. The longer
    ones, all of them:
    - The dialog rises over 300 ms (`--duration-slower`) with its scrim, so a whole-screen change doesn't read as a cut.
