@@ -180,7 +180,7 @@ function DropOffBadge({ row, fmt }: { row: FunnelRow; fmt: Formatters }) {
 
 /* ---------- one stage ---------- */
 
-export interface FunnelChartStageProps extends Omit<React.ComponentProps<'div'>, 'children'> {
+export interface FunnelChartStageProps extends Omit<React.ComponentProps<'span'>, 'children'> {
   row: FunnelRow
   orientation?: 'horizontal' | 'vertical'
   showConversion?: FunnelConversion
@@ -197,7 +197,7 @@ export interface FunnelChartStageProps extends Omit<React.ComponentProps<'div'>,
  * Horizontal: the conversion line (from the second stage on), the label and the count, then the
  * track with its bar. Vertical: the count, the bar rising in its 160px track, the label, then
  * the conversion and drop-off. The tooltip points at `[data-slot="funnel-chart-marker"]`, at the
- * bar's end. Other props, `ref` included, go to its `div`.
+ * bar's end. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.
  */
 export function FunnelChartStage({
   row,
@@ -224,9 +224,10 @@ export function FunnelChartStage({
   const drop = row.dropOff != null ? labels.funnelDropOff(fmt.count(row.dropOff)) : null
 
   const count = (
-    <span className="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap tabular-nums">
+    <span className="flex max-w-full min-w-0 shrink-0 items-baseline gap-1.5 overflow-hidden whitespace-nowrap tabular-nums">
       <span className="font-medium text-text-default">{fmt.count(row.value)}</span>
-      {first && <span className="text-text-muted">{first}</span>}
+      {/* In a narrow column the share of the first is cut before the count. */}
+      {first && <span className="min-w-0 truncate text-text-muted">{first}</span>}
     </span>
   )
   const bar = (
@@ -243,7 +244,8 @@ export function FunnelChartStage({
       )}
       style={{
         [vertical ? 'height' : 'width']: `${row.share * 100}%`,
-        animationDelay: enter ? `${row.index * 25}ms` : undefined,
+        // Five steps at most, so a long funnel doesn't keep its last bars waiting.
+        animationDelay: enter ? `${Math.min(row.index, 4) * 25}ms` : undefined,
       }}
     >
       <span
@@ -255,43 +257,47 @@ export function FunnelChartStage({
 
   if (vertical)
     return (
-      <div
+      <span
         aria-hidden
         data-slot="funnel-chart-stage"
         data-orientation="vertical"
         className={cn('flex min-w-0 flex-col gap-2 text-sm leading-(--text-sm--line-height)', className)}
         {...props}
       >
-        <div className="flex h-5 justify-center">{count}</div>
-        <div className="relative h-40 rounded-md bg-bg-muted">{bar}</div>
-        <p className="h-5 truncate text-center font-medium text-text-default">{row.label}</p>
-        <div className="flex h-10 flex-col items-center gap-0.5 text-text-muted">
+        <span className="flex h-5 justify-center">{count}</span>
+        <span className="relative block h-40 rounded-md bg-bg-muted">{bar}</span>
+        <span className="block h-5 truncate text-center font-medium text-text-default">{row.label}</span>
+        <span className="flex h-10 flex-col items-center gap-0.5 text-text-muted">
           {previous && <span className="max-w-full truncate">{previous}</span>}
-          {row.bigDropOff ? <DropOffBadge row={row} fmt={fmt} /> : drop && <span className="max-w-full truncate">{drop}</span>}
-        </div>
-      </div>
+          <span className="flex max-w-full min-w-0 items-center justify-center gap-1">
+            {drop && <span className="min-w-0 truncate">{drop}</span>}
+            <DropOffBadge row={row} fmt={fmt} />
+          </span>
+        </span>
+      </span>
     )
 
   return (
-    <div
+    <span
       aria-hidden
       data-slot="funnel-chart-stage"
       data-orientation="horizontal"
       className={cn('flex min-w-0 flex-col text-sm leading-(--text-sm--line-height)', className)}
       {...props}
     >
+      {/* 28px with the text centred, so it keeps 4px off the track above and reads with the stage below. */}
       {row.index > 0 && (
-        <div data-slot="funnel-chart-conversion" className="flex h-6 min-w-0 items-center gap-2 text-text-muted">
+        <span data-slot="funnel-chart-conversion" className="flex h-7 min-w-0 items-center gap-2 pt-1 text-text-muted">
           <span className="min-w-0 truncate">{[previous, drop].filter(Boolean).join(' · ')}</span>
           <DropOffBadge row={row} fmt={fmt} />
-        </div>
+        </span>
       )}
-      <div className="flex h-5 min-w-0 items-center gap-3">
+      <span className="flex h-5 min-w-0 items-center gap-3">
         <span className="min-w-0 flex-1 truncate text-text-default">{row.label}</span>
         {count}
-      </div>
-      <div className="relative mt-1 h-5 rounded-md bg-bg-muted">{bar}</div>
-    </div>
+      </span>
+      <span className="relative mt-1 block h-5 rounded-md bg-bg-muted">{bar}</span>
+    </span>
   )
 }
 
@@ -330,8 +336,8 @@ export function FunnelTable({ stages, caption, format, visible = false, dropOffW
           <th scope="col" className="h-8 px-2 text-start font-medium">
             {labels.funnelStage}
           </th>
-          {[labels.funnelCount, labels.funnelFromPrevious, labels.funnelFromFirst, labels.funnelDropOffHead].map((head) => (
-            <th key={head} scope="col" className="h-8 px-2 text-end font-medium whitespace-nowrap">
+          {[labels.funnelCount, labels.funnelFromPrevious, labels.funnelFromFirst, labels.funnelDropOffHead].map((head, i) => (
+            <th key={i} scope="col" className="h-8 px-2 text-end font-medium whitespace-nowrap">
               {head}
             </th>
           ))}
@@ -390,8 +396,8 @@ export interface FunnelChartProps extends Omit<ChartCardBaseProps, 'data' | 'for
 }
 
 // Five stages, so loading, empty and error keep the loaded funnel's height: horizontal, a first
-// stage of 44px and four of 68 (24 conversion line + 20 label + 4 + 20 track); vertical, the column.
-const HORIZONTAL_BODY = 'min-h-[316px]'
+// stage of 44px and four of 72 (28 conversion line + 20 label + 4 + 20 track); vertical, the column.
+const HORIZONTAL_BODY = 'min-h-[332px]'
 const VERTICAL_BODY = 'min-h-[264px]'
 
 /**
@@ -427,6 +433,11 @@ export function FunnelChart({
   const [hovered, setHovered] = React.useState<number | null>(null)
   const [focused, setFocused] = React.useState<number | null>(null)
   const [tabStop, setTabStop] = React.useState(0)
+  // The list's unmount fires no blur or pointer leave: forget the stage on show while it's gone.
+  if (!ready && (hovered != null || focused != null)) {
+    setHovered(null)
+    setFocused(null)
+  }
   const stop = Math.min(tabStop, Math.max(0, n - 1))
   const pointer = hovered != null && hovered < n ? hovered : null
   const keyboard = focused != null && focused < n ? focused : null
@@ -441,7 +452,9 @@ export function FunnelChart({
     [active],
   )
   const markerRef = React.useRef(marker)
-  markerRef.current = marker
+  React.useLayoutEffect(() => {
+    markerRef.current = marker
+  }, [marker])
   const anchor = React.useMemo(() => glideAnchor(() => markerRef.current(), offset), [])
   // The pointer's moves glide; the keyboard's (and a highlight's) jump.
   useGlide(active, {
@@ -471,6 +484,8 @@ export function FunnelChart({
     items.current[i]?.focus()
   }
   const onKeyDown = (e: React.KeyboardEvent<HTMLOListElement>) => {
+    // Alt+← is the browser's Back; leave modified keys alone.
+    if (e.altKey || e.metaKey || e.ctrlKey) return
     const rtl = getComputedStyle(e.currentTarget).direction === 'rtl'
     const next = e.key === 'ArrowDown' || e.key === (rtl ? 'ArrowLeft' : 'ArrowRight')
     const prev = e.key === 'ArrowUp' || e.key === (rtl ? 'ArrowRight' : 'ArrowLeft')
@@ -489,6 +504,10 @@ export function FunnelChart({
   return (
     <ChartCard title={title} range={range} aria-busy={loading || undefined} data-orientation={orientation} {...props}>
       <div data-slot="funnel-chart" data-state={loading ? 'loading' : failed ? 'error' : n === 0 ? 'empty' : undefined}>
+        {/* Mounted before the error comes, so it is announced (a filled region that appears often isn't). */}
+        <span role="status" className="sr-only">
+          {failed ? (error === true ? labels.funnelError : error) : ''}
+        </span>
         {loading ? (
           <div className={cn('flex', vertical ? 'gap-3' : 'flex-col', body)}>
             <span className="sr-only">{labels.funnelLoading}</span>
@@ -500,7 +519,7 @@ export function FunnelChart({
                   <Skeleton animated className="mx-auto mt-1 w-16" />
                 </div>
               ) : (
-                <div key={i} aria-hidden className={cn('flex flex-col', i > 0 && 'pt-6')}>
+                <div key={i} aria-hidden className={cn('flex flex-col', i > 0 && 'pt-7')}>
                   <div className="flex h-5 items-center justify-between">
                     <Skeleton animated width={96} />
                     <Skeleton animated width={40} />
@@ -512,7 +531,7 @@ export function FunnelChart({
           </div>
         ) : failed ? (
           <div className={cn('flex flex-wrap items-center justify-center gap-2', body)}>
-            <p role="status" className="flex min-w-0 items-center gap-1.5 text-sm leading-(--text-sm--line-height) text-text-muted">
+            <p className="flex min-w-0 items-center gap-1.5 text-sm leading-(--text-sm--line-height) text-text-muted">
               <WarningCircle aria-hidden className="size-icon-size-sm shrink-0" />
               <span className="min-w-0">{error === true ? labels.funnelError : error}</span>
             </p>
@@ -531,6 +550,7 @@ export function FunnelChart({
             <ol
               ref={listRef}
               data-slot="funnel-chart-stages"
+              aria-label={title}
               className={cn('relative', vertical ? 'grid auto-cols-fr grid-flow-col gap-3' : 'flex flex-col')}
               onKeyDown={onKeyDown}
               onPointerLeave={() => setHovered(null)}
@@ -585,7 +605,8 @@ export function FunnelChart({
                 anchor={anchor}
                 updateRef={updateTooltip}
                 label={activeRow.label}
-                value={[fmt.count(activeRow.value), ...stageDetails(activeRow, labels, fmt, showConversion)].join(' · ')}
+                // The count and one conversion keep it to a short line; the name and the table say the rest.
+                value={[fmt.count(activeRow.value), ...stageDetails(activeRow, labels, fmt, showConversion).slice(0, 1)].join(' · ')}
               />
             )}
           </>

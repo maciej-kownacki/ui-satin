@@ -113,7 +113,8 @@ describe('FunnelChart', () => {
     await user.keyboard('{ArrowDown}{ArrowDown}')
     const tooltip = document.querySelector('[data-slot="chart-tooltip"]')!
     expect(tooltip.textContent).toContain('Interview')
-    expect(tooltip.textContent).toContain('18 · 30% of Screening · 7.5% of Applied · drop-off 42')
+    expect(tooltip.textContent).toContain('18 · 30% of Screening')
+    expect(tooltip.textContent).not.toContain('drop-off')
   })
 
   it('moves the other way under right to left in reading order', async () => {
@@ -161,7 +162,7 @@ describe('FunnelChart', () => {
   it('is busy while loading, at the height of five stages', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={[]} loading />)
     expect(screen.getByRole('figure', { name: 'Hiring' }).getAttribute('aria-busy')).toBe('true')
-    expect(container.querySelector('[data-slot="funnel-chart"] > .min-h-\\[316px\\]')).not.toBeNull()
+    expect(container.querySelector('[data-slot="funnel-chart"] > .min-h-\\[332px\\]')).not.toBeNull()
     expect(screen.queryByRole('table')).toBeNull()
   })
 
@@ -169,13 +170,14 @@ describe('FunnelChart', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={[]} empty="No applicants yet" />)
     expect(screen.getByText('No applicants yet')).not.toBeNull()
     expect(container.querySelector('[data-slot="funnel-chart"]')!.getAttribute('data-state')).toBe('empty')
-    expect(container.querySelector('.min-h-\\[316px\\]')).not.toBeNull()
+    expect(container.querySelector('.min-h-\\[332px\\]')).not.toBeNull()
   })
 
   it('shows the error politely with Retry', async () => {
     const onRetry = vi.fn()
     const { user } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} error onRetry={onRetry} />)
     expect(screen.getByRole('status').textContent).toBe("Couldn't load")
+    expect(screen.getByRole('status').className).toContain('sr-only')
     expect(screen.queryByRole('listitem')).toBeNull()
     await user.click(screen.getByRole('button', { name: 'Retry' }))
     expect(onRetry).toHaveBeenCalledTimes(1)
