@@ -2,8 +2,10 @@
  * Rich text editor (components/rich-text-editor.tsx). The field wears Textarea's skin
  * (`.satin-field` from Free's input.css): the edge, the fill, the hover and the error. It rings on
  * the editable area's focus (the component sets data-force="focus" while it has it), not on
- * :focus-within, so a toolbar inside the field doesn't light it. The editable area is 96px tall
- * at least, 12 / 8 padding, 14/21 text, and resizes vertically under Textarea's grip.
+ * :focus-within, so a toolbar inside the field doesn't light it. The editable area is 178px tall
+ * at least (180px with the field's edges: room for a short note without scrolling), 12 / 8
+ * padding, 14/21 text, and resizes vertically under Textarea's grip. An app sets another height on
+ * `[data-slot="rich-text-editor-content"]` (min-height, or height for a fixed one).
  *
  * Lexical draws plain elements (p, h1–h3, ul, ol, li, blockquote, code, a, strong, em, table,
  * th, td), styled here by element under the content's data-slot; strikethrough has no element and
@@ -33,7 +35,7 @@
   position: relative;
 }
 .satin-rte-content {
-  min-height: calc(96px - 2 * var(--border-width-strong));
+  min-height: calc(180px - 2 * var(--border-width-strong));
   padding: 8px 12px;
   overflow-y: auto;
   resize: vertical;
