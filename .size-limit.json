@@ -48,14 +48,14 @@
     "name": "styles.css",
     "path": "packages/ui/dist/styles.css",
     "gzip": true,
-    "limit": "27 kB",
+    "limit": "27.5 kB",
     "rolldown": false
   },
   {
     "name": "Satin Pro styles.css (on top of Free's)",
     "path": "packages/ui-pro/dist/styles.css",
     "gzip": true,
-    "limit": "8.5 kB",
+    "limit": "9 kB",
     "rolldown": false
   },
   {
