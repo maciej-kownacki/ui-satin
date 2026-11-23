@@ -1,12 +1,11 @@
 'use client'
 
 import * as React from 'react'
-import { Bold, ChatLines, Check, Code, EditPencil, Italic, Link as LinkIcon, List as ListIcon, MoreHoriz, Refresh, Reply, Trash, WarningCircle, Xmark } from 'iconoir-react'
+import { Bold, ChatLines, Code, EditPencil, Italic, Link as LinkIcon, List as ListIcon, MoreHoriz, Refresh, Reply, Trash, WarningCircle, Xmark } from 'iconoir-react'
 import { TetrisStill } from '@uisatin/ui/agent-loading'
 import { Avatar, type AvatarTone } from '@uisatin/ui/avatar'
 import { Badge } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
-import { ButtonGroupSeparator } from '@uisatin/ui/button-group'
 import { DropdownMenu, DropdownMenuItem } from '@uisatin/ui/dropdown'
 import { EmptyState } from '@uisatin/ui/empty-state'
 import { useSatinLabels } from '@uisatin/ui/labels'
@@ -22,7 +21,7 @@ import { Toolbar, ToolbarButton } from '@uisatin/ui/toolbar'
 
 /**
  * CommentsThread: a discussion on a record (a candidate, a deal, a campaign, an order), with
- * replies, @mentions and resolve. Not a support inbox and not a change history.
+ * replies and @mentions. Not a support inbox and not a change history.
  *
  * - Root comments, each with its replies one level deep, in a `List` (`ul`) of threads. A reply
  *   whose `parentId` points at a reply joins that reply's root; a reply whose parent is missing
@@ -36,8 +35,9 @@ import { Toolbar, ToolbarButton } from '@uisatin/ui/toolbar'
  *   `~~struck~~`, `` `code` ``, `[text](https://…)` (http, https and mailto only; any other link
  *   shows its text alone), and lines starting `- ` or `* ` as a bulleted list. Other line breaks
  *   are kept. No HTML is ever rendered from the body.
- * - The composer has a formatting toolbar (Bold, Italic, Code, Bulleted list, Link; ⌘/Ctrl+B, I,
- *   E, K in the field) that writes those marks into the text, through the field's own undo.
+ * - The composer is one field: the text on top and, inside the same border at its bottom, a
+ *   formatting toolbar (Bold, Italic, Code, Bulleted list, Link; ⌘/Ctrl+B, I, E, K in the field)
+ *   that writes those marks into the text through the field's own undo, with Send at the end.
  * - An author with `kind: 'agent'` shows the agent mark at rest in a circle (Activity timeline's)
  *   and an "Agent" Badge after the name.
  * - Your own comments say "(me)" after your name and show Edit next to Reply (`onEdit`). The ⋯
@@ -62,12 +62,8 @@ import { Toolbar, ToolbarButton } from '@uisatin/ui/toolbar'
  *   when the toast closes without Undo, or at once if the thread unmounts or the page is left
  *   first. Undo brings the comment back with focus on it; a rejected `onDelete` brings it back
  *   with an error toast. Toasts need the app's `<Toaster />`.
- * - `resolvable`: Resolve sits at the start of the composer's row, away from Send. A resolved
- *   thread folds to one line ("Resolved by Marta Nowak", Show comments, Reopen), opacity only.
- *   Focus goes to Reopen after Resolve and back to Resolve after Reopen. `resolved` /
- *   `defaultResolved` / `onResolve`; an `onResolve` promise is optimistic and a rejection undoes it.
  * - New comments fade in, 4px up, over --duration-base; reduced motion turns it off.
- * - `disabled` reads only: no composer, menu, Reply, Resolve or Reopen.
+ * - `disabled` reads only: no composer, menu or Reply.
  *
  * Parts, for a thread of your own: `Comment`, `CommentComposer`, `CommentActions`. Other props
  * on CommentsThread, `ref` included, go to the root `div`.
@@ -100,14 +96,6 @@ export const commentsThreadLabels = {
   commentsDiscard: 'Discard',
   /** On a comment whose send failed; Retry is described by it. */
   commentsNotSent: 'Not sent',
-  commentsResolve: 'Resolve',
-  commentsReopen: 'Reopen',
-  /** The resolved bar, when nobody is named. */
-  commentsResolved: 'Resolved',
-  /** The resolved bar: "Resolved by Marta Nowak". */
-  commentsResolvedBy: (name: string) => `Resolved by ${name}`,
-  commentsShow: 'Show comments',
-  commentsHide: 'Hide comments',
   /** After the time of an edited comment. */
   commentsEdited: '(edited)',
   /** After your own name on your comments. */
@@ -752,21 +740,25 @@ export interface CommentComposerProps extends Omit<React.ComponentProps<'div'>, 
   /** Defaults to "Write a comment…". */
   placeholder?: string
   disabled?: boolean
-  /** Under the field, in text/destructive; the field is marked invalid. */
+  /** Under the field, in text/destructive, and the field's description; the field is marked invalid. */
   error?: React.ReactNode
   /** Focus the field when it mounts, with the caret at the end. */
   autoFocus?: boolean
-  /** At the start of the button row, after the formatting toolbar and away from Send: the thread puts Resolve here. */
-  start?: React.ReactNode
 }
 
 /**
- * The field and Send: a Satin Textarea (72px, resizable) with @mentions from `usePromptMentions`,
- * and the button row under it: the formatting toolbar (Free's Toolbar, one tab stop: Bold,
- * Italic, Code, Bulleted list, Link), `start`, then Cancel and Send. A format writes its
- * markdown-lite marks round the selection through the field's own editing, so undo takes it back;
- * a selection that cuts into a mention takes the whole mention. ⌘/Ctrl+B, I, E and K do the same
- * in the field. Ctrl/⌘+Enter sends, Enter alone is a new line, Escape cancels
+ * One field with everything inside it: the field skin (`.satin-field`: border, hover, the focus
+ * edge while anything in it has focus, the error edge, the disabled fill) round a Satin Textarea
+ * with no skin of its own and, at the bottom inside the same border, the action row: the
+ * formatting toolbar (Free's Toolbar, one tab stop: Bold, Italic, Code, Bulleted list, Link) at
+ * the start, Cancel (with `onCancel`) and Send at the end. The text starts at 72px and grows with
+ * what's typed up to 240px, then scrolls. A click on the field's empty space puts focus in the text.
+ * @mentions come from `usePromptMentions`. An `error` shows under the field, in text/destructive,
+ * and describes the text.
+ *
+ * A format writes its markdown-lite marks round the selection through the field's own editing, so
+ * undo takes it back; a selection that cuts into a mention takes the whole mention. ⌘/Ctrl+B, I, E
+ * and K do the same in the field. Ctrl/⌘+Enter sends, Enter alone is a new line, Escape cancels
  * when `onCancel` is given (after the mentions menu, which takes Enter and Escape while open).
  * Send stays `aria-disabled` while the text is blank. Other props, `ref` included, go to the
  * root `div`.
@@ -784,7 +776,6 @@ export function CommentComposer({
   disabled = false,
   error,
   autoFocus = false,
-  start,
   className,
   ...props
 }: CommentComposerProps) {
@@ -891,58 +882,78 @@ export function CommentComposer({
     el.setSelectionRange(select[0], select[1])
   }
 
+  const errorId = `${React.useId()}-error`
+  const invalid = error != null && error !== false && error !== ''
+
   return (
     <div data-slot="comment-composer" className={cn('flex flex-col gap-2', className)} {...props}>
-      <Textarea
-        ref={textareaRef}
-        aria-label={label ?? labels.commentsField}
-        placeholder={placeholder ?? labels.commentsPlaceholder}
-        disabled={disabled}
-        value={value.text}
-        error={error || undefined}
-        underlay={m.overlay}
-        {...handlers}
-        onChange={(_, event) => onChange(event)}
-        onKeyDown={(event) => {
-          onKeyDown(event)
-          if (event.defaultPrevented || event.nativeEvent.isComposing) return
-          // Not while the mentions menu is open: the query is being typed.
-          const shortcut = !m.open && (apple ? event.metaKey : event.ctrlKey) && !event.altKey && !event.shiftKey && FORMAT_KEYS[event.key.toLowerCase()]
-          if (shortcut) {
-            event.preventDefault()
-            format(shortcut)
-          } else if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-            event.preventDefault()
-            submit()
-          } else if (event.key === 'Escape' && onCancel) {
-            event.preventDefault()
-            onCancel()
-          }
+      <div
+        data-slot="comment-composer-field"
+        data-invalid={invalid || undefined}
+        data-disabled={disabled || undefined}
+        className="satin-field"
+        onMouseDown={(event) => {
+          // Empty space in the box (padding, the row's gaps) focuses the text; controls keep their own.
+          if (disabled || (event.target as Element).closest('button, a, textarea, input')) return
+          event.preventDefault()
+          textareaRef.current?.focus()
         }}
-      />
-      {m.menu}
-      <div data-slot="comment-composer-actions" className="flex flex-wrap items-center gap-2">
-        {/* -ms-1.5 puts the first icon on the field's edge. */}
-        <Toolbar aria-label={labels.commentsFormatting} data-slot="comment-formatting" preventFocusOnPress className="-ms-1.5">
-          <ToolbarButton icon={<Bold />} label={labels.commentsBold} shortcut={keys('B')} disabled={disabled} onClick={() => format('bold')} />
-          <ToolbarButton icon={<Italic />} label={labels.commentsItalic} shortcut={keys('I')} disabled={disabled} onClick={() => format('italic')} />
-          <ToolbarButton icon={<Code />} label={labels.commentsCode} shortcut={keys('E')} disabled={disabled} onClick={() => format('code')} />
-          <ToolbarButton icon={<ListIcon />} label={labels.commentsList} disabled={disabled} onClick={() => format('list')} />
-          <ToolbarButton icon={<LinkIcon />} label={labels.commentsLink} shortcut={keys('K')} disabled={disabled} onClick={() => format('link')} />
-        </Toolbar>
-        {start != null && start !== false && <ButtonGroupSeparator aria-hidden />}
-        {start}
-        <div className="ms-auto flex items-center gap-2">
-          {onCancel && (
-            <Button variant="tertiary" onClick={onCancel} disabled={disabled}>
-              {labels.cancel}
+      >
+        <Textarea
+          ref={textareaRef}
+          aria-label={label ?? labels.commentsField}
+          aria-describedby={invalid ? errorId : undefined}
+          placeholder={placeholder ?? labels.commentsPlaceholder}
+          disabled={disabled}
+          value={value.text}
+          // Only marks it invalid: the message goes under the whole field, not inside it.
+          error={invalid || undefined}
+          underlay={m.overlay}
+          {...handlers}
+          onChange={(_, event) => onChange(event)}
+          onKeyDown={(event) => {
+            onKeyDown(event)
+            if (event.defaultPrevented || event.nativeEvent.isComposing) return
+            // Not while the mentions menu is open: the query is being typed.
+            const shortcut = !m.open && (apple ? event.metaKey : event.ctrlKey) && !event.altKey && !event.shiftKey && FORMAT_KEYS[event.key.toLowerCase()]
+            if (shortcut) {
+              event.preventDefault()
+              format(shortcut)
+            } else if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+              event.preventDefault()
+              submit()
+            } else if (event.key === 'Escape' && onCancel) {
+              event.preventDefault()
+              onCancel()
+            }
+          }}
+        />
+        <div data-slot="comment-composer-actions" className="flex flex-wrap items-center gap-2 px-1.5 pb-1.5">
+          <Toolbar aria-label={labels.commentsFormatting} data-slot="comment-formatting" preventFocusOnPress>
+            <ToolbarButton icon={<Bold />} label={labels.commentsBold} shortcut={keys('B')} disabled={disabled} onClick={() => format('bold')} />
+            <ToolbarButton icon={<Italic />} label={labels.commentsItalic} shortcut={keys('I')} disabled={disabled} onClick={() => format('italic')} />
+            <ToolbarButton icon={<Code />} label={labels.commentsCode} shortcut={keys('E')} disabled={disabled} onClick={() => format('code')} />
+            <ToolbarButton icon={<ListIcon />} label={labels.commentsList} disabled={disabled} onClick={() => format('list')} />
+            <ToolbarButton icon={<LinkIcon />} label={labels.commentsLink} shortcut={keys('K')} disabled={disabled} onClick={() => format('link')} />
+          </Toolbar>
+          <div className="ms-auto flex items-center gap-1">
+            {onCancel && (
+              <Button variant="tertiary" onClick={onCancel} disabled={disabled}>
+                {labels.cancel}
+              </Button>
+            )}
+            <Button aria-disabled={blank || undefined} disabled={disabled} onClick={submit}>
+              {submitLabel ?? labels.send}
             </Button>
-          )}
-          <Button aria-disabled={blank || undefined} disabled={disabled} onClick={submit}>
-            {submitLabel ?? labels.send}
-          </Button>
+          </div>
         </div>
       </div>
+      {m.menu}
+      {invalid && (
+        <p id={errorId} className="m-0 text-sm text-text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
@@ -970,21 +981,11 @@ export interface CommentsThreadProps extends Omit<React.ComponentProps<'div'>, '
    * hidden rather than becoming roots.
    */
   onDelete?: (id: string) => void | Promise<void>
-  /** Resolve and Reopen. A promise is optimistic; a rejection undoes the change. */
-  onResolve?: (resolved: boolean) => void | Promise<void>
-  /** Resolved, controlled: the thread folds to one line. */
-  resolved?: boolean
-  /** Resolved at first, uncontrolled. */
-  defaultResolved?: boolean
-  /** Named on the resolved bar ("Resolved by Marta Nowak"). Uncontrolled, resolving sets it to `currentUser`. */
-  resolvedBy?: CommentAuthor
-  /** Adds Resolve to the thread and Reopen to the resolved bar. */
-  resolvable?: boolean
   /** Delete on everyone's comments, not only your own. Edit stays on your own. */
   moderator?: boolean
   /** @mentions in the composers: "@" opens a menu of the people `search` finds. */
   mentions?: CommentsMentions
-  /** Read only: no composer, menu, Reply, Resolve or Reopen. */
+  /** Read only: no composer, menu or Reply. */
   disabled?: boolean
   /** In place of the default empty state ("No comments yet"). */
   empty?: React.ReactNode
@@ -1039,11 +1040,6 @@ export function CommentsThread({
   onReply,
   onEdit,
   onDelete,
-  onResolve,
-  resolved: resolvedProp,
-  defaultResolved = false,
-  resolvedBy: resolvedByProp,
-  resolvable = false,
   moderator = false,
   mentions,
   disabled = false,
@@ -1057,7 +1053,6 @@ export function CommentsThread({
 }: CommentsThreadProps) {
   const labels = useLabels()
   const uid = React.useId()
-  const bodyId = `${uid}-body`
   const seq = React.useRef(0)
 
   const rootRef = React.useRef<HTMLDivElement | null>(null)
@@ -1333,46 +1328,6 @@ export function CommentsThread({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  /* resolving */
-  const controlled = resolvedProp !== undefined
-  const [localResolved, setLocalResolved] = React.useState(defaultResolved)
-  const [localBy, setLocalBy] = React.useState<CommentAuthor | undefined>(undefined)
-  const [optimistic, setOptimistic] = React.useState<boolean | null>(null)
-  React.useEffect(() => setOptimistic(null), [resolvedProp])
-  const isResolved = optimistic ?? (controlled ? resolvedProp : localResolved)
-  const by = controlled ? resolvedByProp : (localBy ?? resolvedByProp)
-  const [expanded, setExpanded] = React.useState(false)
-  // Set by the first resolve, reopen or show: the swap fades from then on, not on the first paint.
-  const [swapped, setSwapped] = React.useState(false)
-  const setResolved = (next: boolean) => {
-    const prevBy = localBy
-    setSwapped(true)
-    setExpanded(false)
-    if (!controlled) {
-      setLocalResolved(next)
-      setLocalBy(next ? currentUser : undefined)
-    }
-    const result = attempt(() => onResolve?.(next))
-    if (isThenable(result)) {
-      if (controlled) setOptimistic(next)
-      result.then(
-        () => setOptimistic(null),
-        () => {
-          // Focus was on the control the change put there, which goes with the rollback: it moves
-          // to the one that comes back (Resolve or Reopen), not to the page.
-          const had = document.activeElement === part(next ? 'reopen' : 'resolve')
-          setOptimistic(null)
-          if (!controlled) {
-            setLocalResolved(!next)
-            setLocalBy(prevBy)
-          }
-          if (had) focusLater(() => part(next ? 'resolve' : 'reopen'))
-        },
-      )
-    }
-    focusLater(() => part(next ? 'reopen' : 'resolve'))
-  }
-
   /* the threads */
   const threads = React.useMemo(() => {
     const byId = new Map(comments.map((c) => [c.id, c]))
@@ -1419,7 +1374,6 @@ export function CommentsThread({
   const pendingFor = (id: string) => shownPending.filter((p) => p.parentId === id)
 
   const canCompose = !disabled && !!onReply
-  const collapsed = isResolved && !expanded
 
   // A mention without an avatar takes the one of an author with its id, so the tooltip shows it.
   const authors = React.useMemo(() => {
@@ -1534,15 +1488,6 @@ export function CommentsThread({
     )
   }
 
-  // In the composer's row it follows the formatting toolbar; alone, -ms-2.5 puts its icon on the edge.
-  const resolveButton = (alone: boolean) =>
-    resolvable && !disabled && !isResolved ? (
-      <Button variant="tertiary" className={alone ? '-ms-2.5' : undefined} data-part="resolve" onClick={() => setResolved(true)}>
-        <Check aria-hidden />
-        {labels.commentsResolve}
-      </Button>
-    ) : null
-
   const hasAny = visible.length > 0 || pendingRoots.length > 0
   const count = visible.reduce((n, t) => n + 1 + t.replies.length, 0)
   const titleId = `${uid}-title`
@@ -1551,7 +1496,6 @@ export function CommentsThread({
     <div
       ref={setRoot}
       data-slot="comments-thread"
-      data-resolved={isResolved || undefined}
       data-variant={variant}
       aria-labelledby={title != null ? titleId : undefined}
       role={title != null ? 'region' : undefined}
@@ -1573,42 +1517,7 @@ export function CommentsThread({
           </Badge>
         </div>
       )}
-      {isResolved && (
-        <div
-          data-slot="comments-thread-resolved"
-          data-enter={swapped || undefined}
-          className="flex min-h-10 flex-wrap items-center gap-2 rounded-lg border border-border-default px-3 py-1.5"
-        >
-          <Check aria-hidden className="size-icon-size shrink-0 text-status-green-fg [stroke-width:1.875]" />
-          <span className="min-w-0 flex-1 truncate text-sm leading-5 text-text-default">
-            {by ? labels.commentsResolvedBy(by.name) : labels.commentsResolved}
-          </span>
-          <Button
-            variant="tertiary"
-            size="xs"
-            aria-expanded={expanded}
-            aria-controls={bodyId}
-            onClick={() => {
-              setSwapped(true)
-              setExpanded((x) => !x)
-            }}
-          >
-            {expanded ? labels.commentsHide : labels.commentsShow}
-          </Button>
-          {resolvable && !disabled && (
-            <Button variant="secondary" size="xs" data-part="reopen" onClick={() => setResolved(false)}>
-              {labels.commentsReopen}
-            </Button>
-          )}
-        </div>
-      )}
-      <div
-        id={bodyId}
-        data-slot="comments-thread-body"
-        data-enter={swapped || undefined}
-        hidden={collapsed}
-        className={cn(collapsed ? 'hidden' : 'flex', 'flex-col gap-4')}
-      >
+      <div data-slot="comments-thread-body" className="flex flex-col gap-4">
         {hasAny ? (
           <List aria-label={labels.comments} className="gap-5">
             {/* One array, so a comment that replaces its pending row keeps the row's element. */}
@@ -1652,15 +1561,7 @@ export function CommentsThread({
             />
           ))
         )}
-        {canCompose ? (
-          <CommentComposer data-key="root" mentions={mentions} onSubmit={(body, found) => send(null, body, found)} start={resolveButton(false)} />
-        ) : (
-          resolveButton(true) && (
-            <div data-slot="comments-thread-footer" className="flex">
-              {resolveButton(true)}
-            </div>
-          )
-        )}
+        {canCompose && <CommentComposer data-key="root" mentions={mentions} onSubmit={(body, found) => send(null, body, found)} />}
       </div>
     </div>
   )

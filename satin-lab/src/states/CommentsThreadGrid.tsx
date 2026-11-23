@@ -6,8 +6,8 @@ import { Comment, CommentsThread, commentsThreadLabels as labels, type CommentAu
 /**
  * Every Comments thread state, one per row: empty (the empty state over the composer), sending
  * and failed (the `Comment` part, as the thread draws a pending row, since a real one needs a
- * send), an agent's comment (the agent mark and an Agent badge, a markdown-lite body), resolved
- * (folded to one line) and disabled (read only). Fixed dates, so the page is the same on every load.
+ * send), an agent's comment (the agent mark and an Agent badge, a markdown-lite body) and
+ * disabled (read only). Fixed dates, so the page is the same on every load.
  */
 const MARTA: CommentAuthor = { id: 'marta', name: 'Marta Nowak' }
 const JON: CommentAuthor = { id: 'jon', name: 'Jon Park' }
@@ -54,12 +54,11 @@ function Failed() {
 }
 
 const rows: { name: string; node: React.ReactNode }[] = [
-  { name: 'Empty', node: <CommentsThread comments={[]} currentUser={MARTA} onReply={noop} resolvable /> },
+  { name: 'Empty', node: <CommentsThread comments={[]} currentUser={MARTA} onReply={noop} /> },
   { name: 'Sending', node: <Comment author={MARTA} own at="2026-11-16T11:00:00" body={pendingBody} state="sending" /> },
   { name: 'Failed, Retry', node: <Failed /> },
   { name: 'Agent', node: <Comment author={ASSISTANT} at="2026-11-16T11:10:00" body={agentBody} /> },
-  { name: 'Resolved', node: <CommentsThread comments={comments} currentUser={MARTA} onReply={noop} resolvable defaultResolved resolvedBy={MARTA} /> },
-  { name: 'Disabled', node: <CommentsThread comments={comments} currentUser={MARTA} onReply={noop} onEdit={noop} onDelete={noop} resolvable disabled /> },
+  { name: 'Disabled', node: <CommentsThread comments={comments} currentUser={MARTA} onReply={noop} onEdit={noop} onDelete={noop} disabled /> },
 ]
 
 export function CommentsThreadGrid() {

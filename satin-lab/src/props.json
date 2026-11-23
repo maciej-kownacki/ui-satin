@@ -2801,7 +2801,7 @@
       ]
     },
     "CommentComposer": {
-      "description": "The field and Send: a Satin Textarea (72px, resizable) with @mentions from `usePromptMentions`, and the button row under it: the formatting toolbar (Free's Toolbar, one tab stop: Bold, Italic, Code, Bulleted list, Link), `start`, then Cancel and Send. A format writes its markdown-lite marks round the selection through the field's own editing, so undo takes it back; a selection that cuts into a mention takes the whole mention. ⌘/Ctrl+B, I, E and K do the same in the field. Ctrl/⌘+Enter sends, Enter alone is a new line, Escape cancels when `onCancel` is given (after the mentions menu, which takes Enter and Escape while open). Send stays `aria-disabled` while the text is blank. Other props, `ref` included, go to the root `div`.",
+      "description": "One field with everything inside it: the field skin (`.satin-field`: border, hover, the focus edge while anything in it has focus, the error edge, the disabled fill) round a Satin Textarea with no skin of its own and, at the bottom inside the same border, the action row: the formatting toolbar (Free's Toolbar, one tab stop: Bold, Italic, Code, Bulleted list, Link) at the start, Cancel (with `onCancel`) and Send at the end. The text starts at 72px and grows with what's typed up to 240px, then scrolls. A click on the field's empty space puts focus in the text. @mentions come from `usePromptMentions`. An `error` shows under the field, in text/destructive, and describes the text. A format writes its markdown-lite marks round the selection through the field's own editing, so undo takes it back; a selection that cuts into a mention takes the whole mention. ⌘/Ctrl+B, I, E and K do the same in the field. Ctrl/⌘+Enter sends, Enter alone is a new line, Escape cancels when `onCancel` is given (after the mentions menu, which takes Enter and Escape while open). Send stays `aria-disabled` while the text is blank. Other props, `ref` included, go to the root `div`.",
       "type": "CommentComposerProps",
       "extends": [
         "Omit<React.ComponentProps<'div'>, 'onSubmit' | 'defaultValue'>"
@@ -2870,7 +2870,7 @@
           "name": "error",
           "type": "React.ReactNode",
           "required": false,
-          "description": "Under the field, in text/destructive; the field is marked invalid."
+          "description": "Under the field, in text/destructive, and the field's description; the field is marked invalid."
         },
         {
           "name": "autoFocus",
@@ -2878,12 +2878,6 @@
           "required": false,
           "default": "false",
           "description": "Focus the field when it mounts, with the caret at the end."
-        },
-        {
-          "name": "start",
-          "type": "React.ReactNode",
-          "required": false,
-          "description": "At the start of the button row, after the formatting toolbar and away from Send: the thread puts Resolve here."
         }
       ]
     },
@@ -2924,38 +2918,6 @@
           "description": "Adds Delete to your own comments (anyone's with `moderator`). Called when the Undo toast closes without Undo, or at once if the thread unmounts or the page is left first. A rejected promise brings the comment back with an error toast. Deleting a root takes its replies with it, but `onDelete` gets the root's id only: the app deletes the replies too. Until it does, they stay hidden rather than becoming roots."
         },
         {
-          "name": "onResolve",
-          "type": "(resolved: boolean) => void | Promise<void>",
-          "required": false,
-          "description": "Resolve and Reopen. A promise is optimistic; a rejection undoes the change."
-        },
-        {
-          "name": "resolved",
-          "type": "boolean",
-          "required": false,
-          "description": "Resolved, controlled: the thread folds to one line."
-        },
-        {
-          "name": "defaultResolved",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "Resolved at first, uncontrolled."
-        },
-        {
-          "name": "resolvedBy",
-          "type": "CommentAuthor",
-          "required": false,
-          "description": "Named on the resolved bar (\"Resolved by Marta Nowak\"). Uncontrolled, resolving sets it to `currentUser`."
-        },
-        {
-          "name": "resolvable",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "Adds Resolve to the thread and Reopen to the resolved bar."
-        },
-        {
           "name": "moderator",
           "type": "boolean",
           "required": false,
@@ -2973,7 +2935,7 @@
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "Read only: no composer, menu, Reply, Resolve or Reopen."
+          "description": "Read only: no composer, menu or Reply."
         },
         {
           "name": "empty",
