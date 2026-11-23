@@ -20,7 +20,9 @@ import { useSatinLabels } from './labels'
  * Hover (or `highlight`) picks the point nearest the cursor's x, anywhere from 16px above the plot
  * to 16px under it (the hit area in chart.tsx), so with a point per day the tooltip
  * follows the cursor along the line, its date and value changing as it goes: a dashed
- * border-strong drop line from the point to the baseline, an 8px dot ringed in chart/3 on bg/card,
+ * text/default drop line from the point to the baseline (near white in dark, near black in light), a
+ * 10px dot ringed in a lighter chart/3 (mixed 15% toward white in light, keeping 3:1 on the card, 25%
+ * in dark) on bg/card,
  * the tooltip above it and its x label in text/default when that label is shown. The dot, the
  * drop line and the tooltip glide from point to point after the pointer (`useGlide`); the x label
  * and the live text change at once. Every point is also reachable with the keyboard (arrow keys on
@@ -222,21 +224,21 @@ export function LineCard({
           {active != null && (
             <>
               {/* The dashed drop line from the dot to the baseline: a 1px column the plot's height,
-                  its line starting 4px under the dot and cut at the baseline. */}
+                  its line starting 5px under the dot and cut at the baseline. */}
               <span
                 ref={lineRef}
                 aria-hidden
                 className="pointer-events-none absolute top-0 w-px overflow-hidden"
                 style={{ left: `calc(${x(active)}% - 0.5px)`, height: TRACK }}
               >
-                <svg width="1" height={TRACK} className="absolute left-0 block" style={{ top: y(data[active].value) + 4 }}>
-                  <line x1="0.5" x2="0.5" y1="0" y2={TRACK} stroke="var(--border-strong)" strokeDasharray="4 4" />
+                <svg width="1" height={TRACK} className="absolute left-0 block" style={{ top: y(data[active].value) + 5 }}>
+                  <line x1="0.5" x2="0.5" y1="0" y2={TRACK} stroke="var(--text-default)" strokeDasharray="4 4" />
                 </svg>
               </span>
               <span
                 ref={setAnchor}
                 aria-hidden
-                className="pointer-events-none absolute size-2 -translate-1/2 rounded-full border-2 border-chart-3 bg-bg-card"
+                className="pointer-events-none absolute size-2.5 -translate-1/2 rounded-full border-2 border-[color-mix(in_oklab,var(--chart-3)_85%,var(--text-on-solid))] bg-bg-card dark:border-[color-mix(in_oklab,var(--chart-3)_75%,var(--text-on-solid))]"
                 style={{ left: `${x(active)}%`, top: y(data[active].value) }}
               />
               <ChartTooltip
