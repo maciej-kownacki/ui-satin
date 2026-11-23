@@ -334,6 +334,9 @@ export function StatCardSparkline({
       }}
       {...props}
     >
+      {/* The hit area reaches 16px above the drawing, as on the Free charts, so a point near the
+          top keeps its tooltip while the cursor strays over the value row; only its x picks. */}
+      {interactive && <span aria-hidden className="absolute inset-x-0 -top-4 bottom-0" />}
       <svg
         key={redraw.n}
         aria-hidden
