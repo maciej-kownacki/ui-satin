@@ -41,15 +41,6 @@ const CONVERSIONS: { value: FunnelConversion; label: string }[] = [
   { value: 'both', label: 'Both' },
 ]
 
-const percent = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 })
-
-// The KPI and the range's overall conversion: the last stage, and its share of the first.
-function summary(period: string) {
-  const { range, stages } = PERIODS[period]
-  const hired = stages[stages.length - 1].value
-  return { total: `${hired} hired`, range: `${range} · ${percent.format(hired / stages[0].value)} hired` }
-}
-
 const stagesCode = (name: string, stages: FunnelStage[], format: (v: number) => string) =>
   `const ${name} = [\n${stages.map((s) => `  { label: '${s.label}', value: ${format(s.value)} },`).join('\n')}\n]`
 
@@ -67,9 +58,8 @@ export const controls: ShowcaseControl[] = [
 function code(v: Record<string, string>) {
   const attrs = [
     'title="Hiring"',
-    'total={`${hired} hired`}',
-    'range={`${range} · ${percent.format(hired / stages[0].value)} hired`}',
-    'stages={stages}',
+    'range={PERIODS[period].range}',
+    'stages={PERIODS[period].stages}',
     'periods={Object.keys(PERIODS)}',
     'value={period}',
     'onPeriodChange={setPeriod}',
@@ -90,13 +80,8 @@ const PERIODS = {
   'This year': { range: 'Jan 1 – Sep 30, 2026', stages: [/* … */] },
 }
 
-const percent = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 })
-
 export function HiringFunnel() {
   const [period, setPeriod] = React.useState('This quarter')
-  const { range, stages } = PERIODS[period]
-  // The KPI is the last stage; the range adds its share of the first.
-  const hired = stages[stages.length - 1].value
   return (
     <FunnelChart
 ${attrs.map((a) => `      ${a}`).join('\n')}
@@ -134,7 +119,7 @@ function HiringCard({ v }: { v: Record<string, string> }) {
     <div className="w-[560px] max-w-full">
       <FunnelChart
         title="Hiring"
-        {...summary(period)}
+        range={PERIODS[period].range}
         stages={PERIODS[period].stages}
         periods={Object.keys(PERIODS)}
         value={period}

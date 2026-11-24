@@ -74,40 +74,36 @@ describe('FunnelChart', () => {
     expect(funnelShapePath(1, 0.25, true)).toBe('M 0 0 C 0 50 19.22 50 19.22 100 L 80.78 100 C 80.78 50 100 50 100 0 Z')
   })
 
-  it('puts the conversion from the previous stage on each step, none on the first stage', () => {
+  it('says the share lost under the flow at each step, none on the first stage', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
     const items = screen.getAllByRole('listitem')
     expect(items[0].querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
-    expect(items.slice(1).map((li) => li.querySelector('[data-slot="funnel-chart-step"]')!.textContent)).toEqual(['25%', '30%', '22.2%', '75%'])
-    // The column says only the label and the count; the step and the tooltip say the rest.
-    expect(items[2].textContent).toBe('Interview1830%')
+    expect(items.slice(1).map((li) => li.querySelector('[data-slot="funnel-chart-step"]')!.textContent)).toEqual(['75%', '70%', '77.8%', '25%'])
+    // The step comes after the shape, centred on the hairline.
+    const step = items[1].querySelector('[data-slot="funnel-chart-step"]')!
+    expect(step.parentElement!.className).toContain('justify-center')
+    // The column says only the label and the count; the steps and the tooltip say the rest.
+    expect(items[2].textContent).toBe('Interview1870%')
     expect(container.textContent).not.toContain('drop-off 42')
   })
 
   it('marks a big drop-off with an icon and words, not colour alone', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} dropOffWarning={0.75} />)
     const steps = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')]
-    expect(steps.map((s) => s.getAttribute('data-tone'))).toEqual(['amber', 'neutral', 'amber', 'neutral'])
-    // The same number as a normal step: the conversion, not the loss.
-    expect(steps[0].textContent).toBe('25%')
-    expect(steps[0].querySelector('svg')).not.toBeNull()
-    expect(steps[1].querySelector('svg')).toBeNull()
+    expect(steps.map((s) => s.hasAttribute('data-warning'))).toEqual([true, false, true, false])
+    // A warning icon in amber takes the arrow's place.
+    expect(steps[0].querySelector('[data-tone="amber"] svg')).not.toBeNull()
+    expect(steps[1].querySelector('[data-tone="amber"]')).toBeNull()
+    expect(steps[1].querySelector('svg')).not.toBeNull()
     expect(screen.getAllByRole('listitem')[1].getAttribute('aria-label')).toContain('big drop-off')
   })
 
-  it('places a step on the hairline, just above the flow', () => {
-    const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
-    const box = container.querySelectorAll('[data-slot="funnel-chart-step"]')[1].parentElement!
-    // Interview's near edge: 50 − 0.075^0.35 × 50.
-    expect(box.style.height).toBe('calc(29.81% - 4px)')
-  })
-
-  it('moves every other step under the flow when the columns are narrow', () => {
+  it('starts each step at its hairline when the columns are narrow', () => {
     const spy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ width: 300 } as DOMRect)
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
     const boxes = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')].map((b) => b.parentElement!)
-    // 60px columns: Screening's and Offer's steps stay over the flow, Interview's and Hired's go under it.
-    expect(boxes.map((b) => b.classList.contains('bottom-0'))).toEqual([false, true, false, true])
+    // 60px columns: no step is centred.
+    expect(boxes.every((b) => !b.className.includes('justify-center'))).toBe(true)
     spy.mockRestore()
   })
 
@@ -115,11 +111,11 @@ describe('FunnelChart', () => {
     const { container, rerender } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} showConversion="both" />)
     const items = () => screen.getAllByRole('listitem')
     expect(items()[2].getAttribute('aria-label')).toBe('Interview: 18, 30% of Screening, 7.5% of Applied, drop-off 42, big drop-off')
-    // The share of the first follows the count; the second stage's step already says it.
-    expect(items()[1].textContent).toBe('Screening6025%')
-    expect(items()[2].textContent).toBe('Interview187.5%30%')
+    // The share of the first follows the count; the step under the flow says the share lost.
+    expect(items()[1].textContent).toBe('Screening6025%75%')
+    expect(items()[2].textContent).toBe('Interview187.5%70%')
     rerender(<FunnelChart title="Hiring" stages={hiring} showConversion="first" />)
-    // No steps, except a big drop-off's amber Badge: the warning is never only in words.
+    // No steps, except a big drop-off's: the warning is never only in words.
     const steps = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')]
     expect(steps).toHaveLength(3)
     expect(steps.every((b) => b.hasAttribute('data-warning'))).toBe(true)

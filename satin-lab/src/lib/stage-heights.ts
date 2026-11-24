@@ -33,7 +33,7 @@ export const stageHeights: Record<string, [number, number]> = {
   'Area chart': [448, 448],
   'Donut chart': [490, 490],
   'Stat card': [392, 720],
-  'Funnel chart': [863, 863],
+  'Funnel chart': [817, 817],
   'Sales funnel': [632, 632],
   'Checkbox': [280, 280],
   'Chip': [280, 280],
