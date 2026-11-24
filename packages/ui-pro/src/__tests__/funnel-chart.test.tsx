@@ -56,21 +56,22 @@ describe('FunnelChart', () => {
     ])
   })
 
-  it('draws each stage as thick as the square root of its share of the first, easing to the next', () => {
+  it('draws each stage as thick as its share of the first to the power 0.35, easing to the next', () => {
     renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
     const paths = bars().map((b) => b.querySelector('path')!.getAttribute('d'))
     expect(paths[0]).toBe(funnelShapePath(1, 0.25))
-    expect(paths[0]).toBe('M 0 0 C 50 0 50 25 100 25 L 100 75 C 50 75 50 100 0 100 Z')
+    expect(paths[0]).toBe('M 0 0 C 50 0 50 19.22 100 19.22 L 100 80.78 C 50 80.78 50 100 0 100 Z')
     // The last stage stays flat.
     expect(paths[4]).toBe(funnelShapePath(0.0125, 0.0125))
-    // 1.25% of the first draws about 11% thick, not a thread.
-    expect(paths[4]).toBe('M 0 44.41 C 50 44.41 50 44.41 100 44.41 L 100 55.59 C 50 55.59 50 55.59 0 55.59 Z')
-    // A tiny stage keeps 3% of the height.
-    expect(funnelShapePath(0.0001, 0.0001)).toBe('M 0 48.5 C 50 48.5 50 48.5 100 48.5 L 100 51.5 C 50 51.5 50 51.5 0 51.5 Z')
+    // 1.25% of the first draws about 22% thick, not a thread.
+    expect(paths[4]).toBe('M 0 39.21 C 50 39.21 50 39.21 100 39.21 L 100 60.79 C 50 60.79 50 60.79 0 60.79 Z')
+    // A very small share draws thin, and never under 3%.
+    expect(funnelShapePath(0.0001, 0.0001)).toBe('M 0 48.01 C 50 48.01 50 48.01 100 48.01 L 100 51.99 C 50 51.99 50 51.99 0 51.99 Z')
+    expect(funnelShapePath(1e-8, 1e-8)).toBe('M 0 48.5 C 50 48.5 50 48.5 100 48.5 L 100 51.5 C 50 51.5 50 51.5 0 51.5 Z')
   })
 
   it('flows top to bottom when vertical', () => {
-    expect(funnelShapePath(1, 0.25, true)).toBe('M 0 0 C 0 50 25 50 25 100 L 75 100 C 75 50 100 50 100 0 Z')
+    expect(funnelShapePath(1, 0.25, true)).toBe('M 0 0 C 0 50 19.22 50 19.22 100 L 80.78 100 C 80.78 50 100 50 100 0 Z')
   })
 
   it('marks a big drop-off with an icon and words, not colour alone', () => {

@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { FunnelChart, type FunnelConversion, type FunnelStage } from '@uisatin/pro/funnel-chart'
 import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } from '../components/Showcase'
 
@@ -12,13 +13,16 @@ import { Showcase, combos, comboId, type ShowcaseControl, type ShowcaseOption } 
  * switching the props never moves the controls under it.
  */
 
-const HIRING: FunnelStage[] = [
-  { label: 'Applied', value: 240 },
-  { label: 'Screening', value: 60 },
-  { label: 'Interview', value: 18 },
-  { label: 'Offer', value: 4 },
-  { label: 'Hired', value: 3 },
-]
+const hiring = (values: number[]): FunnelStage[] =>
+  ['Applied', 'Screening', 'Interview', 'Offer', 'Hired'].map((label, i) => ({ label, value: values[i] }))
+
+// The period Select in the card's header swaps the quarter for another span.
+const PERIODS: Record<string, { range: string; stages: FunnelStage[] }> = {
+  'Last 30 days': { range: 'Aug 31 – Sep 30, 2026', stages: hiring([86, 24, 8, 2, 1]) },
+  'This quarter': { range: 'Jul 1 – Sep 30, 2026', stages: hiring([240, 60, 18, 4, 3]) },
+  'This year': { range: 'Jan 1 – Sep 30, 2026', stages: hiring([712, 196, 61, 15, 11]) },
+}
+const HIRING = PERIODS['This quarter'].stages
 
 const SALES: FunnelStage[] = [
   { label: 'Leads', value: 1_200_000 },
@@ -53,18 +57,30 @@ export const controls: ShowcaseControl[] = [
 function code(v: Record<string, string>) {
   const attrs = [
     'title="Hiring"',
-    'range="Jul 1 – Sep 30, 2026"',
-    'stages={hiring}',
+    'range={PERIODS[period].range}',
+    'stages={PERIODS[period].stages}',
+    'periods={Object.keys(PERIODS)}',
+    'value={period}',
+    'onPeriodChange={setPeriod}',
     ...(v.orientation === 'vertical' ? ['orientation="vertical"'] : []),
     ...(v.conversion !== 'both' ? [`showConversion="${v.conversion}"`] : []),
     ...(v.table === 'on' ? ['showTable'] : []),
   ]
-  return `import { FunnelChart } from '@uisatin/pro/funnel-chart'
+  return `import * as React from 'react'
+import { FunnelChart } from '@uisatin/pro/funnel-chart'
 
 // One entry per stage, first to last.
 ${stagesCode('hiring', HIRING, plain)}
 
+// Each period's range and stages; the Select in the header picks one.
+const PERIODS = {
+  'Last 30 days': { range: 'Aug 31 – Sep 30, 2026', stages: [/* … */] },
+  'This quarter': { range: 'Jul 1 – Sep 30, 2026', stages: hiring },
+  'This year': { range: 'Jan 1 – Sep 30, 2026', stages: [/* … */] },
+}
+
 export function HiringFunnel() {
+  const [period, setPeriod] = React.useState('This quarter')
   return (
     <FunnelChart
 ${attrs.map((a) => `      ${a}`).join('\n')}
@@ -91,19 +107,27 @@ export default function FunnelChartDemo({ codeHtml }: { codeHtml: Record<string,
       codeHtml={codeHtml}
       controls={controls}
       align="top"
-      render={(_, v) => (
-        <div className="w-[560px] max-w-full">
-          <FunnelChart
-            title="Hiring"
-            range="Jul 1 – Sep 30, 2026"
-            stages={HIRING}
-            orientation={v.orientation as 'horizontal' | 'vertical'}
-            showConversion={v.conversion as FunnelConversion}
-            showTable={v.table === 'on'}
-          />
-        </div>
-      )}
+      render={(_, v) => <HiringCard v={v} />}
     />
+  )
+}
+
+function HiringCard({ v }: { v: Record<string, string> }) {
+  const [period, setPeriod] = React.useState('This quarter')
+  return (
+    <div className="w-[560px] max-w-full">
+      <FunnelChart
+        title="Hiring"
+        range={PERIODS[period].range}
+        stages={PERIODS[period].stages}
+        periods={Object.keys(PERIODS)}
+        value={period}
+        onPeriodChange={setPeriod}
+        orientation={v.orientation as 'horizontal' | 'vertical'}
+        showConversion={v.conversion as FunnelConversion}
+        showTable={v.table === 'on'}
+      />
+    </div>
   )
 }
 
