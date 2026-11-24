@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { cn } from '../lib/utils'
 import { Badge } from './badge'
-import { Floating, type FloatingVirtualElement } from './floating'
+import { Floating, type FloatingSide, type FloatingVirtualElement } from './floating'
 import { Select } from './select'
 import { useSatinLabels } from './labels'
 
@@ -332,16 +332,55 @@ function TooltipPill({ label, value, stacked }: { label: React.ReactNode; value:
   )
 }
 
+/** One row of a card tooltip: a short line in the series' colour, its name, its value. */
+export interface ChartTooltipRow {
+  /** Any CSS colour: `var(--chart-1)`. */
+  color: string
+  label: React.ReactNode
+  value: React.ReactNode
+}
+
+const cardShadow =
+  '[box-shadow:0_4px_6px_-4px_var(--effect-shadow-float-contact),0_10px_15px_-3px_var(--effect-shadow-float-contact),0_2px_20px_0_var(--effect-shadow-float)]'
+
+function TooltipCard({ label, rows, note }: { label: React.ReactNode; rows: ChartTooltipRow[]; note?: React.ReactNode }) {
+  return (
+    <div
+      className={cn(
+        'flex min-w-40 flex-col gap-1 rounded-lg border border-border-subtle bg-bg-popover px-3 py-2.5',
+        'text-sm leading-(--text-sm--line-height) whitespace-nowrap',
+        cardShadow,
+      )}
+    >
+      <span className="text-text-muted">{label}</span>
+      {rows.map((row, i) => (
+        <span key={i} className="flex items-center gap-2">
+          <span aria-hidden className="h-0.5 w-3 shrink-0 rounded-full" style={{ background: row.color }} />
+          <span className="text-text-default">{row.label}</span>
+          <span className="ms-auto ps-4 font-medium text-text-default tabular-nums">{row.value}</span>
+        </span>
+      ))}
+      {note != null && <span className="text-text-muted">{note}</span>}
+    </div>
+  )
+}
+
 /**
  * The chart tooltip pill with its pointer. Exported for custom charts.
  * With `anchor` it floats over the page (see Floating): it never gets cut off by the card,
  * flips below when there's no room above, slides in from the screen edge, and its pointer
  * keeps pointing at the anchor. Without it, it renders in place. A chart whose tooltip follows the
  * pointer from point to point moves it with `useGlide`.
+ *
+ * With `rows` it is a card instead of a pill, with no pointer: the label muted on top, a row per
+ * series (a short line in its colour, its name, its value at the end) and a muted `note` under them.
  */
 export function ChartTooltip({
   label,
   value,
+  rows,
+  note,
+  side = 'top',
   anchor,
   sideOffset = 4,
   updateRef,
@@ -350,9 +389,15 @@ export function ChartTooltip({
   ...props
 }: {
   label: React.ReactNode
-  value: React.ReactNode
+  value?: React.ReactNode
   /** The label on one line and the value under it, for a value too long to share a line. */
   stacked?: boolean
+  /** A row per series: the card instead of the pill. */
+  rows?: ChartTooltipRow[]
+  /** A muted line under the rows ("30% of Screening"). */
+  note?: React.ReactNode
+  /** The card's side of the anchor, for a card that would cover what it explains. The pill is always above. */
+  side?: FloatingSide
   /** What it points at: an element, or a stand-in (`glideAnchor`). */
   anchor?: Element | FloatingVirtualElement | null
   /** Gets a function that moves it to the anchor within the frame, for an anchor that glides (see Floating). */
@@ -360,6 +405,22 @@ export function ChartTooltip({
   /** Gap between the anchor and the pointer's tip. */
   sideOffset?: number
 } & React.ComponentProps<'div'>) {
+  if (rows) {
+    const card = <TooltipCard label={label} rows={rows} note={note} />
+    return anchor !== undefined ? (
+      <Floating anchor={anchor} side={side} sideOffset={sideOffset + 4} updateRef={updateRef} className="pointer-events-none">
+        {() => (
+          <div data-slot="chart-tooltip" data-variant="card" className={className} {...props}>
+            {card}
+          </div>
+        )}
+      </Floating>
+    ) : (
+      <div data-slot="chart-tooltip" data-variant="card" className={cn('pointer-events-none', className)} {...props}>
+        {card}
+      </div>
+    )
+  }
   if (anchor !== undefined) {
     // The pointer is 6 high and overlaps the pill by 1px.
     return (

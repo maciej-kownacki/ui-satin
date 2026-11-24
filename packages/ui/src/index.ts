@@ -14,7 +14,7 @@ export { Button, buttonVariants, ButtonDefaultsContext, type ButtonProps, type B
 export { ButtonGroup, ButtonGroupSeparator, type ButtonGroupProps } from './components/button-group'
 export { SplitButton, type SplitButtonProps } from './components/split-button'
 export * from './components/card'
-export { ChartCard, ChartTooltip, ChartLegendRow, ChartLegendPill, type ChartDatum, type ChartCardBaseProps } from './components/chart'
+export { ChartCard, ChartTooltip, ChartLegendRow, ChartLegendPill, type ChartDatum, type ChartCardBaseProps, type ChartTooltipRow } from './components/chart'
 export { LineCard, AreaCard, smoothPath, type LineCardProps } from './components/line-chart'
 export { DonutCard, type DonutCardProps } from './components/donut-chart'
 export { BarCard, type BarCardProps } from './components/bar-chart'
