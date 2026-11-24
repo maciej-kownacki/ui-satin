@@ -14,8 +14,9 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  * FunnelChart: a conversion funnel through stages (recruiting, sales, checkout), in the chart
  * card frame (Free's `ChartCard`: title, range, an optional KPI and period Select).
  *
- * - The shape: one chart/3 flow, as thick as each stage's share of the first stage, centred,
- *   easing on an S-curve from one stage's thickness to the next's across the stage. Horizontal
+ * - The shape: one chart/3 flow, centred, its thickness the square root of each stage's share of
+ *   the first stage (a quarter of the first draws half as thick), so it narrows gently and a long
+ *   tail stays readable, easing on an S-curve from one stage's thickness to the next's across the stage. Horizontal
  *   (default) flows left to right, one column per stage, its words on top (the label, the count
  *   with its share of the first, the conversion from the previous stage, the drop-off). Vertical
  *   flows top to bottom, one row per stage, its words at the start. A hairline in
@@ -204,18 +205,19 @@ export interface FunnelChartStageProps extends Omit<React.ComponentProps<'span'>
   enter?: boolean
 }
 
-// A stage that isn't 0 stays at least this thick (3%, 6px of the 200px shape), so a long tail
-// of small stages still shows; its words and the table give the true share.
-const MIN_SHARE = 0.03
-const thick = (share: number) => (share > 0 ? Math.max(share, MIN_SHARE) : 0)
-// The shape's edges, in a 0–100 box: centred on the flow's axis, `share` thick.
+// The thickness is the square root of the share: a straight share narrows so fast that the tail
+// of a hiring funnel (1–2% of the first stage) is a thread. Its words and the table give the
+// true share. A stage that isn't 0 stays at least 3% thick (6px of the 200px shape).
+const MIN_THICK = 0.03
+const thick = (share: number) => (share > 0 ? Math.max(Math.sqrt(share), MIN_THICK) : 0)
+// The shape's edges, in a 0–100 box: centred on the flow's axis.
 const near = (share: number) => 50 - thick(share) * 50
 const far = (share: number) => 50 + thick(share) * 50
 const n2 = (v: number) => Math.round(v * 100) / 100
 
 /**
- * The shape for one stage, in a 100 × 100 box drawn to its cell: the stage's share of the first
- * as its thickness (at least 3% when it isn't 0), centred, easing on an S-curve to the next
+ * The shape for one stage, in a 100 × 100 box drawn to its cell: the square root of the stage's
+ * share of the first as its thickness (at least 3% when it isn't 0), centred, easing on an S-curve to the next
  * stage's by the cell's far end.
  * Cells side by side join into one flowing funnel. `vertical` flows top to bottom.
  */
@@ -230,7 +232,7 @@ export function funnelShapePath(share: number, nextShare: number, vertical = fal
  * One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The
  * words on top (horizontal) or at the start (vertical): the label, the count with its share of
  * the first, the conversion from the previous stage, the drop-off with its warning Badge. Then
- * its piece of the funnel: a chart/3 shape as thick as its share of the first, easing to the next
+ * its piece of the funnel: a chart/3 shape whose thickness follows its share of the first, easing to the next
  * stage's. A hairline in border-subtle parts it from the stage before. The tooltip points at
  * `[data-slot="funnel-chart-marker"]`, on the shape's edge mid-stage. Spans only, so it can sit
  * in a button. Other props, `ref` included, go to its root `span`.

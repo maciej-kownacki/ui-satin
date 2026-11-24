@@ -5598,7 +5598,7 @@
   },
   "funnel-chart": {
     "FunnelChartStage": {
-      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The words on top (horizontal) or at the start (vertical): the label, the count with its share of the first, the conversion from the previous stage, the drop-off with its warning Badge. Then its piece of the funnel: a chart/3 shape as thick as its share of the first, easing to the next stage's. A hairline in border-subtle parts it from the stage before. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, on the shape's edge mid-stage. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
+      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The words on top (horizontal) or at the start (vertical): the label, the count with its share of the first, the conversion from the previous stage, the drop-off with its warning Badge. Then its piece of the funnel: a chart/3 shape whose thickness follows its share of the first, easing to the next stage's. A hairline in border-subtle parts it from the stage before. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, on the shape's edge mid-stage. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
       "type": "FunnelChartStageProps",
       "extends": [
         "Omit<React.ComponentProps<'span'>, 'children'>"
