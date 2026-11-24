@@ -310,7 +310,7 @@ export function FunnelChartStage({
     <span
       className={cn(
         'flex min-w-0 flex-col text-sm leading-(--text-sm--line-height)',
-        vertical ? 'w-40 shrink-0 justify-center ps-3 pe-4' : 'px-3 pt-2 pb-3',
+        vertical ? 'w-40 shrink-0 justify-center ps-3 pe-4' : 'px-3 pt-2 pb-5',
       )}
     >
       <span className="block h-5 truncate text-text-muted">{row.label}</span>
@@ -479,9 +479,9 @@ export interface FunnelChartProps extends Omit<ChartCardBaseProps, 'data' | 'for
   reducedMotion?: boolean
 }
 
-// Loading, empty and error keep the loaded funnel's height: horizontal, 8 + 48px of words + 12,
+// Loading, empty and error keep the loaded funnel's height: horizontal, 8 + 48px of words + 20 (the flow sits a little below them),
 // a 160px shape and 32 of steps; vertical, five rows of 88.
-const HORIZONTAL_BODY = 'min-h-[260px]'
+const HORIZONTAL_BODY = 'min-h-[268px]'
 const VERTICAL_BODY = 'min-h-[440px]'
 
 /**

@@ -232,7 +232,7 @@ describe('FunnelChart', () => {
   it('is busy while loading, at the height of five stages', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={[]} loading />)
     expect(screen.getByRole('figure', { name: 'Hiring' }).getAttribute('aria-busy')).toBe('true')
-    expect(container.querySelector('[data-slot="funnel-chart"] > .min-h-\\[260px\\]')).not.toBeNull()
+    expect(container.querySelector('[data-slot="funnel-chart"] > .min-h-\\[268px\\]')).not.toBeNull()
     expect(screen.queryByRole('table')).toBeNull()
   })
 
@@ -240,7 +240,7 @@ describe('FunnelChart', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={[]} empty="No applicants yet" />)
     expect(screen.getByText('No applicants yet')).not.toBeNull()
     expect(container.querySelector('[data-slot="funnel-chart"]')!.getAttribute('data-state')).toBe('empty')
-    expect(container.querySelector('.min-h-\\[260px\\]')).not.toBeNull()
+    expect(container.querySelector('.min-h-\\[268px\\]')).not.toBeNull()
   })
 
   it('shows the error politely with Retry', async () => {
