@@ -19,8 +19,8 @@ const salesHtml = await highlight(salesOptions)
       <h2 id="drop-off-title" class="text-lg font-medium text-text-default">Conversion and drop-off</h2>
       <p class="text-base leading-6 text-text-muted">
         Each stage's column says only its label and its count. The step between two stages sits under the piece of the flow
-        that narrows, centred on the stage it leaves: the share lost on the way ("↓ 75%"); the tooltip adds the share of the first stage and how many
-        were lost ("7.5% of Applied · drop-off 42"). <Chip>showConversion</Chip> picks <Chip>"previous"</Chip> (the default,
+        that narrows, centred on the stage it leaves: the share lost on the way ("↓ 75%"); the tooltip, beside the stage, lists its count and how many
+        were lost, then its conversions ("30% of Screening · 7.5% of Applied"). <Chip>showConversion</Chip> picks <Chip>"previous"</Chip> (the default,
         the steps), <Chip>"first"</Chip> (the share of the first after each count; no steps) or <Chip>"both"</Chip>. A step
         that loses at least <Chip>dropOffWarning</Chip> of the previous stage, half by default (<Chip>0.5</Chip>), has its stage's
         name and the table say "big drop-off"; under the flow it reads like any other step. Lower it to
@@ -49,7 +49,7 @@ const salesHtml = await highlight(salesOptions)
       <p class="text-base leading-6 text-text-muted">
         <Chip>loading</Chip> shows Skeleton rows, empty <Chip>stages</Chip> an EmptyState titled by <Chip>empty</Chip> ("No
         applicants yet"), and <Chip>error</Chip> the reason with Retry when <Chip>onRetry</Chip> is set. Loading, empty and error keep the
-        height of a five-stage funnel, so a dashboard doesn't jump when the data arrives. A stage of 0 keeps its column; the flow narrows to nothing there.
+        height of a five-stage funnel, so a dashboard doesn't jump when the data arrives. A stage of 0 keeps its column; the flow closes to a point before it, as it does after the last stage.
       </p>
       <p class="text-base leading-6 text-text-muted">
         On first appearance each stage's piece of the flow fades in from 95% of its thickness, 25 ms apart (the fifth and any after it together), never growing from zero; new values swap in

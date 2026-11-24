@@ -61,10 +61,10 @@ describe('FunnelChart', () => {
     const paths = bars().map((b) => b.querySelector('path')!.getAttribute('d'))
     expect(paths[0]).toBe(funnelShapePath(1, 0.25))
     expect(paths[0]).toBe('M 0 0 C 50 0 50 19.22 100 19.22 L 100 80.78 C 50 80.78 50 100 0 100 Z')
-    // The last stage stays flat.
-    expect(paths[4]).toBe(funnelShapePath(0.0125, 0.0125))
-    // 1.25% of the first draws about 22% thick, not a thread.
-    expect(paths[4]).toBe('M 0 39.21 C 50 39.21 50 39.21 100 39.21 L 100 60.79 C 50 60.79 50 60.79 0 60.79 Z')
+    // The last stage closes to a point: 1.25% of the first leaves about 22% thick, not a thread,
+    // flat out of the stage before, then runs into the axis.
+    expect(paths[4]).toBe(funnelShapePath(0.0125, 0))
+    expect(paths[4]).toBe('M 0 39.21 C 25 39.21 35 49.14 100 50 C 35 50.86 25 60.79 0 60.79 Z')
     // A very small share draws thin, and never under 3%.
     expect(funnelShapePath(0.0001, 0.0001)).toBe('M 0 48.01 C 50 48.01 50 48.01 100 48.01 L 100 51.99 C 50 51.99 50 51.99 0 51.99 Z')
     expect(funnelShapePath(1e-8, 1e-8)).toBe('M 0 48.5 C 50 48.5 50 48.5 100 48.5 L 100 51.5 C 50 51.5 50 51.5 0 51.5 Z')
@@ -72,6 +72,7 @@ describe('FunnelChart', () => {
 
   it('flows top to bottom when vertical', () => {
     expect(funnelShapePath(1, 0.25, true)).toBe('M 0 0 C 0 50 19.22 50 19.22 100 L 80.78 100 C 80.78 50 100 50 100 0 Z')
+    expect(funnelShapePath(1, 0, true)).toBe('M 0 0 C 0 25 46 35 50 100 C 54 35 100 25 100 0 Z')
   })
 
   it('says the share lost under the piece of the flow that narrows, none on the last stage', () => {
@@ -162,18 +163,18 @@ describe('FunnelChart', () => {
     await user.tab()
     await user.keyboard('{ArrowDown}{ArrowDown}')
     const tooltip = document.querySelector('[data-slot="chart-tooltip"]')!
-    expect(tooltip.textContent).toContain('Interview')
-    expect(tooltip.textContent).toContain('18 · 7.5% of Applied · drop-off 42')
+    // A card: the stage on top, its count and drop-off, its conversions in a muted line.
+    expect(tooltip.getAttribute('data-variant')).toBe('card')
+    expect(tooltip.textContent).toBe('InterviewCount18Drop-off4230% of Screening · 7.5% of Applied')
     expect(tooltip.textContent).not.toContain('big drop-off')
-    // Two lines: the stage's label over its numbers.
-    expect(tooltip.querySelector('.flex-col')).not.toBeNull()
     await user.keyboard('{End}')
-    // A drop-off that isn't big is said too.
-    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toContain('3 · 1.3% of Applied · drop-off 1')
+    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('HiredCount3Drop-off175% of Offer · 1.3% of Applied')
+    await user.keyboard('{ArrowUp}{ArrowUp}{ArrowUp}')
+    // The second stage's share of the previous is its share of the first: said once.
+    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('ScreeningCount60Drop-off18025% of Applied')
     await user.keyboard('{Home}')
-    const first = document.querySelector('[data-slot="chart-tooltip"]')!.textContent!
-    expect(first).toContain('240')
-    expect(first).not.toContain('·')
+    // The first stage: its count alone.
+    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('AppliedCount240')
   })
 
   it('moves the other way under right to left in reading order', async () => {

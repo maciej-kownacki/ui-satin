@@ -2049,7 +2049,7 @@
       ]
     },
     "ChartTooltip": {
-      "description": "The chart tooltip pill with its pointer. Exported for custom charts. With `anchor` it floats over the page (see Floating): it never gets cut off by the card, flips below when there's no room above, slides in from the screen edge, and its pointer keeps pointing at the anchor. Without it, it renders in place. A chart whose tooltip follows the pointer from point to point moves it with `useGlide`.",
+      "description": "The chart tooltip pill with its pointer. Exported for custom charts. With `anchor` it floats over the page (see Floating): it never gets cut off by the card, flips below when there's no room above, slides in from the screen edge, and its pointer keeps pointing at the anchor. Without it, it renders in place. A chart whose tooltip follows the pointer from point to point moves it with `useGlide`. With `rows` it is a card instead of a pill, with no pointer: the label muted on top, a row per series (a short line in its colour, its name, its value at the end) and a muted `note` under them.",
       "extends": [
         "React.ComponentProps<'div'>",
         "React.ComponentProps<'div'>"
@@ -2063,7 +2063,7 @@
         {
           "name": "value",
           "type": "React.ReactNode",
-          "required": true
+          "required": false
         },
         {
           "name": "stacked",
@@ -2071,6 +2071,25 @@
           "required": false,
           "default": "false",
           "description": "The label on one line and the value under it, for a value too long to share a line."
+        },
+        {
+          "name": "rows",
+          "type": "ChartTooltipRow[]",
+          "required": false,
+          "description": "A row per series: the card instead of the pill."
+        },
+        {
+          "name": "note",
+          "type": "React.ReactNode",
+          "required": false,
+          "description": "A muted line under the rows (\"30% of Screening\")."
+        },
+        {
+          "name": "side",
+          "type": "FloatingSide",
+          "required": false,
+          "default": "'top'",
+          "description": "The card's side of the anchor, for a card that would cover what it explains. The pill is always above."
         },
         {
           "name": "anchor",
@@ -5605,7 +5624,7 @@
   },
   "funnel-chart": {
     "FunnelChartStage": {
-      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The words on top (horizontal) or at the start (vertical): the label and the count, with its share of the first when `showConversion` is `'first'` or `'both'` (not on the first stage). Then its piece of the funnel: a chart/3 shape whose thickness follows its share of the first, edge to edge, easing to the next stage's. With `active` its whole area lights up. Under the shape (horizontal), centred on the stage, or after it (vertical), level with its middle, sits the step to the `next` stage (`[data-slot=\"funnel-chart-step\"]`, not on the last stage, nor with `showConversion=\"first\"`): the share lost on the way (\"↓ 75%\"), under the piece of the flow that narrows. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, in the middle of the stage's shape, so it never covers the words. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
+      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The words on top (horizontal) or at the start (vertical): the label and the count, with its share of the first when `showConversion` is `'first'` or `'both'` (not on the first stage). Then its piece of the funnel: a chart/3 shape whose thickness follows its share of the first, edge to edge, easing to the next stage's. With `active` its whole area lights up. Under the shape (horizontal), centred on the stage, or after it (vertical), level with its middle, sits the step to the `next` stage (`[data-slot=\"funnel-chart-step\"]`, not on the last stage, nor with `showConversion=\"first\"`): the share lost on the way (\"↓ 75%\"), under the piece of the flow that narrows. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, level with the middle of the shape: at the column's end (its start on the last stage) or, vertical, at the middle of the row, so it never covers the words. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
       "type": "FunnelChartStageProps",
       "extends": [
         "Omit<React.ComponentProps<'span'>, 'children'>"

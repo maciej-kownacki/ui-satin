@@ -4,7 +4,7 @@ import * as React from 'react'
 import { ArrowDown, WarningCircle } from 'iconoir-react'
 import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
-import { ChartCard, ChartTooltip, glideAnchor, useGlide, type ChartCardBaseProps, type GlidePoint } from '@uisatin/ui/chart'
+import { ChartCard, ChartTooltip, glideAnchor, useGlide, type ChartCardBaseProps, type ChartTooltipRow, type GlidePoint } from '@uisatin/ui/chart'
 import { EmptyState } from '@uisatin/ui/empty-state'
 import { useSatinLabels } from '@uisatin/ui/labels'
 import { cn } from '@uisatin/ui/lib/utils'
@@ -17,7 +17,9 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  * - The shape: one chart/3 flow, centred, its thickness each stage's share of the first stage to
  *   the power 0.35 (a quarter of the first draws 62% as thick, 1% draws 20%), so the middle
  *   stages stay full and only a very small share draws thin, easing on an S-curve from one
- *   stage's thickness to the next's across the stage. Horizontal (default) flows left to right,
+ *   stage's thickness to the next's across the stage. The last stage closes it to a sharp point:
+ *   flat out of the stage before, then narrowing faster and faster into a long, hyperbolic tip.
+ *   Horizontal (default) flows left to right,
  *   one column per stage, its words on top: the label and the count, with its share of the first
  *   when `showConversion` asks for it. Vertical flows top to bottom, one row per stage, its words
  *   at the start. The stages join edge to edge into one flow, with no line between them; the
@@ -27,11 +29,13 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  *   least `dropOffWarning` (default half the previous stage) puts the words "big drop-off" in
  *   the stage's name and the table; the drawing shows it as any other step.
  *   `showConversion="first"` leaves the steps out. A stage of 0 keeps its column; the flow
- *   narrows to nothing.
+ *   closes to a point before it.
  * - On first appearance each stage's shape fades in from 95% of its thickness (opacity and
  *   transform, 250 ms on ease-out, 25 ms apart, at most four steps), never from zero; none under
  *   reduced motion or with `reducedMotion`. New values swap in place.
- * - Hover and keyboard focus show the stage in a ChartTooltip in the middle of its shape, off its words; after the
+ * - Hover and keyboard focus show the stage in a ChartTooltip card (its label, its count and
+ *   drop-off as rows, its conversions in a muted line), beside the column over the next stage's
+ *   flow (before it for the last stage), above the row when vertical: never over the words. After the
  *   pointer it glides from stage to stage (`useGlide`), under the keyboard it jumps. The funnel
  *   is one tab stop (roving tab index): ↑ ↓ (and ← → in reading order) move between stages,
  *   Home and End jump. With `onStageSelect` every stage is a button (Enter, Space); without, a
@@ -173,14 +177,20 @@ function stageDetails(row: FunnelRow, labels: Labels, fmt: Formatters, conversio
  * ("drop-off 42"), what the column doesn't say. The first stage's is the count alone. Short, so
  * it fits a phone; the name and the table say the rest.
  */
-function tooltipValue(row: FunnelRow, labels: Labels, fmt: Formatters) {
-  return [
-    fmt.count(row.value),
-    row.fromFirst != null ? labels.funnelOf(fmt.percent(row.fromFirst), row.firstLabel) : null,
-    row.dropOff != null ? labels.funnelDropOff(fmt.count(row.dropOff)) : null,
+/**
+ * The tooltip card: the stage on top, its count in the flow's colour and the people lost since the
+ * previous stage, then its conversions in a muted line ("30% of Screening · 7.5% of Applied").
+ */
+function tooltipContent(row: FunnelRow, labels: Labels, fmt: Formatters) {
+  const rows: ChartTooltipRow[] = [
+    { color: row.tone ? 'var(--tone-fg)' : 'var(--chart-3)', label: labels.funnelCount, value: fmt.count(row.value) },
   ]
-    .filter(Boolean)
-    .join(' · ')
+  if (row.dropOff != null) rows.push({ color: 'var(--border-strong)', label: labels.funnelDropOffHead, value: fmt.count(row.dropOff) })
+  const note = [
+    row.fromPrevious != null ? labels.funnelOf(fmt.percent(row.fromPrevious), row.previousLabel ?? '') : null,
+    row.fromFirst != null && row.index > 1 ? labels.funnelOf(fmt.percent(row.fromFirst), row.firstLabel) : null,
+  ].filter(Boolean)
+  return { rows, note: note.length ? note.join(' · ') : undefined }
 }
 
 /**
@@ -235,9 +245,21 @@ const n2 = (v: number) => Math.round(v * 100) / 100
  * to the power 0.35 as its thickness (at least 3% when it isn't 0), centred, easing on an S-curve to the next
  * stage's by the cell's far end.
  * Cells side by side join into one flowing funnel. `vertical` flows top to bottom.
+ *
+ * When the next share is 0 (after the last stage, or before a stage of 0) the shape closes to a
+ * point instead: it leaves its thickness flat, so it joins the stage before without a kink, then
+ * narrows faster and faster and runs into the axis on a long, almost flat curve, like a hyperbola
+ * meeting its asymptote. The tip is always an acute angle, however thick the stage is.
  */
 export function funnelShapePath(share: number, nextShare: number, vertical = false) {
   const [a1, a2, b1, b2] = [near(share), far(share), near(nextShare), far(nextShare)].map(n2)
+  if (nextShare <= 0 && share > 0) {
+    // Control points: flat out of the stage, then 92% of the way to the axis by a third of the cell.
+    const [c1, c2] = [n2(50 - (50 - a1) * 0.08), n2(50 + (a2 - 50) * 0.08)]
+    return vertical
+      ? `M ${a1} 0 C ${a1} 25 ${c1} 35 50 100 C ${c2} 35 ${a2} 25 ${a2} 0 Z`
+      : `M 0 ${a1} C 25 ${a1} 35 ${c1} 100 50 C 35 ${c2} 25 ${a2} 0 ${a2} Z`
+  }
   return vertical
     ? `M ${a1} 0 C ${a1} 50 ${b1} 50 ${b1} 100 L ${b2} 100 C ${b2} 50 ${a2} 50 ${a2} 0 Z`
     : `M 0 ${a1} C 50 ${a1} 50 ${b1} 100 ${b1} L 100 ${b2} C 50 ${b2} 50 ${a2} 0 ${a2} Z`
@@ -255,8 +277,9 @@ export function funnelShapePath(share: number, nextShare: number, vertical = fal
  * stage, nor with `showConversion="first"`): the share lost on the way ("↓ 75%"), under the
  * piece of the flow that narrows.
  *
- * The tooltip points at `[data-slot="funnel-chart-marker"]`, in the middle of the stage's shape,
- * so it never covers the words.
+ * The tooltip points at `[data-slot="funnel-chart-marker"]`, level with the middle of the shape:
+ * at the column's end (its start on the last stage) or, vertical, at the middle of the row, so it
+ * never covers the words.
  * Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.
  */
 export function FunnelChartStage({
@@ -274,7 +297,8 @@ export function FunnelChartStage({
   const labels = useLabels()
   const fmt = useFormatters(labels, format)
   const vertical = orientation === 'vertical'
-  const next = nextShare ?? nextRow?.share ?? row.share
+  // The last stage closes the funnel to a point.
+  const next = nextShare ?? nextRow?.share ?? 0
   const first = showsFirst(showConversion) && row.index > 0 && row.fromFirst != null ? fmt.percent(row.fromFirst) : null
   const step = nextRow != null && showsPrevious(showConversion)
 
@@ -339,7 +363,9 @@ export function FunnelChartStage({
         </svg>
         <span
           data-slot="funnel-chart-marker"
-          className="absolute start-1/2 size-0"
+          // Left to right the card sits beside the column, over the flow next to it: after the column,
+          // before it for the last stage.
+          className={cn('absolute size-0', vertical ? 'start-1/2' : nextRow ? 'end-0' : 'start-0')}
           style={{ top: '50%' }}
         />
       </span>
@@ -494,6 +520,13 @@ export function FunnelChart({
   const active = !ready ? null : (pointer ?? keyboard ?? (highlight != null && highlight < n ? highlight : null))
 
   const listRef = React.useRef<HTMLOListElement>(null)
+  // Left to right, the card sits after the stage's column, over the next stage's flow: in right to
+  // left that is its left. Read when a stage goes on show.
+  const [rtl, setRtl] = React.useState(false)
+  const showing = active != null
+  React.useLayoutEffect(() => {
+    if (showing && listRef.current) setRtl(getComputedStyle(listRef.current).direction === 'rtl')
+  }, [showing])
   const items = React.useRef<(HTMLElement | null)[]>([])
   const offset = React.useRef<GlidePoint>({ x: 0, y: 0 })
   const updateTooltip = React.useRef<(() => void) | null>(null)
@@ -664,8 +697,9 @@ export function FunnelChart({
                 anchor={anchor}
                 updateRef={updateTooltip}
                 label={activeRow.label}
-                value={tooltipValue(activeRow, labels, fmt)}
-                stacked
+                {...tooltipContent(activeRow, labels, fmt)}
+                side={vertical ? 'top' : (active === n - 1) !== rtl ? 'left' : 'right'}
+                data-tone={activeRow.tone}
               />
             )}
           </>
