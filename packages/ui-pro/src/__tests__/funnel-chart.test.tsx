@@ -110,7 +110,8 @@ describe('FunnelChart', () => {
   it('lights up the stage on show', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} highlight={2} />)
     const stages = [...container.querySelectorAll('[data-slot="funnel-chart-stage"]')]
-    expect(stages.map((s) => s.classList.contains('bg-bg-hover'))).toEqual([false, false, true, false, false])
+    const lit = stages.map((s) => s.querySelector('[data-slot="funnel-chart-highlight"]')!.classList.contains('bg-bg-hover'))
+    expect(lit).toEqual([false, false, true, false, false])
     // No line between the stages: one flow.
     expect(container.querySelector('[data-slot="funnel-chart-stages"] .border-s')).toBeNull()
     // The other stages' shapes fade in a solid mix with the card, never with opacity.

@@ -346,14 +346,25 @@ export function FunnelChartStage({
       data-slot="funnel-chart-stage"
       data-orientation={orientation}
       className={cn(
-        'flex min-w-0 rounded-md transition-colors duration-(--duration-fast) ease-(--ease-out)',
+        'relative flex min-w-0',
         !vertical && 'flex-col',
-        // The stage on show: its whole area lights up.
-        active && 'bg-bg-hover',
         className,
       )}
       {...props}
     >
+      {/* The stage on show lights up its whole area, the stage's box moved 12px back, so its
+          words never touch its edge (on the first stage it reaches out into the card's padding) and it
+          ends before the next stage's words. Under the stages (the list
+          is isolated), so it never covers the previous stage's flow. */}
+      <span
+        aria-hidden
+        data-slot="funnel-chart-highlight"
+        className={cn(
+          'absolute inset-y-0 -z-1 rounded-md transition-colors duration-(--duration-fast) ease-(--ease-out)',
+          active && 'bg-bg-hover',
+        )}
+        style={{ insetInlineStart: '-12px', insetInlineEnd: '12px' }}
+      />
       {words}
       <span className={cn('relative block', vertical ? 'h-22 min-w-0 flex-1' : 'h-40')}>
         <svg
@@ -662,7 +673,7 @@ export function FunnelChart({
               ref={listRef}
               data-slot="funnel-chart-stages"
               aria-label={title}
-              className={cn('relative', vertical ? 'flex flex-col' : 'grid auto-cols-fr grid-flow-col')}
+              className={cn('relative isolate', vertical ? 'flex flex-col' : 'grid auto-cols-fr grid-flow-col')}
               onKeyDown={onKeyDown}
               onPointerLeave={() => setHovered(null)}
             >
