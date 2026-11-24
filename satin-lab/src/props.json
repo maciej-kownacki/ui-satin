@@ -2066,6 +2066,13 @@
           "required": true
         },
         {
+          "name": "stacked",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "The label on one line and the value under it, for a value too long to share a line."
+        },
+        {
           "name": "anchor",
           "type": "Element | FloatingVirtualElement | null",
           "required": false,
