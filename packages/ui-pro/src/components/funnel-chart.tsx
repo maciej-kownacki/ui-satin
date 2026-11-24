@@ -26,7 +26,7 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  *   the conversion from the previous stage ("25%"). A drop-off of at least `dropOffWarning`
  *   (default half the previous stage) turns it amber with a warning icon, and puts the words
  *   "big drop-off" in the stage's name: never colour alone. `showConversion="first"` leaves the
- *   steps out. A stage of 0 keeps its column; the flow narrows to nothing.
+ *   steps out, except a big drop-off's amber one. A stage of 0 keeps its column; the flow narrows to nothing.
  * - On first appearance each stage's shape fades in from 95% of its thickness (opacity and
  *   transform, 250 ms on ease-out, 25 ms apart, at most four steps), never from zero; none under
  *   reduced motion or with `reducedMotion`. New values swap in place.
@@ -160,7 +160,8 @@ function stageDetails(row: FunnelRow, labels: Labels, fmt: Formatters, conversio
   const details: string[] = []
   if (showsPrevious(conversion) && row.fromPrevious != null && row.previousLabel != null)
     details.push(labels.funnelOf(fmt.percent(row.fromPrevious), row.previousLabel))
-  if (showsFirst(conversion) && row.fromFirst != null && !(row.index === 1 && showsPrevious(conversion))) details.push(labels.funnelOf(fmt.percent(row.fromFirst), row.firstLabel))
+  // The name says the share of the first whatever the column shows: the tooltip does too.
+  if (row.fromFirst != null && !(row.index === 1 && showsPrevious(conversion))) details.push(labels.funnelOf(fmt.percent(row.fromFirst), row.firstLabel))
   if (row.dropOff != null) details.push(labels.funnelDropOff(fmt.count(row.dropOff)))
   if (row.bigDropOff) details.push(labels.funnelBigDropOff)
   return details
@@ -251,7 +252,7 @@ export function funnelShapePath(share: number, nextShare: number, vertical = fal
  * hairline in border-subtle parts it from the stage before.
  *
  * On that hairline sits the step from the previous stage (`[data-slot="funnel-chart-step"]`,
- * not on the first stage, nor with `showConversion="first"`): a small Badge with the conversion,
+ * not on the first stage; with `showConversion="first"` only after a big drop-off): a small Badge with the conversion,
  * amber with a warning icon after a big drop-off. Horizontal, it is centred on the hairline, its
  * bottom 4px above the flow's top edge there, and never above the shape's box (it may then
  * overlap the flow). Vertical, it is centred on the hairline (the row's top edge), its end 4px
@@ -278,7 +279,8 @@ export function FunnelChartStage({
   // The second stage's share of the first is its conversion from the previous: said once.
   const first =
     showsFirst(showConversion) && row.fromFirst != null && !(row.index === 1 && showsPrevious(showConversion)) ? fmt.percent(row.fromFirst) : null
-  const step = showsPrevious(showConversion) && row.index > 0
+  // With 'first' there are no steps, but a big drop-off keeps its amber Badge: the warning is never only in words.
+  const step = row.index > 0 && (showsPrevious(showConversion) || row.bigDropOff)
   const edge = (near(row.share) + near(next)) / 2
   // Where the flow's near edge meets the hairline, as a share of the shape's box.
   const boundary = `${n2(near(row.share))}%`

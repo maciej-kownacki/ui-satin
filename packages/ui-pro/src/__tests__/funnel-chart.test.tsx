@@ -50,9 +50,9 @@ describe('FunnelChart', () => {
     expect(items.map((li) => li.getAttribute('aria-label'))).toEqual([
       'Applied: 240',
       'Screening: 60, 25% of Applied, drop-off 180, big drop-off',
-      'Interview: 18, 30% of Screening, drop-off 42, big drop-off',
-      'Offer: 4, 22.2% of Interview, drop-off 14, big drop-off',
-      'Hired: 3, 75% of Offer, drop-off 1',
+      'Interview: 18, 30% of Screening, 7.5% of Applied, drop-off 42, big drop-off',
+      'Offer: 4, 22.2% of Interview, 1.7% of Applied, drop-off 14, big drop-off',
+      'Hired: 3, 75% of Offer, 1.3% of Applied, drop-off 1',
     ])
   })
 
@@ -110,8 +110,11 @@ describe('FunnelChart', () => {
     expect(items()[1].textContent).toBe('Screening6025%')
     expect(items()[2].textContent).toBe('Interview187.5%30%')
     rerender(<FunnelChart title="Hiring" stages={hiring} showConversion="first" />)
-    expect(container.querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
-    expect(items()[1].textContent).toBe('Screening6025%')
+    // No steps, except a big drop-off's amber Badge: the warning is never only in words.
+    const steps = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')]
+    expect(steps).toHaveLength(3)
+    expect(steps.every((b) => b.hasAttribute('data-warning'))).toBe(true)
+    expect(items()[4].querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
     expect(items()[2].getAttribute('aria-label')).toBe('Interview: 18, 7.5% of Applied, drop-off 42, big drop-off')
   })
 
