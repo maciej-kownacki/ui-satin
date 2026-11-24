@@ -318,9 +318,14 @@ export function ChartLegendPill({
 const pointerPath = 'M1.17721 0.5H13.1772L8.23721 5.62C7.65721 6.22 6.69721 6.22 6.11721 5.62L1.17721 0.5Z'
 const tooltipShadow = '[filter:drop-shadow(0_2px_2px_var(--effect-shadow-sm))_drop-shadow(0_4px_3px_var(--effect-shadow-sm))]'
 
-function TooltipPill({ label, value }: { label: React.ReactNode; value: React.ReactNode }) {
+function TooltipPill({ label, value, stacked }: { label: React.ReactNode; value: React.ReactNode; stacked?: boolean }) {
   return (
-    <div className="flex items-center gap-1.5 rounded-md bg-text-default px-2.5 py-1.5 text-sm leading-(--text-sm--line-height) whitespace-nowrap text-bg-canvas">
+    <div
+      className={cn(
+        'flex rounded-md bg-text-default px-2.5 py-1.5 text-sm leading-(--text-sm--line-height) whitespace-nowrap text-bg-canvas',
+        stacked ? 'flex-col items-start' : 'items-center gap-1.5',
+      )}
+    >
       <span className="font-medium">{label}</span>
       <span className="opacity-72">{value}</span>
     </div>
@@ -340,11 +345,14 @@ export function ChartTooltip({
   anchor,
   sideOffset = 4,
   updateRef,
+  stacked = false,
   className,
   ...props
 }: {
   label: React.ReactNode
   value: React.ReactNode
+  /** The label on one line and the value under it, for a value too long to share a line. */
+  stacked?: boolean
   /** What it points at: an element, or a stand-in (`glideAnchor`). */
   anchor?: Element | FloatingVirtualElement | null
   /** Gets a function that moves it to the anchor within the frame, for an anchor that glides (see Floating). */
@@ -358,7 +366,7 @@ export function ChartTooltip({
       <Floating anchor={anchor} side="top" sideOffset={sideOffset + 5} updateRef={updateRef} className="pointer-events-none">
         {({ side, arrowRef, arrowStyle }) => (
           <div data-slot="chart-tooltip" className={cn('relative', tooltipShadow, className)} {...props}>
-            <TooltipPill label={label} value={value} />
+            <TooltipPill label={label} value={value} stacked={stacked} />
             <svg
               ref={arrowRef as React.Ref<SVGSVGElement>}
               width="12"
@@ -381,7 +389,7 @@ export function ChartTooltip({
       className={cn('pointer-events-none flex flex-col items-center', tooltipShadow, className)}
       {...props}
     >
-      <TooltipPill label={label} value={value} />
+      <TooltipPill label={label} value={value} stacked={stacked} />
       <svg width="12" height="6" viewBox="1.17 0.5 12 5.57" aria-hidden className="-mt-px block text-text-default">
         <path d={pointerPath} fill="currentColor" />
       </svg>
