@@ -50,9 +50,9 @@ describe('FunnelChart', () => {
     expect(items.map((li) => li.getAttribute('aria-label'))).toEqual([
       'Applied: 240',
       'Screening: 60, 25% of Applied, drop-off 180, big drop-off',
-      'Interview: 18, 30% of Screening, 7.5% of Applied, drop-off 42, big drop-off',
-      'Offer: 4, 22.2% of Interview, 1.7% of Applied, drop-off 14, big drop-off',
-      'Hired: 3, 75% of Offer, 1.3% of Applied, drop-off 1',
+      'Interview: 18, 30% of Screening, drop-off 42, big drop-off',
+      'Offer: 4, 22.2% of Interview, drop-off 14, big drop-off',
+      'Hired: 3, 75% of Offer, drop-off 1',
     ])
   })
 
@@ -74,17 +74,45 @@ describe('FunnelChart', () => {
     expect(funnelShapePath(1, 0.25, true)).toBe('M 0 0 C 0 50 19.22 50 19.22 100 L 80.78 100 C 80.78 50 100 50 100 0 Z')
   })
 
+  it('puts the conversion from the previous stage on each step, none on the first stage', () => {
+    const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
+    const items = screen.getAllByRole('listitem')
+    expect(items[0].querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
+    expect(items.slice(1).map((li) => li.querySelector('[data-slot="funnel-chart-step"]')!.textContent)).toEqual(['25%', '30%', '22.2%', '75%'])
+    // The column says only the label and the count; the step and the tooltip say the rest.
+    expect(items[2].textContent).toBe('Interview1830%')
+    expect(container.textContent).not.toContain('drop-off 42')
+  })
+
   it('marks a big drop-off with an icon and words, not colour alone', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} dropOffWarning={0.75} />)
-    const warnings = container.querySelectorAll('[data-slot="funnel-chart-warning"]')
-    expect([...warnings].map((w) => w.textContent)).toEqual(['−75%', '−77.8%'])
-    expect(warnings[0].querySelector('svg')).not.toBeNull()
-    expect(warnings[0].getAttribute('data-tone')).toBe('amber')
+    const steps = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')]
+    expect(steps.map((s) => s.getAttribute('data-tone'))).toEqual(['amber', 'neutral', 'amber', 'neutral'])
+    // The same number as a normal step: the conversion, not the loss.
+    expect(steps[0].textContent).toBe('25%')
+    expect(steps[0].querySelector('svg')).not.toBeNull()
+    expect(steps[1].querySelector('svg')).toBeNull()
+    expect(screen.getAllByRole('listitem')[1].getAttribute('aria-label')).toContain('big drop-off')
+  })
+
+  it('places a step on the hairline, just above the flow', () => {
+    const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
+    const box = container.querySelectorAll('[data-slot="funnel-chart-step"]')[1].parentElement!
+    // Interview's near edge: 50 − 0.075^0.35 × 50.
+    expect(box.style.height).toBe('calc(29.81% - 4px)')
   })
 
   it('shows only the conversions asked for', () => {
-    renderWithSatin(<FunnelChart title="Hiring" stages={hiring} showConversion="previous" />)
-    expect(screen.getAllByRole('listitem')[2].getAttribute('aria-label')).toBe('Interview: 18, 30% of Screening, drop-off 42, big drop-off')
+    const { container, rerender } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} showConversion="both" />)
+    const items = () => screen.getAllByRole('listitem')
+    expect(items()[2].getAttribute('aria-label')).toBe('Interview: 18, 30% of Screening, 7.5% of Applied, drop-off 42, big drop-off')
+    // The share of the first follows the count; the second stage's step already says it.
+    expect(items()[1].textContent).toBe('Screening6025%')
+    expect(items()[2].textContent).toBe('Interview187.5%30%')
+    rerender(<FunnelChart title="Hiring" stages={hiring} showConversion="first" />)
+    expect(container.querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
+    expect(items()[1].textContent).toBe('Screening6025%')
+    expect(items()[2].getAttribute('aria-label')).toBe('Interview: 18, 7.5% of Applied, drop-off 42, big drop-off')
   })
 
   it('keeps a zero stage with an empty track', () => {
@@ -127,8 +155,15 @@ describe('FunnelChart', () => {
     await user.keyboard('{ArrowDown}{ArrowDown}')
     const tooltip = document.querySelector('[data-slot="chart-tooltip"]')!
     expect(tooltip.textContent).toContain('Interview')
-    expect(tooltip.textContent).toContain('18 · 30% of Screening')
-    expect(tooltip.textContent).toContain('18 · 30% of Screening · drop-off 42')
+    expect(tooltip.textContent).toContain('18 · 7.5% of Applied · drop-off 42')
+    expect(tooltip.textContent).not.toContain('big drop-off')
+    await user.keyboard('{End}')
+    // A drop-off that isn't big is said too.
+    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toContain('3 · 1.3% of Applied · drop-off 1')
+    await user.keyboard('{Home}')
+    const first = document.querySelector('[data-slot="chart-tooltip"]')!.textContent!
+    expect(first).toContain('240')
+    expect(first).not.toContain('·')
   })
 
   it('moves the other way under right to left in reading order', async () => {
@@ -176,7 +211,7 @@ describe('FunnelChart', () => {
   it('is busy while loading, at the height of five stages', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={[]} loading />)
     expect(screen.getByRole('figure', { name: 'Hiring' }).getAttribute('aria-busy')).toBe('true')
-    expect(container.querySelector('[data-slot="funnel-chart"] > .min-h-\\[300px\\]')).not.toBeNull()
+    expect(container.querySelector('[data-slot="funnel-chart"] > .min-h-\\[260px\\]')).not.toBeNull()
     expect(screen.queryByRole('table')).toBeNull()
   })
 
@@ -184,7 +219,7 @@ describe('FunnelChart', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={[]} empty="No applicants yet" />)
     expect(screen.getByText('No applicants yet')).not.toBeNull()
     expect(container.querySelector('[data-slot="funnel-chart"]')!.getAttribute('data-state')).toBe('empty')
-    expect(container.querySelector('.min-h-\\[300px\\]')).not.toBeNull()
+    expect(container.querySelector('.min-h-\\[260px\\]')).not.toBeNull()
   })
 
   it('shows the error politely with Retry', async () => {

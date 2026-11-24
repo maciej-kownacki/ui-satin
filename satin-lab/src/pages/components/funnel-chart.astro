@@ -18,12 +18,13 @@ const salesHtml = await highlight(salesOptions)
     <section aria-labelledby="drop-off-title" class="flex flex-col gap-3 pt-8">
       <h2 id="drop-off-title" class="text-lg font-medium text-text-default">Conversion and drop-off</h2>
       <p class="text-base leading-6 text-text-muted">
-        Every stage after the first says how many it kept and how many it lost: "25% of Applied · drop-off 180". Its count adds the
-        share of the first stage. <Chip>showConversion</Chip> picks <Chip>"previous"</Chip>, <Chip>"first"</Chip> or
-        <Chip>"both"</Chip> (the default). A step that loses at least <Chip>dropOffWarning</Chip> of the previous stage, half by
-        default (<Chip>0.5</Chip>), gets an amber Badge with a warning icon and the share lost ("−75%"), and its name says "big
-        drop-off", so the warning never rests on colour alone. Lower it to catch smaller losses, raise it where steep steps are
-        normal.
+        Each stage's column says only its label and its count. The step between two stages sits on their hairline, a small
+        Badge with the conversion from the previous stage ("25%"); the tooltip adds the share of the first stage and how many
+        were lost ("7.5% of Applied · drop-off 42"). <Chip>showConversion</Chip> picks <Chip>"previous"</Chip> (the default,
+        the steps), <Chip>"first"</Chip> (the share of the first after each count, no steps) or <Chip>"both"</Chip>. A step
+        that loses at least <Chip>dropOffWarning</Chip> of the previous stage, half by default (<Chip>0.5</Chip>), turns amber
+        with a warning icon, and its stage's name says "big drop-off", so the warning never rests on colour alone. Lower it to
+        catch smaller losses, raise it where steep steps are normal.
       </p>
       <p class="text-base leading-6 text-text-muted">
         A table with the same numbers (stage, count, from previous, from first, drop-off) is always in the page for screen

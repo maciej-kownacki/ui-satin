@@ -16,14 +16,17 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  *
  * - The shape: one chart/3 flow, centred, its thickness each stage's share of the first stage to
  *   the power 0.35 (a quarter of the first draws 62% as thick, 1% draws 20%), so the middle
- *   stages stay full and only a very small share draws thin, easing on an S-curve from one stage's thickness to the next's across the stage. Horizontal
- *   (default) flows left to right, one column per stage, its words on top (the label, the count
- *   with its share of the first, the conversion from the previous stage, the drop-off). Vertical
- *   flows top to bottom, one row per stage, its words at the start. A hairline in
- *   border-subtle parts the stages, with 2px either side, so they read as steps of one flow.
- * - A drop-off of at least `dropOffWarning` (default half the previous stage) earns an amber
- *   Badge with a warning icon and the share lost ("−75%"), and the words "big drop-off" in the
- *   stage's name: never colour alone. A stage of 0 keeps its column; the flow narrows to nothing.
+ *   stages stay full and only a very small share draws thin, easing on an S-curve from one
+ *   stage's thickness to the next's across the stage. Horizontal (default) flows left to right,
+ *   one column per stage, its words on top: the label and the count, with its share of the first
+ *   when `showConversion` asks for it. Vertical flows top to bottom, one row per stage, its words
+ *   at the start. A hairline in border-subtle parts the stages, with 2px either side, so they
+ *   read as steps of one flow.
+ * - The step between two stages is a small Badge on their hairline, just above the flow's edge:
+ *   the conversion from the previous stage ("25%"). A drop-off of at least `dropOffWarning`
+ *   (default half the previous stage) turns it amber with a warning icon, and puts the words
+ *   "big drop-off" in the stage's name: never colour alone. `showConversion="first"` leaves the
+ *   steps out. A stage of 0 keeps its column; the flow narrows to nothing.
  * - On first appearance each stage's shape fades in from 95% of its thickness (opacity and
  *   transform, 250 ms on ease-out, 25 ms apart, at most four steps), never from zero; none under
  *   reduced motion or with `reducedMotion`. New values swap in place.
@@ -164,27 +167,36 @@ function stageDetails(row: FunnelRow, labels: Labels, fmt: Formatters, conversio
 }
 
 /**
- * The tooltip's line: the count, one conversion, and the drop-off when it is big (the column
- * shows only its Badge then). Short, so it fits a phone; the name and the table say the rest.
+ * The tooltip's line: the count, its share of the first ("7.5% of Applied") and the drop-off
+ * ("drop-off 42"), what the column doesn't say. The first stage's is the count alone. Short, so
+ * it fits a phone; the name and the table say the rest.
  */
-function tooltipValue(row: FunnelRow, labels: Labels, fmt: Formatters, conversion: FunnelConversion) {
-  const drop = row.dropOff != null ? labels.funnelDropOff(fmt.count(row.dropOff)) : null
-  const conversionText = stageDetails(row, labels, fmt, conversion).find((d) => d !== drop && d !== labels.funnelBigDropOff)
-  return [fmt.count(row.value), conversionText, row.bigDropOff ? drop : null].filter(Boolean).join(' · ')
+function tooltipValue(row: FunnelRow, labels: Labels, fmt: Formatters) {
+  return [
+    fmt.count(row.value),
+    row.fromFirst != null ? labels.funnelOf(fmt.percent(row.fromFirst), row.firstLabel) : null,
+    row.dropOff != null ? labels.funnelDropOff(fmt.count(row.dropOff)) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 }
 
-/** The amber Badge for a big drop-off: a warning icon and the share lost ("−75%"). */
-function DropOffBadge({ row, fmt }: { row: FunnelRow; fmt: Formatters }) {
-  if (!row.bigDropOff || row.dropOffShare == null) return null
+/**
+ * The step from the previous stage, as a small Badge: the conversion ("25%"), neutral; amber
+ * with a warning icon after a big drop-off, so the warning never rests on colour alone.
+ */
+function StepBadge({ row, fmt }: { row: FunnelRow; fmt: Formatters }) {
+  const text = row.fromPrevious != null ? fmt.percent(row.fromPrevious) : '—'
   return (
     <Badge
-      tone="amber"
+      tone={row.bigDropOff ? 'amber' : 'neutral'}
       size="sm"
-      data-slot="funnel-chart-warning"
-      className="[box-shadow:inset_0_0_0_var(--border-width-default)_var(--tone-border)]"
+      data-slot="funnel-chart-step"
+      data-warning={row.bigDropOff || undefined}
+      className="tabular-nums [box-shadow:inset_0_0_0_var(--border-width-default)_var(--tone-border)]"
     >
-      <WarningTriangle />
-      {`−${fmt.percent(row.dropOffShare)}`}
+      {row.bigDropOff && <WarningTriangle />}
+      {text}
     </Badge>
   )
 }
@@ -232,18 +244,27 @@ export function funnelShapePath(share: number, nextShare: number, vertical = fal
 
 /**
  * One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The
- * words on top (horizontal) or at the start (vertical): the label, the count with its share of
- * the first, the conversion from the previous stage, the drop-off with its warning Badge. Then
- * its piece of the funnel: a chart/3 shape whose thickness follows its share of the first, easing to the next
- * stage's. A hairline in border-subtle parts it from the stage before. The tooltip points at
- * `[data-slot="funnel-chart-marker"]`, on the shape's edge mid-stage. Spans only, so it can sit
- * in a button. Other props, `ref` included, go to its root `span`.
+ * words on top (horizontal) or at the start (vertical): the label and the count, with its share
+ * of the first when `showConversion` is `'first'` or `'both'` (not on the first stage, nor on
+ * the second when its step already says the same number). Then its piece of the funnel: a
+ * chart/3 shape whose thickness follows its share of the first, easing to the next stage's. A
+ * hairline in border-subtle parts it from the stage before.
+ *
+ * On that hairline sits the step from the previous stage (`[data-slot="funnel-chart-step"]`,
+ * not on the first stage, nor with `showConversion="first"`): a small Badge with the conversion,
+ * amber with a warning icon after a big drop-off. Horizontal, it is centred on the hairline, its
+ * bottom 4px above the flow's top edge there, and never above the shape's box (it may then
+ * overlap the flow). Vertical, it is centred on the hairline (the row's top edge), its end 4px
+ * before the flow's near edge there, and never past the shape area's start.
+ *
+ * The tooltip points at `[data-slot="funnel-chart-marker"]`, on the shape's edge mid-stage.
+ * Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.
  */
 export function FunnelChartStage({
   row,
   nextShare,
   orientation = 'horizontal',
-  showConversion = 'both',
+  showConversion = 'previous',
   format,
   dimmed = false,
   enter = false,
@@ -257,29 +278,39 @@ export function FunnelChartStage({
   // The second stage's share of the first is its conversion from the previous: said once.
   const first =
     showsFirst(showConversion) && row.fromFirst != null && !(row.index === 1 && showsPrevious(showConversion)) ? fmt.percent(row.fromFirst) : null
-  const previous =
-    showsPrevious(showConversion) && row.index > 0
-      ? row.fromPrevious != null && row.previousLabel != null
-        ? labels.funnelOf(fmt.percent(row.fromPrevious), row.previousLabel)
-        : '—'
-      : null
-  const drop = row.dropOff != null ? labels.funnelDropOff(fmt.count(row.dropOff)) : null
+  const step = showsPrevious(showConversion) && row.index > 0
   const edge = (near(row.share) + near(next)) / 2
+  // Where the flow's near edge meets the hairline, as a share of the shape's box.
+  const boundary = `${n2(near(row.share))}%`
 
   const words = (
-    <span className={cn('flex min-w-0 flex-col text-sm leading-(--text-sm--line-height)', vertical ? 'w-36 shrink-0 py-1' : 'px-3 pb-3')}>
+    <span
+      className={cn(
+        'flex min-w-0 flex-col text-sm leading-(--text-sm--line-height)',
+        vertical ? 'w-36 shrink-0 justify-center' : 'px-3 pb-3',
+      )}
+    >
       <span className="block h-5 truncate text-text-muted">{row.label}</span>
       <span className="flex h-7 min-w-0 items-baseline gap-1.5 overflow-hidden whitespace-nowrap tabular-nums">
         <span className="text-lg leading-7 font-semibold text-text-default">{fmt.count(row.value)}</span>
         {first && <span className="min-w-0 truncate text-text-muted">{first}</span>}
       </span>
-      <span title={previous ?? undefined} className="block h-5 truncate text-text-muted">
-        {previous}
-      </span>
-      {/* A big drop-off is its Badge alone, so neither is cut; the count is in the tooltip and the table. */}
-      <span className="flex h-5 min-w-0 items-center text-text-muted">
-        {row.bigDropOff ? <DropOffBadge row={row} fmt={fmt} /> : drop && <span className="min-w-0 truncate">{drop}</span>}
-      </span>
+    </span>
+  )
+
+  // A box on the hairline, 0 thick, so the Badge overflows it evenly either side (in either
+  // direction of text): from the shape's start to 4px before the flow's edge, never smaller than
+  // the Badge, the Badge at its far end. So it sits by the flow, and never past the shape's start.
+  const stepBadge = step && (
+    <span
+      className={cn('absolute start-0 top-0 flex items-center justify-end', vertical ? 'h-0' : 'w-0 flex-col')}
+      style={
+        vertical
+          ? { width: `calc(${boundary} - 4px)`, minWidth: 'max-content' }
+          : { height: `calc(${boundary} - 4px)`, minHeight: 'max-content' }
+      }
+    >
+      <StepBadge row={row} fmt={fmt} />
     </span>
   )
 
@@ -318,6 +349,7 @@ export function FunnelChartStage({
         >
           <path d={funnelShapePath(row.share, next, vertical)} fill="currentColor" />
         </svg>
+        {stepBadge}
         <span
           data-slot="funnel-chart-marker"
           className="absolute start-1/2 size-0"
@@ -398,11 +430,14 @@ export interface FunnelChartProps extends Omit<ChartCardBaseProps, 'data' | 'for
   range?: string
   /** Writes the counts ("€48,000"). Default: the number in `dateLocale`. */
   format?: (value: number) => string
-  /** Which conversions to show: from the previous stage, from the first, or both. Default 'both'. */
+  /**
+   * Which conversions to show: from the previous stage (the step Badge on each hairline), from
+   * the first (after each count), or both. Default 'previous'.
+   */
   showConversion?: FunnelConversion
   /** Rows (default) or columns. */
   orientation?: 'horizontal' | 'vertical'
-  /** Share of the previous stage lost (0–1) that earns the warning Badge and "big drop-off". Default 0.5. */
+  /** Share of the previous stage lost (0–1) that turns the step amber with a warning icon and adds "big drop-off". Default 0.5. */
   dropOffWarning?: number
   /** Shows the data table under the funnel; it is always in the DOM for screen readers. */
   showTable?: boolean
@@ -422,9 +457,9 @@ export interface FunnelChartProps extends Omit<ChartCardBaseProps, 'data' | 'for
   reducedMotion?: boolean
 }
 
-// Loading, empty and error keep the loaded funnel's height: horizontal, 88px of words, 12 and a
+// Loading, empty and error keep the loaded funnel's height: horizontal, 48px of words, 12 and a
 // 200px shape; vertical, five rows of 88 and their hairlines.
-const HORIZONTAL_BODY = 'min-h-[300px]'
+const HORIZONTAL_BODY = 'min-h-[260px]'
 const VERTICAL_BODY = 'min-h-[444px]'
 
 /**
@@ -436,7 +471,7 @@ export function FunnelChart({
   title,
   range = '',
   format,
-  showConversion = 'both',
+  showConversion = 'previous',
   orientation = 'horizontal',
   dropOffWarning = 0.5,
   showTable = false,
@@ -548,9 +583,10 @@ export function FunnelChart({
                   i > 0 && (vertical ? 'border-t border-border-subtle' : 'border-s border-border-subtle'),
                 )}
               >
-                <div className={cn('flex flex-col gap-2', vertical ? 'w-36 shrink-0' : 'h-[100px] px-3 pt-1')}>
+                <div className={cn('flex flex-col gap-2', vertical ? 'w-36 shrink-0' : 'px-3 pt-1 pb-3')}>
+                  {/* 4 + 12 + 8 + 24 + 12: the 60px of a column's words. */}
                   <Skeleton animated className="w-16 max-w-full" />
-                  <Skeleton animated height={20} className="w-12 max-w-full" />
+                  <Skeleton animated height={vertical ? 20 : 24} className="w-12 max-w-full" />
                 </div>
                 <div className={cn('flex items-center justify-center', vertical ? 'h-full flex-1' : 'h-50 px-0.5')}>
                   {/* The funnel's narrowing, roughly, so the skeleton already reads as one. */}
@@ -641,7 +677,7 @@ export function FunnelChart({
                 anchor={anchor}
                 updateRef={updateTooltip}
                 label={activeRow.label}
-                value={tooltipValue(activeRow, labels, fmt, showConversion)}
+                value={tooltipValue(activeRow, labels, fmt)}
               />
             )}
           </>

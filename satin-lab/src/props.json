@@ -5598,7 +5598,7 @@
   },
   "funnel-chart": {
     "FunnelChartStage": {
-      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The words on top (horizontal) or at the start (vertical): the label, the count with its share of the first, the conversion from the previous stage, the drop-off with its warning Badge. Then its piece of the funnel: a chart/3 shape whose thickness follows its share of the first, easing to the next stage's. A hairline in border-subtle parts it from the stage before. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, on the shape's edge mid-stage. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
+      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The words on top (horizontal) or at the start (vertical): the label and the count, with its share of the first when `showConversion` is `'first'` or `'both'` (not on the first stage, nor on the second when its step already says the same number). Then its piece of the funnel: a chart/3 shape whose thickness follows its share of the first, easing to the next stage's. A hairline in border-subtle parts it from the stage before. On that hairline sits the step from the previous stage (`[data-slot=\"funnel-chart-step\"]`, not on the first stage, nor with `showConversion=\"first\"`): a small Badge with the conversion, amber with a warning icon after a big drop-off. Horizontal, it is centred on the hairline, its bottom 4px above the flow's top edge there, and never above the shape's box (it may then overlap the flow). Vertical, it is centred on the hairline (the row's top edge), its end 4px before the flow's near edge there, and never past the shape area's start. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, on the shape's edge mid-stage. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
       "type": "FunnelChartStageProps",
       "extends": [
         "Omit<React.ComponentProps<'span'>, 'children'>"
@@ -5625,7 +5625,7 @@
           "name": "showConversion",
           "type": "FunnelConversion",
           "required": false,
-          "default": "'both'"
+          "default": "'previous'"
         },
         {
           "name": "format",
@@ -5717,8 +5717,8 @@
           "name": "showConversion",
           "type": "FunnelConversion",
           "required": false,
-          "default": "'both'",
-          "description": "Which conversions to show: from the previous stage, from the first, or both. Default 'both'."
+          "default": "'previous'",
+          "description": "Which conversions to show: from the previous stage (the step Badge on each hairline), from the first (after each count), or both. Default 'previous'."
         },
         {
           "name": "orientation",
@@ -5732,7 +5732,7 @@
           "type": "number",
           "required": false,
           "default": "0.5",
-          "description": "Share of the previous stage lost (0–1) that earns the warning Badge and \"big drop-off\". Default 0.5."
+          "description": "Share of the previous stage lost (0–1) that turns the step amber with a warning icon and adds \"big drop-off\". Default 0.5."
         },
         {
           "name": "showTable",
