@@ -168,7 +168,7 @@ function stageDetails(row: FunnelRow, labels: Labels, fmt: Formatters, conversio
 }
 
 /**
- * The tooltip's line: the count, its share of the first ("7.5% of Applied") and the drop-off
+ * The tooltip's second line, under the stage's label: the count, its share of the first ("7.5% of Applied") and the drop-off
  * ("drop-off 42"), what the column doesn't say. The first stage's is the count alone. Short, so
  * it fits a phone; the name and the table say the rest.
  */
@@ -702,6 +702,7 @@ export function FunnelChart({
                 updateRef={updateTooltip}
                 label={activeRow.label}
                 value={tooltipValue(activeRow, labels, fmt)}
+                stacked
               />
             )}
           </>

@@ -165,6 +165,8 @@ describe('FunnelChart', () => {
     expect(tooltip.textContent).toContain('Interview')
     expect(tooltip.textContent).toContain('18 · 7.5% of Applied · drop-off 42')
     expect(tooltip.textContent).not.toContain('big drop-off')
+    // Two lines: the stage's label over its numbers.
+    expect(tooltip.querySelector('.flex-col')).not.toBeNull()
     await user.keyboard('{End}')
     // A drop-off that isn't big is said too.
     expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toContain('3 · 1.3% of Applied · drop-off 1')
