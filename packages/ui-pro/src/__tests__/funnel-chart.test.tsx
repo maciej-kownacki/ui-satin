@@ -110,6 +110,16 @@ describe('FunnelChart', () => {
     expect(stages.map((s) => s.classList.contains('bg-bg-hover'))).toEqual([false, false, true, false, false])
     // No line between the stages: one flow.
     expect(container.querySelector('[data-slot="funnel-chart-stages"] .border-s')).toBeNull()
+    // The other stages' shapes fade in a solid mix with the card, never with opacity.
+    const shapes = [...container.querySelectorAll<SVGElement>('[data-slot="funnel-chart-shape"]')]
+    expect(shapes.map((s) => s.style.color.includes('30%'))).toEqual([true, true, false, true, true])
+    expect(shapes.every((s) => !s.style.opacity)).toBe(true)
+  })
+
+  it('fades no stage while none is on show', () => {
+    const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
+    const shapes = [...container.querySelectorAll<SVGElement>('[data-slot="funnel-chart-shape"]')]
+    expect(shapes.every((s) => s.style.color === '')).toBe(true)
   })
 
   it('shows only the conversions asked for', () => {

@@ -5667,6 +5667,13 @@
           "description": "This stage is on show: its area lights up."
         },
         {
+          "name": "dimmed",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Another stage is on show: the shape fades to 30% of its colour on the card, as BarChart's other bars do."
+        },
+        {
           "name": "enter",
           "type": "boolean",
           "required": false,

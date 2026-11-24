@@ -23,7 +23,8 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  *   one column per stage, its words on top: the label and the count, with its share of the first
  *   when `showConversion` asks for it. Vertical flows top to bottom, one row per stage, its words
  *   at the start. The stages join edge to edge into one flow, with no line between them; the
- *   stage on show lights up its whole area (bg-hover).
+ *   stage on show lights up its whole area (bg-hover) and the other stages' shapes fade to 30% of
+ *   their colour, as BarChart's other bars do.
  * - The step between two stages sits under the piece of the flow that narrows, centred on the
  *   stage it leaves (after it and level with its middle, vertical): the share lost on the way, muted, after a down arrow ("↓ 75%"). A drop-off of at
  *   least `dropOffWarning` (default half the previous stage) puts the words "big drop-off" in
@@ -222,6 +223,8 @@ export interface FunnelChartStageProps extends Omit<React.ComponentProps<'span'>
   format?: (value: number) => string
   /** This stage is on show: its area lights up. */
   active?: boolean
+  /** Another stage is on show: the shape fades to 30% of its colour on the card, as BarChart's other bars do. */
+  dimmed?: boolean
   /** Fades the shape in from 95% of its thickness, once, when it mounts. */
   enter?: boolean
   /** The next stage: under this one (after it, vertical) the step says the share lost on the way there, where the flow narrows. */
@@ -289,6 +292,7 @@ export function FunnelChartStage({
   showConversion = 'previous',
   format,
   active = false,
+  dimmed = false,
   enter = false,
   next: nextRow,
   className,
@@ -352,9 +356,13 @@ export function FunnelChartStage({
             // Edge to edge, so the stages join into one flow; 1px over the next stage, so no seam shows.
             vertical ? 'inset-x-0 top-0 w-full' : 'inset-y-0 start-0 h-full rtl:-scale-x-100',
             row.tone ? 'text-tone-fg' : 'text-chart-3',
+            'transition-colors duration-(--duration-fast) ease-(--ease-out)',
           )}
           // Five steps at most, so a long funnel doesn't keep its last stages waiting.
+          // Dimmed in a solid mix with the card, never with opacity: the shapes overlap by 1px and a
+          // see-through overlap would draw a seam.
           style={{
+            color: dimmed ? (row.tone ? 'color-mix(in oklab, var(--tone-fg) 30%, var(--bg-card))' : 'color-mix(in oklab, var(--chart-3) 30%, var(--bg-card))') : undefined,
             animationDelay: enter ? `${Math.min(row.index, 4) * 25}ms` : undefined,
             ...(vertical ? { height: 'calc(100% + 1px)' } : { width: 'calc(100% + 1px)' }),
           }}
@@ -657,6 +665,7 @@ export function FunnelChart({
                     showConversion={showConversion}
                     format={format}
                     active={active === i}
+                    dimmed={active != null && active !== i}
                     enter={enter}
                   />
                 )
