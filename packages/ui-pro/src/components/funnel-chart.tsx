@@ -26,7 +26,8 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  *   stage on show lights up its whole area (bg-hover) and the other stages' shapes fade to 30% of
  *   their colour, as BarChart's other bars do.
  * - The step between two stages sits under the piece of the flow that narrows, centred on the
- *   stage it leaves (after it and level with its middle, vertical): the share lost on the way, muted, after a down arrow ("↓ 75%"). A drop-off of at
+ *   stage it leaves (after it and level with its middle, vertical): the share lost on the way, muted, after a down arrow ("↓ 75%"); the last stage concludes them with
+ *   its share of the first ("1.3%"). A drop-off of at
  *   least `dropOffWarning` (default half the previous stage) puts the words "big drop-off" in
  *   the stage's name and the table; the drawing shows it as any other step.
  *   `showConversion="first"` leaves the steps out. A stage of 0 keeps its column; the flow
@@ -305,12 +306,15 @@ export function FunnelChartStage({
   const next = nextShare ?? nextRow?.share ?? 0
   const first = showsFirst(showConversion) && row.index > 0 && row.fromFirst != null ? fmt.percent(row.fromFirst) : null
   const step = nextRow != null && showsPrevious(showConversion)
+  // The last stage concludes the steps with what made it through: its share of the first.
+  const total = nextRow == null && showsPrevious(showConversion) && row.index > 0 && row.fromFirst != null
 
   const words = (
     <span
       className={cn(
         'flex min-w-0 flex-col text-sm leading-(--text-sm--line-height)',
-        vertical ? 'w-40 shrink-0 justify-center ps-3 pe-4' : 'px-3 pt-2 pb-5',
+        // Flush with the card's content edge: the first stage's words line up with the title.
+        vertical ? 'w-40 shrink-0 justify-center pe-4' : 'pe-3 pt-2 pb-5',
       )}
     >
       <span className="block h-5 truncate text-text-muted">{row.label}</span>
@@ -325,6 +329,14 @@ export function FunnelChartStage({
   const stepRow = (
     <span className={cn('flex shrink-0 items-center', vertical ? 'ms-4 w-20' : 'h-8 justify-center')}>
       {step && <StepDrop row={nextRow} fmt={fmt} />}
+      {total && (
+        <span
+          data-slot="funnel-chart-total"
+          className="text-sm leading-(--text-sm--line-height) font-medium whitespace-nowrap text-text-default tabular-nums"
+        >
+          {fmt.percent(row.fromFirst!)}
+        </span>
+      )}
     </span>
   )
 

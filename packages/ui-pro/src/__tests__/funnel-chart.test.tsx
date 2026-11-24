@@ -81,6 +81,9 @@ describe('FunnelChart', () => {
     // Applied narrows to Screening across its own column, so the 75% lost sits under Applied.
     expect(items.slice(0, 4).map((li) => li.querySelector('[data-slot="funnel-chart-step"]')!.textContent)).toEqual(['75%', '70%', '77.8%', '25%'])
     expect(items[4].querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
+    // The last stage concludes with what made it through: its share of the first.
+    expect(items[4].querySelector('[data-slot="funnel-chart-total"]')!.textContent).toBe('1.3%')
+    expect(items.slice(0, 4).every((li) => !li.querySelector('[data-slot="funnel-chart-total"]'))).toBe(true)
     // Centred under the stage.
     expect(items[0].querySelector('[data-slot="funnel-chart-step"]')!.parentElement!.className).toContain('justify-center')
     // The column says only the label and the count; the steps and the tooltip say the rest.
@@ -131,6 +134,7 @@ describe('FunnelChart', () => {
     expect(items()[2].textContent).toBe('Interview187.5%77.8%')
     rerender(<FunnelChart title="Hiring" stages={hiring} showConversion="first" />)
     expect(container.querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
+    expect(container.querySelector('[data-slot="funnel-chart-total"]')).toBeNull()
     expect(items()[2].getAttribute('aria-label')).toBe('Interview: 18, 7.5% of Applied, drop-off 42, big drop-off')
   })
 
