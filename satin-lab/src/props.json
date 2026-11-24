@@ -5646,6 +5646,13 @@
           "required": false,
           "default": "false",
           "description": "Fades the shape in from 95% of its thickness, once, when it mounts."
+        },
+        {
+          "name": "stepBelow",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Horizontal: the step sits under the flow, not over it. The chart sets it on every other step in narrow columns, so neighbours never meet."
         }
       ]
     },

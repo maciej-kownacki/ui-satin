@@ -216,6 +216,8 @@ export interface FunnelChartStageProps extends Omit<React.ComponentProps<'span'>
   dimmed?: boolean
   /** Fades the shape in from 95% of its thickness, once, when it mounts. */
   enter?: boolean
+  /** Horizontal: the step sits under the flow, not over it. The chart sets it on every other step in narrow columns, so neighbours never meet. */
+  stepBelow?: boolean
 }
 
 // The thickness is the share to the power 0.35: a straight share narrows so fast that the middle
@@ -269,6 +271,7 @@ export function FunnelChartStage({
   format,
   dimmed = false,
   enter = false,
+  stepBelow = false,
   className,
   ...props
 }: FunnelChartStageProps) {
@@ -303,9 +306,14 @@ export function FunnelChartStage({
   // A box on the hairline, 0 thick, so the Badge overflows it evenly either side (in either
   // direction of text): from the shape's start to 4px before the flow's edge, never smaller than
   // the Badge, the Badge at its far end. So it sits by the flow, and never past the shape's start.
+  // Below (horizontal only) mirrors it from the shape's bottom: the flow is symmetric.
+  const below = stepBelow && !vertical
   const stepBadge = step && (
     <span
-      className={cn('absolute start-0 top-0 flex items-center justify-end', vertical ? 'h-0' : 'w-0 flex-col')}
+      className={cn(
+        'absolute start-0 flex items-center',
+        vertical ? 'top-0 h-0 justify-end' : below ? 'bottom-0 w-0 flex-col justify-start' : 'top-0 w-0 flex-col justify-end',
+      )}
       style={
         vertical
           ? { width: `calc(${boundary} - 4px)`, minWidth: 'max-content' }
@@ -508,6 +516,22 @@ export function FunnelChart({
   const active = !ready ? null : (pointer ?? keyboard ?? (highlight != null && highlight < n ? highlight : null))
 
   const listRef = React.useRef<HTMLOListElement>(null)
+  // Columns under 76px can't hold two step Badges side by side ("⚠ 22.2%" is 67px wide), so
+  // every other step moves under the flow.
+  const [narrow, setNarrow] = React.useState(false)
+  React.useLayoutEffect(() => {
+    const el = listRef.current
+    if (!el || vertical || n === 0 || typeof ResizeObserver === 'undefined') return setNarrow(false)
+    // 0 wide is not laid out yet (or a test's DOM): not narrow.
+    const check = () => {
+      const width = el.getBoundingClientRect().width
+      setNarrow(width > 0 && width / n < 76)
+    }
+    check()
+    const observer = new ResizeObserver(check)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [vertical, n, ready])
   const items = React.useRef<(HTMLElement | null)[]>([])
   const offset = React.useRef<GlidePoint>({ x: 0, y: 0 })
   const updateTooltip = React.useRef<(() => void) | null>(null)
@@ -634,6 +658,7 @@ export function FunnelChart({
                 const stage = (
                   <FunnelChartStage
                     row={row}
+                    stepBelow={narrow && i % 2 === 0}
                     nextShare={rows[i + 1]?.share}
                     orientation={orientation}
                     showConversion={showConversion}

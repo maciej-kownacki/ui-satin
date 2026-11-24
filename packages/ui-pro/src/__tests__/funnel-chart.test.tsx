@@ -102,6 +102,15 @@ describe('FunnelChart', () => {
     expect(box.style.height).toBe('calc(29.81% - 4px)')
   })
 
+  it('moves every other step under the flow when the columns are narrow', () => {
+    const spy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ width: 300 } as DOMRect)
+    const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
+    const boxes = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')].map((b) => b.parentElement!)
+    // 60px columns: Screening's and Offer's steps stay over the flow, Interview's and Hired's go under it.
+    expect(boxes.map((b) => b.classList.contains('bottom-0'))).toEqual([false, true, false, true])
+    spy.mockRestore()
+  })
+
   it('shows only the conversions asked for', () => {
     const { container, rerender } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} showConversion="both" />)
     const items = () => screen.getAllByRole('listitem')
