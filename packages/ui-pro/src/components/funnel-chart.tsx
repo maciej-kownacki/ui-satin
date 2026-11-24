@@ -313,8 +313,8 @@ export function FunnelChartStage({
     <span
       className={cn(
         'flex min-w-0 flex-col text-sm leading-(--text-sm--line-height)',
-        // Flush with the card's content edge: the first stage's words line up with the title.
-        vertical ? 'w-40 shrink-0 justify-center pe-4' : 'pe-3 pt-2 pb-5',
+        // 12px in from the stage's edge; the funnel moves 12px out, so the first stage's words line up with the title.
+        vertical ? 'w-40 shrink-0 justify-center ps-3 pe-4' : 'px-3 pt-2 pb-5',
       )}
     >
       <span className="block h-5 truncate text-text-muted">{row.label}</span>
@@ -352,18 +352,15 @@ export function FunnelChartStage({
       )}
       {...props}
     >
-      {/* The stage on show lights up its whole area, the stage's box moved 12px back, so its
-          words never touch its edge (on the first stage it reaches out into the card's padding) and it
-          ends before the next stage's words. Under the stages (the list
-          is isolated), so it never covers the previous stage's flow. */}
+      {/* The stage on show lights up its whole area, edge to edge with its piece of the flow. Under
+          the stages (the list is isolated), so it never covers the words or the flow. */}
       <span
         aria-hidden
         data-slot="funnel-chart-highlight"
         className={cn(
-          'absolute inset-y-0 -z-1 rounded-md transition-colors duration-(--duration-fast) ease-(--ease-out)',
+          'absolute inset-0 -z-1 rounded-md transition-colors duration-(--duration-fast) ease-(--ease-out)',
           active && 'bg-bg-hover',
         )}
-        style={{ insetInlineStart: '-12px', insetInlineEnd: '12px' }}
       />
       {words}
       <span className={cn('relative block', vertical ? 'h-22 min-w-0 flex-1' : 'h-40')}>
@@ -623,7 +620,8 @@ export function FunnelChart({
           {failed ? (error === true ? labels.funnelError : error) : ''}
         </span>
         {loading ? (
-          <div className={cn('flex', vertical ? 'flex-col' : '', body)}>
+          // Out into the card's padding as the stages are, so nothing moves when they arrive.
+          <div className={cn('flex', vertical ? 'flex-col' : '', body)} style={{ marginInlineStart: '-12px' }}>
             <span className="sr-only">{labels.funnelLoading}</span>
             {[0, 1, 2, 3, 4].map((i) => (
               <div
@@ -634,7 +632,7 @@ export function FunnelChart({
                   vertical ? 'h-22 items-center gap-4' : 'flex-col',
                 )}
               >
-                <div className={cn('flex flex-col gap-2', vertical ? 'w-36 shrink-0' : 'px-3 pt-1 pb-3')}>
+                <div className={cn('flex flex-col gap-2', vertical ? 'w-36 shrink-0 ps-3' : 'px-3 pt-1 pb-3')}>
                   {/* 4 + 12 + 8 + 24 + 12: the 60px of a column's words. */}
                   <Skeleton animated className="w-16 max-w-full" />
                   <Skeleton animated height={vertical ? 20 : 24} className="w-12 max-w-full" />
@@ -674,6 +672,10 @@ export function FunnelChart({
               data-slot="funnel-chart-stages"
               aria-label={title}
               className={cn('relative isolate', vertical ? 'flex flex-col' : 'grid auto-cols-fr grid-flow-col')}
+              // 12px out into the card's padding: the stages' words sit 12px in from their edges, so
+              // the first stage's words line up with the title while each stage's highlight, words
+              // and piece of the flow share one edge.
+              style={{ marginInlineStart: '-12px' }}
               onKeyDown={onKeyDown}
               onPointerLeave={() => setHovered(null)}
             >
