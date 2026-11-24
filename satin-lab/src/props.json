@@ -2049,7 +2049,7 @@
       ]
     },
     "ChartTooltip": {
-      "description": "The chart tooltip pill with its pointer. Exported for custom charts. With `anchor` it floats over the page (see Floating): it never gets cut off by the card, flips below when there's no room above, slides in from the screen edge, and its pointer keeps pointing at the anchor. Without it, it renders in place. A chart whose tooltip follows the pointer from point to point moves it with `useGlide`. With `rows` it is a card instead of a pill, with no pointer: the label muted on top, a row per series (a short line in its colour, its name, its value at the end) and a muted `note` under them.",
+      "description": "The chart tooltip pill with its pointer. Exported for custom charts. With `anchor` it floats over the page (see Floating): it never gets cut off by the card, flips below when there's no room above, slides in from the screen edge, and its pointer keeps pointing at the anchor. Without it, it renders in place. A chart whose tooltip follows the pointer from point to point moves it with `useGlide`. With `rows` it is a card instead of a pill, with no pointer: the label muted on top, a row per series (the legend's 8px dot in its colour, its name, its value at the end) and a muted `note` under them.",
       "extends": [
         "React.ComponentProps<'div'>",
         "React.ComponentProps<'div'>"
