@@ -18,12 +18,12 @@ const salesHtml = await highlight(salesOptions)
     <section aria-labelledby="drop-off-title" class="flex flex-col gap-3 pt-8">
       <h2 id="drop-off-title" class="text-lg font-medium text-text-default">Conversion and drop-off</h2>
       <p class="text-base leading-6 text-text-muted">
-        Each stage's column says only its label and its count. The step between two stages sits under the flow, centred on
-        their hairline: the share lost on the way ("↓ 75%"); the tooltip adds the share of the first stage and how many
+        Each stage's column says only its label and its count. The step between two stages sits under the flow, centred where
+        they meet: the share lost on the way ("↓ 75%"); the tooltip adds the share of the first stage and how many
         were lost ("7.5% of Applied · drop-off 42"). <Chip>showConversion</Chip> picks <Chip>"previous"</Chip> (the default,
-        the steps), <Chip>"first"</Chip> (the share of the first after each count; only a big drop-off keeps its step) or <Chip>"both"</Chip>. A step
-        that loses at least <Chip>dropOffWarning</Chip> of the previous stage, half by default (<Chip>0.5</Chip>), swaps its arrow
-        for an amber warning icon, and its stage's name says "big drop-off", so the warning never rests on colour alone. Lower it to
+        the steps), <Chip>"first"</Chip> (the share of the first after each count; no steps) or <Chip>"both"</Chip>. A step
+        that loses at least <Chip>dropOffWarning</Chip> of the previous stage, half by default (<Chip>0.5</Chip>), has its stage's
+        name and the table say "big drop-off"; under the flow it reads like any other step. Lower it to
         catch smaller losses, raise it where steep steps are normal.
       </p>
       <p class="text-base leading-6 text-text-muted">

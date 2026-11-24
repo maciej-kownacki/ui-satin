@@ -48,7 +48,7 @@ export const charts = (
     <FunnelChart title="Hiring" stages={stages} showConversion="last" />
     {/* @ts-expect-error: stages are required */}
     <FunnelChart title="Hiring" />
-    <FunnelChartStage row={rows[1]} orientation="vertical" dimmed enter ref={React.createRef<HTMLSpanElement>()} />
+    <FunnelChartStage row={rows[1]} orientation="vertical" active enter ref={React.createRef<HTMLSpanElement>()} />
     <FunnelChartStage row={rows[1]} showConversion="first" nextShare={0.5} />
     <FunnelTable stages={stages} caption="Hiring" visible ref={React.createRef<HTMLTableElement>()} />
     <SatinLabels

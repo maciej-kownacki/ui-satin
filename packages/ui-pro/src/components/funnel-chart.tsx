@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { ArrowDown, WarningCircle, WarningTriangle } from 'iconoir-react'
+import { ArrowDown, WarningCircle } from 'iconoir-react'
 import { Badge, type BadgeTone } from '@uisatin/ui/badge'
 import { Button } from '@uisatin/ui/button'
 import { ChartCard, ChartTooltip, glideAnchor, useGlide, type ChartCardBaseProps, type GlidePoint } from '@uisatin/ui/chart'
@@ -20,13 +20,14 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  *   stage's thickness to the next's across the stage. Horizontal (default) flows left to right,
  *   one column per stage, its words on top: the label and the count, with its share of the first
  *   when `showConversion` asks for it. Vertical flows top to bottom, one row per stage, its words
- *   at the start. A hairline in border-subtle parts the stages, with 2px either side, so they
- *   read as steps of one flow.
- * - The step between two stages sits under the flow (after it, vertical), centred on their
- *   hairline: the share lost on the way, muted, after a down arrow ("↓ 75%"). A drop-off of at
- *   least `dropOffWarning` (default half the previous stage) swaps the arrow for an amber warning
- *   icon and puts the words "big drop-off" in the stage's name: never colour alone.
- *   `showConversion="first"` leaves the steps out, except a big drop-off's. A stage of 0 keeps its column; the flow narrows to nothing.
+ *   at the start. The stages join edge to edge into one flow, with no line between them; the
+ *   stage on show lights up its whole area (bg-hover).
+ * - The step between two stages sits under the flow (after it, vertical), centred on where they
+ *   meet: the share lost on the way, muted, after a down arrow ("↓ 75%"). A drop-off of at
+ *   least `dropOffWarning` (default half the previous stage) puts the words "big drop-off" in
+ *   the stage's name and the table; the drawing shows it as any other step.
+ *   `showConversion="first"` leaves the steps out. A stage of 0 keeps its column; the flow
+ *   narrows to nothing.
  * - On first appearance each stage's shape fades in from 95% of its thickness (opacity and
  *   transform, 250 ms on ease-out, 25 ms apart, at most four steps), never from zero; none under
  *   reduced motion or with `reducedMotion`. New values swap in place.
@@ -184,8 +185,7 @@ function tooltipValue(row: FunnelRow, labels: Labels, fmt: Formatters) {
 
 /**
  * The step from the previous stage, under the flow: the share lost on the way ("↓ 75%"), muted.
- * After a big drop-off an amber warning icon takes the arrow's place, so the warning never rests
- * on colour alone. After a stage of 0 it says "—".
+ * After a stage of 0 it says "—". A big drop-off looks the same: its stage's name says it.
  */
 function StepDrop({ row, fmt }: { row: FunnelRow; fmt: Formatters }) {
   return (
@@ -194,13 +194,7 @@ function StepDrop({ row, fmt }: { row: FunnelRow; fmt: Formatters }) {
       data-warning={row.bigDropOff || undefined}
       className="flex items-center gap-1 text-sm leading-(--text-sm--line-height) whitespace-nowrap text-text-muted tabular-nums [&_svg]:size-icon-size-sm [&_svg]:shrink-0"
     >
-      {row.bigDropOff ? (
-        <span data-tone="amber" className="flex text-tone-fg">
-          <WarningTriangle />
-        </span>
-      ) : (
-        <ArrowDown />
-      )}
+      <ArrowDown />
       {row.fromPrevious != null ? fmt.percent(1 - row.fromPrevious) : '—'}
     </span>
   )
@@ -216,11 +210,11 @@ export interface FunnelChartStageProps extends Omit<React.ComponentProps<'span'>
   showConversion?: FunnelConversion
   /** Writes the count. Default: the number in `dateLocale`. */
   format?: (value: number) => string
-  /** Another stage is on show: this one's shape fades back. */
-  dimmed?: boolean
+  /** This stage is on show: its area lights up. */
+  active?: boolean
   /** Fades the shape in from 95% of its thickness, once, when it mounts. */
   enter?: boolean
-  /** Horizontal: the step under the flow starts at the hairline instead of centring on it. The chart sets it when columns are too narrow for neighbours to share. */
+  /** Horizontal: the step under the flow starts at the seam instead of centring on it. The chart sets it when columns are too narrow for neighbours to share. */
   stepAtStart?: boolean
 }
 
@@ -253,14 +247,13 @@ export function funnelShapePath(share: number, nextShare: number, vertical = fal
  * One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The
  * words on top (horizontal) or at the start (vertical): the label and the count, with its share
  * of the first when `showConversion` is `'first'` or `'both'` (not on the first stage). Then its piece of the funnel: a
- * chart/3 shape whose thickness follows its share of the first, easing to the next stage's. A
- * hairline in border-subtle parts it from the stage before.
+ * chart/3 shape whose thickness follows its share of the first, edge to edge, easing to the next
+ * stage's. With `active` its whole area lights up.
  *
- * Under the shape (horizontal) or after it (vertical), on the hairline, sits the step from the
- * previous stage (`[data-slot="funnel-chart-step"]`, not on the first stage; with
- * `showConversion="first"` only after a big drop-off): the share lost ("↓ 75%"), an amber
- * warning icon in the arrow's place after a big drop-off. It is centred on the hairline, or
- * starts there with `stepAtStart`.
+ * Under the shape (horizontal) or after it (vertical), where it meets the stage before, sits the
+ * step from the previous stage (`[data-slot="funnel-chart-step"]`, not on the first stage, nor
+ * with `showConversion="first"`): the share lost ("↓ 75%"). It is centred on the stages' seam,
+ * or starts there with `stepAtStart`.
  *
  * The tooltip points at `[data-slot="funnel-chart-marker"]`, on the shape's edge mid-stage.
  * Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.
@@ -271,7 +264,7 @@ export function FunnelChartStage({
   orientation = 'horizontal',
   showConversion = 'previous',
   format,
-  dimmed = false,
+  active = false,
   enter = false,
   stepAtStart = false,
   className,
@@ -282,19 +275,14 @@ export function FunnelChartStage({
   const vertical = orientation === 'vertical'
   const next = nextShare ?? row.share
   const first = showsFirst(showConversion) && row.index > 0 && row.fromFirst != null ? fmt.percent(row.fromFirst) : null
-  // With 'first' there are no steps, but a big drop-off keeps its warning: never only in words.
-  const step = row.index > 0 && (showsPrevious(showConversion) || row.bigDropOff)
+  const step = row.index > 0 && showsPrevious(showConversion)
   const edge = (near(row.share) + near(next)) / 2
-
-  // The hairline between stages runs across the words and the shape, not the step under them.
-  const hairline = row.index > 0 && (vertical ? 'border-t border-border-subtle' : 'border-s border-border-subtle')
 
   const words = (
     <span
       className={cn(
         'flex min-w-0 flex-col text-sm leading-(--text-sm--line-height)',
-        vertical ? 'w-40 shrink-0 justify-center pe-4' : 'px-3 pb-3',
-        hairline,
+        vertical ? 'w-40 shrink-0 justify-center ps-3 pe-4' : 'px-3 pt-2 pb-3',
       )}
     >
       <span className="block h-5 truncate text-text-muted">{row.label}</span>
@@ -305,11 +293,11 @@ export function FunnelChartStage({
     </span>
   )
 
-  // Under the flow (horizontal) or after it (vertical), on the hairline: a box 0 thick, so the
-  // step overflows it evenly either side, in either direction of text. Narrow columns start it
-  // at the hairline instead, so neighbours don't meet.
+  // Under the flow (horizontal) or after it (vertical), on the seam with the stage before: a box
+  // 0 thick, so the step overflows it evenly either side, in either direction of text. Narrow
+  // columns start it at the seam instead, so neighbours don't meet.
   const stepRow = (
-    <span className={cn('relative block shrink-0', vertical ? 'ms-4 w-16' : 'h-10')}>
+    <span className={cn('relative block shrink-0', vertical ? 'ms-4 w-16' : 'h-8')}>
       {step && (
         <span
           className={cn(
@@ -329,14 +317,16 @@ export function FunnelChartStage({
       data-slot="funnel-chart-stage"
       data-orientation={orientation}
       className={cn(
-        'flex min-w-0',
+        'flex min-w-0 rounded-md transition-colors duration-(--duration-fast) ease-(--ease-out)',
         !vertical && 'flex-col',
+        // The stage on show: its whole area lights up.
+        active && 'bg-bg-hover',
         className,
       )}
       {...props}
     >
       {words}
-      <span className={cn('relative block', vertical ? 'h-22 min-w-0 flex-1' : 'h-40', hairline)}>
+      <span className={cn('relative block', vertical ? 'h-22 min-w-0 flex-1' : 'h-40')}>
         <svg
           data-slot="funnel-chart-shape"
           data-orientation={orientation}
@@ -345,14 +335,16 @@ export function FunnelChartStage({
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           className={cn(
-            'absolute block overflow-visible transition-opacity duration-(--duration-fast) ease-(--ease-out)',
-            // 2px off the hairline on either side, so the stages read as steps of one flow.
-            vertical ? 'inset-x-0 top-0.5 bottom-0.5 h-[calc(100%-4px)] w-full' : 'inset-y-0 start-0.5 end-0.5 h-full w-[calc(100%-4px)] rtl:-scale-x-100',
+            'absolute block overflow-visible',
+            // Edge to edge, so the stages join into one flow; 1px over the next stage, so no seam shows.
+            vertical ? 'inset-x-0 top-0 w-full' : 'inset-y-0 start-0 h-full rtl:-scale-x-100',
             row.tone ? 'text-tone-fg' : 'text-chart-3',
-            dimmed && 'opacity-45',
           )}
           // Five steps at most, so a long funnel doesn't keep its last stages waiting.
-          style={{ animationDelay: enter ? `${Math.min(row.index, 4) * 25}ms` : undefined }}
+          style={{
+            animationDelay: enter ? `${Math.min(row.index, 4) * 25}ms` : undefined,
+            ...(vertical ? { height: 'calc(100% + 1px)' } : { width: 'calc(100% + 1px)' }),
+          }}
         >
           <path d={funnelShapePath(row.share, next, vertical)} fill="currentColor" />
         </svg>
@@ -438,7 +430,7 @@ export interface FunnelChartProps extends Omit<ChartCardBaseProps, 'data' | 'for
   /** Writes the counts ("€48,000"). Default: the number in `dateLocale`. */
   format?: (value: number) => string
   /**
-   * Which conversions to show: from the previous stage (the step Badge on each hairline), from
+   * Which conversions to show: from the previous stage (the step under the flow), from
    * the first (after each count), or both. Default 'previous'.
    */
   showConversion?: FunnelConversion
@@ -464,10 +456,10 @@ export interface FunnelChartProps extends Omit<ChartCardBaseProps, 'data' | 'for
   reducedMotion?: boolean
 }
 
-// Loading, empty and error keep the loaded funnel's height: horizontal, 48px of words, 12 and a
-// 200px shape; vertical, five rows of 88 and their hairlines.
+// Loading, empty and error keep the loaded funnel's height: horizontal, 8 + 48px of words + 12,
+// a 160px shape and 32 of steps; vertical, five rows of 88.
 const HORIZONTAL_BODY = 'min-h-[260px]'
-const VERTICAL_BODY = 'min-h-[444px]'
+const VERTICAL_BODY = 'min-h-[440px]'
 
 /**
  * The funnel in its card. See the block comment above for the anatomy, states and keys. Other
@@ -513,8 +505,8 @@ export function FunnelChart({
   const active = !ready ? null : (pointer ?? keyboard ?? (highlight != null && highlight < n ? highlight : null))
 
   const listRef = React.useRef<HTMLOListElement>(null)
-  // Columns under 72px can't hold two steps centred on their hairlines ("⚠ 77.8%" is about
-  // 60px wide), so the steps start at their hairlines instead.
+  // Columns under 64px can't hold two steps centred on their seams ("↓ 77.8%" is about 60px
+  // wide), so the steps start at their seams instead.
   const [narrow, setNarrow] = React.useState(false)
   React.useLayoutEffect(() => {
     const el = listRef.current
@@ -522,7 +514,7 @@ export function FunnelChart({
     // 0 wide is not laid out yet (or a test's DOM): not narrow.
     const check = () => {
       const width = el.getBoundingClientRect().width
-      setNarrow(width > 0 && width / n < 72)
+      setNarrow(width > 0 && width / n < 64)
     }
     check()
     const observer = new ResizeObserver(check)
@@ -603,7 +595,6 @@ export function FunnelChart({
                 className={cn(
                   'flex min-w-0 flex-1',
                   vertical ? 'h-22 items-center gap-4' : 'flex-col',
-                  i > 0 && (vertical ? 'border-t border-border-subtle' : 'border-s border-border-subtle'),
                 )}
               >
                 <div className={cn('flex flex-col gap-2', vertical ? 'w-36 shrink-0' : 'px-3 pt-1 pb-3')}>
@@ -660,7 +651,7 @@ export function FunnelChart({
                     orientation={orientation}
                     showConversion={showConversion}
                     format={format}
-                    dimmed={active != null && active !== i}
+                    active={active === i}
                     enter={enter}
                   />
                 )

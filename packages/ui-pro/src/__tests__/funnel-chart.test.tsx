@@ -87,18 +87,25 @@ describe('FunnelChart', () => {
     expect(container.textContent).not.toContain('drop-off 42')
   })
 
-  it('marks a big drop-off with an icon and words, not colour alone', () => {
+  it('says a big drop-off in words; the step under the flow looks like any other', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} dropOffWarning={0.75} />)
     const steps = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')]
-    expect(steps.map((s) => s.hasAttribute('data-warning'))).toEqual([true, false, true, false])
-    // A warning icon in amber takes the arrow's place.
-    expect(steps[0].querySelector('[data-tone="amber"] svg')).not.toBeNull()
-    expect(steps[1].querySelector('[data-tone="amber"]')).toBeNull()
-    expect(steps[1].querySelector('svg')).not.toBeNull()
-    expect(screen.getAllByRole('listitem')[1].getAttribute('aria-label')).toContain('big drop-off')
+    expect(steps.map((s) => s.textContent)).toEqual(['75%', '70%', '77.8%', '25%'])
+    expect(container.querySelector('[data-tone="amber"]')).toBeNull()
+    const items = screen.getAllByRole('listitem')
+    expect(items[1].getAttribute('aria-label')).toContain('big drop-off')
+    expect(items[2].getAttribute('aria-label')).not.toContain('big drop-off')
   })
 
-  it('starts each step at its hairline when the columns are narrow', () => {
+  it('lights up the stage on show', () => {
+    const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} highlight={2} />)
+    const stages = [...container.querySelectorAll('[data-slot="funnel-chart-stage"]')]
+    expect(stages.map((s) => s.classList.contains('bg-bg-hover'))).toEqual([false, false, true, false, false])
+    // No line between the stages: one flow.
+    expect(container.querySelector('[data-slot="funnel-chart-stages"] .border-s')).toBeNull()
+  })
+
+  it('starts each step at its seam when the columns are narrow', () => {
     const spy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ width: 300 } as DOMRect)
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
     const boxes = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')].map((b) => b.parentElement!)
@@ -115,11 +122,7 @@ describe('FunnelChart', () => {
     expect(items()[1].textContent).toBe('Screening6025%75%')
     expect(items()[2].textContent).toBe('Interview187.5%70%')
     rerender(<FunnelChart title="Hiring" stages={hiring} showConversion="first" />)
-    // No steps, except a big drop-off's: the warning is never only in words.
-    const steps = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')]
-    expect(steps).toHaveLength(3)
-    expect(steps.every((b) => b.hasAttribute('data-warning'))).toBe(true)
-    expect(items()[4].querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
+    expect(container.querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
     expect(items()[2].getAttribute('aria-label')).toBe('Interview: 18, 7.5% of Applied, drop-off 42, big drop-off')
   })
 
