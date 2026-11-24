@@ -178,18 +178,18 @@ describe('FunnelChart', () => {
     await user.tab()
     await user.keyboard('{ArrowDown}{ArrowDown}')
     const tooltip = document.querySelector('[data-slot="chart-tooltip"]')!
-    // A card: the stage on top, its count and drop-off, its conversions in a muted line.
+    // A card with no label (the stage's words beside it say which): its count and drop-off, its conversions in a muted line.
     expect(tooltip.getAttribute('data-variant')).toBe('card')
-    expect(tooltip.textContent).toBe('InterviewCount18Drop-off4230% of Screening · 7.5% of Applied')
+    expect(tooltip.textContent).toBe('Count18Drop-off4230% of Screening · 7.5% of Applied')
     expect(tooltip.textContent).not.toContain('big drop-off')
     await user.keyboard('{End}')
-    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('HiredCount3Drop-off175% of Offer · 1.3% of Applied')
+    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('Count3Drop-off175% of Offer · 1.3% of Applied')
     await user.keyboard('{ArrowUp}{ArrowUp}{ArrowUp}')
     // The second stage's share of the previous is its share of the first: said once.
-    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('ScreeningCount60Drop-off18025% of Applied')
+    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('Count60Drop-off18025% of Applied')
     await user.keyboard('{Home}')
     // The first stage: its count alone.
-    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('AppliedCount240')
+    expect(document.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('Count240')
   })
 
   it('moves the other way under right to left in reading order', async () => {

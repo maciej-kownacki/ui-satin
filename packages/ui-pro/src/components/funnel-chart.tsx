@@ -35,8 +35,8 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  * - On first appearance each stage's shape fades in from 95% of its thickness (opacity and
  *   transform, 250 ms on ease-out, 25 ms apart, at most four steps), never from zero; none under
  *   reduced motion or with `reducedMotion`. New values swap in place.
- * - Hover and keyboard focus show the stage in a ChartTooltip card (its label, its count and
- *   drop-off as rows, its conversions in a muted line), beside the column over the next stage's
+ * - Hover and keyboard focus show the stage in a ChartTooltip card (its count and
+ *   drop-off as rows, its conversions in a muted line; no label, the stage's words beside it say which), beside the column over the next stage's
  *   flow (before it for the last stage), above the row when vertical: never over the words. After the
  *   pointer it glides from stage to stage (`useGlide`), under the keyboard it jumps. The funnel
  *   is one tab stop (roving tab index): ↑ ↓ (and ← → in reading order) move between stages,
@@ -730,7 +730,8 @@ export function FunnelChart({
               <ChartTooltip
                 anchor={anchor}
                 updateRef={updateTooltip}
-                label={activeRow.label}
+                // No label: the card sits beside its stage, whose words name it.
+                label={null}
                 {...tooltipContent(activeRow, labels, fmt)}
                 side={vertical ? 'top' : (active === n - 1) !== rtl ? 'left' : 'right'}
                 data-tone={activeRow.tone}

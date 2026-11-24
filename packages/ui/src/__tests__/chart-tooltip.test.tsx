@@ -29,4 +29,9 @@ describe('ChartTooltip', () => {
     const swatches = tip.querySelectorAll<HTMLElement>('[aria-hidden]')
     expect([...swatches].map((s) => s.style.background)).toEqual(['var(--chart-1)', 'var(--chart-2)'])
   })
+
+  it('leaves the card\'s label out when it is null', () => {
+    const { container } = renderWithSatin(<ChartTooltip label={null} rows={[{ color: 'red', label: 'Count', value: '3' }]} />)
+    expect(container.querySelector('[data-slot="chart-tooltip"]')!.textContent).toBe('Count3')
+  })
 })

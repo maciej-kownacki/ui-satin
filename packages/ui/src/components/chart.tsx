@@ -352,7 +352,7 @@ function TooltipCard({ label, rows, note }: { label: React.ReactNode; rows: Char
         cardShadow,
       )}
     >
-      <span className="text-text-muted">{label}</span>
+      {label != null && <span className="text-text-muted">{label}</span>}
       {rows.map((row, i) => (
         <span key={i} className="flex items-center gap-2">
           <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: row.color }} />
@@ -372,7 +372,8 @@ function TooltipCard({ label, rows, note }: { label: React.ReactNode; rows: Char
  * keeps pointing at the anchor. Without it, it renders in place. A chart whose tooltip follows the
  * pointer from point to point moves it with `useGlide`.
  *
- * With `rows` it is a card instead of a pill, with no pointer: the label muted on top, a row per
+ * With `rows` it is a card instead of a pill, with no pointer: the label muted on top (left out when
+ * null, for a card next to what it explains), a row per
  * series (the legend's 8px dot in its colour, its name, its value at the end) and a muted `note` under them.
  */
 export function ChartTooltip({
