@@ -22,8 +22,8 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  *   when `showConversion` asks for it. Vertical flows top to bottom, one row per stage, its words
  *   at the start. The stages join edge to edge into one flow, with no line between them; the
  *   stage on show lights up its whole area (bg-hover).
- * - The step between two stages sits under the flow (after it, vertical), centred on where they
- *   meet: the share lost on the way, muted, after a down arrow ("↓ 75%"). A drop-off of at
+ * - The step between two stages sits under the piece of the flow that narrows, centred on the
+ *   stage it leaves (after it and level with its middle, vertical): the share lost on the way, muted, after a down arrow ("↓ 75%"). A drop-off of at
  *   least `dropOffWarning` (default half the previous stage) puts the words "big drop-off" in
  *   the stage's name and the table; the drawing shows it as any other step.
  *   `showConversion="first"` leaves the steps out. A stage of 0 keeps its column; the flow
@@ -31,7 +31,7 @@ import { Skeleton } from '@uisatin/ui/skeleton'
  * - On first appearance each stage's shape fades in from 95% of its thickness (opacity and
  *   transform, 250 ms on ease-out, 25 ms apart, at most four steps), never from zero; none under
  *   reduced motion or with `reducedMotion`. New values swap in place.
- * - Hover and keyboard focus show the stage in a ChartTooltip on the shape's edge; after the
+ * - Hover and keyboard focus show the stage in a ChartTooltip in the middle of its shape, off its words; after the
  *   pointer it glides from stage to stage (`useGlide`), under the keyboard it jumps. The funnel
  *   is one tab stop (roving tab index): ↑ ↓ (and ← → in reading order) move between stages,
  *   Home and End jump. With `onStageSelect` every stage is a button (Enter, Space); without, a
@@ -214,8 +214,8 @@ export interface FunnelChartStageProps extends Omit<React.ComponentProps<'span'>
   active?: boolean
   /** Fades the shape in from 95% of its thickness, once, when it mounts. */
   enter?: boolean
-  /** Horizontal: the step under the flow starts at the seam instead of centring on it. The chart sets it when columns are too narrow for neighbours to share. */
-  stepAtStart?: boolean
+  /** The next stage: under this one (after it, vertical) the step says the share lost on the way there, where the flow narrows. */
+  next?: FunnelRow
 }
 
 // The thickness is the share to the power 0.35: a straight share narrows so fast that the middle
@@ -250,12 +250,13 @@ export function funnelShapePath(share: number, nextShare: number, vertical = fal
  * chart/3 shape whose thickness follows its share of the first, edge to edge, easing to the next
  * stage's. With `active` its whole area lights up.
  *
- * Under the shape (horizontal) or after it (vertical), where it meets the stage before, sits the
- * step from the previous stage (`[data-slot="funnel-chart-step"]`, not on the first stage, nor
- * with `showConversion="first"`): the share lost ("↓ 75%"). It is centred on the stages' seam,
- * or starts there with `stepAtStart`.
+ * Under the shape (horizontal), centred on the stage, or after it (vertical), level with its
+ * middle, sits the step to the `next` stage (`[data-slot="funnel-chart-step"]`, not on the last
+ * stage, nor with `showConversion="first"`): the share lost on the way ("↓ 75%"), under the
+ * piece of the flow that narrows.
  *
- * The tooltip points at `[data-slot="funnel-chart-marker"]`, on the shape's edge mid-stage.
+ * The tooltip points at `[data-slot="funnel-chart-marker"]`, in the middle of the stage's shape,
+ * so it never covers the words.
  * Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.
  */
 export function FunnelChartStage({
@@ -266,17 +267,16 @@ export function FunnelChartStage({
   format,
   active = false,
   enter = false,
-  stepAtStart = false,
+  next: nextRow,
   className,
   ...props
 }: FunnelChartStageProps) {
   const labels = useLabels()
   const fmt = useFormatters(labels, format)
   const vertical = orientation === 'vertical'
-  const next = nextShare ?? row.share
+  const next = nextShare ?? nextRow?.share ?? row.share
   const first = showsFirst(showConversion) && row.index > 0 && row.fromFirst != null ? fmt.percent(row.fromFirst) : null
-  const step = row.index > 0 && showsPrevious(showConversion)
-  const edge = (near(row.share) + near(next)) / 2
+  const step = nextRow != null && showsPrevious(showConversion)
 
   const words = (
     <span
@@ -293,21 +293,10 @@ export function FunnelChartStage({
     </span>
   )
 
-  // Under the flow (horizontal) or after it (vertical), on the seam with the stage before: a box
-  // 0 thick, so the step overflows it evenly either side, in either direction of text. Narrow
-  // columns start it at the seam instead, so neighbours don't meet.
+  // Under the flow, centred on the stage (horizontal), or after it, level with its middle.
   const stepRow = (
-    <span className={cn('relative block shrink-0', vertical ? 'ms-4 w-16' : 'h-8')}>
-      {step && (
-        <span
-          className={cn(
-            'absolute start-0 top-0 flex items-center',
-            vertical ? 'h-0' : stepAtStart ? 'ps-2 pt-2' : 'w-0 justify-center pt-2',
-          )}
-        >
-          <StepDrop row={row} fmt={fmt} />
-        </span>
-      )}
+    <span className={cn('flex shrink-0 items-center', vertical ? 'ms-4 w-20' : 'h-8 justify-center')}>
+      {step && <StepDrop row={nextRow} fmt={fmt} />}
     </span>
   )
 
@@ -351,7 +340,7 @@ export function FunnelChartStage({
         <span
           data-slot="funnel-chart-marker"
           className="absolute start-1/2 size-0"
-          style={vertical ? { top: 0 } : { top: `${edge}%` }}
+          style={{ top: '50%' }}
         />
       </span>
       {stepRow}
@@ -505,22 +494,6 @@ export function FunnelChart({
   const active = !ready ? null : (pointer ?? keyboard ?? (highlight != null && highlight < n ? highlight : null))
 
   const listRef = React.useRef<HTMLOListElement>(null)
-  // Columns under 64px can't hold two steps centred on their seams ("↓ 77.8%" is about 60px
-  // wide), so the steps start at their seams instead.
-  const [narrow, setNarrow] = React.useState(false)
-  React.useLayoutEffect(() => {
-    const el = listRef.current
-    if (!el || vertical || n === 0 || typeof ResizeObserver === 'undefined') return setNarrow(false)
-    // 0 wide is not laid out yet (or a test's DOM): not narrow.
-    const check = () => {
-      const width = el.getBoundingClientRect().width
-      setNarrow(width > 0 && width / n < 64)
-    }
-    check()
-    const observer = new ResizeObserver(check)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [vertical, n, ready])
   const items = React.useRef<(HTMLElement | null)[]>([])
   const offset = React.useRef<GlidePoint>({ x: 0, y: 0 })
   const updateTooltip = React.useRef<(() => void) | null>(null)
@@ -646,8 +619,7 @@ export function FunnelChart({
                 const stage = (
                   <FunnelChartStage
                     row={row}
-                    stepAtStart={narrow}
-                    nextShare={rows[i + 1]?.share}
+                    next={rows[i + 1]}
                     orientation={orientation}
                     showConversion={showConversion}
                     format={format}

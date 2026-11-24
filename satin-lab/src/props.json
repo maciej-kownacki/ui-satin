@@ -5605,7 +5605,7 @@
   },
   "funnel-chart": {
     "FunnelChartStage": {
-      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The words on top (horizontal) or at the start (vertical): the label and the count, with its share of the first when `showConversion` is `'first'` or `'both'` (not on the first stage). Then its piece of the funnel: a chart/3 shape whose thickness follows its share of the first, edge to edge, easing to the next stage's. With `active` its whole area lights up. Under the shape (horizontal) or after it (vertical), where it meets the stage before, sits the step from the previous stage (`[data-slot=\"funnel-chart-step\"]`, not on the first stage, nor with `showConversion=\"first\"`): the share lost (\"↓ 75%\"). It is centred on the stages' seam, or starts there with `stepAtStart`. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, on the shape's edge mid-stage. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
+      "description": "One stage's drawing, hidden from screen readers (the stage that holds it carries its name). The words on top (horizontal) or at the start (vertical): the label and the count, with its share of the first when `showConversion` is `'first'` or `'both'` (not on the first stage). Then its piece of the funnel: a chart/3 shape whose thickness follows its share of the first, edge to edge, easing to the next stage's. With `active` its whole area lights up. Under the shape (horizontal), centred on the stage, or after it (vertical), level with its middle, sits the step to the `next` stage (`[data-slot=\"funnel-chart-step\"]`, not on the last stage, nor with `showConversion=\"first\"`): the share lost on the way (\"↓ 75%\"), under the piece of the flow that narrows. The tooltip points at `[data-slot=\"funnel-chart-marker\"]`, in the middle of the stage's shape, so it never covers the words. Spans only, so it can sit in a button. Other props, `ref` included, go to its root `span`.",
       "type": "FunnelChartStageProps",
       "extends": [
         "Omit<React.ComponentProps<'span'>, 'children'>"
@@ -5655,11 +5655,10 @@
           "description": "Fades the shape in from 95% of its thickness, once, when it mounts."
         },
         {
-          "name": "stepAtStart",
-          "type": "boolean",
+          "name": "next",
+          "type": "FunnelRow",
           "required": false,
-          "default": "false",
-          "description": "Horizontal: the step under the flow starts at the seam instead of centring on it. The chart sets it when columns are too narrow for neighbours to share."
+          "description": "The next stage: under this one (after it, vertical) the step says the share lost on the way there, where the flow narrows."
         }
       ]
     },

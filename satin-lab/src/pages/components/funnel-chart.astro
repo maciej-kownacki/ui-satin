@@ -18,8 +18,8 @@ const salesHtml = await highlight(salesOptions)
     <section aria-labelledby="drop-off-title" class="flex flex-col gap-3 pt-8">
       <h2 id="drop-off-title" class="text-lg font-medium text-text-default">Conversion and drop-off</h2>
       <p class="text-base leading-6 text-text-muted">
-        Each stage's column says only its label and its count. The step between two stages sits under the flow, centred where
-        they meet: the share lost on the way ("↓ 75%"); the tooltip adds the share of the first stage and how many
+        Each stage's column says only its label and its count. The step between two stages sits under the piece of the flow
+        that narrows, centred on the stage it leaves: the share lost on the way ("↓ 75%"); the tooltip adds the share of the first stage and how many
         were lost ("7.5% of Applied · drop-off 42"). <Chip>showConversion</Chip> picks <Chip>"previous"</Chip> (the default,
         the steps), <Chip>"first"</Chip> (the share of the first after each count; no steps) or <Chip>"both"</Chip>. A step
         that loses at least <Chip>dropOffWarning</Chip> of the previous stage, half by default (<Chip>0.5</Chip>), has its stage's

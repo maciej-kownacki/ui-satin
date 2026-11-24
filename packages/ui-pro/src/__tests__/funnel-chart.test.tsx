@@ -74,17 +74,23 @@ describe('FunnelChart', () => {
     expect(funnelShapePath(1, 0.25, true)).toBe('M 0 0 C 0 50 19.22 50 19.22 100 L 80.78 100 C 80.78 50 100 50 100 0 Z')
   })
 
-  it('says the share lost under the flow at each step, none on the first stage', () => {
+  it('says the share lost under the piece of the flow that narrows, none on the last stage', () => {
     const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
     const items = screen.getAllByRole('listitem')
-    expect(items[0].querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
-    expect(items.slice(1).map((li) => li.querySelector('[data-slot="funnel-chart-step"]')!.textContent)).toEqual(['75%', '70%', '77.8%', '25%'])
-    // The step comes after the shape, centred on the hairline.
-    const step = items[1].querySelector('[data-slot="funnel-chart-step"]')!
-    expect(step.parentElement!.className).toContain('justify-center')
+    // Applied narrows to Screening across its own column, so the 75% lost sits under Applied.
+    expect(items.slice(0, 4).map((li) => li.querySelector('[data-slot="funnel-chart-step"]')!.textContent)).toEqual(['75%', '70%', '77.8%', '25%'])
+    expect(items[4].querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
+    // Centred under the stage.
+    expect(items[0].querySelector('[data-slot="funnel-chart-step"]')!.parentElement!.className).toContain('justify-center')
     // The column says only the label and the count; the steps and the tooltip say the rest.
-    expect(items[2].textContent).toBe('Interview1870%')
+    expect(items[2].textContent).toBe('Interview1877.8%')
     expect(container.textContent).not.toContain('drop-off 42')
+  })
+
+  it('points the tooltip at the middle of the stage, off its words', () => {
+    const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
+    const marker = container.querySelector<HTMLElement>('[data-slot="funnel-chart-marker"]')!
+    expect(marker.style.top).toBe('50%')
   })
 
   it('says a big drop-off in words; the step under the flow looks like any other', () => {
@@ -105,22 +111,13 @@ describe('FunnelChart', () => {
     expect(container.querySelector('[data-slot="funnel-chart-stages"] .border-s')).toBeNull()
   })
 
-  it('starts each step at its seam when the columns are narrow', () => {
-    const spy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ width: 300 } as DOMRect)
-    const { container } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} />)
-    const boxes = [...container.querySelectorAll('[data-slot="funnel-chart-step"]')].map((b) => b.parentElement!)
-    // 60px columns: no step is centred.
-    expect(boxes.every((b) => !b.className.includes('justify-center'))).toBe(true)
-    spy.mockRestore()
-  })
-
   it('shows only the conversions asked for', () => {
     const { container, rerender } = renderWithSatin(<FunnelChart title="Hiring" stages={hiring} showConversion="both" />)
     const items = () => screen.getAllByRole('listitem')
     expect(items()[2].getAttribute('aria-label')).toBe('Interview: 18, 30% of Screening, 7.5% of Applied, drop-off 42, big drop-off')
     // The share of the first follows the count; the step under the flow says the share lost.
-    expect(items()[1].textContent).toBe('Screening6025%75%')
-    expect(items()[2].textContent).toBe('Interview187.5%70%')
+    expect(items()[1].textContent).toBe('Screening6025%70%')
+    expect(items()[2].textContent).toBe('Interview187.5%77.8%')
     rerender(<FunnelChart title="Hiring" stages={hiring} showConversion="first" />)
     expect(container.querySelector('[data-slot="funnel-chart-step"]')).toBeNull()
     expect(items()[2].getAttribute('aria-label')).toBe('Interview: 18, 7.5% of Applied, drop-off 42, big drop-off')
