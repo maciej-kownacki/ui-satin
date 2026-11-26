@@ -10,7 +10,7 @@ import { bannerMesh, type Mesh } from './banner-mesh'
 
 /**
  * Banner, 1:1 with the uiKit `Banner` set (3822:3475): a title, an optional description (one
- * or two lines) and one action, on bg/card with a 1px border/default and the shadcn md shadow.
+ * or two lines) and one action, on bg/card with a 1px border/default and the shadcn md shadow (none `inline`, inside the prompt bar).
  *
  * - layout="horizontal": 450 wide, one row, 12 × 8 padding, 10 gap; the action and the close
  *   button sit on the right, 4px apart.
@@ -35,16 +35,19 @@ import { bannerMesh, type Mesh } from './banner-mesh'
  * puts a 16px mark 8px before the title. The close button only renders when `onDismiss` is
  * passed.
  */
+/** The shadcn md shadow, for the banners that float on their own (not `inline`). */
+const SHADOW = '[box-shadow:0_2px_4px_-2px_var(--effect-shadow-sm),0_4px_6px_-1px_var(--effect-shadow-sm)]'
+
 const bannerVariants = cva(
   [
     'relative isolate flex max-w-full overflow-clip border border-border-default bg-bg-card',
-    '[box-shadow:0_2px_4px_-2px_var(--effect-shadow-sm),0_4px_6px_-1px_var(--effect-shadow-sm)]',
   ],
   {
     variants: {
       layout: {
-        horizontal: 'w-[450px] items-center gap-2.5 px-3 py-2',
-        sidebar: 'w-[222px] flex-col items-start gap-3 p-3',
+        horizontal: ['w-[450px] items-center gap-2.5 px-3 py-2', SHADOW],
+        sidebar: ['w-[222px] flex-col items-start gap-3 p-3', SHADOW],
+        // Inside the prompt bar: flat, the bar's own border and shadow are enough.
         inline: 'min-h-[38px] w-full items-center gap-2.5 px-2.5 py-1',
       },
       shape: {
