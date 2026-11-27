@@ -28,7 +28,7 @@
   ],
   "docs": "Stat card docs: https://uisatin.dev/components/stat-card",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "pro",
     "props": {
       "StatCardChange": {

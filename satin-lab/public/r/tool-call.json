@@ -24,7 +24,7 @@
   ],
   "docs": "Tool call docs: https://uisatin.dev/ai-patterns/tool-call",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "ToolCallRoot": {

@@ -24,7 +24,7 @@
   ],
   "docs": "Input OTP docs: https://uisatin.dev/components/input-otp",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "InputOTP": {

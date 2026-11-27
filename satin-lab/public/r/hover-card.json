@@ -20,7 +20,7 @@
   ],
   "docs": "Hover card docs: https://uisatin.dev/components/hover-card",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "HoverCard": {

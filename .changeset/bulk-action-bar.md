@@ -1,5 +1,0 @@
----
-'@uisatin/pro': minor
----
-
-Bulk action bar, the first Satin Pro component (`@uisatin/pro/bulk-action-bar`): the toolbar that appears when rows are selected. A select-all checkbox (with `total` and `onSelectAll`: indeterminate while some are selected, one click selects all), the count in a grey Badge (its digits roll as it changes, except under reduced motion), the actions as buttons and the rest in a ⋯ menu, then the clear button at the end, after a rule. An action that returns a promise shows a Spinner, then a checkmark. Escape clears the selection while focus is in the table or the bar; arrow keys move along the toolbar. `RollingNumber` (`@uisatin/pro/rolling-number`) is the rolling count on its own. It sticks to the bottom of its container and keeps its place while hidden, so it never covers the last row. Works with Table's `selected` / `onSelectedChange` as they are. Its words (`bulkActions`, `bulkSelected`, `selectAll`, `clearSelection`, `selectionCleared`, `moreActions`) are translated with SatinLabels.

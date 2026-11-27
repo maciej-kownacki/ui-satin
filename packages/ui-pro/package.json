@@ -1,6 +1,6 @@
 {
   "name": "@uisatin/pro",
-  "version": "0.7.1",
+  "version": "1.0.0",
   "private": true,
   "description": "Satin Pro: the licensed components and AI patterns of the Satin design system, built on @uisatin/ui.",
   "license": "UNLICENSED",
@@ -50,7 +50,7 @@
     "@lexical/markdown": "~0.53.0",
     "@lexical/rich-text": "~0.53.0",
     "@lexical/table": "~0.53.0",
-    "@uisatin/ui": "0.7.1",
+    "@uisatin/ui": "1.0.0",
     "lexical": "~0.53.0",
     "react": ">=19",
     "react-dom": ">=19"
@@ -93,7 +93,7 @@
     "@lexical/utils": "0.53.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@uisatin/ui": "0.7.1",
+    "@uisatin/ui": "1.0.0",
     "lexical": "0.53.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

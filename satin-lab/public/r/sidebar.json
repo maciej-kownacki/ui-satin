@@ -21,7 +21,7 @@
   ],
   "docs": "Sidebar docs: https://uisatin.dev/components/sidebar",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "Sidebar": {

@@ -20,7 +20,7 @@
   ],
   "docs": "Selectable checkbox docs: https://uisatin.dev/components/selectable-checkbox",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "SelectableCheckbox": {
