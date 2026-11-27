@@ -1,7 +1,7 @@
 /*
  * Kanban board (components/kanban-board.tsx). The board sets data-flip on a card for the length
  * of one move; everything else is a Tailwind class in the component. The lean and the drop's
- * spring are drag.css's, shared with Agent plan.
+ * spring are drag.css's (in Satin Free), shared with Agent plan and Decision card.
  *
  * - Lifted (the keyboard's pick-up, and the card under the pointer): scale 1.02 and the toast's
  *   shadow, eased in over --duration-fast.

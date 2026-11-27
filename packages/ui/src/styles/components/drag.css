@@ -1,7 +1,10 @@
 /*
- * Pointer drags, shared by Agent plan's steps (components/agent-plan.tsx) and Kanban cards
- * (components/kanban-board.tsx). A component puts `satin-drag` on what the pointer carries and
- * sets data-drag for one drag; the lift itself (fill, edge, shadow, scale) stays the component's.
+ * Pointer drags, shared by three components: Decision card's `ranking` rows (Satin Free,
+ * components/decision-card.tsx), and Satin Pro's Agent plan steps (packages/ui-pro/src/components/
+ * agent-plan.tsx) and Kanban cards (packages/ui-pro/src/components/kanban-board.tsx). It lives in
+ * Free so Decision card can use it; Pro gets it through Free's stylesheet. A component puts
+ * `satin-drag` on what the pointer carries and sets data-drag for one drag; the lift itself (fill,
+ * edge, shadow, scale) stays the component's.
  *
  * - data-drag="lifted": picked up, it leans 1° to the left (to the right, right to left), as a
  *   hand holds a card. The component eases it in with the rest of its lift.

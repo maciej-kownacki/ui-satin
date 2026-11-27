@@ -13,6 +13,7 @@
 @import "./components/stepper.css";
 @import "./components/dropdown.css";
 @import "./components/mention.css";
+@import "./components/drag.css";
 
 /*
  * Interaction states that can also be forced with data-force, so a state sheet can show

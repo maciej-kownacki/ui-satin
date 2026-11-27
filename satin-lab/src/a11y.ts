@@ -555,12 +555,13 @@ export const a11y: Record<string, A11y> = {
   },
   'decision-card': {
     summary:
-      'A `role="group"` labelled by the title. The answers follow `type`: `radio` is a Radix radio group, `checkbox` a list of Checkboxes, `chips` buttons with `aria-pressed`, `ranking` an ordered list of focusable rows announced as "sortable item" with the hint "Alt and arrow keys to move", and `draft` the text that Rewrite (`aria-pressed`) turns into a textarea named "Draft". After a move, a polite live region reads the row’s new place ("Budget, position 2 of 4"). The step buttons are named "Previous question" and "Next question" (or `previousStepLabel` and `nextStepLabel`) and the step count is a polite live region; its rolling digits are hidden from screen readers, which read the plain count. The step that leaves is `inert` and `aria-hidden` while it slides out, and under reduced motion steps change without moving. When Continue or Skip moves to another question, focus goes into it (its picked answer, or its first control), so the new question is read out; the step buttons keep focus. In `summary`, Change is named "Change <title>".',
+      'A `role="group"` labelled by the title. The answers follow `type`: `radio` is a Radix radio group, `checkbox` a list of Checkboxes, `chips` buttons with `aria-pressed`, `ranking` an ordered list of focusable rows announced as "sortable item" with the hint "Alt and arrow keys to move", and `draft` the text that Rewrite (`aria-pressed`) turns into a textarea named "Draft". After a move, by keyboard or a pointer drop, a polite live region reads the row’s new place ("Budget, position 2 of 4"). The step buttons are named "Previous question" and "Next question" (or `previousStepLabel` and `nextStepLabel`) and the step count is a polite live region; its rolling digits are hidden from screen readers, which read the plain count. The step that leaves is `inert` and `aria-hidden` while it slides out, and under reduced motion steps change without moving. When Continue or Skip moves to another question, focus goes into it (its picked answer, or its first control), so the new question is read out; the step buttons keep focus. In `summary`, Change is named "Change <title>".',
     keyboard: [
       { keys: ['↑', '↓', '←', '→'], action: '`radio`: moves to the previous or next answer and picks it.' },
       { keys: ['Space'], action: '`checkbox`: checks or unchecks the answer. `chips`: picks or drops the chip (Enter works too).' },
       { keys: ['↑', '↓'], action: '`ranking`: moves focus to the row above or below.' },
       { keys: ['Alt+↑', 'Alt+↓'], action: '`ranking`: moves the focused row up or down and reads its new place.' },
+      { keys: ['Esc'], action: '`ranking`: during a pointer drag, puts the row back where it was, with no change.' },
     ],
   },
   'agent-loading': {

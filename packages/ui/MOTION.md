@@ -45,8 +45,8 @@ The tokens live in `src/styles/motion.css`.
      edge can't be scaled without stretching its line and corners. Not yet on the pixel grid; to revisit.
 2. **Ease-out for anything the user starts.** It moves fast at first, so the interface answers the click at once.
    Never use ease-in for UI: it starts slowly and feels late.
-   No springs and no overshoot, with two exceptions. First, a card dropped from a pointer drag (Satin Pro's Agent plan
-   steps and Kanban cards) lands on `--ease-spring` over `--duration-base`, passing its place by about 3% and
+   No springs and no overshoot, with two exceptions. First, a card dropped from a pointer drag (Decision card's
+   ranking rows, Satin Pro's Agent plan steps and Kanban cards) lands on `--ease-spring` over `--duration-base`, passing its place by about 3% and
    coming back, transform only (translate, rotate, scale). It still starts fast; a drop is the one moment the hand
    lets go of something, and the short spring makes it land rather than stop. Keyboard moves stay instant (rule 6),
    and under reduced motion it doesn't play.
