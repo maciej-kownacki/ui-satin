@@ -29,7 +29,7 @@
   ],
   "docs": "Bulk action bar docs: https://uisatin.dev/components/bulk-action-bar",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "pro",
     "props": {
       "BulkActionBarRoot": {

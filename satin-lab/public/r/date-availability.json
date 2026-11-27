@@ -23,7 +23,7 @@
   ],
   "docs": "Availability calendar docs: https://uisatin.dev/components/date-availability",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "pro",
     "props": {
       "AvailabilityCalendar": {

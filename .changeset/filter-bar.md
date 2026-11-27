@@ -1,5 +1,0 @@
----
-'@uisatin/pro': minor
----
-
-Filter bar (`@uisatin/pro/filter-bar`): one facet per field, each in a fixed place, idle ("Stage") or set ("Owner: Me", with a × that clears it). No "+ Filter" and no operators: a facet opens its choices. `enum`, `person` and `multi` fields open a menu of checkboxes that stays open; a person field lists `me` first, as "Me", and options with a `tone` show as Badges, in the menu and in the facet, two at most, then "+N". Number fields open a menu of presets ("> €20k", "€10k – €50k"); date fields open presets ("This quarter", "Last 30 days") and Custom range…, a Calendar on the same surface. Clear filters clears them all, and the result count rolls and is read out as it changes. The value is plain JSON, one filter per field; `applyFilters(rows, value, fields)` filters rows for a List, Table or DataGrid, and a filter no facet can say stays idle and doesn't apply. Its words (`filterBar`, `filterFacetValue`, `filterClearField`, `filterClearAll`, `filterComparison`, `filterThis`, `filterLastDays`, `filterCustomRange`, `filterResults`…) are translated with SatinLabels.

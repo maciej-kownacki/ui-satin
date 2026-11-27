@@ -1,5 +1,0 @@
----
-'@uisatin/ui': minor
----
-
-RelativeTime (`@uisatin/ui/relative-time`), new: when something happened, in a `<time dateTime>` (`data-slot="relative-time"`, muted 13px, tabular figures). Relative today ("now", "5 min ago", "2 hr ago"), the clock time before that, and with `withDate` the date too ("Nov 16, 9:40 AM", with the year when it isn't this one). English short units lose their dot; other languages keep their own spelling; words and formats follow `dateLocale` in SatinLabels. Screen readers hear the full date and time from a visually hidden span, the short text is `aria-hidden`. Every time on the page reads one clock that ticks every 30 seconds while any listens and stops when none does, and a tick renders only the times whose text changed. `at` takes a Date, an ISO string or a timestamp; other props, `ref` included, go to the `time`. Also exported: `useRelativeClock(text)`, a text of your own from the same clock, and `dateTimeFormat` / `relativeTimeFormat`, shared `Intl` formatters built once per locale and options.

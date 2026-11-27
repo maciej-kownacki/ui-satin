@@ -29,7 +29,7 @@
   ],
   "docs": "Review queue docs: https://uisatin.dev/ai-patterns/review-queue",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "pro",
     "props": {
       "ReviewQueueRoot": {

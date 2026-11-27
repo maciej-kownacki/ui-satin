@@ -41,7 +41,7 @@
   ],
   "docs": "CSV import docs: https://uisatin.dev/components/csv-import",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "pro",
     "props": {
       "CsvImportMapping": {

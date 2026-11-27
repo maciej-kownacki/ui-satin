@@ -23,7 +23,7 @@
   ],
   "docs": "Sheet docs: https://uisatin.dev/components/sheet",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "free",
     "props": {
       "Sheet": {

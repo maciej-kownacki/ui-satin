@@ -36,7 +36,7 @@
   ],
   "docs": "Comments thread docs: https://uisatin.dev/components/comments-thread",
   "meta": {
-    "version": "0.7.1",
+    "version": "1.0.0",
     "edition": "pro",
     "props": {
       "Comment": {
